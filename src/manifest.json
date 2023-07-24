@@ -1,0 +1,49 @@
+{
+    "manifest_version": 2,
+    "name": "BestSEQTA",
+    "version": "3.0.2",
+    "description": "Making SEQTA Learn better.",
+    "icons": {
+        "48": "icons/icon-48.png"
+    },
+    "browser_action": {
+        "browser_style": true,
+        "default_popup": "popup/info.html",
+        "default_icon": {
+            "32": "icons/icon-32.png",
+            "64": "icons/icon-64.png"
+        }
+    },
+    "permissions": [
+        "tabs",
+        "notifications",
+        "storage",
+        "https://newsapi.org/"
+    ],
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "optional_permissions": [
+        "*://*/*",
+        "declarativeContent"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.edu.au/*"
+            ],
+            "js": [
+                "SEQTA.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        "icons/*",
+        "images/*",
+        "inject/*",
+        "popup/*"
+    ]
+}

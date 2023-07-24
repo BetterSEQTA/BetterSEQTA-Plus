@@ -1,0 +1,33 @@
+/* // This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>. */
+
+html, p, div, span {
+  color: white !important;
+  text-shadow: 1px 1px 2px #161616, 0 0 1em #161616;
+}
+
+blockquote.forward > .preamble {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+blockquote.forward > .preamble > .date > .value,
+blockquote.forward > .preamble > .sender > .value {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+blockquote.forward > .preamble > .date > .label,
+blockquote.forward > .preamble > .sender > .label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+table th {
+  background-color: #161616;
+}
