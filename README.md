@@ -25,5 +25,5 @@ Forking the BetterSEQTA project to add extra functionality
 
 This extension was developed and maintained by [RandomTechChannel](https://github.com/OG-RandomTechChannel)
 
-> GitHub [@nulkem](https://github.com/OG-RandomTechChannel)
+> GitHub [@OG-RandomTechChannel](https://github.com/OG-RandomTechChannel)
 > Youtube [@TheRandomTechChannel](https://www.youtube.com/@TheRandomTechChannel)
