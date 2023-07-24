@@ -251,6 +251,7 @@ function OpenWhatsNewPopup() {
   text = stringToHTML(
     `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+  <h1>3.0.3 - The settings pannel was blank except for the about
   <h1>3.0.2 - The custom shortcut feature wasn't working
   <h1>3.0.1 - Bug fixes and removing redundant code
   <h1>3.0.0 - The beginning of BestSEQTA, I am forking the project to take it in a new direction
