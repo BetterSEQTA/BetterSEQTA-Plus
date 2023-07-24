@@ -1319,8 +1319,8 @@ function CallExtensionSettings() {
         </div>
         <div class="aboutcontainer">
           <div>
-            <h1 class="addonitem" style="margin-top: 20px; margin-bottom: 5px;">Support Me</h1>
-            <a href='https://ko-fi.com/O4O5AOFX9' target='_blank' style="background: none !important; margin: 0; padding:0;"><img height='36' style='border:0px;height:36px;' src='${chrome.runtime.getURL('/popup/kofi3.png')}' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+            <h1 class="addonitem" style="margin-top: 20px; margin-bottom: 5px;"></h1>
+            
           </div>
         </div>
 
