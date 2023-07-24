@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         for (let i = 0; i < rules.length; i++) {
           chrome.declarativeContent.onPageChanged.addRules([rules[i]]);
         }
-        alert("Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn't work, please contact the developer.");
+        alert("Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn't work, please contact the developer. It will be an easy fix");
 
       }
     });
