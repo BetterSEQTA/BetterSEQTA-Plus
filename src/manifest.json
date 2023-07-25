@@ -1,12 +1,11 @@
-{
-    "manifest_version": 2,
+ "manifest_version": 3,
     "name": "BestSEQTA",
     "version": "3.0.2",
-    "description": "Making SEQTA Learn better.",
+    "description": "A dark-themed Firefox/Chrome Extension that adds additional features and gives an overall better experience for SEQTA Learn.",
     "icons": {
         "48": "icons/icon-48.png"
     },
-    "browser_action": {
+    "action": {
         "browser_style": true,
         "default_popup": "popup/info.html",
         "default_icon": {
@@ -17,16 +16,16 @@
     "permissions": [
         "tabs",
         "notifications",
-        "storage",
-        "https://newsapi.org/"
+        "storage"
+    ],
+    "host_permissions": [
+        "https://newsapi.org/",
+	"*://*/*"
     ],
     "background": {
-        "scripts": [
-            "background.js"
-        ]
+	    "service_worker": "background.js"
     },
     "optional_permissions": [
-        "*://*/*",
         "declarativeContent"
     ],
     "content_scripts": [
@@ -35,15 +34,44 @@
                 "https://*.edu.au/*"
             ],
             "js": [
+		"purify.min.js",
                 "SEQTA.js"
             ],
             "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [
-        "icons/*",
-        "images/*",
-        "inject/*",
-        "popup/*"
+	{
+        "resources": [
+        	"icons/*"
+      	],
+      	"matches": [
+        	"*://*/*"
+      	]
+	},
+	{
+	"resources": [
+        	"images/*"
+      	],
+      	"matches": [
+        	"*://*/*"
+      	]
+	},
+	{
+	"resources": [
+        	"inject/*"
+      	],
+      	"matches": [
+        	"*://*/*"
+      	]
+	},
+	{
+        "resources": [
+        	"popup/*"
+      	],
+      	"matches": [
+        	"*://*/*"
+      	]
+	}
     ]
 }
