@@ -1,4 +1,5 @@
- "manifest_version": 3,
+{
+"manifest_version": 3,
     "name": "BestSEQTA",
     "version": "3.0.2",
     "description": "A dark-themed Firefox/Chrome Extension that adds additional features and gives an overall better experience for SEQTA Learn.",
