@@ -159,7 +159,7 @@ const DefaultValues = {
     },
     {
       Name: "educationperfect",
-      enabled: false
+      enabled: true
     }
   ],
   customshortcuts: []
