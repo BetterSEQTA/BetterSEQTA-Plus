@@ -1,16 +1,3 @@
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 var isChrome = window.chrome;
 var SettingsClicked = false
 var MenuOptionsOpen = false;
@@ -18,10 +5,11 @@ var UserInitalCode = '';
 var currentSelectedDate = new Date();
 var WhatsNewOpen = false;
 var LessonInterval;
-
-var stringToHTML = function (str) {
+var stringToHTML = function (str, styles=false) {
   var parser = new DOMParser();
+  var str = DOMPurify.sanitize(str, { ADD_ATTR: ['onclick']});
   var doc = parser.parseFromString(str, "text/html");
+  if(styles){doc.body.style.cssText = "height: auto; overflow: scroll; margin: 0px; background: var(--background-primary);"}
   return doc.body;
 };
 
@@ -81,10 +69,6 @@ const ShortcutLinks = {
     link: "https://netflix.com",
     viewBox: "0 0 24 24",
     icon: "M6.5,2H10.5L13.44,10.83L13.5,2H17.5V22C16.25,21.78 14.87,21.64 13.41,21.58L10.5,13L10.43,21.59C9.03,21.65 7.7,21.79 6.5,22V2Z"
-  },
-  EducationPerfect: {
-    link: "https://app.educationperfect.com",
-    viewBox: "0 0 24 24",
   }
 }
 
@@ -251,10 +235,8 @@ function OpenWhatsNewPopup() {
   text = stringToHTML(
     `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-  <h1>3.0.3 - The settings pannel was blank except for the about
-  <h1>3.0.2 - The custom shortcut feature wasn't working
-  <h1>3.0.1 - Bug fixes and removing redundant code
-  <h1>3.0.0 - The beginning of BestSEQTA, I am forking the project to take it in a new direction
+  <h1>3.0.1 - Bug fixes and working on manifest V3</h1>
+  <h1>3.0.0 - Started BestSEQTA</h1>
   <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1><li>Fixed BestSEQTA not loading on some pages</li><li>Fixed text colour of notices being unreadable</li><li>Fixed pages not reloading when saving changes</li>
   <h1>2.0.2 - Minor bug fixes</h1><li>Fixed indicator for current lesson</li><li>Fixed text colour for DM messages list in Light mode</li><li>Fixed user info text colour</li>
   <h1>Sleek New Layout</h1><li>Updated with a new font and presentation, BestSEQTA has never looked better.</li>
@@ -273,12 +255,14 @@ function OpenWhatsNewPopup() {
   <div class="whatsnewFooter">
   <div>
   Report bugs and feedback: 
-  <a href="https://github.com/OG-RandomTechChannel/BestSEQTA" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL('/popup/github.svg')}" alt=""></a>
+  <a href="https://github.com/Nulkem/betterseqta" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL('/popup/github.svg')}" alt=""></a>
   <a href="https://chrome.google.com/webstore/detail/betterseqta/boikofabjaholheekefimfojfncpjfib" target="_blank" style="background: none !important; margin: 0 5px; padding:0;">
   <svg style="width:25px;height:25px" viewBox="0 0 24 24">
     <path fill="white" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
   </svg>
   </a>
+  </div>
+  <div>Support me: <a href="https://ko-fi.com/O4O5AOFX9" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0;"><img height="25" style="border:0px;height:25px;" src="${chrome.runtime.getURL('/popup/kofi3.png')}" border="0" alt="Buy Me a Coffee at ko-fi.com"></a></div>
   </div>
   `).firstChild
 
@@ -507,7 +491,7 @@ function LoadPageElements() {
                     "notifications__bubble___1EkSQ"
                   )[0];
                   if (typeof alertdiv == 'undefined') {
-                    console.log("[BestSEQTA] Your inbox is clean")
+                    console.log("[BestSEQTA] No notifications currently")
 
                   }
                   else {
@@ -561,7 +545,7 @@ function LoadPageElements() {
                 "notifications__bubble___1EkSQ"
               )[0];
               if (typeof alertdiv == 'undefined') {
-                console.log("[BestSEQTA] Your inbox is clean")
+                console.log("[BestSEQTA] No notifications currently")
 
               }
               else {
@@ -848,7 +832,7 @@ function RunFunctionOnTrue(storedSetting) {
       document.documentElement.style.setProperty('--text-primary', "black");
     }
 
-    document.querySelector('link[rel*="icon"]').href = chrome.extension.getURL("icons/icon-48.png");
+    document.querySelector('link[rel*="icon"]').href = chrome.runtime.getURL("icons/icon-48.png");
 
     rbg = GetThresholdofHex(storedSetting.selectedColor);
     if (rbg > 210) {
@@ -926,7 +910,7 @@ document.addEventListener(
       console.log("[BestSEQTA] Verified SEQTA Page");
 
       var link = document.createElement("link");
-      link.href = chrome.extension.getURL("inject/documentload.css");
+      link.href = chrome.runtime.getURL("inject/documentload.css");
       link.type = "text/css";
       link.rel = "stylesheet";
       document.getElementsByTagName("html")[0].appendChild(link);
@@ -1007,7 +991,7 @@ function RunExtensionSettingsJS() {
   }
 
   function FindSEQTATab() {
-    chrome.runtime.sendMessage({ type: "ReloadTabs", });
+    chrome.runtime.sendMessage({ type: "reloadTabs", });
   }
   /*
   Store the currently selected settings using chrome.storage.local.
@@ -1063,11 +1047,6 @@ function RunExtensionSettingsJS() {
     }
   }
 
-  var stringtoHTML = function (str) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(str, "text/html");
-    return doc.body;
-  };
 
   function CreateShortcutDiv(name) {
 
@@ -1289,8 +1268,8 @@ function CallExtensionSettings() {
           <div class="aboutcontainer">
           <div>
             <h1 class="addonitem">About</h1>
-            <p class="item subitem">Developed and maintained by RTC</p>
-            <p class="item subitem">BestSEQTA is a fork of the project called betterSEQTA, The betterSEQTA project is dead, this is here to add features and improve the experience</p>
+            <p class="item subitem">Created and developed and maintained by Nulkem</p>
+            <p class="item subitem">BestSEQTA is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
           </div>
         </div>
 
@@ -1320,8 +1299,7 @@ function CallExtensionSettings() {
         </div>
         <div class="aboutcontainer">
           <div>
-            <h1 class="addonitem" style="margin-top: 20px; margin-bottom: 5px;"></h1>
-            
+
           </div>
         </div>
 
@@ -1469,7 +1447,7 @@ function CallExtensionSettings() {
         <div class="item-container">
           <div class="text-container">
             <h1 class="addonitem">Animated Background</h1>
-            <p class="item subitem">Adds an animated background to BestSEQTA.</p>
+            <p class="item subitem">Adds an animated background to BestSEQTA. (May impact battery life)</p>
           </div>
           <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="animatedbk">
           <label for="animatedbk" class="onoffswitch-label"></label>
@@ -1515,7 +1493,7 @@ function CallExtensionSettings() {
     <div></div>
 
     <div style="position: absolute; bottom: 15px; right: 50px; color: rgb(177, 177, 177); display: flex; align-items:center;">
-    <p style="margin: 0; margin-right: 5px; color: white;">Forked by RTC </p>
+    <p style="margin: 0; margin-right: 5px; color: white;">Created by Nulkem </p>
     <p style="margin: 0; cursor:pointer; padding: 4px 5px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">What's new in v${chrome.runtime.getManifest().version}</p></div>
     <img src=${chrome.runtime.getURL('/popup/github.svg')} alt="" id="github">
   </div></div>`)
@@ -2181,8 +2159,8 @@ function hexToRGB(hex) {
 }
 
 function GetThresholdofHex(hex) {
-  rbg = hexToRGB(hex)
-  return Math.sqrt(rbg.r ** 2 + rbg.g ** 2 + rbg.b ** 2)
+  var rgb = hexToRGB(hex)
+  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2)
 }
 
 function CheckCurrentLessonAll(lessons) {
@@ -2822,7 +2800,7 @@ function AddCustomShortcutsToPage() {
 function SendHomePage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log("[BestSEQTA] Loading Home Page");
+    console.log("[BestSEQTA] Started Loading Home Page");
     document.title = "Home ― SEQTA Learn";
     var element = document.querySelector("[data-key=home]");
 
@@ -2835,7 +2813,7 @@ function SendHomePage() {
 
     const titlediv = document.getElementById('title').firstChild;
     titlediv.innerText = "Home";
-    document.querySelector('link[rel*="icon"]').href = chrome.extension.getURL("icons/icon-48.png");
+    document.querySelector('link[rel*="icon"]').href = chrome.runtime.getURL("icons/icon-48.png");
 
     currentSelectedDate = new Date();
 
@@ -3041,7 +3019,7 @@ function SendHomePage() {
                 );
                 NewNotice.append(staff.firstChild);
                 // Converts the string into HTML
-                var content = stringToHTML(NoticesPayload.payload[i].contents);
+                var content = stringToHTML(NoticesPayload.payload[i].contents, styles=true);
                 for (let i = 0; i < content.childNodes.length; i++) {
                   NewNotice.append(content.childNodes[i]);
                 }
@@ -3095,7 +3073,7 @@ function SendHomePage() {
               "notifications__bubble___1EkSQ"
             )[0];
             if (typeof alertdiv == 'undefined') {
-              console.log("[BestSEQTA] Your inbox is clean")
+              console.log("[BestSEQTA] No notifications currently")
 
             }
             else {
