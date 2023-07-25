@@ -235,7 +235,7 @@ function OpenWhatsNewPopup() {
   text = stringToHTML(
     `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-  <h1>3.1.0 - Complete overhaul</h1><li>Upgraded Manifest to V3
+  <h1>3.1.0 - Complete overhaul</h1><li>Upgraded Manifest to V3</li><li>Fixed transitional glitches</li><li>News feature wouldn't refresh until cookies were cleared</li>
   <h1>3.0.1 - Bug fixes and working on manifest V3</h1>
   <h1>3.0.0 - Started BestSEQTA</h1>
   <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1><li>Fixed BestSEQTA not loading on some pages</li><li>Fixed text colour of notices being unreadable</li><li>Fixed pages not reloading when saving changes</li>
@@ -263,7 +263,6 @@ function OpenWhatsNewPopup() {
   </svg>
   </a>
   </div>
-  <div>Support me: <a href="https://ko-fi.com/O4O5AOFX9" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0;"><img height="25" style="border:0px;height:25px;" src="${chrome.runtime.getURL('/popup/kofi3.png')}" border="0" alt="Buy Me a Coffee at ko-fi.com"></a></div>
   </div>
   `).firstChild
 
