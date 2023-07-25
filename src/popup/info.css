@@ -232,7 +232,7 @@ p {
 .notification::before {
   width: 16px;
   height: 16px;
-  font: 10px/16px Fantasy;
+  font: 10px/16px Helvetica;
   word-spacing: 26px;
 }
 .notification:checked:before {
@@ -389,7 +389,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 30ms;
+  transition: 300ms;
 }
 .custom-shortcuts-buttons:hover {
   background: #161616;
