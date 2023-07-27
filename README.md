@@ -20,6 +20,7 @@ Looking for contributors!
   - Edge Supported
   - Brave Supported
   - (kinda) Opera Supported (We have found a issue that the manifest V3 version doesn't work on Opera, Please use 3.0.2)
+    
  
 
 ## Credits
