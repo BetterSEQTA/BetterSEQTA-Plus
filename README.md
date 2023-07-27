@@ -1,4 +1,5 @@
-![betterseqta-light-full](https://github.com/OG-RandomTechChannel/BestSEQTA/assets/140035326/9c420c9b-aead-455b-8994-b2ab84fe9e75)
+![betterseqta-dark-full](https://github.com/OG-RandomTechChannel/BestSEQTA/assets/140035326/9e51a6be-4da9-4cff-a746-070583cbddcb)
+
 # BestSEQTA
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
