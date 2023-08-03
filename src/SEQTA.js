@@ -235,6 +235,7 @@ function OpenWhatsNewPopup() {
   text = stringToHTML(
     `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+  <h1>3.1.2 - New API for News feed and bug fixes</h1>
   <h1>3.1.1 - Under the hood improvements</h1>
   <h1>3.1.0 - Complete overhaul</h1><li>Upgraded Manifest to V3</li><li>Fixed transitional glitches</li><li>News feature wouldn't refresh until cookies were cleared</li>
   <h1>3.0.1 - Bug fixes and working on manifest V3</h1>
