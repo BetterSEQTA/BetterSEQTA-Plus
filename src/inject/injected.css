@@ -793,6 +793,11 @@ html {
   background: unset;
 }
 
+.MessageList__MessageList___3DxoC ::-webkit-scrollbar {
+    width: 0px;
+    background: none;
+}
+
 .MessageList__MessageList___3DxoC {
   background: var(--background-primary);
 }
