@@ -762,10 +762,6 @@ html {
   flex-direction: column;
 }
 
-.notifications__items___2hCdv::first-child {
-  border-top-left-radius: 1rem;
-}
-
 .notifications__item___2ErJN>.notifications__dismiss___zveKV {
   background: rgba(0, 0, 0, 0.1) !important;
   color: var(--text-primary);
@@ -906,6 +902,7 @@ iframe.userHTML {
   background-clip: padding-box;
   border: 2px solid transparent;
   transition: 1.0s;
+  border-radius: 1rem !important;
 }
 
 ::-webkit-scrollbar-thumb:vertical:hover,
@@ -968,8 +965,6 @@ ul {
 .legacy-root .uiFileHandler {
   background: var(--background-secondary);
   margin: 8px 0px 0px 0px;
-  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
-  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
 }
 
 .dailycal>.header {
@@ -982,6 +977,20 @@ ul {
 
 #main>.timetablepage>.note {
   color: var(--text-primary);
+}
+
+.uiFileHandler .uiButton {
+  border-radius: 2rem !important;
+  color: lightgray !important;
+  margin-top: 0.25rem !important;
+}
+
+.uiButton:hover {
+  box-shadow: none !important;
+}
+
+.uiButton:not([disabled]):hover {
+  transform: scale(1.01) !important;
 }
 
 .uiFileHandlerPanel {
@@ -1019,16 +1028,32 @@ blurred {
   background-color: var(--better-main);
 }
 
+.content [placeholder="Subject…"] {
+  padding-left: 12px !important;
+  border-radius: 1rem;
+  background-color: var(--background-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.content [placeholder="Subject…"]::-webkit-input-placeholder {
+  color: gray;
+}
+
 .activelesson {
   box-shadow: inset 0px 10px 0 var(--item-colour, transparent) !important;
 }
 
 .formattedText>.wrapper>.cke>.cke_inner>.cke_contents {
   background: var(--background-primary);
+  border-radius: 1rem;
+  padding: 8px;
+  overflow-x: hidden;
 }
 
 .formattedText>.footer {
   background-color: var(--background-primary);
+  border-radius: 1rem;
+  margin-top: 0.5rem;
 }
 
 .uiSlidePane.shown {
@@ -1051,6 +1076,7 @@ blurred {
   transform: translateY(100%);
   transition: transform 0.5s ease-in-out,-webkit-transform 0.5s ease-in-out;
   transition-delay: 0 !important;
+  border-radius: 1rem !important;
 }
 
 .anyoneSelect.filterBox {
