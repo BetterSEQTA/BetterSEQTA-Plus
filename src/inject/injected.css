@@ -226,14 +226,6 @@ html {
   }
 }
 
-/* #menu:hover {
-  width: 300px;
-  transition: 1s;
-} */
-/* #menu:hover ~ #content {
-  left: 300px;
-  transition: 1s;
-} */
 .welcome>.portalPageView>.powerPortalPage>.Body__body___3pGxr>.Container__container___33GlY>.Document__document___1KJCG>.Canvas__canvas___OBdCZ {
   background-color: unset !important;
   background-image: unset !important;
@@ -770,6 +762,10 @@ html {
   flex-direction: column;
 }
 
+.notifications__items___2hCdv::first-child {
+  border-top-left-radius: 1rem;
+}
+
 .notifications__item___2ErJN>.notifications__dismiss___zveKV {
   background: rgba(0, 0, 0, 0.1) !important;
   color: var(--text-primary);
@@ -1035,9 +1031,26 @@ blurred {
   background-color: var(--background-primary);
 }
 
+.uiSlidePane.shown {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.uiSlidePane {
+  transform: translatey(0%) !important;
+  transition: background-color 0.5s ease-in-out;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.uiSlidePane.shown>.pane {
+  transform: translatey(0%) !important;
+}
+
 .uiSlidePane>.pane {
-  background-color: var(--background-secondary);
   color: var(--text-primary);
+  background-color: var(--background-secondary);
+  transform: translateY(100%);
+  transition: transform 0.5s ease-in-out,-webkit-transform 0.5s ease-in-out;
+  transition-delay: 0 !important;
 }
 
 .anyoneSelect.filterBox {

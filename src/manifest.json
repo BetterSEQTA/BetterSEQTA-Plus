@@ -35,7 +35,7 @@
                 "https://*.edu.au/*"
             ],
             "js": [
-		"purify.min.js",
+		            "purify.min.js",
                 "SEQTA.js"
             ],
             "run_at": "document_start"
