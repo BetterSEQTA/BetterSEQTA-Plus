@@ -56,7 +56,6 @@ html {
 .addedButton {
   position: absolute !important;
   right: 105px;
-  top: 31px;
   padding: 6px !important;
   overflow: unset !important;
   border-radius: 10px !important;
@@ -284,7 +283,7 @@ html {
 
 #title {
   background: var(--background-primary);
-  height: 80px;
+  height: 4rem;
   box-shadow: rgb(0 0 0 / 35%) 0px 5px 15px;
   min-height: 48px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -743,6 +742,13 @@ html {
   color: var(--text-primary);
   top: 80px;
   right: 10px;
+  border-radius: 1rem;
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.4);
+}
+
+#ExtensionPopup {
+  border-radius: 1rem;
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.4);
 }
 
 #menu li.active {
@@ -758,7 +764,7 @@ html {
 }
 
 .notifications__items___2hCdv {
-  border-bottom: unset;
+  border-bottom: none;
   height: 540px;
   display: flex;
   flex-direction: column;
@@ -785,6 +791,11 @@ html {
 
 .Viewer__sidebar___1Btu4>header {
   background: unset;
+}
+
+.MessageList__MessageList___3DxoC ::-webkit-scrollbar {
+    width: 0px;
+    background: none;
 }
 
 .MessageList__MessageList___3DxoC {
@@ -1146,7 +1157,7 @@ body {
   height: 42px;
   justify-content: center;
   right: 47px;
-  top: 28px;
+  top: 14px;
   width: 42px;
   z-index: 2;
 }
@@ -1436,8 +1447,12 @@ body {
 
 #menuToggle {
   color: var(--text-primary);
-  top: 23px !important;
+  top: 0.8rem !important;
   z-index: 2;
+}
+
+#AddedSettings {
+  top: 17.5px !important;
 }
 
 .day-empty {
@@ -2019,7 +2034,7 @@ body {
   color: var(--text-primary);
   display: flex;
   min-height: 32px;
-  height: 100px;
+  height: 64px;
   justify-content: space-between;
   z-index: 10;
   position: absolute;
@@ -2046,6 +2061,7 @@ body {
 .userInfo {
   display: flex;
   align-items: center;
+  padding-top: 4px;
 }
 
 .userInfoText {
@@ -2078,7 +2094,7 @@ body {
   z-index: 3;
   position: absolute !important;
   right: -70px !important;
-  top: 14px !important;
+  top: -2px !important;
 }
 
 .userInfosvg::after {
@@ -2172,7 +2188,7 @@ body {
   fill: var(--text-primary);
   height: 35px;
   width: 35px;
-  top: 31px;
+  top: 17.5px;
 }
 
 .topmenutooltip {
