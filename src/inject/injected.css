@@ -740,8 +740,15 @@ html {
 
 .connectedNotificationsWrapper>div>button+div {
   color: var(--text-primary);
-  top: 70px;
+  top: 80px;
   right: 10px;
+  border-radius: 1rem;
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.4);
+}
+
+#ExtensionPopup {
+  border-radius: 1rem;
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.4);
 }
 
 #menu li.active {
@@ -757,7 +764,7 @@ html {
 }
 
 .notifications__items___2hCdv {
-  border-bottom: unset;
+  border-bottom: none;
   height: 540px;
   display: flex;
   flex-direction: column;
