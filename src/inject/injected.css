@@ -59,6 +59,9 @@ html {
 
 .defaultWelcome {
   background: var(--better-main);
+  border-radius: 1rem 1rem 0rem 0 !important;
+  color: var(--text-color) !important;
+  overflow: hidden;
 }
 
 .addedButton {
@@ -121,6 +124,11 @@ ul.magicDelete>li.deleting {
   z-index: 5 !important;
 }
 
+#menu ::-webkit-scrollbar {
+  width: 0px;
+  background: none;
+}
+
 #menu li,
 #menu section {
   margin: 3px 20px;
@@ -147,6 +155,7 @@ ul.magicDelete>li.deleting {
 #menu {
   width: 270px;
   background: var(--better-main);
+  color: var(--text-color);
   border-right: none;
   font-family: Rubik, sans-serif !important;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
@@ -160,9 +169,17 @@ ul.magicDelete>li.deleting {
   height: 28px !important;
 }
 
+#menu ul li {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  width: 85% !important;
+}
+
 #menu li.active>.sub>ul>.item {
   box-shadow: inset 3px 0 var(--item-colour, transparent);
-  border-radius: 0px 15px 15px 0px;
+  border-radius: 0px 8px 8px 0px;
   transition: 100ms;
 }
 
@@ -375,7 +392,7 @@ html {
   font-weight: 400;
   font-size: 3em !important;
   font-weight: 300;
-  margin: 30px auto 0;
+  margin: 30px auto 60px;
   background-color: var(--background-primary);
   height: 3em;
   align-items: center;
@@ -479,7 +496,7 @@ html {
 }
 
 .border {
-  border-radius: 15px;
+  border-radius: 8px;
 }
 
 .shortcut-container h2 {
@@ -497,6 +514,10 @@ html {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.shortcut-container:not(:has(#shortcuts *)) {
+  display: none !important;
 }
 
 .shortcuts a {
@@ -1292,10 +1313,11 @@ body {
 }
 
 .NewsArticle {
-  border-radius: 5px !important;
+  border-radius: 1rem !important;
+  overflow: hidden;
   width: 94%;
   padding: 0 !important;
-  margin: 10px auto 50px !important;
+  margin: 0px auto 30px !important;
   background: var(--background-primary) !important;
   color: var(--text-primary);
   display: flex;
@@ -1497,8 +1519,10 @@ body {
   visibility: visible;
 }
 
-#menu {
-  color: var(--text-color);
+.draggable::before {
+  left: 0 !important;
+  top: 100% !important;
+  transform: translateY(-100%) !important;
 }
 
 #menuToggle {
