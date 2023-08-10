@@ -5,6 +5,8 @@ var UserInitalCode = '';
 var currentSelectedDate = new Date();
 var WhatsNewOpen = false;
 var LessonInterval;
+var isDarkMode = false;
+
 var stringToHTML = function (str, styles=false) {
   var parser = new DOMParser();
   var str = DOMPurify.sanitize(str, { ADD_ATTR: ['onclick']});
@@ -297,10 +299,14 @@ function OpenWhatsNewPopup() {
 }
 
 async function finishLoad() {
-  var loadingbk = document.getElementById("loading");
-  loadingbk.style.opacity = "0";
-  await delay(501);
-  loadingbk.remove();
+  try {
+    var loadingbk = document.getElementById("loading");
+    loadingbk.style.opacity = "0";
+    await delay(501);
+    loadingbk.remove();
+  } catch(err) {
+    console.log(err);
+  }
 
   chrome.storage.local.get(["justupdated"], function (result) {
     if (result.justupdated) {
@@ -686,8 +692,8 @@ async function ObserveMenuItemPosition() {
         mutations_list.forEach(function (mutation) {
           mutation.addedNodes.forEach(function (added_node) {
 
-            if (!added_node.dataset.checked && !MenuOptionsOpen) {
-              if (MenuitemSVGKey[added_node.dataset.key]) {
+            if (!added_node?.dataset?.checked && !MenuOptionsOpen) {
+              if (MenuitemSVGKey[added_node?.dataset?.key]) {
                 ReplaceMenuSVG(added_node, MenuitemSVGKey[added_node.dataset.key])
               }
               ChangeMenuItemPositions(menuorder);
@@ -734,6 +740,77 @@ function AppendElementsToDisabledPage() {
   document.head.append(settingsStyle)
 }
 
+function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) {
+  // Convert a RGB value to HSL
+  function rgbToHsl(r, g, b) {
+    r /= 255, g /= 255, b /= 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return [h, s, l];
+  }
+
+  // Convert an HSL value to RGB
+  function hslToRgb(h, s, l) {
+    function hue2rgb(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    }
+
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      let p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [r * 255, g * 255, b * 255];
+  }
+
+  // Extract the red, green, and blue components from hex
+  let r = parseInt(hexColor.substr(1, 2), 16);
+  let g = parseInt(hexColor.substr(3, 2), 16);
+  let b = parseInt(hexColor.substr(5, 2), 16);
+
+  // Convert RGB to HSL
+  let [h, s, l] = rgbToHsl(r, g, b);
+
+  // Adjust saturation and lightness
+  s -= s * paleFactor;
+  l += (1 - l) * lightenFactor;
+
+  // Convert HSL back to RGB
+  [r, g, b] = hslToRgb(h, s, l);
+
+  // Convert RGB to hex
+  r = Math.round(r).toString(16).padStart(2, '0');
+  g = Math.round(g).toString(16).padStart(2, '0');
+  b = Math.round(b).toString(16).padStart(2, '0');
+
+  return '#' + r + g + b;
+}
+
 function ColorLuminance(hex, lum) {
 
   // validate hex string
@@ -756,6 +833,11 @@ function ColorLuminance(hex, lum) {
 
 chrome.storage.onChanged.addListener(function (changes) {
   if (changes.selectedColor) {
+    try {
+      document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(changes.selectedColor.newValue));
+    } catch(err) {
+      console.log(err)
+    }
 
     rbg = GetThresholdofHex(changes.selectedColor.newValue)
     if (rbg > 210) {
@@ -769,7 +851,7 @@ chrome.storage.onChanged.addListener(function (changes) {
 
     document.documentElement.style.setProperty('--better-main', changes.selectedColor.newValue);
     // document.documentElement.style.setProperty('--better-sub', ColorLuminance(changes.selectedColor.newValue, -0.15));
-
+    
     if (changes.selectedColor.newValue == '#ffffff') {
       document.documentElement.style.setProperty('--better-light', '#b7b7b7');
     } else {
@@ -777,7 +859,7 @@ chrome.storage.onChanged.addListener(function (changes) {
     }
   }
 
-  if (changes.customshortcuts.newValue) {
+  if (changes?.customshortcuts?.newValue) {
     if (changes.customshortcuts.oldValue.length > 0) {
       CreateCustomShortcutDiv(changes.customshortcuts.newValue[(changes.customshortcuts.oldValue.length)]);
     } else {
@@ -822,13 +904,19 @@ function RunFunctionOnTrue(storedSetting) {
     document.documentElement.style.setProperty('--better-sub', "#161616");
     document.documentElement.style.setProperty('--better-alert-highlight', "#c61851");
 
-
+    
+    
     if (storedSetting.DarkMode) {
       document.documentElement.style.setProperty('--background-primary', "#232323");
       document.documentElement.style.setProperty('--background-secondary', "#1a1a1a");
       document.documentElement.style.setProperty('--text-primary', "white");
     }
     else {
+      try {
+        document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(storedSetting.selectedColor));
+      } catch(err) {
+        console.log(err)
+      }
       document.documentElement.style.setProperty('--background-primary', "#ffffff");
       document.documentElement.style.setProperty('--background-secondary', "#e5e7eb");
       document.documentElement.style.setProperty('--text-primary', "black");
@@ -848,6 +936,7 @@ function RunFunctionOnTrue(storedSetting) {
 
     document.documentElement.style.setProperty('--better-main', storedSetting.selectedColor);
     // document.documentElement.style.setProperty('--better-sub', ColorLuminance(storedSetting.selectedColor, -0.15));
+
     if (storedSetting.selectedColor == '#ffffff') {
       document.documentElement.style.setProperty('--better-light', '#b7b7b7');
     } else {
@@ -1890,16 +1979,19 @@ function AddBetterSEQTAElements(toggle) {
                 });
 
                 houseelement = document.getElementsByClassName("userInfohouse")[0];
-                if (students[index].house) {
+                if (students[index]?.house) {
                   houseelement.style.background = students[index].house_colour;
-                  colorresult = GetThresholdofHex(students[index].house_colour);
-                  if (colorresult > 300) {
-                    houseelement.style.color = "black";
-                  }
-                  else {
-                    houseelement.style.color = "white";
-                  }
-                  houseelement.innerText = students[index].year + students[index].house;
+                  try {
+                    colorresult = GetThresholdofHex(students[index]?.house_colour);
+                    
+                    if (colorresult > 300) {
+                      houseelement.style.color = "black";
+                    }
+                    else {
+                      houseelement.style.color = "white";
+                    }
+                    houseelement.innerText = students[index].year + students[index].house;
+                  } catch {}
                 }
                 else {
                   houseelement.innerText = students[index].year;
@@ -1974,6 +2066,7 @@ function AddBetterSEQTAElements(toggle) {
 
         chrome.storage.local.get(['DarkMode'], function (result) {
           Darkmode = result.DarkMode;
+
           tooltipstring = GetLightDarkModeString(Darkmode);
           var LightDarkModeButton = stringToHTML(`<button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px);" preserveAspectRatio="xMidYMid meet"></svg><div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipstring}</div></button>`);
           ContentDiv.append(LightDarkModeButton.firstChild);
@@ -1982,32 +2075,44 @@ function AddBetterSEQTAElements(toggle) {
 
           if (Darkmode) {
             LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
+            document.documentElement.style.removeProperty('--better-pale');
           } else {
             LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
+            try {
+              chrome.storage.local.get(null, function (result) {
+                document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(result.selectedColor)); // TODO: Make this variable referencable
+              });
+            } catch(err) { console.log(err) }
           }
           darklightText = document.getElementById('darklighttooliptext');
           LightDarkModeElement.addEventListener('click', function () {
             chrome.storage.local.get(['DarkMode'], function (result) {
               alliframes = document.getElementsByTagName('iframe');
               fileref = GetiFrameCSSElement();
-
+              
               if (!result.DarkMode) {
                 document.documentElement.style.setProperty('--background-primary', "#232323");
                 document.documentElement.style.setProperty('--background-secondary', "#1a1a1a");
                 document.documentElement.style.setProperty('--text-primary', "white");
+                document.documentElement.style.removeProperty('--better-pale');
                 LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
-
+                
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
                   element.contentDocument.documentElement.childNodes[1].style.color = "white";
                   element.contentDocument.documentElement.firstChild.appendChild(fileref);
                 }
-
+                
               }
               else {
                 document.documentElement.style.setProperty('--background-primary', "#ffffff");
                 document.documentElement.style.setProperty('--background-secondary', "#e5e7eb");
                 document.documentElement.style.setProperty('--text-primary', "black");
+                try {
+                  chrome.storage.local.get(null, function (result) {
+                    document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(result.selectedColor)); // TODO: Make this variable referencable
+                  });
+                } catch(err) { console.log(err) }
                 LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
 
                 for (let i = 0; i < alliframes.length; i++) {
@@ -2153,11 +2258,13 @@ function CheckCurrentLesson(lesson, num) {
 }
 
 function hexToRGB(hex) {
-  var r = parseInt(hex.slice(1, 3), 16),
+  try {
+    var r = parseInt(hex.slice(1, 3), 16),
     g = parseInt(hex.slice(3, 5), 16),
     b = parseInt(hex.slice(5, 7), 16);
-
-  return { 'r': r, 'g': g, 'b': b }
+    
+    return { 'r': r, 'g': g, 'b': b }
+  } catch {}
 }
 
 function GetThresholdofHex(hex) {

@@ -16,6 +16,7 @@
   background-color: var(--better-main) !important;
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
+  --auto-background: var(--better-pale, var(--background-secondary)) !important;
 }
 
 body,
@@ -25,6 +26,7 @@ html {
 
 #container {
   transition: 200ms;
+  background-color: var(--auto-background) !important;
 }
 
 * {
@@ -35,6 +37,12 @@ html {
 #title {
   color: var(--text-primary);
   font-weight: 500 !important;
+}
+
+@media (min-width: 900px) {
+  #title > span {
+    transform: translateY(2px);
+  }
 }
 
 .connectedNotificationsWrapper>div>button>svg>g {
@@ -142,7 +150,7 @@ ul.magicDelete>li.deleting {
   border-right: none;
   font-family: Rubik, sans-serif !important;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  z-index: 10;
+  z-index: 100 !important;
 }
 
 #menu li>label>svg,
@@ -185,6 +193,14 @@ html {
 
 .student #menu>ul::before {
   background-image: var(--betterseqta-logo);
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0;
+  background-color: var(--better-main);
+}
+
+.assessmentsWrapper .message {
+  display: none;
 }
 
 #menu li:hover {
@@ -248,7 +264,7 @@ html {
 .composer>.Body__body___3pGxr>.Container__container___33GlY>.Document__document___1KJCG>.Canvas__canvas___OBdCZ {
   background-color: unset !important;
   background-image: unset !important;
-  background: var(--background-secondary) !important;
+  background: var(--auto-background) !important;
   color: white !important;
 }
 
@@ -276,7 +292,7 @@ html {
 #title {
   background: var(--background-primary);
   height: 4rem;
-  box-shadow: rgb(0 0 0 / 35%) 0px 5px 15px;
+  box-shadow: rgb(0 0 0 / 35%) 0px 0px 10px;
   min-height: 48px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 1;
@@ -286,7 +302,7 @@ html {
   animation: slide 3s ease-in-out infinite alternate;
   background-image: linear-gradient(-60deg,
       var(--better-main) 50%,
-      var(--background-secondary) 50%);
+      var(--auto-background) 50%);
   bottom: 0;
   left: -50%;
   opacity: 0.5;
@@ -518,7 +534,7 @@ html {
 }
 
 .shortcut:hover {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 .shortcut p {
@@ -716,7 +732,7 @@ html {
 }
 
 .notifications__list___rp2L2 {
-  border: 4px solid var(--background-secondary);
+  border: 4px solid var(--auto-background);
   background: var(--background-primary);
 }
 
@@ -727,7 +743,7 @@ html {
 }
 
 .notifications__item___2ErJN:hover {
-  background: var(--background-secondary) !important;
+  background: var(--auto-background) !important;
 }
 
 .connectedNotificationsWrapper>div>button+div {
@@ -752,7 +768,7 @@ html {
 }
 
 .notifications__actions___1UX7r {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 .notifications__items___2hCdv {
@@ -773,7 +789,7 @@ html {
 }
 
 .Viewer__sidebar___1Btu4 {
-  background: var(--background-secondary);
+  background: var(--auto-background);
   color: var(--text-primary);
 }
 
@@ -813,6 +829,7 @@ html {
 
 .Message__Message___3oJaU {
   background: var(--background-primary);
+  border-radius: 1rem !important;
 }
 
 iframe.userHTML {
@@ -830,7 +847,7 @@ iframe.userHTML {
 }
 
 #main>.reports {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 #main>.reports>.item>.report>.year {
@@ -844,7 +861,7 @@ iframe.userHTML {
 }
 
 .Collapsible__Collapsible___3O8P3>.Collapsible__header___-Afvq {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 .AssessmentList__AssessmentList___1GdCl>.AssessmentList__searchFilter___3N70o+.AssessmentList__items___3LcmQ {
@@ -853,7 +870,7 @@ iframe.userHTML {
 
 .Thermoscore__Thermoscore___2tWMi {
   background-image: unset;
-  background-color: var(--background-secondary);
+  background-color: var(--auto-background);
 }
 
 #toolbar {
@@ -868,7 +885,7 @@ iframe.userHTML {
 }
 
 .programmeNavigator>.navigator>.week>.lessons>.lesson:hover {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 .programmeNavigator>.navigator>.search {
@@ -963,7 +980,7 @@ ul {
 }
 
 .legacy-root .uiFileHandler {
-  background: var(--background-secondary);
+  background: var(--auto-background);
   margin: 8px 0px 0px 0px;
 }
 
@@ -1072,7 +1089,7 @@ blurred {
 
 .uiSlidePane>.pane {
   color: var(--text-primary);
-  background-color: var(--background-secondary);
+  background-color: var(--auto-background);
   transform: translateY(100%);
   transition: transform 0.5s ease-in-out,-webkit-transform 0.5s ease-in-out;
   transition-delay: 0 !important;
@@ -1080,7 +1097,7 @@ blurred {
 }
 
 .anyoneSelect.filterBox {
-  background: var(--background-secondary);
+  background: var(--auto-background);
 }
 
 .cke_toolbox {
@@ -1102,7 +1119,7 @@ blurred {
 }
 
 .legacy-root input.singleSelect:focus {
-  background: var(--background-secondary);
+  background: var(--auto-background);
   color: var(--text-primary) !important;
 }
 
@@ -1122,7 +1139,7 @@ ul.uiSplitButtonList,
 .legacy-root select,
 .legacy-root option,
 .legacy-root .input {
-  background: var(--background-secondary);
+  background: var(--auto-background);
   color: var(--text-primary);
 }
 
@@ -1788,7 +1805,7 @@ body {
 }
 
 .day:hover {
-  background: var(--background-secondary);
+  background: var(--auto-background);
   transition: 200ms;
 }
 
@@ -2149,7 +2166,7 @@ body {
   margin: 0 8px !important;
   border-radius: 5px;
   color: var(--text-primary);
-  background: var(--background-secondary);
+  background: var(--auto-background);
   outline: solid 1px black;
 }
 
