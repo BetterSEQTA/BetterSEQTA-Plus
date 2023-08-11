@@ -1,6 +1,7 @@
-![betterseqta-dark-full](<logo url>)
+![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-light-full.png#gh-dark-mode-only)
+![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
-# Better BetterSEQTA
+# Better than BetterSEQTA
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
 
