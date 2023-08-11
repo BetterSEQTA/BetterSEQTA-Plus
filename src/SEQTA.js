@@ -198,7 +198,7 @@ function ApplyCSSToHiddenMenuItems() {
       if (!Object.values(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
         console.log(
-          `[BestSEQTA] Hiding ${Object.keys(result.menuitems)[i]} menu item`
+          `[Better BetterSEQTA] Hiding ${Object.keys(result.menuitems)[i]} menu item`
         );
       }
     }
@@ -218,7 +218,7 @@ function OpenWhatsNewPopup() {
 
   var header = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
-  <p>BestSEQTA V${chrome.runtime.getManifest().version}</p>
+  <p>Better BetterSEQTA V${chrome.runtime.getManifest().version}</p>
   </div>`).firstChild;
 
   imagecont = document.createElement('div');
@@ -237,20 +237,21 @@ function OpenWhatsNewPopup() {
   text = stringToHTML(
     `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-  <h1>3.1.2 - New API for News feed and bug fixes</h1>
-  <h1>3.1.1 - Under the hood improvements</h1>
-  <h1>3.1.0 - Complete overhaul</h1><li>Upgraded Manifest to V3</li><li>Fixed transitional glitches</li><li>News feature wouldn't refresh until cookies were cleared</li>
-  <h1>3.0.1 - Bug fixes and working on manifest V3</h1>
-  <h1>3.0.0 - Started BestSEQTA</h1>
-  <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1><li>Fixed BestSEQTA not loading on some pages</li><li>Fixed text colour of notices being unreadable</li><li>Fixed pages not reloading when saving changes</li>
+  <h1>3.0.0 - Better BetterSEQTA *Complete Overhaul*</h1>
+  <li>Redesigned appearance</li>
+  <li>Upgraded to manifest V3 (longer support)</li>
+  <li>Fixed transitional glitches</li>
+  <li>Under the hood improvements</li>
+  <li>Fixed News Feed</li>
+  <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1><li>Fixed Better BetterSEQTA not loading on some pages</li><li>Fixed text colour of notices being unreadable</li><li>Fixed pages not reloading when saving changes</li>
   <h1>2.0.2 - Minor bug fixes</h1><li>Fixed indicator for current lesson</li><li>Fixed text colour for DM messages list in Light mode</li><li>Fixed user info text colour</li>
-  <h1>Sleek New Layout</h1><li>Updated with a new font and presentation, BestSEQTA has never looked better.</li>
+  <h1>Sleek New Layout</h1><li>Updated with a new font and presentation, Better BetterSEQTA has never looked better.</li>
   <h1>New Updated Sidebar</h1><li>Condensed appearance with new updated icons.</li>
   <h1>Independent Light Mode and Dark Mode</h1><li>Dark mode and Light mode are now available to pick alongside your chosen Theme Colour. Your Theme Colour will now become an accent colour for the page.
   Light/Dark mode can be toggled with the new button, found in the top-right of the menu bar.
   </li>
   <img style="width:150px;margin-bottom:5px" src="${chrome.runtime.getURL('inject/preview/lightdarkmode.png')}">
-  <h1>Create Custom Shortcuts</h1><li>Found in the BestSEQTA Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
+  <h1>Create Custom Shortcuts</h1><li>Found in the Better BetterSEQTA Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
   <img style="width:150px;" src="${chrome.runtime.getURL('inject/preview/customshortcut.png')}">
   </div>
   `
@@ -260,7 +261,7 @@ function OpenWhatsNewPopup() {
   <div class="whatsnewFooter">
   <div>
   Report bugs and feedback: 
-  <a href="https://github.com/OG-RandomTechChannel/BestSEQTA" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL('/popup/github.svg')}" alt=""></a>
+  <a href="https://github.com/SethBurkart123/BetterThanBetterSeqta" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL('/popup/github.svg')}" alt=""></a>
   <a href="https://chrome.google.com/webstore/detail/betterseqta/boikofabjaholheekefimfojfncpjfib" target="_blank" style="background: none !important; margin: 0 5px; padding:0;">
   <svg style="width:25px;height:25px" viewBox="0 0 24 24">
     <path fill="white" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
@@ -474,7 +475,7 @@ function LoadPageElements() {
   var sublink = window.location.href.split("/")[4];
   switch (sublink) {
     case "news":
-      console.log("[BestSEQTA] Started Init");
+      console.log("[Better BetterSEQTA] Started Init");
       chrome.storage.local.get(null, function (result) {
         if (result.onoff) {
           SendNewsPage();
@@ -499,7 +500,7 @@ function LoadPageElements() {
                     "notifications__bubble___1EkSQ"
                   )[0];
                   if (typeof alertdiv == 'undefined') {
-                    console.log("[BestSEQTA] No notifications currently")
+                    console.log("[Better BetterSEQTA] No notifications currently")
 
                   }
                   else {
@@ -553,7 +554,7 @@ function LoadPageElements() {
                 "notifications__bubble___1EkSQ"
               )[0];
               if (typeof alertdiv == 'undefined') {
-                console.log("[BestSEQTA] No notifications currently")
+                console.log("[Better BetterSEQTA] No notifications currently")
 
               }
               else {
@@ -637,7 +638,7 @@ function tryLoad() {
   });
 
   waitForElm(".code").then((elm) => {
-    if (!elm.innerText.includes("BestSEQTA"))
+    if (!elm.innerText.includes("BetterSEQTA"))
       LoadPageElements();
   });
 
@@ -891,7 +892,7 @@ function RunFunctionOnTrue(storedSetting) {
   }
   if (storedSetting.onoff) {
 
-    console.log("[BestSEQTA] Enabled");
+    console.log("[Better BetterSEQTA] Enabled");
     // Injecting CSS File to the webpage to overwrite SEQTA's default CSS
     var cssFile = chrome.runtime.getURL("inject/injected.css");
     var fileref = document.createElement("link");
@@ -998,7 +999,7 @@ document.addEventListener(
     var weblink = window.location.origin
     if (document.childNodes[1].textContent?.includes("Copyright (c) SEQTA Software") && document.title.includes("SEQTA Learn") && !IsSEQTAPage) {
       IsSEQTAPage = true;
-      console.log("[BestSEQTA] Verified SEQTA Page");
+      console.log("[BetterSEQTA] Verified SEQTA Page");
 
       var link = document.createElement("link");
       link.href = chrome.runtime.getURL("inject/documentload.css");
@@ -1359,8 +1360,8 @@ function CallExtensionSettings() {
           <div class="aboutcontainer">
           <div>
             <h1 class="addonitem">About</h1>
-            <p class="item subitem">Created and developed and maintained by RandomTechChannel</p>
-            <p class="item subitem">BestSEQTA is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
+            <p class="item subitem">Created and developed and maintained by SethBurkart123</p>
+            <p class="item subitem">Better BetterSEQTA is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
           </div>
         </div>
 
@@ -1538,7 +1539,7 @@ function CallExtensionSettings() {
         <div class="item-container">
           <div class="text-container">
             <h1 class="addonitem">Animated Background</h1>
-            <p class="item subitem">Adds an animated background to BestSEQTA. (May impact battery life)</p>
+            <p class="item subitem">Adds an animated background to BetterSEQTA. (May impact battery life)</p>
           </div>
           <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="animatedbk">
           <label for="animatedbk" class="onoffswitch-label"></label>
@@ -1559,7 +1560,7 @@ function CallExtensionSettings() {
 
         <div class="item-container" style="height: 2em; margin-top: 0px;">
           <div class="text-container">
-            <h1 class="addonitem">BestSEQTA</h1>
+            <h1 class="addonitem">Better BetterSEQTA</h1>
           </div>
           <div class="onoffswitch" style="margin-bottom: 0px;"><input class="onoffswitch-checkbox notification" type="checkbox" id="onoff">
             <label for="onoff" class="onoffswitch-label"></label>
@@ -1584,7 +1585,7 @@ function CallExtensionSettings() {
     <div></div>
 
     <div style="position: absolute; bottom: 15px; right: 50px; color: rgb(177, 177, 177); display: flex; align-items:center;">
-    <p style="margin: 0; margin-right: 5px; color: white;">Maintained by RandomTechChannel </p>
+    <p style="margin: 0; margin-right: 5px; color: white;">Maintained by SethBurkart123 </p>
     <p style="margin: 0; cursor:pointer; padding: 4px 5px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">What's new in v${chrome.runtime.getManifest().version}</p></div>
     <img src=${chrome.runtime.getURL('/popup/github.svg')} alt="" id="github">
   </div></div>`)
@@ -1904,18 +1905,18 @@ function AddBetterSEQTAElements(toggle) {
   var code = document.getElementsByClassName("code")[0];
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
-    if (!code.innerHTML.includes("BestSEQTA")) {
+    if (!code.innerHTML.includes("BetterSEQTA")) {
       UserInitalCode = code.innerText;
-      code.innerText = `BestSEQTA v${chrome.runtime.getManifest().version}`;
+      code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`;
       code.setAttribute('data-hover', 'Click for user code');
       code.addEventListener('click', function () {
         var code = document.getElementsByClassName("code")[0];
-        if (code.innerText.includes('BestSEQTA')) {
+        if (code.innerText.includes('BetterSEQTA')) {
           code.innerText = UserInitalCode;
-          code.setAttribute('data-hover', 'Click for BestSEQTA version')
+          code.setAttribute('data-hover', 'Click for BetterSEQTA version')
         }
         else {
-          code.innerText = `BestSEQTA v${chrome.runtime.getManifest().version}`
+          code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`
           code.setAttribute('data-hover', 'Click for user code');
         }
       })
@@ -2059,7 +2060,7 @@ function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
-          `<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BestSEQTA Settings</div></button>`
+          `<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA Settings</div></button>`
         );
         var ContentDiv = document.getElementById("content");
         ContentDiv.append(SettingsButton.firstChild);
@@ -2909,7 +2910,7 @@ function AddCustomShortcutsToPage() {
 function SendHomePage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log("[BestSEQTA] Started Loading Home Page");
+    console.log("[BetterSEQTA] Started Loading Home Page");
     document.title = "Home ― SEQTA Learn";
     var element = document.querySelector("[data-key=home]");
 
@@ -3182,7 +3183,7 @@ function SendHomePage() {
               "notifications__bubble___1EkSQ"
             )[0];
             if (typeof alertdiv == 'undefined') {
-              console.log("[BestSEQTA] No notifications currently")
+              console.log("[BetterSEQTA] No notifications currently")
 
             }
             else {
@@ -3248,7 +3249,7 @@ function SendHomePage() {
 function SendNewsPage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log("[BestSEQTA] Started Loading News Page");
+    console.log("[BetterSEQTA] Started Loading News Page");
     document.title = "News ― SEQTA Learn";
     var element = document.querySelector("[data-key=news]");
 
@@ -3332,7 +3333,7 @@ function EnabledDisabledToBool(input) {
 }
 
 function LoadInit() {
-  console.log("[BestSEQTA] Started Init");
+  console.log("[BetterSEQTA] Started Init");
   chrome.storage.local.get(null, function (result) {
     if (result.onoff) {
       SendHomePage();

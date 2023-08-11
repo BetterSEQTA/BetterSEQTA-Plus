@@ -1,6 +1,6 @@
-![betterseqta-dark-full](https://github.com/OG-RandomTechChannel/BestSEQTA/assets/140035326/9e51a6be-4da9-4cff-a746-070583cbddcb)
+![betterseqta-dark-full](<logo url>)
 
-# BestSEQTA
+# Better BetterSEQTA
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
 
@@ -21,12 +21,8 @@ Looking for contributors!
   - Edge Supported
   - Brave Supported
   - (kinda) Opera Supported (We have found a issue that the manifest V3 version doesn't work on Opera, Please use Ultra Stable (3.0.2)
-    
  
 
 ## Credits
 
-This extension was developed and maintained by [RandomTechChannel](https://github.com/OG-RandomTechChannel)
-
-> GitHub [@OG-RandomTechChannel](https://github.com/OG-RandomTechChannel)
-> Youtube [@TheRandomTechChannel](https://www.youtube.com/@TheRandomTechChannel)
+This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [OG-RandomTechChannel](https://github.com/OG-RandomTechChannel) and is currently under active development by [SethBurkart](https://github.com/SethBurkart123)
