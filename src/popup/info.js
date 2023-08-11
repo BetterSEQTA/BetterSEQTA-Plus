@@ -52,7 +52,7 @@ var validURL = false;
 var validName = false;
 
 function openGithub() {
-  chrome.tabs.create({ url: "https://github.com/OG-RandomTechChannel/BestSEQTA" });
+  chrome.tabs.create({ url: "https://github.com/SethBurkart123/BetterThanBetterSeqta" });
 }
 
 
