@@ -7,6 +7,7 @@ module.exports = {
     maxEntrypointSize: 512000,
     maxAssetSize: 512000
   },
+  devtool: 'cheap-module-source-map',
   entry: {
     'SEQTA': './src/SEQTA.js',
     'background': './src/background.js',
