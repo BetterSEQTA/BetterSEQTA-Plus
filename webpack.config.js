@@ -2,6 +2,11 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  },
   entry: {
     'SEQTA': './src/SEQTA.js',
     'background': './src/background.js',
