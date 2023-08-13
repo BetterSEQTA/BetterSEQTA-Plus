@@ -11,6 +11,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 @import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
+/* // This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>. */
+@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
 
 :root {
   background-color: var(--better-main) !important;
@@ -1243,7 +1256,7 @@ body {
   content: "";
   width: 14px;
   height: 12px;
-  background-image: url(/icons/betterseqta-light-outline.png);
+  background-image: url("../../public/icons/betterseqta-light-outline.png");
   display: inline-block;
   background-size: 18px 18px;
   color: #fff;
