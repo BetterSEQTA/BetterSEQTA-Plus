@@ -5,7 +5,13 @@
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
 
-## Key Features
+## Table of contents
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+
+
+## Features
 
 * Dark mode
   - Custom Background
@@ -22,7 +28,35 @@ Looking for contributors!
   - Edge Supported
   - Brave Supported
   - (kinda) Opera Supported (We have found a issue that the manifest V3 version doesn't work on Opera, Please use Ultra Stable (3.0.2)
- 
+
+## Getting started
+
+1. Clone the repository
+```
+git clone https://github.com/SethBurkart123/BetterThanBetterSeqta
+```
+2. Install dependencies
+```
+npm install
+```
+3. Run the dev script (it updates as you save files)
+```
+npm run dev
+```
+
+## Folder Structure
+
+The folder structure is as follows:
+
+- The `public` folder contains files that are not compiled, but only copied across to the build directory
+
+- The `src` folder contains source files that are compiled to the build directory, these can use import statements so that we can do code splitting.
+
+- The `build` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
+
+## Contributing
+
+If you would like to contribute to this project, please read the [contributing guidelines](CONTRIBUTING.md).
 
 ## Credits
 
