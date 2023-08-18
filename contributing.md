@@ -3,8 +3,6 @@
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the owners of this repository before making a change. 
 
-Please note we have a code of conduct, please follow it in all your interactions with the project.
-
 ## Pull Request Process
 
 1. It is recommended to start by opening an issue to discuss the change you wish to make. This will allow us to discuss the change and ensure it is a good fit for the project.
@@ -28,11 +26,6 @@ Please delete options that are not relevant.
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
-
-## How Has This Been Tested?
-
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
-
 ```
 
 ### Issues
