@@ -128,7 +128,7 @@ function OpenWhatsNewPopup() {
 
   var header = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
-  <p>Better BetterSEQTA V${chrome.runtime.getManifest().version}</p>
+  <p>Better than BetterSEQTA V${chrome.runtime.getManifest().version}</p>
   </div>`).firstChild;
 
   imagecont = document.createElement('div');
@@ -1271,7 +1271,7 @@ function CallExtensionSettings() {
           <div>
             <h1 class="addonitem">About</h1>
             <p class="item subitem">Created and developed and maintained by SethBurkart123</p>
-            <p class="item subitem">Better BetterSEQTA is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
+            <p class="item subitem">Better than BetterSEQTA is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
           </div>
         </div>
 
@@ -1306,7 +1306,7 @@ function CallExtensionSettings() {
         </div>
 
         <div class="aboutcontainer" style="color: rgb(155, 155, 155); font-size: 14px; margin-top: 7px;">
-        <p>Contact: cacakaca1@outlook.com</p>
+        <p>Contact: <a href="https://github.com/SethBurkart123/BetterThanBetterSeqta/issues">Open an issue on my github</a></p>
         </div>
 
       </div>
