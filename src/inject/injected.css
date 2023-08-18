@@ -22,6 +22,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>. */
+
 @import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
 
 :root {
@@ -171,7 +172,7 @@ ul.magicDelete>li.deleting {
   border-right: none;
   font-family: Rubik, sans-serif !important;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  z-index: 100 !important;
+  z-index: 11 !important;
 }
 
 #menu li>label>svg,
