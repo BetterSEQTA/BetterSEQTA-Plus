@@ -1,7 +1,7 @@
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-light-full.png#gh-dark-mode-only)
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
-# Better than BetterSEQTA
+# Even BetterSEQTA
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
 
@@ -33,7 +33,7 @@ Looking for contributors!
 
 1. Clone the repository
 ```
-git clone https://github.com/SethBurkart123/BetterThanBetterSeqta
+git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 2. Install dependencies
 ```
