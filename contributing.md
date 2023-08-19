@@ -32,8 +32,8 @@ Please delete options that are not relevant.
 
 #### Create a new issue
 
-If you spot a problem with the readme or code, [search if an issue already exists](https://github.com/SethBurkart123/BetterThanBetterSeqta/issues). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/SethBurkart123/BetterThanBetterSeqta/issues/new).
+If you spot a problem with the readme or code, [search if an issue already exists](https://github.com/SethBurkart123/EvenBetterSEQTA/issues). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/SethBurkart123/EvenBetterSEQTA/issues/new).
 
 #### Solve an issue
 
-Scan through our [existing issues](https://github.com/SethBurkart123/BetterThanBetterSeqta/issues) to find one that interests you. You can narrow down the search using `labels` as filters. As a general rule, we don’t assign issues to anyone. If you find an issue to work on, you are welcome to open a PR with a fix.
+Scan through our [existing issues](https://github.com/SethBurkart123/EvenBetterSEQTA/issues) to find one that interests you. You can narrow down the search using `labels` as filters. As a general rule, we don’t assign issues to anyone. If you find an issue to work on, you are welcome to open a PR with a fix.

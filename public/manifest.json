@@ -1,8 +1,8 @@
 {
 "manifest_version": 3,
-    "name": "Better than Better SEQTA",
-    "version": "3.0",
-    "description": "A extension that makes the SEQTA experience customizable and unique to you",
+    "name": "Even BetterSEQTA",
+    "version": "3.0.0",
+    "description": "An extension that makes the SEQTA experience customizable and unique to you!",
     "icons": {
         "48": "icons/icon-48.png"
     },
