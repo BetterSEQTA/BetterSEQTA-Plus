@@ -24,6 +24,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 @import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
+@import './injected/popup.css';
 
 :root {
   background-color: var(--better-main) !important;
@@ -219,6 +220,187 @@ ul.magicDelete>li.deleting {
 
 html {
   background-color: var(--better-main) !important;
+}
+
+/* Messages */
+.menuShown .content .anyoneSelect .listWrapper .list:has(.item) {
+  height: 32px !important;
+  width: 100% !important;
+}
+
+[data-type="student"] .header {
+  color: black !important;
+}
+
+ol:has(.MessageList__avatar___2wxyb svg) {
+  transition-duration: 150ms !important;
+  transition-delay: 0ms !important;
+}
+
+/* Direct Message Menu */
+.wrapper .cke_contents {
+  border-radius: 16px !important;
+  padding: 8px !important;
+}
+
+.wrapper .cke_contents::-webkit-scrollbar-thumb {
+  background-color: rgb(150, 150, 150) !important;    /* color of the scroll thumb */
+  border-radius: 20px;       /* roundness of the scroll thumb */
+  border: 3px solid orange;  /* creates padding around scroll thumb */
+}
+
+.content .footer {
+  margin-top: 5px;
+  border-radius: 16px;
+}
+
+.content [autocomplete="off"] {
+  background-color: var(--background-primary) !important;
+}
+
+.content [placeholder="Subject…"] {
+  border-radius: 16px;
+  padding-left: 12px !important;
+  background-color: var(--background-primary) !important;
+}
+
+.listWrapper {
+  padding: 8px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  background-color: var(--background-primary);
+  margin-top: 26%;
+}
+
+.functions {
+  background-color: var(--background-primary);
+  margin: 0 !important;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.functions > .uiButton {
+  width: 100%;
+  border: none !important;
+}
+
+.singleSelect {
+  border-radius: 16px !important;
+  padding: 4px !important;
+  padding-left: 12px !important;
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.2) !important;
+}
+
+[style="--better-sub\:\ \#161616\;\ --better-alert-highlight\:\ \#c61851\;\ --background-primary\:\ \#ffffff\;\ --background-secondary\:\ \#e5e7eb\;\ --text-primary\:\ black\;\ --text-color\:\ white\;\ --betterseqta-logo\:\ url\(chrome-extension\:\/\/boikofabjaholheekefimfojfncpjfib\/icons\/betterseqta-light-full\.png\)\;\ --better-main\:\ \#1a1a1a\;\ --better-light\:\ \#333333\;"] .menuShown > :last-child {
+  top: 14% !important;
+}
+[style="--better-sub\:\ \#161616\;\ --better-alert-highlight\:\ \#c61851\;\ --background-primary\:\ \#ffffff\;\ --background-secondary\:\ \#e5e7eb\;\ --text-primary\:\ black\;\ --text-color\:\ white\;\ --betterseqta-logo\:\ url\(chrome-extension\:\/\/boikofabjaholheekefimfojfncpjfib\/icons\/betterseqta-light-full\.png\)\;\ --better-main\:\ \#1a1a1a\;\ --better-light\:\ \#333333\;"] .menuShown > :last-child {
+  top: 18% !important;
+}
+
+.singleSelect > li {
+  border-radius: 4px;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.singleSelect::-webkit-scrollbar-thumb {
+  background-color: rgb(150, 150, 150) !important;    /* color of the scroll thumb */
+  border-radius: 20px;       /* roundness of the scroll thumb */
+  border: 3px solid orange;  /* creates padding around scroll thumb */
+}
+
+.uiFileHandler {
+  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
+  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
+}
+
+.menuShown :first-child:has(.header h1) {
+  border-radius: 16px !important;
+}
+
+.uiSlidePane {
+  background-color: rgba(0, 0, 0, 0);
+  transition-duration: 500ms !important;
+}
+
+#container #content {
+  border-radius: 16px;
+  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+#container #content #title {
+  margin-bottom: 40px;
+  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2) !important;
+}
+#main .timetablepage {
+  padding-top: 10px;
+}
+.header {
+  background: var(--arc-palette-foregroundPrimary) !important;
+}
+
+.document {
+  border-radius: 32px !important;
+}
+td.size {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+td.colourBar {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.documents {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+#main>.reports>.item>.report {
+  filter: brightness(1) !important;
+  border-radius: 16px !important;
+  border: 2px solid lightgray !important;
+}
+
+#main>.reports>.item {
+  box-shadow: none !important;
+}
+
+ol > [data-message] {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  margin-bottom: 4px;
+  border-radius: 8px !important;
+}
+
+ol > [data-label] {
+  margin-left: 4px;
+  margin-bottom: 4px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.MessageList__sender___32riy :last-child {
+  white-space: nowrap;
+}
+
+[data-type="student"] [style="z-index\:\ 30\;"] .header:has(h1) {
+  color: black !important;
+}
+
+div > ol:has(.uiFileHandlerWrapper) {
+  border-bottom-left-radius: 16px !important;
+  border-bottom-right-radius: 16px !important;
+}
+
+.assessments > div > div > div > div > div > div > div:has(ol)  {
+  border-radius: 16px !important;
+}
+
+[aria-labelledby="lixycoxs-tab-1"] [minlength="\30 "] {
+  min-height: 8rem !important;
 }
 
 .student #menu>ul::before {
