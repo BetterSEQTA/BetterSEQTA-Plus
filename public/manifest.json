@@ -2,15 +2,18 @@
   "manifest_version": 3,
   "name": "BetterSEQTA+",
   "version": "3.0.0",
-  "description": "An extension that makes the SEQTA experience customizable and unique to you!",
+  "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
-    "48": "icons/icon-48.png"
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "64": "icons/icon-64.png"
   },
   "action": {
     "browser_style": true,
     "default_popup": "popup/info.html",
     "default_icon": {
       "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
       "64": "icons/icon-64.png"
     }
   },

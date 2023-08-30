@@ -2,6 +2,8 @@
 node_modules/
 package-lock.json
 
+# Build
+package.zip
 build/
 
 .DS_Store/
