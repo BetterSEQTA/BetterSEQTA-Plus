@@ -43,11 +43,27 @@ git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 npm install
 ```
+OR
+```
+pnpm install
+```
+OR
+```
+yarn install
+```
 
 3. Run the dev script (it updates as you save files)
 
 ```
 npm run dev
+```
+OR
+```
+pnpm dev
+```
+OR
+```
+yarn dev
 ```
 
 ## Folder Structure
