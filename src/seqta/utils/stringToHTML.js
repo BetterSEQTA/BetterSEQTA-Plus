@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 
-export function stringToHTML(str, styles = false) {
+export default function stringToHTML(str, styles = false) {
   var parser = new DOMParser();
   str = DOMPurify.sanitize(str, { ADD_ATTR: ["onclick"] });
   var doc = parser.parseFromString(str, "text/html");
