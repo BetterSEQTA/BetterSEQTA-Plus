@@ -11,7 +11,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 /* cyrillic-ext */
-@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
+@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 
 .outside-container {
   width: 350px;
@@ -65,7 +65,8 @@
   text-align: center;
   text-shadow: 0px 0px 15px rgb(22, 22, 22);
 }
-.apply-changes h3, h5 {
+.apply-changes h3,
+h5 {
   margin: 0;
 }
 .apply-changes h3 {
@@ -129,7 +130,7 @@ p {
   justify-content: space-between;
   margin-top: 10px;
   font-size: 13px !important;
-  position:relative;
+  position: relative;
 }
 .clr-field input:hover {
   cursor: pointer;
@@ -178,7 +179,8 @@ p {
 
 .onoffswitch {
   margin: 0 0 1ex;
-  position: relative; width: 42px;
+  position: relative;
+  width: 42px;
 }
 .onoffswitch-checkbox {
   position: absolute;
@@ -195,33 +197,44 @@ p {
 }
 
 .onoffswitch-label {
-  display: block; overflow: hidden; cursor: pointer;
-  height: 16px; padding: 0; line-height: 16px;
-  border: 0px solid #FFFFFF; border-radius: 24px;
-  background-color: #9E9E9E;
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  height: 16px;
+  padding: 0;
+  line-height: 16px;
+  border: 0px solid #ffffff;
+  border-radius: 24px;
+  background-color: #9e9e9e;
 }
 .onoffswitch-label:before {
   content: "";
-  display: block; width: 24px; margin: -4px; height: 24px;
-  background: #FFFFFF;
-  position: absolute; top: 0; bottom: 0;
+  display: block;
+  width: 24px;
+  margin: -4px;
+  height: 24px;
+  background: #ffffff;
+  position: absolute;
+  top: 0;
+  bottom: 0;
   right: 22px;
   border-radius: 24px;
   transition: 0.3s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label {
-  background-color: #20E060;
+  background-color: #20e060;
 }
-.onoffswitch-checkbox:checked + .onoffswitch-label, .onoffswitch-checkbox:checked + .onoffswitch-label:before {
- border-color: #20E060;
+.onoffswitch-checkbox:checked + .onoffswitch-label,
+.onoffswitch-checkbox:checked + .onoffswitch-label:before {
+  border-color: #20e060;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
   margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label:before {
   transition: 0.3s;
-  right: 0px; 
-  background-color: #86F078; 
+  right: 0px;
+  background-color: #86f078;
   box-shadow: 3px 6px 18px 0px rgba(0, 0, 0, 0.2);
 }
 
@@ -272,14 +285,14 @@ p {
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
-  transition: 1.0s;
+  transition: 1s;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: rgba(127, 127, 127, 0.6);
   background-clip: padding-box;
   border: 2px solid transparent;
-  transition: 1.0s;
+  transition: 1s;
 }
 
 ::-webkit-scrollbar-thumb:vertical:hover,
@@ -291,22 +304,22 @@ p {
   background-color: transparent;
 }
 
-
-
 ::-webkit-scrollbar-thumb:vertical:active,
 ::-webkit-scrollbar-thumb:horizontal:active {
   background: rgba(95, 91, 91, 1);
-
 }
 
 ::-webkit-scrollbar-corner {
   background: none;
 }
-:root, html, body, div, ol {
+:root,
+html,
+body,
+div,
+ol {
   scrollbar-width: thin !important;
   scrollbar-color: #5e5e5f #161616 !important;
 }
-
 
 .topmenu {
   display: flex;
@@ -315,7 +328,6 @@ p {
   color: white;
   margin-top: 20px;
   margin-bottom: 20px;
-  
 }
 .navitem {
   width: 33.34%;
@@ -329,7 +341,6 @@ p {
   border-bottom: 2px solid #a5a5a5;
   color: #a5a5a5;
   transition: 0.3s;
-  
 }
 .activenav {
   border-bottom: 2px solid #ff5f5f;
@@ -358,7 +369,8 @@ p {
 #applychanges {
   margin-top: 0px;
 }
-.applychanges h5, h6 {
+.applychanges h5,
+h6 {
   margin: 0;
   font-weight: 400;
 }
@@ -366,10 +378,10 @@ p {
   list-style: none;
   position: relative;
   margin-left: 10px;
-  cursor:grab;
+  cursor: grab;
 }
 .draggable:active {
-  cursor:-moz-grabbing;
+  cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
 }
 .draggable::before {
@@ -401,18 +413,18 @@ p {
   transition: 300ms;
 }
 
-.customshortcut-submit-valid { 
+.customshortcut-submit-valid {
   background: #20de5f !important;
   transition: 300ms;
 }
 
-.customshortcut-submit-valid:hover { 
+.customshortcut-submit-valid:hover {
   background: #1cc956 !important;
   transition: 300ms;
   cursor: pointer;
 }
 
-.customshortcut-submit-valid:active { 
+.customshortcut-submit-valid:active {
   background: #17aa48 !important;
   transition: 300ms;
 }
@@ -459,9 +471,9 @@ p {
 }
 
 .custom-shortcuts-field:focus {
-    outline: none;
-    outline: 1px solid rgb(60, 60, 60);
-    transition: 100ms;
+  outline: none;
+  outline: 1px solid rgb(60, 60, 60);
+  transition: 100ms;
 }
 .domain-container {
   font-size: 9px;

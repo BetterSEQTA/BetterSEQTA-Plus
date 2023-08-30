@@ -16,49 +16,57 @@ const notificationcollector = document.querySelector("#notification");
 const lessonalert = document.querySelector("#lessonalert");
 const aboutsection = document.querySelector("#aboutsection");
 const shortcutsection = document.querySelector("#shortcutsection");
-const miscsection = document.querySelector('#miscsection');
+const miscsection = document.querySelector("#miscsection");
 const mainpage = document.querySelector("#mainpage");
 const colorpicker = document.querySelector("#colorpicker");
-const animatedbk = document.querySelector('#animatedbk');
-const customshortcutbutton = document.getElementsByClassName('custom-shortcuts-button')[0];
-const customshortcutdiv = document.getElementsByClassName('custom-shortcuts-container')[0];
-const customshortcutsubmit = document.getElementsByClassName('custom-shortcuts-submit')[0];
-const customshortcutinputname = document.querySelector('#shortcutname');
-const customshortcutinputurl = document.querySelector('#shortcuturl');
+const animatedbk = document.querySelector("#animatedbk");
+const customshortcutbutton = document.getElementsByClassName(
+  "custom-shortcuts-button",
+)[0];
+const customshortcutdiv = document.getElementsByClassName(
+  "custom-shortcuts-container",
+)[0];
+const customshortcutsubmit = document.getElementsByClassName(
+  "custom-shortcuts-submit",
+)[0];
+const customshortcutinputname = document.querySelector("#shortcutname");
+const customshortcutinputurl = document.querySelector("#shortcuturl");
 
-const shortcutmenuitemselection = document.getElementsByClassName('menushortcut')[0];
+const shortcutmenuitemselection =
+  document.getElementsByClassName("menushortcut")[0];
 
-const applybutton = document.querySelector('#applychanges')
+const applybutton = document.querySelector("#applychanges");
 
 const navbuttons = document.getElementsByClassName("navitem");
-const menupages = document.getElementsByClassName("menu-page")
+const menupages = document.getElementsByClassName("menu-page");
 
-const allinputs = document.getElementsByTagName('input');
+const allinputs = document.getElementsByTagName("input");
 
 const menupage = document.querySelector("#menupage");
 
 const shortcutpage = document.querySelector("#shortcutpage");
 
-const miscpage = document.querySelector('#miscpage');
+const miscpage = document.querySelector("#miscpage");
 
 var shortcutbuttons = document.getElementsByClassName("shortcutitem");
 
 const github = document.getElementById("github");
 
-const version = document.getElementById('version');
-const domainbutton = document.getElementById('domain-button');
+const version = document.getElementById("version");
+const domainbutton = document.getElementById("domain-button");
 
 var validURL = false;
 var validName = false;
 
 function openGithub() {
-  chrome.tabs.create({ url: "https://github.com/SethBurkart123/EvenBetterSEQTA" });
+  chrome.tabs.create({
+    url: "https://github.com/SethBurkart123/EvenBetterSEQTA",
+  });
 }
-
 
 function openPage(page) {
   mainpage.style.left = "-350px";
-  page.style.right = '0px';
+  page.style.right = "0px";
 }
 
 function backToMainMenu() {
@@ -71,12 +79,11 @@ function backToMainMenu() {
 
 function resetActive() {
   for (let i = 0; i < navbuttons.length; i++) {
-    navbuttons[i].classList.remove('activenav');
+    navbuttons[i].classList.remove("activenav");
   }
   for (let i = 0; i < menupages.length; i++) {
-    menupages[i].classList.add('hiddenmenu');
+    menupages[i].classList.add("hiddenmenu");
   }
-
 }
 
 function FindSEQTATab() {
@@ -98,12 +105,12 @@ function storeSettings() {
 }
 
 function storeNotificationSettings() {
-  chrome.storage.local.set(
-    { notificationcollector: notificationcollector.checked });
+  chrome.storage.local.set({
+    notificationcollector: notificationcollector.checked,
+  });
   chrome.storage.local.set({ lessonalert: lessonalert.checked });
   chrome.storage.local.set({ animatedbk: animatedbk.checked });
 }
-
 
 function StoreAllSettings() {
   chrome.storage.local.get(["shortcuts"], function (result) {
@@ -121,7 +128,7 @@ Update the options UI with the settings values retrieved from storage,
 or the default settings if the stored settings are empty.
 */
 function updateUI(restoredSettings) {
-  if (typeof restoredSettings.onoff == 'undefined') {
+  if (typeof restoredSettings.onoff == "undefined") {
     chrome.runtime.sendMessage({ type: "setDefaultStorage" });
 
     chrome.storage.local.get(null, function (result) {
@@ -149,7 +156,6 @@ var stringtoHTML = function (str) {
 };
 
 function CreateShortcutDiv(name) {
-
   div = stringtoHTML(`
   <div class="item-container menushortcuts" data-customshortcut="${name}">
     <div class="text-container">
@@ -163,7 +169,7 @@ function CreateShortcutDiv(name) {
   shortcutmenuitemselection.append(div);
 
   const deletebutton = document.getElementById(`delete-${name}`);
-  deletebutton.addEventListener('click', function () {
+  deletebutton.addEventListener("click", function () {
     DeleteCustomShortcut(name);
     applybutton.style.left = "4px";
   });
@@ -174,9 +180,7 @@ function AddCustomShortcuts() {
     var customshortcuts = Object.values(result)[0];
     for (let i = 0; i < customshortcuts.length; i++) {
       const element = customshortcuts[i];
-      CreateShortcutDiv(
-        element.name,
-      )
+      CreateShortcutDiv(element.name);
     }
   });
 }
@@ -193,40 +197,42 @@ function DeleteCustomShortcut(name) {
     }
     chrome.storage.local.set({ customshortcuts: customshortcuts });
   });
-
 }
 
 function CustomShortcutMenu() {
-  customshortcutinputname.value = '';
-  customshortcutinputurl.value = '';
+  customshortcutinputname.value = "";
+  customshortcutinputurl.value = "";
   validURL = false;
   validName = false;
   customshortcutsubmit.classList.remove("customshortcut-submit-valid");
-  if (customshortcutdiv.classList.contains('custom-shortcuts-container-shown')) {
-    customshortcutdiv.classList.remove('custom-shortcuts-container-shown')
+  if (
+    customshortcutdiv.classList.contains("custom-shortcuts-container-shown")
+  ) {
+    customshortcutdiv.classList.remove("custom-shortcuts-container-shown");
   } else {
-    customshortcutdiv.classList.add('custom-shortcuts-container-shown')
-  };
+    customshortcutdiv.classList.add("custom-shortcuts-container-shown");
+  }
 }
 
 function CreateCustomShortcut() {
   const shortcutname = customshortcutinputname.value;
   var shortcuturl = customshortcutinputurl.value;
 
-  if (!(shortcuturl.includes('http'))) {
+  if (!shortcuturl.includes("http")) {
     shortcuturl = "https://" + shortcuturl;
   }
 
   chrome.storage.local.get(["customshortcuts"], function (result) {
     var customshortcuts = Object.values(result)[0];
-    customshortcuts.push({ name: shortcutname, url: shortcuturl, icon: (shortcutname[0]).toUpperCase() });
+    customshortcuts.push({
+      name: shortcutname,
+      url: shortcuturl,
+      icon: shortcutname[0].toUpperCase(),
+    });
     chrome.storage.local.set({ customshortcuts: customshortcuts });
   });
 
-  CreateShortcutDiv(
-    shortcutname
-  );
-
+  CreateShortcutDiv(shortcutname);
 }
 
 function onError(e) {
@@ -236,7 +242,8 @@ function onError(e) {
 On opening the options page, fetch stored settings and update the UI with them.
 */
 chrome.storage.local.get(null, function (result) {
-  document.getElementsByClassName('clr-field')[0].style.color = result.selectedColor;
+  document.getElementsByClassName("clr-field")[0].style.color =
+    result.selectedColor;
   colorpicker.value = result.selectedColor;
   console.log(result);
   updateUI(result);
@@ -249,18 +256,37 @@ document.addEventListener("DOMContentLoaded", function () {
   version.innerHTML = `v${chrome.runtime.getManifest().version}`;
   github.addEventListener("click", openGithub);
 
-  domainbutton.addEventListener('click', function (event) {
+  domainbutton.addEventListener("click", function (event) {
     chrome.runtime.sendMessage({ type: "addPermissions" });
-  })
+  });
 
-  aboutsection.addEventListener("click", () => { resetActive(); aboutsection.classList.add('activenav'); menupage.classList.remove('hiddenmenu') });
+  aboutsection.addEventListener("click", () => {
+    resetActive();
+    aboutsection.classList.add("activenav");
+    menupage.classList.remove("hiddenmenu");
+  });
 
-  shortcutsection.addEventListener("click", () => { resetActive(); shortcutsection.classList.add('activenav'); shortcutpage.classList.remove('hiddenmenu') });
+  shortcutsection.addEventListener("click", () => {
+    resetActive();
+    shortcutsection.classList.add("activenav");
+    shortcutpage.classList.remove("hiddenmenu");
+  });
 
-  miscsection.addEventListener("click", () => { resetActive(); miscsection.classList.add('activenav'); miscpage.classList.remove('hiddenmenu') });
+  miscsection.addEventListener("click", () => {
+    resetActive();
+    miscsection.classList.add("activenav");
+    miscpage.classList.remove("hiddenmenu");
+  });
 
-  customshortcutbutton.addEventListener("click", () => { CustomShortcutMenu(); })
-  customshortcutsubmit.addEventListener("click", () => { if (validName && validURL) { CreateCustomShortcut(); CustomShortcutMenu() } });
+  customshortcutbutton.addEventListener("click", () => {
+    CustomShortcutMenu();
+  });
+  customshortcutsubmit.addEventListener("click", () => {
+    if (validName && validURL) {
+      CreateCustomShortcut();
+      CustomShortcutMenu();
+    }
+  });
 
   var sameName = false;
   customshortcutinputname.addEventListener("input", function () {
@@ -273,7 +299,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      if (customshortcutinputname.value.length > 0 && customshortcutinputname.value.length < 22 && !sameName) {
+      if (
+        customshortcutinputname.value.length > 0 &&
+        customshortcutinputname.value.length < 22 &&
+        !sameName
+      ) {
         validName = true;
       } else {
         validName = false;
@@ -281,15 +311,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (validName && validURL) {
         customshortcutsubmit.classList.add("customshortcut-submit-valid");
-      }
-      else {
+      } else {
         customshortcutsubmit.classList.remove("customshortcut-submit-valid");
       }
     });
   });
 
   customshortcutinputurl.addEventListener("input", function () {
-    if (customshortcutinputurl.value.length > 0 && customshortcutinputurl.value.includes('.')) {
+    if (
+      customshortcutinputurl.value.length > 0 &&
+      customshortcutinputurl.value.includes(".")
+    ) {
       validURL = true;
     } else {
       validURL = false;
@@ -297,46 +329,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (validName && validURL) {
       customshortcutsubmit.classList.add("customshortcut-submit-valid");
-    }
-    else {
+    } else {
       customshortcutsubmit.classList.remove("customshortcut-submit-valid");
     }
-  })
+  });
 
   AddCustomShortcuts();
 });
 
 onoffselection.addEventListener("change", storeSettings);
-notificationcollector.addEventListener(
-  "change",
-  storeNotificationSettings
-);
-lessonalert.addEventListener("change", storeNotificationSettings)
+notificationcollector.addEventListener("change", storeNotificationSettings);
+lessonalert.addEventListener("change", storeNotificationSettings);
 
-animatedbk.addEventListener("change", storeNotificationSettings)
+animatedbk.addEventListener("change", storeNotificationSettings);
 
 for (let i = 0; i < allinputs.length; i++) {
-  if (allinputs[i].id != 'colorpicker' && allinputs[i].id != "shortcuturl" && allinputs[i].id != "shortcutname") {
-    allinputs[i].addEventListener("change", () => { applybutton.style.left = "4px" })
+  if (
+    allinputs[i].id != "colorpicker" &&
+    allinputs[i].id != "shortcuturl" &&
+    allinputs[i].id != "shortcutname"
+  ) {
+    allinputs[i].addEventListener("change", () => {
+      applybutton.style.left = "4px";
+    });
   }
 }
 
-applybutton.addEventListener('click', () => { StoreAllSettings(); applybutton.style.left = "-150px" })
-
+applybutton.addEventListener("click", () => {
+  StoreAllSettings();
+  applybutton.style.left = "-150px";
+});
 
 colorpicker.addEventListener("input", function () {
-  var colorPreview = document.querySelector('#clr-color-preview')
+  var colorPreview = document.querySelector("#clr-color-preview");
   if (colorPreview.style.color) {
     var hex = colorPreview.style.color.split("(")[1].split(")")[0];
     hex = hex.split(",");
-    var b = hex.map(function (x) {             //For each array element
-      x = parseInt(x).toString(16);      //Convert to a base16 string
-      return (x.length == 1) ? "0" + x : x;  //Add zero if we get only one character
-    })
+    var b = hex.map(function (x) {
+      //For each array element
+      x = parseInt(x).toString(16); //Convert to a base16 string
+      return x.length == 1 ? "0" + x : x; //Add zero if we get only one character
+    });
     b = "#" + b.join("");
 
-    chrome.storage.local.set({ selectedColor: b })
+    chrome.storage.local.set({ selectedColor: b });
   }
-
-
-})
+});
