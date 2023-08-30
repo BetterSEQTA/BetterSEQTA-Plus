@@ -249,8 +249,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
     150,
     150
   ) !important; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid orange; /* creates padding around scroll thumb */
 }
 
 .content .footer {
@@ -327,10 +325,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
 }
 
-.menuShown :first-child:has(.header h1) {
-  border-radius: 16px !important;
-}
-
 .uiSlidePane {
   background-color: rgba(0, 0, 0, 0);
   transition-duration: 500ms !important;
@@ -348,9 +342,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main .timetablepage {
   padding-top: 10px;
-}
-.header {
-  background: var(--arc-palette-foregroundPrimary) !important;
 }
 
 .document {
@@ -387,8 +378,19 @@ ol > [data-message] {
 ol > [data-label] {
   margin-left: 4px;
   margin-bottom: 4px;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+}
+
+@media (min-width: 1000px) {
+  ol > [data-label] {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+}
+
+.Viewer__newMessage___3ToUb {
+  border-radius: 0.5rem !important;
+  font-size: 0.8rem !important;
+  background-color: var(--background-primary) !important;
 }
 
 .MessageList__sender___32riy :last-child {
@@ -1032,10 +1034,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
 }
 
-.LabelList__LabelList___2RJFf > li.LabelList__selected___3Egk7 {
-  color: var(--text-primary);
-}
-
 .Viewer__sidebar___1Btu4 > header {
   background: unset;
 }
@@ -1060,6 +1058,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .LabelList__LabelList___2RJFf > li.LabelList__selected___3Egk7 {
   background: var(--background-primary);
+  color: var(--text-primary);
 }
 
 .Viewer__Viewer___32BH- {
@@ -1235,7 +1234,7 @@ ul {
 
 .uiFileHandler .uiButton {
   border-radius: 2rem !important;
-  color: lightgray !important;
+  color: var(--text-primary) !important;
   margin-top: 0.25rem !important;
 }
 
@@ -1277,8 +1276,15 @@ blurred {
   cursor: pointer;
 }
 
+.uiSlidePane > .pane > .header button {
+  color: var(--text-primary) !important;
+}
+
+.uiSlidePane > .pane > .header > h1 {
+  color: var(--text-primary) !important;
+}
+
 .uiSlidePane > .pane > .header {
-  color: var(--text-color);
   background-color: var(--better-main);
 }
 
