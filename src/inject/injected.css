@@ -1277,11 +1277,11 @@ blurred {
 }
 
 .uiSlidePane > .pane > .header button {
-  color: var(--text-primary) !important;
+  color: var(--text-color) !important;
 }
 
 .uiSlidePane > .pane > .header > h1 {
-  color: var(--text-primary) !important;
+  color: var(--text-color) !important;
 }
 
 .uiSlidePane > .pane > .header {
