@@ -1,21 +1,24 @@
-const ShortcutLinks = require('./seqta/content/links.json');
-var MenuitemSVGKey = require('./seqta/content/MenuItemSVGKey.json');
+const ShortcutLinks = require("./seqta/content/links.json");
+var MenuitemSVGKey = require("./seqta/content/MenuItemSVGKey.json");
 
 var isChrome = window.chrome;
-var SettingsClicked = false
+var SettingsClicked = false;
 var MenuOptionsOpen = false;
-var UserInitalCode = '';
+var UserInitalCode = "";
 var currentSelectedDate = new Date();
 var WhatsNewOpen = false;
 var LessonInterval;
 
-function stringToHTML (str, styles=false) {
+function stringToHTML(str, styles = false) {
   var parser = new DOMParser();
-  var str = DOMPurify.sanitize(str, { ADD_ATTR: ['onclick']});
+  var str = DOMPurify.sanitize(str, { ADD_ATTR: ["onclick"] });
   var doc = parser.parseFromString(str, "text/html");
-  if(styles){doc.body.style.cssText = "height: auto; overflow: scroll; margin: 0px; background: var(--background-primary);"}
+  if (styles) {
+    doc.body.style.cssText =
+      "height: auto; overflow: scroll; margin: 0px; background: var(--background-primary);";
+  }
   return doc.body;
-};
+}
 
 function loading() {
   loadinghtml = stringToHTML(
@@ -75,7 +78,9 @@ function loading() {
     <svg height="135" width="135" viewBox="0 0 1000 1000" class="small-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:#ededed; stroke:none;" d="M456 954L455.999 938C455.986 936.008 456.301 933.282 454.972 931.603C453.594 929.862 450.977 930.062 448.999 929.835C443.991 929.258 438.987 928.463 434 927.728C414.788 924.898 395.564 920.733 377 915.025C300.826 891.602 231.835 849.314 178.17 790C106.263 710.526 63.7248 603.522 65.0039 496C65.7806 430.71 81.6532 365.691 110.259 307C130.156 266.177 157.727 228.746 189.039 196C222.33 161.185 262.986 132.26 306 110.753C345.737 90.8846 389.756 75.6209 434 70L434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.501 68.7513 294.622 88.2739 254 113.576C215.656 137.46 181.298 167.82 151.87 202C33.2034 339.827 7.62905 544.971 91.2585 707C112.853 748.839 140.699 787.699 174 821C210.688 857.688 253.047 888.542 300 910.781C332.493 926.171 365.923 937.713 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
     <svg height="180" width="180" viewBox="0 0 1000 1000" class="big-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:#ededed; stroke:none;" d="M454 952L454 887C441.324 886.456 428.346 883.444 416 880.65C389.799 874.722 364.497 866.349 340 855.306C205.92 794.861 116.45 660.408 110.039 514C108.593 480.976 112.302 447.246 119.424 415C144.931 299.518 226.1 198.275 333 147.781C389.157 121.255 450.99 108.496 513 110.015C612.241 112.446 711.495 157.399 779.961 229C839.544 291.312 879.215 372.892 887.831 459C893.323 513.894 887.624 569.466 870.329 622C836.537 724.647 758.42 810.937 660 855.306C635.503 866.349 610.201 874.722 584 880.65C571.383 883.505 557.974 886.732 545 887L545 952C562.916 951.63 581.566 947.595 599 943.65C637.149 935.018 673.043 921.725 708 904.247C753.184 881.655 792.42 850.594 828 815C859.416 783.572 885.414 745.666 905.247 706C933.723 649.048 949.566 588.445 953.911 525C963.014 392.066 906.622 254.399 808 165.17C769.47 130.31 725.8 101.975 678 81.5787C629.733 60.9833 575.64 47.3041 523 46.0146C469.032 44.6927 415.748 49.9443 364 66.0255C223.375 109.726 109.726 223.376 66.0255 364C14.4181 530.066 63.7205 715.347 191 833.911C229.196 869.491 274.051 897.962 322 918.421C362.806 935.833 409.371 950.084 454 952z"/></svg>
     <svg height="220" width="220" viewBox="0 0 1000 1000" class="outer-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:#ededed; stroke:none;" d="M456 954L456 946C438.715 945.258 420.843 941.462 404 937.65C369.403 929.822 335.739 918.116 304 902.247C255.981 878.237 211.768 846.374 175.09 807C62.5744 686.214 23.1598 509.033 78.6921 353C96.4653 303.062 122.84 256.974 156.424 216C207.709 153.43 278.099 103.658 355 78C372.453 72.1767 389.992 67.0399 408 63.2107C413.31 62.0816 418.647 60.9853 424 60.0811C426.508 59.6575 430.352 59.6852 432.397 57.9869C434.897 55.9098 434 50.8766 434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.517 68.7473 294.608 88.2827 254 113.576C215.673 137.45 181.285 167.835 151.87 202C33.9725 338.933 8.37009 541.243 89.2485 703C110.949 746.4 139.693 786.693 174 821C210.688 857.688 253.047 888.542 300 910.781C332.484 926.167 365.934 937.716 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
-    <div style="position: absolute;bottom: 0;right: 0;padding: 10px;color: #4f4f4f;text-anchor: middle;font-size: 20px;">v${chrome.runtime.getManifest().version}</div></div>`
+    <div style="position: absolute;bottom: 0;right: 0;padding: 10px;color: #4f4f4f;text-anchor: middle;font-size: 20px;">v${
+      chrome.runtime.getManifest().version
+    }</div></div>`,
   );
   var html = document.getElementsByTagName("html")[0];
   html.append(loadinghtml.firstChild);
@@ -88,9 +93,9 @@ function AppendLoadingSymbol(givenID, position) {
     <svg height="135" width="135" viewBox="0 0 1000 1000" class="small-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:var(--text-primary); stroke:none;" d="M456 954L455.999 938C455.986 936.008 456.301 933.282 454.972 931.603C453.594 929.862 450.977 930.062 448.999 929.835C443.991 929.258 438.987 928.463 434 927.728C414.788 924.898 395.564 920.733 377 915.025C300.826 891.602 231.835 849.314 178.17 790C106.263 710.526 63.7248 603.522 65.0039 496C65.7806 430.71 81.6532 365.691 110.259 307C130.156 266.177 157.727 228.746 189.039 196C222.33 161.185 262.986 132.26 306 110.753C345.737 90.8846 389.756 75.6209 434 70L434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.501 68.7513 294.622 88.2739 254 113.576C215.656 137.46 181.298 167.82 151.87 202C33.2034 339.827 7.62905 544.971 91.2585 707C112.853 748.839 140.699 787.699 174 821C210.688 857.688 253.047 888.542 300 910.781C332.493 926.171 365.923 937.713 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
     <svg height="180" width="180" viewBox="0 0 1000 1000" class="big-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:var(--text-primary); stroke:none;" d="M454 952L454 887C441.324 886.456 428.346 883.444 416 880.65C389.799 874.722 364.497 866.349 340 855.306C205.92 794.861 116.45 660.408 110.039 514C108.593 480.976 112.302 447.246 119.424 415C144.931 299.518 226.1 198.275 333 147.781C389.157 121.255 450.99 108.496 513 110.015C612.241 112.446 711.495 157.399 779.961 229C839.544 291.312 879.215 372.892 887.831 459C893.323 513.894 887.624 569.466 870.329 622C836.537 724.647 758.42 810.937 660 855.306C635.503 866.349 610.201 874.722 584 880.65C571.383 883.505 557.974 886.732 545 887L545 952C562.916 951.63 581.566 947.595 599 943.65C637.149 935.018 673.043 921.725 708 904.247C753.184 881.655 792.42 850.594 828 815C859.416 783.572 885.414 745.666 905.247 706C933.723 649.048 949.566 588.445 953.911 525C963.014 392.066 906.622 254.399 808 165.17C769.47 130.31 725.8 101.975 678 81.5787C629.733 60.9833 575.64 47.3041 523 46.0146C469.032 44.6927 415.748 49.9443 364 66.0255C223.375 109.726 109.726 223.376 66.0255 364C14.4181 530.066 63.7205 715.347 191 833.911C229.196 869.491 274.051 897.962 322 918.421C362.806 935.833 409.371 950.084 454 952z"/></svg>
     <svg height="220" width="220" viewBox="0 0 1000 1000" class="outer-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:var(--text-primary); stroke:none;" d="M456 954L456 946C438.715 945.258 420.843 941.462 404 937.65C369.403 929.822 335.739 918.116 304 902.247C255.981 878.237 211.768 846.374 175.09 807C62.5744 686.214 23.1598 509.033 78.6921 353C96.4653 303.062 122.84 256.974 156.424 216C207.709 153.43 278.099 103.658 355 78C372.453 72.1767 389.992 67.0399 408 63.2107C413.31 62.0816 418.647 60.9853 424 60.0811C426.508 59.6575 430.352 59.6852 432.397 57.9869C434.897 55.9098 434 50.8766 434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.517 68.7473 294.608 88.2827 254 113.576C215.673 137.45 181.285 167.835 151.87 202C33.9725 338.933 8.37009 541.243 89.2485 703C110.949 746.4 139.693 786.693 174 821C210.688 857.688 253.047 888.542 300 910.781C332.484 926.167 365.934 937.716 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
-    </div>`).firstChild
+    </div>`).firstChild;
 
-  document.querySelector(position).appendChild(loadingsymbol)
+  document.querySelector(position).appendChild(loadingsymbol);
 }
 
 function delay(ms) {
@@ -108,7 +113,9 @@ function ApplyCSSToHiddenMenuItems() {
       if (!Object.values(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
         console.log(
-          `[Even BetterSEQTA] Hiding ${Object.keys(result.menuitems)[i]} menu item`
+          `[Even BetterSEQTA] Hiding ${
+            Object.keys(result.menuitems)[i]
+          } menu item`,
         );
       }
     }
@@ -119,29 +126,31 @@ function ApplyCSSToHiddenMenuItems() {
 }
 
 function OpenWhatsNewPopup() {
-  const background = document.createElement('div');
+  const background = document.createElement("div");
   background.id = "whatsnewbk";
-  background.classList.add('whatsnewBackground');
+  background.classList.add("whatsnewBackground");
 
-  const container = document.createElement('div');
-  container.classList.add('whatsnewContainer');
+  const container = document.createElement("div");
+  container.classList.add("whatsnewContainer");
 
   var header = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
   <p>Even BetterSEQTA V${chrome.runtime.getManifest().version}</p>
   </div>`).firstChild;
 
-  imagecont = document.createElement('div');
-  imagecont.classList.add('whatsnewImgContainer');
-  var image = document.createElement('img');
-  image.src = chrome.runtime.getURL('icons/betterseqta-dark-icon.png');
-  image.classList.add('whatsnewImg')
+  imagecont = document.createElement("div");
+  imagecont.classList.add("whatsnewImgContainer");
+  var image = document.createElement("img");
+  image.src = chrome.runtime.getURL("icons/betterseqta-dark-icon.png");
+  image.classList.add("whatsnewImg");
   imagecont.append(image);
 
-  textcontainer = document.createElement('div');
-  textcontainer.classList.add('whatsnewTextContainer');
+  textcontainer = document.createElement("div");
+  textcontainer.classList.add("whatsnewTextContainer");
 
-  textheader = stringToHTML('<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>').firstChild;
+  textheader = stringToHTML(
+    '<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>',
+  ).firstChild;
   textcontainer.append(textheader);
 
   text = stringToHTML(
@@ -160,18 +169,24 @@ function OpenWhatsNewPopup() {
   <h1>Independent Light Mode and Dark Mode</h1><li>Dark mode and Light mode are now available to pick alongside your chosen Theme Colour. Your Theme Colour will now become an accent colour for the page.
   Light/Dark mode can be toggled with the new button, found in the top-right of the menu bar.
   </li>
-  <img style="width:150px;margin-bottom:5px" src="${chrome.runtime.getURL('inject/preview/lightdarkmode.png')}">
+  <img style="width:150px;margin-bottom:5px" src="${chrome.runtime.getURL(
+    "inject/preview/lightdarkmode.png",
+  )}">
   <h1>Create Custom Shortcuts</h1><li>Found in the Even BetterSEQTA Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
-  <img style="width:150px;" src="${chrome.runtime.getURL('inject/preview/customshortcut.png')}">
+  <img style="width:150px;" src="${chrome.runtime.getURL(
+    "inject/preview/customshortcut.png",
+  )}">
   </div>
-  `
+  `,
   ).firstChild;
 
   footer = stringToHTML(`
   <div class="whatsnewFooter">
   <div>
   Report bugs and feedback: 
-  <a href="https://github.com/SethBurkart123/EvenBetterSEQTA" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL('/popup/github.svg')}" alt=""></a>
+  <a href="https://github.com/SethBurkart123/EvenBetterSEQTA" target="_blank" style="background: none !important; margin: 0 5px; padding:0;"><img style="filter: invert(99%) sepia(0%) saturate(627%) hue-rotate(255deg) brightness(122%) contrast(100%);" height="23" src="${chrome.runtime.getURL(
+    "/popup/github.svg",
+  )}" alt=""></a>
   <a href="https://chrome.google.com/webstore/detail/betterseqta/boikofabjaholheekefimfojfncpjfib" target="_blank" style="background: none !important; margin: 0 5px; padding:0;">
   <svg style="width:25px;height:25px" viewBox="0 0 24 24">
     <path fill="white" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
@@ -179,11 +194,11 @@ function OpenWhatsNewPopup() {
   </a>
   </div>
   </div>
-  `).firstChild
+  `).firstChild;
 
-  exitbutton = document.createElement('div')
-  exitbutton.innerText = 'x';
-  exitbutton.id = 'whatsnewclosebutton';
+  exitbutton = document.createElement("div");
+  exitbutton.innerText = "x";
+  exitbutton.id = "whatsnewclosebutton";
 
   container.append(header);
   container.append(imagecont);
@@ -192,21 +207,21 @@ function OpenWhatsNewPopup() {
   container.append(footer);
   container.append(exitbutton);
 
-  document.getElementById('container').append(background);
-  document.getElementById('container').append(container);
+  document.getElementById("container").append(background);
+  document.getElementById("container").append(container);
 
   chrome.storage.local.remove(["justupdated"]);
 
-  var bkelement = document.getElementById('whatsnewbk');
-  bkelement.addEventListener('click', function () {
+  var bkelement = document.getElementById("whatsnewbk");
+  bkelement.addEventListener("click", function () {
     DeleteWhatsNew();
     WhatsNewOpen = false;
-  })
-  var closeelement = document.getElementById('whatsnewclosebutton');
-  closeelement.addEventListener('click', function (e) {
+  });
+  var closeelement = document.getElementById("whatsnewclosebutton");
+  closeelement.addEventListener("click", function (e) {
     DeleteWhatsNew();
     WhatsNewOpen = false;
-  })
+  });
 }
 
 async function finishLoad() {
@@ -215,7 +230,7 @@ async function finishLoad() {
     loadingbk.style.opacity = "0";
     await delay(501);
     loadingbk.remove();
-  } catch(err) {
+  } catch (err) {
     console.log(err);
   }
 
@@ -224,16 +239,14 @@ async function finishLoad() {
       WhatsNewOpen = true;
       OpenWhatsNewPopup();
     }
-  })
-
-
+  });
 }
 
 async function DeleteWhatsNew() {
-  var bkelement = document.getElementById('whatsnewbk');
+  var bkelement = document.getElementById("whatsnewbk");
   var popup = document.getElementsByClassName("whatsnewContainer")[0];
-  bkelement.classList.add('whatsnewfadeout');
-  popup.classList.add('whatsnewzoomout');
+  bkelement.classList.add("whatsnewfadeout");
+  popup.classList.add("whatsnewzoomout");
   await delay(500);
   bkelement.remove();
   popup.remove();
@@ -281,11 +294,12 @@ function waitForElm(selector) {
 var LoadingDone = false;
 
 async function RunColourCheck(element) {
-  if (typeof element.contentDocument.documentElement.childNodes[1] == 'undefined') {
+  if (
+    typeof element.contentDocument.documentElement.childNodes[1] == "undefined"
+  ) {
     await delay(1000);
     RunColourCheck(element);
-  }
-  else {
+  } else {
     element.contentDocument.documentElement.childNodes[1].style.color = "white";
   }
 }
@@ -307,43 +321,47 @@ function CheckiFrameItems() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-
         if (added_node.tagName == "IFRAME") {
-
           chrome.storage.local.get(["DarkMode"], function (result) {
-            DarkModeResult = result.DarkMode
+            DarkModeResult = result.DarkMode;
             if (DarkModeResult) {
               RunColourCheck(added_node);
-              if (added_node.contentDocument.documentElement.childNodes[1].style.color != "white") {
-                added_node.contentDocument.documentElement.childNodes[1].style.color = "white";
+              if (
+                added_node.contentDocument.documentElement.childNodes[1].style
+                  .color != "white"
+              ) {
+                added_node.contentDocument.documentElement.childNodes[1].style.color =
+                  "white";
               }
               if (
                 !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
-                  "iframe.css"
+                  "iframe.css",
                 )
               ) {
                 added_node.contentDocument.documentElement.firstChild.appendChild(
-                  fileref
+                  fileref,
                 );
               }
               added_node.addEventListener("load", function () {
-                if (added_node.contentDocument.documentElement.childNodes[1].style.color != "white") {
-                  added_node.contentDocument.documentElement.childNodes[1].style.color = "white";
+                if (
+                  added_node.contentDocument.documentElement.childNodes[1].style
+                    .color != "white"
+                ) {
+                  added_node.contentDocument.documentElement.childNodes[1].style.color =
+                    "white";
                 }
                 if (
                   !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
-                    "iframe.css"
+                    "iframe.css",
                   )
                 ) {
                   added_node.contentDocument.documentElement.firstChild.appendChild(
-                    fileref
+                    fileref,
                   );
                 }
               });
             }
-
           });
-
         }
       });
     });
@@ -356,11 +374,13 @@ function CheckiFrameItems() {
 }
 
 function SortMessagePageItems(messagesParentElement) {
-  filterbutton = document.createElement('div');
+  filterbutton = document.createElement("div");
   filterbutton.classList.add("messages-filterbutton");
   filterbutton.innerText = "Filter";
 
-  header = document.getElementsByClassName('MessageList__MessageList___3DxoC')[0].firstChild;
+  header = document.getElementsByClassName(
+    "MessageList__MessageList___3DxoC",
+  )[0].firstChild;
   header.append(filterbutton);
 
   const observer = new MutationObserver(function (mutations_list) {
@@ -377,7 +397,6 @@ function SortMessagePageItems(messagesParentElement) {
     subtree: true,
     childList: true,
   });
-
 }
 
 function LoadPageElements() {
@@ -397,24 +416,25 @@ function LoadPageElements() {
               xhr3.open(
                 "POST",
                 `${location.origin}/seqta/student/heartbeat?`,
-                true
+                true,
               );
               xhr3.setRequestHeader(
                 "Content-Type",
-                "application/json; charset=utf-8"
+                "application/json; charset=utf-8",
               );
               xhr3.onreadystatechange = function () {
                 if (xhr3.readyState === 4) {
                   var Notifications = JSON.parse(xhr3.response);
                   var alertdiv = document.getElementsByClassName(
-                    "notifications__bubble___1EkSQ"
+                    "notifications__bubble___1EkSQ",
                   )[0];
-                  if (typeof alertdiv == 'undefined') {
-                    console.log("[Even BetterSEQTA] No notifications currently")
-
-                  }
-                  else {
-                    alertdiv.textContent = Notifications.payload.notifications.length;
+                  if (typeof alertdiv == "undefined") {
+                    console.log(
+                      "[Even BetterSEQTA] No notifications currently",
+                    );
+                  } else {
+                    alertdiv.textContent =
+                      Notifications.payload.notifications.length;
                   }
                 }
               };
@@ -422,14 +442,13 @@ function LoadPageElements() {
                 JSON.stringify({
                   timestamp: "1970-01-01 00:00:00.0",
                   hash: "#?page=/home",
-                })
+                }),
               );
             }
           });
 
           finishLoad();
         }
-
       });
       break;
 
@@ -451,24 +470,23 @@ function LoadPageElements() {
           xhr3.open(
             "POST",
             `${location.origin}/seqta/student/heartbeat?`,
-            true
+            true,
           );
           xhr3.setRequestHeader(
             "Content-Type",
-            "application/json; charset=utf-8"
+            "application/json; charset=utf-8",
           );
           xhr3.onreadystatechange = function () {
             if (xhr3.readyState === 4) {
               var Notifications = JSON.parse(xhr3.response);
               var alertdiv = document.getElementsByClassName(
-                "notifications__bubble___1EkSQ"
+                "notifications__bubble___1EkSQ",
               )[0];
-              if (typeof alertdiv == 'undefined') {
-                console.log("[Even BetterSEQTA] No notifications currently")
-
-              }
-              else {
-                alertdiv.textContent = Notifications.payload.notifications.length;
+              if (typeof alertdiv == "undefined") {
+                console.log("[Even BetterSEQTA] No notifications currently");
+              } else {
+                alertdiv.textContent =
+                  Notifications.payload.notifications.length;
               }
             }
           };
@@ -476,7 +494,7 @@ function LoadPageElements() {
             JSON.stringify({
               timestamp: "1970-01-01 00:00:00.0",
               hash: "#?page=/home",
-            })
+            }),
           );
         }
       });
@@ -486,41 +504,38 @@ function LoadPageElements() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.classList.contains('messages')) {
-          element = document.getElementById('title').firstChild;
+        if (added_node.classList.contains("messages")) {
+          element = document.getElementById("title").firstChild;
           element.innerText = "Direct Messages";
           document.title = "Direct Messages ― SEQTA Learn";
           SortMessagePageItems(added_node);
-        }
-        else if (added_node.classList.contains('notices')) {
+        } else if (added_node.classList.contains("notices")) {
           CheckNoticeTextColour(added_node);
         }
       });
     });
   });
 
-  observer.observe(document.querySelector('#main'), {
+  observer.observe(document.querySelector("#main"), {
     subtree: false,
     childList: true,
   });
-
-
 }
 
 function CheckNoticeTextColour(notice) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        chrome.storage.local.get(['DarkMode'], function (result) {
+        chrome.storage.local.get(["DarkMode"], function (result) {
           Darkmode = result.DarkMode;
-          if (added_node.classList.contains('notice')) {
-            var hex = added_node.style.cssText.split(' ')[1];
+          if (added_node.classList.contains("notice")) {
+            var hex = added_node.style.cssText.split(" ")[1];
             var threshold = GetThresholdofHex(hex);
             if (Darkmode && threshold < 100) {
               added_node.style.cssText = "--color: undefined;";
             }
           }
-        })
+        });
       });
     });
   });
@@ -529,7 +544,6 @@ function CheckNoticeTextColour(notice) {
     subtree: true,
     childList: true,
   });
-
 }
 
 function tryLoad() {
@@ -544,15 +558,12 @@ function tryLoad() {
   });
 
   waitForElm("[data-key=welcome]").then((elm) => {
-    elm.classList.remove('active')
+    elm.classList.remove("active");
   });
 
   waitForElm(".code").then((elm) => {
-    if (!elm.innerText.includes("BetterSEQTA"))
-      LoadPageElements();
+    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
   });
-
-
 
   // Waits for page to call on load, run scripts
   document.addEventListener(
@@ -560,35 +571,34 @@ function tryLoad() {
     function () {
       CheckiFrameItems();
     },
-    true
+    true,
   );
 }
 
 function ChangeMenuItemPositions(storage) {
   menuorder = storage;
 
-  var menuList = document.querySelector('#menu').firstChild.childNodes;
+  var menuList = document.querySelector("#menu").firstChild.childNodes;
 
-  listorder = []
+  listorder = [];
   for (let i = 0; i < menuList.length; i++) {
-    namevalue = menuList[i].dataset.key
+    namevalue = menuList[i].dataset.key;
 
-    a = menuorder.indexOf(menuList[i].dataset.key)
+    a = menuorder.indexOf(menuList[i].dataset.key);
 
-    listorder.push(a)
+    listorder.push(a);
   }
 
-  var newArr = []
+  var newArr = [];
   for (var i = 0; i < listorder.length; i++) {
-    newArr[listorder[i]] = menuList[i]
+    newArr[listorder[i]] = menuList[i];
   }
 
-
-  listItemsDOM = document.getElementById('menu').firstChild
+  listItemsDOM = document.getElementById("menu").firstChild;
   for (let i = 0; i < newArr.length; i++) {
     const element = newArr[i];
     if (element) {
-      element.setAttribute('data-checked', 'true')
+      element.setAttribute("data-checked", "true");
       listItemsDOM.appendChild(element);
     }
   }
@@ -596,16 +606,17 @@ function ChangeMenuItemPositions(storage) {
 
 async function ObserveMenuItemPosition() {
   chrome.storage.local.get(null, function (result) {
-
-    menuorder = result.menuorder
+    menuorder = result.menuorder;
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
         mutations_list.forEach(function (mutation) {
           mutation.addedNodes.forEach(function (added_node) {
-
             if (!added_node?.dataset?.checked && !MenuOptionsOpen) {
               if (MenuitemSVGKey[added_node?.dataset?.key]) {
-                ReplaceMenuSVG(added_node, MenuitemSVGKey[added_node.dataset.key])
+                ReplaceMenuSVG(
+                  added_node,
+                  MenuitemSVGKey[added_node.dataset.key],
+                );
               }
               ChangeMenuItemPositions(menuorder);
             }
@@ -613,21 +624,18 @@ async function ObserveMenuItemPosition() {
         });
       });
 
-      observer.observe(document.querySelector('#menu').firstChild, {
+      observer.observe(document.querySelector("#menu").firstChild, {
         subtree: true,
         childList: true,
       });
     }
-
-
-  })
-
+  });
 }
 
 function AppendElementsToDisabledPage() {
   AddBetterSEQTAElements(false);
 
-  settingsStyle = document.createElement('style')
+  settingsStyle = document.createElement("style");
   settingsStyle.innerText = `
     .addedButton {
     position: absolute !important;
@@ -647,16 +655,23 @@ function AppendElementsToDisabledPage() {
   .outside-container {
     top: 48px !important;
   }
-  `
-  document.head.append(settingsStyle)
+  `;
+  document.head.append(settingsStyle);
 }
 
-function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) {
+function lightenAndPaleColor(
+  hexColor,
+  lightenFactor = 0.75,
+  paleFactor = 0.55,
+) {
   // Convert a RGB value to HSL
   function rgbToHsl(r, g, b) {
-    r /= 255, g /= 255, b /= 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
+    (r /= 255), (g /= 255), (b /= 255);
+    let max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    let h,
+      s,
+      l = (max + min) / 2;
 
     if (max === min) {
       h = s = 0;
@@ -664,9 +679,15 @@ function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) 
       let d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
       }
       h /= 6;
     }
@@ -679,9 +700,9 @@ function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) 
     function hue2rgb(p, q, t) {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
       return p;
     }
 
@@ -691,9 +712,9 @@ function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) 
     } else {
       let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       let p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
+      r = hue2rgb(p, q, h + 1 / 3);
       g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+      b = hue2rgb(p, q, h - 1 / 3);
     }
 
     return [r * 255, g * 255, b * 255];
@@ -715,27 +736,28 @@ function lightenAndPaleColor(hexColor, lightenFactor = 0.75, paleFactor = 0.55) 
   [r, g, b] = hslToRgb(h, s, l);
 
   // Convert RGB to hex
-  r = Math.round(r).toString(16).padStart(2, '0');
-  g = Math.round(g).toString(16).padStart(2, '0');
-  b = Math.round(b).toString(16).padStart(2, '0');
+  r = Math.round(r).toString(16).padStart(2, "0");
+  g = Math.round(g).toString(16).padStart(2, "0");
+  b = Math.round(b).toString(16).padStart(2, "0");
 
-  return '#' + r + g + b;
+  return "#" + r + g + b;
 }
 
 function ColorLuminance(hex, lum) {
-
   // validate hex string
-  hex = String(hex).replace(/[^0-9a-f]/gi, '');
+  hex = String(hex).replace(/[^0-9a-f]/gi, "");
   if (hex.length < 6) {
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   }
   lum = lum || 0;
 
   // convert to decimal and change luminosity
-  var rgb = "#", c, i;
+  var rgb = "#",
+    c,
+    i;
   for (i = 0; i < 3; i++) {
     c = parseInt(hex.substr(i * 2, 2), 16);
-    c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
     rgb += ("00" + c).substring(c.length);
   }
 
@@ -745,45 +767,63 @@ function ColorLuminance(hex, lum) {
 chrome.storage.onChanged.addListener(function (changes) {
   if (changes.selectedColor) {
     try {
-      document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(changes.selectedColor.newValue));
-    } catch(err) {
-      console.log(err)
+      document.documentElement.style.setProperty(
+        "--better-pale",
+        lightenAndPaleColor(changes.selectedColor.newValue),
+      );
+    } catch (err) {
+      console.log(err);
     }
 
-    rbg = GetThresholdofHex(changes.selectedColor.newValue)
+    rbg = GetThresholdofHex(changes.selectedColor.newValue);
     if (rbg > 210) {
-      document.documentElement.style.setProperty('--text-color', 'black');
-      document.documentElement.style.setProperty('--betterseqta-logo', `url(${chrome.runtime.getURL('icons/betterseqta-dark-full.png')})`);
-    }
-    else {
-      document.documentElement.style.setProperty('--text-color', 'white');
-      document.documentElement.style.setProperty('--betterseqta-logo', `url(${chrome.runtime.getURL('icons/betterseqta-light-full.png')})`);
+      document.documentElement.style.setProperty("--text-color", "black");
+      document.documentElement.style.setProperty(
+        "--betterseqta-logo",
+        `url(${chrome.runtime.getURL("icons/betterseqta-dark-full.png")})`,
+      );
+    } else {
+      document.documentElement.style.setProperty("--text-color", "white");
+      document.documentElement.style.setProperty(
+        "--betterseqta-logo",
+        `url(${chrome.runtime.getURL("icons/betterseqta-light-full.png")})`,
+      );
     }
 
-    document.documentElement.style.setProperty('--better-main', changes.selectedColor.newValue);
+    document.documentElement.style.setProperty(
+      "--better-main",
+      changes.selectedColor.newValue,
+    );
     // document.documentElement.style.setProperty('--better-sub', ColorLuminance(changes.selectedColor.newValue, -0.15));
-    
-    if (changes.selectedColor.newValue == '#ffffff') {
-      document.documentElement.style.setProperty('--better-light', '#b7b7b7');
+
+    if (changes.selectedColor.newValue == "#ffffff") {
+      document.documentElement.style.setProperty("--better-light", "#b7b7b7");
     } else {
-      document.documentElement.style.setProperty('--better-light', ColorLuminance(changes.selectedColor.newValue, 0.99));
+      document.documentElement.style.setProperty(
+        "--better-light",
+        ColorLuminance(changes.selectedColor.newValue, 0.99),
+      );
     }
   }
 
   if (changes?.customshortcuts?.newValue) {
     if (changes.customshortcuts.oldValue.length > 0) {
-      CreateCustomShortcutDiv(changes.customshortcuts.newValue[(changes.customshortcuts.oldValue.length)]);
+      CreateCustomShortcutDiv(
+        changes.customshortcuts.newValue[
+          changes.customshortcuts.oldValue.length
+        ],
+      );
     } else {
       CreateCustomShortcutDiv(changes.customshortcuts.newValue[0]);
     }
   }
-})
+});
 
 var PageLoaded = false;
 async function CheckLoadOnPeriods() {
   if (!PageLoaded) {
     await delay(1000);
-    var code = document.getElementsByClassName('code')[0];
+    var code = document.getElementsByClassName("code")[0];
     if (code && !UserInitalCode) {
       LoadPageElements();
       finishLoad();
@@ -797,11 +837,10 @@ async function CheckLoadOnPeriods() {
 
 function RunFunctionOnTrue(storedSetting) {
   // If the option is 'on', open BetterSEQTA
-  if (typeof storedSetting.onoff == 'undefined') {
+  if (typeof storedSetting.onoff == "undefined") {
     chrome.runtime.sendMessage({ type: "setDefaultStorage" });
   }
   if (storedSetting.onoff) {
-
     console.log("[Even BetterSEQTA] Enabled");
     // Injecting CSS File to the webpage to overwrite SEQTA's default CSS
     var cssFile = chrome.runtime.getURL("inject/injected.css");
@@ -812,48 +851,74 @@ function RunFunctionOnTrue(storedSetting) {
     document.head.appendChild(fileref);
     document.getElementsByTagName("html")[0].appendChild(fileref);
 
-    document.documentElement.style.setProperty('--better-sub', "#161616");
-    document.documentElement.style.setProperty('--better-alert-highlight', "#c61851");
+    document.documentElement.style.setProperty("--better-sub", "#161616");
+    document.documentElement.style.setProperty(
+      "--better-alert-highlight",
+      "#c61851",
+    );
 
-    
-    
     if (storedSetting.DarkMode) {
-      document.documentElement.style.setProperty('--background-primary', "#232323");
-      document.documentElement.style.setProperty('--background-secondary', "#1a1a1a");
-      document.documentElement.style.setProperty('--text-primary', "white");
-    }
-    else {
+      document.documentElement.style.setProperty(
+        "--background-primary",
+        "#232323",
+      );
+      document.documentElement.style.setProperty(
+        "--background-secondary",
+        "#1a1a1a",
+      );
+      document.documentElement.style.setProperty("--text-primary", "white");
+    } else {
       try {
-        document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(storedSetting.selectedColor));
-      } catch(err) {
-        console.log(err)
+        document.documentElement.style.setProperty(
+          "--better-pale",
+          lightenAndPaleColor(storedSetting.selectedColor),
+        );
+      } catch (err) {
+        console.log(err);
       }
-      document.documentElement.style.setProperty('--background-primary', "#ffffff");
-      document.documentElement.style.setProperty('--background-secondary', "#e5e7eb");
-      document.documentElement.style.setProperty('--text-primary', "black");
+      document.documentElement.style.setProperty(
+        "--background-primary",
+        "#ffffff",
+      );
+      document.documentElement.style.setProperty(
+        "--background-secondary",
+        "#e5e7eb",
+      );
+      document.documentElement.style.setProperty("--text-primary", "black");
     }
 
-    document.querySelector('link[rel*="icon"]').href = chrome.runtime.getURL("icons/icon-48.png");
+    document.querySelector('link[rel*="icon"]').href =
+      chrome.runtime.getURL("icons/icon-48.png");
 
     rbg = GetThresholdofHex(storedSetting.selectedColor);
     if (rbg > 210) {
-      document.documentElement.style.setProperty('--text-color', 'black');
-      document.documentElement.style.setProperty('--betterseqta-logo', `url(${chrome.runtime.getURL('icons/betterseqta-dark-full.png')})`);
-    }
-    else {
-      document.documentElement.style.setProperty('--text-color', 'white');
-      document.documentElement.style.setProperty('--betterseqta-logo', `url(${chrome.runtime.getURL('icons/betterseqta-light-full.png')})`);
+      document.documentElement.style.setProperty("--text-color", "black");
+      document.documentElement.style.setProperty(
+        "--betterseqta-logo",
+        `url(${chrome.runtime.getURL("icons/betterseqta-dark-full.png")})`,
+      );
+    } else {
+      document.documentElement.style.setProperty("--text-color", "white");
+      document.documentElement.style.setProperty(
+        "--betterseqta-logo",
+        `url(${chrome.runtime.getURL("icons/betterseqta-light-full.png")})`,
+      );
     }
 
-    document.documentElement.style.setProperty('--better-main', storedSetting.selectedColor);
+    document.documentElement.style.setProperty(
+      "--better-main",
+      storedSetting.selectedColor,
+    );
     // document.documentElement.style.setProperty('--better-sub', ColorLuminance(storedSetting.selectedColor, -0.15));
 
-    if (storedSetting.selectedColor == '#ffffff') {
-      document.documentElement.style.setProperty('--better-light', '#b7b7b7');
+    if (storedSetting.selectedColor == "#ffffff") {
+      document.documentElement.style.setProperty("--better-light", "#b7b7b7");
     } else {
-      document.documentElement.style.setProperty('--better-light', ColorLuminance(storedSetting.selectedColor, 0.95));
+      document.documentElement.style.setProperty(
+        "--better-light",
+        ColorLuminance(storedSetting.selectedColor, 0.95),
+      );
     }
-
 
     ApplyCSSToHiddenMenuItems();
 
@@ -868,8 +933,7 @@ function RunFunctionOnTrue(storedSetting) {
     window.addEventListener("load", function () {
       tryLoad();
     });
-  }
-  else {
+  } else {
     if (!isChrome || isChrome == "undefined") {
       waitForElm(".code").then((elm) => {
         AppendElementsToDisabledPage();
@@ -879,23 +943,20 @@ function RunFunctionOnTrue(storedSetting) {
       waitForElm(".code").then((elm) => {
         AppendElementsToDisabledPage();
       });
-
     });
-  };
+  }
 }
 
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
-      if (document.getElementById('menu').firstChild) {
+      if (document.getElementById("menu").firstChild) {
         ObserveMenuItemPosition();
         MenuItemMutation = true;
       }
-    }
-    catch (error) {
+    } catch (error) {
       return;
     }
-
   }
 }
 
@@ -906,8 +967,14 @@ document.addEventListener(
   "load",
   function () {
     CheckForMenuList();
-    var weblink = window.location.origin
-    if (document.childNodes[1].textContent?.includes("Copyright (c) SEQTA Software") && document.title.includes("SEQTA Learn") && !IsSEQTAPage) {
+    var weblink = window.location.origin;
+    if (
+      document.childNodes[1].textContent?.includes(
+        "Copyright (c) SEQTA Software",
+      ) &&
+      document.title.includes("SEQTA Learn") &&
+      !IsSEQTAPage
+    ) {
       IsSEQTAPage = true;
       console.log("[BetterSEQTA] Verified SEQTA Page");
 
@@ -928,12 +995,12 @@ document.addEventListener(
       NonSEQTAPage = true;
     }
   },
-  true
+  true,
 );
 
 function RunExtensionSettingsJS() {
-  const whatsnewsettings = document.getElementById('whatsnewsettings');
-  whatsnewsettings.addEventListener('click', function () {
+  const whatsnewsettings = document.getElementById("whatsnewsettings");
+  whatsnewsettings.addEventListener("click", function () {
     if (!WhatsNewOpen) {
       WhatsNewOpen = true;
       OpenWhatsNewPopup();
@@ -945,31 +1012,37 @@ function RunExtensionSettingsJS() {
   const lessonalert = document.querySelector("#lessonalert");
   const aboutsection = document.querySelector("#aboutsection");
   const shortcutsection = document.querySelector("#shortcutsection");
-  const miscsection = document.querySelector('#miscsection');
+  const miscsection = document.querySelector("#miscsection");
   const mainpage = document.querySelector("#mainpage");
   const colorpicker = document.querySelector("#colorpicker");
-  const animatedbk = document.querySelector('#animatedbk');
-  const customshortcutbutton = document.getElementsByClassName('custom-shortcuts-button')[0];
-  const customshortcutdiv = document.getElementsByClassName('custom-shortcuts-container')[0];
-  const customshortcutsubmit = document.getElementsByClassName('custom-shortcuts-submit')[0];
-  const customshortcutinputname = document.querySelector('#shortcutname');
-  const customshortcutinputurl = document.querySelector('#shortcuturl');
+  const animatedbk = document.querySelector("#animatedbk");
+  const customshortcutbutton = document.getElementsByClassName(
+    "custom-shortcuts-button",
+  )[0];
+  const customshortcutdiv = document.getElementsByClassName(
+    "custom-shortcuts-container",
+  )[0];
+  const customshortcutsubmit = document.getElementsByClassName(
+    "custom-shortcuts-submit",
+  )[0];
+  const customshortcutinputname = document.querySelector("#shortcutname");
+  const customshortcutinputurl = document.querySelector("#shortcuturl");
 
-  const shortcutmenuitemselection = document.getElementsByClassName('menushortcut')[0];
+  const shortcutmenuitemselection =
+    document.getElementsByClassName("menushortcut")[0];
 
-
-  const applybutton = document.querySelector('#applychanges')
+  const applybutton = document.querySelector("#applychanges");
 
   const navbuttons = document.getElementsByClassName("navitem");
-  const menupages = document.getElementsByClassName("menu-page")
+  const menupages = document.getElementsByClassName("menu-page");
 
-  const allinputs = document.getElementsByTagName('input');
+  const allinputs = document.getElementsByTagName("input");
 
   const menupage = document.querySelector("#menupage");
 
   const shortcutpage = document.querySelector("#shortcutpage");
 
-  const miscpage = document.querySelector('#miscpage');
+  const miscpage = document.querySelector("#miscpage");
 
   var shortcutbuttons = document.getElementsByClassName("shortcutitem");
 
@@ -984,16 +1057,15 @@ function RunExtensionSettingsJS() {
 
   function resetActive() {
     for (let i = 0; i < navbuttons.length; i++) {
-      navbuttons[i].classList.remove('activenav');
+      navbuttons[i].classList.remove("activenav");
     }
     for (let i = 0; i < menupages.length; i++) {
-      menupages[i].classList.add('hiddenmenu');
+      menupages[i].classList.add("hiddenmenu");
     }
-
   }
 
   function FindSEQTATab() {
-    chrome.runtime.sendMessage({ type: "reloadTabs", });
+    chrome.runtime.sendMessage({ type: "reloadTabs" });
   }
   /*
   Store the currently selected settings using chrome.storage.local.
@@ -1005,12 +1077,12 @@ function RunExtensionSettingsJS() {
   }
 
   function storeNotificationSettings() {
-    chrome.storage.local.set(
-      { notificationcollector: notificationcollector.checked });
+    chrome.storage.local.set({
+      notificationcollector: notificationcollector.checked,
+    });
     chrome.storage.local.set({ lessonalert: lessonalert.checked });
     chrome.storage.local.set({ animatedbk: animatedbk.checked });
   }
-
 
   function StoreAllSettings() {
     chrome.storage.local.get(["shortcuts"], function (result) {
@@ -1028,7 +1100,7 @@ function RunExtensionSettingsJS() {
   or the default settings if the stored settings are empty.
   */
   function updateUI(restoredSettings) {
-    if (typeof restoredSettings.onoff == 'undefined') {
+    if (typeof restoredSettings.onoff == "undefined") {
       chrome.runtime.sendMessage({ type: "setDefaultStorage" });
 
       chrome.storage.local.get(null, function (result) {
@@ -1049,9 +1121,7 @@ function RunExtensionSettingsJS() {
     }
   }
 
-
   function CreateShortcutDiv(name) {
-
     div = stringtoHTML(`
     <div class="item-container menushortcuts" data-customshortcut="${name}">
       <div class="text-container">
@@ -1065,7 +1135,7 @@ function RunExtensionSettingsJS() {
     shortcutmenuitemselection.append(div);
 
     const deletebutton = document.getElementById(`delete-${name}`);
-    deletebutton.addEventListener('click', function () {
+    deletebutton.addEventListener("click", function () {
       DeleteCustomShortcut(name);
       applybutton.style.left = "4px";
     });
@@ -1076,9 +1146,7 @@ function RunExtensionSettingsJS() {
       var customshortcuts = Object.values(result)[0];
       for (let i = 0; i < customshortcuts.length; i++) {
         const element = customshortcuts[i];
-        CreateShortcutDiv(
-          element.name,
-        )
+        CreateShortcutDiv(element.name);
       }
     });
   }
@@ -1095,61 +1163,84 @@ function RunExtensionSettingsJS() {
       }
       chrome.storage.local.set({ customshortcuts: customshortcuts });
     });
-
   }
 
   function CustomShortcutMenu() {
-    customshortcutinputname.value = '';
-    customshortcutinputurl.value = '';
+    customshortcutinputname.value = "";
+    customshortcutinputurl.value = "";
     validURL = false;
     validName = false;
     customshortcutsubmit.classList.remove("customshortcut-submit-valid");
-    if (customshortcutdiv.classList.contains('custom-shortcuts-container-shown')) {
-      customshortcutdiv.classList.remove('custom-shortcuts-container-shown')
+    if (
+      customshortcutdiv.classList.contains("custom-shortcuts-container-shown")
+    ) {
+      customshortcutdiv.classList.remove("custom-shortcuts-container-shown");
     } else {
-      customshortcutdiv.classList.add('custom-shortcuts-container-shown')
-    };
+      customshortcutdiv.classList.add("custom-shortcuts-container-shown");
+    }
   }
 
   function CreateCustomShortcut() {
     const shortcutname = customshortcutinputname.value;
     var shortcuturl = customshortcutinputurl.value;
 
-    if (!(shortcuturl.includes('http'))) {
+    if (!shortcuturl.includes("http")) {
       shortcuturl = "https://" + shortcuturl;
     }
 
     chrome.storage.local.get(["customshortcuts"], function (result) {
       var customshortcuts = Object.values(result)[0];
-      customshortcuts.push({ name: shortcutname, url: shortcuturl, icon: (shortcutname[0]).toUpperCase() });
+      customshortcuts.push({
+        name: shortcutname,
+        url: shortcuturl,
+        icon: shortcutname[0].toUpperCase(),
+      });
       chrome.storage.local.set({ customshortcuts: customshortcuts });
     });
 
-    CreateShortcutDiv(
-      shortcutname
-    );
-    document.getElementsByClassName("shortcut-container")[0].style.display = "block";
+    CreateShortcutDiv(shortcutname);
+    document.getElementsByClassName("shortcut-container")[0].style.display =
+      "block";
   }
-
 
   function onError(e) {
     console.error(e);
   }
   chrome.storage.local.get(null, function (result) {
-    document.getElementsByClassName('clr-field')[0].style.color = result.selectedColor;
+    document.getElementsByClassName("clr-field")[0].style.color =
+      result.selectedColor;
     colorpicker.value = result.selectedColor;
     updateUI(result);
   });
 
   github.addEventListener("click", openGithub);
-  aboutsection.addEventListener("click", () => { resetActive(); aboutsection.classList.add('activenav'); menupage.classList.remove('hiddenmenu') });
+  aboutsection.addEventListener("click", () => {
+    resetActive();
+    aboutsection.classList.add("activenav");
+    menupage.classList.remove("hiddenmenu");
+  });
 
-  shortcutsection.addEventListener("click", () => { resetActive(); shortcutsection.classList.add('activenav'); shortcutpage.classList.remove('hiddenmenu') });
+  shortcutsection.addEventListener("click", () => {
+    resetActive();
+    shortcutsection.classList.add("activenav");
+    shortcutpage.classList.remove("hiddenmenu");
+  });
 
-  miscsection.addEventListener("click", () => { resetActive(); miscsection.classList.add('activenav'); miscpage.classList.remove('hiddenmenu') });
+  miscsection.addEventListener("click", () => {
+    resetActive();
+    miscsection.classList.add("activenav");
+    miscpage.classList.remove("hiddenmenu");
+  });
 
-  customshortcutbutton.addEventListener("click", () => { CustomShortcutMenu(); })
-  customshortcutsubmit.addEventListener("click", () => { if (validName && validURL) { CreateCustomShortcut(); CustomShortcutMenu() } });
+  customshortcutbutton.addEventListener("click", () => {
+    CustomShortcutMenu();
+  });
+  customshortcutsubmit.addEventListener("click", () => {
+    if (validName && validURL) {
+      CreateCustomShortcut();
+      CustomShortcutMenu();
+    }
+  });
 
   var sameName = false;
   customshortcutinputname.addEventListener("input", function () {
@@ -1162,7 +1253,11 @@ function RunExtensionSettingsJS() {
         }
       }
 
-      if (customshortcutinputname.value.length > 0 && customshortcutinputname.value.length < 22 && !sameName) {
+      if (
+        customshortcutinputname.value.length > 0 &&
+        customshortcutinputname.value.length < 22 &&
+        !sameName
+      ) {
         validName = true;
       } else {
         validName = false;
@@ -1170,15 +1265,17 @@ function RunExtensionSettingsJS() {
 
       if (validName && validURL) {
         customshortcutsubmit.classList.add("customshortcut-submit-valid");
-      }
-      else {
+      } else {
         customshortcutsubmit.classList.remove("customshortcut-submit-valid");
       }
     });
   });
 
   customshortcutinputurl.addEventListener("input", function () {
-    if (customshortcutinputurl.value.length > 0 && customshortcutinputurl.value.includes('.')) {
+    if (
+      customshortcutinputurl.value.length > 0 &&
+      customshortcutinputurl.value.includes(".")
+    ) {
       validURL = true;
     } else {
       validURL = false;
@@ -1186,50 +1283,51 @@ function RunExtensionSettingsJS() {
 
     if (validName && validURL) {
       customshortcutsubmit.classList.add("customshortcut-submit-valid");
-    }
-    else {
+    } else {
       customshortcutsubmit.classList.remove("customshortcut-submit-valid");
     }
-  })
+  });
 
   AddCustomShortcuts();
 
   onoffselection.addEventListener("change", storeSettings);
-  notificationcollector.addEventListener(
-    "change",
-    storeNotificationSettings
-  );
-  lessonalert.addEventListener("change", storeNotificationSettings)
+  notificationcollector.addEventListener("change", storeNotificationSettings);
+  lessonalert.addEventListener("change", storeNotificationSettings);
 
-
-  animatedbk.addEventListener("change", storeNotificationSettings)
+  animatedbk.addEventListener("change", storeNotificationSettings);
 
   for (let i = 0; i < allinputs.length; i++) {
-    if (allinputs[i].id != 'colorpicker' && allinputs[i].id != "shortcuturl" && allinputs[i].id != "shortcutname") {
-      allinputs[i].addEventListener("change", () => { applybutton.style.left = "4px" })
+    if (
+      allinputs[i].id != "colorpicker" &&
+      allinputs[i].id != "shortcuturl" &&
+      allinputs[i].id != "shortcutname"
+    ) {
+      allinputs[i].addEventListener("change", () => {
+        applybutton.style.left = "4px";
+      });
     }
   }
 
-  applybutton.addEventListener('click', () => { StoreAllSettings(); applybutton.style.left = "-150px" })
-
+  applybutton.addEventListener("click", () => {
+    StoreAllSettings();
+    applybutton.style.left = "-150px";
+  });
 
   colorpicker.addEventListener("input", function () {
-    var colorPreview = document.querySelector('#clr-color-preview')
+    var colorPreview = document.querySelector("#clr-color-preview");
     if (colorPreview.style.color) {
       var hex = colorPreview.style.color.split("(")[1].split(")")[0];
       hex = hex.split(",");
-      var b = hex.map(function (x) {             //For each array element
-        x = parseInt(x).toString(16);      //Convert to a base16 string
-        return (x.length == 1) ? "0" + x : x;  //Add zero if we get only one character
-      })
+      var b = hex.map(function (x) {
+        //For each array element
+        x = parseInt(x).toString(16); //Convert to a base16 string
+        return x.length == 1 ? "0" + x : x; //Add zero if we get only one character
+      });
       b = "#" + b.join("");
 
-      chrome.storage.local.set({ selectedColor: b })
+      chrome.storage.local.set({ selectedColor: b });
     }
-
-
-  })
-
+  });
 }
 
 function CallExtensionSettings() {
@@ -1253,8 +1351,11 @@ function CallExtensionSettings() {
   fileref.setAttribute("href", cssFile);
   document.head.append(fileref);
 
-  NextPageImage = chrome.runtime.getURL('popup/page.png')
-  Settings = stringToHTML(`<div class="outside-container hidden" id="ExtensionPopup"><div class="logo-container"><img src=${chrome.runtime.getURL('icons/betterseqta-light-full.png')}></div>
+  NextPageImage = chrome.runtime.getURL("popup/page.png");
+  Settings =
+    stringToHTML(`<div class="outside-container hidden" id="ExtensionPopup"><div class="logo-container"><img src=${chrome.runtime.getURL(
+      "icons/betterseqta-light-full.png",
+    )}></div>
   <div class="main-page" id="mainpage">
       <div class="topmenu">
         <div class="navitem activenav" id="miscsection">Settings</div>
@@ -1496,54 +1597,52 @@ function CallExtensionSettings() {
 
     <div style="position: absolute; bottom: 15px; right: 50px; color: rgb(177, 177, 177); display: flex; align-items:center;">
     <p style="margin: 0; margin-right: 5px; color: white;">Maintained by SethBurkart123 </p>
-    <p style="margin: 0; cursor:pointer; padding: 4px 5px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">What's new in v${chrome.runtime.getManifest().version}</p></div>
-    <img src=${chrome.runtime.getURL('/popup/github.svg')} alt="" id="github">
-  </div></div>`)
-  document.body.append(Settings.firstChild)
+    <p style="margin: 0; cursor:pointer; padding: 4px 5px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">What's new in v${
+      chrome.runtime.getManifest().version
+    }</p></div>
+    <img src=${chrome.runtime.getURL("/popup/github.svg")} alt="" id="github">
+  </div></div>`);
+  document.body.append(Settings.firstChild);
 
-
-  var container = document.getElementById('container');
-  var extensionsettings = document.getElementById('ExtensionPopup');
+  var container = document.getElementById("container");
+  var extensionsettings = document.getElementById("ExtensionPopup");
   container.onclick = function () {
     if (!SettingsClicked) {
-      extensionsettings.classList.add('hidden');
+      extensionsettings.classList.add("hidden");
     }
-    SettingsClicked = false
-  }
-
-
+    SettingsClicked = false;
+  };
 }
 
 function ApplyDraggableFunctions() {
-
-  var listItens = document.querySelectorAll('.draggable');
+  var listItens = document.querySelectorAll(".draggable");
   [].forEach.call(listItens, function (item) {
     addEventsDragAndDrop(item);
   });
 }
 // Code By Webdevtrick ( https://webdevtrick.com )
 
-var remove = document.querySelector('.draggable');
+var remove = document.querySelector(".draggable");
 
 function dragStart(e) {
-  this.style.opacity = '0.4';
+  this.style.opacity = "0.4";
   dragSrcEl = this;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/html', this.innerHTML);
-};
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/html", this.innerHTML);
+}
 
 function dragEnter(e) {
-  this.classList.add('over');
+  this.classList.add("over");
 }
 
 function dragLeave(e) {
   e.stopPropagation();
-  this.classList.remove('over');
+  this.classList.remove("over");
 }
 
 function dragOver(e) {
   e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
+  e.dataTransfer.dropEffect = "move";
   return false;
 }
 
@@ -1558,61 +1657,56 @@ function dragDrop(e) {
     // Move `dragSrcEl` to before the sibling of `this`
     parentA.insertBefore(dragSrcEl, siblingA);
 
-
     // Save position of all menu items
     children = parentA.childNodes;
     // console.log(children)
-    listorder = []
+    listorder = [];
 
     for (let i = 0; i < children.length; i++) {
-      const elm = children[i]
-      listorder.push(elm.dataset.key)
+      const elm = children[i];
+      listorder.push(elm.dataset.key);
     }
 
-    chrome.storage.local.set({ menuorder: listorder })
-
-
+    chrome.storage.local.set({ menuorder: listorder });
   }
   return false;
 }
 
 function dragEnd(e) {
-  var listItens = document.querySelectorAll('.draggable');
+  var listItens = document.querySelectorAll(".draggable");
   [].forEach.call(listItens, function (item) {
-    item.classList.remove('over');
+    item.classList.remove("over");
   });
-  this.style.opacity = '1';
+  this.style.opacity = "1";
 }
 
 function addEventsDragAndDrop(el) {
-  el.addEventListener('dragstart', dragStart, false);
-  el.addEventListener('dragenter', dragEnter, false);
-  el.addEventListener('dragover', dragOver, false);
-  el.addEventListener('dragleave', dragLeave, false);
-  el.addEventListener('drop', dragDrop, false);
-  el.addEventListener('dragend', dragEnd, false);
+  el.addEventListener("dragstart", dragStart, false);
+  el.addEventListener("dragenter", dragEnter, false);
+  el.addEventListener("dragover", dragOver, false);
+  el.addEventListener("dragleave", dragLeave, false);
+  el.addEventListener("drop", dragDrop, false);
+  el.addEventListener("dragend", dragEnd, false);
 }
-
-
 
 function cloneAttributes(target, source) {
-  [...source.attributes].forEach(attr => { target.setAttribute(attr.nodeName, attr.nodeValue) })
+  [...source.attributes].forEach((attr) => {
+    target.setAttribute(attr.nodeName, attr.nodeValue);
+  });
 }
-
 
 function OpenMenuOptions() {
   chrome.storage.local.get(null, function (result) {
-    var container = document.getElementById('container');
-    var menu = document.getElementById('menu');
+    var container = document.getElementById("container");
+    var menu = document.getElementById("menu");
 
-
-    if (result.defaultmenuorder.length == '0') {
+    if (result.defaultmenuorder.length == "0") {
       childnodes = menu.firstChild.childNodes;
       newdefaultmenuorder = [];
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
-        newdefaultmenuorder.push(element.dataset.key)
-        chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
+        newdefaultmenuorder.push(element.dataset.key);
+        chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
       }
     }
     childnodes = menu.firstChild.childNodes;
@@ -1622,60 +1716,55 @@ function OpenMenuOptions() {
         if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
           newdefaultmenuorder = result.defaultmenuorder;
           newdefaultmenuorder.push(element.dataset.key);
-          chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
+          chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
         }
-
       }
     }
 
-
     MenuOptionsOpen = true;
 
-
-    cover = document.createElement('div');
-    cover.classList.add('notMenuCover');
-    menu.style.zIndex = '20';
-    menu.style.setProperty('--menuHidden', 'flex');
+    cover = document.createElement("div");
+    cover.classList.add("notMenuCover");
+    menu.style.zIndex = "20";
+    menu.style.setProperty("--menuHidden", "flex");
     container.append(cover);
 
+    menusettings = document.createElement("div");
+    menusettings.classList.add("editmenuoption-container");
 
-    menusettings = document.createElement('div');
-    menusettings.classList.add('editmenuoption-container');
+    defaultbutton = document.createElement("div");
+    defaultbutton.classList.add("editmenuoption");
+    defaultbutton.innerText = "Restore Default";
+    defaultbutton.id = "restoredefaultoption";
 
-    defaultbutton = document.createElement('div');
-    defaultbutton.classList.add('editmenuoption');
-    defaultbutton.innerText = 'Restore Default';
-    defaultbutton.id = 'restoredefaultoption';
-
-    savebutton = document.createElement('div');
-    savebutton.classList.add('editmenuoption');
-    savebutton.innerText = 'Save';
-    savebutton.id = 'restoredefaultoption';
+    savebutton = document.createElement("div");
+    savebutton.classList.add("editmenuoption");
+    savebutton.innerText = "Save";
+    savebutton.id = "restoredefaultoption";
 
     menusettings.appendChild(defaultbutton);
     menusettings.appendChild(savebutton);
 
     menu.appendChild(menusettings);
 
-
     ListItems = menu.firstChild.childNodes;
     for (let i = 0; i < ListItems.length; i++) {
       const element = ListItems[i];
 
-      element.classList.add('draggable');
-      element.setAttribute('draggable', true)
-      if (element.classList.contains('hasChildren')) {
-        element.classList.remove('active');
-        menu.firstChild.classList.remove('noscroll');
+      element.classList.add("draggable");
+      element.setAttribute("draggable", true);
+      if (element.classList.contains("hasChildren")) {
+        element.classList.remove("active");
+        menu.firstChild.classList.remove("noscroll");
       }
 
-      MenuItemToggle = stringToHTML(`<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${element.dataset.key}"><label for="${element.dataset.key}" class="onoffswitch-label"></label>`).firstChild
+      MenuItemToggle = stringToHTML(
+        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${element.dataset.key}"><label for="${element.dataset.key}" class="onoffswitch-label"></label>`,
+      ).firstChild;
       element.append(MenuItemToggle);
 
-
-
       if (!element.dataset.betterseqta) {
-        var a = document.createElement('section');
+        var a = document.createElement("section");
         a.innerHTML = element.innerHTML;
         cloneAttributes(a, element);
         menu.firstChild.insertBefore(a, element);
@@ -1688,19 +1777,18 @@ function OpenMenuOptions() {
       var menuItems = {};
       for (var i = 0; i < menubuttons.length; i++) {
         var id = menubuttons[i].dataset.key;
-        const element = {}
+        const element = {};
         element.toggle = true;
         menuItems[id] = element;
       }
       chrome.storage.local.set({ menuitems: menuItems });
     }
 
-    var menubuttons = document.getElementsByClassName('menuitem');
+    var menubuttons = document.getElementsByClassName("menuitem");
     chrome.storage.local.get(["menuitems"], function (result) {
       var menuItems = result.menuitems;
-      buttons = document.getElementsByClassName('menuitem');
+      buttons = document.getElementsByClassName("menuitem");
       for (var i = 0; i < buttons.length; i++) {
-
         var id = buttons[i].id;
         if (menuItems[id]) {
           buttons[i].checked = menuItems[id].toggle;
@@ -1708,43 +1796,46 @@ function OpenMenuOptions() {
         if (!menuItems[id]) {
           buttons[i].checked = true;
         }
-
       }
     });
 
     ApplyDraggableFunctions();
 
-
     function StoreMenuSettings() {
       chrome.storage.local.get(["menuitems"], function (result) {
         var menuItems = {};
         menubuttons = menu.firstChild.childNodes;
-        button = document.getElementsByClassName('menuitem');
+        button = document.getElementsByClassName("menuitem");
         for (var i = 0; i < menubuttons.length; i++) {
           var id = menubuttons[i].dataset.key;
-          const element = {}
+          const element = {};
           element.toggle = button[i].checked;
 
           menuItems[id] = element;
         }
         chrome.storage.local.set({ menuitems: menuItems });
       });
-
-
     }
 
     function changeDisplayProperty(element) {
       if (!element.checked) {
-        element.parentNode.parentNode.style.display = 'var(--menuHidden)';
+        element.parentNode.parentNode.style.display = "var(--menuHidden)";
       }
       if (element.checked) {
-        element.parentNode.parentNode.style.setProperty('display', 'flex', 'important');
+        element.parentNode.parentNode.style.setProperty(
+          "display",
+          "flex",
+          "important",
+        );
       }
     }
 
     for (let i = 0; i < menubuttons.length; i++) {
       const element = menubuttons[i];
-      element.addEventListener('change', () => { StoreMenuSettings(); changeDisplayProperty(element); })
+      element.addEventListener("change", () => {
+        StoreMenuSettings();
+        changeDisplayProperty(element);
+      });
     }
 
     function closeAll() {
@@ -1752,16 +1843,15 @@ function OpenMenuOptions() {
       menusettings.remove();
       cover.remove();
       MenuOptionsOpen = false;
-      menu.style.setProperty('--menuHidden', 'none');
+      menu.style.setProperty("--menuHidden", "none");
 
       for (let i = 0; i < ListItems.length; i++) {
         const element = ListItems[i];
-        element.classList.remove('draggable');
-        element.setAttribute('draggable', false)
-
+        element.classList.remove("draggable");
+        element.setAttribute("draggable", false);
 
         if (!element.dataset.betterseqta) {
-          var a = document.createElement('li');
+          var a = document.createElement("li");
           a.innerHTML = element.innerHTML;
           cloneAttributes(a, element);
           menu.firstChild.insertBefore(a, element);
@@ -1769,34 +1859,36 @@ function OpenMenuOptions() {
         }
       }
 
-      switches = menu.querySelectorAll('.onoffswitch')
+      switches = menu.querySelectorAll(".onoffswitch");
       for (let i = 0; i < switches.length; i++) {
-        switches[i].remove()
+        switches[i].remove();
       }
 
       StoreMenuSettings();
     }
 
-    cover.addEventListener('click', closeAll)
-    savebutton.addEventListener('click', closeAll)
+    cover.addEventListener("click", closeAll);
+    savebutton.addEventListener("click", closeAll);
 
-    defaultbutton.addEventListener('click', function () {
+    defaultbutton.addEventListener("click", function () {
       chrome.storage.local.get(null, function (response) {
-        const options = response.defaultmenuorder
-        chrome.storage.local.set({ menuorder: options })
+        const options = response.defaultmenuorder;
+        chrome.storage.local.set({ menuorder: options });
         ChangeMenuItemPositions(options);
 
         for (let i = 0; i < menubuttons.length; i++) {
           const element = menubuttons[i];
           element.checked = true;
-          element.parentNode.parentNode.style.setProperty('display', 'flex', 'important');
-
+          element.parentNode.parentNode.style.setProperty(
+            "display",
+            "flex",
+            "important",
+          );
         }
         StoreMenuSettings();
-      })
-    })
-
-  })
+      });
+    });
+  });
 }
 
 function ReplaceMenuSVG(element, svg) {
@@ -1818,33 +1910,34 @@ function AddBetterSEQTAElements(toggle) {
     if (!code.innerHTML.includes("BetterSEQTA")) {
       UserInitalCode = code.innerText;
       code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`;
-      code.setAttribute('data-hover', 'Click for user code');
-      code.addEventListener('click', function () {
+      code.setAttribute("data-hover", "Click for user code");
+      code.addEventListener("click", function () {
         var code = document.getElementsByClassName("code")[0];
-        if (code.innerText.includes('BetterSEQTA')) {
+        if (code.innerText.includes("BetterSEQTA")) {
           code.innerText = UserInitalCode;
-          code.setAttribute('data-hover', 'Click for BetterSEQTA version')
+          code.setAttribute("data-hover", "Click for BetterSEQTA version");
+        } else {
+          code.innerText = `BetterSEQTA v${
+            chrome.runtime.getManifest().version
+          }`;
+          code.setAttribute("data-hover", "Click for user code");
         }
-        else {
-          code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`
-          code.setAttribute('data-hover', 'Click for user code');
-        }
-      })
+      });
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        chrome.storage.local.get(['animatedbk'], function (result) {
+        chrome.storage.local.get(["animatedbk"], function (result) {
           if (result.animatedbk) {
             CreateBackground();
+          } else {
+            document.getElementById("container").style.background =
+              "var(--background-secondary)";
           }
-          else {
-            document.getElementById('container').style.background = "var(--background-secondary)";
-          }
-        })
+        });
 
-        var titlebar = document.createElement('div');
+        var titlebar = document.createElement("div");
         titlebar.classList.add("titlebar");
-        container = document.getElementById('content');
+        container = document.getElementById("content");
         container.append(titlebar);
         var NewButtonStr = `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg>Home</label></li>`;
         var NewButton = stringToHTML(NewButtonStr);
@@ -1857,22 +1950,29 @@ function AddBetterSEQTAElements(toggle) {
           headers: {
             "Content-Type": "application/json; charset=utf-8",
           },
-          body: JSON.stringify({ "mode": "normal", "query": null, "redirect_url": location.origin })
+          body: JSON.stringify({
+            mode: "normal",
+            query: null,
+            redirect_url: location.origin,
+          }),
         })
           .then((result) => result.json())
           .then((response) => {
             info = response.payload;
 
-            var titlebar = document.getElementsByClassName('titlebar')[0];
-            titlebar.append(stringToHTML(`<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>`).firstChild)
-            var userinfostr = `<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`
-            var userinfo = stringToHTML(userinfostr).firstChild
+            var titlebar = document.getElementsByClassName("titlebar")[0];
+            titlebar.append(
+              stringToHTML(
+                `<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>`,
+              ).firstChild,
+            );
+            var userinfostr = `<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`;
+            var userinfo = stringToHTML(userinfostr).firstChild;
 
+            titlebar.append(userinfo);
 
-            titlebar.append(userinfo)
-
-            var logoutbutton = document.getElementsByClassName('logout')[0];
-            var userInfosvgdiv = document.getElementById('logouttooltip');
+            var logoutbutton = document.getElementsByClassName("logout")[0];
+            var userInfosvgdiv = document.getElementById("logouttooltip");
             userInfosvgdiv.appendChild(logoutbutton);
 
             fetch(`${location.origin}/seqta/student/load/message/people`, {
@@ -1880,57 +1980,58 @@ function AddBetterSEQTAElements(toggle) {
               headers: {
                 "Content-Type": "application/json; charset=utf-8",
               },
-              body: JSON.stringify({ "mode": "student" })
+              body: JSON.stringify({ mode: "student" }),
             })
               .then((result) => result.json())
               .then((response) => {
                 students = response.payload;
                 var index = students.findIndex(function (person) {
-                  return person.firstname == (info.userDesc.split(' ')[0]) && person.surname == (info.userDesc.split(' ')[1])
+                  return (
+                    person.firstname == info.userDesc.split(" ")[0] &&
+                    person.surname == info.userDesc.split(" ")[1]
+                  );
                 });
 
-                houseelement = document.getElementsByClassName("userInfohouse")[0];
+                houseelement =
+                  document.getElementsByClassName("userInfohouse")[0];
                 if (students[index]?.house) {
                   houseelement.style.background = students[index].house_colour;
                   try {
-                    colorresult = GetThresholdofHex(students[index]?.house_colour);
-                    
+                    colorresult = GetThresholdofHex(
+                      students[index]?.house_colour,
+                    );
+
                     if (colorresult > 300) {
                       houseelement.style.color = "black";
-                    }
-                    else {
+                    } else {
                       houseelement.style.color = "white";
                     }
-                    houseelement.innerText = students[index].year + students[index].house;
+                    houseelement.innerText =
+                      students[index].year + students[index].house;
                   } catch {}
-                }
-                else {
+                } else {
                   houseelement.innerText = students[index].year;
                 }
-
-
-              })
-
-          })
-
+              });
+          });
 
         var NewsButtonStr = `<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>`;
         var NewsButton = stringToHTML(NewsButtonStr);
-        List.appendChild(NewsButton.firstChild)
+        List.appendChild(NewsButton.firstChild);
 
+        editmenu = document.createElement("div");
+        editmenu.classList.add("editmenu");
 
-
-        editmenu = document.createElement('div');
-        editmenu.classList.add('editmenu');
-
-        svg = stringToHTML('<svg style="width:24px;height:24px;padding:5px;" id="editmenu" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>')
-        editmenu.append(svg.firstChild)
+        svg = stringToHTML(
+          '<svg style="width:24px;height:24px;padding:5px;" id="editmenu" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>',
+        );
+        editmenu.append(svg.firstChild);
 
         menu.appendChild(editmenu);
 
-        a = document.createElement('div');
-        a.classList.add('icon-cover');
-        a.id = 'icon-cover';
+        a = document.createElement("div");
+        a.classList.add("icon-cover");
+        a.id = "icon-cover";
         menu.appendChild(a);
 
         var editmenu = document.querySelector("#editmenu");
@@ -1938,15 +2039,16 @@ function AddBetterSEQTAElements(toggle) {
           if (!MenuOptionsOpen) {
             OpenMenuOptions();
           }
-
-        })
+        });
 
         var menuCover = document.querySelector("#icon-cover");
         menuCover.addEventListener("click", function () {
-          location.href = '../#?page=/home'
+          location.href = "../#?page=/home";
           SendHomePage();
-          document.getElementById('menu').firstChild.classList.remove('noscroll');
-        })
+          document
+            .getElementById("menu")
+            .firstChild.classList.remove("noscroll");
+        });
         // Creates the home container when the menu button is pressed
         var homebutton = document.getElementById("homebutton");
         homebutton.addEventListener("click", function () {
@@ -1970,93 +2072,120 @@ function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
-          `<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA Settings</div></button>`
+          `<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA Settings</div></button>`,
         );
         var ContentDiv = document.getElementById("content");
         ContentDiv.append(SettingsButton.firstChild);
 
-        chrome.storage.local.get(['DarkMode'], function (result) {
+        chrome.storage.local.get(["DarkMode"], function (result) {
           Darkmode = result.DarkMode;
 
           tooltipstring = GetLightDarkModeString(Darkmode);
-          var LightDarkModeButton = stringToHTML(`<button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px);" preserveAspectRatio="xMidYMid meet"></svg><div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipstring}</div></button>`);
+          var LightDarkModeButton = stringToHTML(
+            `<button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px);" preserveAspectRatio="xMidYMid meet"></svg><div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipstring}</div></button>`,
+          );
           ContentDiv.append(LightDarkModeButton.firstChild);
 
-          LightDarkModeElement = document.getElementById('LightDarkModeButton');
+          LightDarkModeElement = document.getElementById("LightDarkModeButton");
 
           if (Darkmode) {
-            LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
-            document.documentElement.style.removeProperty('--better-pale');
+            LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
+            document.documentElement.style.removeProperty("--better-pale");
           } else {
-            LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
+            LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
             try {
               chrome.storage.local.get(null, function (result) {
-                document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(result.selectedColor)); // TODO: Make this variable referencable
+                document.documentElement.style.setProperty(
+                  "--better-pale",
+                  lightenAndPaleColor(result.selectedColor),
+                ); // TODO: Make this variable referencable
               });
-            } catch(err) { console.log(err) }
+            } catch (err) {
+              console.log(err);
+            }
           }
-          darklightText = document.getElementById('darklighttooliptext');
-          LightDarkModeElement.addEventListener('click', function () {
-            chrome.storage.local.get(['DarkMode'], function (result) {
-              alliframes = document.getElementsByTagName('iframe');
+          darklightText = document.getElementById("darklighttooliptext");
+          LightDarkModeElement.addEventListener("click", function () {
+            chrome.storage.local.get(["DarkMode"], function (result) {
+              alliframes = document.getElementsByTagName("iframe");
               fileref = GetiFrameCSSElement();
-              
+
               if (!result.DarkMode) {
-                document.documentElement.style.setProperty('--background-primary', "#232323");
-                document.documentElement.style.setProperty('--background-secondary', "#1a1a1a");
-                document.documentElement.style.setProperty('--text-primary', "white");
-                document.documentElement.style.removeProperty('--better-pale');
-                LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
-                
-                for (let i = 0; i < alliframes.length; i++) {
-                  const element = alliframes[i];
-                  element.contentDocument.documentElement.childNodes[1].style.color = "white";
-                  element.contentDocument.documentElement.firstChild.appendChild(fileref);
-                }
-                
-              }
-              else {
-                document.documentElement.style.setProperty('--background-primary', "#ffffff");
-                document.documentElement.style.setProperty('--background-secondary', "#e5e7eb");
-                document.documentElement.style.setProperty('--text-primary', "black");
-                try {
-                  chrome.storage.local.get(null, function (result) {
-                    document.documentElement.style.setProperty('--better-pale', lightenAndPaleColor(result.selectedColor)); // TODO: Make this variable referencable
-                  });
-                } catch(err) { console.log(err) }
-                LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`
+                document.documentElement.style.setProperty(
+                  "--background-primary",
+                  "#232323",
+                );
+                document.documentElement.style.setProperty(
+                  "--background-secondary",
+                  "#1a1a1a",
+                );
+                document.documentElement.style.setProperty(
+                  "--text-primary",
+                  "white",
+                );
+                document.documentElement.style.removeProperty("--better-pale");
+                LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
 
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
-                  element.contentDocument.documentElement.childNodes[1].style.color = "black";
+                  element.contentDocument.documentElement.childNodes[1].style.color =
+                    "white";
+                  element.contentDocument.documentElement.firstChild.appendChild(
+                    fileref,
+                  );
+                }
+              } else {
+                document.documentElement.style.setProperty(
+                  "--background-primary",
+                  "#ffffff",
+                );
+                document.documentElement.style.setProperty(
+                  "--background-secondary",
+                  "#e5e7eb",
+                );
+                document.documentElement.style.setProperty(
+                  "--text-primary",
+                  "black",
+                );
+                try {
+                  chrome.storage.local.get(null, function (result) {
+                    document.documentElement.style.setProperty(
+                      "--better-pale",
+                      lightenAndPaleColor(result.selectedColor),
+                    ); // TODO: Make this variable referencable
+                  });
+                } catch (err) {
+                  console.log(err);
+                }
+                LightDarkModeElement.firstChild.innerHTML = `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
+
+                for (let i = 0; i < alliframes.length; i++) {
+                  const element = alliframes[i];
+                  element.contentDocument.documentElement.childNodes[1].style.color =
+                    "black";
                   element.contentDocument.documentElement.firstChild.lastChild.remove();
                 }
               }
               tooltipstring = GetLightDarkModeString(!result.DarkMode);
               darklightText.innerText = tooltipstring;
               chrome.storage.local.set({ DarkMode: !result.DarkMode });
-
             });
-
           });
         });
       } else {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
-          `<button class="addedButton" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: var(--text-color);"><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg></button>`
+          `<button class="addedButton" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: var(--text-color);"><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg></button>`,
         );
         var ContentDiv = document.getElementById("content");
         ContentDiv.append(SettingsButton.firstChild);
       }
 
-
-
-
       var AddedSettings = document.getElementById("AddedSettings");
-      var extensionsettings = document.getElementById("ExtensionPopup")
+      var extensionsettings = document.getElementById("ExtensionPopup");
       AddedSettings.addEventListener("click", function () {
-        extensionsettings.classList.toggle('hidden');
-        SettingsClicked = true
+        extensionsettings.classList.toggle("hidden");
+        SettingsClicked = true;
       });
     }
   }
@@ -2101,15 +2230,17 @@ function CheckCurrentLesson(lesson, num) {
   // Checks if current time is between the start time and end time of current tested lesson
   valid = startDate < currentDate && endDate > currentDate;
 
-  id = lesson.code + num
-  const date = new Date()
+  id = lesson.code + num;
+  const date = new Date();
 
   var elementA = document.getElementById(id);
   if (!elementA) {
     clearInterval(LessonInterval);
-  }
-  else {
-    if (currentSelectedDate.toLocaleDateString('en-au') == date.toLocaleDateString('en-au')) {
+  } else {
+    if (
+      currentSelectedDate.toLocaleDateString("en-au") ==
+      date.toLocaleDateString("en-au")
+    ) {
       if (valid) {
         // Apply the activelesson class to increase the box-shadow of current lesson
         elementA.classList.add("activelesson");
@@ -2122,10 +2253,9 @@ function CheckCurrentLesson(lesson, num) {
     }
   }
 
-
   // If 5 minutes before the start of another lesson:
   if (minutes == 5) {
-    chrome.storage.local.get('lessonalert', function (result) {
+    chrome.storage.local.get("lessonalert", function (result) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
@@ -2160,24 +2290,22 @@ function CheckCurrentLesson(lesson, num) {
         }
       }
     });
-
   }
-
 }
 
 function hexToRGB(hex) {
   try {
     var r = parseInt(hex.slice(1, 3), 16),
-    g = parseInt(hex.slice(3, 5), 16),
-    b = parseInt(hex.slice(5, 7), 16);
-    
-    return { 'r': r, 'g': g, 'b': b }
+      g = parseInt(hex.slice(3, 5), 16),
+      b = parseInt(hex.slice(5, 7), 16);
+
+    return { r: r, g: g, b: b };
   } catch {}
 }
 
 function GetThresholdofHex(hex) {
-  var rgb = hexToRGB(hex)
-  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2)
+  var rgb = hexToRGB(hex);
+  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
 }
 
 function CheckCurrentLessonAll(lessons) {
@@ -2188,28 +2316,36 @@ function CheckCurrentLessonAll(lessons) {
         CheckCurrentLesson(lessons[i], i + 1);
       }
     }.bind(lessons),
-    60000
+    60000,
   );
 }
 
 function MakeLessonDiv(lesson, num) {
-  assessmentstring = ""
-  var lessonstring = `<div class="day" id=${lesson.code + num} style="${lesson.colour}"><h2>${lesson?.description ?? "Unknown"}</h2><h3>${lesson?.staff ?? "Unknown"}</h3><h3>${lesson?.room ?? "Unknown"}</h3><h4>${lesson?.from ?? "Unknown"} - ${lesson?.until ?? "Unknown"}</h4><h5>${lesson?.attendanceTitle ?? "Unknown"}</h5>`
+  assessmentstring = "";
+  var lessonstring = `<div class="day" id=${lesson.code + num} style="${
+    lesson.colour
+  }"><h2>${lesson?.description ?? "Unknown"}</h2><h3>${
+    lesson?.staff ?? "Unknown"
+  }</h3><h3>${lesson?.room ?? "Unknown"}</h3><h4>${
+    lesson?.from ?? "Unknown"
+  } - ${lesson?.until ?? "Unknown"}</h4><h5>${
+    lesson?.attendanceTitle ?? "Unknown"
+  }</h5>`;
 
   if (lesson.programmeID != 0) {
-    lessonstring += `<div class="day-button clickable" style="right: 5px;" onclick="location.href='../#?page=/assessments/${lesson.programmeID}:${lesson.metaID}'">${assessmentsicon}</div><div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${lesson.programmeID}:${lesson.metaID}'">${coursesicon}</div>`
+    lessonstring += `<div class="day-button clickable" style="right: 5px;" onclick="location.href='../#?page=/assessments/${lesson.programmeID}:${lesson.metaID}'">${assessmentsicon}</div><div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${lesson.programmeID}:${lesson.metaID}'">${coursesicon}</div>`;
   }
 
   if (lesson.assessments.length > 0) {
     for (let i = 0; i < lesson.assessments.length; i++) {
-      const element = lesson.assessments[i]
-      assessmentstring += `<p onclick="location.href = '../#?page=/assessments/${lesson.programmeID}:${lesson.metaID}&item=${element.id}';">${element.title}</p>`
+      const element = lesson.assessments[i];
+      assessmentstring += `<p onclick="location.href = '../#?page=/assessments/${lesson.programmeID}:${lesson.metaID}&item=${element.id}';">${element.title}</p>`;
     }
     lessonstring += `<div class="tooltip assessmenttooltip"><svg style="width:28px;height:28px;border-radius:0;" viewBox="0 0 24 24">
     <path fill="#ed3939" d="M16 2H4C2.9 2 2 2.9 2 4V20C2 21.11 2.9 22 4 22H16C17.11 22 18 21.11 18 20V4C18 2.9 17.11 2 16 2M16 20H4V4H6V12L8.5 9.75L11 12V4H16V20M20 15H22V17H20V15M22 7V13H20V7H22Z" />
-    </svg><div class="tooltiptext">${assessmentstring}</div></div>`
+    </svg><div class="tooltiptext">${assessmentstring}</div></div>`;
   }
-  lessonstring += '</div>';
+  lessonstring += "</div>";
   var lessondiv = stringToHTML(lessonstring);
   return lessondiv;
 }
@@ -2217,8 +2353,7 @@ function MakeLessonDiv(lesson, num) {
 function CheckUnmarkedAttendance(lessonattendance) {
   if (lessonattendance) {
     var lesson = lessonattendance.label;
-  }
-  else {
+  } else {
     var lesson = " ";
   }
   return lesson;
@@ -2227,11 +2362,7 @@ function CheckUnmarkedAttendance(lessonattendance) {
 function callHomeTimetable(date, change) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest();
-  xhr.open(
-    "POST",
-    `${location.origin}/seqta/student/load/timetable?`,
-    true
-  );
+  xhr.open("POST", `${location.origin}/seqta/student/load/timetable?`, true);
   // Sets the response type to json
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
@@ -2240,7 +2371,7 @@ function callHomeTimetable(date, change) {
     if (xhr.readyState === 4) {
       var serverResponse = JSON.parse(xhr.response);
       lessonArray = [];
-      var DayContainer = document.getElementById("day-container")
+      var DayContainer = document.getElementById("day-container");
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
         if (!DayContainer.innerText || change) {
@@ -2256,15 +2387,15 @@ function callHomeTimetable(date, change) {
           GetLessonColours().then((colours) => {
             subjects = colours;
             for (let i = 0; i < lessonArray.length; i++) {
+              subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
 
-              subjectname = `timetable.subject.colour.${lessonArray[i].code}`
-
-              subject = subjects.find(element => element.name === subjectname)
+              subject = subjects.find(
+                (element) => element.name === subjectname,
+              );
               if (!subject) {
-                lessonArray[i].colour = `--item-colour: #8e8e8e;`
-              }
-              else {
-                lessonArray[i].colour = `--item-colour: ${subject.value};`
+                lessonArray[i].colour = `--item-colour: #8e8e8e;`;
+              } else {
+                lessonArray[i].colour = `--item-colour: ${subject.value};`;
                 result = GetThresholdofHex(subject.value);
 
                 if (result > 300) {
@@ -2277,15 +2408,16 @@ function callHomeTimetable(date, change) {
 
               // Checks if attendance is unmarked, and sets the string to " ".
               lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
-                lessonArray[i].attendance)
+                lessonArray[i].attendance,
+              );
             }
             // If on home page, apply each lesson to HTML with information in each div
-            DayContainer.innerText = '';
+            DayContainer.innerText = "";
             for (let i = 0; i < lessonArray.length; i++) {
               var div = MakeLessonDiv(lessonArray[i], i + 1);
               // Append each of the lessons into the day-container
               if (lessonArray[i].invert) {
-                div.firstChild.classList.add('day-inverted');
+                div.firstChild.classList.add("day-inverted");
               }
 
               DayContainer.append(div.firstChild);
@@ -2299,20 +2431,17 @@ function callHomeTimetable(date, change) {
               // For each lesson, check the start and end times
               CheckCurrentLessonAll(lessonArray);
             }
-          })
-
-
+          });
         }
-      }
-      else {
+      } else {
         if (!DayContainer.innerText || change) {
-          DayContainer.innerText = '';
+          DayContainer.innerText = "";
           var dummyDay = document.createElement("div");
           dummyDay.classList.add("day-empty");
-          img = document.createElement('img')
-          img.src = chrome.runtime.getURL('icons/betterseqta-light-icon.png')
-          text = document.createElement('p')
-          text.innerText = "No lessons available."
+          img = document.createElement("img");
+          img.src = chrome.runtime.getURL("icons/betterseqta-light-icon.png");
+          text = document.createElement("p");
+          text.innerText = "No lessons available.";
           dummyDay.append(img);
           dummyDay.append(text);
           DayContainer.append(dummyDay);
@@ -2327,23 +2456,22 @@ function callHomeTimetable(date, change) {
       until: date,
       // Funny number
       student: 69,
-    })
+    }),
   );
 }
 
 function GetUpcomingAssessments() {
-
   func = fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json; charset=utf-8",
     },
-    body: JSON.stringify({ "student": 69 })
-  })
+    body: JSON.stringify({ student: 69 }),
+  });
 
   return func
     .then((result) => result.json())
-    .then(response => (response.payload))
+    .then((response) => response.payload);
 }
 
 function GetActiveClasses() {
@@ -2352,12 +2480,12 @@ function GetActiveClasses() {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
     },
-    body: JSON.stringify({})
-  })
+    body: JSON.stringify({}),
+  });
 
   return func
     .then((result) => result.json())
-    .then(response => (response.payload))
+    .then((response) => response.payload);
 }
 
 function comparedate(obj1, obj2) {
@@ -2387,63 +2515,64 @@ function CreateElement(type, class_, id, innerText, innerHTML, style) {
   if (style !== undefined) {
     element.style = style;
   }
-  return element
+  return element;
 }
 
 function createAssessmentDateDiv(date, value, datecase = undefined) {
-  var options = { weekday: 'long', month: 'long', day: 'numeric' };
-  const FormattedDate = new Date(date)
+  var options = { weekday: "long", month: "long", day: "numeric" };
+  const FormattedDate = new Date(date);
 
   const assessments = value.assessments;
   const container = value.div;
 
-  DateTitleDiv = document.createElement('div');
-  DateTitleDiv.classList.add('upcoming-date-title');
+  DateTitleDiv = document.createElement("div");
+  DateTitleDiv.classList.add("upcoming-date-title");
 
   if (datecase) {
-    datetitle = document.createElement('h5');
-    datetitle.classList.add('upcoming-special-day')
+    datetitle = document.createElement("h5");
+    datetitle.classList.add("upcoming-special-day");
     datetitle.innerText = datecase;
     DateTitleDiv.append(datetitle);
-    container.setAttribute('data-day', datecase);
+    container.setAttribute("data-day", datecase);
   }
 
-  DateTitle = document.createElement('h5')
+  DateTitle = document.createElement("h5");
   DateTitle.innerText = FormattedDate.toLocaleDateString("en-AU", options);
   DateTitleDiv.append(DateTitle);
 
-
-
   container.append(DateTitleDiv);
 
-  assessmentContainer = document.createElement('div')
-  assessmentContainer.classList.add('upcoming-date-assessments');
+  assessmentContainer = document.createElement("div");
+  assessmentContainer.classList.add("upcoming-date-assessments");
 
   for (let i = 0; i < assessments.length; i++) {
     const element = assessments[i];
-    item = document.createElement('div')
-    item.classList.add('upcoming-assessment');
-    item.setAttribute('data-subject', element.code);
+    item = document.createElement("div");
+    item.classList.add("upcoming-assessment");
+    item.setAttribute("data-subject", element.code);
     item.id = `assessment${element.id}`;
 
     item.style = element.colour;
 
-    titlediv = document.createElement('div');
-    titlediv.classList.add('upcoming-subject-title');
+    titlediv = document.createElement("div");
+    titlediv.classList.add("upcoming-subject-title");
 
-    titlesvg = stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
+    titlesvg =
+      stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
     <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
-    </svg>`).firstChild
+    </svg>`).firstChild;
     titlediv.append(titlesvg);
 
-    detailsdiv = document.createElement('div');
-    detailsdiv.classList.add('upcoming-details');
-    detailstitle = document.createElement('h5');
+    detailsdiv = document.createElement("div");
+    detailsdiv.classList.add("upcoming-details");
+    detailstitle = document.createElement("h5");
     detailstitle.innerText = `${element.subject} assessment`;
-    subject = document.createElement('p');
+    subject = document.createElement("p");
     subject.innerText = element.title;
-    subject.classList.add('upcoming-assessment-title');
-    subject.onclick = function () { location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}` };
+    subject.classList.add("upcoming-assessment-title");
+    subject.onclick = function () {
+      location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
+    };
     detailsdiv.append(detailstitle);
     detailsdiv.append(subject);
 
@@ -2456,7 +2585,11 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ "assessment": element.id, "metaclass": element.metaclassID, "student": 69 })
+      body: JSON.stringify({
+        assessment: element.id,
+        metaclass: element.metaclassID,
+        student: 69,
+      }),
     })
       .then((result) => result.json())
       .then((response) => {
@@ -2466,30 +2599,24 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
           // ticksvg = stringToHTML(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="var(--item-colour)" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>`).firstChild
           // ticksvg.classList.add('upcoming-tick');
           // assessment.append(ticksvg);
-          submittedtext = document.createElement('div')
-          submittedtext.classList.add('upcoming-submittedtext');
+          submittedtext = document.createElement("div");
+          submittedtext.classList.add("upcoming-submittedtext");
           submittedtext.innerText = "Submitted";
           assessment.append(submittedtext);
-
-
         }
-      })
-
-
-
+      });
   }
 
   container.append(assessmentContainer);
 
   return container;
-
 }
 
 function CheckSpecialDay(date1, date2) {
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
-    (date1.getDate() - 1) === date2.getDate()
+    date1.getDate() - 1 === date2.getDate()
   ) {
     return "Yesterday";
   }
@@ -2504,7 +2631,7 @@ function CheckSpecialDay(date1, date2) {
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
-    (date1.getDate() + 1) === date2.getDate()
+    date1.getDate() + 1 === date2.getDate()
   ) {
     TomorrowinUpcoming = true;
     return "Tomorrow";
@@ -2512,76 +2639,92 @@ function CheckSpecialDay(date1, date2) {
 }
 
 function CreateDateCheckedDiv(text, date) {
-  upcomingitemcontainer = document.querySelector('#upcoming-items')
-  container = CreateElement(type = 'div', class_ = 'upcoming-date-container');
-  datecontainer = CreateElement(type = 'div', class_ = 'upcoming-date-title');
-  titletext = CreateElement(type = 'h5', class_ = 'upcoming-special-day', id = undefined, innerText = text);
-  titledate = CreateElement(type = 'h5', class_ = undefined, id = undefined, innerText = date);
+  upcomingitemcontainer = document.querySelector("#upcoming-items");
+  container = CreateElement(
+    (type = "div"),
+    (class_ = "upcoming-date-container"),
+  );
+  datecontainer = CreateElement(
+    (type = "div"),
+    (class_ = "upcoming-date-title"),
+  );
+  titletext = CreateElement(
+    (type = "h5"),
+    (class_ = "upcoming-special-day"),
+    (id = undefined),
+    (innerText = text),
+  );
+  titledate = CreateElement(
+    (type = "h5"),
+    (class_ = undefined),
+    (id = undefined),
+    (innerText = date),
+  );
 
-  textcontainer = CreateElement('div', 'upcoming-blank')
-  textblank = CreateElement('p');
-  textblank.innerText = 'No assessments due';
+  textcontainer = CreateElement("div", "upcoming-blank");
+  textblank = CreateElement("p");
+  textblank.innerText = "No assessments due";
 
-  textcontainer.append(textblank)
+  textcontainer.append(textblank);
 
   datecontainer.append(titletext);
   datecontainer.append(titledate);
 
   container.append(datecontainer);
-  container.append(textcontainer)
+  container.append(textcontainer);
   upcomingitemcontainer.append(container);
 }
 
-
-
 function CreateSubjectFilter(subjectcode, itemcolour, checked) {
-  label = CreateElement('label', "upcoming-checkbox-container")
+  label = CreateElement("label", "upcoming-checkbox-container");
   label.innerText = subjectcode;
-  input = CreateElement('input');
+  input = CreateElement("input");
   input.type = "checkbox";
   input.checked = checked;
   input.id = `filter-${subjectcode}`;
   label.style = itemcolour;
-  span = CreateElement('span', 'upcoming-checkmark')
+  span = CreateElement("span", "upcoming-checkmark");
   label.append(input);
   label.append(span);
 
-  input.addEventListener('change', function (change) {
+  input.addEventListener("change", function (change) {
     chrome.storage.local.get(null, function (storage) {
       filters = storage.subjectfilters;
-      id = change.target.id.split('-')[1]
-      filters[id] = change.target.checked
+      id = change.target.id.split("-")[1];
+      filters[id] = change.target.checked;
 
-      chrome.storage.local.set({ subjectfilters: filters })
-    })
-  })
+      chrome.storage.local.set({ subjectfilters: filters });
+    });
+  });
 
-  return label
+  return label;
 }
 
 function CreateFilters(subjects) {
   chrome.storage.local.get(null, function (result) {
-    filteroptions = result.subjectfilters
+    filteroptions = result.subjectfilters;
 
-    filterdiv = document.querySelector('#upcoming-filters')
+    filterdiv = document.querySelector("#upcoming-filters");
     for (let i = 0; i < subjects.length; i++) {
       const element = subjects[i];
       if (!filteroptions.hasOwnProperty(element.code)) {
         filteroptions[element.code] = true;
         chrome.storage.local.set({ subjectfilters: filteroptions });
       }
-      elementdiv = CreateSubjectFilter(element.code, element.colour, filteroptions[element.code])
+      elementdiv = CreateSubjectFilter(
+        element.code,
+        element.colour,
+        filteroptions[element.code],
+      );
 
-      filterdiv.append(elementdiv)
+      filterdiv.append(elementdiv);
     }
-  })
+  });
 }
 
-
-
 function CreateUpcomingSection(assessments) {
-  upcomingitemcontainer = document.querySelector('#upcoming-items')
-  homecontainer = document.querySelector('#home-container')
+  upcomingitemcontainer = document.querySelector("#upcoming-items");
+  homecontainer = document.querySelector("#home-container");
   overdueDates = [];
   upcomingDates = {};
   TodayinUpcoming = false;
@@ -2597,7 +2740,7 @@ function CreateUpcomingSection(assessments) {
     const element = assessments[i];
     assessmentdue = new Date(element.due);
 
-    CheckSpecialDay(Today, assessmentdue)
+    CheckSpecialDay(Today, assessmentdue);
     if (assessmentdue < Today) {
       if (!CheckSpecialDay(Today, assessmentdue)) {
         overdueDates.push(element);
@@ -2606,7 +2749,7 @@ function CreateUpcomingSection(assessments) {
       }
     }
   }
-  var options = { weekday: 'long', month: 'long', day: 'numeric' };
+  var options = { weekday: "long", month: "long", day: "numeric" };
   if (!TodayinUpcoming) {
     text = Today.toLocaleDateString("en-AU", options);
     CreateDateCheckedDiv("Today", text);
@@ -2615,7 +2758,7 @@ function CreateUpcomingSection(assessments) {
   function addTomorrowinUpcoming() {
     // var TomorrowDate = new Date(date);
     var TomorrowDate = new Date();
-    TomorrowDate.setDate((TomorrowDate.getDate() + 1))
+    TomorrowDate.setDate(TomorrowDate.getDate() + 1);
     textDate = TomorrowDate.toLocaleDateString("en-AU", options);
     CreateDateCheckedDiv("Tomorrow", textDate);
   }
@@ -2627,46 +2770,42 @@ function CreateUpcomingSection(assessments) {
   GetLessonColours().then((colours) => {
     subjects = colours;
     for (let i = 0; i < assessments.length; i++) {
+      subjectname = `timetable.subject.colour.${assessments[i].code}`;
 
-      subjectname = `timetable.subject.colour.${assessments[i].code}`
-
-      subject = subjects.find(element => element.name === subjectname)
+      subject = subjects.find((element) => element.name === subjectname);
       if (!subject) {
-        assessments[i].colour = `--item-colour: #8e8e8e;`
-      }
-      else {
-        assessments[i].colour = `--item-colour: ${subject.value};`
+        assessments[i].colour = `--item-colour: #8e8e8e;`;
+      } else {
+        assessments[i].colour = `--item-colour: ${subject.value};`;
         result = GetThresholdofHex(subject.value);
       }
     }
 
     for (let i = 0; i < activeSubjects.length; i++) {
       const element = activeSubjects[i];
-      subjectname = `timetable.subject.colour.${element.code}`
-      colour = colours.find(element => element.name === subjectname);
+      subjectname = `timetable.subject.colour.${element.code}`;
+      colour = colours.find((element) => element.name === subjectname);
       if (!colour) {
-        element.colour = `--item-colour: #8e8e8e;`
-      }
-      else {
-        element.colour = `--item-colour: ${colour.value};`
+        element.colour = `--item-colour: #8e8e8e;`;
+      } else {
+        element.colour = `--item-colour: ${colour.value};`;
         result = GetThresholdofHex(colour.value);
         if (result > 300) {
           element.invert = true;
         }
       }
-
     }
 
-
     CreateFilters(activeSubjects);
-
-
 
     for (let i = 0; i < assessments.length; i++) {
       const element = assessments[i];
       if (!upcomingDates[element.due]) {
         dateObj = new Object();
-        dateObj.div = CreateElement(type = 'div', class_ = 'upcoming-date-container')
+        dateObj.div = CreateElement(
+          (type = "div"),
+          (class_ = "upcoming-date-container"),
+        );
         dateObj.assessments = [];
 
         upcomingDates[element.due] = dateObj;
@@ -2676,44 +2815,48 @@ function CreateUpcomingSection(assessments) {
     }
 
     for (var date in upcomingDates) {
-
       assessmentdue = new Date(upcomingDates[date].assessments[0].due);
       specialcase = CheckSpecialDay(Today, assessmentdue);
 
       if (specialcase) {
-        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date], datecase = specialcase);
+        assessmentDate = createAssessmentDateDiv(
+          date,
+          upcomingDates[date],
+          (datecase = specialcase),
+        );
       } else {
         assessmentDate = createAssessmentDateDiv(date, upcomingDates[date]);
       }
 
-      if (specialcase === 'Yesterday') {
-        upcomingitemcontainer.insertBefore(assessmentDate, upcomingitemcontainer.firstChild);
+      if (specialcase === "Yesterday") {
+        upcomingitemcontainer.insertBefore(
+          assessmentDate,
+          upcomingitemcontainer.firstChild,
+        );
       } else {
-        upcomingitemcontainer.append(assessmentDate)
+        upcomingitemcontainer.append(assessmentDate);
       }
 
-      if (specialcase === 'Today' && !TomorrowinUpcoming) {
+      if (specialcase === "Today" && !TomorrowinUpcoming) {
         addTomorrowinUpcoming();
       }
-
-
     }
     chrome.storage.local.get(null, function (result) {
       FilterUpcomingAssessments(result.subjectfilters);
-    })
-  })
+    });
+  });
 }
 
 function AddPlaceHolderToParent(parent, numberofassessments) {
-  textcontainer = CreateElement('div', 'upcoming-blank')
-  textblank = CreateElement('p', 'upcoming-hiddenassessment');
+  textcontainer = CreateElement("div", "upcoming-blank");
+  textblank = CreateElement("p", "upcoming-hiddenassessment");
   s = "";
   if (numberofassessments > 1) {
     s = "s";
   }
   textblank.innerText = `${numberofassessments} hidden assessment${s} due`;
   textcontainer.append(textblank);
-  textcontainer.setAttribute('data-hidden', true);
+  textcontainer.setAttribute("data-hidden", true);
 
   parent.append(textcontainer);
 }
@@ -2726,47 +2869,47 @@ function FilterUpcomingAssessments(subjectoptions) {
       const element = subjectdivs[i];
 
       if (!subjectoptions[item]) {
-        element.classList.add('hidden');
+        element.classList.add("hidden");
       }
       if (subjectoptions[item]) {
-        element.classList.remove('hidden');
+        element.classList.remove("hidden");
       }
-      element.parentNode.classList.remove('hidden');
+      element.parentNode.classList.remove("hidden");
 
-      children = element.parentNode.parentNode.children
+      children = element.parentNode.parentNode.children;
       for (let i = 0; i < children.length; i++) {
         const element = children[i];
-        if (element.hasAttribute('data-hidden')) {
+        if (element.hasAttribute("data-hidden")) {
           element.remove();
         }
       }
 
-      if (element.parentNode.children.length == element.parentNode.querySelectorAll(".hidden").length) {
+      if (
+        element.parentNode.children.length ==
+        element.parentNode.querySelectorAll(".hidden").length
+      ) {
         if (element.parentNode.querySelectorAll(".hidden").length > 0) {
-          if (!element.parentNode.parentNode.hasAttribute('data-day')) {
-            element.parentNode.parentNode.classList.add('hidden');
+          if (!element.parentNode.parentNode.hasAttribute("data-day")) {
+            element.parentNode.parentNode.classList.add("hidden");
           } else {
-            AddPlaceHolderToParent(element.parentNode.parentNode, element.parentNode.querySelectorAll(".hidden").length)
+            AddPlaceHolderToParent(
+              element.parentNode.parentNode,
+              element.parentNode.querySelectorAll(".hidden").length,
+            );
           }
         }
-
-
-      }
-      else {
-        element.parentNode.parentNode.classList.remove('hidden');
+      } else {
+        element.parentNode.parentNode.classList.remove("hidden");
       }
     }
-
-
   }
-
 }
 
 chrome.storage.onChanged.addListener(function (changes) {
   if (changes.subjectfilters) {
     FilterUpcomingAssessments(changes.subjectfilters.newValue);
   }
-})
+});
 
 function GetLessonColours() {
   func = fetch(`${location.origin}/seqta/student/load/prefs?`, {
@@ -2774,11 +2917,11 @@ function GetLessonColours() {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
     },
-    body: JSON.stringify({ "request": "userPrefs", "asArray": true, "user": 69 })
-  })
+    body: JSON.stringify({ request: "userPrefs", asArray: true, user: 69 }),
+  });
   return func
     .then((result) => result.json())
-    .then(response => (response.payload))
+    .then((response) => response.payload);
 }
 
 function CreateCustomShortcutDiv(element) {
@@ -2790,7 +2933,9 @@ function CreateCustomShortcutDiv(element) {
   shortcutdiv.classList.add("shortcut");
   shortcutdiv.classList.add("customshortcut");
 
-  image = stringToHTML(`<svg viewBox="0 0 40 40" style="width:39px;height:39px"><text font-size="32" font-weight="bold" fill="var(--text-primary)" x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${element.icon}</text></svg>`).firstChild
+  image = stringToHTML(
+    `<svg viewBox="0 0 40 40" style="width:39px;height:39px"><text font-size="32" font-weight="bold" fill="var(--text-primary)" x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${element.icon}</text></svg>`,
+  ).firstChild;
   image.classList.add("shortcuticondiv");
   var text = document.createElement("p");
   text.textContent = element.name;
@@ -2805,7 +2950,8 @@ function AddCustomShortcutsToPage() {
   chrome.storage.local.get(["customshortcuts"], function (result) {
     var customshortcuts = Object.values(result)[0];
     if (customshortcuts.length > 0) {
-      document.getElementsByClassName("shortcut-container")[0].style.display = "block";
+      document.getElementsByClassName("shortcut-container")[0].style.display =
+        "block";
       for (let i = 0; i < customshortcuts.length; i++) {
         const element = customshortcuts[i];
         CreateCustomShortcutDiv(element);
@@ -2828,15 +2974,15 @@ function SendHomePage() {
     var main = document.getElementById("main");
     main.innerHTML = "";
 
-    const titlediv = document.getElementById('title').firstChild;
+    const titlediv = document.getElementById("title").firstChild;
     titlediv.innerText = "Home";
-    document.querySelector('link[rel*="icon"]').href = chrome.runtime.getURL("icons/icon-48.png");
+    document.querySelector('link[rel*="icon"]').href =
+      chrome.runtime.getURL("icons/icon-48.png");
 
     currentSelectedDate = new Date();
 
     // Creates the root of the home page added to the main div
-    var htmlStr =
-      `<div class="home-root"><div class="home-container" id="home-container"></div></div>`;
+    var htmlStr = `<div class="home-root"><div class="home-container" id="home-container"></div></div>`;
 
     var html = stringToHTML(htmlStr);
     // Appends the html file to main div
@@ -2853,7 +2999,6 @@ function SendHomePage() {
     // Replaces actual date with a selected date. Used for testing.
     // TodayFormatted = "2020-08-31";
 
-
     // Creates the shortcut container into the home container
     var ShortcutStr = `<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>`;
     var Shortcut = stringToHTML(ShortcutStr);
@@ -2866,49 +3011,64 @@ function SendHomePage() {
     // Appends the timetable container into the home container
     document.getElementById("home-container").append(Timetable.firstChild);
 
-    var timetablearrowback = document.getElementById('home-timetable-back')
-    var timetablearrowforward = document.getElementById('home-timetable-forward')
+    var timetablearrowback = document.getElementById("home-timetable-back");
+    var timetablearrowforward = document.getElementById(
+      "home-timetable-forward",
+    );
 
     function SetTimetableSubtitle() {
-      var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
+      var homelessonsubtitle = document.getElementById("home-lesson-subtitle");
       const date = new Date();
-      if (date.getYear() == currentSelectedDate.getYear() && date.getMonth() == currentSelectedDate.getMonth()) {
+      if (
+        date.getYear() == currentSelectedDate.getYear() &&
+        date.getMonth() == currentSelectedDate.getMonth()
+      ) {
         if (date.getDate() == currentSelectedDate.getDate()) {
           // Change text to Today's Lessons
           homelessonsubtitle.innerText = "Today's Lessons";
-        }
-        else if ((date.getDate() - 1) == currentSelectedDate.getDate()) {
+        } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
           // Change text to Yesterday's Lessons
           homelessonsubtitle.innerText = "Yesterday's Lessons";
-        }
-        else if ((date.getDate() + 1) == currentSelectedDate.getDate()) {
+        } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
           // Change text to Tomorrow's Lessons
           homelessonsubtitle.innerText = "Tomorrow's Lessons";
-        }
-        else {
+        } else {
           // Change text to date of the day
-          homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString('en-us', { weekday: 'short' })} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+          homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+            "en-us",
+            { weekday: "short" },
+          )} ${currentSelectedDate.toLocaleDateString("en-au")}`;
         }
-      }
-      else {
+      } else {
         // Change text to date of the day
-        homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString('en-us', { weekday: 'short' })} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+        homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+          "en-us",
+          { weekday: "short" },
+        )} ${currentSelectedDate.toLocaleDateString("en-au")}`;
       }
     }
 
     function changeTimetable(value) {
       currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
-      FormattedDate = currentSelectedDate.getFullYear() + "-" + (currentSelectedDate.getMonth() + 1) + "-" + currentSelectedDate.getDate();
+      FormattedDate =
+        currentSelectedDate.getFullYear() +
+        "-" +
+        (currentSelectedDate.getMonth() + 1) +
+        "-" +
+        currentSelectedDate.getDate();
       callHomeTimetable(FormattedDate, true);
       SetTimetableSubtitle();
     }
 
-    timetablearrowback.addEventListener('click', function () { changeTimetable(-1) })
-    timetablearrowforward.addEventListener('click', function () { changeTimetable(1) })
+    timetablearrowback.addEventListener("click", function () {
+      changeTimetable(-1);
+    });
+    timetablearrowforward.addEventListener("click", function () {
+      changeTimetable(1);
+    });
 
-
-    assessmentsicon = `<svg style="width:24px;height:24px;border-radius:0;" viewBox="0 0 24 24"><path fill="currentColor" d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path></svg>`
-    coursesicon = `<svg style="width:24px;height:24px;border-radius:0;" viewBox="0 0 24 24"><path fill="currentColor" d="M19 1L14 6V17L19 12.5V1M21 5V18.5C19.9 18.15 18.7 18 17.5 18C15.8 18 13.35 18.65 12 19.5V6C10.55 4.9 8.45 4.5 6.5 4.5C4.55 4.5 2.45 4.9 1 6V20.65C1 20.9 1.25 21.15 1.5 21.15C1.6 21.15 1.65 21.1 1.75 21.1C3.1 20.45 5.05 20 6.5 20C8.45 20 10.55 20.4 12 21.5C13.35 20.65 15.8 20 17.5 20C19.15 20 20.85 20.3 22.25 21.05C22.35 21.1 22.4 21.1 22.5 21.1C22.75 21.1 23 20.85 23 20.6V6C22.4 5.55 21.75 5.25 21 5M10 18.41C8.75 18.09 7.5 18 6.5 18C5.44 18 4.18 18.19 3 18.5V7.13C3.91 6.73 5.14 6.5 6.5 6.5C7.86 6.5 9.09 6.73 10 7.13V18.41Z"></path></svg>`
+    assessmentsicon = `<svg style="width:24px;height:24px;border-radius:0;" viewBox="0 0 24 24"><path fill="currentColor" d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path></svg>`;
+    coursesicon = `<svg style="width:24px;height:24px;border-radius:0;" viewBox="0 0 24 24"><path fill="currentColor" d="M19 1L14 6V17L19 12.5V1M21 5V18.5C19.9 18.15 18.7 18 17.5 18C15.8 18 13.35 18.65 12 19.5V6C10.55 4.9 8.45 4.5 6.5 4.5C4.55 4.5 2.45 4.9 1 6V20.65C1 20.9 1.25 21.15 1.5 21.15C1.6 21.15 1.65 21.1 1.75 21.1C3.1 20.45 5.05 20 6.5 20C8.45 20 10.55 20.4 12 21.5C13.35 20.65 15.8 20 17.5 20C19.15 20 20.85 20.3 22.25 21.05C22.35 21.1 22.4 21.1 22.5 21.1C22.75 21.1 23 20.85 23 20.6V6C22.4 5.55 21.75 5.25 21 5M10 18.41C8.75 18.09 7.5 18 6.5 18C5.44 18 4.18 18.19 3 18.5V7.13C3.91 6.73 5.14 6.5 6.5 6.5C7.86 6.5 9.09 6.73 10 7.13V18.41Z"></path></svg>`;
 
     function createNewShortcut(link, icon, viewBox, title) {
       // Creates the stucture and element information for each seperate shortcut
@@ -2918,7 +3078,9 @@ function SendHomePage() {
       var shortcutdiv = document.createElement("div");
       shortcutdiv.classList.add("shortcut");
 
-      image = stringToHTML(`<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`).firstChild
+      image = stringToHTML(
+        `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
+      ).firstChild;
       image.classList.add("shortcuticondiv");
       var text = document.createElement("p");
       text.textContent = title;
@@ -2933,12 +3095,12 @@ function SendHomePage() {
       var shortcuts = Object.values(result)[0];
       for (let i = 0; i < shortcuts.length; i++) {
         if (shortcuts[i].enabled) {
-          Itemname = (shortcuts[i].name).replace(/ /g, '')
+          Itemname = shortcuts[i].name.replace(/ /g, "");
           createNewShortcut(
             ShortcutLinks[Itemname].link,
             ShortcutLinks[Itemname].icon,
             ShortcutLinks[Itemname].viewBox,
-            shortcuts[i].name
+            shortcuts[i].name,
           );
         }
       }
@@ -2947,38 +3109,38 @@ function SendHomePage() {
       // Checks if shortcut container is empty
       if (document.getElementById("shortcuts").childElementCount == 0) {
         // If there are no shortcuts, hide the container
-        document.getElementsByClassName("shortcut-container")[0].style.display = "none";
+        document.getElementsByClassName("shortcut-container")[0].style.display =
+          "none";
       }
     });
 
-
     // Creates the upcoming container and appends to the home container
-    var upcomingcontainer = document.createElement('div');
-    upcomingcontainer.classList.add('upcoming-container');
-    upcomingcontainer.classList.add('border');
+    var upcomingcontainer = document.createElement("div");
+    upcomingcontainer.classList.add("upcoming-container");
+    upcomingcontainer.classList.add("border");
 
-
-    upcomingtitlediv = CreateElement('div', 'upcoming-title');
-    upcomingtitle = document.createElement('h2');
-    upcomingtitle.classList.add('home-subtitle');
-    upcomingtitle.innerText = 'Upcoming Assessments';
+    upcomingtitlediv = CreateElement("div", "upcoming-title");
+    upcomingtitle = document.createElement("h2");
+    upcomingtitle.classList.add("home-subtitle");
+    upcomingtitle.innerText = "Upcoming Assessments";
     upcomingtitlediv.append(upcomingtitle);
 
-    upcomingfilterdiv = CreateElement('div', 'upcoming-filters', 'upcoming-filters');
-    upcomingtitlediv.append(upcomingfilterdiv)
+    upcomingfilterdiv = CreateElement(
+      "div",
+      "upcoming-filters",
+      "upcoming-filters",
+    );
+    upcomingtitlediv.append(upcomingfilterdiv);
 
     upcomingcontainer.append(upcomingtitlediv);
 
-
-
-    upcomingitems = document.createElement('div');
-    upcomingitems.id = 'upcoming-items';
-    upcomingitems.classList.add('upcoming-items');
+    upcomingitems = document.createElement("div");
+    upcomingitems.id = "upcoming-items";
+    upcomingitems.classList.add("upcoming-items");
 
     upcomingcontainer.append(upcomingitems);
 
     document.getElementById("home-container").append(upcomingcontainer);
-
 
     // Creates the notices container into the home container
     var NoticesStr = `<div class="notices-container border"><h2 class="home-subtitle">Notices</h2><div class="notice-container" id="notice-container"></div></div>`;
@@ -2988,14 +3150,9 @@ function SendHomePage() {
 
     callHomeTimetable(TodayFormatted);
 
-
     // Sends similar HTTP Post Request for the notices
     var xhr2 = new XMLHttpRequest();
-    xhr2.open(
-      "POST",
-      `${location.origin}/seqta/student/load/notices?`,
-      true
-    );
+    xhr2.open("POST", `${location.origin}/seqta/student/load/notices?`, true);
     xhr2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
     xhr2.onreadystatechange = function () {
@@ -3010,7 +3167,6 @@ function SendHomePage() {
             dummyNotice.classList.add("dummynotice");
             NoticeContainer.append(dummyNotice);
           }
-
         } else {
           if (!NoticeContainer.innerText) {
             // For each element in the response json:
@@ -3020,33 +3176,41 @@ function SendHomePage() {
                 var NewNotice = document.createElement("div");
                 NewNotice.classList.add("notice");
                 var title = stringToHTML(
-                  `<h3 style="color:var(--colour)">` + NoticesPayload.payload[i].title + `</h3>`
+                  `<h3 style="color:var(--colour)">` +
+                    NoticesPayload.payload[i].title +
+                    `</h3>`,
                 );
                 NewNotice.append(title.firstChild);
 
                 if (NoticesPayload.payload[i].label_title != undefined) {
                   var label = stringToHTML(
-                    `<h5 style="color:var(--colour)">` + NoticesPayload.payload[i].label_title + `</h5>`
+                    `<h5 style="color:var(--colour)">` +
+                      NoticesPayload.payload[i].label_title +
+                      `</h5>`,
                   );
                   NewNotice.append(label.firstChild);
                 }
 
                 var staff = stringToHTML(
-                  `<h6 style="color:var(--colour)">` + NoticesPayload.payload[i].staff + `</h6>`
+                  `<h6 style="color:var(--colour)">` +
+                    NoticesPayload.payload[i].staff +
+                    `</h6>`,
                 );
                 NewNotice.append(staff.firstChild);
                 // Converts the string into HTML
-                var content = stringToHTML(NoticesPayload.payload[i].contents, styles=true);
+                var content = stringToHTML(
+                  NoticesPayload.payload[i].contents,
+                  (styles = true),
+                );
                 for (let i = 0; i < content.childNodes.length; i++) {
                   NewNotice.append(content.childNodes[i]);
                 }
                 // Gets the colour for the top section of each notice
 
-
                 var colour = NoticesPayload.payload[i].colour;
-                if (typeof (colour) == "string") {
+                if (typeof colour == "string") {
                   rgb = GetThresholdofHex(colour);
-                  DarkModeResult = result.DarkMode
+                  DarkModeResult = result.DarkMode;
                   if (rgb < 100 && DarkModeResult) {
                     colour = undefined;
                   }
@@ -3060,7 +3224,6 @@ function SendHomePage() {
                 NewNotice.append(colourbar);
                 // Appends the new notice into the notice container
                 NoticeContainer.append(NewNotice);
-
               }
             });
           }
@@ -3074,26 +3237,20 @@ function SendHomePage() {
     chrome.storage.local.get(null, function (result) {
       if (result.notificationcollector) {
         var xhr3 = new XMLHttpRequest();
-        xhr3.open(
-          "POST",
-          `${location.origin}/seqta/student/heartbeat?`,
-          true
-        );
+        xhr3.open("POST", `${location.origin}/seqta/student/heartbeat?`, true);
         xhr3.setRequestHeader(
           "Content-Type",
-          "application/json; charset=utf-8"
+          "application/json; charset=utf-8",
         );
         xhr3.onreadystatechange = function () {
           if (xhr3.readyState === 4) {
             var Notifications = JSON.parse(xhr3.response);
             var alertdiv = document.getElementsByClassName(
-              "notifications__bubble___1EkSQ"
+              "notifications__bubble___1EkSQ",
             )[0];
-            if (typeof alertdiv == 'undefined') {
-              console.log("[BetterSEQTA] No notifications currently")
-
-            }
-            else {
+            if (typeof alertdiv == "undefined") {
+              console.log("[BetterSEQTA] No notifications currently");
+            } else {
               alertdiv.textContent = Notifications.payload.notifications.length;
             }
           }
@@ -3102,54 +3259,45 @@ function SendHomePage() {
           JSON.stringify({
             timestamp: "1970-01-01 00:00:00.0",
             hash: "#?page=/home",
-          })
+          }),
         );
       }
     });
 
-    GetUpcomingAssessments()
-      .then((assessments) => {
-        GetActiveClasses().then((classes) => {
-
-          // Gets all subjects for the student
-          for (let i = 0; i < classes.length; i++) {
-            const element = classes[i];
-            if (element.hasOwnProperty('active')) {
-              // Finds the active class list with the current subjects
-              activeClassList = classes[i]
-            }
+    GetUpcomingAssessments().then((assessments) => {
+      GetActiveClasses().then((classes) => {
+        // Gets all subjects for the student
+        for (let i = 0; i < classes.length; i++) {
+          const element = classes[i];
+          if (element.hasOwnProperty("active")) {
+            // Finds the active class list with the current subjects
+            activeClassList = classes[i];
           }
-          activeSubjects = activeClassList.subjects
+        }
+        activeSubjects = activeClassList.subjects;
 
-          activeSubjectCodes = []
-          // Gets the code for each of the subjects and puts them in an array
-          for (let i = 0; i < activeSubjects.length; i++) {
-            const element = activeSubjects[i];
-            activeSubjectCodes.push(element.code)
+        activeSubjectCodes = [];
+        // Gets the code for each of the subjects and puts them in an array
+        for (let i = 0; i < activeSubjects.length; i++) {
+          const element = activeSubjects[i];
+          activeSubjectCodes.push(element.code);
+        }
+
+        CurrentAssessments = [];
+        for (let i = 0; i < assessments.length; i++) {
+          const element = assessments[i];
+          if (activeSubjectCodes.includes(element.code)) {
+            CurrentAssessments.push(element);
           }
+        }
 
-          CurrentAssessments = []
-          for (let i = 0; i < assessments.length; i++) {
-            const element = assessments[i];
-            if (activeSubjectCodes.includes(element.code)) {
-              CurrentAssessments.push(element)
-            }
-          }
+        CurrentAssessments.sort(comparedate);
 
+        CreateUpcomingSection(CurrentAssessments, activeSubjects);
 
-
-          CurrentAssessments.sort(comparedate);
-
-
-          CreateUpcomingSection(CurrentAssessments, activeSubjects);
-
-
-          // Run function to check if gap between assessments > 7 days?
-
-        })
-
+        // Run function to check if gap between assessments > 7 days?
       });
-
+    });
   }, 8);
 }
 
@@ -3168,50 +3316,48 @@ function SendNewsPage() {
     main.innerHTML = "";
 
     // Creates the root of the home page added to the main div
-    var htmlStr =
-      `<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>`;
+    var htmlStr = `<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>`;
 
     var html = stringToHTML(htmlStr);
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
     main.append(html.firstChild);
 
-    const titlediv = document.getElementById('title').firstChild;
+    const titlediv = document.getElementById("title").firstChild;
     titlediv.innerText = "News";
     AppendLoadingSymbol("newsloading", "#news-container");
 
-
     chrome.runtime.sendMessage({ type: "sendNews" }, function (response) {
       newsarticles = response.news.articles;
-      var newscontainer = document.querySelector('#news-container');
-      document.getElementById('newsloading').remove();
+      var newscontainer = document.querySelector("#news-container");
+      document.getElementById("newsloading").remove();
       for (let i = 0; i < newsarticles.length; i++) {
-
-        newsarticle = document.createElement('a');
-        newsarticle.classList.add('NewsArticle');
+        newsarticle = document.createElement("a");
+        newsarticle.classList.add("NewsArticle");
         newsarticle.href = newsarticles[i].url;
-        newsarticle.target = '_blank';
+        newsarticle.target = "_blank";
 
-        articleimage = document.createElement('div');
-        articleimage.classList.add('articleimage')
+        articleimage = document.createElement("div");
+        articleimage.classList.add("articleimage");
 
-        if (newsarticles[i].urlToImage == 'null') {
-          articleimage.style.backgroundImage = `url(${chrome.runtime.getURL("icons/betterseqta-light-outline.png")})`;
-          articleimage.style.width = '20%'
-          articleimage.style.margin = '0 7.5%';
-        }
-        else {
+        if (newsarticles[i].urlToImage == "null") {
+          articleimage.style.backgroundImage = `url(${chrome.runtime.getURL(
+            "icons/betterseqta-light-outline.png",
+          )})`;
+          articleimage.style.width = "20%";
+          articleimage.style.margin = "0 7.5%";
+        } else {
           articleimage.style.backgroundImage = `url(${newsarticles[i].urlToImage})`;
         }
 
-        articletext = document.createElement('div');
-        articletext.classList.add('ArticleText')
-        title = document.createElement('a');
+        articletext = document.createElement("div");
+        articletext.classList.add("ArticleText");
+        title = document.createElement("a");
         title.innerText = newsarticles[i].title;
         title.href = newsarticles[i].url;
-        title.target = '_blank';
+        title.target = "_blank";
 
-        description = document.createElement('p');
+        description = document.createElement("p");
         description.innerHTML = newsarticles[i].description;
 
         articletext.append(title);
@@ -3220,13 +3366,8 @@ function SendNewsPage() {
         newsarticle.append(articleimage);
         newsarticle.append(articletext);
         newscontainer.append(newsarticle);
-
-
       }
-
     });
-
-
   }, 8);
 }
 
@@ -3245,6 +3386,5 @@ function LoadInit() {
     if (result.onoff) {
       SendHomePage();
     }
-
   });
 }

@@ -1,78 +1,48 @@
 {
-"manifest_version": 3,
-    "name": "Even BetterSEQTA",
-    "version": "3.0.0",
-    "description": "An extension that makes the SEQTA experience customizable and unique to you!",
-    "icons": {
-        "48": "icons/icon-48.png"
+  "manifest_version": 3,
+  "name": "Even BetterSEQTA",
+  "version": "3.0.0",
+  "description": "An extension that makes the SEQTA experience customizable and unique to you!",
+  "icons": {
+    "48": "icons/icon-48.png"
+  },
+  "action": {
+    "browser_style": true,
+    "default_popup": "popup/info.html",
+    "default_icon": {
+      "32": "icons/icon-32.png",
+      "64": "icons/icon-64.png"
+    }
+  },
+  "permissions": ["tabs", "notifications", "storage"],
+  "host_permissions": ["https://newsapi.org/", "*://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "optional_permissions": ["declarativeContent"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.edu.au/*"],
+      "js": ["purify.min.js", "SEQTA.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["*://*/*"]
     },
-    "action": {
-        "browser_style": true,
-        "default_popup": "popup/info.html",
-        "default_icon": {
-            "32": "icons/icon-32.png",
-            "64": "icons/icon-64.png"
-        }
+    {
+      "resources": ["images/*"],
+      "matches": ["*://*/*"]
     },
-    "permissions": [
-        "tabs",
-        "notifications",
-        "storage"
-    ],
-    "host_permissions": [
-        "https://newsapi.org/",
-	"*://*/*"
-    ],
-    "background": {
-	    "service_worker": "background.js"
+    {
+      "resources": ["inject/*"],
+      "matches": ["*://*/*"]
     },
-    "optional_permissions": [
-        "declarativeContent"
-    ],
-    "content_scripts": [
-        {
-            "matches": [
-                "https://*.edu.au/*"
-            ],
-            "js": [
-		            "purify.min.js",
-                "SEQTA.js"
-            ],
-            "run_at": "document_start"
-        }
-    ],
-    "web_accessible_resources": [
-	{
-        "resources": [
-        	"icons/*"
-      	],
-      	"matches": [
-        	"*://*/*"
-      	]
-	},
-	{
-	"resources": [
-        	"images/*"
-      	],
-      	"matches": [
-        	"*://*/*"
-      	]
-	},
-	{
-	"resources": [
-        	"inject/*"
-      	],
-      	"matches": [
-        	"*://*/*"
-      	]
-	},
-	{
-        "resources": [
-        	"popup/*"
-      	],
-      	"matches": [
-        	"*://*/*"
-      	]
-	}
-    ]
+    {
+      "resources": ["popup/*"],
+      "matches": ["*://*/*"]
+    }
+  ]
 }

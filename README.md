@@ -2,28 +2,29 @@
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
 # Even BetterSEQTA
+
 Forking the BetterSEQTA project to add extra functionality
 Looking for contributors!
 
 ## Table of contents
+
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 
-
 ## Features
 
-* Dark mode
+- Dark mode
   - Custom Background
-* Improved Styling/CSS
+- Improved Styling/CSS
   - Improved look for SEQTA Learn
-* Custom Home Page including:
+- Custom Home Page including:
   - Daily Lessons
   - Shortcuts
   - Easier Access Notices
-* Options to remove certain items from the side menu
-* Notification for next lesson (sent 5 minutes prior to lesson end)
-* Browser Support
+- Options to remove certain items from the side menu
+- Notification for next lesson (sent 5 minutes prior to lesson end)
+- Browser Support
   - Chrome Supported
   - Edge Supported
   - Brave Supported
@@ -32,14 +33,19 @@ Looking for contributors!
 ## Getting started
 
 1. Clone the repository
+
 ```
 git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
+
 2. Install dependencies
+
 ```
 npm install
 ```
+
 3. Run the dev script (it updates as you save files)
+
 ```
 npm run dev
 ```
