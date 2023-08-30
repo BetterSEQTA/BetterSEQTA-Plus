@@ -1,11 +1,12 @@
 {
   "name": "evenbetterseqta",
   "version": "1.0.0",
+  "type": "module",
   "description": "![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-light-full.png#gh-dark-mode-only) ![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-dark-full.png#gh-light-mode-only)",
   "main": "webpack.config.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "dev": "webpack --config webpack.config.js --watch"
+    "build": "webpack --config webpack.config.js --mode production",
+    "dev": "webpack --config webpack.config.js --watch --mode production"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +14,7 @@
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
+    "dompurify": "^3.0.5",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-webpack-plugin": "^4.0.1",
@@ -22,6 +24,7 @@
     "sass": "^1.65.1",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
+    "webextension-polyfill": "^0.10.0",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
   }

@@ -1,9 +1,14 @@
-const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const ESLintPlugin = require("eslint-webpack-plugin");
+import path from "path";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import ESLintPlugin from "eslint-webpack-plugin";
 
-module.exports = {
+
+export default {
+  target: "web",
+  node: {
+    __dirname: true
+  },
   performance: {
     hints: false,
     maxEntrypointSize: 512000,
@@ -13,9 +18,9 @@ module.exports = {
   entry: {
     SEQTA: "./src/SEQTA.js",
     background: "./src/background.js",
-    "inject-documentload": "./src/inject/documentload.css", // Entry for CSS
-    "inject-iframe": "./src/inject/iframe.css", // Entry for CSS
-    "inject-injected": "./src/inject/injected.css", // Entry for CSS
+    "inject/documentload": "./src/inject/documentload.css", // Entry for CSS
+    "inject/iframe": "./src/inject/iframe.css", // Entry for CSS
+    "inject/injected": "./src/inject/injected.css", // Entry for CSS
   },
   output: {
     filename: (pathData) => {
@@ -23,15 +28,22 @@ module.exports = {
       return name.includes("inject") ? `inject/${name}.js` : `${name}.js`;
     },
     // eslint-disable-next-line no-undef
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve("build"),
+    publicPath: "",
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
-        // eslint-disable-next-line no-undef
-        include: path.resolve(__dirname, "src"),
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 1
+            }
+          }
+        ]
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
@@ -45,17 +57,13 @@ module.exports = {
   plugins: [
     new ESLintPlugin(),
     new MiniCssExtractPlugin({
-      filename: (pathData) => {
-        const name = pathData.chunk.name.replace("inject-", "");
-        return name.includes("inject")
-          ? `inject/${name}.css`
-          : `inject/${name}.css`;
-      },
+      filename: "[name].css" 
     }),
     new CopyWebpackPlugin({
       patterns: [
         { from: "public", to: "." },
         { from: "src/inject/preview", to: "inject/preview" },
+        { from: "node_modules/webextension-polyfill/dist/browser-polyfill.js", to: "."},
       ],
     }),
   ],

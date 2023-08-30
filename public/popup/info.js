@@ -11,13 +11,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/*global chrome*/
+
 const onoffselection = document.querySelector("#onoff");
 const notificationcollector = document.querySelector("#notification");
 const lessonalert = document.querySelector("#lessonalert");
 const aboutsection = document.querySelector("#aboutsection");
 const shortcutsection = document.querySelector("#shortcutsection");
 const miscsection = document.querySelector("#miscsection");
-const mainpage = document.querySelector("#mainpage");
+//const mainpage = document.querySelector("#mainpage");
 const colorpicker = document.querySelector("#colorpicker");
 const animatedbk = document.querySelector("#animatedbk");
 const customshortcutbutton = document.getElementsByClassName(
@@ -63,7 +65,7 @@ function openGithub() {
     url: "https://github.com/SethBurkart123/EvenBetterSEQTA",
   });
 }
-
+/*
 function openPage(page) {
   mainpage.style.left = "-350px";
   page.style.right = "0px";
@@ -75,7 +77,7 @@ function backToMainMenu() {
   menupage.style.right = "-350px";
   shortcutpage.style.right = "-350px";
   miscpage.style.right = "-350px";
-}
+}*/
 
 function resetActive() {
   for (let i = 0; i < navbuttons.length; i++) {

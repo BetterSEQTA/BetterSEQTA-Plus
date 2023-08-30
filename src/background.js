@@ -1,3 +1,5 @@
+/*global chrome*/
+
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
@@ -8,7 +10,7 @@ function ReloadSEQTAPages() {
   });
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender) {
+chrome.runtime.onMessage.addListener(function (request) {
   if (request.type == "reloadTabs") {
     ReloadSEQTAPages();
   } else if (request.type == "githubTab") {
@@ -29,7 +31,7 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
       { permissions: ["declarativeContent"], origins: ["*://*/*"] },
       function (granted) {
         if (granted) {
-          rules = [
+          let rules = [
             {
               conditions: [
                 new chrome.declarativeContent.PageStateMatcher({
@@ -70,7 +72,18 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
   }
 });
 
-var NewsJSON = {};
+function GetNews(url, sendResponse) {
+  fetch(url)
+    .then((result) => result.json())
+    .then((response) => {
+      if (response.code == "rateLimited") {
+        url += "%00";
+        GetNews();
+      } else {
+        sendResponse({ news: response });
+      }
+    });
+}
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type === "sendNews") {
@@ -92,20 +105,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // var url = `https://newsapi.org/v2/everything?sources=abc-news&from=${TodayFormatted}&sortBy=popularity&apiKey=17c0da766ba347c89d094449504e3080`;
     var url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
 
-    function GetNews() {
-      fetch(url)
-        .then((result) => result.json())
-        .then((response) => {
-          if (response.code == "rateLimited") {
-            url += "%00";
-            GetNews();
-          } else {
-            sendResponse({ news: response });
-          }
-        });
-    }
-
-    GetNews();
+    GetNews(url, sendResponse);
 
     return true;
   }
@@ -196,9 +196,9 @@ function UpdateCurrentValues(details) {
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
           } else {
             // If the object is an array, turn it back after
-            length = DefaultValues[i].length;
+            let length = DefaultValues[i].length;
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
-            NewArray = [];
+            let NewArray = [];
             for (let j = 0; j < length; j++) {
               NewArray.push(NewValue[i][j]);
             }
