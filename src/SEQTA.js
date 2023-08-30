@@ -2221,8 +2221,8 @@ function hexToRGB(hex) {
       b = parseInt(hex.slice(5, 7), 16);
 
     return { r: r, g: g, b: b };
-  } catch(e) {
-    console.error(e);
+  } catch {
+    // do nothing becuase this functoin is a bit broken right now (feel free to fix it!)
   }
 }
 
