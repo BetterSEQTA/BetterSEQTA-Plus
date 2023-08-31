@@ -2636,7 +2636,8 @@ function CreateFilters(subjects) {
     let filterdiv = document.querySelector("#upcoming-filters");
     for (let i = 0; i < subjects.length; i++) {
       const element = subjects[i];
-      if (!filteroptions.prototype.hasOwnProperty.call(element.code)) {
+      // eslint-disable-next-line
+      if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
         filteroptions[element.code] = true;
         chrome.storage.local.set({ subjectfilters: filteroptions });
       }
@@ -3200,13 +3201,15 @@ function SendHomePage() {
         );
       }
     });
+    console.log("Getting assessments");
     let activeClassList;
     GetUpcomingAssessments().then((assessments) => {
       GetActiveClasses().then((classes) => {
         // Gets all subjects for the student
         for (let i = 0; i < classes.length; i++) {
           const element = classes[i];
-          if (element.prototype.hasOwnProperty.call("active")) {
+          // eslint-disable-next-line
+          if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
             // Finds the active class list with the current subjects
             activeClassList = classes[i];
           }
@@ -3215,20 +3218,22 @@ function SendHomePage() {
 
         let activeSubjectCodes = [];
         // Gets the code for each of the subjects and puts them in an array
+        let element;
         for (let i = 0; i < activeSubjects.length; i++) {
-          const element = activeSubjects[i];
+          element = activeSubjects[i];
           activeSubjectCodes.push(element.code);
         }
 
         let CurrentAssessments = [];
         for (let i = 0; i < assessments.length; i++) {
-          const element = assessments[i];
+          element = assessments[i];
           if (activeSubjectCodes.includes(element.code)) {
             CurrentAssessments.push(element);
           }
         }
 
         CurrentAssessments.sort(comparedate);
+        console.log(CurrentAssessments, activeSubjects);
 
         CreateUpcomingSection(CurrentAssessments, activeSubjects);
 
