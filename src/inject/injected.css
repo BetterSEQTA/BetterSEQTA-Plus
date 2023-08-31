@@ -145,7 +145,7 @@ ul.magicDelete > li.deleting {
 
 #menu li,
 #menu section {
-  margin: 3px 20px;
+  margin-right: 8px !important;
   border-bottom: none;
   box-shadow: none;
   border-radius: 12px;
@@ -189,6 +189,10 @@ ul.magicDelete > li.deleting {
   margin-top: 8px !important;
   margin-bottom: 8px !important;
   width: 85% !important;
+}
+
+li.item.draggable {
+  width: 100% !important;
 }
 
 #menu li.active > .sub > ul > .item {
@@ -714,7 +718,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .border {
-  border-radius: 8px;
+  border-radius: 0.5rem 1rem;
 }
 
 .shortcut-container h2 {
@@ -1617,7 +1621,7 @@ body {
   height: 100%;
   background: black;
   position: absolute;
-  z-index: 19;
+  z-index: 10;
   opacity: 0.4;
 }
 
@@ -1636,7 +1640,7 @@ body {
 .editmenuoption-container {
   width: 100%;
   height: 42px;
-  background: var(--background-primary);
+  background: var(--better-main);
   bottom: 0;
   display: flex;
   justify-content: space-between;
@@ -1751,9 +1755,8 @@ body {
 }
 
 .draggable::before {
-  left: 0 !important;
-  top: 100% !important;
-  transform: translateY(-100%) !important;
+  top: 1.1rem;
+  left: -0.5rem;
 }
 
 #menuToggle {
