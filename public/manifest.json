@@ -36,6 +36,10 @@
       "matches": ["*://*/*"]
     },
     {
+      "resources": ["fonts/*"],
+      "matches": ["*://*/*"]
+    },
+    {
       "resources": ["images/*"],
       "matches": ["*://*/*"]
     },
