@@ -364,6 +364,49 @@ td.colourBar {
   padding-left: 10px;
   padding-right: 10px;
 }
+
+#toolbar span:has(.search) {
+  position: relative;  /* Makes sure the pseudo-element is positioned relative to this element */
+}
+
+#toolbar .search {
+  padding-left: 30px;  /* Provides space for the icon */
+}
+
+#toolbar span:has(.search)::before {
+  content: "\eca5";  /* Unicode for the search icon */
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: currentColor;
+  font-size: 16px;
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
+#container #content .search {
+  width: 100%;
+  border-radius: 16px;
+}
+
+#container #content .uiButton {
+  border-radius: 16px;
+}
+
+#toolbar button.toggled, #toolbar button.depressed {
+  background: var(--better-main);
+}
+
+.buttonChecklist {
+  border-radius: 16px;
+  margin-top: 4px;
+}
+
+#toolbar > span:has(input) {
+  flex: 1 1 0%;
+}
+
 #main > .reports > .item > .report {
   filter: brightness(1) !important;
   border-radius: 16px !important;
@@ -492,6 +535,12 @@ div > ol:has(.uiFileHandlerWrapper) {
 .Module__wrapper___2sbOo {
   background: var(--background-primary) !important;
   color: var(--text-primary) !important;
+  box-shadow: none;
+}
+
+.course .composer {
+  background: var(--background-primary) !important;
+  overflow: hidden;
 }
 
 .composer
@@ -501,7 +550,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   > .Canvas__canvas___OBdCZ {
   background-color: unset !important;
   background-image: unset !important;
-  background: var(--auto-background) !important;
   color: white !important;
 }
 
@@ -1051,9 +1099,30 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
 }
 
+.Input__Input___3RSTI::before {
+  content: "\eca5";  /* Unicode for the search icon */
+  transform: translateY(-50%);
+  color: currentColor;
+  font-size: 16px;
+  margin-left: 8px;
+  margin-top: auto;
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
 .Input__Input___3RSTI > input {
+  outline: none !important;
+  border: none !important;
   color: var(--text-primary);
-  background: var(--better-main);
+  width: 100%;
+}
+
+.Input__Input___3RSTI {
+  transition: background-color 0.5s,border-color 0.5s;
+  background-color: var(--auto-background);
+  position: relative;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .Avatar__Avatar___gE5kx.Avatar__staff___4gVLs {
@@ -1683,6 +1752,47 @@ body {
   -moz-animation: spin 3s linear infinite;
 }
 
+.LabelList__name___-CHgq {
+  display: flex;
+  align-items: center;
+}
+
+[data-label="inbox"] > .LabelList__name___-CHgq::before {
+  content: "\eb70";  /* Unicode for the search icon */
+  color: currentColor;
+  font-size: 16px;
+  margin-right: 8px; /* Adjusted to margin-right for the icon to be on the left */
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
+[data-label="outbox"] > .LabelList__name___-CHgq::before {
+  content: "\eca6";  /* Unicode for the search icon */
+  color: currentColor;
+  font-size: 16px;
+  margin-right: 8px; /* Adjusted to margin-right for the icon to be on the left */
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
+[data-label="starred"] > .LabelList__name___-CHgq::before {
+  content: "\ece8";
+  color: currentColor;
+  font-size: 16px;
+  margin-right: 8px; /* Adjusted to margin-right for the icon to be on the left */
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
+[data-label="trash"] > .LabelList__name___-CHgq::before {
+  content: "\ed2c";  /* Unicode for the search icon */
+  color: currentColor;
+  font-size: 16px;
+  margin-right: 8px; /* Adjusted to margin-right for the icon to be on the left */
+  font-family: "IconFamily";
+  pointer-events: none;
+}
+
 .outer-circle {
   margin: -108px;
   animation-direction: alternate-reverse;
@@ -1809,7 +1919,6 @@ body {
 }
 
 .upcoming-items {
-  background-color: var(--better-sub);
   width: 100%;
   max-height: 55em;
   overflow-y: auto;
@@ -2015,10 +2124,6 @@ body {
   justify-content: space-between;
 }
 
-.Input__Input___3RSTI {
-  width: 100%;
-}
-
 .messages-filterbutton {
   height: 34px;
   width: 25%;
@@ -2129,17 +2234,6 @@ body {
   margin: 0;
 }
 
-.upcoming-container {
-  width: 94%;
-  margin: 50px auto;
-  max-height: 60em;
-  background-color: var(--better-main);
-  display: flex;
-  flex-direction: column;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
 .upcoming-items {
   background-color: var(--background-primary);
   transition: 200ms;
@@ -2152,12 +2246,6 @@ body {
   transition: 200ms;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
-}
-
-.upcoming-container h2 {
-  margin: 20px;
-  font-size: 20px;
-  font-weight: 400;
 }
 
 .upcoming-assessment-title {

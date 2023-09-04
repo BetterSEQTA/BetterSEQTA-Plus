@@ -770,6 +770,21 @@ function RunFunctionOnTrue(storedSetting) {
     document.head.appendChild(fileref);
     document.getElementsByTagName("html")[0].appendChild(fileref);
 
+    // Injecting custom icons font file
+    const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
+
+    const style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.innerHTML = `
+    @font-face {
+      font-family: 'IconFamily';
+      src: url('${fontURL}') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }`;
+    document.head.appendChild(style);
+
+
     document.documentElement.style.setProperty("--better-sub", "#161616");
     document.documentElement.style.setProperty(
       "--better-alert-highlight",
@@ -2559,51 +2574,6 @@ function CheckSpecialDay(date1, date2) {
   }
 }
 
-function CreateDateCheckedDiv(text, date) {
-  let upcomingitemcontainer = document.querySelector("#upcoming-items");
-  let type;
-  let class_;
-  let id;
-  let innerText;
-  let container = CreateElement(
-    (type = "div"),
-    (class_ = "upcoming-date-container"),
-  );
-  let datecontainer = CreateElement(
-    (type = "div"),
-    (class_ = "upcoming-date-title"),
-  );
-  let titletext = CreateElement(
-    (type = "h5"),
-    (class_ = "upcoming-special-day"),
-    (id = undefined),
-    (innerText = text),
-  );
-  let titledate = CreateElement(
-    // eslint-disable-next-line no-unused-vars
-    type = "h5",
-    // eslint-disable-next-line no-unused-vars
-    class_ = undefined,
-    // eslint-disable-next-line no-unused-vars
-    id = undefined,
-    // eslint-disable-next-line no-unused-vars
-    innerText = date,
-  );
-
-  let textcontainer = CreateElement("div", "upcoming-blank");
-  let textblank = CreateElement("p");
-  textblank.innerText = "No assessments due";
-
-  textcontainer.append(textblank);
-
-  datecontainer.append(titletext);
-  datecontainer.append(titledate);
-
-  container.append(datecontainer);
-  container.append(textcontainer);
-  upcomingitemcontainer.append(container);
-}
-
 function CreateSubjectFilter(subjectcode, itemcolour, checked) {
   let label = CreateElement("label", "upcoming-checkbox-container");
   label.innerText = subjectcode;
@@ -2656,8 +2626,6 @@ function CreateUpcomingSection(assessments) {
   let upcomingitemcontainer = document.querySelector("#upcoming-items");
   let overdueDates = [];
   let upcomingDates = {};
-  let TodayinUpcoming = false;
-  let TomorrowinUpcoming = false;
 
   // date = '2022/3/20';
   // var Today = new Date(date);
@@ -2678,23 +2646,9 @@ function CreateUpcomingSection(assessments) {
       }
     }
   }
-  var options = { weekday: "long", month: "long", day: "numeric" };
-  if (!TodayinUpcoming) {
-    let text = Today.toLocaleDateString("en-AU", options);
-    CreateDateCheckedDiv("Today", text);
-  }
 
-  function addTomorrowinUpcoming() {
-    // var TomorrowDate = new Date(date);
-    var TomorrowDate = new Date();
-    TomorrowDate.setDate(TomorrowDate.getDate() + 1);
-    let textDate = TomorrowDate.toLocaleDateString("en-AU", options);
-    CreateDateCheckedDiv("Tomorrow", textDate);
-  }
-
-  if (!TomorrowinUpcoming && !TodayinUpcoming) {
-    addTomorrowinUpcoming();
-  }
+  var TomorrowDate = new Date();
+  TomorrowDate.setDate(TomorrowDate.getDate() + 1);
 
   GetLessonColours().then((colours) => {
     let subjects = colours;
@@ -2776,9 +2730,6 @@ function CreateUpcomingSection(assessments) {
         upcomingitemcontainer.append(assessmentDate);
       }
 
-      if (specialcase === "Today" && !TomorrowinUpcoming) {
-        addTomorrowinUpcoming();
-      }
     }
     chrome.storage.local.get(null, function (result) {
       FilterUpcomingAssessments(result.subjectfilters);
