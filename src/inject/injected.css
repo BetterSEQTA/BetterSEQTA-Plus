@@ -232,6 +232,11 @@ html {
   width: 100% !important;
 }
 
+.listWrapper:not(:has(.list *)) + .functions,
+.listWrapper:not(:has(.list *)) {
+  display: none !important;
+}
+
 [data-type="student"] .header {
   color: black !important;
 }
@@ -288,6 +293,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 .functions > .uiButton {
   width: 100%;
   border: none !important;
+  border-radius: 16px !important;
 }
 
 .singleSelect {
@@ -312,16 +318,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-radius: 4px;
   margin-top: 4px !important;
   margin-bottom: 4px !important;
-}
-
-.singleSelect::-webkit-scrollbar-thumb {
-  background-color: rgb(
-    150,
-    150,
-    150
-  ) !important; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid orange; /* creates padding around scroll thumb */
 }
 
 .uiFileHandler {
@@ -766,7 +762,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .border {
-  border-radius: 0.5rem 1rem;
+  border-radius: 1rem;
 }
 
 .shortcut-container h2 {
@@ -810,6 +806,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   display: flex;
   border-radius: 5px;
   position: relative;
+  transition: 200ms;
 }
 
 .customshortcut::after {
@@ -2244,8 +2241,7 @@ body {
   flex-direction: column;
   color: var(--text-primary);
   transition: 200ms;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  border-radius: 1rem;
 }
 
 .upcoming-assessment-title {
