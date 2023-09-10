@@ -1,16 +1,3 @@
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 /*global chrome*/
 
 const onoffselection = document.querySelector("#onoff");
@@ -22,6 +9,8 @@ const miscsection = document.querySelector("#miscsection");
 //const mainpage = document.querySelector("#mainpage");
 const colorpicker = document.querySelector("#colorpicker");
 const animatedbk = document.querySelector("#animatedbk");
+const bkslider = document.querySelector("#bksliderinput");
+
 const customshortcutbutton = document.getElementsByClassName(
   "custom-shortcuts-button",
 )[0];
@@ -97,9 +86,7 @@ function FindSEQTATab() {
     }
   });
 }
-/*
-Store the currently selected settings using chrome.storage.local.
-*/
+
 function storeSettings() {
   chrome.storage.local.set({ onoff: onoffselection.checked }, function () {
     FindSEQTATab();
@@ -112,6 +99,7 @@ function storeNotificationSettings() {
   });
   chrome.storage.local.set({ lessonalert: lessonalert.checked });
   chrome.storage.local.set({ animatedbk: animatedbk.checked });
+  chrome.storage.local.set({ bksliderinput: bkslider.value });
 }
 
 function StoreAllSettings() {
@@ -141,6 +129,7 @@ function updateUI(restoredSettings) {
     notificationcollector.checked = restoredSettings.notificationcollector;
     lessonalert.checked = restoredSettings.lessonalert;
     animatedbk.checked = restoredSettings.animatedbk;
+    bkslider.value = restoredSettings.bksliderinput;
     chrome.storage.local.get(["shortcuts"], function (result) {
       var shortcuts = Object.values(result)[0];
       for (var i = 0; i < shortcutbuttons.length; i++) {
@@ -158,7 +147,7 @@ var stringtoHTML = function (str) {
 };
 
 function CreateShortcutDiv(name) {
-  div = stringtoHTML(`
+  let div = stringtoHTML(`
   <div class="item-container menushortcuts" data-customshortcut="${name}">
     <div class="text-container">
       <h1 class="addonitem" style="font-size: 8px !important;font-weight: 300;">Custom</h1>
@@ -188,7 +177,7 @@ function AddCustomShortcuts() {
 }
 
 function DeleteCustomShortcut(name) {
-  item = document.querySelector(`[data-customshortcut="${name}"]`);
+  let item = document.querySelector(`[data-customshortcut="${name}"]`);
   item.remove();
   chrome.storage.local.get(["customshortcuts"], function (result) {
     var customshortcuts = Object.values(result)[0];
@@ -237,9 +226,6 @@ function CreateCustomShortcut() {
   CreateShortcutDiv(shortcutname);
 }
 
-function onError(e) {
-  console.error(e);
-}
 /*
 On opening the options page, fetch stored settings and update the UI with them.
 */
@@ -258,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
   version.innerHTML = `v${chrome.runtime.getManifest().version}`;
   github.addEventListener("click", openGithub);
 
-  domainbutton.addEventListener("click", function (event) {
+  domainbutton.addEventListener("click", function () {
     chrome.runtime.sendMessage({ type: "addPermissions" });
   });
 
@@ -344,6 +330,7 @@ notificationcollector.addEventListener("change", storeNotificationSettings);
 lessonalert.addEventListener("change", storeNotificationSettings);
 
 animatedbk.addEventListener("change", storeNotificationSettings);
+bkslider.addEventListener("change", storeNotificationSettings);
 
 for (let i = 0; i < allinputs.length; i++) {
   if (
