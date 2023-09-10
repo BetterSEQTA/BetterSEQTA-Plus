@@ -25,6 +25,33 @@ function SetDisplayNone(ElementName) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
+function animbkEnable (item) {
+  if (item.animatedbk) {
+    CreateBackground();
+  } else {
+    RemoveBackground();
+    document.getElementById("container").style.background = "var(--background-secondary)";
+  }
+}
+
+function bkValues (item) {
+  const bg = document.getElementsByClassName("bg");
+  const bg2 = document.getElementsByClassName("bg2");
+  const bg3 = document.getElementsByClassName("bg3");
+  const value = 200 - item.bksliderinput;
+
+  const minDuration = 1; // minimum duration in seconds
+  const maxDuration = 10; // maximum duration in seconds
+  const durationRange = maxDuration - minDuration;
+  const bgDuration = minDuration + (value / 200) * durationRange;
+  const bg2Duration = minDuration + ((value / 200) + 0.05) * durationRange;
+  const bg3Duration = minDuration + ((value / 200) + 0.1) * durationRange;
+
+  bg[0].style.animationDuration = `${bgDuration}s`;
+  bg2[0].style.animationDuration = `${bg2Duration}s`;
+  bg3[0].style.animationDuration = `${bg3Duration}s`;
+}
+
 function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = "";
   chrome.storage.local.get(null, function (result) {
@@ -188,6 +215,15 @@ function CreateBackground() {
   bk3.classList.add("bg");
   bk3.classList.add("bg3");
   bklocation.insertBefore(bk3, menu);
+}
+
+function RemoveBackground() {
+  var bk = document.getElementsByClassName("bg");
+  var bk2 = document.getElementsByClassName("bg2");
+  var bk3 = document.getElementsByClassName("bg3");
+  bk[0].remove();
+  bk2[0].remove();
+  bk3[0].remove();
 }
 
 function waitForElm(selector) {
@@ -949,6 +985,8 @@ function RunExtensionSettingsJS() {
   //const mainpage = document.querySelector("#mainpage");
   const colorpicker = document.querySelector("#colorpicker");
   const animatedbk = document.querySelector("#animatedbk");
+  const bkslider = document.querySelector("#bksliderinput");
+
   const customshortcutbutton = document.getElementsByClassName(
     "custom-shortcuts-button",
   )[0];
@@ -1015,6 +1053,7 @@ function RunExtensionSettingsJS() {
     });
     chrome.storage.local.set({ lessonalert: lessonalert.checked });
     chrome.storage.local.set({ animatedbk: animatedbk.checked });
+    chrome.storage.local.set({ bksliderinput: bkslider.value });
   }
 
   function StoreAllSettings() {
@@ -1044,6 +1083,7 @@ function RunExtensionSettingsJS() {
       notificationcollector.checked = restoredSettings.notificationcollector;
       lessonalert.checked = restoredSettings.lessonalert;
       animatedbk.checked = restoredSettings.animatedbk;
+      bkslider.value = restoredSettings.bksliderinput;
       chrome.storage.local.get(["shortcuts"], function (result) {
         var shortcuts = Object.values(result)[0];
         for (var i = 0; i < shortcutbuttons.length; i++) {
@@ -1223,14 +1263,22 @@ function RunExtensionSettingsJS() {
   onoffselection.addEventListener("change", storeSettings);
   notificationcollector.addEventListener("change", storeNotificationSettings);
   lessonalert.addEventListener("change", storeNotificationSettings);
-
-  animatedbk.addEventListener("change", storeNotificationSettings);
+  bkslider.addEventListener("change", () => {
+    storeNotificationSettings();
+    chrome.storage.local.get(["bksliderinput"]).then(bkValues);
+  });
+  animatedbk.addEventListener("change", () => {
+    storeNotificationSettings();
+    animbkEnable({ animatedbk: animatedbk.checked });
+  });
 
   for (let i = 0; i < allinputs.length; i++) {
     if (
       allinputs[i].id != "colorpicker" &&
       allinputs[i].id != "shortcuturl" &&
-      allinputs[i].id != "shortcutname"
+      allinputs[i].id != "shortcutname" &&
+      allinputs[i].id != "bkslider" &&
+      allinputs[i].id != "bksliderinput"
     ) {
       allinputs[i].addEventListener("change", () => {
         applybutton.style.left = "4px";
@@ -1485,6 +1533,16 @@ function CallExtensionSettings() {
           </div>
           <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="animatedbk">
           <label for="animatedbk" class="onoffswitch-label"></label>
+          </div>
+        </div>
+
+        <div class="item-container">
+          <div class="text-container">
+            <h1 class="addonitem">Animated Background Speed</h1>
+            <p class="item subitem">Controls the speed of the animated background.</p>
+          </div>
+          <div class="bkslider">
+            <input type="range" id="bksliderinput" name="Animated Background Slider" min="1" max="200" />
           </div>
         </div>
 
@@ -1856,14 +1914,11 @@ function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        chrome.storage.local.get(["animatedbk"], function (result) {
-          if (result.animatedbk) {
-            CreateBackground();
-          } else {
-            document.getElementById("container").style.background =
-              "var(--background-secondary)";
-          }
-        });
+        const result = chrome.storage.local.get(["animatedbk"]);
+        const sliderVal = chrome.storage.local.get(["bksliderinput"]);
+
+        result.then(animbkEnable);
+        sliderVal.then(bkValues);
 
         // Load darkmode state
         chrome.storage.local.get(["DarkMode"], function (result) {

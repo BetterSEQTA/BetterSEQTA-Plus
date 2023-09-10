@@ -24,6 +24,29 @@
   z-index: 20;
 }
 
+#bksliderinput {
+  background-color: #20e060 !important;
+  color: #20e060 !important;
+  border-radius: 16px !important;
+  border: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#bksliderinput::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  transform: scale(1.5) !important;
+  background: #86f078 !important;
+  cursor: pointer !important;
+  border-radius: 50% !important;
+  border: 1px solid #20e060 !important;
+}
+
 .selector-container {
   font-family: Rubik, sans-serif;
   background-color: #131313;

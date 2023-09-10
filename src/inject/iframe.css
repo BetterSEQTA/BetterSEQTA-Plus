@@ -21,6 +21,10 @@ span {
     0 0 1em #161616;
 }
 
+body {
+  background-color: transparent !important;
+}
+
 blockquote.forward > .preamble {
   color: rgba(255, 255, 255, 0.7) !important;
 }
@@ -35,4 +39,27 @@ blockquote.forward > .preamble > .sender > .label {
 }
 table th {
   background-color: #161616;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  transition: 1s;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: none;
+}
+
+.forward {
+  border-radius: 1rem;
+}
+
+.preamble {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
 }

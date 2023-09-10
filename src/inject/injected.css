@@ -59,6 +59,28 @@ html {
   }
 }
 
+#bksliderinput {
+  background-color: #20e060 !important;
+  border-radius: 16px !important;
+  border: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#bksliderinput::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  transform: scale(1.5) !important;
+  background: #86f078 !important;
+  cursor: pointer !important;
+  border-radius: 50% !important;
+  border: 1px solid #20e060 !important;
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--background-primary) !important;
 }
@@ -234,8 +256,14 @@ html {
 
 .listWrapper:not(:has(.list *)) + .functions,
 .listWrapper:not(:has(.list *)) {
-  display: none !important;
+  opacity: 0 !important;
 }
+
+.listWrapper + .functions,
+.listWrapper {
+  transition: opacity 500ms;
+}
+
 
 [data-type="student"] .header {
   color: black !important;
@@ -258,6 +286,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
     150,
     150
   ) !important; /* color of the scroll thumb */
+  
 }
 
 .content .footer {
@@ -267,6 +296,10 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 
 .content [autocomplete="off"] {
   background-color: var(--background-primary) !important;
+}
+
+.MessageList__MessageList___3DxoC .footer {
+  background-color: var(--background-secondary) !important;
 }
 
 .content [placeholder="Subject…"] {
@@ -320,11 +353,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   margin-bottom: 4px !important;
 }
 
-.uiFileHandler {
-  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
-  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
-}
-
 .uiSlidePane {
   background-color: rgba(0, 0, 0, 0);
   transition-duration: 500ms !important;
@@ -342,6 +370,32 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main .timetablepage {
   padding-top: 10px;
+}
+
+#main .timetablepage .quickbar {
+  border: none;
+  border-radius: 1rem;
+}
+
+.quickbar .actions {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.quickbar .attendance {
+  border-top-left-radius: 100%;
+  border-bottom-right-radius: 1rem !important;
+}
+
+#main > .timetablepage > .quickbar.below::before {
+  border-bottom-color: var(--background-primary);
+  top: -1.75rem;
+}
+
+#main .timetablepage .actions a,
+#main .timetablepage .actions button {
+  background-color: transparent;
+  border: none;
 }
 
 .document {
@@ -406,11 +460,20 @@ td.colourBar {
 #main > .reports > .item > .report {
   filter: brightness(1) !important;
   border-radius: 16px !important;
-  border: 2px solid lightgray !important;
+  border: 2px solid var(--better-main) !important;
+  transform: scale(0.97);
+  transition: transform 0.2s ease-out !important;
+}
+
+#main > .reports > .item > .report:hover {
+  transform: scale(1);
 }
 
 #main > .reports > .item {
   box-shadow: none !important;
+  margin-left: auto;
+  margin-right: auto;
+  overflow: visible;
 }
 
 ol > [data-message] {
@@ -1074,8 +1137,22 @@ div > ol:has(.uiFileHandlerWrapper) {
   margin: auto 0;
 }
 
+.notifications__details___193F4 {
+  max-width: 80%;
+  overflow: clip;
+}
+
+.notifications__details___193F4 div {
+  text-overflow: ellipsis;
+}
+
 #main > .messages {
   color: var(--text-primary);
+}
+
+.Overview__details___2Zlnr {
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
 .Viewer__sidebar___1Btu4 {
@@ -1090,6 +1167,12 @@ div > ol:has(.uiFileHandlerWrapper) {
 .MessageList__MessageList___3DxoC ::-webkit-scrollbar {
   width: 0px;
   background: none;
+}
+
+.MessageList__MessageList___3DxoC .Button__Button___3SRFo {
+  width: 100%;
+  min-height: 2rem;
+  text-align: center;
 }
 
 .MessageList__MessageList___3DxoC {
@@ -1155,12 +1238,22 @@ iframe.userHTML {
 }
 
 #main > .reports {
-  background: var(--auto-background);
+  background: none;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 #main > .reports > .item > .report > .year {
   background: var(--better-light);
   color: var(--text-color);
+}
+
+.Spinner__Spinner___CStEb > svg {
+  margin: 1rem 0;
+}
+
+.Spinner__Spinner___CStEb > svg > path {
+  stroke: var(--text-primary) !important;
 }
 
 #main > .reports > .item > .report > .term {
@@ -1224,14 +1317,6 @@ iframe.userHTML {
   transition: 1s;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: var(--better-light);
-  background-clip: padding-box;
-  border: 2px solid transparent;
-  transition: 1s;
-  border-radius: 1rem !important;
-}
-
 ::-webkit-scrollbar-thumb:vertical:hover,
 ::-webkit-scrollbar-thumb:horizontal:hover {
   background-color: var(--better-light);
@@ -1277,6 +1362,26 @@ ul {
   color: var(--text-primary);
 }
 
+.SelectedAssessment__SelectedAssessment___3Bu5D > .SelectedAssessment__meta___1gq_y > .SelectedAssessment__clearBtn___21D85 {
+  background: var(--better-main);
+}
+
+.SelectedAssessment__SelectedAssessment___3Bu5D > .SelectedAssessment__meta___1gq_y {
+  border-bottom: 1px solid var(--better-main);
+}
+
+.TabSet__TabSet___Vo-SZ > ol.TabSet__tabs___1RRZk > li.TabSet__selected___1psfF {
+  border-bottom-color: var(--better-main);
+}
+
+.TabSet__TabSet___Vo-SZ > ol.TabSet__tabs___1RRZk {
+  border-bottom: none;
+}
+
+.TabSet__TabSet___Vo-SZ > ol.TabSet__tabs___1RRZk > li:hover {
+  box-shadow: inset 0 -1px var(--better-main);
+}
+
 .TabSet__TabSet___Vo-SZ > .TabSet__tabContainer___3iIRe {
   background: unset;
 }
@@ -1285,13 +1390,48 @@ ul {
   background: var(--background-primary);
 }
 
-.legacy-root .uiFileHandler {
-  background: var(--auto-background);
+.uiFileHandler {
+  -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
+  box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
+  background: var(--background-primary);
   margin: 8px 0px 0px 0px;
+  border-radius: 1rem;
+}
+
+.mediaWrapper, .mediaRecorder, .MediaRecorder__MediaRecorder___2c2_M {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  overflow: hidden;
+}
+
+.MediaRecorder__MediaRecorder___2c2_M {
+  background: var(--background-primary);
+}
+
+.legacy-root .uiFileHandler {
+  background-color: var(--auto-background);
+  border-radius: 1rem;
+}
+
+.ResourceList__ResourceList___2z-c1 .legacy-root .uiFileHandler {
+  background-color: var(--background-primary);
+}
+
+.legacy-root .uiFileHandler.dragTarget {
+  background-color: var(--better-main);
+}
+
+.MenuButton__MenuPanel___2q42B {
+  background: var(--background-primary);
+  color: var(--text-primary);
 }
 
 .dailycal > .header {
   color: var(--text-primary);
+}
+
+#main > .timetablepage {
+  color: var(--text-primary) !important;
 }
 
 #main > .timetablepage > .container > .dailycal {
@@ -1300,12 +1440,32 @@ ul {
 
 #main > .timetablepage > .note {
   color: var(--text-primary);
+  display: none;
+}
+
+.days td {
+  overflow: hidden;
+}
+
+div.entry.class {
+  width: 100% !important;
+  border-radius: 0.25rem;
+}
+
+.timetablepage .dailycal>.content>.wrapper>.days>tbody>tr>td>.entriesWrapper {
+  min-width: 0;
+  width: auto !important;
 }
 
 .uiFileHandler .uiButton {
   border-radius: 2rem !important;
   color: var(--text-primary) !important;
   margin-top: 0.25rem !important;
+}
+
+.uiFileHandlerPanel::before {
+  border: 12px solid rgba(0, 0, 0, 0);
+  border-top-color: var(--background-primary);
 }
 
 .uiButton:hover {
@@ -1317,8 +1477,18 @@ ul {
 }
 
 .uiFileHandlerPanel {
-  background: var(--better-main);
+  background: var(--background-primary);
   color: var(--text-primary);
+  border-radius: 1rem;
+}
+
+.sources .uiButton {
+  border-radius: 1rem;
+}
+
+
+.MediaRecorder__preview___1hQqY, .MediaRecorder__actions___3Jjvp {
+  background: var(--background-primary);
 }
 
 .Rubric__Rubric___2AAKS > .Rubric__line___JCC3Y {
@@ -1426,6 +1596,10 @@ blurred {
 .legacy-root button.depressed,
 .legacy-root button.toggled {
   background: #797979;
+}
+
+.legacy-root button, .legacy-root a {
+  background: var(--background-primary);
 }
 
 .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
