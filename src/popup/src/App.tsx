@@ -1,5 +1,5 @@
 import './App.css'
-import Switch from './components/switch'
+import Switch from './components/Switch'
 
 function App() {
   const switchChange = (isOn: boolean) => {
