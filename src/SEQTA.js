@@ -102,12 +102,24 @@ function OpenWhatsNewPopup() {
   let text = stringToHTML(
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-    <h1>3.0.0 - BetterSEQTA+ *Complete Overhaul*</h1>
+  <h1>3.1.1 - Minor Bug fixes</h1>
+  <li>Fixed assessments overlapping</li>
+  <li>Fixed houses not displaying if they aren't a specific color</li>
+  <li>Fixed Chrome Webstore Link</li>
+  
+  <h1>3.1.0 - Design Improvements</h1>
+  <li>Minor UI improvements</li>
+  <li>Added Animation Speed Slider</li>
+  <li>Animation now enables and disables without reloading SEQTA</li>
+  <li>Changed logo</li>
+
+  <h1>3.0.0 - BetterSEQTA+ *Complete Overhaul*</h1>
   <li>Redesigned appearance</li>
   <li>Upgraded to manifest V3 (longer support)</li>
   <li>Fixed transitional glitches</li>
   <li>Under the hood improvements</li>
   <li>Fixed News Feed</li>
+
   <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1><li>Fixed BetterSEQTA+ not loading on some pages</li><li>Fixed text colour of notices being unreadable</li><li>Fixed pages not reloading when saving changes</li>
   <h1>2.0.2 - Minor bug fixes</h1><li>Fixed indicator for current lesson</li><li>Fixed text colour for DM messages list in Light mode</li><li>Fixed user info text colour</li>
   <h1>Sleek New Layout</h1><li>Updated with a new font and presentation, BetterSEQTA+ has never looked better.</li>
@@ -982,7 +994,6 @@ function RunExtensionSettingsJS() {
   const aboutsection = document.querySelector("#aboutsection");
   const shortcutsection = document.querySelector("#shortcutsection");
   const miscsection = document.querySelector("#miscsection");
-  //const mainpage = document.querySelector("#mainpage");
   const colorpicker = document.querySelector("#colorpicker");
   const animatedbk = document.querySelector("#animatedbk");
   const bkslider = document.querySelector("#bksliderinput");
@@ -1019,12 +1030,6 @@ function RunExtensionSettingsJS() {
 
   var validURL = false;
   var validName = false;
-
-  const github = document.getElementById("github");
-
-  function openGithub() {
-    chrome.runtime.sendMessage({ type: "githubTab" });
-  }
 
   function resetActive() {
     for (let i = 0; i < navbuttons.length; i++) {
@@ -1183,7 +1188,6 @@ function RunExtensionSettingsJS() {
     updateUI(result);
   });
 
-  github.addEventListener("click", openGithub);
   aboutsection.addEventListener("click", () => {
     resetActive();
     aboutsection.classList.add("activenav");
@@ -1357,24 +1361,11 @@ function CallExtensionSettings() {
 
         <div class="aboutcontainer">
           <div>
-            <a class="aboutlinks" href="https://chrome.google.com/webstore/detail/betterseqta/boikofabjaholheekefimfojfncpjfib" target="_blank">
+            <a class="aboutlinks" href="https://chrome.google.com/webstore/detail/betterseqta%2B/afdgaoaclhkhemfkkkonemoapeinchel?snuoi" target="_blank">
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
             </svg>
               Chrome Webstore
-            </a>
-            <a class="aboutlinks" href="https://addons.mozilla.org/en-US/firefox/addon/betterseqta/" target="_blank">
-              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M9.27 7.94C9.27 7.94 9.27 7.94 9.27 7.94M6.85 6.74C6.86 6.74 6.86 6.74 6.85 6.74M21.28 8.6C20.85 7.55 19.96 6.42 19.27 6.06C19.83 7.17 20.16 8.28 20.29 9.1L20.29 9.12C19.16 6.3 17.24 5.16 15.67 2.68C15.59 2.56 15.5 2.43 15.43 2.3C15.39 2.23 15.36 2.16 15.32 2.09C15.26 1.96 15.2 1.83 15.17 1.69C15.17 1.68 15.16 1.67 15.15 1.67H15.13L15.12 1.67L15.12 1.67L15.12 1.67C12.9 2.97 11.97 5.26 11.74 6.71C11.05 6.75 10.37 6.92 9.75 7.22C9.63 7.27 9.58 7.41 9.62 7.53C9.67 7.67 9.83 7.74 9.96 7.68C10.5 7.42 11.1 7.27 11.7 7.23L11.75 7.23C11.83 7.22 11.92 7.22 12 7.22C12.5 7.21 12.97 7.28 13.44 7.42L13.5 7.44C13.6 7.46 13.67 7.5 13.75 7.5C13.8 7.54 13.86 7.56 13.91 7.58L14.05 7.64C14.12 7.67 14.19 7.7 14.25 7.73C14.28 7.75 14.31 7.76 14.34 7.78C14.41 7.82 14.5 7.85 14.54 7.89C14.58 7.91 14.62 7.94 14.66 7.96C15.39 8.41 16 9.03 16.41 9.77C15.88 9.4 14.92 9.03 14 9.19C17.6 11 16.63 17.19 11.64 16.95C11.2 16.94 10.76 16.85 10.34 16.7C10.24 16.67 10.14 16.63 10.05 16.58C10 16.56 9.93 16.53 9.88 16.5C8.65 15.87 7.64 14.68 7.5 13.23C7.5 13.23 8 11.5 10.83 11.5C11.14 11.5 12 10.64 12.03 10.4C12.03 10.31 10.29 9.62 9.61 8.95C9.24 8.59 9.07 8.42 8.92 8.29C8.84 8.22 8.75 8.16 8.66 8.1C8.43 7.3 8.42 6.45 8.63 5.65C7.6 6.12 6.8 6.86 6.22 7.5H6.22C5.82 7 5.85 5.35 5.87 5C5.86 5 5.57 5.16 5.54 5.18C5.19 5.43 4.86 5.71 4.56 6C4.21 6.37 3.9 6.74 3.62 7.14C3 8.05 2.5 9.09 2.28 10.18C2.28 10.19 2.18 10.59 2.11 11.1L2.08 11.33C2.06 11.5 2.04 11.65 2 11.91L2 11.94L2 12.27L2 12.32C2 17.85 6.5 22.33 12 22.33C16.97 22.33 21.08 18.74 21.88 14C21.9 13.89 21.91 13.76 21.93 13.63C22.13 11.91 21.91 10.11 21.28 8.6Z" />
-            </svg>
-              Firefox Add-ons
-            </a>
-
-            <a class="aboutlinks" href="https://betterseqta.com" target="_blank">
-              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z" />
-            </svg>
-              betterseqta.com
             </a>
 
           </div>
@@ -1558,7 +1549,7 @@ function CallExtensionSettings() {
         </div>
 
 
-        <div class="item-container" style="height: 2em; margin-top: 0px;">
+        <div class="item-container" style="height: 2em; margin-top: 0px; margin-bottom: 24px;">
           <div class="text-container">
             <h1 class="addonitem">BetterSEQTA+</h1>
           </div>
@@ -1566,6 +1557,7 @@ function CallExtensionSettings() {
             <label for="onoff" class="onoffswitch-label"></label>
           </div>
         </div>
+
 
       </div>
     </div>
@@ -1584,12 +1576,10 @@ function CallExtensionSettings() {
 
     <div></div>
 
-    <div style="position: absolute; bottom: 15px; right: 50px; color: rgb(177, 177, 177); display: flex; align-items:center;">
-    <p style="margin: 0; margin-right: 5px; color: white;">Maintained by SethBurkart123 </p>
-    <p style="margin: 0; cursor:pointer; padding: 4px 5px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">What's new in v${
-  chrome.runtime.getManifest().version
-}</p></div>
-    <img src=${chrome.runtime.getURL("/popup/github.svg")} alt="" id="github">
+    <div style="position: absolute; background: #131313; bottom: 15px; right: 0px; color: rgb(177, 177, 177); display: flex; align-items: center; width: 100%; justify-content: space-between;">
+      <p style="margin: 0; flex: 1; padding-left: 24px; margin-right: 5px; color: white;">By SethBurkart123</p>
+      <button style="margin: 0; margin-right: 20px; cursor:pointer; padding: 8px 10px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">Changelog v${chrome.runtime.getManifest().version}</button>
+    </div>
   </div></div>`);
   document.body.append(Settings.firstChild);
 
@@ -1998,8 +1988,9 @@ function AddBetterSEQTAElements(toggle) {
                     }
                     houseelement.innerText =
                       students[index].year + students[index].house;
-                  } catch(e) {
-                    console.log(e);
+                  } catch (error) {
+                    console.log(students[index]);
+                    houseelement.innerText = students[index].house;
                   }
                 } else {
                   houseelement.innerText = students[index].year;
@@ -2064,7 +2055,7 @@ function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
-          "<button class=\"addedButton tooltip\" id=\"AddedSettings\"\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><g><g><path d=\"M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z\"></path><path d=\"M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z\"></path></g></g></svg><div class=\"tooltiptext topmenutooltip\">BetterSEQTA Settings</div></button>",
+          "<button class=\"addedButton tooltip\" id=\"AddedSettings\"\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><g><g><path d=\"M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z\"></path><path d=\"M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z\"></path></g></g></svg><div class=\"tooltiptext topmenutooltip\">BetterSEQTA+ Settings</div></button>",
         );
         var ContentDiv = document.getElementById("content");
         ContentDiv.append(SettingsButton.firstChild);
