@@ -28,7 +28,8 @@ Looking for contributors!
   - Chrome Supported
   - Edge Supported
   - Brave Supported
-  - (kinda) Opera Supported (We have found a issue that the manifest V3 version doesn't work on Opera, Please use Ultra Stable (3.0.2)
+  - Opera Supported
+  - Firefox (currently not supported, plans for it in future though)
 
 ## Getting started
 
