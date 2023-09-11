@@ -1,4 +1,5 @@
 import './App.css'
+import Slider from './components/Slider'
 import Switch from './components/Switch'
 
 function App() {
@@ -7,8 +8,11 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col gap-2 bg-zinc-800">
+    <div className="flex flex-col gap-2 dark:bg-zinc-800">
       <Switch onChange={switchChange} />
+      <div className="w-48">
+        <Slider onValueChange={(value) => console.log(value)} />
+      </div>
       <Switch onChange={switchChange} />
       <Switch onChange={switchChange} />
       <Switch onChange={switchChange} />
