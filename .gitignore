@@ -6,4 +6,4 @@ package-lock.json
 package.zip
 build/
 
-.DS_Store/
+**/.DS_Store
