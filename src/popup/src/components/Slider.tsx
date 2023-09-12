@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import "./Slider.css";
 
 interface Slider {
   onValueChange: (value: number) => void;
@@ -25,7 +26,7 @@ const Slider: React.FC<Slider> = ({ onValueChange }) => {
         value={sliderValue}
         onChange={handleInputChange}
         onMouseUp={handleMouseUp}
-        className="absolute w-full h-1.5 bg-gray-300 rounded-full cursor-pointer focus:outline-none"
+        className="absolute w-full h-1 rounded-full cursor-pointer range-slider focus:outline-none"
       />
     </div>
   );

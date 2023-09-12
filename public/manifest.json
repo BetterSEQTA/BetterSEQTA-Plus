@@ -20,7 +20,8 @@
   "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "content_scripts": "background.js"
+    "content_scripts": "background.js",
+    "persistent": false
   },
   "optional_permissions": ["declarativeContent"],
   "content_scripts": [
