@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/b0e49756-64a1-4421-8786-fc3dd7114441" alt="ChromeDownload" width="250"></a>
+ <a target="_blank" href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png" alt="ChromeDownload" width="250"></a>
 </p>
 
 ## Table of contents
