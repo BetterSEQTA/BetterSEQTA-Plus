@@ -50,6 +50,10 @@
     {
       "resources": ["popup/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client.js"],
+      "matches": ["*://*/*"]
     }
   ]
 }

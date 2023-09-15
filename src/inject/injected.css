@@ -25,6 +25,7 @@
 
 @import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 @import "./injected/popup.css";
+@import "./popup.css";
 
 :root {
   background-color: var(--better-main) !important;
