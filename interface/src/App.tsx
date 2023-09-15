@@ -57,19 +57,16 @@ const App: React.FC = () => {
     }
   ];
 
+  {/* <div className="flex justify-center w-screen h-screen pt-4 overflow-hidden" style={{ background: settingsState.customThemeColor }}> */}
   return (
-    <div className="flex justify-center w-screen h-screen pt-4 overflow-hidden" style={{ background: settingsState.customThemeColor }}>
-
-      <div className="flex flex-col w-[24rem] shadow-2xl gap-2 bg-white rounded-xl h-4/6 dark:bg-zinc-800 dark:text-white">
-        <div className="grid border-b border-b-zinc-200/40 place-items-center">
-          <img src={logo} className="w-4/5 dark:hidden" />
-          <img src={logoDark} className="hidden w-4/5 dark:block" />
-        </div>
-        <TabbedContainer themeColor={settingsState.customThemeColor} tabs={tabs} />
+    <div className="flex flex-col w-[24rem] shadow-2xl gap-2 bg-white rounded-xl h-[590px] dark:bg-zinc-800 dark:text-white">
+      <div className="grid border-b border-b-zinc-200/40 place-items-center">
+        <img src={logo} className="w-4/5 dark:hidden" />
+        <img src={logoDark} className="hidden w-4/5 dark:block" />
       </div>
-
+      <TabbedContainer themeColor={settingsState.customThemeColor} tabs={tabs} />
     </div>
   );
-}
+};
 
 export default App;

@@ -10,7 +10,7 @@ export default defineConfig({
       output: {
         assetFileNames: 'client/rsc/[ext]/[name][extname]',
         chunkFileNames: 'client/rsc/[chunks]/[name].[hash].js',
-        entryFileNames: 'client/rsc/js/client.js'
+        entryFileNames: 'client/public/client.js'
       }
     }
   }

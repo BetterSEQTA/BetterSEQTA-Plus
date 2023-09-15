@@ -1583,6 +1583,12 @@ function CallExtensionSettings() {
   </div></div>`);
   document.body.append(Settings.firstChild);
 
+  // override old popup with new (experimental)
+  const script = document.createElement("script");
+  script.type = "module"; 
+  script.src = chrome.runtime.getURL("client.js");
+  (document.head||document.documentElement).appendChild(script);
+
   var container = document.getElementById("container");
   var extensionsettings = document.getElementById("ExtensionPopup");
   container.onclick = function () {
