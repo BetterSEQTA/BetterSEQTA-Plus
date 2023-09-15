@@ -1,10 +1,13 @@
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-light-full.png#gh-dark-mode-only)
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
-# BetterSEQTA+
+<p align="center">
+  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for [SEQTA Learn](https://seqta.com.au/). **Currently looking for contributors** 🔥
+</p>
 
-Forking the BetterSEQTA project to add extra functionality
-Looking for contributors!
+<p align="center">
+ <a target="_blank" href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png" alt="ChromeDownload" width="250"></a>
+</p>
 
 ## Table of contents
 
@@ -29,7 +32,8 @@ Looking for contributors!
   - Edge Supported
   - Brave Supported
   - Opera Supported
-  - Firefox (currently not supported, plans for it in future though)
+  - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
+  - Safari (Experimental)
 
 ## Getting started
 
@@ -46,11 +50,7 @@ npm install
 ```
 OR
 ```
-pnpm install
-```
-OR
-```
-yarn install
+bun install
 ```
 
 3. Run the dev script (it updates as you save files)
@@ -60,11 +60,7 @@ npm run dev
 ```
 OR
 ```
-pnpm dev
-```
-OR
-```
-yarn dev
+bun run dev
 ```
 
 ## Folder Structure
@@ -76,6 +72,8 @@ The folder structure is as follows:
 - The `src` folder contains source files that are compiled to the build directory, these can use import statements so that we can do code splitting.
 
 - The `build` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
+
+- The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working (but because of the styling not being designed for phone, its basically useless for now).
 
 ## Contributing
 
