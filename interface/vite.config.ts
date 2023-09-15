@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: '../../public/popup-dist',
+    //outDir: '../../public/popup-dist',
     rollupOptions: {
       output: {
         assetFileNames: 'client/rsc/[ext]/[name][extname]',

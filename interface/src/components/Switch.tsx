@@ -1,31 +1,30 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import "./Switch.css";
 
 interface SwitchProps {
   onChange: (isOn: boolean) => void;
+  state: boolean;
 }
 
 export default function Switch(props: SwitchProps) {
-  const [isOn, setIsOn] = useState(false);
-
   const toggleSwitch = () => {
-    const newIsOn = !isOn;
-    setIsOn(newIsOn);
+    const newIsOn = !props.state;
     props.onChange(newIsOn);
   };
 
   return (
     <div
       className="flex w-14 p-1 cursor-pointer rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
-      data-isOn={isOn}
+      data-isOn={props.state}
       onClick={toggleSwitch}
     >
       <motion.div
+      
         className="w-6 h-6 bg-white dark:bg-[#FEFEFE] rounded-full drop-shadow-md"
-        layout
+        initial={{ x: props.state ? 0 : 0 }}
+        animate={{ x: props.state ? 24 : 0 }}
         transition={spring}
-      />
+        />
     </div>
   );
 }
