@@ -54,6 +54,10 @@
     {
       "resources": ["client.js"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["index.css"],
+      "matches": ["*://*/*"]
     }
   ]
 }
