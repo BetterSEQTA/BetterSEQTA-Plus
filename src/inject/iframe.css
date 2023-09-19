@@ -51,6 +51,10 @@ table th {
   background-color: transparent;
 }
 
+::-webkit-scrollbar-thumb {
+  border-radius: 10rem !important;
+}
+
 ::-webkit-scrollbar-corner {
   background: none;
 }
