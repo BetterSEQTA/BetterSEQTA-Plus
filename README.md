@@ -2,7 +2,7 @@
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for [SEQTA Learn](https://seqta.com.au/). **Currently looking for contributors** 🔥
+  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for [SEQTA Learn.](https://seqta.com.au/) **Currently looking for contributors** 🔥
 </p>
 
 <p align="center">
