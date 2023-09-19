@@ -1,5 +1,5 @@
 // App.tsx
-import { useState } from 'react';
+import React, { useState } from 'react';
 import TabbedContainer from './components/TabbedContainer';
 import Settings from './pages/Settings';
 import logo from './assets/betterseqta-dark-full.png';

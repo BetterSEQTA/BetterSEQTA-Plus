@@ -1,7 +1,5 @@
-// TODO: Create types for ColorPicker
-// @ts-expect-error No typescript declarations available
 import ColorPicker from 'react-best-gradient-color-picker';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface ColorPickerProps {
   color: string;
