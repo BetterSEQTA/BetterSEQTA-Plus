@@ -4,7 +4,6 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  important: true,
   darkMode: "class",
   theme: {
     fontSize: {
