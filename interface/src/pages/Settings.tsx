@@ -1,6 +1,6 @@
 import Switch from '../components/Switch';
 import ColorPicker from '../components/ColorPicker';
-import { SettingsState } from '../App';
+import { SettingsState } from '../../../src/popup/App';
 
 interface ISetting {
   title: string;
