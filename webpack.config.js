@@ -64,6 +64,7 @@ export default {
         { from: "public", to: "." },
         { from: "src/inject/preview", to: "inject/preview" },
         { from: "node_modules/webextension-polyfill/dist/browser-polyfill.js", to: "."},
+        { from: "interface/dist/client", to: "client" }
       ],
     }),
   ],

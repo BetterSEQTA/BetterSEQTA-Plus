@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 @import "./injected/popup.css";
-@import "./popup.css";
 
 :root {
   background-color: var(--better-main) !important;
@@ -22,11 +21,6 @@ html {
 * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
-}
-
-#title {
-  color: var(--text-primary);
-  font-weight: 500 !important;
 }
 
 @media (min-width: 900px) {
@@ -611,10 +605,12 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 #title {
   background: var(--background-primary);
+  color: var(--text-primary);
   height: 4rem;
-  box-shadow: rgb(0 0 0 / 35%) 0px 0px 10px;
   min-height: 48px;
+  box-shadow: rgb(0 0 0 / 35%) 0px 0px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500 !important;
   z-index: 1;
 }
 
@@ -1085,7 +1081,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 #ExtensionPopup {
   border-radius: 1rem;
-  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px -2px rgba(0,0,0,0.6)  
 }
 
 #menu li.active {
@@ -1676,7 +1672,7 @@ body {
 }
 
 .MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO {
-  box-shadow: inset 3px 0 rgb(255, 255, 255);
+  box-shadow: inset 3px 0 var(--better-main);
 }
 
 .connectedNotificationsWrapper > div > button {

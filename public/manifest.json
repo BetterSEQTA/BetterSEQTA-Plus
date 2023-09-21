@@ -58,6 +58,14 @@
     {
       "resources": ["index.css"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["interface/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }
