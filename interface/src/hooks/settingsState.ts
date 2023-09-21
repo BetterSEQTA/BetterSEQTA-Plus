@@ -57,17 +57,14 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   });
 
   const setStorage = (key: keyof MainConfig, value: any) => {
-    console.log(chrome.storage.local.set({ [key]: value }));
+    chrome.storage.local.set({ [key]: value });
   }
 
   useEffect(() => {
-    console.log("settingsState", settingsState)
-    console.log("previousSettingsState", previousSettingsState)
     if (previousSettingsState) {
       for (const [key, value] of Object.entries(settingsState)) {
         const storageKey = Object.keys(keyToStateMap).find(k => keyToStateMap[k] === key);
         if (storageKey && value !== previousSettingsState[key]) {
-          console.log("key", storageKey)
           setStorage(storageKey as keyof MainConfig, value);
         }
       }

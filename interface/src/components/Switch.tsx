@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import "./Switch.css";
-import type { SwitchProps } from "../types/Switch";
+import type { SwitchProps } from "../types/SwitchProps";
 
 export default function Switch(props: SwitchProps) {
   const toggleSwitch = () => {

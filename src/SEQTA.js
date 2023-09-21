@@ -1,4 +1,6 @@
 /*global chrome*/
+import Color from "color";
+
 import ShortcutLinks from "./seqta/content/links.json";
 import MenuitemSVGKey from "./seqta/content/MenuItemSVGKey.json";
 import stringToHTML from "./seqta/utils/stringToHTML.js";
@@ -626,109 +628,81 @@ function AppendElementsToDisabledPage() {
   document.head.append(settingsStyle);
 }
 
-function lightenAndPaleColor(
-  hexColor,
-  lightenFactor = 0.75,
-  paleFactor = 0.55,
-) {
-  // Convert a RGB value to HSL
-  function rgbToHsl(r, g, b) {
-    (r /= 255), (g /= 255), (b /= 255);
-    let max = Math.max(r, g, b),
-      min = Math.min(r, g, b);
-    let h,
-      s,
-      l = (max + min) / 2;
+function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
+  // Step 1: Convert RGBA to separate R, G and B values
+  const [r, g, b] = inputColor.match(/\d+/g).map(Number);
 
-    if (max === min) {
-      h = s = 0;
-    } else {
-      let d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-      }
-      h /= 6;
+  // Step 2: Convert RGB to HSL
+  let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+  const max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; 
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+
+    case r1: h = (g1 - b1) / d + (g1 < b1 ? 6 : 0); break;
+    case g1: h = (b1 - r1) / d + 2; break;
+    case b1: h = (r1 - g1) / d + 4; break;
+
     }
-
-    return [h, s, l];
+    h /= 6;
   }
 
-  // Convert an HSL value to RGB
-  function hslToRgb(h, s, l) {
-    function hue2rgb(p, q, t) {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    }
-
-    let r, g, b;
-    if (s === 0) {
-      r = g = b = l;
-    } else {
-      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      let p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1 / 3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1 / 3);
-    }
-
-    return [r * 255, g * 255, b * 255];
-  }
-
-  // Extract the red, green, and blue components from hex
-  let r = parseInt(hexColor.substr(1, 2), 16);
-  let g = parseInt(hexColor.substr(3, 2), 16);
-  let b = parseInt(hexColor.substr(5, 2), 16);
-
-  // Convert RGB to HSL
-  let [h, s, l] = rgbToHsl(r, g, b);
-
-  // Adjust saturation and lightness
+  // Step 3: Adjust saturation and lightness
   s -= s * paleFactor;
   l += (1 - l) * lightenFactor;
 
-  // Convert HSL back to RGB
-  [r, g, b] = hslToRgb(h, s, l);
+  // Step 4: Convert HSL back to RGB
+  const hue2rgb = (p, q, t) => {
+    if(t < 0) t += 1;
+    if(t > 1) t -= 1;
+    if(t < 1/6) return p + (q - p) * 6 * t;
+    if(t < 1/2) return q;
+    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
 
-  // Convert RGB to hex
-  r = Math.round(r).toString(16).padStart(2, "0");
-  g = Math.round(g).toString(16).padStart(2, "0");
-  b = Math.round(b).toString(16).padStart(2, "0");
+  let r2, g2, b2;
+  if (s === 0) {
+    r2 = g2 = b2 = l; 
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r2 = hue2rgb(p, q, h + 1/3);
+    g2 = hue2rgb(p, q, h);
+    b2 = hue2rgb(p, q, h - 1/3);
+  }
 
-  return "#" + r + g + b;
+  // Step 5: Format Output
+  const result = `rgb(${Math.round(r2 * 255)}, ${Math.round(g2 * 255)}, ${Math.round(b2 * 255)})`;
+
+  return `${result}`;
 }
 
-function ColorLuminance(hex, lum) {
-  // validate hex string
-  hex = String(hex).replace(/[^0-9a-f]/gi, "");
-  if (hex.length < 6) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-  }
-  lum = lum || 0;
+function ColorLuminance(color, lum = 0) {
+  // Convert the input color to HEX format
+  const hexColor = Color(color).hex();
 
-  // convert to decimal and change luminosity
-  var rgb = "#",
-    c,
-    i;
-  for (i = 0; i < 3; i++) {
-    c = parseInt(hex.substr(i * 2, 2), 16);
+  // Original luminance adjustment logic
+  let adjustedHex = String(hexColor).replace(/[^0-9a-f]/gi, "");
+  if (adjustedHex.length < 6) {
+    adjustedHex = adjustedHex[0] + adjustedHex[0] + adjustedHex[1] + adjustedHex[1] + adjustedHex[2] + adjustedHex[2];
+  }
+
+  let rgb = "#",
+    c;
+  for (let i = 0; i < 3; i++) {
+    c = parseInt(adjustedHex.substr(i * 2, 2), 16);
     c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
     rgb += ("00" + c).substring(c.length);
   }
 
-  return rgb;
+  // Convert the adjusted color back to the desired output mode
+  return Color(rgb).hex();
 }
 
 chrome.storage.onChanged.addListener(function (changes) {
@@ -736,6 +710,7 @@ chrome.storage.onChanged.addListener(function (changes) {
     try {
       chrome.storage.local.get(["DarkMode"], function (result) {
         if (!result.DarkMode) {
+          console.log(changes.selectedColor.newValue);
           document.documentElement.style.setProperty(
             "--better-pale",
             lightenAndPaleColor(changes.selectedColor.newValue),
@@ -747,6 +722,7 @@ chrome.storage.onChanged.addListener(function (changes) {
     }
 
     let rbg = GetThresholdofHex(changes.selectedColor.newValue);
+
     if (rbg > 210) {
       document.documentElement.style.setProperty("--text-color", "black");
       document.documentElement.style.setProperty(
@@ -2001,10 +1977,12 @@ function AddBetterSEQTAElements(toggle) {
                       students[index]?.house_colour,
                     );
 
-                    if (colorresult > 300) {
+                    if (colorresult && colorresult > 300) {
                       houseelement.style.color = "black";
-                    } else {
+                    } else if (colorresult < 300) {
                       houseelement.style.color = "white";
+                    } else {
+                      houseelement.style.color = "black";
                     }
                     houseelement.innerText =
                       students[index].year + students[index].house;
@@ -2137,7 +2115,7 @@ function AddBetterSEQTAElements(toggle) {
                   if (element.getAttribute("excludeDarkCheck") == "true") {
                     continue;
                   }
-                  
+
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "white";
                   element.contentDocument.documentElement.firstChild.appendChild(
@@ -2306,20 +2284,8 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-function hexToRGB(hex) {
-  try {
-    var r = parseInt(hex.slice(1, 3), 16),
-      g = parseInt(hex.slice(3, 5), 16),
-      b = parseInt(hex.slice(5, 7), 16);
-
-    return { r: r, g: g, b: b };
-  } catch {
-    // do nothing becuase this functoin is a bit broken right now (feel free to fix it!)
-  }
-}
-
-function GetThresholdofHex(hex) {
-  var rgb = hexToRGB(hex);
+function GetThresholdofHex(color) {
+  var rgb = Color.rgb(color).string();
   return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
 }
 
