@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import "./Slider.css";
-import type { Slider } from '../types/Slider';
+import type { Slider } from '../types/SliderProps';
 
 const Slider: React.FC<Slider> = ({ onValueChange }) => {
   const [sliderValue, setSliderValue] = useState(0);

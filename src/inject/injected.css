@@ -555,20 +555,19 @@ div > ol:has(.uiFileHandlerWrapper) {
   top: 0;
   width: 100%;
   height: 100vh;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-position: 10% 10%;
   color: var(--text-primary) !important;
 }
 
 .Module__wrapper___2sbOo {
+  overflow: clip;
   background: var(--background-primary) !important;
+  border-radius: 1rem !important;
   color: var(--text-primary) !important;
   box-shadow: none;
 }
 
 .course .composer {
-  background: var(--background-primary) !important;
+  background: transparent !important;
   overflow: hidden;
 }
 
@@ -577,7 +576,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   > .Container__container___33GlY
   > .Document__document___1KJCG
   > .Canvas__canvas___OBdCZ {
-  background-color: unset !important;
+  background-color: transparent !important;
   background-image: unset !important;
   color: white !important;
 }
@@ -1275,6 +1274,7 @@ iframe.userHTML {
 
 #main > .course > .content > h1 {
   color: var(--text-primary);
+  border-bottom: none;
 }
 
 #main > .course > .content > .outline > h2,
