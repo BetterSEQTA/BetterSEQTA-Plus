@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import "./Slider.css";
-
-interface Slider {
-  onValueChange: (value: number) => void;
-}
+import type { Slider } from '../types/Slider';
 
 const Slider: React.FC<Slider> = ({ onValueChange }) => {
   const [sliderValue, setSliderValue] = useState(0);

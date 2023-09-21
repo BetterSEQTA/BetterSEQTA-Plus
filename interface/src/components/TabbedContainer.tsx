@@ -1,15 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-interface Tab {
-  title: string;
-  content: JSX.Element;
-}
-
-interface TabbedContainerProps {
-  tabs: Tab[];
-  themeColor: string;
-}
+import type { TabbedContainerProps } from '../types/TabbedContainer';
 
 const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) => {
   const [activeTab, setActiveTab] = useState(0);

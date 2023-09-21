@@ -1,9 +1,9 @@
 import React, { JSX } from 'react';
-interface Tab {
+export interface Tab {
     title: string;
     content: JSX.Element;
 }
-interface TabbedContainerProps {
+export interface TabbedContainerProps {
     tabs: Tab[];
     themeColor: string;
 }

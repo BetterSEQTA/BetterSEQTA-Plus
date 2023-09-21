@@ -1,10 +1,7 @@
+// @ts-expect-error There aren't any types for the below library
 import ColorPicker from 'react-best-gradient-color-picker';
-import React, { useState, useRef, useEffect } from 'react';
-
-interface ColorPickerProps {
-  color: string;
-  onChange: (color: string) => void;
-}
+import { useState, useRef, useEffect } from 'react';
+import type { ColorPickerProps } from '../types/ColorPicker';
 
 const Picker = ({ color, onChange }: ColorPickerProps) => {
   const [showPicker, setShowPicker] = useState<boolean>(false);

@@ -13,7 +13,7 @@ let SettingsClicked = false;
 let MenuOptionsOpen = false;
 let UserInitalCode = "";
 let currentSelectedDate = new Date();
-let WhatsNewOpen = false;
+//let WhatsNewOpen = false;
 let LessonInterval;
 let DarkMode;
 
@@ -25,7 +25,7 @@ function SetDisplayNone(ElementName) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
-function animbkEnable (item) {
+function animbkEnable(item) {
   if (item.animatedbk) {
     CreateBackground();
   } else {
@@ -38,7 +38,9 @@ function bkValues (item) {
   const bg = document.getElementsByClassName("bg");
   const bg2 = document.getElementsByClassName("bg2");
   const bg3 = document.getElementsByClassName("bg3");
-  const value = 200 - item.bksliderinput;
+  const value = 200 - item.bksliderinput; // reverse the slider direction to match the animation direction
+
+  if (bg.length == 0 || bg2.length == 0 || bg3.length == 0) return;
 
   const minDuration = 1; // minimum duration in seconds
   const maxDuration = 10; // maximum duration in seconds
@@ -172,12 +174,12 @@ function OpenWhatsNewPopup() {
   var bkelement = document.getElementById("whatsnewbk");
   bkelement.addEventListener("click", function () {
     DeleteWhatsNew();
-    WhatsNewOpen = false;
+    //WhatsNewOpen = false;
   });
   var closeelement = document.getElementById("whatsnewclosebutton");
   closeelement.addEventListener("click", function () {
     DeleteWhatsNew();
-    WhatsNewOpen = false;
+    //WhatsNewOpen = false;
   });
 }
 
@@ -193,7 +195,7 @@ async function finishLoad() {
 
   chrome.storage.local.get(["justupdated"], function (result) {
     if (result.justupdated) {
-      WhatsNewOpen = true;
+      //WhatsNewOpen = true;
       OpenWhatsNewPopup();
     }
   });
@@ -233,6 +235,9 @@ function RemoveBackground() {
   var bk = document.getElementsByClassName("bg");
   var bk2 = document.getElementsByClassName("bg2");
   var bk3 = document.getElementsByClassName("bg3");
+
+  if (bk.length == 0 || bk2.length == 0 || bk3.length == 0) return;
+
   bk[0].remove();
   bk2[0].remove();
   bk3[0].remove();
@@ -760,7 +765,6 @@ chrome.storage.onChanged.addListener(function (changes) {
       "--better-main",
       changes.selectedColor.newValue,
     );
-    // document.documentElement.style.setProperty('--better-sub', ColorLuminance(changes.selectedColor.newValue, -0.15));
 
     if (changes.selectedColor.newValue == "#ffffff") {
       document.documentElement.style.setProperty("--better-light", "#b7b7b7");
@@ -801,7 +805,7 @@ async function CheckLoadOnPeriods() {
   }
 }
 
-function RunFunctionOnTrue(storedSetting) {
+function main(storedSetting) {
   DarkMode = storedSetting.DarkMode;
   // If the option is 'on', open BetterSEQTA
   if (typeof storedSetting.onoff == "undefined") {
@@ -891,7 +895,6 @@ function RunFunctionOnTrue(storedSetting) {
       "--better-main",
       storedSetting.selectedColor,
     );
-    // document.documentElement.style.setProperty('--better-sub', ColorLuminance(storedSetting.selectedColor, -0.15));
 
     if (storedSetting.selectedColor == "#ffffff") {
       document.documentElement.style.setProperty("--better-light", "#b7b7b7");
@@ -966,7 +969,7 @@ document.addEventListener(
       document.getElementsByTagName("html")[0].appendChild(link);
 
       chrome.storage.local.get(null, function (items) {
-        RunFunctionOnTrue(items);
+        main(items);
       });
     }
     if (
@@ -978,7 +981,7 @@ document.addEventListener(
   },
   true,
 );
-
+/*
 function RunExtensionSettingsJS() {
   const whatsnewsettings = document.getElementById("whatsnewsettings");
   whatsnewsettings.addEventListener("click", function () {
@@ -1043,9 +1046,9 @@ function RunExtensionSettingsJS() {
   function FindSEQTATab() {
     chrome.runtime.sendMessage({ type: "reloadTabs" });
   }
-  /*
-  Store the currently selected settings using chrome.storage.local.
-  */
+  
+  // Store the currently selected settings using chrome.storage.local.
+
   function storeSettings() {
     chrome.storage.local.set({ onoff: onoffselection.checked }, function () {
       FindSEQTATab();
@@ -1072,10 +1075,10 @@ function RunExtensionSettingsJS() {
 
     FindSEQTATab();
   }
-  /*
-  Update the options UI with the settings values retrieved from storage,
-  or the default settings if the stored settings are empty.
-  */
+  
+  // Update the options UI with the settings values retrieved from storage,
+  // or the default settings if the stored settings are empty.
+  
   function updateUI(restoredSettings) {
     if (typeof restoredSettings.onoff == "undefined") {
       chrome.runtime.sendMessage({ type: "setDefaultStorage" });
@@ -1310,7 +1313,7 @@ function RunExtensionSettingsJS() {
       chrome.storage.local.set({ selectedColor: b });
     }
   });
-}
+}*/
 
 function CallExtensionSettings() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
@@ -1333,7 +1336,7 @@ function CallExtensionSettings() {
   fileref.setAttribute("href", cssFile);
   document.head.append(fileref);
 
-  let Settings =
+  /*let Settings =
     stringToHTML(
       String.raw`
       <div class="outside-container hidden" id="ExtensionPopup"><div class="logo-container"><img src=${chrome.runtime.getURL(
@@ -1580,20 +1583,31 @@ function CallExtensionSettings() {
       <p style="margin: 0; flex: 1; padding-left: 24px; margin-right: 5px; color: white;">By SethBurkart123</p>
       <button style="margin: 0; margin-right: 20px; cursor:pointer; padding: 8px 10px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">Changelog v${chrome.runtime.getManifest().version}</button>
     </div>
-  </div></div>`);
-  document.body.append(Settings.firstChild);
+  </div></div>`);*/
+  let Settings2 =
+  stringToHTML(
+    String.raw`
+    <div class="outside-container hide" id="ExtensionPopup">
+    </div>
+    `);
+  document.body.append(Settings2.firstChild);
 
-  // override old popup with new (experimental)
-  const script = document.createElement("script");
-  script.type = "module"; 
-  script.src = chrome.runtime.getURL("client.js");
-  (document.head||document.documentElement).appendChild(script);
+  // add an iframe to the div: <iframe src="interface/index.html"></iframe>
+  let iframe = document.createElement("iframe");
+  iframe.src = chrome.runtime.getURL("interface/index.html");
+  iframe.allowTransparency = "true";
+  iframe.style.width = "384px";
+  iframe.style.height = "590px";
+  iframe.style.border = "none";
+  iframe.setAttribute("excludeDarkCheck", "true");
+  
+  document.getElementById("ExtensionPopup").append(iframe);
 
   var container = document.getElementById("container");
   var extensionsettings = document.getElementById("ExtensionPopup");
   container.onclick = function () {
     if (!SettingsClicked) {
-      extensionsettings.classList.add("hidden");
+      extensionsettings.classList.add("hide");
     }
     SettingsClicked = false;
   };
@@ -2056,8 +2070,9 @@ function AddBetterSEQTAElements(toggle) {
       }
 
       CallExtensionSettings();
-      RunExtensionSettingsJS();
+      //RunExtensionSettingsJS();
 
+      // If betterSEQTA+ is enabled, run the code
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
@@ -2118,6 +2133,11 @@ function AddBetterSEQTAElements(toggle) {
 
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
+
+                  if (element.getAttribute("excludeDarkCheck") == "true") {
+                    continue;
+                  }
+                  
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "white";
                   element.contentDocument.documentElement.firstChild.appendChild(
@@ -2151,6 +2171,11 @@ function AddBetterSEQTAElements(toggle) {
 
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
+
+                  if (element.getAttribute("excludeDarkCheck") == "true") {
+                    continue;
+                  }
+
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "black";
                   element.contentDocument.documentElement.firstChild.lastChild.remove();
@@ -2174,7 +2199,7 @@ function AddBetterSEQTAElements(toggle) {
       var AddedSettings = document.getElementById("AddedSettings");
       var extensionsettings = document.getElementById("ExtensionPopup");
       AddedSettings.addEventListener("click", function () {
-        extensionsettings.classList.toggle("hidden");
+        extensionsettings.classList.toggle("hide");
         SettingsClicked = true;
       });
     }
