@@ -684,26 +684,53 @@ function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55
 }
 
 function ColorLuminance(color, lum = 0) {
-  // Convert the input color to HEX format
-  const hexColor = Color(color).hex();
+  // Regular expression to match RGBA colors
+  const rgbaRegex = /rgba?\(([^)]+)\)/g;
 
-  // Original luminance adjustment logic
-  let adjustedHex = String(hexColor).replace(/[^0-9a-f]/gi, "");
-  if (adjustedHex.length < 6) {
-    adjustedHex = adjustedHex[0] + adjustedHex[0] + adjustedHex[1] + adjustedHex[1] + adjustedHex[2] + adjustedHex[2];
+  // Check if the input color is a gradient (linear or radial)
+  if (color.includes("gradient")) {
+    let gradient = color;
+
+    // Find and replace all instances of RGBA in the gradient
+    let match;
+    while ((match = rgbaRegex.exec(color)) !== null) {
+      const rgbaString = match[1];
+      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
+
+      // Apply the original luminance adjustment logic
+      let adjustedRgba = [];
+      for (let c of [r, g, b]) {
+        c = Math.round(Math.min(Math.max(0, c + c * lum), 255));
+        adjustedRgba.push(c);
+      }
+      adjustedRgba.push(a);  // Add the alpha component back
+
+      // Replace the original RGBA string with the adjusted one
+      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${adjustedRgba.join(", ")})`);
+    }
+
+    return gradient;
+
+  } else {
+    // Handle as a simple color (could be HEX, RGBA, etc., as supported by your Color library)
+    const hexColor = Color(color).hex();
+    let adjustedHex = String(hexColor).replace(/[^0-9a-f]/gi, "");
+    if (adjustedHex.length < 6) {
+      adjustedHex = adjustedHex[0] + adjustedHex[0] + adjustedHex[1] + adjustedHex[1] + adjustedHex[2] + adjustedHex[2];
+    }
+
+    let rgb = "#",
+      c;
+    for (let i = 0; i < 3; i++) {
+      c = parseInt(adjustedHex.substr(i * 2, 2), 16);
+      c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
+      rgb += ("00" + c).substring(c.length);
+    }
+
+    return Color(rgb).hex();
   }
-
-  let rgb = "#",
-    c;
-  for (let i = 0; i < 3; i++) {
-    c = parseInt(adjustedHex.substr(i * 2, 2), 16);
-    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
-    rgb += ("00" + c).substring(c.length);
-  }
-
-  // Convert the adjusted color back to the desired output mode
-  return Color(rgb).hex();
 }
+
 
 chrome.storage.onChanged.addListener(function (changes) {
   if (changes.selectedColor) {
@@ -2285,8 +2312,35 @@ function CheckCurrentLesson(lesson, num) {
 }
 
 function GetThresholdofHex(color) {
-  var rgb = Color.rgb(color).string();
-  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
+  // Regular expression for matching RGBA colors
+  const rgbaRegex = /rgba?\(([^)]+)\)/g;
+
+  // Check if the color string is a gradient (linear or radial)
+  if (color.includes("gradient")) {
+    let gradient = color;
+    
+    // Find and replace all instances of RGBA in the gradient
+    let match;
+    while ((match = rgbaRegex.exec(color)) !== null) {
+      // Extract the individual components (r, g, b, a)
+      const rgbaString = match[1];
+      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
+
+      // Compute the threshold using your existing algorithm
+      const threshold = Math.sqrt(r ** 2 + g ** 2 + b ** 2);
+
+      // Replace the original RGBA string with the computed threshold
+      // Note: You can modify this part based on what you actually want to do with the threshold
+      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${threshold}, ${threshold}, ${threshold}, ${a})`);
+    }
+    
+    return gradient;
+
+  } else {
+    // Handle the color as a simple RGBA (or hex, or whatever the Color library supports)
+    const rgb = Color.rgb(color).string();
+    return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
+  }
 }
 
 function CheckCurrentLessonAll(lessons) {
