@@ -614,11 +614,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .bg {
   animation: slide 3s ease-in-out infinite alternate;
-  background-image: linear-gradient(
-    -60deg,
-    var(--better-main) 50%,
-    var(--auto-background) 50%
-  );
+  background: var(--better-main);
   bottom: 0;
   left: -50%;
   opacity: 0.5;
@@ -627,6 +623,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   top: 0;
   z-index: 0 !important;
   overflow: hidden;
+  scale: 1.5;
 }
 
 .bg2 {
@@ -640,11 +637,11 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 @keyframes slide {
   0% {
-    transform: translateX(-25%);
+    transform: translate(50%) rotate(-60deg);
   }
 
   100% {
-    transform: translateX(25%);
+    transform: translateX(5%) rotate(-60deg);
   }
 }
 
