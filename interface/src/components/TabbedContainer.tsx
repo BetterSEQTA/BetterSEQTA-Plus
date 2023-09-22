@@ -35,30 +35,31 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) =
   };
 
   return (
-    <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
-      <div ref={containerRef} className="sticky top-0 z-10 text-[0.875rem] mb-2 pb-2 bg-white">
-        <div className="relative flex">          
-          <motion.div
-            className="absolute top-0 left-0 z-0 h-full rounded-full opacity-40"
-            style={{ width: `${tabWidth}px`, background: themeColor }}
-            initial={false}
-            animate={{ x: calcXPos(hoveredTab) }}
-            transition={springTransition}
-          />
-          {tabs.map((tab, index) => (
-            <button
-              key={index}
-              className="relative z-10 flex-1 px-4 py-2"
-              onClick={() => setActiveTab(index)}
-              onMouseEnter={() => setHoveredTab(index)}
-              onMouseLeave={() => setHoveredTab(null)}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
+    <>
+    <div ref={containerRef} className="top-0 z-10 text-[0.875rem] mb-2 pb-2 mx-4">
+      <div className="relative flex">          
+        <motion.div
+          className="absolute top-0 left-0 z-0 h-full rounded-full opacity-40"
+          style={{ width: `${tabWidth}px`, background: themeColor }}
+          initial={false}
+          animate={{ x: calcXPos(hoveredTab) }}
+          transition={springTransition}
+        />
+        {tabs.map((tab, index) => (
+          <button
+            key={index}
+            className="relative z-10 flex-1 px-4 py-2"
+            onClick={() => setActiveTab(index)}
+            onMouseEnter={() => setHoveredTab(index)}
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            {tab.title}
+          </button>
+        ))}
       </div>
-      <div className="relative">
+    </div>
+    <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
+      <div className="-mt-4">
         <motion.div
           initial={false}
           animate={{ x: `${position}%` }}
@@ -77,6 +78,7 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) =
         </motion.div>
       </div>
     </div>
+    </>
   );
 };
 

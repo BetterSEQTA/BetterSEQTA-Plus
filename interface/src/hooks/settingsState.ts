@@ -4,9 +4,6 @@ import { SettingsProps } from "../types/SettingsProps";
 import { MainConfig, SettingsState } from "../types/AppProps";
 
 let RanOnce = false;
-type StorageKeyToStateKeyMap = {
-  [key in keyof MainConfig]?: keyof SettingsState;
-};
 let previousSettingsState: SettingsState
 
 const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) => {
@@ -25,6 +22,10 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         customThemeColor: result.selectedColor,
         betterSEQTAPlus: result.onoff
       });
+
+      if (result.DarkMode) {
+        document.body.classList.add('dark');
+      }
     });
   });
   
@@ -38,13 +39,24 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   }), []);
   
   const storageChangeListener = (changes: chrome.storage.StorageChange) => {
+    console.log(changes);
     for (const [key, { newValue }] of Object.entries(changes)) {
+      if (key === "DarkMode") {
+        if (key === "DarkMode" && newValue) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+      }
+
+      // @ts-expect-error - TODO: Fix this
       const stateKey = keyToStateMap[key as keyof MainConfig];
       if (stateKey) {
         setSettingsState((prevState: SettingsState) => ({
           ...prevState,
           [stateKey]: newValue
         }));
+
       }
     }
   };
@@ -63,7 +75,9 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   useEffect(() => {
     if (previousSettingsState) {
       for (const [key, value] of Object.entries(settingsState)) {
+        // @ts-expect-error - TODO: Fix this
         const storageKey = Object.keys(keyToStateMap).find(k => keyToStateMap[k] === key);
+        // @ts-expect-error - TODO: Fix this
         if (storageKey && value !== previousSettingsState[key]) {
           setStorage(storageKey as keyof MainConfig, value);
         }
