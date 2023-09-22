@@ -15,7 +15,6 @@ let SettingsClicked = false;
 let MenuOptionsOpen = false;
 let UserInitalCode = "";
 let currentSelectedDate = new Date();
-//let WhatsNewOpen = false;
 let LessonInterval;
 let DarkMode;
 
