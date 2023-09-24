@@ -3026,15 +3026,24 @@ function SendHomePage() {
     // Adds the shortcuts to the shortcut container
     chrome.storage.local.get(["shortcuts"], function (result) {
       var shortcuts = Object.values(result)[0];
+
       for (let i = 0; i < shortcuts.length; i++) {
-        if (shortcuts[i].enabled) {
-          let Itemname = shortcuts[i].name.replace(/ /g, "");
-          createNewShortcut(
-            ShortcutLinks[Itemname].link,
-            ShortcutLinks[Itemname].icon,
-            ShortcutLinks[Itemname].viewBox,
-            shortcuts[i].name,
-          );
+        const currentShortcut = shortcuts[i];
+                
+        if (currentShortcut?.enabled) {
+          const Itemname = currentShortcut?.name;
+                    
+          const linkDetails = ShortcutLinks?.[Itemname];
+          if (linkDetails) {
+            createNewShortcut(
+              linkDetails.link,
+              linkDetails.icon,
+              linkDetails.viewBox,
+              Itemname
+            );
+          } else {
+            console.warn(`No link details found for '${Itemname}'`);
+          }
         }
       }
       AddCustomShortcutsToPage();
