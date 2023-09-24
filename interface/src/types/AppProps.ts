@@ -5,25 +5,29 @@ export interface SettingsState {
   animatedBackgroundSpeed: string;
   customThemeColor: string;
   betterSEQTAPlus: boolean;
+  shortcuts: Shortcut[];
+  customshortcuts: CustomShortcut[];
 }
 
-// Define the ToggleItem interface for the nested objects in menuitems
 interface ToggleItem {
   toggle: boolean;
 }
 
-// Define the Shortcut interface for the objects in the shortcuts array
 interface Shortcut {
   enabled: boolean;
   name: string;
 }
 
-// Define the MainConfig interface for the top-level object
+interface CustomShortcut {
+  name: string;
+  url: string;
+}
+
 export interface MainConfig {
   DarkMode: boolean;
   animatedbk: boolean;
   bksliderinput: string;
-  customshortcuts: any[];
+  customshortcuts: CustomShortcut[];
   defaultmenuorder: any[];
   lessonalert: boolean;
   menuitems: {
@@ -49,5 +53,5 @@ export interface MainConfig {
   onoff: boolean;
   selectedColor: string;
   shortcuts: Shortcut[];
-  subjectfilters: Record<string, any>; // Could be more specific based on what types are allowed
+  subjectfilters: Record<string, any>;
 }

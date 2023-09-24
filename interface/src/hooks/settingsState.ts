@@ -7,22 +7,24 @@ let RanOnce = false;
 let previousSettingsState: SettingsState
 
 const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) => {
-  // run the following code once
   useEffect(() => {
     if (RanOnce) return;
     RanOnce = true;
 
     // get the current settings state
     chrome.storage.local.get(function(result: MainConfig) {
+      console.log(result);
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
         animatedBackground: result.animatedbk,
         animatedBackgroundSpeed: result.bksliderinput,
         customThemeColor: result.selectedColor,
-        betterSEQTAPlus: result.onoff
+        betterSEQTAPlus: result.onoff,
+        shortcuts: result.shortcuts,
+        customshortcuts: result.customshortcuts,
       });
-
+      
       if (result.DarkMode) {
         document.body.classList.add('dark');
       }
@@ -36,10 +38,12 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "bksliderinput": "animatedBackgroundSpeed",
     "selectedColor": "customThemeColor",
     "onoff": "betterSEQTAPlus",
+    "shortcuts": "shortcuts",
+    "customshortcuts": "customshortcuts",
   }), []);
   
   const storageChangeListener = (changes: chrome.storage.StorageChange) => {
-    console.log(changes);
+    console.log(settingsState);
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {

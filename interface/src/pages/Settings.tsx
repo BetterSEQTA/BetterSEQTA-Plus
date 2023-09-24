@@ -1,8 +1,10 @@
 import Switch from '../components/Switch';
 import ColorPicker from '../components/ColorPicker';
-import { SettingsProps, SettingsList } from '../types/SettingsProps';
+import { SettingsList } from '../types/SettingsProps';
+import { useSettingsContext } from '../SettingsContext';
 
-const Settings: React.FC<SettingsProps> = ({ settingsState, setSettingsState }) => {
+const Settings: React.FC = () => {
+  const { settingsState, setSettingsState } = useSettingsContext();
 
   const switchChange = (key: string, isOn: boolean) => {
     setSettingsState({
@@ -52,7 +54,7 @@ const Settings: React.FC<SettingsProps> = ({ settingsState, setSettingsState }) 
   ];
 
   return (
-    <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100">
+    <div className="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100">
       {settings.map((setting, index) => (
         <div className="flex items-center justify-between px-4 py-3" key={index}>
           <div className="pr-4">

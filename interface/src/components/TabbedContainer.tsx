@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
+import { useSettingsContext } from '../SettingsContext';
 
-const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) => {
+const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [hoveredTab, setHoveredTab] = useState<number | null>(null);
   const [tabWidth, setTabWidth] = useState(0);
   const [position, setPosition] = useState(0);
   const positionRef = useRef(position);
+  const themeColor = useSettingsContext().settingsState.customThemeColor;
 
   useEffect(() => {
     const newPosition = -activeTab * 100;
@@ -59,24 +61,22 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) =
       </div>
     </div>
     <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
-      <div className="-mt-4">
-        <motion.div
-          initial={false}
-          animate={{ x: `${position}%` }}
-          transition={springTransition}
-        >
-          <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
-            {tabs.map((tab, index) => (
-              <div
-                key={index}
-                className={`w-full ${activeTab === index ? '' : 'hidden'}`}
-              >
-                {tab.content}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
+      <motion.div
+        initial={false}
+        animate={{ x: `${position}%` }}
+        transition={springTransition}
+      >
+        <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
+          {tabs.map((tab, index) => (
+            <div
+              key={index}
+              className={`w-full ${activeTab === index ? '' : 'hidden'}`}
+            >
+              {tab.content}
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
     </>
   );
