@@ -5,7 +5,6 @@ export interface Tab {
 }
 export interface TabbedContainerProps {
     tabs: Tab[];
-    themeColor: string;
 }
 declare const TabbedContainer: React.FC<TabbedContainerProps>;
 export default TabbedContainer;

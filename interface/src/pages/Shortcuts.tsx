@@ -1,95 +1,96 @@
 import { useState } from "react";
 import Switch from "../components/Switch";
+import { useSettingsContext } from "../SettingsContext";
+
+interface Shortcut {
+  name: string;
+  url: string;
+  enabled?: boolean;
+}
 
 export default function Shortcuts() {
-  const [shortcutState, setShortcutState] = useState({
-    youtube: false,
-    outlook: false,
-    office: false,
-    spotify: false,
-    google: false,
-    duckduckgo: false,
-    coolmathgames: false,
-    sace: false,
-    googlescholar: false,
-    gmail: false,
-    netflix: false
-  });
+  const { settingsState, setSettingsState } = useSettingsContext();
 
-  // Handler for Switches
-  const switchChange = (key: string, isOn: boolean) => {
-    setShortcutState({
-      ...shortcutState,
-      [key]: isOn,
+  const switchChange = (shortcutName: string, isOn: boolean): void => {
+    const updatedShortcuts = settingsState.shortcuts.map((shortcut) => {
+      if (shortcut.name === shortcutName) {
+        return { ...shortcut, enabled: isOn };
+      }
+      return shortcut;
     });
+
+    setSettingsState({ ...settingsState, shortcuts: updatedShortcuts });
   };
 
-  const DefaultShortcuts = [
-    {
-      title: "YouTube",
-      link: "https://youtube.com",
-      modifyElement: <Switch state={shortcutState.youtube} onChange={(isOn: boolean) => switchChange('youtube', isOn)} />
-    },
-    {
-      title: "Outlook",
-      link: "https://outlook.office.com/mail/inbox",
-      modifyElement: <Switch state={shortcutState.outlook} onChange={(isOn: boolean) => switchChange('outlook', isOn)} />
-    },
-    {
-      title: "Office",
-      link: "https://www.office.com/",
-      modifyElement: <Switch state={shortcutState.office} onChange={(isOn: boolean) => switchChange('office', isOn)} />
-    },
-    {
-      title: "Spotify",
-      link: "https://www.spotify.com/",
-      modifyElement: <Switch state={shortcutState.spotify} onChange={(isOn: boolean) => switchChange('spotify', isOn)} />
-    },
-    {
-      title: "Google",
-      link: "https://www.google.com/",
-      modifyElement: <Switch state={shortcutState.google} onChange={(isOn: boolean) => switchChange('google', isOn)} />
-    },
-    {
-      title: "DuckDuckGo",
-      link: "https://duckduckgo.com/",
-      modifyElement: <Switch state={shortcutState.duckduckgo} onChange={(isOn: boolean) => switchChange('duckduckgo', isOn)} />
-    },
-    {
-      title: "Cool Math Games",
-      link: "https://www.coolmathgames.com/",
-      modifyElement: <Switch state={shortcutState.coolmathgames} onChange={(isOn: boolean) => switchChange('coolmathgames', isOn)} />
-    },
-    {
-      title: "SACE",
-      link: "https://www.sace.sa.edu.au/",
-      modifyElement: <Switch state={shortcutState.sace} onChange={(isOn: boolean) => switchChange('sace', isOn)} />
-    },
-    {
-      title: "Google Scholar",
-      link: "https://scholar.google.com/",
-      modifyElement: <Switch state={shortcutState.googlescholar} onChange={(isOn: boolean) => switchChange('googlescholar', isOn)} />
-    },
-    {
-      title: "Gmail",
-      link: "https://mail.google.com/",
-      modifyElement: <Switch state={shortcutState.gmail} onChange={(isOn: boolean) => switchChange('gmail', isOn)} />
-    },
-    {
-      title: "Netflix",
-      link: "https://www.netflix.com/",
-      modifyElement: <Switch state={shortcutState.netflix} onChange={(isOn: boolean) => switchChange('netflix', isOn)} />
+  const [newTitle, setNewTitle] = useState<string>("");
+  const [newURL, setNewURL] = useState<string>("");
+
+  const isValidTitle = (title: string): boolean => title.trim() !== "";
+  
+  const isValidURL = (url: string): boolean => {
+    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+[\\w.-]+$", "i");
+    return pattern.test(url);
+  };
+
+  const addNewCustomShortcut = (): void => {
+    if (isValidTitle(newTitle) && isValidURL(newURL)) {
+      const newShortcut: Shortcut = { name: newTitle.trim(), url: newURL.trim() };
+      const updatedCustomShortcuts = [...settingsState.customshortcuts, newShortcut];
+      setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
+      setNewTitle("");
+      setNewURL("");
+    } else {
+      // Replace with a more user-friendly way to display errors
+      console.error("Please enter a valid title and URL.");
     }
-  ];
+  };
+
+  const deleteCustomShortcut = (index: number): void => {
+    const updatedCustomShortcuts = settingsState.customshortcuts.filter((_, i) => i !== index);
+    setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
+  };
 
   return (
     <div className="flex flex-col divide-y divide-zinc-100">
-      {DefaultShortcuts.map((shortcut, index) => (
-        <div className="flex items-center justify-between px-4 py-3" key={index}>
-          {shortcut.title}
-          {shortcut.modifyElement}
-        </div>
-      ))}
+      {/* Form Section */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <input
+          type="text"
+          placeholder="Title"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="URL"
+          value={newURL}
+          onChange={(e) => setNewURL(e.target.value)}
+        />
+        <button onClick={addNewCustomShortcut}>Add</button>
+      </div>
+            {/* Shortcuts Section */}
+            {settingsState.shortcuts ? (
+        settingsState.shortcuts.map((shortcut) => (
+          <div className="flex items-center justify-between px-4 py-3" key={shortcut.name}>
+            {shortcut.name}
+            <Switch state={shortcut.enabled} onChange={(isOn) => switchChange(shortcut.name, isOn)} />
+          </div>
+        ))
+      ) : (
+        <p>Loading shortcuts...</p>
+      )}
+      
+      {/* Custom Shortcuts Section */}
+      {settingsState.customshortcuts ? (
+        settingsState.customshortcuts.map((shortcut, index) => (
+          <div className="flex items-center justify-between px-4 py-3" key={shortcut.name}>
+            {shortcut.name}
+            <button onClick={() => deleteCustomShortcut(index)}>Delete</button>
+          </div>
+        ))
+      ) : (
+        <p>Loading custom shortcuts...</p>
+      )}
     </div>
   );
 }
