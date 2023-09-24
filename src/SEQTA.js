@@ -2870,7 +2870,21 @@ function CreateCustomShortcutDiv(element) {
   shortcutdiv.classList.add("customshortcut");
 
   let image = stringToHTML(
-    `<svg viewBox="0 0 40 40" style="width:39px;height:39px"><text font-size="32" font-weight="bold" fill="var(--text-primary)" x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${element.icon}</text></svg>`,
+    `
+    <svg style="width:39px;height:39px" viewBox="0 0 40 40" class="shortcuticondiv">
+      <text 
+        text-anchor="middle" 
+        x="50%" 
+        y="50%" 
+        dy=".35em" 
+        fill="var(--text-primary)" 
+        font-weight="bold" 
+        font-size="32" 
+        dominant-baseline="middle">
+        ${element.icon}
+      </text>
+    </svg>
+    `,
   ).firstChild;
   image.classList.add("shortcuticondiv");
   var text = document.createElement("p");
