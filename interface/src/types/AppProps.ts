@@ -18,9 +18,10 @@ interface Shortcut {
   name: string;
 }
 
-interface CustomShortcut {
+export interface CustomShortcut {
   name: string;
   url: string;
+  icon: string;
 }
 
 export interface MainConfig {
