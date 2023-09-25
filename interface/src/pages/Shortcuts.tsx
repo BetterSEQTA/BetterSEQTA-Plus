@@ -2,12 +2,7 @@ import { useState } from "react";
 import Switch from "../components/Switch";
 import { useSettingsContext } from "../SettingsContext";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Shortcut {
-  name: string;
-  url: string;
-  enabled?: boolean;
-}
+import { CustomShortcut } from "../types/AppProps";
 
 export default function Shortcuts() {
   const { settingsState, setSettingsState } = useSettingsContext();
@@ -35,7 +30,7 @@ export default function Shortcuts() {
 
   const addNewCustomShortcut = (): void => {
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
-      const newShortcut: Shortcut = { name: newTitle.trim(), url: newURL.trim() };
+      const newShortcut: CustomShortcut = { name: newTitle.trim(), url: newURL.trim(), icon: newTitle[0] };
       const updatedCustomShortcuts = [...settingsState.customshortcuts, newShortcut];
       setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
       setNewTitle("");
@@ -118,8 +113,8 @@ export default function Shortcuts() {
 
       {/* Shortcuts Section */}
       {settingsState.shortcuts ? (
-        settingsState.shortcuts.map((shortcut) => shortcut.name && (
-          <div className="flex items-center justify-between px-4 py-3" key={shortcut.name}>
+        settingsState.shortcuts.map((shortcut, index) => shortcut.name && (
+          <div className="flex items-center justify-between px-4 py-3" key={index}>
             {shortcut.name}
             <Switch state={shortcut.enabled} onChange={(isOn) => switchChange(shortcut.name, isOn)} />
           </div>
@@ -131,21 +126,11 @@ export default function Shortcuts() {
       {/* Custom Shortcuts Section */}
       {settingsState.customshortcuts ? (
         settingsState.customshortcuts.map((shortcut, index) => (
-          <div className="flex items-center justify-between px-4 py-3" key={shortcut.name}>
+          <div className="flex items-center justify-between px-4 py-3" key={index}>
             {shortcut.name}
             <button onClick={() => deleteCustomShortcut(index)}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4 text-red-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  // eslint-disable-next-line max-len
-                  d="M15.707 4.293a1 1 0 010 1.414L11.414 10l4.293 4.293a1 1 0 11-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 11-1.414-1.414L8.586 10 4.293 5.707a1 1 0 111.414-1.414L10 8.586l4.293-4.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
