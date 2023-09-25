@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Switch from "../components/Switch";
 import { useSettingsContext } from "../SettingsContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Shortcut {
   name: string;
@@ -39,6 +40,8 @@ export default function Shortcuts() {
       setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
       setNewTitle("");
       setNewURL("");
+
+      setFormVisible(false);
     } else {
       // Replace with a more user-friendly way to display errors
       console.error("Please enter a valid title and URL.");
@@ -50,26 +53,71 @@ export default function Shortcuts() {
     setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
   };
 
+  const [isFormVisible, setFormVisible] = useState(false);
+
+  const toggleForm = () => {
+    setFormVisible(!isFormVisible);
+  };
+
   return (
     <div className="flex flex-col divide-y divide-zinc-100">
-      {/* Form Section */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <input
-          type="text"
-          placeholder="Title"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="URL"
-          value={newURL}
-          onChange={(e) => setNewURL(e.target.value)}
-        />
-        <button onClick={addNewCustomShortcut}>Add</button>
-      </div>
-            {/* Shortcuts Section */}
-            {settingsState.shortcuts ? (
+
+      <AnimatePresence>
+        {isFormVisible ? (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ type: "spring", damping: 20 }}
+          >
+            <div className="flex flex-col items-center mb-4">
+              <motion.input
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="w-full p-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
+                type="text"
+                placeholder="Shortcut Name"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+              />
+              <motion.input
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="w-full p-2 my-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
+                type="text"
+                placeholder="URL eg. https://google.com"
+                value={newURL}
+                onChange={(e) => setNewURL(e.target.value)}
+              />
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="w-full px-4 py-2 text-white bg-blue-500 rounded-md"
+                onClick={ addNewCustomShortcut }
+              >
+                Add
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.button
+            initial={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
+            animate={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
+            exit={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
+            transition={{ type: 'tween', ease: "easeOut" }}
+            className="px-4 py-2 mb-4 text-white bg-blue-500 rounded"
+            onClick={toggleForm}
+          >
+            Add Custom Shortcut
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Shortcuts Section */}
+      {settingsState.shortcuts ? (
         settingsState.shortcuts.map((shortcut) => (
           <div className="flex items-center justify-between px-4 py-3" key={shortcut.name}>
             {shortcut.name}
