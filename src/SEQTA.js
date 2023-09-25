@@ -779,14 +779,25 @@ chrome.storage.onChanged.addListener(function (changes) {
   }
 
   if (changes?.customshortcuts?.newValue) {
-    if (changes.customshortcuts.oldValue.length > 0) {
-      CreateCustomShortcutDiv(
-        changes.customshortcuts.newValue[
-          changes.customshortcuts.oldValue.length
-        ],
+    console.log(changes);
+  
+    const oldValue = changes.customshortcuts.oldValue;
+    const newValue = changes.customshortcuts.newValue;
+  
+    // Check for addition
+    if (newValue.length > oldValue.length) {
+      CreateCustomShortcutDiv(newValue[oldValue.length]);
+    }
+    // Check for removal
+    else if (newValue.length < oldValue.length) {
+      // Find the removed element
+      const removedElement = oldValue.find(
+        (oldItem) => !newValue.some((newItem) => JSON.stringify(oldItem) === JSON.stringify(newItem))
       );
-    } else {
-      CreateCustomShortcutDiv(changes.customshortcuts.newValue[0]);
+  
+      if (removedElement) {
+        RemoveCustomShortcutDiv(removedElement);
+      }
     }
   }
 });
@@ -2944,6 +2955,20 @@ function CreateCustomShortcutDiv(element) {
   shortcut.append(shortcutdiv);
 
   document.getElementById("shortcuts").append(shortcut);
+}
+
+function RemoveCustomShortcutDiv(element) {
+  // Iterate through each shortcut
+  const shortcuts = document.querySelectorAll(".shortcut");
+  shortcuts.forEach((shortcut) => {
+    const anchorElement = shortcut.parentElement; // the <a> element is the parent
+    const textElement = shortcut.querySelector("p"); // <p> is a direct child of .shortcut
+    const title = textElement ? textElement.textContent : "";
+    
+    if (anchorElement.getAttribute("href") === element.url && title === element.name) {
+      anchorElement.remove();
+    }
+  });
 }
 
 function AddCustomShortcutsToPage() {
