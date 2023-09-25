@@ -837,7 +837,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .customshortcut::after {
-  content: "User Created Shortcut";
+  content: "Custom Shortcut";
   position: absolute;
   top: -4px;
   right: -15px;
@@ -2158,7 +2158,7 @@ body {
 }
 
 .upcoming-title h2 {
-  width: 25%;
+  width: 100%;
 }
 
 .upcoming-filters {
@@ -2461,10 +2461,6 @@ body {
 .upcoming-title {
   display: flex;
   align-content: space-between;
-}
-
-.upcoming-title h2 {
-  width: 25%;
 }
 
 .upcoming-filters {
