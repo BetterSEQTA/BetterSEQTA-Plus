@@ -1,29 +1,24 @@
-import React, { useState } from 'react';
+import { useSettingsContext } from "../SettingsContext";
 import "./Slider.css";
-import type { Slider } from '../types/SliderProps';
 
-const Slider: React.FC<Slider> = ({ onValueChange }) => {
-  const [sliderValue, setSliderValue] = useState(0);
+interface SliderProps {
+  state: number;
+  onChange: (value: number) => void;
+}
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value, 10);
-    setSliderValue(value);
-  };
-
-  const handleMouseUp = () => {
-    onValueChange(sliderValue);
-  };
+const Slider: React.FC<SliderProps> = ({ state, onChange }) => {
+  const { settingsState } = useSettingsContext();
 
   return (
-    <div className="relative">
+    <div className="relative w-full max-w-lg py-8 mx-auto">
       <input
         type="range"
         min="0"
         max="100"
-        value={sliderValue}
-        onChange={handleInputChange}
-        onMouseUp={handleMouseUp}
-        className="absolute w-full h-1 rounded-full cursor-pointer range-slider focus:outline-none"
+        value={state}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full h-1 rounded-full appearance-none cursor-pointer slider"
+        style={{ background: `${settingsState.customThemeColor}` }}
       />
     </div>
   );
