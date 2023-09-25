@@ -1,21 +1,26 @@
 import Switch from '../components/Switch';
 import ColorPicker from '../components/ColorPicker';
-import { SettingsState } from '../App';
+import { SettingsList } from '../types/SettingsProps';
+import { useSettingsContext } from '../SettingsContext';
 
-interface ISetting {
-  title: string;
-  description: string;
-  modifyElement: JSX.Element;
-}
+const Settings: React.FC = () => {
+  const { settingsState, setSettingsState } = useSettingsContext();
 
-interface SettingsProps {
-  settingsState: SettingsState;
-  switchChange: (key: string, isOn: boolean) => void;
-  colorChange: (color: string) => void;
-}
+  const switchChange = (key: string, isOn: boolean) => {
+    setSettingsState({
+      ...settingsState,
+      [key]: isOn,
+    });
+  };
 
-const Settings: React.FC<SettingsProps> = ({ settingsState, switchChange, colorChange }) => {
-  const settings: ISetting[] = [
+  const colorChange = (color: string) => {
+    setSettingsState({
+      ...settingsState,
+      customThemeColor: color,
+    });
+  };
+
+  const settings: SettingsList[] = [
     {
       title: "Notification Collector",
       description: "Uncaps the 9+ limit for notifications, showing the real number.",
@@ -34,7 +39,7 @@ const Settings: React.FC<SettingsProps> = ({ settingsState, switchChange, colorC
     {
       title: "Animated Background Speed",
       description: "Controls the speed of the animated background.",
-      modifyElement: <Switch state={settingsState.animatedBackgroundSpeed} onChange={(isOn: boolean) => switchChange('animatedBackgroundSpeed', isOn)} />
+      modifyElement: <div>Insert Slider Please</div>
     },
     {
       title: "Custom Theme Colour",
@@ -43,13 +48,13 @@ const Settings: React.FC<SettingsProps> = ({ settingsState, switchChange, colorC
     },
     {
       title: "BetterSEQTA+",
-      description: "Unlocks premium features.",
+      description: "Enables BetterSEQTA+ features",
       modifyElement: <Switch state={settingsState.betterSEQTAPlus} onChange={(isOn: boolean) => switchChange('betterSEQTAPlus', isOn)} />
     }
   ];
 
   return (
-    <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100">
+    <div className="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100">
       {settings.map((setting, index) => (
         <div className="flex items-center justify-between px-4 py-3" key={index}>
           <div className="pr-4">

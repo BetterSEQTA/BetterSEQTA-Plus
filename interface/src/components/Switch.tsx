@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
 import "./Switch.css";
-
-interface SwitchProps {
-  onChange: (isOn: boolean) => void;
-  state: boolean;
-}
+import type { SwitchProps } from "../types/SwitchProps";
 
 export default function Switch(props: SwitchProps) {
   const toggleSwitch = () => {

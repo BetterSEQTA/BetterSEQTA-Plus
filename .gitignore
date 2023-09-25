@@ -1,6 +1,7 @@
 # npm
 node_modules/
 package-lock.json
+bun.lockb
 
 # Build
 package.zip

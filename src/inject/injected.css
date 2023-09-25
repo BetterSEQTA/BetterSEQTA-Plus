@@ -2,7 +2,6 @@
 @import "./injected/popup.css";
 
 :root {
-  background-color: var(--better-main) !important;
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
@@ -15,17 +14,12 @@ html {
 
 #container {
   transition: 200ms;
-  background-color: var(--auto-background) !important;
+  background: var(--auto-background) !important;
 }
 
 * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
-}
-
-#title {
-  color: var(--text-primary);
-  font-weight: 500 !important;
 }
 
 @media (min-width: 900px) {
@@ -220,7 +214,7 @@ li.item.draggable {
 }
 
 html {
-  background-color: var(--better-main) !important;
+  background: var(--better-main) !important;
 }
 
 /* Messages */
@@ -270,29 +264,29 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 
 .content [autocomplete="off"] {
-  background-color: var(--background-primary) !important;
+  background: var(--background-primary) !important;
 }
 
 .MessageList__MessageList___3DxoC .footer {
-  background-color: var(--background-secondary) !important;
+  background: var(--background-secondary) !important;
 }
 
 .content [placeholder="Subject…"] {
   border-radius: 16px;
   padding-left: 12px !important;
-  background-color: var(--background-primary) !important;
+  background: var(--background-primary) !important;
 }
 
 .listWrapper {
   padding: 8px;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   margin-top: 26%;
 }
 
 .functions {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   margin: 0 !important;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
@@ -468,7 +462,7 @@ ol > [data-label] {
 .Viewer__newMessage___3ToUb {
   border-radius: 0.5rem !important;
   font-size: 0.8rem !important;
-  background-color: var(--background-primary) !important;
+  background: var(--background-primary) !important;
 }
 
 .MessageList__sender___32riy :last-child {
@@ -509,7 +503,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 #main > .timetablepage > .container {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
 }
 
 #content {
@@ -557,20 +551,19 @@ div > ol:has(.uiFileHandlerWrapper) {
   top: 0;
   width: 100%;
   height: 100vh;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-position: 10% 10%;
   color: var(--text-primary) !important;
 }
 
 .Module__wrapper___2sbOo {
+  overflow: clip;
   background: var(--background-primary) !important;
+  border-radius: 1rem !important;
   color: var(--text-primary) !important;
   box-shadow: none;
 }
 
 .course .composer {
-  background: var(--background-primary) !important;
+  background: transparent !important;
   overflow: hidden;
 }
 
@@ -579,7 +572,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   > .Container__container___33GlY
   > .Document__document___1KJCG
   > .Canvas__canvas___OBdCZ {
-  background-color: unset !important;
+  background-color: transparent !important;
   background-image: unset !important;
   color: white !important;
 }
@@ -607,20 +600,18 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 #title {
   background: var(--background-primary);
+  color: var(--text-primary);
   height: 4rem;
-  box-shadow: rgb(0 0 0 / 35%) 0px 0px 10px;
   min-height: 48px;
+  box-shadow: rgb(0 0 0 / 35%) 0px 0px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500 !important;
   z-index: 1;
 }
 
 .bg {
   animation: slide 3s ease-in-out infinite alternate;
-  background-image: linear-gradient(
-    -60deg,
-    var(--better-main) 50%,
-    var(--auto-background) 50%
-  );
+  background: var(--better-main);
   bottom: 0;
   left: -50%;
   opacity: 0.5;
@@ -629,6 +620,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   top: 0;
   z-index: 0 !important;
   overflow: hidden;
+  scale: 1.5;
 }
 
 .bg2 {
@@ -642,11 +634,11 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 @keyframes slide {
   0% {
-    transform: translateX(-25%);
+    transform: translate(50%) rotate(-60deg);
   }
 
   100% {
-    transform: translateX(25%);
+    transform: translateX(5%) rotate(-60deg);
   }
 }
 
@@ -694,7 +686,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-size: 3em !important;
   font-weight: 300;
   margin: 30px auto 60px;
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   height: 3em;
   align-items: center;
   justify-content: center;
@@ -708,7 +700,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 94%;
   margin: 50px auto;
   height: 19em;
-  background-color: var(--better-main);
+  background: var(--better-main);
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
@@ -716,7 +708,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .day-container {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   transition: 200ms;
   width: 100%;
   height: 15em;
@@ -729,7 +721,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 94%;
   margin: 50px auto;
   max-height: 60em;
-  background-color: var(--better-main);
+  background: var(--better-main);
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
@@ -737,7 +729,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .notice-container {
-  background-color: var(--better-main);
+  background: var(--better-main);
   width: 100%;
   max-height: 55em;
   overflow-y: auto;
@@ -789,7 +781,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   border: 2px solid var(--better-main);
   width: 94%;
   margin: 10px auto 50px;
-  background-color: var(--better-main);
+  background: var(--better-main);
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
@@ -807,7 +799,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcuts {
-  background-color: var(--better-main);
+  background: var(--better-main);
   width: 100%;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -991,13 +983,13 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .modaliser {
-  background-color: var(--better-main);
+  background: var(--better-main);
 }
 
 .alert-container {
   height: 35em;
   width: 22em;
-  background-color: var(--better-sub);
+  background: var(--better-sub);
   position: absolute;
   right: 0;
   top: 0;
@@ -1081,7 +1073,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 #ExtensionPopup {
   border-radius: 1rem;
-  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px -2px rgba(0,0,0,0.6)  
 }
 
 #menu li.active {
@@ -1171,7 +1163,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .Input__Input___3RSTI {
   transition: background-color 0.5s,border-color 0.5s;
-  background-color: var(--auto-background);
+  background: var(--auto-background);
   position: relative;
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
@@ -1245,7 +1237,7 @@ iframe.userHTML {
 
 .Thermoscore__Thermoscore___2tWMi {
   background-image: unset;
-  background-color: var(--auto-background);
+  background: var(--auto-background);
 }
 
 #toolbar {
@@ -1275,6 +1267,7 @@ iframe.userHTML {
 
 #main > .course > .content > h1 {
   color: var(--text-primary);
+  border-bottom: none;
 }
 
 #main > .course > .content > .outline > h2,
@@ -1291,7 +1284,7 @@ iframe.userHTML {
 
 ::-webkit-scrollbar-thumb:vertical:hover,
 ::-webkit-scrollbar-thumb:horizontal:hover {
-  background-color: var(--better-light);
+  background: var(--better-light);
 }
 
 ::-webkit-scrollbar-track {
@@ -1381,16 +1374,16 @@ ul {
 }
 
 .legacy-root .uiFileHandler {
-  background-color: var(--auto-background);
+  background: var(--auto-background);
   border-radius: 1rem;
 }
 
 .ResourceList__ResourceList___2z-c1 .legacy-root .uiFileHandler {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
 }
 
 .legacy-root .uiFileHandler.dragTarget {
-  background-color: var(--better-main);
+  background: var(--better-main);
 }
 
 .MenuButton__MenuPanel___2q42B {
@@ -1497,13 +1490,13 @@ blurred {
 }
 
 .uiSlidePane > .pane > .header {
-  background-color: var(--better-main);
+  background: var(--better-main);
 }
 
 .content [placeholder="Subject…"] {
   padding-left: 12px !important;
   border-radius: 1rem;
-  background-color: var(--background-primary) !important;
+  background: var(--background-primary) !important;
   color: var(--text-primary) !important;
 }
 
@@ -1523,7 +1516,7 @@ blurred {
 }
 
 .formattedText > .footer {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   border-radius: 1rem;
   margin-top: 0.5rem;
 }
@@ -1544,7 +1537,7 @@ blurred {
 
 .uiSlidePane > .pane {
   color: var(--text-primary);
-  background-color: var(--auto-background);
+  background: var(--auto-background);
   transform: translateY(100%);
   transition:
     transform 0.5s ease-in-out,
@@ -1672,7 +1665,7 @@ body {
 }
 
 .MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO {
-  box-shadow: inset 3px 0 rgb(255, 255, 255);
+  box-shadow: inset 3px 0 var(--better-main);
 }
 
 .connectedNotificationsWrapper > div > button {
@@ -2054,7 +2047,7 @@ body {
   width: 94%;
   margin: 50px auto;
   max-height: 60em;
-  background-color: var(--better-main);
+  background: var(--better-main);
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
@@ -2226,7 +2219,7 @@ body {
 
 /* When the checkbox is checked, add a blue background */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
-  background-color: var(--item-colour);
+  background: var(--item-colour);
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -2378,7 +2371,7 @@ body {
 }
 
 .upcoming-items {
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   transition: 200ms;
   width: 100%;
   max-height: 55em;
@@ -2532,7 +2525,7 @@ body {
 
 /* When the checkbox is checked, add a blue background */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
-  background-color: var(--item-colour);
+  background: var(--item-colour);
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -2668,7 +2661,7 @@ body {
   transform: scale(0);
   transition: transform 0.2s;
   transform-origin: top;
-  background-color: var(--background-primary);
+  background: var(--background-primary);
   color: var(--text-primary);
   text-align: center;
   border-radius: 6px;
