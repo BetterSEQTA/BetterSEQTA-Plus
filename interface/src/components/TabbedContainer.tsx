@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
 import { useSettingsContext } from '../SettingsContext';
 
@@ -20,6 +20,13 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const containerRef = useRef(null);
 
   const springTransition = { type: 'spring', stiffness: 250, damping: 25 };
+
+  const contentVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  const fastOpacityTransition = { duration: 0.2 }; 
 
   useEffect(() => {
     if (containerRef.current) {
@@ -61,23 +68,32 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
       </div>
     </div>
     <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
-      <motion.div
-        initial={false}
-        animate={{ x: `${position}%` }}
-        transition={springTransition}
-      >
-        <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
-          {tabs.map((tab, index) => (
-            <div
-              key={index}
-              className={`w-full ${activeTab === index ? '' : 'hidden'}`}
-            >
-              {tab.content}
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </div>
+        <motion.div
+          initial={false}
+          animate={{ x: `${position}%` }}
+          transition={springTransition}
+        >
+          <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
+            <AnimatePresence>
+              {tabs.map((tab, index) => (
+                activeTab === index && (
+                  <motion.div
+                    key={index}
+                    className="absolute w-full"
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    transition={fastOpacityTransition}
+                    variants={contentVariants}
+                  >
+                    {tab.content}
+                  </motion.div>
+                )
+              ))}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
     </>
   );
 };
