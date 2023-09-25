@@ -6,5 +6,6 @@ bun.lockb
 # Build
 package.zip
 build/
+dist/
 
 **/.DS_Store

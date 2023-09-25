@@ -1,5 +1,7 @@
-import Switch from '../components/Switch';
 import ColorPicker from '../components/ColorPicker';
+import Switch from '../components/Switch';
+import Slider from '../components/Slider';
+
 import { SettingsList } from '../types/SettingsProps';
 import { useSettingsContext } from '../SettingsContext';
 
@@ -12,6 +14,13 @@ const Settings: React.FC = () => {
       [key]: isOn,
     });
   };
+
+  const sliderChange = (key: string, value: number) => {
+    setSettingsState({
+      ...settingsState,
+      [key]: value,
+    });
+  }
 
   const colorChange = (color: string) => {
     setSettingsState({
@@ -39,7 +48,7 @@ const Settings: React.FC = () => {
     {
       title: "Animated Background Speed",
       description: "Controls the speed of the animated background.",
-      modifyElement: <div>Insert Slider Please</div>
+      modifyElement: <Slider state={parseInt(settingsState.animatedBackgroundSpeed)} onChange={(value: number) => sliderChange('animatedBackgroundSpeed', value)} />
     },
     {
       title: "Custom Theme Colour",
