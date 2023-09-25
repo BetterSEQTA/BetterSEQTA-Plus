@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(function (request) {
     ReloadSEQTAPages();
   } else if (request.type == "githubTab") {
     chrome.tabs.create({
-      url: "github.com/SethBurkart123/BetterThanBetterSeqta",
+      url: "github.com/SethBurkart123/EvenBetterSEQTA",
     });
   } else if (request.type == "setDefaultStorage") {
     console.log("setting default values");
@@ -102,7 +102,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(TodayFormatted);
     console.log(from);
 
-    // var url = `https://newsapi.org/v2/everything?sources=abc-news&from=${TodayFormatted}&sortBy=popularity&apiKey=17c0da766ba347c89d094449504e3080`;
     var url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
 
     GetNews(url, sendResponse);
@@ -168,7 +167,7 @@ const DefaultValues = {
       enabled: false,
     },
     {
-      Name: "educationperfect",
+      name: "educationperfect",
       enabled: true,
     },
   ],
@@ -217,13 +216,45 @@ function UpdateCurrentValues(details) {
   });
 }
 
+function migrateOldStorage() {
+  chrome.storage.local.get(null, function (items) {
+    let shouldUpdate = false; // Flag to check if there is anything to update
+    
+    // Check for the old "Name" field and convert it to "name"
+    if (items.shortcuts && items.shortcuts.length > 0 && "Name" in items.shortcuts[0]) {
+      shouldUpdate = true;
+      items.shortcuts = items.shortcuts.map((shortcut) => {
+        return {
+          name: shortcut.Name,  // Convert "Name" to "name"
+          enabled: shortcut.enabled // Keep the "enabled" field as is
+        };
+      });
+    }
+
+    // Check for "educationperfect" and convert it to "Education Perfect"
+    if (items.shortcuts && items.shortcuts.length > 0) {
+      for (let shortcut of items.shortcuts) {
+        if (shortcut.name === "educationperfect") {
+          shouldUpdate = true;
+          shortcut.name = "Education Perfect"; // Convert to "Education Perfect"
+        }
+      }
+    }
+
+    // If there's something to update, set the new values in storage
+    if (shouldUpdate) {
+      chrome.storage.local.set({ shortcuts: items.shortcuts }, function() {
+        console.log("Migration completed.");
+      });
+    }
+  });
+}
+
 chrome.runtime.onInstalled.addListener(function (event) {
   chrome.storage.local.remove(["justupdated"]);
   UpdateCurrentValues();
-  if (
-    /*chrome.runtime.getManifest().version > event.previousVersion || */ event.reason ==
-    "install"
-  ) {
+  if ( event.reason == "install" ) {
     chrome.storage.local.set({ justupdated: true });
+    migrateOldStorage();
   }
 });
