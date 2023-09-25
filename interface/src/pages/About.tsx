@@ -1,7 +1,7 @@
 const About: React.FC = () => {
 
   return (
-    <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100/50">
+    <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100/50 dark:divide-zinc-700/50">
       <div>
         <h2 className="text-lg font-bold">About</h2>
         <p className="py-2">BetterSEQTA+ is a branch of BetterSEQTA which was originally developed by Nulkem. It was discontinued. So BetterSEQTA+ has come in to fill in that gap!</p>

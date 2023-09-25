@@ -55,7 +55,7 @@ export default function Shortcuts() {
   };
 
   return (
-    <div className="flex flex-col divide-y divide-zinc-100">
+    <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
 
       <AnimatePresence>
         {isFormVisible ? (
