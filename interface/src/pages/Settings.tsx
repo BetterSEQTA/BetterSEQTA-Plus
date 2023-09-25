@@ -63,7 +63,7 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100">
+    <div className="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100 dark:divide-zinc-700">
       {settings.map((setting, index) => (
         <div className="flex items-center justify-between px-4 py-3" key={index}>
           <div className="pr-4">
