@@ -45,7 +45,7 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
 
   return (
     <>
-    <div ref={containerRef} className="top-0 z-10 text-[0.875rem] mb-2 pb-2 mx-4">
+    <div ref={containerRef} className="top-0 z-10 text-[0.875rem] pb-2 mx-4">
       <div className="relative flex">          
         <motion.div
           className="absolute top-0 left-0 z-0 h-full rounded-full opacity-40"
