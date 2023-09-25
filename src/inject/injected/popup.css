@@ -5,3 +5,8 @@
 .topmenu {
   margin-top: 0;
 }
+
+.hide {
+  opacity: 0;
+  pointer-events: none;
+}

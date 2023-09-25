@@ -50,6 +50,22 @@
     {
       "resources": ["popup/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client.js"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["index.css"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["interface/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }

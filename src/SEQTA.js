@@ -1,4 +1,6 @@
 /*global chrome*/
+import Color from "color";
+
 import ShortcutLinks from "./seqta/content/links.json";
 import MenuitemSVGKey from "./seqta/content/MenuItemSVGKey.json";
 import stringToHTML from "./seqta/utils/stringToHTML.js";
@@ -13,7 +15,6 @@ let SettingsClicked = false;
 let MenuOptionsOpen = false;
 let UserInitalCode = "";
 let currentSelectedDate = new Date();
-let WhatsNewOpen = false;
 let LessonInterval;
 let DarkMode;
 
@@ -25,7 +26,7 @@ function SetDisplayNone(ElementName) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
-function animbkEnable (item) {
+function animbkEnable(item) {
   if (item.animatedbk) {
     CreateBackground();
   } else {
@@ -38,7 +39,9 @@ function bkValues (item) {
   const bg = document.getElementsByClassName("bg");
   const bg2 = document.getElementsByClassName("bg2");
   const bg3 = document.getElementsByClassName("bg3");
-  const value = 200 - item.bksliderinput;
+  const value = 200 - item.bksliderinput; // reverse the slider direction to match the animation direction
+
+  if (bg.length == 0 || bg2.length == 0 || bg3.length == 0) return;
 
   const minDuration = 1; // minimum duration in seconds
   const maxDuration = 10; // maximum duration in seconds
@@ -172,12 +175,12 @@ function OpenWhatsNewPopup() {
   var bkelement = document.getElementById("whatsnewbk");
   bkelement.addEventListener("click", function () {
     DeleteWhatsNew();
-    WhatsNewOpen = false;
+    //WhatsNewOpen = false;
   });
   var closeelement = document.getElementById("whatsnewclosebutton");
   closeelement.addEventListener("click", function () {
     DeleteWhatsNew();
-    WhatsNewOpen = false;
+    //WhatsNewOpen = false;
   });
 }
 
@@ -193,7 +196,7 @@ async function finishLoad() {
 
   chrome.storage.local.get(["justupdated"], function (result) {
     if (result.justupdated) {
-      WhatsNewOpen = true;
+      //WhatsNewOpen = true;
       OpenWhatsNewPopup();
     }
   });
@@ -233,6 +236,9 @@ function RemoveBackground() {
   var bk = document.getElementsByClassName("bg");
   var bk2 = document.getElementsByClassName("bg2");
   var bk3 = document.getElementsByClassName("bg3");
+
+  if (bk.length == 0 || bk2.length == 0 || bk3.length == 0) return;
+
   bk[0].remove();
   bk2[0].remove();
   bk3[0].remove();
@@ -621,116 +627,116 @@ function AppendElementsToDisabledPage() {
   document.head.append(settingsStyle);
 }
 
-function lightenAndPaleColor(
-  hexColor,
-  lightenFactor = 0.75,
-  paleFactor = 0.55,
-) {
-  // Convert a RGB value to HSL
-  function rgbToHsl(r, g, b) {
-    (r /= 255), (g /= 255), (b /= 255);
-    let max = Math.max(r, g, b),
-      min = Math.min(r, g, b);
-    let h,
-      s,
-      l = (max + min) / 2;
+function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
+  // Step 1: Convert RGBA to separate R, G and B values
+  const [r, g, b] = inputColor.match(/\d+/g).map(Number);
 
-    if (max === min) {
-      h = s = 0;
-    } else {
-      let d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-      }
-      h /= 6;
+  // Step 2: Convert RGB to HSL
+  let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+  const max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0; 
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+
+    case r1: h = (g1 - b1) / d + (g1 < b1 ? 6 : 0); break;
+    case g1: h = (b1 - r1) / d + 2; break;
+    case b1: h = (r1 - g1) / d + 4; break;
+
     }
-
-    return [h, s, l];
+    h /= 6;
   }
 
-  // Convert an HSL value to RGB
-  function hslToRgb(h, s, l) {
-    function hue2rgb(p, q, t) {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    }
-
-    let r, g, b;
-    if (s === 0) {
-      r = g = b = l;
-    } else {
-      let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      let p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1 / 3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1 / 3);
-    }
-
-    return [r * 255, g * 255, b * 255];
-  }
-
-  // Extract the red, green, and blue components from hex
-  let r = parseInt(hexColor.substr(1, 2), 16);
-  let g = parseInt(hexColor.substr(3, 2), 16);
-  let b = parseInt(hexColor.substr(5, 2), 16);
-
-  // Convert RGB to HSL
-  let [h, s, l] = rgbToHsl(r, g, b);
-
-  // Adjust saturation and lightness
+  // Step 3: Adjust saturation and lightness
   s -= s * paleFactor;
   l += (1 - l) * lightenFactor;
 
-  // Convert HSL back to RGB
-  [r, g, b] = hslToRgb(h, s, l);
+  // Step 4: Convert HSL back to RGB
+  const hue2rgb = (p, q, t) => {
+    if(t < 0) t += 1;
+    if(t > 1) t -= 1;
+    if(t < 1/6) return p + (q - p) * 6 * t;
+    if(t < 1/2) return q;
+    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
 
-  // Convert RGB to hex
-  r = Math.round(r).toString(16).padStart(2, "0");
-  g = Math.round(g).toString(16).padStart(2, "0");
-  b = Math.round(b).toString(16).padStart(2, "0");
-
-  return "#" + r + g + b;
-}
-
-function ColorLuminance(hex, lum) {
-  // validate hex string
-  hex = String(hex).replace(/[^0-9a-f]/gi, "");
-  if (hex.length < 6) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-  }
-  lum = lum || 0;
-
-  // convert to decimal and change luminosity
-  var rgb = "#",
-    c,
-    i;
-  for (i = 0; i < 3; i++) {
-    c = parseInt(hex.substr(i * 2, 2), 16);
-    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
-    rgb += ("00" + c).substring(c.length);
+  let r2, g2, b2;
+  if (s === 0) {
+    r2 = g2 = b2 = l; 
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r2 = hue2rgb(p, q, h + 1/3);
+    g2 = hue2rgb(p, q, h);
+    b2 = hue2rgb(p, q, h - 1/3);
   }
 
-  return rgb;
+  // Step 5: Format Output
+  const result = `rgb(${Math.round(r2 * 255)}, ${Math.round(g2 * 255)}, ${Math.round(b2 * 255)})`;
+
+  return `${result}`;
 }
+
+function ColorLuminance(color, lum = 0) {
+  // Regular expression to match RGBA colors
+  const rgbaRegex = /rgba?\(([^)]+)\)/g;
+
+  // Check if the input color is a gradient (linear or radial)
+  if (color.includes("gradient")) {
+    let gradient = color;
+
+    // Find and replace all instances of RGBA in the gradient
+    let match;
+    while ((match = rgbaRegex.exec(color)) !== null) {
+      const rgbaString = match[1];
+      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
+
+      // Apply the original luminance adjustment logic
+      let adjustedRgba = [];
+      for (let c of [r, g, b]) {
+        c = Math.round(Math.min(Math.max(0, c + c * lum), 255));
+        adjustedRgba.push(c);
+      }
+      adjustedRgba.push(a);  // Add the alpha component back
+
+      // Replace the original RGBA string with the adjusted one
+      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${adjustedRgba.join(", ")})`);
+    }
+
+    return gradient;
+
+  } else {
+    // Handle as a simple color (could be HEX, RGBA, etc., as supported by your Color library)
+    const hexColor = Color(color).hex();
+    let adjustedHex = String(hexColor).replace(/[^0-9a-f]/gi, "");
+    if (adjustedHex.length < 6) {
+      adjustedHex = adjustedHex[0] + adjustedHex[0] + adjustedHex[1] + adjustedHex[1] + adjustedHex[2] + adjustedHex[2];
+    }
+
+    let rgb = "#",
+      c;
+    for (let i = 0; i < 3; i++) {
+      c = parseInt(adjustedHex.substr(i * 2, 2), 16);
+      c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
+      rgb += ("00" + c).substring(c.length);
+    }
+
+    return Color(rgb).hex();
+  }
+}
+
 
 chrome.storage.onChanged.addListener(function (changes) {
   if (changes.selectedColor) {
     try {
       chrome.storage.local.get(["DarkMode"], function (result) {
         if (!result.DarkMode) {
+          console.log(changes.selectedColor.newValue);
           document.documentElement.style.setProperty(
             "--better-pale",
             lightenAndPaleColor(changes.selectedColor.newValue),
@@ -742,6 +748,7 @@ chrome.storage.onChanged.addListener(function (changes) {
     }
 
     let rbg = GetThresholdofHex(changes.selectedColor.newValue);
+
     if (rbg > 210) {
       document.documentElement.style.setProperty("--text-color", "black");
       document.documentElement.style.setProperty(
@@ -760,7 +767,6 @@ chrome.storage.onChanged.addListener(function (changes) {
       "--better-main",
       changes.selectedColor.newValue,
     );
-    // document.documentElement.style.setProperty('--better-sub', ColorLuminance(changes.selectedColor.newValue, -0.15));
 
     if (changes.selectedColor.newValue == "#ffffff") {
       document.documentElement.style.setProperty("--better-light", "#b7b7b7");
@@ -801,7 +807,7 @@ async function CheckLoadOnPeriods() {
   }
 }
 
-function RunFunctionOnTrue(storedSetting) {
+function main(storedSetting) {
   DarkMode = storedSetting.DarkMode;
   // If the option is 'on', open BetterSEQTA
   if (typeof storedSetting.onoff == "undefined") {
@@ -891,7 +897,6 @@ function RunFunctionOnTrue(storedSetting) {
       "--better-main",
       storedSetting.selectedColor,
     );
-    // document.documentElement.style.setProperty('--better-sub', ColorLuminance(storedSetting.selectedColor, -0.15));
 
     if (storedSetting.selectedColor == "#ffffff") {
       document.documentElement.style.setProperty("--better-light", "#b7b7b7");
@@ -966,7 +971,7 @@ document.addEventListener(
       document.getElementsByTagName("html")[0].appendChild(link);
 
       chrome.storage.local.get(null, function (items) {
-        RunFunctionOnTrue(items);
+        main(items);
       });
     }
     if (
@@ -978,7 +983,7 @@ document.addEventListener(
   },
   true,
 );
-
+/*
 function RunExtensionSettingsJS() {
   const whatsnewsettings = document.getElementById("whatsnewsettings");
   whatsnewsettings.addEventListener("click", function () {
@@ -1043,9 +1048,9 @@ function RunExtensionSettingsJS() {
   function FindSEQTATab() {
     chrome.runtime.sendMessage({ type: "reloadTabs" });
   }
-  /*
-  Store the currently selected settings using chrome.storage.local.
-  */
+  
+  // Store the currently selected settings using chrome.storage.local.
+
   function storeSettings() {
     chrome.storage.local.set({ onoff: onoffselection.checked }, function () {
       FindSEQTATab();
@@ -1072,10 +1077,10 @@ function RunExtensionSettingsJS() {
 
     FindSEQTATab();
   }
-  /*
-  Update the options UI with the settings values retrieved from storage,
-  or the default settings if the stored settings are empty.
-  */
+  
+  // Update the options UI with the settings values retrieved from storage,
+  // or the default settings if the stored settings are empty.
+  
   function updateUI(restoredSettings) {
     if (typeof restoredSettings.onoff == "undefined") {
       chrome.runtime.sendMessage({ type: "setDefaultStorage" });
@@ -1310,7 +1315,7 @@ function RunExtensionSettingsJS() {
       chrome.storage.local.set({ selectedColor: b });
     }
   });
-}
+}*/
 
 function CallExtensionSettings() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
@@ -1333,7 +1338,7 @@ function CallExtensionSettings() {
   fileref.setAttribute("href", cssFile);
   document.head.append(fileref);
 
-  let Settings =
+  /*let Settings =
     stringToHTML(
       String.raw`
       <div class="outside-container hidden" id="ExtensionPopup"><div class="logo-container"><img src=${chrome.runtime.getURL(
@@ -1580,14 +1585,31 @@ function CallExtensionSettings() {
       <p style="margin: 0; flex: 1; padding-left: 24px; margin-right: 5px; color: white;">By SethBurkart123</p>
       <button style="margin: 0; margin-right: 20px; cursor:pointer; padding: 8px 10px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">Changelog v${chrome.runtime.getManifest().version}</button>
     </div>
-  </div></div>`);
-  document.body.append(Settings.firstChild);
+  </div></div>`);*/
+  let Settings2 =
+  stringToHTML(
+    String.raw`
+    <div class="outside-container hide" id="ExtensionPopup">
+    </div>
+    `);
+  document.body.append(Settings2.firstChild);
+
+  // add an iframe to the div: <iframe src="interface/index.html"></iframe>
+  let iframe = document.createElement("iframe");
+  iframe.src = chrome.runtime.getURL("interface/index.html");
+  iframe.allowTransparency = "true";
+  iframe.style.width = "384px";
+  iframe.style.height = "590px";
+  iframe.style.border = "none";
+  iframe.setAttribute("excludeDarkCheck", "true");
+  
+  document.getElementById("ExtensionPopup").append(iframe);
 
   var container = document.getElementById("container");
   var extensionsettings = document.getElementById("ExtensionPopup");
   container.onclick = function () {
     if (!SettingsClicked) {
-      extensionsettings.classList.add("hidden");
+      extensionsettings.classList.add("hide");
     }
     SettingsClicked = false;
   };
@@ -1981,10 +2003,12 @@ function AddBetterSEQTAElements(toggle) {
                       students[index]?.house_colour,
                     );
 
-                    if (colorresult > 300) {
+                    if (colorresult && colorresult > 300) {
                       houseelement.style.color = "black";
-                    } else {
+                    } else if (colorresult < 300) {
                       houseelement.style.color = "white";
+                    } else {
+                      houseelement.style.color = "black";
                     }
                     houseelement.innerText =
                       students[index].year + students[index].house;
@@ -2050,8 +2074,9 @@ function AddBetterSEQTAElements(toggle) {
       }
 
       CallExtensionSettings();
-      RunExtensionSettingsJS();
+      //RunExtensionSettingsJS();
 
+      // If betterSEQTA+ is enabled, run the code
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         var SettingsButton = stringToHTML(
@@ -2112,6 +2137,11 @@ function AddBetterSEQTAElements(toggle) {
 
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
+
+                  if (element.getAttribute("excludeDarkCheck") == "true") {
+                    continue;
+                  }
+
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "white";
                   element.contentDocument.documentElement.firstChild.appendChild(
@@ -2145,6 +2175,11 @@ function AddBetterSEQTAElements(toggle) {
 
                 for (let i = 0; i < alliframes.length; i++) {
                   const element = alliframes[i];
+
+                  if (element.getAttribute("excludeDarkCheck") == "true") {
+                    continue;
+                  }
+
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "black";
                   element.contentDocument.documentElement.firstChild.lastChild.remove();
@@ -2168,7 +2203,7 @@ function AddBetterSEQTAElements(toggle) {
       var AddedSettings = document.getElementById("AddedSettings");
       var extensionsettings = document.getElementById("ExtensionPopup");
       AddedSettings.addEventListener("click", function () {
-        extensionsettings.classList.toggle("hidden");
+        extensionsettings.classList.toggle("hide");
         SettingsClicked = true;
       });
     }
@@ -2275,21 +2310,36 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-function hexToRGB(hex) {
-  try {
-    var r = parseInt(hex.slice(1, 3), 16),
-      g = parseInt(hex.slice(3, 5), 16),
-      b = parseInt(hex.slice(5, 7), 16);
+function GetThresholdofHex(color) {
+  // Regular expression for matching RGBA colors
+  const rgbaRegex = /rgba?\(([^)]+)\)/g;
 
-    return { r: r, g: g, b: b };
-  } catch {
-    // do nothing becuase this functoin is a bit broken right now (feel free to fix it!)
+  // Check if the color string is a gradient (linear or radial)
+  if (color.includes("gradient")) {
+    let gradient = color;
+    
+    // Find and replace all instances of RGBA in the gradient
+    let match;
+    while ((match = rgbaRegex.exec(color)) !== null) {
+      // Extract the individual components (r, g, b, a)
+      const rgbaString = match[1];
+      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
+
+      // Compute the threshold using your existing algorithm
+      const threshold = Math.sqrt(r ** 2 + g ** 2 + b ** 2);
+
+      // Replace the original RGBA string with the computed threshold
+      // Note: You can modify this part based on what you actually want to do with the threshold
+      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${threshold}, ${threshold}, ${threshold}, ${a})`);
+    }
+    
+    return gradient;
+
+  } else {
+    // Handle the color as a simple RGBA (or hex, or whatever the Color library supports)
+    const rgb = Color.rgb(color).string();
+    return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
   }
-}
-
-function GetThresholdofHex(hex) {
-  var rgb = hexToRGB(hex);
-  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
 }
 
 function CheckCurrentLessonAll(lessons) {

@@ -1,22 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { TabbedContainerProps } from '../types/TabbedContainerProps';
+import { useSettingsContext } from '../SettingsContext';
 
-interface Tab {
-  title: string;
-  content: JSX.Element;
-}
-
-interface TabbedContainerProps {
-  tabs: Tab[];
-  themeColor: string;
-}
-
-const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) => {
+const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [hoveredTab, setHoveredTab] = useState<number | null>(null);
   const [tabWidth, setTabWidth] = useState(0);
   const [position, setPosition] = useState(0);
   const positionRef = useRef(position);
+  const themeColor = useSettingsContext().settingsState.customThemeColor;
 
   useEffect(() => {
     const newPosition = -activeTab * 100;
@@ -27,6 +20,13 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) =
   const containerRef = useRef(null);
 
   const springTransition = { type: 'spring', stiffness: 250, damping: 25 };
+
+  const contentVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  const fastOpacityTransition = { duration: 0.2 }; 
 
   useEffect(() => {
     if (containerRef.current) {
@@ -44,48 +44,57 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs, themeColor }) =
   };
 
   return (
-    <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
-      <div ref={containerRef} className="sticky top-0 z-10 text-[0.875rem] mb-2 pb-2 bg-white">
-        <div className="relative flex">          
-          <motion.div
-            className="absolute top-0 left-0 z-0 h-full rounded-full opacity-40"
-            style={{ width: `${tabWidth}px`, background: themeColor }}
-            initial={false}
-            animate={{ x: calcXPos(hoveredTab) }}
-            transition={springTransition}
-          />
-          {tabs.map((tab, index) => (
-            <button
-              key={index}
-              className="relative z-10 flex-1 px-4 py-2"
-              onClick={() => setActiveTab(index)}
-              onMouseEnter={() => setHoveredTab(index)}
-              onMouseLeave={() => setHoveredTab(null)}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
+    <>
+    <div ref={containerRef} className="top-0 z-10 text-[0.875rem] mb-2 pb-2 mx-4">
+      <div className="relative flex">          
+        <motion.div
+          className="absolute top-0 left-0 z-0 h-full rounded-full opacity-40"
+          style={{ width: `${tabWidth}px`, background: themeColor }}
+          initial={false}
+          animate={{ x: calcXPos(hoveredTab) }}
+          transition={springTransition}
+        />
+        {tabs.map((tab, index) => (
+          <button
+            key={index}
+            className="relative z-10 flex-1 px-4 py-2"
+            onClick={() => setActiveTab(index)}
+            onMouseEnter={() => setHoveredTab(index)}
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            {tab.title}
+          </button>
+        ))}
       </div>
-      <div className="relative">
+    </div>
+    <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
         <motion.div
           initial={false}
           animate={{ x: `${position}%` }}
           transition={springTransition}
         >
           <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
-            {tabs.map((tab, index) => (
-              <div
-                key={index}
-                className={`w-full ${activeTab === index ? '' : 'hidden'}`}
-              >
-                {tab.content}
-              </div>
-            ))}
+            <AnimatePresence>
+              {tabs.map((tab, index) => (
+                activeTab === index && (
+                  <motion.div
+                    key={index}
+                    className="absolute w-full"
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    transition={fastOpacityTransition}
+                    variants={contentVariants}
+                  >
+                    {tab.content}
+                  </motion.div>
+                )
+              ))}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
-    </div>
+    </>
   );
 };
 
