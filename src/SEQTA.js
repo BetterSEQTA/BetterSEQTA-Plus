@@ -739,7 +739,7 @@ export function ColorLuminance(color, lum = 0) {
   }
 }
 
-StorageListener();
+new StorageListener();
 
 var PageLoaded = false;
 async function CheckLoadOnPeriods() {
