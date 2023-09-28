@@ -9,6 +9,8 @@ const SettingsContext = createContext<{
   setSettingsState: React.Dispatch<React.SetStateAction<SettingsState>>;
   showPicker: boolean;
   setShowPicker: React.Dispatch<React.SetStateAction<boolean>>;
+  standalone: boolean;
+  setStandalone: React.Dispatch<React.SetStateAction<boolean>>;
 } | undefined>(undefined);
 
 export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -24,11 +26,12 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
   });
 
   const [showPicker, setShowPicker] = useState<boolean>(false);
+  const [standalone, setStandalone] = useState<boolean>(false);
 
   useSettingsState({ settingsState, setSettingsState });
 
   return (
-    <SettingsContext.Provider value={{ settingsState, setSettingsState, showPicker, setShowPicker }}>
+    <SettingsContext.Provider value={{ settingsState, setSettingsState, showPicker, setShowPicker, standalone, setStandalone }}>
       {children}
     </SettingsContext.Provider>
   );
