@@ -1,5 +1,5 @@
 /* global chrome */
-import { lightenAndPaleColor, GetThresholdofHex, ColorLuminance, CreateCustomShortcutDiv, RemoveCustomShortcutDiv } from "../../SEQTA";
+import { lightenAndPaleColor, GetThresholdofHex, ColorLuminance, CreateCustomShortcutDiv, RemoveCustomShortcutDiv } from "../../SEQTA.js";
 
 export default function StorageListener() {
   chrome.storage.onChanged.addListener(function (changes) {

@@ -9,7 +9,7 @@ import loading, { AppendLoadingSymbol } from "./seqta/ui/Loading.js";
 // Icons
 import assessmentsicon from "./seqta/icons/assessmentsIcon.js";
 import coursesicon from "./seqta/icons/coursesIcon.js";
-import StorageListener from "./seqta/utils/StorageListener";
+import StorageListener from "./seqta/utils/StorageListener.js";
 
 let isChrome = window.chrome;
 let SettingsClicked = false;
@@ -691,10 +691,17 @@ export function ColorLuminance(color, lum = 0) {
   if (color.includes("gradient")) {
     let gradient = color;
 
-    // Find and replace all instances of RGBA in the gradient
+    // Create a set to hold unique RGBA strings
+    let uniqueRgbaSet = new Set();
+
+    // Find all instances of RGBA in the gradient
     let match;
     while ((match = rgbaRegex.exec(color)) !== null) {
-      const rgbaString = match[1];
+      uniqueRgbaSet.add(match[1]);  // Add the unique RGBA string to the set
+    }
+
+    // Loop through each unique RGBA string
+    for (let rgbaString of uniqueRgbaSet) {
       const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
 
       // Apply the original luminance adjustment logic
@@ -705,8 +712,9 @@ export function ColorLuminance(color, lum = 0) {
       }
       adjustedRgba.push(a);  // Add the alpha component back
 
-      // Replace the original RGBA string with the adjusted one
-      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${adjustedRgba.join(", ")})`);
+      // Replace all occurrences of the original RGBA string with the adjusted one
+      const regex = new RegExp(`rgba\\(${rgbaString}\\)`, "g");
+      gradient = gradient.replace(regex, `rgba(${adjustedRgba.join(", ")})`);
     }
 
     return gradient;
@@ -1280,261 +1288,13 @@ function CallExtensionSettings() {
   fileref.setAttribute("href", cssFile);
   document.head.append(fileref);
 
-  /*let Settings =
-    stringToHTML(
-      String.raw`
-      <div class="outside-container hidden" id="ExtensionPopup"><div class="logo-container"><img src=${chrome.runtime.getURL(
-    "icons/betterseqta-light-full.png",
-  )}></div>
-  <div class="main-page" id="mainpage">
-      <div class="topmenu">
-        <div class="navitem activenav" id="miscsection">Settings</div>
-        <div class="navitem" id="shortcutsection">Shortcuts</div>
-        <div class="navitem" id="aboutsection">About</div>
-      </div>
-    </div>
-  
-
-  <div class="menu-page hiddenmenu" id="menupage">
-    <div class="selector-container" style="margin-bottom: 0;">
-      <div class="menu-item-selection">
-          <div class="aboutcontainer">
-          <div>
-            <h1 class="addonitem">About</h1>
-            <p class="item subitem">Created and developed and maintained by SethBurkart123</p>
-            <p class="item subitem">BetterSEQTA+ is a fork of the project BetterSEQTA, BetterSEQTA is no longer supported so we are here to fill that gap!</p>
-          </div>
-        </div>
-
-        <div class="aboutcontainer">
-          <div>
-            <a class="aboutlinks" href="https://chrome.google.com/webstore/detail/betterseqta%2B/afdgaoaclhkhemfkkkonemoapeinchel?snuoi" target="_blank">
-              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-            </svg>
-              Chrome Webstore
-            </a>
-
-          </div>
-        </div>
-        <div class="aboutcontainer">
-          <div>
-
-          </div>
-        </div>
-
-        <div class="aboutcontainer" style="color: rgb(155, 155, 155); font-size: 14px; margin-top: 7px;">
-        <p>Contact: <a href="https://github.com/SethBurkart123/EvenBetterSEQTA/issues">Open an issue on my github</a></p>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div class="menu-page hiddenmenu" id="shortcutpage">
-    <div class="selector-container" style="margin-bottom: 0; max-height: 17em; overflow-y:hidden;">
-      <div>
-        <div class="custom-shortcuts-button custom-shortcuts-buttons">Create Custom Shortcut</div>
-        <div class="custom-shortcuts-container">
-          <label for="shortcutname" class="custom-shortcuts-label">Shortcut Name:</label>
-          <input type="text" id="shortcutname" name="shortcutname" class="custom-shortcuts-field" placeholder="e.g. Google" maxlength="20">
-          <label for="shortcuturl" class="custom-shortcuts-label">URL:</label>
-          <input type="text" id="shortcuturl" name="shortcuturl" class="custom-shortcuts-field" placeholder="e.g. https://www.google.com">
-          <div class="custom-shortcuts-submit custom-shortcuts-buttons">Create</div>
-        </div>
-      </div>
-      <div class="menu-item-selection menushortcut">
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">YouTube</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="youtube">
-            <label for="youtube" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Outlook</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="outlook">
-            <label for="outlook" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Office</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="office">
-            <label for="office" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Spotify</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="spotify">
-            <label for="spotify" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Google</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="google">
-            <label for="google" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">DuckDuckGo</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox"
-              id="duckduckgo">
-              <label for="duckduckgo" class="onoffswitch-label"></label>
-            </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Cool Math Games</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox"
-              id="coolmathgames">
-              <label for="coolmathgames" class="onoffswitch-label"></label>
-            </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">SACE</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="sace">
-            <label for="sace" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Google Scholar</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox"
-              id="googlescholar">
-              <label for="googlescholar" class="onoffswitch-label"></label>
-            </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Gmail</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="gmail">
-            <label for="gmail" class="onoffswitch-label"></label>
-          </div>
-        </div>
-        <div class="item-container menushortcuts">
-          <div class="text-container">
-            <h1 class="addonitem">Netflix</h1>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification shortcutitem" type="checkbox" id="netflix">
-            <label for="netflix" class="onoffswitch-label"></label>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="menu-page" id="miscpage">
-    <div class="selector-container" style="margin-bottom: 0;">
-      <div class="menu-item-selection">
-
-        <div class="item-container">
-          <div class="text-container">
-            <h1 class="addonitem">Notification Collector</h1>
-            <p class="item subitem">Uncaps the 9+ limit for notifications, showing the real number.</p>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="notification">
-          <label for="notification" class="onoffswitch-label"></label>
-          </div>
-        </div>
-
-
-        <div class="item-container">
-          <div class="text-container">
-            <h1 class="addonitem">Lesson Alerts</h1>
-            <p class="item subitem">Sends a native browser notification ~5 minutes prior to lessons.</p>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="lessonalert">
-            <label for="lessonalert" class="onoffswitch-label"></label>
-          </div>
-        </div>
-
-        <div class="item-container">
-          <div class="text-container">
-            <h1 class="addonitem">Animated Background</h1>
-            <p class="item subitem">Adds an animated background to BetterSEQTA. (May impact battery life)</p>
-          </div>
-          <div class="onoffswitch"><input class="onoffswitch-checkbox notification" type="checkbox" id="animatedbk">
-          <label for="animatedbk" class="onoffswitch-label"></label>
-          </div>
-        </div>
-
-        <div class="item-container">
-          <div class="text-container">
-            <h1 class="addonitem">Animated Background Speed</h1>
-            <p class="item subitem">Controls the speed of the animated background.</p>
-          </div>
-          <div class="bkslider">
-            <input type="range" id="bksliderinput" name="Animated Background Slider" min="1" max="200" />
-          </div>
-        </div>
-
-        <div class="item-container">
-          <div class="text-container">
-            <h1 class="addonitem">Custom Theme Colour</h1>
-            <p class="item subitem">Customise the overall theme colour of SEQTA Learn.</p>
-          </div>
-          <div class="clr-field" style="justify-content: end; display: flex; margin: 5px;">
-            <button aria-labelledby="clr-open-label" style="width: 51px; right: 0px; border: 1px solid white;"></button>
-            <input type="text" id="colorpicker" class="coloris" style="width: 42px; border-radius: 3px;" />
-          </div>
-        </div>
-
-
-        <div class="item-container" style="height: 2em; margin-top: 0px; margin-bottom: 24px;">
-          <div class="text-container">
-            <h1 class="addonitem">BetterSEQTA+</h1>
-          </div>
-          <div class="onoffswitch" style="margin-bottom: 0px;"><input class="onoffswitch-checkbox notification" type="checkbox" id="onoff">
-            <label for="onoff" class="onoffswitch-label"></label>
-          </div>
-        </div>
-
-
-      </div>
-    </div>
-  </div>
-
-
-
-
-  <div class="bottom-container">
-    <div class="applychanges" id="applychanges" style="height: 25px;">
-      <div style="margin-top:0px;">
-      <h5>Unsaved Changes</h5>
-      <h6>Click to apply.</h6>
-      </div>
-    </div>
-
-    <div></div>
-
-    <div style="position: absolute; background: #131313; bottom: 15px; right: 0px; color: rgb(177, 177, 177); display: flex; align-items: center; width: 100%; justify-content: space-between;">
-      <p style="margin: 0; flex: 1; padding-left: 24px; margin-right: 5px; color: white;">By SethBurkart123</p>
-      <button style="margin: 0; margin-right: 20px; cursor:pointer; padding: 8px 10px; background: #ff5f5f; color:#1a1a1a;font-weight: 500; border-radius: 10px;" id="whatsnewsettings">Changelog v${chrome.runtime.getManifest().version}</button>
-    </div>
-  </div></div>`);*/
-  let Settings2 =
+  let Settings =
   stringToHTML(
     String.raw`
     <div class="outside-container hide" id="ExtensionPopup">
     </div>
     `);
-  document.body.append(Settings2.firstChild);
+  document.body.append(Settings.firstChild);
 
   // add an iframe to the div: <iframe src="interface/index.html"></iframe>
   let iframe = document.createElement("iframe");
@@ -2938,9 +2698,8 @@ function SendHomePage() {
     currentSelectedDate = new Date();
 
     // Creates the root of the home page added to the main div
-    var htmlStr = "<div class=\"home-root\"><div class=\"home-container\" id=\"home-container\"></div></div>";
-
-    var html = stringToHTML(htmlStr);
+    var html = stringToHTML("<div class=\"home-root\"><div class=\"home-container\" id=\"home-container\"></div></div>");
+    
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
     main.append(html.firstChild);

@@ -1171,6 +1171,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .Avatar__Avatar___gE5kx.Avatar__staff___4gVLs {
   --person-colour: var(--better-light);
+  background: var(--person-colour, var(--navy));
 }
 
 .LabelList__LabelList___2RJFf > li.LabelList__selected___3Egk7 {

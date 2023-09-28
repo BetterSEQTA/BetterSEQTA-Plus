@@ -7,6 +7,8 @@ import useSettingsState from './hooks/settingsState';
 const SettingsContext = createContext<{
   settingsState: SettingsState;
   setSettingsState: React.Dispatch<React.SetStateAction<SettingsState>>;
+  showPicker: boolean;
+  setShowPicker: React.Dispatch<React.SetStateAction<boolean>>;
 } | undefined>(undefined);
 
 export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -15,15 +17,18 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
     lessonAlerts: false,
     animatedBackground: false,
     animatedBackgroundSpeed: "0",
-    customThemeColor: "#db6969",
+    customThemeColor: "rgba(219, 105, 105, 1)",
     betterSEQTAPlus: true,
-    shortcuts: []
+    shortcuts: [],
+    customshortcuts: [],
   });
+
+  const [showPicker, setShowPicker] = useState<boolean>(false);
 
   useSettingsState({ settingsState, setSettingsState });
 
   return (
-    <SettingsContext.Provider value={{ settingsState, setSettingsState }}>
+    <SettingsContext.Provider value={{ settingsState, setSettingsState, showPicker, setShowPicker }}>
       {children}
     </SettingsContext.Provider>
   );
