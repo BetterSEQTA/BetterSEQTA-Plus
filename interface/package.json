@@ -13,7 +13,7 @@
     "@types/chrome": "^0.0.246",
     "framer-motion": "^10.16.4",
     "react": "^18.2.0",
-    "react-best-gradient-color-picker": "^2.2.22",
+    "react-best-gradient-color-picker": "^2.2.23",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

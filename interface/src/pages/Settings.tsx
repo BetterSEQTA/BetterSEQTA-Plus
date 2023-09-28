@@ -1,6 +1,6 @@
-import ColorPicker from '../components/ColorPicker';
 import Switch from '../components/Switch';
 import Slider from '../components/Slider';
+import PickerSwatch from '../components/PickerSwatch';
 
 import { SettingsList } from '../types/SettingsProps';
 import { useSettingsContext } from '../SettingsContext';
@@ -19,13 +19,6 @@ const Settings: React.FC = () => {
     setSettingsState({
       ...settingsState,
       [key]: value,
-    });
-  }
-
-  const colorChange = (color: string) => {
-    setSettingsState({
-      ...settingsState,
-      customThemeColor: color,
     });
   };
 
@@ -53,7 +46,7 @@ const Settings: React.FC = () => {
     {
       title: "Custom Theme Colour",
       description: "Customise the overall theme colour of SEQTA Learn.",
-      modifyElement: <ColorPicker color={settingsState.customThemeColor} onChange={(color: string) => colorChange(color)} />
+      modifyElement: <PickerSwatch />
     },
     {
       title: "BetterSEQTA+",

@@ -6,6 +6,7 @@ import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
 import About from './pages/About';
 import { SettingsContextProvider } from './SettingsContext';
+import Picker from './components/Picker';
 
 const App: React.FC = () => {
 
@@ -32,6 +33,7 @@ const App: React.FC = () => {
           <img src={logo} className="w-4/5 dark:hidden" />
           <img src={logoDark} className="hidden w-4/5 dark:block" />
         </div>
+        <Picker />
         <TabbedContainer tabs={tabs} />
       </div>
     </SettingsContextProvider>
