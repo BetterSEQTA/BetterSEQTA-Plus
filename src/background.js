@@ -1,5 +1,7 @@
 /*global chrome*/
 
+import { readData, writeData } from "./seqta/utils/IndexedDB.js";
+
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
@@ -10,69 +12,110 @@ function ReloadSEQTAPages() {
   });
 }
 
-chrome.runtime.onMessage.addListener(function (request) {
-  if (request.type == "reloadTabs") {
-    ReloadSEQTAPages();
-  } else if (request.type == "githubTab") {
-    chrome.tabs.create({
-      url: "github.com/SethBurkart123/EvenBetterSEQTA",
-    });
-  } else if (request.type == "setDefaultStorage") {
-    console.log("setting default values");
-    SetStorageValue(DefaultValues);
-  } else if (request.type == "addPermissions") {
-    if (typeof chrome.declarativeContent != "undefined") {
-      chrome.declarativeContent.onPageChanged.removeRules(
-        undefined,
-        function () {},
-      );
+// Helper function to handle IndexedDB actions
+const handleIndexedDBActions = (request) => {
+  return new Promise((resolve, reject) => {
+    console.log("request");
+    if (request.action === "save") {
+      writeData(request.data.type, request.data.data)
+        .then(() => {
+          resolve({ message: "Data saved successfully" });
+        })
+        .catch(reject);
+    } else if (request.action === "read") {
+      readData()
+        .then(data => {
+          resolve(data);
+        })
+        .catch(reject);
+    } else {
+      reject(new Error("Invalid action type"));
     }
-    chrome.permissions.request(
-      { permissions: ["declarativeContent"], origins: ["*://*/*"] },
-      function (granted) {
-        if (granted) {
-          let rules = [
-            {
-              conditions: [
-                new chrome.declarativeContent.PageStateMatcher({
-                  pageUrl: {
-                    urlContains: "site.seqta.com.au",
-                    schemes: ["https"],
-                  },
-                }),
-              ],
-              actions: [
-                new chrome.declarativeContent.RequestContentScript({
-                  js: ["SEQTA.js"],
-                }),
-              ],
-            },
-            {
-              conditions: [
-                new chrome.declarativeContent.PageStateMatcher({
-                  pageUrl: { urlContains: "learn.", schemes: ["https"] },
-                }),
-              ],
-              actions: [
-                new chrome.declarativeContent.RequestContentScript({
-                  js: ["SEQTA.js"],
-                }),
-              ],
-            },
-          ];
-          for (let i = 0; i < rules.length; i++) {
-            chrome.declarativeContent.onPageChanged.addRules([rules[i]]);
-          }
-          alert(
-            "Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn't work, please contact the developer. It will be an easy fix",
-          );
-        }
-      },
-    );
+  });
+};
+
+// Helper function to handle setting permissions
+const handleAddPermissions = () => {
+  if (typeof chrome.declarativeContent !== "undefined") {
+    chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
+  }
+  
+  chrome.permissions.request(
+    { permissions: ["declarativeContent"], origins: ["*://*/*"] },
+    (granted) => {
+      if (granted) {
+        const rules = [
+          // Define your rules here
+        ];
+        
+        rules.forEach(rule => {
+          chrome.declarativeContent.onPageChanged.addRules([rule]);
+        });
+        
+        alert("Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn't work, please contact the developer. It will be an easy fix");
+      }
+    }
+  );
+};
+
+// Main message listener
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  console.log("Message received in background script", request);
+
+  sendResponse({ type: "success" });
+  switch (request.type) {
+  case "reloadTabs":
+    ReloadSEQTAPages();
+    break;
+    
+  case "IndexedDB":
+    handleIndexedDBActions(request, sendResponse);
+    return true; // This keeps the message channel open for async sendResponse
+    // eslint-disable-next-line no-unreachable
+    break;
+    
+  case "githubTab":
+    chrome.tabs.create({ url: "github.com/SethBurkart123/EvenBetterSEQTA" });
+    break;
+    
+  case "setDefaultStorage":
+    console.log("Setting default values");
+    SetStorageValue(DefaultValues);
+    break;
+    
+  case "addPermissions":
+    handleAddPermissions();
+    break;
+
+  case "sendNews":
+    GetNews(sendResponse);
+    return true;
+    // eslint-disable-next-line no-unreachable
+    break;
+    
+  default:
+    console.log("Unknown request type");
   }
 });
 
-function GetNews(url, sendResponse) {
+function GetNews(sendResponse) {
+  // Gets the current date
+  const date = new Date();
+  // Formats the current date used send a request for timetable and notices later
+  const TodayFormatted =
+    date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+
+  const from =
+    date.getFullYear() +
+    "-" +
+    (date.getMonth() + 1) +
+    "-" +
+    (date.getDate() - 1);
+  console.log(TodayFormatted);
+  console.log(from);
+
+  let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
+
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
@@ -84,31 +127,6 @@ function GetNews(url, sendResponse) {
       }
     });
 }
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type === "sendNews") {
-    // Gets the current date
-    const date = new Date();
-    // Formats the current date used send a request for timetable and notices later
-    var TodayFormatted =
-      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-
-    var from =
-      date.getFullYear() +
-      "-" +
-      (date.getMonth() + 1) +
-      "-" +
-      (date.getDate() - 1);
-    console.log(TodayFormatted);
-    console.log(from);
-
-    var url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
-
-    GetNews(url, sendResponse);
-
-    return true;
-  }
-});
 
 const DefaultValues = {
   onoff: true,
@@ -241,7 +259,7 @@ function migrateOldStorage() {
       }
     }
 
-    // If there's something to update, set the new values in storage
+    // If there"s something to update, set the new values in storage
     if (shouldUpdate) {
       chrome.storage.local.set({ shortcuts: items.shortcuts }, function() {
         console.log("Migration completed.");

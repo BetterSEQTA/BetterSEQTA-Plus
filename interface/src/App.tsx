@@ -4,9 +4,9 @@ import Settings from './pages/Settings';
 import logo from './assets/betterseqta-dark-full.png';
 import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
-import About from './pages/About';
 import { useSettingsContext } from './SettingsContext';
 import Picker from './components/Picker';
+import Themes from './pages/Themes';
 
 const App: React.FC = () => {
 
@@ -30,8 +30,8 @@ const App: React.FC = () => {
       content: <Shortcuts />
     },
     {
-      title: 'About',
-      content: <About />
+      title: 'Themes',
+      content: <Themes />
     }
   ];
 

@@ -10,14 +10,17 @@ import loading, { AppendLoadingSymbol } from "./seqta/ui/Loading.js";
 import assessmentsicon from "./seqta/icons/assessmentsIcon.js";
 import coursesicon from "./seqta/icons/coursesIcon.js";
 import StorageListener from "./seqta/utils/StorageListener.js";
+import { updateBgDurations } from "./seqta/ui/Animation.js";
+import { updateAllColors } from "./seqta/ui/Colors.js";
+import { appendBackgroundToUI } from "./seqta/ui/Background.js";
 
-let isChrome = window.chrome;
+export let isChrome = window.chrome;
 let SettingsClicked = false;
 let MenuOptionsOpen = false;
 let UserInitalCode = "";
 let currentSelectedDate = new Date();
 let LessonInterval;
-let DarkMode;
+export let DarkMode;
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -36,27 +39,7 @@ function animbkEnable(item) {
   }
 }
 
-function bkValues (item) {
-  const bg = document.getElementsByClassName("bg");
-  const bg2 = document.getElementsByClassName("bg2");
-  const bg3 = document.getElementsByClassName("bg3");
-  const value = 200 - item.bksliderinput; // reverse the slider direction to match the animation direction
-
-  if (bg.length == 0 || bg2.length == 0 || bg3.length == 0) return;
-
-  const minDuration = 1; // minimum duration in seconds
-  const maxDuration = 10; // maximum duration in seconds
-  const durationRange = maxDuration - minDuration;
-  const bgDuration = minDuration + (value / 200) * durationRange;
-  const bg2Duration = minDuration + ((value / 200) + 0.05) * durationRange;
-  const bg3Duration = minDuration + ((value / 200) + 0.1) * durationRange;
-
-  bg[0].style.animationDuration = `${bgDuration}s`;
-  bg2[0].style.animationDuration = `${bg2Duration}s`;
-  bg3[0].style.animationDuration = `${bg3Duration}s`;
-}
-
-function ApplyCSSToHiddenMenuItems() {
+export function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = "";
   chrome.storage.local.get(null, function (result) {
     for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
@@ -245,7 +228,7 @@ function RemoveBackground() {
   bk3[0].remove();
 }
 
-function waitForElm(selector) {
+export function waitForElm(selector) {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
       return resolve(document.querySelector(selector));
@@ -518,7 +501,7 @@ function CheckNoticeTextColour(notice) {
   });
 }
 
-function tryLoad() {
+export function tryLoad() {
   waitForElm(".login").then(() => {
     finishLoad();
   });
@@ -573,7 +556,7 @@ function ChangeMenuItemPositions(storage) {
   }
 }
 
-async function ObserveMenuItemPosition() {
+export async function ObserveMenuItemPosition() {
   chrome.storage.local.get(null, function (result) {
     let menuorder = result.menuorder;
     if (menuorder && result.onoff) {
@@ -601,7 +584,67 @@ async function ObserveMenuItemPosition() {
   });
 }
 
-function AppendElementsToDisabledPage() {
+function main(storedSetting) {
+  DarkMode = storedSetting.DarkMode;
+  // If the option is 'on', open BetterSEQTA
+  if (typeof storedSetting.onoff == "undefined") {
+    chrome.runtime.sendMessage({ type: "setDefaultStorage" });
+  }
+  if (storedSetting.onoff) {
+    console.log("[BetterSEQTA+] Enabled");
+    // Injecting CSS File to the webpage to overwrite SEQTA's default CSS
+    var cssFile = chrome.runtime.getURL("inject/injected.css");
+    var fileref = document.createElement("link");
+    fileref.setAttribute("rel", "stylesheet");
+    fileref.setAttribute("type", "text/css");
+    fileref.setAttribute("href", cssFile);
+    document.head.appendChild(fileref);
+    document.getElementsByTagName("html")[0].appendChild(fileref);
+
+    // Injecting custom icons font file
+    const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
+
+    const style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.innerHTML = `
+    @font-face {
+      font-family: 'IconFamily';
+      src: url('${fontURL}') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }`;
+    document.head.appendChild(style);
+
+    updateAllColors(storedSetting);
+
+    ApplyCSSToHiddenMenuItems();
+
+    loading();
+
+    CheckLoadOnPeriods();
+
+    if (!isChrome || isChrome == "undefined") {
+      tryLoad();
+    }
+
+    window.addEventListener("load", function () {
+      tryLoad();
+    });
+  } else {
+    if (!isChrome || isChrome == "undefined") {
+      waitForElm(".code").then(() => {
+        AppendElementsToDisabledPage();
+      });
+    }
+    window.addEventListener("load", function () {
+      waitForElm(".code").then(() => {
+        AppendElementsToDisabledPage();
+      });
+    });
+  }
+}
+
+export function AppendElementsToDisabledPage() {
   AddBetterSEQTAElements(false);
 
   let settingsStyle = document.createElement("style");
@@ -757,146 +800,6 @@ async function CheckLoadOnPeriods() {
   }
 }
 
-function main(storedSetting) {
-  DarkMode = storedSetting.DarkMode;
-  // If the option is 'on', open BetterSEQTA
-  if (typeof storedSetting.onoff == "undefined") {
-    chrome.runtime.sendMessage({ type: "setDefaultStorage" });
-  }
-  if (storedSetting.onoff) {
-    console.log("[BetterSEQTA+] Enabled");
-    // Injecting CSS File to the webpage to overwrite SEQTA's default CSS
-    var cssFile = chrome.runtime.getURL("inject/injected.css");
-    var fileref = document.createElement("link");
-    fileref.setAttribute("rel", "stylesheet");
-    fileref.setAttribute("type", "text/css");
-    fileref.setAttribute("href", cssFile);
-    document.head.appendChild(fileref);
-    document.getElementsByTagName("html")[0].appendChild(fileref);
-
-    // Injecting custom icons font file
-    const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
-
-    const style = document.createElement("style");
-    style.setAttribute("type", "text/css");
-    style.innerHTML = `
-    @font-face {
-      font-family: 'IconFamily';
-      src: url('${fontURL}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-    document.head.appendChild(style);
-
-
-    document.documentElement.style.setProperty("--better-sub", "#161616");
-    document.documentElement.style.setProperty(
-      "--better-alert-highlight",
-      "#c61851",
-    );
-
-    if (storedSetting.DarkMode) {
-      document.documentElement.style.setProperty(
-        "--background-primary",
-        "#232323",
-      );
-      document.documentElement.style.setProperty(
-        "--background-secondary",
-        "#1a1a1a",
-      );
-      document.documentElement.style.setProperty("--text-primary", "white");
-    } else {
-      try {
-        document.documentElement.style.setProperty(
-          "--better-pale",
-          lightenAndPaleColor(storedSetting.selectedColor),
-        );
-      } catch (err) {
-        console.log(err);
-      }
-      document.documentElement.style.setProperty(
-        "--background-primary",
-        "#ffffff",
-      );
-      document.documentElement.style.setProperty(
-        "--background-secondary",
-        "#e5e7eb",
-      );
-      document.documentElement.style.setProperty("--text-primary", "black");
-    }
-
-    document.querySelector("link[rel*=\"icon\"]").href =
-      chrome.runtime.getURL("icons/icon-48.png");
-
-    let rbg = GetThresholdofHex(storedSetting.selectedColor);
-    if (rbg > 210) {
-      document.documentElement.style.setProperty("--text-color", "black");
-      document.documentElement.style.setProperty(
-        "--betterseqta-logo",
-        `url(${chrome.runtime.getURL("icons/betterseqta-dark-full.png")})`,
-      );
-    } else {
-      document.documentElement.style.setProperty("--text-color", "white");
-      document.documentElement.style.setProperty(
-        "--betterseqta-logo",
-        `url(${chrome.runtime.getURL("icons/betterseqta-light-full.png")})`,
-      );
-    }
-
-    document.documentElement.style.setProperty(
-      "--better-main",
-      storedSetting.selectedColor,
-    );
-
-    if (storedSetting.selectedColor == "#ffffff") {
-      document.documentElement.style.setProperty("--better-light", "#b7b7b7");
-    } else {
-      document.documentElement.style.setProperty(
-        "--better-light",
-        ColorLuminance(storedSetting.selectedColor, 0.95),
-      );
-    }
-
-    ApplyCSSToHiddenMenuItems();
-
-    loading();
-
-    CheckLoadOnPeriods();
-
-    if (!isChrome || isChrome == "undefined") {
-      tryLoad();
-    }
-
-    window.addEventListener("load", function () {
-      tryLoad();
-    });
-  } else {
-    if (!isChrome || isChrome == "undefined") {
-      waitForElm(".code").then(() => {
-        AppendElementsToDisabledPage();
-      });
-    }
-    window.addEventListener("load", function () {
-      waitForElm(".code").then(() => {
-        AppendElementsToDisabledPage();
-      });
-    });
-  }
-}
-
-async function CheckForMenuList() {
-  if (!MenuItemMutation) {
-    try {
-      if (document.getElementById("menu").firstChild) {
-        ObserveMenuItemPosition();
-        MenuItemMutation = true;
-      }
-    } catch (error) {
-      return;
-    }
-  }
-}
-
 var MenuItemMutation = false;
 var NonSEQTAPage = false;
 var IsSEQTAPage = false;
@@ -933,361 +836,8 @@ document.addEventListener(
   },
   true,
 );
-/*
-function RunExtensionSettingsJS() {
-  const whatsnewsettings = document.getElementById("whatsnewsettings");
-  whatsnewsettings.addEventListener("click", function () {
-    if (!WhatsNewOpen) {
-      WhatsNewOpen = true;
-      OpenWhatsNewPopup();
-    }
-  });
-
-  const onoffselection = document.querySelector("#onoff");
-  const notificationcollector = document.querySelector("#notification");
-  const lessonalert = document.querySelector("#lessonalert");
-  const aboutsection = document.querySelector("#aboutsection");
-  const shortcutsection = document.querySelector("#shortcutsection");
-  const miscsection = document.querySelector("#miscsection");
-  const colorpicker = document.querySelector("#colorpicker");
-  const animatedbk = document.querySelector("#animatedbk");
-  const bkslider = document.querySelector("#bksliderinput");
-
-  const customshortcutbutton = document.getElementsByClassName(
-    "custom-shortcuts-button",
-  )[0];
-  const customshortcutdiv = document.getElementsByClassName(
-    "custom-shortcuts-container",
-  )[0];
-  const customshortcutsubmit = document.getElementsByClassName(
-    "custom-shortcuts-submit",
-  )[0];
-  const customshortcutinputname = document.querySelector("#shortcutname");
-  const customshortcutinputurl = document.querySelector("#shortcuturl");
-
-  const shortcutmenuitemselection =
-    document.getElementsByClassName("menushortcut")[0];
-
-  const applybutton = document.querySelector("#applychanges");
-
-  const navbuttons = document.getElementsByClassName("navitem");
-  const menupages = document.getElementsByClassName("menu-page");
-
-  const allinputs = document.getElementsByTagName("input");
-
-  const menupage = document.querySelector("#menupage");
-
-  const shortcutpage = document.querySelector("#shortcutpage");
-
-  const miscpage = document.querySelector("#miscpage");
-
-  var shortcutbuttons = document.getElementsByClassName("shortcutitem");
-
-  var validURL = false;
-  var validName = false;
-
-  function resetActive() {
-    for (let i = 0; i < navbuttons.length; i++) {
-      navbuttons[i].classList.remove("activenav");
-    }
-    for (let i = 0; i < menupages.length; i++) {
-      menupages[i].classList.add("hiddenmenu");
-    }
-  }
-
-  function FindSEQTATab() {
-    chrome.runtime.sendMessage({ type: "reloadTabs" });
-  }
-  
-  // Store the currently selected settings using chrome.storage.local.
-
-  function storeSettings() {
-    chrome.storage.local.set({ onoff: onoffselection.checked }, function () {
-      FindSEQTATab();
-    });
-  }
-
-  function storeNotificationSettings() {
-    chrome.storage.local.set({
-      notificationcollector: notificationcollector.checked,
-    });
-    chrome.storage.local.set({ lessonalert: lessonalert.checked });
-    chrome.storage.local.set({ animatedbk: animatedbk.checked });
-    chrome.storage.local.set({ bksliderinput: bkslider.value });
-  }
-
-  function StoreAllSettings() {
-    chrome.storage.local.get(["shortcuts"], function (result) {
-      var shortcuts = Object.values(result)[0];
-      for (var i = 0; i < shortcutbuttons.length; i++) {
-        shortcuts[i].enabled = shortcutbuttons[i].checked;
-      }
-      chrome.storage.local.set({ shortcuts: shortcuts });
-    });
-
-    FindSEQTATab();
-  }
-  
-  // Update the options UI with the settings values retrieved from storage,
-  // or the default settings if the stored settings are empty.
-  
-  function updateUI(restoredSettings) {
-    if (typeof restoredSettings.onoff == "undefined") {
-      chrome.runtime.sendMessage({ type: "setDefaultStorage" });
-
-      chrome.storage.local.get(null, function (result) {
-        updateUI(result);
-      });
-    } else {
-      onoffselection.checked = restoredSettings.onoff;
-      notificationcollector.checked = restoredSettings.notificationcollector;
-      lessonalert.checked = restoredSettings.lessonalert;
-      animatedbk.checked = restoredSettings.animatedbk;
-      bkslider.value = restoredSettings.bksliderinput;
-      chrome.storage.local.get(["shortcuts"], function (result) {
-        var shortcuts = Object.values(result)[0];
-        for (var i = 0; i < shortcutbuttons.length; i++) {
-          shortcutbuttons[i].checked = shortcuts[i].enabled;
-        }
-        chrome.storage.local.set({ shortcuts: shortcuts });
-      });
-    }
-  }
-
-  function CreateShortcutDiv(name) {
-    let div = stringToHTML(`
-    <div class="item-container menushortcuts" data-customshortcut="${name}">
-      <div class="text-container">
-        <h1 class="addonitem" style="font-size: 8px !important;font-weight: 300;">Custom</h1>
-        <h1 class="addonitem">${name}</h1>  
-      </div>
-      <svg id="delete-${name}" style="width:24px;height:24px;margin: 9px;cursor:pointer;" viewBox="0 0 24 24">
-      <path fill="#ffffff" d="M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M14.59,8L12,10.59L9.41,8L8,9.41L10.59,12L8,14.59L9.41,16L12,13.41L14.59,16L16,14.59L13.41,12L16,9.41L14.59,8Z"></path></svg>
-    </div>`).firstChild;
-
-    shortcutmenuitemselection.append(div);
-
-    const deletebutton = document.getElementById(`delete-${name}`);
-    deletebutton.addEventListener("click", function () {
-      DeleteCustomShortcut(name);
-      applybutton.style.left = "4px";
-    });
-  }
-
-  function AddCustomShortcuts() {
-    chrome.storage.local.get(["customshortcuts"], function (result) {
-      var customshortcuts = Object.values(result)[0];
-      for (let i = 0; i < customshortcuts.length; i++) {
-        const element = customshortcuts[i];
-        CreateShortcutDiv(element.name);
-      }
-    });
-  }
-
-  function DeleteCustomShortcut(name) {
-    let item = document.querySelector(`[data-customshortcut="${name}"]`);
-    item.remove();
-    chrome.storage.local.get(["customshortcuts"], function (result) {
-      var customshortcuts = Object.values(result)[0];
-      for (let i = 0; i < customshortcuts.length; i++) {
-        if (customshortcuts[i].name == name) {
-          customshortcuts.splice(i, 1);
-        }
-      }
-      chrome.storage.local.set({ customshortcuts: customshortcuts });
-    });
-  }
-
-  function CustomShortcutMenu() {
-    customshortcutinputname.value = "";
-    customshortcutinputurl.value = "";
-    validURL = false;
-    validName = false;
-    customshortcutsubmit.classList.remove("customshortcut-submit-valid");
-    if (
-      customshortcutdiv.classList.contains("custom-shortcuts-container-shown")
-    ) {
-      customshortcutdiv.classList.remove("custom-shortcuts-container-shown");
-    } else {
-      customshortcutdiv.classList.add("custom-shortcuts-container-shown");
-    }
-  }
-
-  function CreateCustomShortcut() {
-    const shortcutname = customshortcutinputname.value;
-    var shortcuturl = customshortcutinputurl.value;
-
-    if (!shortcuturl.includes("http")) {
-      shortcuturl = "https://" + shortcuturl;
-    }
-
-    chrome.storage.local.get(["customshortcuts"], function (result) {
-      var customshortcuts = Object.values(result)[0];
-      customshortcuts.push({
-        name: shortcutname,
-        url: shortcuturl,
-        icon: shortcutname[0].toUpperCase(),
-      });
-      chrome.storage.local.set({ customshortcuts: customshortcuts });
-    });
-
-    CreateShortcutDiv(shortcutname);
-    document.getElementsByClassName("shortcut-container")[0].style.display =
-      "block";
-  }
-
-  chrome.storage.local.get(null, function (result) {
-    document.getElementsByClassName("clr-field")[0].style.color =
-      result.selectedColor;
-    colorpicker.value = result.selectedColor;
-    updateUI(result);
-  });
-
-  aboutsection.addEventListener("click", () => {
-    resetActive();
-    aboutsection.classList.add("activenav");
-    menupage.classList.remove("hiddenmenu");
-  });
-
-  shortcutsection.addEventListener("click", () => {
-    resetActive();
-    shortcutsection.classList.add("activenav");
-    shortcutpage.classList.remove("hiddenmenu");
-  });
-
-  miscsection.addEventListener("click", () => {
-    resetActive();
-    miscsection.classList.add("activenav");
-    miscpage.classList.remove("hiddenmenu");
-  });
-
-  customshortcutbutton.addEventListener("click", () => {
-    CustomShortcutMenu();
-  });
-  customshortcutsubmit.addEventListener("click", () => {
-    if (validName && validURL) {
-      CreateCustomShortcut();
-      CustomShortcutMenu();
-    }
-  });
-
-  var sameName = false;
-  customshortcutinputname.addEventListener("input", function () {
-    sameName = false;
-    chrome.storage.local.get(["customshortcuts"], function (result) {
-      var customshortcuts = Object.values(result)[0];
-      for (let i = 0; i < customshortcuts.length; i++) {
-        if (customshortcuts[i].name == customshortcutinputname.value) {
-          sameName = true;
-        }
-      }
-
-      if (
-        customshortcutinputname.value.length > 0 &&
-        customshortcutinputname.value.length < 22 &&
-        !sameName
-      ) {
-        validName = true;
-      } else {
-        validName = false;
-      }
-
-      if (validName && validURL) {
-        customshortcutsubmit.classList.add("customshortcut-submit-valid");
-      } else {
-        customshortcutsubmit.classList.remove("customshortcut-submit-valid");
-      }
-    });
-  });
-
-  customshortcutinputurl.addEventListener("input", function () {
-    if (
-      customshortcutinputurl.value.length > 0 &&
-      customshortcutinputurl.value.includes(".")
-    ) {
-      validURL = true;
-    } else {
-      validURL = false;
-    }
-
-    if (validName && validURL) {
-      customshortcutsubmit.classList.add("customshortcut-submit-valid");
-    } else {
-      customshortcutsubmit.classList.remove("customshortcut-submit-valid");
-    }
-  });
-
-  AddCustomShortcuts();
-
-  onoffselection.addEventListener("change", storeSettings);
-  notificationcollector.addEventListener("change", storeNotificationSettings);
-  lessonalert.addEventListener("change", storeNotificationSettings);
-  bkslider.addEventListener("change", () => {
-    storeNotificationSettings();
-    chrome.storage.local.get(["bksliderinput"]).then(bkValues);
-  });
-  animatedbk.addEventListener("change", () => {
-    storeNotificationSettings();
-    animbkEnable({ animatedbk: animatedbk.checked });
-  });
-
-  for (let i = 0; i < allinputs.length; i++) {
-    if (
-      allinputs[i].id != "colorpicker" &&
-      allinputs[i].id != "shortcuturl" &&
-      allinputs[i].id != "shortcutname" &&
-      allinputs[i].id != "bkslider" &&
-      allinputs[i].id != "bksliderinput"
-    ) {
-      allinputs[i].addEventListener("change", () => {
-        applybutton.style.left = "4px";
-      });
-    }
-  }
-
-  applybutton.addEventListener("click", () => {
-    StoreAllSettings();
-    applybutton.style.left = "-150px";
-  });
-
-  colorpicker.addEventListener("input", function () {
-    var colorPreview = document.querySelector("#clr-color-preview");
-    if (colorPreview.style.color) {
-      var hex = colorPreview.style.color.split("(")[1].split(")")[0];
-      hex = hex.split(",");
-      var b = hex.map(function (x) {
-        //For each array element
-        x = parseInt(x).toString(16); //Convert to a base16 string
-        return x.length == 1 ? "0" + x : x; //Add zero if we get only one character
-      });
-      b = "#" + b.join("");
-
-      chrome.storage.local.set({ selectedColor: b });
-    }
-  });
-}*/
 
 function CallExtensionSettings() {
-  // Injecting CSS File to the webpage to overwrite iFrame default CSS
-  var cssFile = chrome.runtime.getURL("popup/info.css");
-  var fileref = document.createElement("link");
-  fileref.setAttribute("rel", "stylesheet");
-  fileref.setAttribute("type", "text/css");
-  fileref.setAttribute("href", cssFile);
-  document.head.append(fileref);
-
-  var jsFile = chrome.runtime.getURL("popup/coloris.js");
-  fileref = document.createElement("script");
-  fileref.setAttribute("src", jsFile);
-  document.head.append(fileref);
-
-  cssFile = chrome.runtime.getURL("popup/coloris.css");
-  fileref = document.createElement("link");
-  fileref.setAttribute("rel", "stylesheet");
-  fileref.setAttribute("type", "text/css");
-  fileref.setAttribute("href", cssFile);
-  document.head.append(fileref);
-
   let Settings =
   stringToHTML(
     String.raw`
@@ -1607,6 +1157,7 @@ function ReplaceMenuSVG(element, svg) {
 
 function AddBetterSEQTAElements(toggle) {
   var code = document.getElementsByClassName("code")[0];
+  appendBackgroundToUI();
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
     if (!code.innerHTML.includes("BetterSEQTA")) {
@@ -1632,7 +1183,7 @@ function AddBetterSEQTAElements(toggle) {
         const sliderVal = chrome.storage.local.get(["bksliderinput"]);
 
         result.then(animbkEnable);
-        sliderVal.then(bkValues);
+        sliderVal.then(updateBgDurations);
 
         // Load darkmode state
         chrome.storage.local.get(["DarkMode"], function (result) {
@@ -1776,7 +1327,6 @@ function AddBetterSEQTAElements(toggle) {
       }
 
       CallExtensionSettings();
-      //RunExtensionSettingsJS();
 
       // If betterSEQTA+ is enabled, run the code
       if (toggle) {
@@ -3098,16 +2648,18 @@ function SendNewsPage() {
   }, 8);
 }
 
-/*
-function EnabledDisabledToBool(input) {
-  if (input == "enabled") {
-    return true;
-  }
-  if (input == "disabled") {
-    return false;
+async function CheckForMenuList() {
+  if (!MenuItemMutation) {
+    try {
+      if (document.getElementById("menu").firstChild) {
+        ObserveMenuItemPosition();
+        MenuItemMutation = true;
+      }
+    } catch (error) {
+      return;
+    }
   }
 }
-*/
 
 function LoadInit() {
   console.log("[BetterSEQTA] Started Init");
