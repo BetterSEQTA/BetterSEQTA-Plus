@@ -1,19 +1,52 @@
 /* global chrome */
-import { ColorLuminance, GetThresholdofHex } from "../../SEQTA.js";
+import { ColorLuminance, GetThresholdofHex, lightenAndPaleColor } from "../../SEQTA.js";
 
-export function updateDocumentColors(newColor) {
-  const rbg = GetThresholdofHex(newColor);
-  const textColor = rbg > 210 ? "black" : "white";
-  const logo = `url(${chrome.runtime.getURL(
-    `icons/betterseqta-${textColor === "black" ? "dark" : "light"}-full.png`
-  )})`;
+// Helper functions
+const setCSSVar = (varName, value) => document.documentElement.style.setProperty(varName, value);
+const getChromeURL = (path) => chrome.runtime.getURL(path);
+const applyProperties = (props) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
-  document.documentElement.style.setProperty("--text-color", textColor);
-  document.documentElement.style.setProperty("--betterseqta-logo", logo);
-  document.documentElement.style.setProperty("--better-main", newColor);
+export function updateAllColors(storedSetting, newColor = null) {
+  // Determine the color to use
+  const selectedColor = newColor || storedSetting.selectedColor;
+  const DarkMode = storedSetting ? storedSetting.DarkMode : null;
 
-  const lightColor =
-    newColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(newColor, 0.99);
+  // Common properties, always applied
+  const commonProps = {
+    "--better-sub": "#161616",
+    "--better-alert-highlight": "#c61851",
+    "--better-main": selectedColor
+  };
 
-  document.documentElement.style.setProperty("--better-light", lightColor);
+  // Mode-based properties, applied if storedSetting is provided
+  let modeProps = {};
+  if (DarkMode !== null) {
+    modeProps = DarkMode ? {
+      "--background-primary": "#232323",
+      "--background-secondary": "#1a1a1a",
+      "--text-primary": "white"
+    } : {
+      "--background-primary": "#ffffff",
+      "--background-secondary": "#e5e7eb",
+      "--text-primary": "black",
+      "--better-pale": lightenAndPaleColor(selectedColor)  // Wrap this in try-catch if needed
+    };
+  }
+
+  // Dynamic properties, always applied
+  const rgbThreshold = GetThresholdofHex(selectedColor);
+  const isBright = rgbThreshold > 210;
+  const dynamicProps = {
+    "--text-color": isBright ? "black" : "white",
+    "--betterseqta-logo": `url(${getChromeURL(`icons/betterseqta-${isBright ? "dark" : "light"}-full.png`)})`,
+    "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(selectedColor, 0.95)
+  };
+
+  // Apply all the properties
+  applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
+
+  // Set favicon, if storedSetting is provided
+  if (DarkMode !== null) {
+    document.querySelector("link[rel*='icon']").href = getChromeURL("icons/icon-48.png");
+  }
 }

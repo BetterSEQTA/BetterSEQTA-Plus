@@ -41,6 +41,10 @@ table th {
   background-color: #161616;
 }
 
+/* .cke_panel_listItem {
+
+} */
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

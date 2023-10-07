@@ -1169,6 +1169,17 @@ div > ol:has(.uiFileHandlerWrapper) {
   border-radius: 0.5rem;
 }
 
+.cke_panel > iframe {
+  height: 180px;
+  background: var(--background-primary);
+}
+
+.cke_panel {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: unset;
+}
+
 .Avatar__Avatar___gE5kx.Avatar__staff___4gVLs {
   --person-colour: var(--better-light);
   background: var(--person-colour, var(--navy));

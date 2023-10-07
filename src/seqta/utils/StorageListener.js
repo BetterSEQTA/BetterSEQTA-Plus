@@ -4,7 +4,7 @@ import {
   CreateCustomShortcutDiv,
   RemoveCustomShortcutDiv,
 } from "../../SEQTA.js";
-import { updateDocumentColors } from "../ui/Colors.js";
+import { updateAllColors } from "../ui/Colors.js";
 
 export default class StorageListener {
   constructor() {
@@ -26,11 +26,7 @@ export default class StorageListener {
 
   handleSelectedColorChange(newColor) {
     try {
-      chrome.storage.local.get(["DarkMode"], (result) => {
-        if (!result.DarkMode) {
-          updateDocumentColors(newColor);
-        }
-      });
+      updateAllColors(null, newColor);
     } catch (err) {
       console.error(err);
     }
