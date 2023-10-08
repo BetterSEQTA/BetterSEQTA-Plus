@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 @import "./injected/popup.css";
+@import "./injected/sidebar-animation.css";
 
 :root {
   background: var(--better-main) !important;
