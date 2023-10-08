@@ -1,29 +1,26 @@
-// IndexedDB utility functions
-export const openDB = () => {
-  return new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open("MyDatabase", 1);
+export const openDB = async () => {
+  const request = indexedDB.open("MyDatabase", 1);
 
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+  request.onupgradeneeded = async (event) => {
+    const db = event.target.result;
+    await db.createObjectStore("backgrounds", { keyPath: "id" });
+  };
 
-    request.onupgradeneeded = (event) => {
-      const db = (event.target).result;
-      db.createObjectStore("backgrounds", { keyPath: "id" });
-    };
-  });
+  return request;
 };
 
 export const writeData = async (type, data) => {
-  return new Promise((resolve, reject) => {
-    openDB().then(db => {
-      const tx = db.transaction("backgrounds", "readwrite");
-      const store = tx.objectStore("backgrounds");
-      const request = store.put({ id: "customBackground", type, data });
+  console.log("Reading Data");
+  const db = await openDB();
+  console.log("Opened DB");
 
-      tx.oncomplete = () => resolve(request.result);
-      tx.onerror = () => reject(tx.error);
-    }).catch(reject);
-  });
+  const tx = db.transaction("backgrounds", "readwrite");
+  const store = tx.objectStore("backgrounds");
+  const request = await store.put({ id: "customBackground", type, data });
+
+  console.log("Data written successfully");
+
+  return request.result;
 };
 
 export const readData = async () => {

@@ -47,12 +47,15 @@ const readData = async () => {
 
 const Themes: React.FC = () => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileType = 'image';
+    const fileType = file.type.split('/')[0];
+    console.log(fileType);
+
     const reader = new FileReader();
 
     reader.onload = async () => {
@@ -61,11 +64,7 @@ const Themes: React.FC = () => {
       setImageSrc(dataURL as string);
     };
 
-    if (fileType === 'image') {
-      reader.readAsDataURL(file);
-    } else {
-      // Handle video file
-    }
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -73,6 +72,8 @@ const Themes: React.FC = () => {
       const data = await readData();
       if (data?.type === 'image') {
         setImageSrc(data.data);
+      } else if (data?.type === 'video') {
+        setVideoSrc(data.data);
       }
     })();
   }, []);  
@@ -85,6 +86,7 @@ const Themes: React.FC = () => {
 
       <input type="file" onChange={handleFileChange} />
       {imageSrc && <img src={imageSrc} alt="Uploaded content" />}
+      {videoSrc && <video src={videoSrc} autoPlay loop muted />}
 
       <div>
         <h2 className="text-lg font-bold">Themes</h2>

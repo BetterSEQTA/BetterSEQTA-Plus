@@ -13,7 +13,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
 
     // get the current settings state
     chrome.storage.local.get(function(result: MainConfig) {
-      console.log(result);
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
@@ -43,7 +42,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   }), []);
   
   const storageChangeListener = (changes: chrome.storage.StorageChange) => {
-    console.log(settingsState);
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {

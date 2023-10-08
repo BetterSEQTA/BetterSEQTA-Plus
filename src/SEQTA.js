@@ -1157,7 +1157,6 @@ function ReplaceMenuSVG(element, svg) {
 
 function AddBetterSEQTAElements(toggle) {
   var code = document.getElementsByClassName("code")[0];
-  appendBackgroundToUI();
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
     if (!code.innerHTML.includes("BetterSEQTA")) {
@@ -1324,8 +1323,10 @@ function AddBetterSEQTAElements(toggle) {
             SendNewsPage();
           }
         });
-      }
 
+      }
+      
+      appendBackgroundToUI();
       CallExtensionSettings();
 
       // If betterSEQTA+ is enabled, run the code

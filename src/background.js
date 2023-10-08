@@ -1,6 +1,67 @@
 /*global chrome*/
 
-import { readData, writeData } from "./seqta/utils/IndexedDB.js";
+export const openDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("MyDatabase", 1);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      db.createObjectStore("backgrounds", { keyPath: "id" });
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = (event) => {
+      reject("Error opening database: " + event.target.errorCode);
+    };
+  });
+};
+
+export const writeData = async (type, data) => {
+  console.log("Reading Data");
+  const db = await openDB();
+  console.log("Opened DB");
+
+  const tx = db.transaction("backgrounds", "readwrite");
+  const store = tx.objectStore("backgrounds");
+  const request = await store.put({ id: "customBackground", type, data });
+
+  console.log("Data written successfully");
+
+  return request.result;
+};
+
+export const readData = () => {
+  return new Promise((resolve, reject) => {
+    openDB()
+      .then(db => {
+        console.log("Database, typeof", typeof db, "Is: ", db);
+        const tx = db.transaction("backgrounds", "readonly");
+        const store = tx.objectStore("backgrounds");
+        console.log("Current store: ", store);
+        
+        // Retrieve the custom background
+        const getRequest = store.get("customBackground");
+        
+        // Attach success and error event handlers
+        getRequest.onsuccess = function(event) {
+          console.log("CustomBackground", event.target.result);
+          resolve(event.target.result);
+        };
+        
+        getRequest.onerror = function(event) {
+          console.error("An error occurred:", event);
+          reject(event);
+        };
+      })
+      .catch(error => {
+        console.error("An error occurred:", error);
+        reject(error);
+      });
+  });
+};
 
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
@@ -11,28 +72,6 @@ function ReloadSEQTAPages() {
     }
   });
 }
-
-// Helper function to handle IndexedDB actions
-const handleIndexedDBActions = (request) => {
-  return new Promise((resolve, reject) => {
-    console.log("request");
-    if (request.action === "save") {
-      writeData(request.data.type, request.data.data)
-        .then(() => {
-          resolve({ message: "Data saved successfully" });
-        })
-        .catch(reject);
-    } else if (request.action === "read") {
-      readData()
-        .then(data => {
-          resolve(data);
-        })
-        .catch(reject);
-    } else {
-      reject(new Error("Invalid action type"));
-    }
-  });
-};
 
 // Helper function to handle setting permissions
 const handleAddPermissions = () => {
@@ -59,21 +98,18 @@ const handleAddPermissions = () => {
 };
 
 // Main message listener
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Message received in background script", request);
 
-  sendResponse({ type: "success" });
   switch (request.type) {
   case "reloadTabs":
     ReloadSEQTAPages();
     break;
     
   case "IndexedDB":
-    handleIndexedDBActions(request, sendResponse);
-    return true; // This keeps the message channel open for async sendResponse
-    // eslint-disable-next-line no-unreachable
-    break;
-    
+    HandleIntexedDB(request, sendResponse);
+    return true;
+  
   case "githubTab":
     chrome.tabs.create({ url: "github.com/SethBurkart123/EvenBetterSEQTA" });
     break;
@@ -98,6 +134,21 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   }
 });
 
+function HandleIntexedDB(request, sendResponse) {
+  switch (request.action) {
+  case "write":
+    writeData(request.data.type, request.data.data);
+    break;
+
+  case "read":
+    readData().then((data) => {
+      console.log("Sending data: ", data);
+      sendResponse(data);
+    });
+    return true;
+
+  }
+}
 function GetNews(sendResponse) {
   // Gets the current date
   const date = new Date();
@@ -116,6 +167,7 @@ function GetNews(sendResponse) {
 
   let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
 
+  console.log("Fetching news from " + url);
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
@@ -123,6 +175,7 @@ function GetNews(sendResponse) {
         url += "%00";
         GetNews();
       } else {
+        console.log(response);
         sendResponse({ news: response });
       }
     });
