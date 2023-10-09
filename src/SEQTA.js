@@ -89,6 +89,9 @@ function OpenWhatsNewPopup() {
   let text = stringToHTML(
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+  <li>Custom backgrounds and themes coming soon!</li>
+  <h1>3.1.2 - New settings menu!</h1>
+  <li>Overhauled the settings menu!!!</li>
   <h1>3.1.1 - Minor Bug fixes</h1>
   <li>Fixed assessments overlapping</li>
   <li>Fixed houses not displaying if they aren't a specific color</li>
@@ -367,41 +370,9 @@ function LoadPageElements() {
         // Sends similar HTTP Post Request for the notices
         chrome.storage.local.get(null, function (result) {
           if (result.notificationcollector) {
-            var xhr3 = new XMLHttpRequest();
-            xhr3.open(
-              "POST",
-              `${location.origin}/seqta/student/heartbeat?`,
-              true,
-            );
-            xhr3.setRequestHeader(
-              "Content-Type",
-              "application/json; charset=utf-8",
-            );
-            xhr3.onreadystatechange = function () {
-              if (xhr3.readyState === 4) {
-                var Notifications = JSON.parse(xhr3.response);
-                var alertdiv = document.getElementsByClassName(
-                  "notifications__bubble___1EkSQ",
-                )[0];
-                if (typeof alertdiv == "undefined") {
-                  console.log(
-                    "[BetterSEQTA+] No notifications currently",
-                  );
-                } else {
-                  alertdiv.textContent =
-                      Notifications.payload.notifications.length;
-                }
-              }
-            };
-            xhr3.send(
-              JSON.stringify({
-                timestamp: "1970-01-01 00:00:00.0",
-                hash: "#?page=/home",
-              }),
-            );
+            enableNotificationCollector();
           }
         });
-
         finishLoad();
       }
     });
@@ -421,36 +392,7 @@ function LoadPageElements() {
     // Sends similar HTTP Post Request for the notices
     chrome.storage.local.get(null, function (result) {
       if (result.notificationcollector) {
-        var xhr3 = new XMLHttpRequest();
-        xhr3.open(
-          "POST",
-          `${location.origin}/seqta/student/heartbeat?`,
-          true,
-        );
-        xhr3.setRequestHeader(
-          "Content-Type",
-          "application/json; charset=utf-8",
-        );
-        xhr3.onreadystatechange = function () {
-          if (xhr3.readyState === 4) {
-            var Notifications = JSON.parse(xhr3.response);
-            var alertdiv = document.getElementsByClassName(
-              "notifications__bubble___1EkSQ",
-            )[0];
-            if (typeof alertdiv == "undefined") {
-              console.log("[BetterSEQTA+] No notifications currently");
-            } else {
-              alertdiv.textContent =
-                  Notifications.payload.notifications.length;
-            }
-          }
-        };
-        xhr3.send(
-          JSON.stringify({
-            timestamp: "1970-01-01 00:00:00.0",
-            hash: "#?page=/home",
-          }),
-        );
+        enableNotificationCollector();
       }
     });
     break;
@@ -837,7 +779,7 @@ document.addEventListener(
   true,
 );
 
-function CallExtensionSettings() {
+function addExtensionSettings() {
   let Settings =
   stringToHTML(
     String.raw`
@@ -846,12 +788,11 @@ function CallExtensionSettings() {
     `);
   document.body.append(Settings.firstChild);
 
-  // add an iframe to the div: <iframe src="interface/index.html"></iframe>
   let iframe = document.createElement("iframe");
   iframe.src = chrome.runtime.getURL("interface/index.html");
   iframe.allowTransparency = "true";
   iframe.style.width = "384px";
-  iframe.style.height = "590px";
+  iframe.style.height = "610px";
   iframe.style.border = "none";
   iframe.setAttribute("excludeDarkCheck", "true");
   
@@ -1327,7 +1268,7 @@ function AddBetterSEQTAElements(toggle) {
       }
       
       appendBackgroundToUI();
-      CallExtensionSettings();
+      addExtensionSettings();
 
       // If betterSEQTA+ is enabled, run the code
       if (toggle) {
@@ -1533,14 +1474,22 @@ function CheckCurrentLesson(lesson, num) {
         } else {
           // check if permission is already granted
           if (Notification.permission === "granted") {
-            // show notification here
+            new Notification("Next Lesson in 5 Minutes:", {
+              body:
+                "Subject: " +
+                lesson.description +
+                " \nRoom: " +
+                lesson.room +
+                " \nTeacher: " +
+                lesson.staff,
+            });
           } else {
             // request permission from user
             Notification.requestPermission()
               .then(function (p) {
                 if (p === "granted") {
                   // show notification here
-                  /* notify = new Notification("Next Lesson in 5 Minutes:", {
+                  new Notification("Next Lesson in 5 Minutes:", {
                     body:
                       "Subject: " +
                       lesson.description +
@@ -1548,7 +1497,7 @@ function CheckCurrentLesson(lesson, num) {
                       lesson.room +
                       " \nTeacher: " +
                       lesson.staff,
-                  }); */
+                  });
                 } else {
                   console.log("User blocked notifications.");
                 }
@@ -2510,31 +2459,7 @@ function SendHomePage() {
     // Sends similar HTTP Post Request for the notices
     chrome.storage.local.get(null, function (result) {
       if (result.notificationcollector) {
-        var xhr3 = new XMLHttpRequest();
-        xhr3.open("POST", `${location.origin}/seqta/student/heartbeat?`, true);
-        xhr3.setRequestHeader(
-          "Content-Type",
-          "application/json; charset=utf-8",
-        );
-        xhr3.onreadystatechange = function () {
-          if (xhr3.readyState === 4) {
-            var Notifications = JSON.parse(xhr3.response);
-            var alertdiv = document.getElementsByClassName(
-              "notifications__bubble___1EkSQ",
-            )[0];
-            if (typeof alertdiv == "undefined") {
-              console.log("[BetterSEQTA] No notifications currently");
-            } else {
-              alertdiv.textContent = Notifications.payload.notifications.length;
-            }
-          }
-        };
-        xhr3.send(
-          JSON.stringify({
-            timestamp: "1970-01-01 00:00:00.0",
-            hash: "#?page=/home",
-          }),
-        );
+        enableNotificationCollector();
       }
     });
     console.log("Getting assessments");
@@ -2577,6 +2502,46 @@ function SendHomePage() {
       });
     });
   }, 8);
+}
+
+export function enableNotificationCollector() {
+  var xhr3 = new XMLHttpRequest();
+  xhr3.open("POST", `${location.origin}/seqta/student/heartbeat?`, true);
+  xhr3.setRequestHeader(
+    "Content-Type",
+    "application/json; charset=utf-8"
+  );
+  xhr3.onreadystatechange = function () {
+    if (xhr3.readyState === 4) {
+      var Notifications = JSON.parse(xhr3.response);
+      var alertdiv = document.getElementsByClassName(
+        "notifications__bubble___1EkSQ"
+      )[0];
+      if (typeof alertdiv == "undefined") {
+        console.log("[BetterSEQTA] No notifications currently");
+      } else {
+        alertdiv.textContent = Notifications.payload.notifications.length;
+      }
+    }
+  };
+  xhr3.send(
+    JSON.stringify({
+      timestamp: "1970-01-01 00:00:00.0",
+      hash: "#?page=/home",
+    })
+  );
+}
+
+export function disableNotificationCollector() {
+  var alertdiv = document.getElementsByClassName("notifications__bubble___1EkSQ")[0];
+  if (typeof alertdiv != "undefined") {
+    var currentNumber = parseInt(alertdiv.textContent);
+    if (currentNumber < 9) {
+      alertdiv.textContent = currentNumber;
+    } else {
+      alertdiv.textContent = "9+";
+    }
+  }
 }
 
 function SendNewsPage() {

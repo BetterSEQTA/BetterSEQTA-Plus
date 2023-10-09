@@ -9,7 +9,9 @@ export function updateBgDurations(item, minDuration = 1, maxDuration = 10) {
   const bgClasses = ["bg", "bg2", "bg3"];
   
   // Reverse the slider direction to align with the animation
-  const reversedValue = 200 - item.bksliderinput;
+  const reversedValue = 150 - item.bksliderinput;
+
+  console.log("reversedValue:", reversedValue);
   
   // Range of possible animation durations
   const durationRange = maxDuration - minDuration;

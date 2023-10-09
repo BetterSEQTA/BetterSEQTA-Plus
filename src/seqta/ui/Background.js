@@ -47,23 +47,30 @@ export async function appendBackgroundToUI() {
     console.log("Starting to append background");
     let backgroundElement;
     if (type === "video") {
-      /* const arrayBuffer = base64ToArrayBuffer(data);
-      const blob = new Blob([arrayBuffer], { type: "video/mp4" });
-      const blobUrl = URL.createObjectURL(blob);
-      console.log("blobUrl:", blobUrl); */
+      console.log("Data type:", typeof data);
+      console.log("Data instance:", data instanceof Blob);
 
+      if (data instanceof Blob) {
+        console.log("Blob size:", data.size);
+        console.log("Blob type:", data.type);
+      }    
+
+      console.log("Starting blob.");
+      const blob = new Blob([new Uint8Array(response.data)]);  // Adjust the MIME type accordingly
+      console.log("Made blob.");
+      const blobUrl = URL.createObjectURL(blob);
+      console.log(blobUrl);
       backgroundElement = document.createElement("video");
-      backgroundElement.src = data;
+      backgroundElement.src = blobUrl;
       backgroundElement.autoplay = true;
       backgroundElement.loop = true;
       backgroundElement.muted = true;
-      backgroundElement.classList.add("imageBackground");
+      console.log(backgroundElement);
       mount.appendChild(backgroundElement);
-
-      const videoElement = document.getElementsByClassName("imageBackground")[0];
-      setTimeout(() => {
-        videoElement.play();
-      }, 1000);
+      // Remember to revoke the blob URL to avoid memory leaks
+      backgroundElement.addEventListener("ended", () => {
+        URL.revokeObjectURL(blobUrl);
+      });
     } else {
       backgroundElement = document.createElement("img");
       backgroundElement.src = data;

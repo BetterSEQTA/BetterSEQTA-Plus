@@ -49,6 +49,11 @@ const Settings: React.FC = () => {
       modifyElement: <PickerSwatch />
     },
     {
+      title: "Transparency Effects",
+      description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
+      modifyElement: <Switch state={settingsState.betterSEQTAPlus} onChange={(isOn: boolean) => switchChange('betterSEQTAPlus', isOn)} />
+    },
+    {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
       modifyElement: <Switch state={settingsState.betterSEQTAPlus} onChange={(isOn: boolean) => switchChange('betterSEQTAPlus', isOn)} />
