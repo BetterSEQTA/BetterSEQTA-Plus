@@ -142,13 +142,17 @@ function HandleIntexedDB(request, sendResponse) {
 
   case "read":
     readData().then((data) => {
-      console.log("Sending data: ", data);
-      sendResponse(data);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        sendResponse({ data: arrayBuffer, type: data.type });
+      };
+      reader.readAsArrayBuffer(data.data);
     });
     return true;
-
   }
 }
+
 function GetNews(sendResponse) {
   // Gets the current date
   const date = new Date();
@@ -184,6 +188,7 @@ function GetNews(sendResponse) {
 const DefaultValues = {
   onoff: true,
   animatedbk: true,
+  bksliderinput: 50,
   lessonalert: true,
   notificationcollector: true,
   defaultmenuorder: [],
@@ -238,7 +243,7 @@ const DefaultValues = {
       enabled: false,
     },
     {
-      name: "educationperfect",
+      name: "Education Perfect",
       enabled: true,
     },
   ],

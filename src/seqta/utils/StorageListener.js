@@ -3,6 +3,8 @@
 import {
   CreateCustomShortcutDiv,
   RemoveCustomShortcutDiv,
+  disableNotificationCollector,
+  enableNotificationCollector,
 } from "../../SEQTA.js";
 import { updateAllColors } from "../ui/Colors.js";
 
@@ -22,6 +24,10 @@ export default class StorageListener {
         changes.customshortcuts.newValue
       );
     }
+
+    if (changes.notificationcollector) {
+      this.handleNotificationCollectorChange(changes.notificationcollector);
+    }
   }
 
   handleSelectedColorChange(newColor) {
@@ -29,6 +35,14 @@ export default class StorageListener {
       updateAllColors(null, newColor);
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  handleNotificationCollectorChange(details) {
+    if (details.newValue) {
+      enableNotificationCollector();
+    } else {
+      disableNotificationCollector();
     }
   }
 

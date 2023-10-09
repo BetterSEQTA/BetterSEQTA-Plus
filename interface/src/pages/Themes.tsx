@@ -52,28 +52,36 @@ const Themes: React.FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+  
     const fileType = file.type.split('/')[0];
     console.log(fileType);
-
+  
+    // Directly save the Blob object (file)
+    await writeData(fileType, file);
+    
+    // For displaying purpose, you might still want to convert it to Data URL
     const reader = new FileReader();
-
-    reader.onload = async () => {
-      const dataURL = reader.result;
-      await writeData(fileType, dataURL);
-      setImageSrc(dataURL as string);
+    reader.onload = () => {
+      setImageSrc(reader.result as string);
     };
-
     reader.readAsDataURL(file);
   };
-
+  
   useEffect(() => {
     (async () => {
       const data = await readData();
       if (data?.type === 'image') {
-        setImageSrc(data.data);
+        const reader = new FileReader();
+        reader.onload = () => {
+          setImageSrc(reader.result as string);
+        };
+        reader.readAsDataURL(data.data);
       } else if (data?.type === 'video') {
-        setVideoSrc(data.data);
+        const reader = new FileReader();
+        reader.onload = () => {
+          setVideoSrc(reader.result as string);
+        };
+        reader.readAsDataURL(data.data);
       }
     })();
   }, []);  

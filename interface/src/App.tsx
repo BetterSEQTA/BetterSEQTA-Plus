@@ -7,6 +7,7 @@ import Shortcuts from './pages/Shortcuts';
 import { useSettingsContext } from './SettingsContext';
 import Picker from './components/Picker';
 import Themes from './pages/Themes';
+//import About from './pages/About';
 
 const App: React.FC = () => {
 
