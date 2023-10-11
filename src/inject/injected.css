@@ -2740,7 +2740,7 @@ body {
   width: 38em;
   height: 95%;
   max-height: 60em;
-  background: var(--better-sub);
+  background: var(--background-primary);
   z-index: 50;
   left: 50%;
   top: 50%;
@@ -2748,7 +2748,7 @@ body {
   border-radius: 20px;
   display: flex;
   flex-direction: column;
-  color: white;
+  color: var(--text-primary);
   animation: zoomin 0.5s;
   animation-fill-mode: forwards;
   transform-origin: center center;
@@ -2790,7 +2790,7 @@ body {
 
 .whatsnewHeader p {
   font-size: 1em;
-  color: #c9c9c9;
+  color: var(--text-primary);
 }
 
 .whatsnewBackground {
@@ -2826,7 +2826,6 @@ body {
   width: 96%;
   display: flex;
   margin: 0 auto;
-  background: #141414;
   border-radius: 10px;
 }
 
@@ -2876,10 +2875,14 @@ body {
   width: 100%;
   height: 3em;
   border-radius: 0 0px 20px 20px;
-  background: #0e0e0e;
+  background: var(--background-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.whatsnewFooter a {
+  border: none;
 }
 
 .whatsnewFooter div {
