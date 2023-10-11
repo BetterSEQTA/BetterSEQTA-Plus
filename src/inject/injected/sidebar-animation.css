@@ -1,7 +1,17 @@
-#menu ul.noscroll li label {
-  transform: translateX(-10%);
+/* #menu ul.noscroll li > label,
+#menu ul.noscroll li > svg {
+  transform: translateX(-100%);
+}
+
+#menu ul.noscroll li.active {
+  background: transparent !important;
+}
+
+#menu ul.noscroll li .sub label,
+#menu ul.noscroll li > svg {
+  transform: translateX(0);
 }
 
 #menu li.active>.sub {
   transform: translateX(0);
-}
+} */
