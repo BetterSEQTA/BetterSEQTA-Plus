@@ -20,6 +20,7 @@ export function updateAllColors(storedSetting, newColor = null) {
 
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
+  console.log(DarkMode);
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
       "--background-primary": "#232323",
@@ -29,9 +30,11 @@ export function updateAllColors(storedSetting, newColor = null) {
       "--background-primary": "#ffffff",
       "--background-secondary": "#e5e7eb",
       "--text-primary": "black",
-      "--better-pale": lightenAndPaleColor(selectedColor)  // Wrap this in try-catch if needed
+      "--better-pale": lightenAndPaleColor(selectedColor)
     };
   }
+
+  console.log("modeProps:", modeProps);
 
   // Dynamic properties, always applied
   const rgbThreshold = GetThresholdofHex(selectedColor);
@@ -49,4 +52,15 @@ export function updateAllColors(storedSetting, newColor = null) {
   if (DarkMode !== null) {
     document.querySelector("link[rel*='icon']").href = getChromeURL("icons/icon-48.png");
   }
+}
+
+export function getDarkMode() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get("DarkMode", (result) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+      resolve(result.DarkMode);
+    });
+  });
 }

@@ -10,10 +10,11 @@ import {
   enableNotificationCollector,
 } from "../../SEQTA.js";
 import { updateBgDurations } from "../ui/Animation.js";
-import { updateAllColors } from "../ui/Colors.js";
+import { getDarkMode, updateAllColors } from "../ui/Colors.js";
 
 export default class StorageListener {
   constructor() {
+    this.darkMode = getDarkMode();
     chrome.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
   }
 
@@ -27,6 +28,10 @@ export default class StorageListener {
         changes.shortcuts.oldValue,
         changes.shortcuts.newValue
       );
+    }
+
+    if (changes.DarkMode) {
+      this.darkMode = changes.DarkMode.newValue;
     }
 
     if (changes?.customshortcuts?.newValue) {
@@ -56,7 +61,7 @@ export default class StorageListener {
 
   handleSelectedColorChange(newColor) {
     try {
-      updateAllColors(null, newColor);
+      updateAllColors(this.darkMode, newColor);
     } catch (err) {
       console.error(err);
     }

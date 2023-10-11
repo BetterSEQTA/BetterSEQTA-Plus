@@ -13,7 +13,7 @@ import coursesicon from "./seqta/icons/coursesIcon.js";
 import StorageListener from "./seqta/utils/StorageListener.js";
 import { updateBgDurations } from "./seqta/ui/Animation.js";
 import { updateAllColors } from "./seqta/ui/Colors.js";
-import { appendBackgroundToUI } from "./seqta/ui/Background.js";
+import { appendBackgroundToUI } from "./seqta/ui/ImageBackgrounds.js";
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
@@ -658,58 +658,70 @@ export function AppendElementsToDisabledPage() {
 }
 
 export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
-  // Step 1: Convert RGBA to separate R, G and B values
-  const [r, g, b] = inputColor.match(/\d+/g).map(Number);
+  console.log(`Input color: ${inputColor}`);
+  if (inputColor.includes("gradient")) return findMatchingColor(inputColor);
 
-  // Step 2: Convert RGB to HSL
-  let r1 = r / 255, g1 = g / 255, b1 = b / 255;
-  const max = Math.max(r1, g1, b1), min = Math.min(r1, g1, b1);
-  let h, s, l = (max + min) / 2;
+  // Step 1: Convert the input RGB color to a 'color' object
+  const colorObj = Color(`rgb(${inputColor.match(/\d+/g).join(",")})`);
 
-  if (max === min) {
-    h = s = 0; 
-  } else {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-
-    case r1: h = (g1 - b1) / d + (g1 < b1 ? 6 : 0); break;
-    case g1: h = (b1 - r1) / d + 2; break;
-    case b1: h = (r1 - g1) / d + 4; break;
-
-    }
-    h /= 6;
-  }
+  // Step 2: Convert to HSL and get the object
+  const hslObj = colorObj.hsl().object();
 
   // Step 3: Adjust saturation and lightness
-  s -= s * paleFactor;
-  l += (1 - l) * lightenFactor;
+  const adjustedS = hslObj.s * (1 - paleFactor);
+  const adjustedL = hslObj.l + (100 - hslObj.l) * lightenFactor;
 
-  // Step 4: Convert HSL back to RGB
-  const hue2rgb = (p, q, t) => {
-    if(t < 0) t += 1;
-    if(t > 1) t -= 1;
-    if(t < 1/6) return p + (q - p) * 6 * t;
-    if(t < 1/2) return q;
-    if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-    return p;
-  };
+  // Step 4: Create a new 'color' object with the adjusted HSL values
+  const newColorObj = Color.hsl(hslObj.h, adjustedS, adjustedL);
 
-  let r2, g2, b2;
-  if (s === 0) {
-    r2 = g2 = b2 = l; 
-  } else {
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    r2 = hue2rgb(p, q, h + 1/3);
-    g2 = hue2rgb(p, q, h);
-    b2 = hue2rgb(p, q, h - 1/3);
+  // Step 5: Convert back to RGB
+  const result = newColorObj.rgb().string();
+
+  console.log(`Input color: ${inputColor} | Output color: ${result}`);
+
+  return result;
+}
+
+// Utility function to average an array of Color objects
+function averageColors(colors) {
+  let avgR = 0, avgG = 0, avgB = 0;
+  colors.forEach(color => {
+    avgR += color.red();
+    avgG += color.green();
+    avgB += color.blue();
+  });
+  return Color.rgb(avgR / colors.length, avgG / colors.length, avgB / colors.length);
+}
+
+// Main function to find a matching color for a CSS gradient
+function findMatchingColor(cssGradient) {
+  try {
+    // Step 1: Parse the gradient to extract color stops (case-insensitive)
+    const regex = /#[0-9a-fA-F]{6}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)/gi;
+    const colorStops = cssGradient.match(regex);
+
+    if (!colorStops) {
+      throw new Error("No valid color stops found in the provided CSS gradient.");
+    }
+
+    // Normalize and trim the color stops
+    const normalizedColorStops = colorStops.map(color => color.toLowerCase().replace(/\s+/g, ""));
+
+    // Convert the color stops to Color objects
+    const colorObjects = normalizedColorStops.map(color => Color(color));
+
+    // Step 2: Average the color stops
+    const baseColor = averageColors(colorObjects);
+
+    // Step 3: Lighten and desaturate the base color
+    const matchingColor = baseColor.lighten(0.7).desaturate(0.5);
+
+    // Step 4: Return the matching color in HEX format
+    return matchingColor.hex();
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    return null;
   }
-
-  // Step 5: Format Output
-  const result = `rgb(${Math.round(r2 * 255)}, ${Math.round(g2 * 255)}, ${Math.round(b2 * 255)})`;
-
-  return `${result}`;
 }
 
 export function ColorLuminance(color, lum = 0) {
