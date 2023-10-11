@@ -232,13 +232,11 @@ async function finishLoad() {
 async function DeleteWhatsNew() {
   const bkelement = document.getElementById("whatsnewbk");
   const popup = document.getElementsByClassName("whatsnewContainer")[0];
-
-  bkelement.classList.add("opacity-0");
   
   animate(
     [popup, bkelement],
-    { scale: [1, 0], opacity: [1, 0] },
-    { easing: spring({ stiffness: 220, damping: 18 }) }
+    { opacity: [1, 0]},
+    { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
     bkelement.remove();
   });
@@ -451,8 +449,65 @@ function LoadPageElements() {
           element.innerText = "Direct Messages";
           document.title = "Direct Messages ― SEQTA Learn";
           SortMessagePageItems(added_node);
+
+          waitForElm("[data-message]").then(() => {
+            animate(
+              "[data-message]",
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05, { start: 0.1 }),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            );
+          });
         } else if (added_node.classList.contains("notices")) {
           CheckNoticeTextColour(added_node);
+        } else if (added_node.classList.contains("dashboard")) {
+          let ranOnce = false;
+          waitForElm(".dashlet").then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              ".dashboard *:not(.dashlet-timetable), .dashboard .message *",
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.01, { start: 0.2 }),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            );
+          });
+        } else if (added_node.classList.contains("documents")) {
+          let ranOnce = false;
+          waitForElm(".document").then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              ".documents tbody tr.document",
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05, { start: 0.2 }),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            );
+          });
+        } else if (added_node.classList.contains("reports")) {
+          let ranOnce = false;
+          waitForElm(".report").then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              ".reports .item",
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05, { start: 0.2 }),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            );
+          });
         }
       });
     });
