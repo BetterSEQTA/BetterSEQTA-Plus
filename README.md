@@ -15,6 +15,9 @@
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 
+## Release Videos
+<video autoplay loop muted controls="false" width="33%" src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/3084644a-edbc-40e5-b1ad-1fdea4f0ca18"></video>
+
 ## Features
 
 - Dark mode
