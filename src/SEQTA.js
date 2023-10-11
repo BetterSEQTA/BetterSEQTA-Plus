@@ -73,10 +73,16 @@ function OpenWhatsNewPopup() {
 
   let imagecont = document.createElement("div");
   imagecont.classList.add("whatsnewImgContainer");
-  var image = document.createElement("img");
-  image.src = chrome.runtime.getURL("icons/betterseqta-dark-icon.png");
-  image.classList.add("whatsnewImg");
-  imagecont.append(image);
+  let video = document.createElement("video");
+  let source = document.createElement("source");
+  source.setAttribute("src", chrome.runtime.getURL("resources/update-video.mp4"));
+  source.setAttribute("type", "video/mp4");
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.appendChild(source);
+  video.classList.add("whatsnewImg");
+  imagecont.appendChild(video);
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
@@ -91,7 +97,8 @@ function OpenWhatsNewPopup() {
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
   <li>Custom backgrounds and themes coming soon!</li>
   <h1>3.1.2 - New settings menu!</h1>
-  <li>Overhauled the settings menu!!!</li>
+  <li>Overhauled the settings menu</li>
+  <li>Added custom gradients</li>
   <h1>3.1.1 - Minor Bug fixes</h1>
   <li>Fixed assessments overlapping</li>
   <li>Fixed houses not displaying if they aren't a specific color</li>
@@ -199,7 +206,7 @@ async function DeleteWhatsNew() {
   popup.remove();
 }
 
-function CreateBackground() {
+export function CreateBackground() {
   // Creating and inserting 3 divs containing the background applied to the pages
   var bklocation = document.getElementById("container");
   var menu = document.getElementById("menu");
@@ -219,7 +226,7 @@ function CreateBackground() {
   bklocation.insertBefore(bk3, menu);
 }
 
-function RemoveBackground() {
+export function RemoveBackground() {
   var bk = document.getElementsByClassName("bg");
   var bk2 = document.getElementsByClassName("bg2");
   var bk3 = document.getElementsByClassName("bg3");
@@ -780,6 +787,12 @@ document.addEventListener(
 );
 
 function addExtensionSettings() {
+  let link = document.createElement("link");
+  link.href = chrome.runtime.getURL("popup/popup.css");
+  link.type = "text/css";
+  link.rel = "stylesheet";
+  document.getElementsByTagName("html")[0].appendChild(link);
+
   let Settings =
   stringToHTML(
     String.raw`
@@ -852,7 +865,6 @@ function dragDrop() {
 
     // Save position of all menu items
     let children = parentA.childNodes;
-    // console.log(children)
     let listorder = [];
 
     for (let i = 0; i < children.length; i++) {
@@ -1206,7 +1218,6 @@ function AddBetterSEQTAElements(toggle) {
                     houseelement.innerText =
                       students[index].year + students[index].house;
                   } catch (error) {
-                    console.log(students[index]);
                     houseelement.innerText = students[index].house;
                   }
                 } else {
@@ -1264,9 +1275,8 @@ function AddBetterSEQTAElements(toggle) {
             SendNewsPage();
           }
         });
-
       }
-      
+
       appendBackgroundToUI();
       addExtensionSettings();
 
@@ -1611,7 +1621,6 @@ function callHomeTimetable(date, change) {
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
         if (!DayContainer.innerText || change) {
-          // console.log(serverResponse.payload.items.length);
           for (let i = 0; i < serverResponse.payload.items.length; i++) {
             lessonArray.push(serverResponse.payload.items[i]);
           }
@@ -2099,7 +2108,7 @@ chrome.storage.onChanged.addListener(function (changes) {
   }
 });
 
-function GetLessonColours() {
+async function GetLessonColours() {
   let func = fetch(`${location.origin}/seqta/student/load/prefs?`, {
     method: "POST",
     headers: {
@@ -2148,17 +2157,25 @@ export function CreateCustomShortcutDiv(element) {
   document.getElementById("shortcuts").append(shortcut);
 }
 
-export function RemoveCustomShortcutDiv(element) {
-  // Iterate through each shortcut
-  const shortcuts = document.querySelectorAll(".shortcut");
-  shortcuts.forEach((shortcut) => {
-    const anchorElement = shortcut.parentElement; // the <a> element is the parent
-    const textElement = shortcut.querySelector("p"); // <p> is a direct child of .shortcut
-    const title = textElement ? textElement.textContent : "";
-    
-    if (anchorElement.getAttribute("href") === element.url && title === element.name) {
-      anchorElement.remove();
-    }
+export function RemoveShortcutDiv(elements) {
+  elements.forEach((element) => {
+    const shortcuts = document.querySelectorAll(".shortcut");
+    shortcuts.forEach((shortcut) => {
+      const anchorElement = shortcut.parentElement; // the <a> element is the parent
+      const textElement = shortcut.querySelector("p"); // <p> is a direct child of .shortcut
+      const title = textElement ? textElement.textContent : "";
+
+      let shouldRemove = title === element.name;
+
+      // Check href only if element.url exists
+      if (element.url) {
+        shouldRemove = shouldRemove && (anchorElement.getAttribute("href") === element.url);
+      }
+
+      if (shouldRemove) {
+        anchorElement.remove();
+      }
+    });
   });
 }
 
@@ -2282,57 +2299,10 @@ function SendHomePage() {
       changeTimetable(1);
     });
 
-    function createNewShortcut(link, icon, viewBox, title) {
-      // Creates the stucture and element information for each seperate shortcut
-      var shortcut = document.createElement("a");
-      shortcut.setAttribute("href", link);
-      shortcut.setAttribute("target", "_blank");
-      var shortcutdiv = document.createElement("div");
-      shortcutdiv.classList.add("shortcut");
-
-      let image = stringToHTML(
-        `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
-      ).firstChild;
-      image.classList.add("shortcuticondiv");
-      var text = document.createElement("p");
-      text.textContent = title;
-      shortcutdiv.append(image);
-      shortcutdiv.append(text);
-      shortcut.append(shortcutdiv);
-
-      document.getElementById("shortcuts").append(shortcut);
-    }
     // Adds the shortcuts to the shortcut container
     chrome.storage.local.get(["shortcuts"], function (result) {
-      var shortcuts = Object.values(result)[0];
-
-      for (let i = 0; i < shortcuts.length; i++) {
-        const currentShortcut = shortcuts[i];
-                
-        if (currentShortcut?.enabled) {
-          const Itemname = currentShortcut?.name;
-                    
-          const linkDetails = ShortcutLinks?.[Itemname];
-          if (linkDetails) {
-            createNewShortcut(
-              linkDetails.link,
-              linkDetails.icon,
-              linkDetails.viewBox,
-              Itemname
-            );
-          } else {
-            console.warn(`No link details found for '${Itemname}'`);
-          }
-        }
-      }
-      AddCustomShortcutsToPage();
-
-      // Checks if shortcut container is empty
-      if (document.getElementById("shortcuts").childElementCount == 0) {
-        // If there are no shortcuts, hide the container
-        document.getElementsByClassName("shortcut-container")[0].style.display =
-          "none";
-      }
+      const shortcuts = Object.values(result)[0];
+      addShortcuts(shortcuts);
     });
 
     // Creates the upcoming container and appends to the home container
@@ -2462,7 +2432,6 @@ function SendHomePage() {
         enableNotificationCollector();
       }
     });
-    console.log("Getting assessments");
     let activeClassList;
     GetUpcomingAssessments().then((assessments) => {
       GetActiveClasses().then((classes) => {
@@ -2494,7 +2463,6 @@ function SendHomePage() {
         }
 
         CurrentAssessments.sort(comparedate);
-        console.log(CurrentAssessments, activeSubjects);
 
         CreateUpcomingSection(CurrentAssessments, activeSubjects);
 
@@ -2502,6 +2470,29 @@ function SendHomePage() {
       });
     });
   }, 8);
+}
+
+export function addShortcuts(shortcuts) {
+  for (let i = 0; i < shortcuts.length; i++) {
+    const currentShortcut = shortcuts[i];
+    
+    if (currentShortcut?.enabled) {
+      const Itemname = currentShortcut?.name.replace(/\s/g, "");
+
+      const linkDetails = ShortcutLinks?.[Itemname];
+      if (linkDetails) {
+        createNewShortcut(
+          linkDetails.link,
+          linkDetails.icon,
+          linkDetails.viewBox,
+          currentShortcut?.name
+        );
+      } else {
+        console.warn(`No link details found for '${Itemname}'`);
+      }
+    }
+  }
+  AddCustomShortcutsToPage();
 }
 
 export function enableNotificationCollector() {
@@ -2542,6 +2533,27 @@ export function disableNotificationCollector() {
       alertdiv.textContent = "9+";
     }
   }
+}
+
+function createNewShortcut(link, icon, viewBox, title) {
+  // Creates the stucture and element information for each seperate shortcut
+  let shortcut = document.createElement("a");
+  shortcut.setAttribute("href", link);
+  shortcut.setAttribute("target", "_blank");
+  let shortcutdiv = document.createElement("div");
+  shortcutdiv.classList.add("shortcut");
+
+  let image = stringToHTML(
+    `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
+  ).firstChild;
+  image.classList.add("shortcuticondiv");
+  let text = document.createElement("p");
+  text.textContent = title;
+  shortcutdiv.append(image);
+  shortcutdiv.append(text);
+  shortcut.append(shortcutdiv);
+
+  document.getElementById("shortcuts").appendChild(shortcut);
 }
 
 function SendNewsPage() {

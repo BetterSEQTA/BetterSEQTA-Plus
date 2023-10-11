@@ -20,15 +20,11 @@ export const openDB = () => {
 };
 
 export const writeData = async (type, data) => {
-  console.log("Reading Data");
   const db = await openDB();
-  console.log("Opened DB");
 
   const tx = db.transaction("backgrounds", "readwrite");
   const store = tx.objectStore("backgrounds");
   const request = await store.put({ id: "customBackground", type, data });
-
-  console.log("Data written successfully");
 
   return request.result;
 };
@@ -37,17 +33,14 @@ export const readData = () => {
   return new Promise((resolve, reject) => {
     openDB()
       .then(db => {
-        console.log("Database, typeof", typeof db, "Is: ", db);
         const tx = db.transaction("backgrounds", "readonly");
         const store = tx.objectStore("backgrounds");
-        console.log("Current store: ", store);
         
         // Retrieve the custom background
         const getRequest = store.get("customBackground");
         
         // Attach success and error event handlers
         getRequest.onsuccess = function(event) {
-          console.log("CustomBackground", event.target.result);
           resolve(event.target.result);
         };
         
@@ -99,8 +92,6 @@ const handleAddPermissions = () => {
 
 // Main message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("Message received in background script", request);
-
   switch (request.type) {
   case "reloadTabs":
     ReloadSEQTAPages();
@@ -115,7 +106,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     break;
     
   case "setDefaultStorage":
-    console.log("Setting default values");
     SetStorageValue(DefaultValues);
     break;
     
@@ -156,9 +146,6 @@ function HandleIntexedDB(request, sendResponse) {
 function GetNews(sendResponse) {
   // Gets the current date
   const date = new Date();
-  // Formats the current date used send a request for timetable and notices later
-  const TodayFormatted =
-    date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 
   const from =
     date.getFullYear() +
@@ -166,12 +153,9 @@ function GetNews(sendResponse) {
     (date.getMonth() + 1) +
     "-" +
     (date.getDate() - 1);
-  console.log(TodayFormatted);
-  console.log(from);
 
   let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
 
-  console.log("Fetching news from " + url);
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
@@ -179,7 +163,6 @@ function GetNews(sendResponse) {
         url += "%00";
         GetNews();
       } else {
-        console.log(response);
         sendResponse({ news: response });
       }
     });
@@ -244,7 +227,7 @@ const DefaultValues = {
     },
     {
       name: "Education Perfect",
-      enabled: true,
+      enabled: false,
     },
   ],
   customshortcuts: [],
@@ -256,9 +239,7 @@ function SetStorageValue(object) {
   }
 }
 
-function UpdateCurrentValues(details) {
-  console.log(details);
-
+function UpdateCurrentValues() {
   chrome.storage.local.get(null, function (items) {
     var CurrentValues = items;
 
@@ -310,9 +291,9 @@ function migrateOldStorage() {
     // Check for "educationperfect" and convert it to "Education Perfect"
     if (items.shortcuts && items.shortcuts.length > 0) {
       for (let shortcut of items.shortcuts) {
-        if (shortcut.name === "educationperfect") {
+        if (shortcut.name === "educationperfect" || shortcut.name === "Education Perfect") {
           shouldUpdate = true;
-          shortcut.name = "Education Perfect"; // Convert to "Education Perfect"
+          shortcut.name = "Education Perfect";
         }
       }
     }
@@ -329,6 +310,7 @@ function migrateOldStorage() {
 chrome.runtime.onInstalled.addListener(function (event) {
   chrome.storage.local.remove(["justupdated"]);
   UpdateCurrentValues();
+  chrome.storage.local.set({ justupdated: true });
   if ( event.reason == "install" ) {
     chrome.storage.local.set({ justupdated: true });
     migrateOldStorage();

@@ -4,14 +4,17 @@
  * @param {number} [minDuration=1] - The minimum animation duration in seconds.
  * @param {number} [maxDuration=10] - The maximum animation duration in seconds.
  */
-export function updateBgDurations(item, minDuration = 1, maxDuration = 10) {
+export function updateBgDurations(speed, minDuration = 0.5, maxDuration = 10) {
   // Class names to look for
   const bgClasses = ["bg", "bg2", "bg3"];
-  
-  // Reverse the slider direction to align with the animation
-  const reversedValue = 150 - item.bksliderinput;
+  let reversedValue;
 
-  console.log("reversedValue:", reversedValue);
+  if (speed.bksliderinput === undefined) {
+    // Reverse the slider direction to align with the animation
+    reversedValue = 150 - speed;
+  } else {
+    reversedValue = 150 - speed.bksliderinput;
+  }
   
   // Range of possible animation durations
   const durationRange = maxDuration - minDuration;

@@ -6,7 +6,8 @@ import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
 import { useSettingsContext } from './SettingsContext';
 import Picker from './components/Picker';
-import Themes from './pages/Themes';
+//import Themes from './pages/Themes';
+import About from './pages/About';
 //import About from './pages/About';
 
 const App: React.FC = () => {
@@ -31,8 +32,8 @@ const App: React.FC = () => {
       content: <Shortcuts />
     },
     {
-      title: 'Themes',
-      content: <Themes />
+      title: 'About',
+      content: <About />
     }
   ];
 
