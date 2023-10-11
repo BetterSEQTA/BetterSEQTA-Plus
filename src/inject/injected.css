@@ -70,6 +70,7 @@ html {
 
 #main > .dashboard > .dashlet {
   background: var(--background-primary);
+  border-radius: 1rem;
 }
 
 .dashlet-notes > ul {
@@ -770,6 +771,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .border {
   border-radius: 1rem;
+  overflow: clip;
 }
 
 .shortcut-container h2 {
@@ -847,6 +849,39 @@ div > ol:has(.uiFileHandlerWrapper) {
   left: 0;
 }
 
+.dashboard .message {
+  background: var(--background-primary) !important;
+  color: var(--text-primary);
+
+  border-left: none !important;
+  border-radius: 1rem !important;
+}
+
+.dashboard .message .ais-wrapper {
+  background: var(--background-primary);
+  color: var(--text-primary);
+
+  box-shadow: unset;
+  -webkit-box-shadow: unset;
+}
+
+.ais-description {
+  color: var(--text-primary);
+}
+
+.ais-signature {
+  color: var(--text-primary);
+}
+
+.ais-btnSearch i {
+  padding-left: 8px;
+}
+
+.ais-input-container select,
+.ais-input-container input {
+  border-radius: 1rem;
+}
+
 .notice h3 {
   margin: 0;
   font-size: 25px;
@@ -875,14 +910,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 15em;
   color: var(--text-primary);
   font-family: Rubik, sans-serif;
-}
-
-.day-container :first-child {
-  border-bottom-left-radius: 15px;
-}
-
-.day-container :last-child {
-  border-bottom-right-radius: 15px;
 }
 
 .clickable {
@@ -1122,7 +1149,8 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
 }
 
-.Input__Input___3RSTI::before {
+.Input__Input___3RSTI::before,
+.ais-btnSearch::before {
   content: "\eca5";  /* Unicode for the search icon */
   transform: translateY(-50%);
   color: currentColor;
@@ -2269,14 +2297,6 @@ body {
   color: var(--text-primary);
   background: var(--background-primary);
   font-family: Rubik, sans-serif;
-}
-
-.day-container :first-child {
-  border-bottom-left-radius: 15px;
-}
-
-.day-container :last-child {
-  border-bottom-right-radius: 15px;
 }
 
 .clickable {
