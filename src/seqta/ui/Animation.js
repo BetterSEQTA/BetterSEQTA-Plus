@@ -25,8 +25,8 @@ export function updateBgDurations(speed, minDuration = 0.5, maxDuration = 10) {
   // Iterate through each class name to update its animation duration
   bgClasses.forEach((className, index) => {
     const elements = document.getElementsByClassName(className);
+
     if (elements.length === 0) {
-      console.error(`No elements found with class name: ${className}`);
       return;
     }
     

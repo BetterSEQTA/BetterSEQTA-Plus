@@ -1,5 +1,5 @@
 /* global chrome */
-import { GetThresholdofHex } from "../../../SEQTA.js";
+import { GetThresholdOfColor } from "../../../SEQTA.js";
 import { lightenAndPaleColor } from "./lightenAndPaleColor.js";
 import ColorLuminance from "./ColorLuminance.js";
 
@@ -36,10 +36,8 @@ export function updateAllColors(storedSetting, newColor = null) {
     };
   }
 
-  console.log("modeProps:", modeProps);
-
   // Dynamic properties, always applied
-  const rgbThreshold = GetThresholdofHex(selectedColor);
+  const rgbThreshold = GetThresholdOfColor(selectedColor);
   const isBright = rgbThreshold > 210;
   const dynamicProps = {
     "--text-color": isBright ? "black" : "white",
