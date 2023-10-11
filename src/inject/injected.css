@@ -2742,38 +2742,13 @@ body {
   max-height: 60em;
   background: var(--background-primary);
   z-index: 50;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
   border-radius: 20px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
-  animation: zoomin 0.5s;
   animation-fill-mode: forwards;
   transform-origin: center center;
-}
-
-@keyframes zoomin {
-  75% {
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-@keyframes zoomout {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
 }
 
 .whatsnewHeader {
@@ -2799,27 +2774,11 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  display: grid;
+  place-items: center;
   background: rgba(0, 0, 0, 0.5);
   z-index: 49;
-  opacity: 0;
-  animation: fadein 0.2s;
-  animation-fill-mode: forwards;
-}
-
-@keyframes fadein {
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeout {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
+  transform: scale(1) !important;
 }
 
 .whatsnewImgContainer {
@@ -2900,10 +2859,11 @@ body {
   cursor: pointer;
 }
 
-.whatsnewfadeout {
-  animation: fadeout 0.6s;
-}
-
-.whatsnewzoomout {
-  animation: zoomout 0.7s;
+#whatsnewclosebutton::before {
+  content: "\ed8a";
+  color: currentColor;
+  font-size: 16px;
+  margin-right: 8px; /* Adjusted to margin-right for the icon to be on the left */
+  font-family: "IconFamily";
+  pointer-events: none;
 }
