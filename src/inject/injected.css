@@ -759,9 +759,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcut-container {
-  border: 2px solid var(--better-main);
   width: 94%;
-  background: var(--better-main);
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
