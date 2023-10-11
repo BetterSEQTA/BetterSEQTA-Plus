@@ -2831,7 +2831,7 @@ body {
 }
 
 .whatsnewImg {
-  margin: 0.5rem 0.5rem;
+  margin: 0.5rem auto;
   width: 90%;
   border-radius: 1rem;
 }
