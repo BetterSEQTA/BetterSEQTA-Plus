@@ -1,4 +1,4 @@
-/* global chrome */
+/* // global chrome */
 /* function isValidBase64(str) {
   const len = str.length;
   if (len % 4 !== 0) {
@@ -28,7 +28,7 @@ function base64ToArrayBuffer(base64) {
 } */
 
 export async function appendBackgroundToUI() {
-  const response = await new Promise((resolve, reject) => {
+  /* const response = await new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ type: "IndexedDB", action: "read", fileName: "customBackground" }, (response) => {
       if (chrome.runtime.lastError) {
         return reject(chrome.runtime.lastError);
@@ -78,7 +78,5 @@ export async function appendBackgroundToUI() {
       backgroundElement.classList.add("imageBackground");
       mount.appendChild(backgroundElement);
     }
-  }
+  } */
 }
-
-appendBackgroundToUI();
