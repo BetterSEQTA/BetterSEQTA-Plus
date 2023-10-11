@@ -238,7 +238,9 @@ async function DeleteWhatsNew() {
     [popup, bkelement],
     { scale: [1, 0], opacity: [1, 0] },
     { easing: spring({ stiffness: 220, damping: 18 }) }
-  );
+  ).finished.then(() => {
+    bkelement.remove();
+  });
 }
 
 export function CreateBackground() {
