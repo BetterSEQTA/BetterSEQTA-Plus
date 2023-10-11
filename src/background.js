@@ -310,7 +310,6 @@ function migrateOldStorage() {
 chrome.runtime.onInstalled.addListener(function (event) {
   chrome.storage.local.remove(["justupdated"]);
   UpdateCurrentValues();
-  chrome.storage.local.set({ justupdated: true });
   if ( event.reason == "install" ) {
     chrome.storage.local.set({ justupdated: true });
     migrateOldStorage();

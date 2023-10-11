@@ -1,7 +1,7 @@
-/* #menu ul.noscroll li label {
+#menu ul.noscroll li label {
   transform: translateX(-10%);
 }
 
 #menu li.active>.sub {
   transform: translateX(0);
-} */
+}
