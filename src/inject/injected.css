@@ -2785,6 +2785,7 @@ body {
   width: 96%;
   display: flex;
   margin: 0 auto;
+  padding-bottom: 1rem;
 }
 
 .whatsnewImg {
