@@ -1,5 +1,5 @@
 /*global chrome*/
-import { animate, spring } from "motion";
+import { animate, spring, stagger } from "motion";
 import Color from "color";
 
 import ShortcutLinks from "./seqta/content/links.json";
@@ -184,6 +184,16 @@ function OpenWhatsNewPopup() {
     [popup, bkelement],
     { scale: [0, 1], opacity: [0, 1] },
     { easing: spring({ stiffness: 220, damping: 18 }) }
+  );
+
+  animate(
+    ".whatsnewTextContainer *",
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.05, { start: 0.1 }),
+      duration: 0.5,
+      easing: [.22, .03, .26, 1]  
+    }
   );
 
   chrome.storage.local.remove(["justupdated"]);
