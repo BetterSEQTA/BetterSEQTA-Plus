@@ -10,7 +10,7 @@ import {
   enableNotificationCollector,
 } from "../../SEQTA.js";
 import { updateBgDurations } from "../ui/Animation.js";
-import { getDarkMode, updateAllColors } from "../ui/Colors.js";
+import { getDarkMode, updateAllColors } from "../ui/colors/Manager.js";
 
 export default class StorageListener {
   constructor() {

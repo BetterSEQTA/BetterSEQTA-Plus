@@ -12,8 +12,9 @@ import assessmentsicon from "./seqta/icons/assessmentsIcon.js";
 import coursesicon from "./seqta/icons/coursesIcon.js";
 import StorageListener from "./seqta/utils/StorageListener.js";
 import { updateBgDurations } from "./seqta/ui/Animation.js";
-import { updateAllColors } from "./seqta/ui/Colors.js";
+import { updateAllColors } from "./seqta/ui/colors/Manager.js";
 import { appendBackgroundToUI } from "./seqta/ui/ImageBackgrounds.js";
+import { lightenAndPaleColor } from "./seqta/ui/colors/lightenAndPaleColor.js";
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
@@ -655,129 +656,6 @@ export function AppendElementsToDisabledPage() {
   }
   `;
   document.head.append(settingsStyle);
-}
-
-export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
-  console.log(`Input color: ${inputColor}`);
-  if (inputColor.includes("gradient")) return findMatchingColor(inputColor);
-
-  // Step 1: Convert the input RGB color to a 'color' object
-  const colorObj = Color(`rgb(${inputColor.match(/\d+/g).join(",")})`);
-
-  // Step 2: Convert to HSL and get the object
-  const hslObj = colorObj.hsl().object();
-
-  // Step 3: Adjust saturation and lightness
-  const adjustedS = hslObj.s * (1 - paleFactor);
-  const adjustedL = hslObj.l + (100 - hslObj.l) * lightenFactor;
-
-  // Step 4: Create a new 'color' object with the adjusted HSL values
-  const newColorObj = Color.hsl(hslObj.h, adjustedS, adjustedL);
-
-  // Step 5: Convert back to RGB
-  const result = newColorObj.rgb().string();
-
-  console.log(`Input color: ${inputColor} | Output color: ${result}`);
-
-  return result;
-}
-
-// Utility function to average an array of Color objects
-function averageColors(colors) {
-  let avgR = 0, avgG = 0, avgB = 0;
-  colors.forEach(color => {
-    avgR += color.red();
-    avgG += color.green();
-    avgB += color.blue();
-  });
-  return Color.rgb(avgR / colors.length, avgG / colors.length, avgB / colors.length);
-}
-
-// Main function to find a matching color for a CSS gradient
-function findMatchingColor(cssGradient) {
-  try {
-    // Step 1: Parse the gradient to extract color stops (case-insensitive)
-    const regex = /#[0-9a-fA-F]{6}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)/gi;
-    const colorStops = cssGradient.match(regex);
-
-    if (!colorStops) {
-      throw new Error("No valid color stops found in the provided CSS gradient.");
-    }
-
-    // Normalize and trim the color stops
-    const normalizedColorStops = colorStops.map(color => color.toLowerCase().replace(/\s+/g, ""));
-
-    // Convert the color stops to Color objects
-    const colorObjects = normalizedColorStops.map(color => Color(color));
-
-    // Step 2: Average the color stops
-    const baseColor = averageColors(colorObjects);
-
-    // Step 3: Lighten and desaturate the base color
-    const matchingColor = baseColor.lighten(0.7).desaturate(0.5);
-
-    // Step 4: Return the matching color in HEX format
-    return matchingColor.hex();
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
-    return null;
-  }
-}
-
-export function ColorLuminance(color, lum = 0) {
-  // Regular expression to match RGBA colors
-  const rgbaRegex = /rgba?\(([^)]+)\)/g;
-
-  // Check if the input color is a gradient (linear or radial)
-  if (color.includes("gradient")) {
-    let gradient = color;
-
-    // Create a set to hold unique RGBA strings
-    let uniqueRgbaSet = new Set();
-
-    // Find all instances of RGBA in the gradient
-    let match;
-    while ((match = rgbaRegex.exec(color)) !== null) {
-      uniqueRgbaSet.add(match[1]);  // Add the unique RGBA string to the set
-    }
-
-    // Loop through each unique RGBA string
-    for (let rgbaString of uniqueRgbaSet) {
-      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
-
-      // Apply the original luminance adjustment logic
-      let adjustedRgba = [];
-      for (let c of [r, g, b]) {
-        c = Math.round(Math.min(Math.max(0, c + c * lum), 255));
-        adjustedRgba.push(c);
-      }
-      adjustedRgba.push(a);  // Add the alpha component back
-
-      // Replace all occurrences of the original RGBA string with the adjusted one
-      const regex = new RegExp(`rgba\\(${rgbaString}\\)`, "g");
-      gradient = gradient.replace(regex, `rgba(${adjustedRgba.join(", ")})`);
-    }
-
-    return gradient;
-
-  } else {
-    // Handle as a simple color (could be HEX, RGBA, etc., as supported by your Color library)
-    const hexColor = Color(color).hex();
-    let adjustedHex = String(hexColor).replace(/[^0-9a-f]/gi, "");
-    if (adjustedHex.length < 6) {
-      adjustedHex = adjustedHex[0] + adjustedHex[0] + adjustedHex[1] + adjustedHex[1] + adjustedHex[2] + adjustedHex[2];
-    }
-
-    let rgb = "#",
-      c;
-    for (let i = 0; i < 3; i++) {
-      c = parseInt(adjustedHex.substr(i * 2, 2), 16);
-      c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
-      rgb += ("00" + c).substring(c.length);
-    }
-
-    return Color(rgb).hex();
-  }
 }
 
 new StorageListener();
@@ -2388,6 +2266,16 @@ function SendHomePage() {
     // Appends the shortcut container into the home container
     document.getElementById("home-container").append(Notices.firstChild);
 
+    animate(
+      ".home-container > div",
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.2, { start: 0 }),
+        duration: 0.6,
+        easing: [.22, .03, .26, 1]  
+      }
+    );
+
     callHomeTimetable(TodayFormatted);
 
     // Sends similar HTTP Post Request for the notices
@@ -2514,8 +2402,6 @@ function SendHomePage() {
         CurrentAssessments.sort(comparedate);
 
         CreateUpcomingSection(CurrentAssessments, activeSubjects);
-
-        // Run function to check if gap between assessments > 7 days?
       });
     });
   }, 8);
