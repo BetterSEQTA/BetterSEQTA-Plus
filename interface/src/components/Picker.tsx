@@ -3,6 +3,8 @@ import ColorPicker from 'react-best-gradient-color-picker';
 import { useSettingsContext } from '../SettingsContext';
 import { motion } from "framer-motion";
 
+import "./Picker.css";
+
 export default function Picker() {
   const { settingsState, setSettingsState, showPicker, setShowPicker } = useSettingsContext();
 

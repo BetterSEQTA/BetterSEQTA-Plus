@@ -66,6 +66,10 @@
     {
       "resources": ["client/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["resources/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }
