@@ -472,7 +472,7 @@ function CheckNoticeTextColour(notice) {
           DarkMode = result.DarkMode;
           if (added_node.classList.contains("notice")) {
             var hex = added_node.style.cssText.split(" ")[1];
-            var threshold = GetThresholdofHex(hex);
+            var threshold = GetThresholdOfColor(hex);
             if (DarkMode && threshold < 100) {
               added_node.style.cssText = "--color: undefined;";
             }
@@ -1131,7 +1131,7 @@ function AddBetterSEQTAElements(toggle) {
                 if (students[index]?.house) {
                   houseelement.style.background = students[index].house_colour;
                   try {
-                    let colorresult = GetThresholdofHex(
+                    let colorresult = GetThresholdOfColor(
                       students[index]?.house_colour,
                     );
 
@@ -1449,34 +1449,36 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-export function GetThresholdofHex(color) {
-  // Regular expression for matching RGBA colors
-  const rgbaRegex = /rgba?\(([^)]+)\)/g;
+export function GetThresholdOfColor(color) {
+  // Case-insensitive regular expression for matching RGBA colors
+  const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
   // Check if the color string is a gradient (linear or radial)
   if (color.includes("gradient")) {
-    let gradient = color;
-    
+    let gradientThresholds = [];
+
     // Find and replace all instances of RGBA in the gradient
     let match;
     while ((match = rgbaRegex.exec(color)) !== null) {
       // Extract the individual components (r, g, b, a)
       const rgbaString = match[1];
-      const [r, g, b, a] = rgbaString.split(",").map(str => str.trim());
+      const [r, g, b] = rgbaString.split(",").map(str => str.trim());
 
       // Compute the threshold using your existing algorithm
       const threshold = Math.sqrt(r ** 2 + g ** 2 + b ** 2);
 
-      // Replace the original RGBA string with the computed threshold
-      // Note: You can modify this part based on what you actually want to do with the threshold
-      gradient = gradient.replace(`rgba(${rgbaString})`, `rgba(${threshold}, ${threshold}, ${threshold}, ${a})`);
+      // Store the computed threshold
+      gradientThresholds.push(threshold);
     }
+
+    // Calculate the average threshold
+    const averageThreshold = gradientThresholds.reduce((acc, val) => acc + val, 0) / gradientThresholds.length;
     
-    return gradient;
+    return averageThreshold;
 
   } else {
     // Handle the color as a simple RGBA (or hex, or whatever the Color library supports)
-    const rgb = Color.rgb(color).string();
+    const rgb = Color.rgb(color).object();
     return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
   }
 }
@@ -1568,7 +1570,7 @@ function callHomeTimetable(date, change) {
                 lessonArray[i].colour = "--item-colour: #8e8e8e;";
               } else {
                 lessonArray[i].colour = `--item-colour: ${subject.value};`;
-                let result = GetThresholdofHex(subject.value);
+                let result = GetThresholdOfColor(subject.value);
 
                 if (result > 300) {
                   lessonArray[i].invert = true;
@@ -1894,7 +1896,7 @@ function CreateUpcomingSection(assessments) {
         assessments[i].colour = "--item-colour: #8e8e8e;";
       } else {
         assessments[i].colour = `--item-colour: ${subject.value};`;
-        GetThresholdofHex(subject.value); // result (originally) result = GetThresholdofHex
+        GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
       }
     }
 
@@ -1907,7 +1909,7 @@ function CreateUpcomingSection(assessments) {
         element.colour = "--item-colour: #8e8e8e;";
       } else {
         element.colour = `--item-colour: ${colour.value};`;
-        let result = GetThresholdofHex(colour.value);
+        let result = GetThresholdOfColor(colour.value);
         if (result > 300) {
           element.invert = true;
         }
@@ -2340,7 +2342,7 @@ function SendHomePage() {
 
                 var colour = NoticesPayload.payload[i].colour;
                 if (typeof colour == "string") {
-                  let rgb = GetThresholdofHex(colour);
+                  let rgb = GetThresholdOfColor(colour);
                   if (rgb < 100 && result.DarkMode) {
                     colour = undefined;
                   }

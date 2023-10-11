@@ -2,11 +2,14 @@ import Color from "color";
 
 
 export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
-  console.log(`Input color: ${inputColor}`);
-  if (inputColor.includes("gradient")) return findMatchingColor(inputColor);
+  if (inputColor.includes("gradient")) {
+    const baseColor = findMatchingColor(inputColor);
 
-  // Step 1: Convert the input RGB color to a 'color' object
-  const colorObj = Color(`rgb(${inputColor.match(/\d+/g).join(",")})`);
+    return lightenAndPaleColor(baseColor, lightenFactor, paleFactor);
+  }
+
+  // Step 1: Convert the input color to a 'color' object
+  const colorObj = Color(inputColor);
 
   // Step 2: Convert to HSL and get the object
   const hslObj = colorObj.hsl().object();
@@ -20,8 +23,6 @@ export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor
 
   // Step 5: Convert back to RGB
   const result = newColorObj.rgb().string();
-
-  console.log(`Input color: ${inputColor} | Output color: ${result}`);
 
   return result;
 }
@@ -55,11 +56,9 @@ function findMatchingColor(cssGradient) {
     // Step 2: Average the color stops
     const baseColor = averageColors(colorObjects);
 
-    // Step 3: Lighten and desaturate the base color
-    const matchingColor = baseColor.lighten(0.7).desaturate(0.5);
 
     // Step 4: Return the matching color in HEX format
-    return matchingColor.hex();
+    return baseColor.hex();
   } catch (err) {
     console.error(`Error: ${err.message}`);
     return null;
