@@ -101,6 +101,9 @@ function OpenWhatsNewPopup() {
     <h1>3.1.2 - New settings menu!</h1>
     <li>Overhauled the settings menu</li>
     <li>Added custom gradients</li>
+    <li>Added HEAPS of animations</li>
+    <li>Fixed a bug where shortcuts don't show up</li>
+    <li>Other minor bugs fixed</li>
     <h1>3.1.1 - Minor Bug fixes</h1>
     <li>Fixed assessments overlapping</li>
     <li>Fixed houses not displaying if they aren't a specific color</li>
@@ -455,7 +458,7 @@ function LoadPageElements() {
               "[data-message]",
               { opacity: [0, 1], y: [10, 0] },
               {
-                delay: stagger(0.05, { start: 0.1 }),
+                delay: stagger(0.05),
                 duration: 0.5,
                 easing: [.22, .03, .26, 1]  
               }
@@ -472,7 +475,7 @@ function LoadPageElements() {
               ".dashboard *:not(.dashlet-timetable), .dashboard .message *",
               { opacity: [0, 1], y: [10, 0] },
               {
-                delay: stagger(0.01, { start: 0.2 }),
+                delay: stagger(0.01),
                 duration: 0.5,
                 easing: [.22, .03, .26, 1]  
               }
@@ -487,7 +490,7 @@ function LoadPageElements() {
               ".documents tbody tr.document",
               { opacity: [0, 1], y: [10, 0] },
               {
-                delay: stagger(0.05, { start: 0.2 }),
+                delay: stagger(0.05),
                 duration: 0.5,
                 easing: [.22, .03, .26, 1]  
               }

@@ -109,8 +109,8 @@ ul.magicDelete > li.deleting {
   z-index: 5 !important;
 }
 
-#menu ::-webkit-scrollbar {
-  width: 0px;
+::-webkit-scrollbar {
+  width: 0px !important;
   background: none;
 }
 
@@ -338,6 +338,12 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 #main > .timetablepage > .quickbar.below::before {
   border-bottom-color: var(--background-primary);
   top: -1.75rem;
+}
+
+#main > .timetablepage > .quickbar.above::before {
+  border-bottom-color: var(--background-primary);
+  bottom: -1.75rem !important;
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
 }
 
 #main .timetablepage .actions a,
@@ -662,7 +668,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 2rem 0;
+  padding: 2rem 4rem;
   align-items: center;
 }
 
@@ -677,13 +683,13 @@ div > ol:has(.uiFileHandlerWrapper) {
   align-items: center;
   justify-content: center;
   display: flex;
-  width: 94%;
+  width: 100%;
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
 }
 
 .timetable-container {
-  width: 94%;
+  width: 100%;
   height: auto;
   background: var(--better-main);
   display: flex;
@@ -703,7 +709,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .notices-container {
-  width: 94%;
+  width: 100%;
   max-height: 60em;
   background: var(--better-main);
   display: flex;
@@ -762,7 +768,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcut-container {
-  width: 94%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
@@ -1662,8 +1668,7 @@ body {
 }
 
 .days {
-  width: 80% !important;
-  margin: 0 auto !important;
+  width: 100%;
 }
 
 .hidden {
@@ -1769,7 +1774,7 @@ body {
 .NewsArticle {
   border-radius: 1rem !important;
   overflow: hidden;
-  width: 94%;
+  width: 100%;
   padding: 0 !important;
   margin: 0px auto 30px !important;
   background: var(--background-primary) !important;
@@ -2058,7 +2063,7 @@ body {
 }
 
 .upcoming-container {
-  width: 94%;
+  width: 100%;
   max-height: 60em;
   background: var(--better-main);
   display: flex;
