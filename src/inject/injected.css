@@ -677,8 +677,12 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .home-container {
   max-width: 1050px;
-  margin: 20px auto;
   width: 1050px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-top: 2rem;
+  align-items: center;
 }
 
 .home-container h1 {
@@ -686,7 +690,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-weight: 400;
   font-size: 3em !important;
   font-weight: 300;
-  margin: 30px auto 60px;
+  margin: 0 auto;
   background: var(--background-primary);
   height: 3em;
   align-items: center;
@@ -699,8 +703,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .timetable-container {
   width: 94%;
-  margin: 50px auto;
-  height: 19em;
+  height: auto;
   background: var(--better-main);
   display: flex;
   flex-direction: column;
@@ -720,7 +723,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .notices-container {
   width: 94%;
-  margin: 50px auto;
   max-height: 60em;
   background: var(--better-main);
   display: flex;
@@ -781,7 +783,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 .shortcut-container {
   border: 2px solid var(--better-main);
   width: 94%;
-  margin: 10px auto 50px;
   background: var(--better-main);
   display: flex;
   flex-direction: column;
@@ -794,7 +795,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcut-container h2 {
-  margin: 20px;
   font-size: 20px;
   font-weight: 400;
 }
@@ -2058,7 +2058,6 @@ body {
 
 .upcoming-container {
   width: 94%;
-  margin: 50px auto;
   max-height: 60em;
   background: var(--better-main);
   display: flex;
