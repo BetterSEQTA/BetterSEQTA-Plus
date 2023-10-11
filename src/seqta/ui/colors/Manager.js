@@ -1,5 +1,7 @@
 /* global chrome */
-import { ColorLuminance, GetThresholdofHex, lightenAndPaleColor } from "../../SEQTA.js";
+import { GetThresholdofHex } from "../../../SEQTA.js";
+import { lightenAndPaleColor } from "./lightenAndPaleColor.js";
+import ColorLuminance from "./ColorLuminance.js";
 
 // Helper functions
 const setCSSVar = (varName, value) => document.documentElement.style.setProperty(varName, value);
