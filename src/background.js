@@ -97,9 +97,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ReloadSEQTAPages();
     break;
     
-    /* case "IndexedDB":
+  case "IndexedDB":
     HandleIntexedDB(request, sendResponse);
-    return true; */
+    return true;
   
   case "githubTab":
     chrome.tabs.create({ url: "github.com/SethBurkart123/EvenBetterSEQTA" });
@@ -124,7 +124,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-/* function HandleIntexedDB(request, sendResponse) {
+function HandleIntexedDB(request, sendResponse) {
   switch (request.action) {
   case "write":
     writeData(request.data.type, request.data.data);
@@ -142,7 +142,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 }
- */
+
 function GetNews(sendResponse) {
   // Gets the current date
   const date = new Date();
