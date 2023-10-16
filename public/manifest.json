@@ -70,6 +70,10 @@
     {
       "resources": ["resources/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["backgrounds/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }

@@ -132,12 +132,7 @@ function HandleIntexedDB(request, sendResponse) {
 
   case "read":
     readData().then((data) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const arrayBuffer = reader.result;
-        sendResponse({ data: arrayBuffer, type: data.type });
-      };
-      reader.readAsArrayBuffer(data.data);
+      sendResponse(data);
     });
     return true;
   }

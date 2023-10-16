@@ -1,82 +1,84 @@
-/* // global chrome */
-/* function isValidBase64(str) {
-  const len = str.length;
-  if (len % 4 !== 0) {
-    return false;
-  }
-  for (let i = 0; i < len; i++) {
-    if (!(/[A-Za-z0-9+/=]/.test(str[i]))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function base64ToArrayBuffer(base64) {
-  console.log(base64);
-  if (!isValidBase64(base64)) {
-    console.error("Invalid base64 string");
-    return null;
-  }
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-} */
+/* global chrome */
 
 export async function appendBackgroundToUI() {
+  console.log("Starting appendBackgroundToUI...");
+
+  const parent = document.getElementById("container");
+
+  // embed background.html
+  const background = document.createElement("iframe");
+  background.id = "background";
+  background.classList.add("imageBackground");
+  background.setAttribute("excludeDarkCheck", "true");
+  background.src = chrome.runtime.getURL("backgrounds/background.html");
+  parent.appendChild(background);
+
   /* const response = await new Promise((resolve, reject) => {
+    console.log("Sending message to background script...");
     chrome.runtime.sendMessage({ type: "IndexedDB", action: "read", fileName: "customBackground" }, (response) => {
       if (chrome.runtime.lastError) {
+        console.error("Error from background script:", chrome.runtime.lastError);
         return reject(chrome.runtime.lastError);
       }
+      console.log("Received response from background script:", response);
       resolve(response);
     });
   });
-  console.log("response:", response);
 
-  let data = response.data; // response.data is the image base64 string
+  let data = response.data; // response.data is the image Data URL
+
+  // Extract the pure base64 string from the Data URL
+  const base64Marker = ";base64,";
+  const base64Index = data.indexOf(base64Marker) + base64Marker.length;
+  const base64 = data.substring(base64Index);
+
   let type = response.type; // response.type is the image type [ video | image ]
-  
-  if (data) {
-    // check if it is video from its base64 string
+
+  if (base64) {
+    console.log("Data exists, proceeding...");
+
     const mount = document.getElementById("container");
-    console.log("Starting to append background");
+
+    // Convert base64 to ArrayBuffer
+    console.log("Converting base64 to ArrayBuffer...");
+    const byteCharacters = atob(base64);
+    const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
+    const byteArray = new Uint8Array(byteNumbers);
+
+    // Create blob
+    console.log("Creating blob...");
+    const blob = new Blob([byteArray], { type: type === "video" ? "video/mp4" : "image/jpeg" });
+
+    // Create blob URL
+    console.log("Creating blob URL...");
+    const blobUrl = URL.createObjectURL(blob);
+
     let backgroundElement;
+
     if (type === "video") {
-      console.log("Data type:", typeof data);
-      console.log("Data instance:", data instanceof Blob);
-
-      if (data instanceof Blob) {
-        console.log("Blob size:", data.size);
-        console.log("Blob type:", data.type);
-      }    
-
-      console.log("Starting blob.");
-      const blob = new Blob([new Uint8Array(response.data)]);  // Adjust the MIME type accordingly
-      console.log("Made blob.");
-      const blobUrl = URL.createObjectURL(blob);
-      console.log(blobUrl);
+      console.log("Appending video element...");
       backgroundElement = document.createElement("video");
       backgroundElement.src = blobUrl;
       backgroundElement.autoplay = true;
       backgroundElement.loop = true;
       backgroundElement.muted = true;
-      console.log(backgroundElement);
-      mount.appendChild(backgroundElement);
-      // Remember to revoke the blob URL to avoid memory leaks
+
+      // Revoke blob URL to free memory
       backgroundElement.addEventListener("ended", () => {
+        console.log("Video ended, revoking blob URL...");
         URL.revokeObjectURL(blobUrl);
       });
     } else {
+      console.log("Appending image element...");
       backgroundElement = document.createElement("img");
-      backgroundElement.src = data;
+      backgroundElement.src = blobUrl;
       backgroundElement.alt = "Custom Background";
       backgroundElement.classList.add("imageBackground");
-      mount.appendChild(backgroundElement);
     }
+
+    console.log("Appending background element to the DOM...");
+    mount.appendChild(backgroundElement);
+  } else {
+    console.warn("No data received. Background not appended.");
   } */
 }

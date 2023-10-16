@@ -8,10 +8,12 @@ const setCSSVar = (varName, value) => document.documentElement.style.setProperty
 const getChromeURL = (path) => chrome.runtime.getURL(path);
 const applyProperties = (props) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
+let DarkMode = null;
+
 export function updateAllColors(storedSetting, newColor = null) {
   // Determine the color to use
   const selectedColor = newColor || storedSetting.selectedColor;
-  const DarkMode = storedSetting ? storedSetting.DarkMode : null;
+  DarkMode = storedSetting ? storedSetting.DarkMode : DarkMode;
 
   // Common properties, always applied
   const commonProps = {
@@ -22,7 +24,7 @@ export function updateAllColors(storedSetting, newColor = null) {
 
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
-  console.log(DarkMode);
+  console.log("Darkmode: ", DarkMode);
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
       "--background-primary": "#232323",
