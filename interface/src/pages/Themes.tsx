@@ -15,14 +15,13 @@ const openDB = () => {
   });
 };
 
-const writeData = async (type: string, data: any) => {
+const writeData = async (type: string, blob: Blob) => {
   return new Promise((resolve, reject) => {
     openDB().then(async db => {
       const tx = db.transaction('backgrounds', 'readwrite');
       const store = tx.objectStore('backgrounds');
-      const request = store.put({ id: 'customBackground', type, data });
+      const request = store.put({ id: 'customBackground', type, blob });
 
-      // Wait for the transaction to complete
       await new Promise((res, rej) => {
         tx.oncomplete = () => res(request.result);
         tx.onerror = () => rej(tx.error);
@@ -32,13 +31,12 @@ const writeData = async (type: string, data: any) => {
   });
 };
 
-
 const readData = async () => {
   const db = await openDB();
   const tx = db.transaction('backgrounds', 'readonly');
   const store = tx.objectStore('backgrounds');
   const request = store.get('customBackground');
-  
+
   return await new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -52,39 +50,35 @@ const Themes: React.FC = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-  
+
     const fileType = file.type.split('/')[0];
-    console.log(fileType);
-  
-    // Directly save the Blob object (file)
-    await writeData(fileType, file);
-    
-    // For displaying purpose, you might still want to convert it to Data URL
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImageSrc(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    const blob = new Blob([file], { type: file.type });
+
+    // Save blob to IndexedDB
+    await writeData(fileType, blob);
+
+    // For displaying purpose
+    const url = URL.createObjectURL(blob);
+    if (fileType === 'image') {
+      setVideoSrc(null);
+      setImageSrc(url);
+    } else if (fileType === 'video') {
+      setImageSrc(null);
+      setVideoSrc(url);
+    }
   };
-  
+
   useEffect(() => {
     (async () => {
       const data = await readData();
+      const url = URL.createObjectURL(data.blob);
       if (data?.type === 'image') {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setImageSrc(reader.result as string);
-        };
-        reader.readAsDataURL(data.data);
+        setImageSrc(url);
       } else if (data?.type === 'video') {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setVideoSrc(reader.result as string);
-        };
-        reader.readAsDataURL(data.data);
+        setVideoSrc(url);
       }
     })();
-  }, []);  
+  }, []);
 
   return (
     <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100/50 dark:divide-zinc-700/50">

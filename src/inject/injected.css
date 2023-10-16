@@ -431,7 +431,7 @@ td.colourBar {
 }
 
 ol > [data-message] {
-  padding-left: 4px !important;
+  padding-left: 8px !important;
   padding-right: 4px !important;
 }
 
@@ -872,11 +872,11 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .ais-description {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 .ais-signature {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 .ais-btnSearch i {
@@ -1428,8 +1428,8 @@ ul {
   overflow: hidden;
 }
 
-.header .days .title {
-  color: var(--text-primary);
+.title {
+  color: var(--text-primary) !important;
 }
 
 div.entry.class {
@@ -1683,8 +1683,14 @@ body {
   display: none;
 }
 
-.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO {
-  box-shadow: inset 3px 0 var(--better-main);
+.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px; /* Same width as your box-shadow */
+  background: var(--better-main);
 }
 
 .connectedNotificationsWrapper > div > button {

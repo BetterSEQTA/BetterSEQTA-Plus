@@ -1330,6 +1330,9 @@ function AddBetterSEQTAElements(toggle) {
                   if (element.getAttribute("excludeDarkCheck") == "true") {
                     continue;
                   }
+                  
+                  console.log(element);
+                  console.log(element.contentDocument.documentElement);
 
                   element.contentDocument.documentElement.childNodes[1].style.color =
                     "white";
