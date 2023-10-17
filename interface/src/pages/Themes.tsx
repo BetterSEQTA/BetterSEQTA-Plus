@@ -1,4 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent, FC } from 'react';
+
+// Custom Types and Interfaces
+interface Background {
+  id: string;
+  type: string;
+  blob: Blob;
+  url?: string;
+}
 
 // IndexedDB utility functions
 const openDB = () => {
@@ -15,12 +23,12 @@ const openDB = () => {
   });
 };
 
-const writeData = async (type: string, blob: Blob) => {
+const writeData = async (fileId: string, type: string, blob: Blob) => {
   return new Promise((resolve, reject) => {
     openDB().then(async db => {
       const tx = db.transaction('backgrounds', 'readwrite');
       const store = tx.objectStore('backgrounds');
-      const request = store.put({ id: 'customBackground', type, blob });
+      const request = store.put({ id: fileId, type, blob });
 
       await new Promise((res, rej) => {
         tx.oncomplete = () => res(request.result);
@@ -31,11 +39,11 @@ const writeData = async (type: string, blob: Blob) => {
   });
 };
 
-const readData = async () => {
+const readAllData = async (): Promise<Background[]> => {
   const db = await openDB();
   const tx = db.transaction('backgrounds', 'readonly');
   const store = tx.objectStore('backgrounds');
-  const request = store.get('customBackground');
+  const request = store.getAll();
 
   return await new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
@@ -43,65 +51,69 @@ const readData = async () => {
   });
 };
 
-const Themes: React.FC = () => {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+const Themes: FC = () => {
+  const [backgrounds, setBackgrounds] = useState<Background[]>([]);
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileId = `${Date.now()}-${file.name}`;
     const fileType = file.type.split('/')[0];
     const blob = new Blob([file], { type: file.type });
 
-    // Save blob to IndexedDB
-    await writeData(fileType, blob);
+    await writeData(fileId, fileType, blob);
+    setBackgrounds(prev => [...prev, { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) }]);
+  };
 
-    // For displaying purpose
-    const url = URL.createObjectURL(blob);
-    if (fileType === 'image') {
-      setVideoSrc(null);
-      setImageSrc(url);
-    } else if (fileType === 'video') {
-      setImageSrc(null);
-      setVideoSrc(url);
-    }
+  const loadBackgrounds = async (): Promise<void> => {
+    const data = await readAllData();
+    const dataWithUrls = data.map(bg => ({ ...bg, url: URL.createObjectURL(bg.blob) }));
+    setBackgrounds(dataWithUrls);
+  };
+
+  const selectBackground = (fileId: string): void => {
+    setSelectedBackground(fileId);
+    localStorage.setItem('selectedBackground', fileId);
   };
 
   useEffect(() => {
-    (async () => {
-      const data = await readData();
-      const url = URL.createObjectURL(data.blob);
-      if (data?.type === 'image') {
-        setImageSrc(url);
-      } else if (data?.type === 'video') {
-        setVideoSrc(url);
-      }
-    })();
+    loadBackgrounds();
   }, []);
 
   return (
-    <div className="flex flex-col overflow-y-scroll divide-y divide-zinc-100/50 dark:divide-zinc-700/50">
-      <div>
-        <h2 className="text-lg font-bold">Custom Background</h2>
-      </div>
+  <div>
+    <h2>Upload a Background</h2>
+    <input type="file" onChange={handleFileChange} />
 
-      <input type="file" onChange={handleFileChange} />
-      {imageSrc && <img src={imageSrc} alt="Uploaded content" />}
-      {videoSrc && <video src={videoSrc} autoPlay loop muted />}
-
-      <div>
-        <h2 className="text-lg font-bold">Themes</h2>
-      </div>
-      <div className="grid grid-cols-2 gap-2 py-4">
-        <button className="flex flex-col items-center justify-center w-full h-32 rounded-md bg-zinc-100 dark:bg-zinc-700">
-          <h2 className="text-lg font-bold">Light</h2>
-        </button>
-        <button className="flex flex-col items-center justify-center w-full h-32 rounded-md bg-zinc-800 dark:bg-zinc-600">
-          <h2 className="text-lg font-bold">Dark</h2>
-        </button>
-      </div>
+    <h2>Images</h2>
+    <div className="flex flex-wrap gap-4">
+      {backgrounds.filter(bg => bg.type === 'image').map(bg => (
+        <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`w-16 h-16 rounded-lg overflow-hidden transition ring ring-white ${selectedBackground === bg.id ? 'ring-4' : 'ring-0'}`}>
+          <img className="object-cover w-full h-full" src={bg.url} alt="swatch" />
+        </div>
+      ))}
     </div>
+
+    <h2>Videos</h2>
+    <div className="flex flex-wrap gap-4">
+      {backgrounds.filter(bg => bg.type === 'video').map(bg => (
+        <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`w-16 h-16 rounded-lg overflow-hidden transition ring ring-white ${selectedBackground === bg.id ? 'ring-4' : 'ring-0'}`}>
+          <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full" />
+        </div>
+      ))}
+    </div>
+    
+    { /* Preview section */ }
+    <div className="hidden">
+      {backgrounds.filter(bg => bg.id === selectedBackground).map(bg => (
+        bg.type === 'image' ? 
+        <img key={bg.id} src={URL.createObjectURL(bg.blob)} alt="Selected Background" /> :
+        <video key={bg.id} src={URL.createObjectURL(bg.blob)} autoPlay loop muted />
+      ))}
+    </div>
+  </div>
   );
 };
 

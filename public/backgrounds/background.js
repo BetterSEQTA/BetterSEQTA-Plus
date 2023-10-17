@@ -13,12 +13,18 @@ const openDB = () => {
   });
 };
 
-// Read data from IndexedDB
+// Modified Read Data from IndexedDB
 const readData = async () => {
+  const selectedBackground = localStorage.getItem("selectedBackground");
+  if (!selectedBackground) {
+    console.log("No selected background in local storage.");
+    return null;
+  }
+
   const db = await openDB();
   const tx = db.transaction("backgrounds", "readonly");
   const store = tx.objectStore("backgrounds");
-  const request = store.get("customBackground");
+  const request = store.get(selectedBackground);
 
   return await new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
@@ -26,8 +32,8 @@ const readData = async () => {
   });
 };
 
-// Main function to run on page load
-const main = async () => {
+// Function to update the background
+const updateBackground = async () => {
   try {
     const data = await readData();
     if (!data) {
@@ -37,6 +43,7 @@ const main = async () => {
 
     const url = URL.createObjectURL(data.blob);
     const container = document.getElementById("media-container");
+    container.innerHTML = "";  // Clear previous background
 
     if (data.type === "image") {
       const imgElement = document.createElement("img");
@@ -54,6 +61,18 @@ const main = async () => {
   } catch (error) {
     console.error("An error occurred:", error);
   }
+};
+
+// Main function to run on page load
+const main = async () => {
+  await updateBackground();  // Initial background update
+
+  // Listen for changes to local storage
+  window.addEventListener("storage", async (event) => {
+    if (event.key === "selectedBackground") {
+      await updateBackground();  // Update background if 'selectedBackground' changes
+    }
+  });
 };
 
 // Run the main function when the document is ready
