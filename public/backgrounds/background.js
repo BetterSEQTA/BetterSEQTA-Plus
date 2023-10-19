@@ -37,6 +37,12 @@ const updateBackground = async () => {
     const data = await readData();
     if (!data) {
       console.log("No data found in IndexedDB.");
+
+      const container = document.getElementById("media-container");
+      const currentMedia = container.querySelector(".current-media");
+      if (currentMedia) {
+        currentMedia.remove();
+      }
       return;
     }
 
