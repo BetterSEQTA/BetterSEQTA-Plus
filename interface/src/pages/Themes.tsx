@@ -1,4 +1,5 @@
 import { useState, useEffect, ChangeEvent, FC } from 'react';
+import './Themes.css';
 
 // Custom Types and Interfaces
 interface Background {
@@ -54,6 +55,7 @@ const readAllData = async (): Promise<Background[]> => {
 const Themes: FC = () => {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -78,29 +80,67 @@ const Themes: FC = () => {
     localStorage.setItem('selectedBackground', fileId);
   };
 
+  const deleteBackground = async (fileId: string): Promise<void> => {
+    const db = await openDB();
+    const tx = db.transaction('backgrounds', 'readwrite');
+    const store = tx.objectStore('backgrounds');
+    store.delete(fileId);
+    setBackgrounds(prev => prev.filter(bg => bg.id !== fileId));
+  };
+
   useEffect(() => {
     loadBackgrounds();
   }, []);
 
   return (
   <div>
-    <h2>Upload a Background</h2>
-    <input type="file" onChange={handleFileChange} />
-
-    <h2>Images</h2>
+      <button className="absolute top-0 right-0 p-2 text-lg text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
+        {isEditMode ? 'Done' : 'Edit'}
+      </button>
+    <h2 className="py-2 text-lg font-bold">Images</h2>
     <div className="flex flex-wrap gap-4">
+      {/* Image uploader swatch */}
+      <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-900">
+        <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
+          {/*  Plus icon */}
+          
+        </div>
+        <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
       {backgrounds.filter(bg => bg.type === 'image').map(bg => (
-        <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`w-16 h-16 rounded-lg overflow-hidden transition ring ring-white ${selectedBackground === bg.id ? 'ring-4' : 'ring-0'}`}>
-          <img className="object-cover w-full h-full" src={bg.url} alt="swatch" />
+        <div key={bg.id}
+          onClick={() => selectBackground(bg.id)} 
+          className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring ring-white ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'ring-2' : 'ring-0'}`}>
+          {isEditMode && (
+            <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                onClick={() => deleteBackground(bg.id)}>
+              <div className="w-4 h-0.5 bg-white"></div>
+            </div>
+          )}
+          <img className="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
         </div>
       ))}
     </div>
 
-    <h2>Videos</h2>
+    <h2 className="py-2 text-lg font-bold">Videos</h2>
     <div className="flex flex-wrap gap-4">
+      {/* Video uploader swatch */}
+      <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-900">
+        <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
+          {/*  Plus icon */}
+          
+        </div>
+        <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
       {backgrounds.filter(bg => bg.type === 'video').map(bg => (
-        <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`w-16 h-16 rounded-lg overflow-hidden transition ring ring-white ${selectedBackground === bg.id ? 'ring-4' : 'ring-0'}`}>
-          <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full" />
+        <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring ring-white ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'ring-2' : 'ring-0'}`}>
+          {isEditMode && (
+            <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                onClick={() => deleteBackground(bg.id)}>
+              <div className="w-4 h-0.5 bg-white"></div>
+            </div>
+          )}
+          <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full rounded-xl" />
         </div>
       ))}
     </div>
