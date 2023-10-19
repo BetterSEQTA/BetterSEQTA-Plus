@@ -32,7 +32,6 @@ const readData = async () => {
   });
 };
 
-// Function to update the background
 const updateBackground = async () => {
   try {
     const data = await readData();
@@ -43,21 +42,39 @@ const updateBackground = async () => {
 
     const url = URL.createObjectURL(data.blob);
     const container = document.getElementById("media-container");
-    container.innerHTML = "";  // Clear previous background
 
+    // Create new element and set properties
+    let newElement;
     if (data.type === "image") {
-      const imgElement = document.createElement("img");
-      imgElement.src = url;
-      imgElement.alt = "Uploaded content";
-      container.appendChild(imgElement);
+      newElement = document.createElement("img");
+      newElement.src = url;
+      newElement.alt = "Uploaded content";
     } else if (data.type === "video") {
-      const videoElement = document.createElement("video");
-      videoElement.src = url;
-      videoElement.autoplay = true;
-      videoElement.loop = true;
-      videoElement.muted = true;
-      container.appendChild(videoElement);
+      newElement = document.createElement("video");
+      newElement.src = url;
+      newElement.autoplay = true;
+      newElement.loop = true;
+      newElement.muted = true;
     }
+
+    // Mark the old element for removal
+    const oldElement = container.querySelector(".current-media");
+    if (oldElement) {
+      oldElement.classList.remove("current-media");
+      oldElement.classList.add("old-media");
+    }
+
+    // Add the new element and mark it as current
+    newElement.classList.add("current-media");
+    container.appendChild(newElement);
+
+    // Delay removal of old element
+    setTimeout(() => {
+      const oldMedia = container.querySelector(".old-media");
+      if (oldMedia) {
+        oldMedia.remove();
+      }
+    }, 100); // 0.1 second delay
   } catch (error) {
     console.error("An error occurred:", error);
   }
