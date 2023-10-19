@@ -32,6 +32,7 @@ export default class StorageListener {
 
     if (changes.DarkMode) {
       this.darkMode = changes.DarkMode.newValue;
+      console.log(this.darkMode);
     }
 
     if (changes?.customshortcuts?.newValue) {

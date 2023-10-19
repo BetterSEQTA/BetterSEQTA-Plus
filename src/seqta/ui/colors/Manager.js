@@ -13,7 +13,12 @@ let DarkMode = null;
 export function updateAllColors(storedSetting, newColor = null) {
   // Determine the color to use
   const selectedColor = newColor || storedSetting.selectedColor;
-  DarkMode = storedSetting ? storedSetting.DarkMode : DarkMode;
+
+  DarkMode = (typeof storedSetting?.DarkMode === "boolean") ? storedSetting.DarkMode : DarkMode;
+
+  if (typeof storedSetting === "boolean") {
+    DarkMode = storedSetting;
+  }
 
   // Common properties, always applied
   const commonProps = {
@@ -24,7 +29,6 @@ export function updateAllColors(storedSetting, newColor = null) {
 
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
-  console.log("Darkmode: ", DarkMode);
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
       "--background-primary": "#232323",
