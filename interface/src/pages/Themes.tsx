@@ -99,8 +99,8 @@ const Themes: FC = () => {
 
   return (
   <div>
-    <button className="p-2 my-4 text-white bg-red-600 rounded" onClick={() => selectNoBackground()}>
-      No Background
+    <button disabled={selectedBackground == null ? true : false} className={`w-full px-4 py-2 mb-4 text-white transition ${selectedBackground == null ? 'bg-zinc-900' : 'bg-blue-500'} rounded`} onClick={() => selectNoBackground()}>
+    {selectedBackground == null ? 'No Background' : 'Remove Background'}
     </button>
     <div className="relative">
       <button className="absolute top-0 right-0 p-2 text-[0.8rem] text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
