@@ -109,7 +109,7 @@ const Themes: FC = () => {
       <h2 className="pb-2 text-lg font-bold">Images</h2>
       <div className="flex flex-wrap gap-4">
         {/* Image uploader swatch */}
-        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-900">
+        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
           <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
             {/*  Plus icon */}
             
@@ -134,7 +134,7 @@ const Themes: FC = () => {
       <h2 className="py-2 text-lg font-bold">Videos</h2>
       <div className="flex flex-wrap gap-4">
         {/* Video uploader swatch */}
-        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-900">
+        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
           <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
             {/*  Plus icon */}
             
