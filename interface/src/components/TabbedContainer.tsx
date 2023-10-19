@@ -79,7 +79,7 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
                 activeTab === index && (
                   <motion.div
                     key={index}
-                    className="absolute w-full pb-6"
+                    className="absolute w-full pb-4"
                     initial="hidden"
                     animate="visible"
                     exit="hidden"

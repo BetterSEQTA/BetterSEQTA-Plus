@@ -637,35 +637,11 @@ function main(storedSetting) {
   }
   if (storedSetting.onoff) {
     console.log("[BetterSEQTA+] Enabled");
-    // Injecting CSS File to the webpage to overwrite SEQTA's default CSS
-    var cssFile = chrome.runtime.getURL("inject/injected.css");
-    var fileref = document.createElement("link");
-    fileref.setAttribute("rel", "stylesheet");
-    fileref.setAttribute("type", "text/css");
-    fileref.setAttribute("href", cssFile);
-    document.head.appendChild(fileref);
-    document.getElementsByTagName("html")[0].appendChild(fileref);
-
-    // Injecting custom icons font file
-    const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
-
-    const style = document.createElement("style");
-    style.setAttribute("type", "text/css");
-    style.innerHTML = `
-    @font-face {
-      font-family: 'IconFamily';
-      src: url('${fontURL}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-    document.head.appendChild(style);
-
+    InjectStyles();
+    InjectCustomIcons();
     updateAllColors(storedSetting);
-
     ApplyCSSToHiddenMenuItems();
-
     loading();
-
     CheckLoadOnPeriods();
 
     if (!isChrome || isChrome == "undefined") {
@@ -687,6 +663,31 @@ function main(storedSetting) {
       });
     });
   }
+}
+
+function InjectStyles() {
+  var cssFile = chrome.runtime.getURL("inject/injected.css");
+  var fileref = document.createElement("link");
+  fileref.setAttribute("rel", "stylesheet");
+  fileref.setAttribute("type", "text/css");
+  fileref.setAttribute("href", cssFile);
+  document.head.appendChild(fileref);
+  document.getElementsByTagName("html")[0].appendChild(fileref);
+}
+
+function InjectCustomIcons() {
+  const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
+
+  const style = document.createElement("style");
+  style.setAttribute("type", "text/css");
+  style.innerHTML = `
+    @font-face {
+      font-family: 'IconFamily';
+      src: url('${fontURL}') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }`;
+  document.head.appendChild(style);
 }
 
 export function AppendElementsToDisabledPage() {
@@ -790,7 +791,7 @@ function addExtensionSettings() {
   iframe.src = chrome.runtime.getURL("interface/index.html");
   iframe.allowTransparency = "true";
   iframe.style.width = "384px";
-  iframe.style.height = "610px";
+  iframe.style.height = "600px";
   iframe.style.border = "none";
   iframe.setAttribute("excludeDarkCheck", "true");
   
