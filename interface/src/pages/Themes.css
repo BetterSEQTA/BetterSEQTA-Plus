@@ -1,21 +1,21 @@
 @keyframes shake {
   0% {
-    transform: translateX(0) rotate(0);
+    transform: rotate(0);
   }
   25% {
-    transform: translateX(-1px) rotate(-1deg);
+    transform: rotate(-1deg);
   }
   50% {
-    transform: translateX(1px) rotate(1deg);
+    transform: rotate(1deg);
   }
   75% {
-    transform: translateX(-1px) rotate(-1deg);
+    transform: rotate(-1deg);
   }
   100% {
-    transform: translateX(0) rotate(0);
+    transform: rotate(0);
   }
 }
 
 .animate-shake {
-  animation: shake 1s linear infinite;
+  animation: shake 0.5s linear infinite;
 }
