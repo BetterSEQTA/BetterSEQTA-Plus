@@ -14,7 +14,6 @@ import StorageListener from "./seqta/utils/StorageListener.js";
 import { updateBgDurations } from "./seqta/ui/Animation.js";
 import { updateAllColors } from "./seqta/ui/colors/Manager.js";
 import { appendBackgroundToUI } from "./seqta/ui/ImageBackgrounds.js";
-import { lightenAndPaleColor } from "./seqta/ui/colors/lightenAndPaleColor.js";
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
@@ -308,7 +307,7 @@ async function RunColourCheck(element) {
   }
 }
 
-function GetiFrameCSSElement() {
+export function GetiFrameCSSElement() {
   var cssFile = chrome.runtime.getURL("inject/iframe.css");
   var fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
@@ -403,8 +402,8 @@ function SortMessagePageItems(messagesParentElement) {
   });
 }
 
-function LoadPageElements() {
-  AddBetterSEQTAElements(true);
+async function LoadPageElements() {
+  await AddBetterSEQTAElements(true);
   var sublink = window.location.href.split("/")[4];
   switch (sublink) {
   case "news":
@@ -1094,7 +1093,7 @@ function ReplaceMenuSVG(element, svg) {
   item.insertBefore(newsvg, item.firstChild);
 }
 
-function AddBetterSEQTAElements(toggle) {
+async function AddBetterSEQTAElements(toggle) {
   var code = document.getElementsByClassName("code")[0];
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
@@ -1275,114 +1274,38 @@ function AddBetterSEQTAElements(toggle) {
         var ContentDiv = document.getElementById("content");
         ContentDiv.append(SettingsButton.firstChild);
 
-        chrome.storage.local.get(["DarkMode"], function (result) {
-          DarkMode = result.DarkMode;
-
-          let tooltipstring = GetLightDarkModeString(DarkMode);
-          var LightDarkModeButton = stringToHTML(
-            String.raw`<button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px);" preserveAspectRatio="xMidYMid meet"></svg><div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipstring}</div></button>`,
-          );
-          ContentDiv.append(LightDarkModeButton.firstChild);
-
-          let LightDarkModeElement = document.getElementById("LightDarkModeButton");
-
-          if (DarkMode) {
-            LightDarkModeElement.firstChild.innerHTML = "<defs><clipPath id=\"__lottie_element_80\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_80)\"><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>";
-            document.documentElement.style.removeProperty("--better-pale");
-          } else {
-            LightDarkModeElement.firstChild.innerHTML = "<defs><clipPath id=\"__lottie_element_263\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_263)\"><g style=\"display: block;\" transform=\"matrix(1.5,0,0,1.5,7,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(-1,0,0,-1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>";
-            try {
-              chrome.storage.local.get(null, function (result) {
-                document.documentElement.style.setProperty(
-                  "--better-pale",
-                  lightenAndPaleColor(result.selectedColor),
-                );
-              });
-            } catch (err) {
-              console.log(err);
-            }
-          }
-          let darklightText = document.getElementById("darklighttooliptext");
-          LightDarkModeElement.addEventListener("click", function () {
-            chrome.storage.local.get(["DarkMode"], function (result) {
-              DarkMode = result.DarkMode;
-              let alliframes = document.getElementsByTagName("iframe");
-              let fileref = GetiFrameCSSElement();
-
-              if (!DarkMode) {
-                document.documentElement.style.setProperty(
-                  "--background-primary",
-                  "#232323",
-                );
-                document.documentElement.style.setProperty(
-                  "--background-secondary",
-                  "#1a1a1a",
-                );
-                document.documentElement.style.setProperty(
-                  "--text-primary",
-                  "white",
-                );
-                document.documentElement.style.removeProperty("--better-pale");
-                LightDarkModeElement.firstChild.innerHTML = "<defs><clipPath id=\"__lottie_element_80\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_80)\"><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>";
-
-                for (let i = 0; i < alliframes.length; i++) {
-                  const element = alliframes[i];
-
-                  if (element.getAttribute("excludeDarkCheck") == "true") {
-                    continue;
-                  }
-                  
-                  console.log(element);
-                  console.log(element.contentDocument.documentElement);
-
-                  element.contentDocument.documentElement.childNodes[1].style.color =
-                    "white";
-                  element.contentDocument.documentElement.firstChild.appendChild(
-                    fileref,
-                  );
-                }
-              } else {
-                document.documentElement.style.setProperty(
-                  "--background-primary",
-                  "#ffffff",
-                );
-                document.documentElement.style.setProperty(
-                  "--background-secondary",
-                  "#e5e7eb",
-                );
-                document.documentElement.style.setProperty(
-                  "--text-primary",
-                  "black",
-                );
-                try {
-                  chrome.storage.local.get(null, function (result) {
-                    document.documentElement.style.setProperty(
-                      "--better-pale",
-                      lightenAndPaleColor(result.selectedColor),
-                    );
-                  });
-                } catch (err) {
-                  console.log(err);
-                }
-                LightDarkModeElement.firstChild.innerHTML = "<defs><clipPath id=\"__lottie_element_263\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_263)\"><g style=\"display: block;\" transform=\"matrix(1.5,0,0,1.5,7,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(-1,0,0,-1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>";
-
-                for (let i = 0; i < alliframes.length; i++) {
-                  const element = alliframes[i];
-
-                  if (element.getAttribute("excludeDarkCheck") == "true") {
-                    continue;
-                  }
-
-                  element.contentDocument.documentElement.childNodes[1].style.color =
-                    "black";
-                  element.contentDocument.documentElement.firstChild.lastChild.remove();
-                }
-              }
-              tooltipstring = GetLightDarkModeString(!result.DarkMode);
-              darklightText.innerText = tooltipstring;
-              chrome.storage.local.set({ DarkMode: !result.DarkMode });
-            });
+        const result = await new Promise(resolve => {
+          chrome.storage.local.get(null, resolve);
+        });
+        
+        const DarkMode = result.DarkMode;
+        const tooltipString = GetLightDarkModeString(DarkMode);
+        const svgContent = DarkMode ? "<defs><clipPath id=\"__lottie_element_80\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_80)\"><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(1,0,0,1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>" :
+          "<defs><clipPath id=\"__lottie_element_263\"><rect width=\"24\" height=\"24\" x=\"0\" y=\"0\"></rect></clipPath></defs><g clip-path=\"url(#__lottie_element_263)\"><g style=\"display: block;\" transform=\"matrix(1.5,0,0,1.5,7,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z\"></path></g></g><g style=\"display: block;\" transform=\"matrix(-1,0,0,-1,12,12)\" opacity=\"1\"><g opacity=\"1\" transform=\"matrix(1,0,0,1,0,0)\"><path fill-opacity=\"1\" d=\" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z\"></path></g></g></g>";
+        
+        const LightDarkModeButton = stringToHTML(`
+          <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
+            <svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>
+            <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipString}</div>
+          </button>
+        `);
+        
+        ContentDiv.append(LightDarkModeButton.firstChild);
+        
+        updateAllColors(DarkMode, result.selectedColor);
+        
+        document.getElementById("LightDarkModeButton").addEventListener("click", async () => {
+          const result = await new Promise(resolve => {
+            chrome.storage.local.get(null, resolve);
           });
+          
+          const newDarkMode = !result.DarkMode;
+          chrome.storage.local.set({ DarkMode: newDarkMode });
+          
+          updateAllColors(newDarkMode, result.selectedColor);
+          
+          const darklightText = document.getElementById("darklighttooliptext");
+          darklightText.innerText = GetLightDarkModeString(newDarkMode);
         });
       } else {
         // Creates settings and dashboard buttons next to alerts
@@ -1395,6 +1318,7 @@ function AddBetterSEQTAElements(toggle) {
 
       var AddedSettings = document.getElementById("AddedSettings");
       var extensionsettings = document.getElementById("ExtensionPopup");
+
       AddedSettings.addEventListener("click", function () {
         extensionsettings.classList.toggle("hide");
         SettingsClicked = true;
