@@ -35,6 +35,7 @@
   - Edge Supported
   - Brave Supported
   - Opera Supported
+  - Vivaldi Supported
   - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
   - Safari (Experimental)
 
