@@ -1,5 +1,5 @@
 /* global chrome */
-import { GetThresholdOfColor } from "../../../SEQTA.js";
+import { GetThresholdOfColor, GetiFrameCSSElement } from "../../../SEQTA.js";
 import { lightenAndPaleColor } from "./lightenAndPaleColor.js";
 import ColorLuminance from "./ColorLuminance.js";
 
@@ -33,13 +33,19 @@ export function updateAllColors(storedSetting, newColor = null) {
     modeProps = DarkMode ? {
       "--background-primary": "#232323",
       "--background-secondary": "#1a1a1a",
-      "--text-primary": "white"
+      "--text-primary": "white",
+      "--betterseqta-logo": `url(${getChromeURL("icons/betterseqta-light-full.png")})`
     } : {
       "--background-primary": "#ffffff",
       "--background-secondary": "#e5e7eb",
       "--text-primary": "black",
-      "--better-pale": lightenAndPaleColor(selectedColor)
+      "--better-pale": lightenAndPaleColor(selectedColor),
+      "--betterseqta-logo": `url(${getChromeURL("icons/betterseqta-dark-full.png")})`
     };
+
+    if (DarkMode) {
+      document.documentElement.style.removeProperty("--better-pale");
+    }
   }
 
   // Dynamic properties, always applied
@@ -47,7 +53,6 @@ export function updateAllColors(storedSetting, newColor = null) {
   const isBright = rgbThreshold > 210;
   const dynamicProps = {
     "--text-color": isBright ? "black" : "white",
-    "--betterseqta-logo": `url(${getChromeURL(`icons/betterseqta-${isBright ? "dark" : "light"}-full.png`)})`,
     "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(selectedColor, 0.95)
   };
 
@@ -57,6 +62,26 @@ export function updateAllColors(storedSetting, newColor = null) {
   // Set favicon, if storedSetting is provided
   if (DarkMode !== null) {
     document.querySelector("link[rel*='icon']").href = getChromeURL("icons/icon-48.png");
+  }
+
+  let alliframes = document.getElementsByTagName("iframe");
+  let fileref = GetiFrameCSSElement();
+
+  for (let i = 0; i < alliframes.length; i++) {
+    const element = alliframes[i];
+
+    if (element.getAttribute("excludeDarkCheck") == "true") {
+      continue;
+    }
+    
+    console.log(element);
+    console.log(element.contentDocument.documentElement);
+
+    element.contentDocument.documentElement.childNodes[1].style.color =
+      DarkMode ? "black" : "white";
+    element.contentDocument.documentElement.firstChild.appendChild(
+      fileref,
+    );
   }
 }
 
