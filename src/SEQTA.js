@@ -1293,6 +1293,17 @@ async function AddBetterSEQTAElements(toggle) {
         ContentDiv.append(LightDarkModeButton.firstChild);
         
         updateAllColors(DarkMode, result.selectedColor);
+
+        // Locate the menuToggle element
+        const menuToggle = document.getElementById("menuToggle");
+        menuToggle.innerHTML = "";
+
+        // Create three divs to act as lines of the hamburger icon
+        for (let i = 0; i < 3; i++) {
+          const line = document.createElement("div");
+          line.className = "hamburger-line";
+          menuToggle.appendChild(line);
+        }
         
         document.getElementById("LightDarkModeButton").addEventListener("click", async () => {
           const result = await new Promise(resolve => {
@@ -1320,6 +1331,7 @@ async function AddBetterSEQTAElements(toggle) {
       var extensionsettings = document.getElementById("ExtensionPopup");
 
       AddedSettings.addEventListener("click", function () {
+        extensionsettings.contentWindow.postMessage("popupClosed", "*");
         extensionsettings.classList.toggle("hide");
         SettingsClicked = true;
       });
