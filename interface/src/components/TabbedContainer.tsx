@@ -11,6 +11,26 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const positionRef = useRef(position);
   const themeColor = useSettingsContext().settingsState.customThemeColor;
 
+
+    // Function to handle message
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === "popupClosed") {  
+        setActiveTab(0);
+      }
+    };
+  
+    useEffect(() => {
+      // Add event listener for 'message' event
+      window.addEventListener("message", handleMessage);
+  
+      // Cleanup
+      return () => {
+        window.removeEventListener("message", handleMessage);
+      };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+
   useEffect(() => {
     const newPosition = -activeTab * 100;
     setPosition(newPosition);

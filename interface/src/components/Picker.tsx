@@ -4,9 +4,27 @@ import { useSettingsContext } from '../SettingsContext';
 import { motion } from "framer-motion";
 
 import "./Picker.css";
+import { useEffect } from 'react';
 
 export default function Picker() {
   const { settingsState, setSettingsState, showPicker, setShowPicker } = useSettingsContext();
+
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data === "popupClosed") {
+      setShowPicker(false);
+    }
+  };
+
+  useEffect(() => {
+    // Add event listener for 'message' event
+    window.addEventListener("message", handleMessage);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const colorChange = (color: string) => {
     setSettingsState({
