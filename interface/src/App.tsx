@@ -11,7 +11,6 @@ import Themes from './pages/Themes';
 //import About from './pages/About';
 
 const App: React.FC = () => {
-
   const { standalone, setStandalone } = useSettingsContext();
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const App: React.FC = () => {
       title: 'Themes',
       content: <Themes />
     }
-  ];
+  ];  
 
   return (
     <div className={`flex flex-col w-[384px] shadow-2xl gap-2 bg-white ${ standalone ? '' : 'rounded-xl' } h-[600px] overflow-clip dark:bg-zinc-800 dark:text-white`}>

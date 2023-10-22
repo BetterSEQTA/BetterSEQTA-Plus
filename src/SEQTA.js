@@ -788,6 +788,7 @@ function addExtensionSettings() {
 
   let iframe = document.createElement("iframe");
   iframe.src = chrome.runtime.getURL("interface/index.html");
+  iframe.id = "ExtensionIframe";
   iframe.allowTransparency = "true";
   iframe.style.width = "384px";
   iframe.style.height = "600px";
@@ -798,11 +799,18 @@ function addExtensionSettings() {
 
   var container = document.getElementById("container");
   var extensionsettings = document.getElementById("ExtensionPopup");
-  container.onclick = function () {
-    if (!SettingsClicked) {
-      extensionsettings.classList.add("hide");
+  var extensionIframe = document.getElementById("ExtensionIframe");
+  
+  container.onclick = function (event) {
+    if (event.target.id !== "AddedSettings") {
+      if (!SettingsClicked) {
+        extensionsettings.classList.add("hide");
+        extensionIframe.contentWindow.postMessage("popupClosed", "*");
+      }
+      SettingsClicked = false;
+    } else {
+      SettingsClicked = false;
     }
-    SettingsClicked = false;
   };
 }
 
@@ -1329,9 +1337,8 @@ async function AddBetterSEQTAElements(toggle) {
 
       var AddedSettings = document.getElementById("AddedSettings");
       var extensionsettings = document.getElementById("ExtensionPopup");
-
+      
       AddedSettings.addEventListener("click", function () {
-        extensionsettings.contentWindow.postMessage("popupClosed", "*");
         extensionsettings.classList.toggle("hide");
         SettingsClicked = true;
       });
