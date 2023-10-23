@@ -11,13 +11,14 @@ import loading, { AppendLoadingSymbol } from "./seqta/ui/Loading.js";
 import assessmentsicon from "./seqta/icons/assessmentsIcon.js";
 import coursesicon from "./seqta/icons/coursesIcon.js";
 import StorageListener from "./seqta/utils/StorageListener.js";
+import { MessageHandler } from "./seqta/utils/MessageListener.js";
 import { updateBgDurations } from "./seqta/ui/Animation.js";
 import { updateAllColors } from "./seqta/ui/colors/Manager.js";
 import { appendBackgroundToUI } from "./seqta/ui/ImageBackgrounds.js";
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
-let MenuOptionsOpen = false;
+export let MenuOptionsOpen = false;
 let UserInitalCode = "";
 let currentSelectedDate = new Date();
 let LessonInterval;
@@ -717,6 +718,7 @@ export function AppendElementsToDisabledPage() {
 }
 
 new StorageListener();
+new MessageHandler();
 
 var PageLoaded = false;
 async function CheckLoadOnPeriods() {
@@ -770,6 +772,13 @@ document.addEventListener(
   },
   true,
 );
+
+export function closeSettings() {
+  var extensionsettings = document.getElementById("ExtensionPopup");
+
+  extensionsettings.classList.add("hide");
+  SettingsClicked = false;
+}
 
 function addExtensionSettings() {
   let link = document.createElement("link");
@@ -893,7 +902,7 @@ function cloneAttributes(target, source) {
   });
 }
 
-function OpenMenuOptions() {
+export function OpenMenuOptions() {
   chrome.storage.local.get(null, function (result) {
     var container = document.getElementById("container");
     var menu = document.getElementById("menu");
