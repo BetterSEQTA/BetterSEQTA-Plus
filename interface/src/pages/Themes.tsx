@@ -96,23 +96,53 @@ const Themes: FC = () => {
 
 
   const presetBackgrounds = [
-    { 
-      id: 'preset-1', 
-      type: 'image', 
-      url: 'https://images.unsplash.com/photo-1697228428285-8c442346434a?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
-      previewUrl: 'https://images.unsplash.com/photo-1697228428285-8c442346434a?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
-      isPreset: true 
+    // Images
+    {
+      id: 'image-preset-1',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1.jpeg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1-thumb.jpeg',
+      isPreset: true
     },
-    { 
-      id: 'preset-2', 
-      type: 'image', 
-      url: 'https://images.unsplash.com/photo-1697359774044-35aa12ab7c91?auto=format&fit=crop&q=80&w=2375&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
-      previewUrl: 'https://images.unsplash.com/photo-1697359774044-35aa12ab7c91?auto=format&fit=crop&q=80&w=2375&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
-      isPreset: true 
+    {
+      id: 'image-preset-2',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2.jpeg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2-thumb.jpeg',
+      isPreset: true
     },
-    // ... more preset backgrounds
+    {
+      id: 'image-preset-3',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3-thumb.jpeg',
+      isPreset: true
+    },
+    {
+      id: 'image-preset-4',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4.jpeg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4-thumb.jpeg',
+      isPreset: true
+    },
+    
+    // Videos
+    {
+      id: 'video-preset-1',
+      type: 'video',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animated-1.mp4',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-1-thumb.mp4',
+      isPreset: true
+    },
+    {
+      id: 'video-preset-2',
+      type: 'video',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-2.mp4',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-2-thumb.mp4',
+      isPreset: true
+    }
   ];
-  
+
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
