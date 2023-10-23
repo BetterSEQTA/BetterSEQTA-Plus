@@ -97,13 +97,21 @@ function OpenWhatsNewPopup() {
   let text = stringToHTML(
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-    <li>Custom backgrounds and themes coming soon!</li>
+    <li>Themes coming soon!</li>
+    
+    <h1>3.1.3 - Custom Backgrounds</h1>
+    <li>Added custom backgrounds with support for images and videos</li>
+    <li>Overhauled topbar</li>
+    <li>New animated hamburger icon</li>
+    <li>Minor bug fixes</li>
+
     <h1>3.1.2 - New settings menu!</h1>
     <li>Overhauled the settings menu</li>
     <li>Added custom gradients</li>
     <li>Added HEAPS of animations</li>
     <li>Fixed a bug where shortcuts don't show up</li>
     <li>Other minor bugs fixed</li>
+    
     <h1>3.1.1 - Minor Bug fixes</h1>
     <li>Fixed assessments overlapping</li>
     <li>Fixed houses not displaying if they aren't a specific color</li>
