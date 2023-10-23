@@ -182,6 +182,8 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
     setSelectedBackground(null);
     localStorage.removeItem('selectedBackground');
   };
+
+  const calcCircumference = (radius: number) => 2 * Math.PI * radius;
   
   useEffect(() => {
     loadBackgrounds();
@@ -224,14 +226,16 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
             onClick={() => handlePresetClick(bg)}
             className='relative w-16 h-16 transition cursor-pointer rounded-xl'>
             {bg.isPreset && downloadProgress[bg.id] !== undefined && (
-              <div className="absolute top-0 left-0 z-20 h-1 bg-blue-500" style={{ width: `${downloadProgress[bg.id]}%` }}></div>
+              <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
+                  <circle stroke="currentColor" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset="0" transform="rotate(-90 18 18)"></circle>
+                  <circle stroke="#3B82F6" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset={`${calcCircumference(14) * (1 - (downloadProgress[bg.id] / 100))}`} transform="rotate(-90 18 18)"></circle>
+                </svg>
+              </div>
             )}
             <div className="relative top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center">
               <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
-                
-              </span>
-              <span className="absolute text-3xl text-black transition opacity-0 blur-sm font-IconFamily group-hover:opacity-100">
-                
+                {downloadProgress[bg.id] === undefined ? '' : ''}
               </span>
             </div>
             <img 
