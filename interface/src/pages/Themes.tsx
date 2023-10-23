@@ -267,8 +267,26 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
             <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full rounded-xl" />
           </div>
         ))}
-
-
+        {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'video' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
+          <div key={bg.id}
+            onClick={() => handlePresetClick(bg)}
+            className='relative w-16 h-16 transition cursor-pointer rounded-xl'>
+            {bg.isPreset && downloadProgress[bg.id] !== undefined && (
+              <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
+                  <circle stroke="currentColor" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset="0" transform="rotate(-90 18 18)"></circle>
+                  <circle stroke="#3B82F6" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset={`${calcCircumference(14) * (1 - (downloadProgress[bg.id] / 100))}`} transform="rotate(-90 18 18)"></circle>
+                </svg>
+              </div>
+            )}
+            <div className="relative top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center">
+              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+                {downloadProgress[bg.id] === undefined ? '' : ''}
+              </span>
+            </div>
+            <video muted loop autoPlay src={bg.isPreset ? bg.previewUrl : bg.url} className="absolute top-0 object-cover w-full h-full rounded-xl" />
+          </div>
+        ))}
       </div>
     </div>
   </div>
