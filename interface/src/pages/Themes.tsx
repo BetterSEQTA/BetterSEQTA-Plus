@@ -7,7 +7,42 @@ interface Background {
   type: string;
   blob: Blob;
   url?: string;
+  previewUrl?: string;  // New field
+  isPreset?: boolean;
+  isDownloaded?: boolean;
 }
+
+const downloadPresetBackground = async (background: Background, onProgress: (progress: number) => void): Promise<Background> => {
+  const response = await fetch(background.url as string);
+  
+  const totalLength = +response.headers.get('Content-Length')!;
+  let receivedLength = 0;
+  
+  const reader = response.body?.getReader();
+  const chunks = [];
+  
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = await reader!.read();
+    
+    if (done) break;
+
+    chunks.push(value!);
+    receivedLength += value!.length;
+
+    onProgress(Math.ceil(receivedLength / totalLength * 100));
+  }
+
+  const blob = new Blob(chunks);
+  await writeData(background.id, background.type, blob);
+  
+  return {
+    id: background.id,
+    type: background.type,
+    blob,
+    url: URL.createObjectURL(blob),
+  };
+};
 
 // IndexedDB utility functions
 const openDB = () => {
@@ -55,8 +90,29 @@ const readAllData = async (): Promise<Background[]> => {
 const Themes: FC = () => {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
+  const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
+  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
+
+  const presetBackgrounds = [
+    { 
+      id: 'preset-1', 
+      type: 'image', 
+      url: 'https://images.unsplash.com/photo-1697228428285-8c442346434a?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
+      previewUrl: 'https://images.unsplash.com/photo-1697228428285-8c442346434a?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
+      isPreset: true 
+    },
+    { 
+      id: 'preset-2', 
+      type: 'image', 
+      url: 'https://images.unsplash.com/photo-1697359774044-35aa12ab7c91?auto=format&fit=crop&q=80&w=2375&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
+      previewUrl: 'https://images.unsplash.com/photo-1697359774044-35aa12ab7c91?auto=format&fit=crop&q=80&w=2375&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
+      isPreset: true 
+    },
+    // ... more preset backgrounds
+  ];
+  
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -72,9 +128,38 @@ const Themes: FC = () => {
   const loadBackgrounds = async (): Promise<void> => {
     const data = await readAllData();
     const dataWithUrls = data.map(bg => ({ ...bg, url: URL.createObjectURL(bg.blob) }));
+  
+    // Update downloaded preset IDs
+    setDownloadedPresetIds(data.map(bg => bg.id));
+    
     setBackgrounds(dataWithUrls);
-  };
+  };  
 
+const handlePresetClick = async (bg: Background): Promise<void> => {
+  if (bg.isPreset) {
+    // Check if already exists in IndexedDB or is currently being downloaded
+    const existingBackgrounds = await readAllData();
+    const alreadyExists = existingBackgrounds.some(ebg => ebg.id === bg.id) || downloadProgress[bg.id] !== undefined;
+  
+    if (!alreadyExists) {
+      setDownloadProgress(prev => ({ ...prev, [bg.id]: 0 }));
+      const downloadedBg = await downloadPresetBackground(bg, progress => {
+        console.log(`${bg}, ${progress}`);
+        setDownloadProgress(prev => ({ ...prev, [bg.id]: progress }));
+      });
+      setDownloadProgress(prev => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [bg.id]: _, ...rest } = prev;
+        return rest;
+      });
+      await writeData(downloadedBg.id, downloadedBg.type, downloadedBg.blob);
+      setBackgrounds(prev => [...prev, downloadedBg]);
+      setDownloadedPresetIds(prev => [...prev, downloadedBg.id]);
+    }
+    selectBackground(bg.id);
+  }
+};
+  
   const selectBackground = (fileId: string): void => {
     setSelectedBackground(fileId);
     localStorage.setItem('selectedBackground', fileId);
@@ -86,20 +171,25 @@ const Themes: FC = () => {
     const store = tx.objectStore('backgrounds');
     store.delete(fileId);
     setBackgrounds(prev => prev.filter(bg => bg.id !== fileId));
-  };
+  
+    // Check if the background being deleted is currently selected
+    if (fileId === selectedBackground) {
+      selectNoBackground();  // Disable the current background
+    }
+  };  
 
   const selectNoBackground = (): void => {
     setSelectedBackground(null);
     localStorage.removeItem('selectedBackground');
-  };  
-
+  };
+  
   useEffect(() => {
     loadBackgrounds();
   }, []);
 
   return (
   <div>
-    <button disabled={selectedBackground == null ? true : false} className={`w-full px-4 py-2 mb-4 text-white transition ${selectedBackground == null ? 'bg-zinc-900' : 'bg-blue-500'} rounded`} onClick={() => selectNoBackground()}>
+    <button disabled={selectedBackground == null ? true : false} className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
     {selectedBackground == null ? 'No Background' : 'Remove Background'}
     </button>
     <div className="relative">
@@ -129,6 +219,27 @@ const Themes: FC = () => {
             <img className="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
           </div>
         ))}
+        {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
+          <div key={bg.id}
+            onClick={() => handlePresetClick(bg)}
+            className='relative w-16 h-16 transition cursor-pointer rounded-xl'>
+            {bg.isPreset && downloadProgress[bg.id] !== undefined && (
+              <div className="absolute top-0 left-0 z-20 h-1 bg-blue-500" style={{ width: `${downloadProgress[bg.id]}%` }}></div>
+            )}
+            <div className="relative top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center">
+              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+                
+              </span>
+              <span className="absolute text-3xl text-black transition opacity-0 blur-sm font-IconFamily group-hover:opacity-100">
+                
+              </span>
+            </div>
+            <img 
+              className="absolute top-0 object-cover w-full h-full rounded-xl" 
+              src={bg.isPreset ? bg.previewUrl : bg.url}  // Use preview for preset backgrounds
+              alt="swatch" />
+          </div>
+        ))}
       </div>
 
       <h2 className="py-2 text-lg font-bold">Videos</h2>
@@ -152,15 +263,8 @@ const Themes: FC = () => {
             <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full rounded-xl" />
           </div>
         ))}
-      </div>
-      
-      { /* Preview section */ }
-      <div className="hidden">
-        {backgrounds.filter(bg => bg.id === selectedBackground).map(bg => (
-          bg.type === 'image' ? 
-          <img key={bg.id} src={URL.createObjectURL(bg.blob)} alt="Selected Background" /> :
-          <video key={bg.id} src={URL.createObjectURL(bg.blob)} autoPlay loop muted />
-        ))}
+
+
       </div>
     </div>
   </div>
