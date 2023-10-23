@@ -2419,7 +2419,7 @@ export function addShortcuts(shortcuts) {
     const currentShortcut = shortcuts[i];
     
     if (currentShortcut?.enabled) {
-      const Itemname = currentShortcut?.name.replace(/\s/g, "");
+      const Itemname = (currentShortcut?.name ?? "").replace(/\s/g, "");
 
       const linkDetails = ShortcutLinks?.[Itemname];
       if (linkDetails) {
