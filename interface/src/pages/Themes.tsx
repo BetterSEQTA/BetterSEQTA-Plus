@@ -241,7 +241,7 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
         {backgrounds.filter(bg => bg.type === 'image').map(bg => (
           <div key={bg.id}
             onClick={() => selectBackground(bg.id)} 
-            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring ring-white ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'ring-2' : 'ring-0'}`}>
+            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
             {isEditMode && (
               <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
                   onClick={() => deleteBackground(bg.id)}>
@@ -287,7 +287,7 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
           <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
         {backgrounds.filter(bg => bg.type === 'video').map(bg => (
-          <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring ring-white ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'ring-2' : 'ring-0'}`}>
+          <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
             {isEditMode && (
               <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
                   onClick={() => deleteBackground(bg.id)}>
