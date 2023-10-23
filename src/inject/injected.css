@@ -2881,6 +2881,7 @@ body {
 
 .whatsnewTextContainer {
   display: flex;
+  overflow-x: hidden;
   flex-direction: column;
   width: 90%;
   margin: 5px auto;
