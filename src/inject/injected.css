@@ -36,7 +36,6 @@ html {
 #main {
   color: var(--text-primary);
   position: relative;
-  padding-top: 5rem;
 }
 
 .forums {
@@ -126,6 +125,12 @@ ul.magicDelete > li.deleting {
   color: var(--text-color);
   display: flex;
   white-space: nowrap;
+  place-items: center;
+}
+
+#menu .sub {
+  top: 71.5px;
+  margin-top: -2px;
 }
 
 #menu section > label {
@@ -180,7 +185,7 @@ li.item.draggable {
 #menu li.active > .sub > ul > .active {
   box-shadow: inset 6px 0 var(--item-colour, transparent);
   transition: 100ms;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3) !important;
 }
 
 #menu li > label,
@@ -310,6 +315,12 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 #container #content {
   bottom: unset !important;
   height: 100%;
+}
+
+#container #content::before {
+  content: "";
+  height: 5.5rem;
+  width: 100%;
 }
 
 .menuShown #container #content #title {
