@@ -122,7 +122,7 @@ ul.magicDelete > li.deleting {
   box-shadow: none;
   border-radius: 12px;
   padding: 12px;
-  color: var(--text-color);
+  color: var(--text-color) !important;
   display: flex;
   white-space: nowrap;
   place-items: center;
