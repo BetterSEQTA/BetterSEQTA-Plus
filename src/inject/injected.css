@@ -319,7 +319,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 
 #container #content::before {
   content: "";
-  height: 5.5rem;
+  height: 69.5px;;
   width: 100%;
 }
 
@@ -1328,7 +1328,11 @@ iframe.userHTML {
 
 #toolbar {
   color: var(--text-primary);
-  background: unset;
+  background: var(--background-primary);
+}
+
+.dailycal > .zoom {
+  display: none;
 }
 
 .programmeNavigator > .navigator,
@@ -1430,6 +1434,10 @@ ul {
 
 .BasicPanel__BasicPanel___1GP6s {
   background: var(--background-primary);
+}
+
+.back > svg {
+  transform: scale(1.2);
 }
 
 .uiFileHandler {
@@ -1614,17 +1622,19 @@ blurred {
 
 .uiSlidePane.shown > .pane {
   transform: translatey(0%) !important;
+  opacity: 1;
 }
 
 .uiSlidePane > .pane {
   color: var(--text-primary);
   background: var(--auto-background);
   transform: translateY(100%);
-  transition:
-    transform 0.5s ease-in-out,
-    -webkit-transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-out,
+              -webkit-transform 0.5s ease-out,
+              opacity 0.2s ease-out;
   transition-delay: 0 !important;
   border-radius: 1rem !important;
+  opacity: 0;
 }
 
 .anyoneSelect.filterBox {

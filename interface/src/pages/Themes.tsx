@@ -100,29 +100,50 @@ const Themes: FC = () => {
     {
       id: 'image-preset-1',
       type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1.jpeg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1-thumb.jpeg',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1-thumb.jpg',
       isPreset: true
     },
     {
       id: 'image-preset-2',
       type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2.jpeg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2-thumb.jpeg',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2-thumb.jpg',
       isPreset: true
     },
     {
       id: 'image-preset-3',
       type: 'image',
       url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3-thumb.jpeg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3-thumb.jpg',
       isPreset: true
     },
     {
       id: 'image-preset-4',
       type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4.jpeg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4-thumb.jpeg',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4-thumb.jpg',
+      isPreset: true
+    },
+    {
+      id: 'image-preset-5',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-5.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-5-thumb.jpg',
+      isPreset: true
+    },
+    {
+      id: 'image-preset-6',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-6.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-6-thumb.jpg',
+      isPreset: true
+    },
+    {
+      id: 'image-preset-7',
+      type: 'image',
+      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-7.jpg',
+      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-7-thumb.jpg',
       isPreset: true
     },
     
@@ -254,7 +275,7 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
         {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
           <div key={bg.id}
             onClick={() => handlePresetClick(bg)}
-            className='relative w-16 h-16 transition cursor-pointer rounded-xl'>
+            className={`relative w-16 h-16 transition cursor-pointer rounded-xl duration-300 ${ isEditMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {bg.isPreset && downloadProgress[bg.id] !== undefined && (
               <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
                 <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
@@ -300,7 +321,7 @@ const handlePresetClick = async (bg: Background): Promise<void> => {
         {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'video' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
           <div key={bg.id}
             onClick={() => handlePresetClick(bg)}
-            className='relative w-16 h-16 transition cursor-pointer rounded-xl'>
+            className={`relative w-16 h-16 transition cursor-pointer rounded-xl duration-300 ${ isEditMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {bg.isPreset && downloadProgress[bg.id] !== undefined && (
               <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
                 <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
