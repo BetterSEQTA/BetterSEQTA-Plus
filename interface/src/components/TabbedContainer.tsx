@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
 import { useSettingsContext } from '../SettingsContext';
 
@@ -94,23 +94,19 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
           transition={springTransition}
         >
           <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
-            <AnimatePresence>
-              {tabs.map((tab, index) => (
-                activeTab === index && (
-                  <motion.div
-                    key={index}
-                    className="absolute w-full pb-4"
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    transition={fastOpacityTransition}
-                    variants={contentVariants}
-                  >
-                    {tab.content}
-                  </motion.div>
-                )
-              ))}
-            </AnimatePresence>
+            {tabs.map((tab, index) => (
+              <motion.div
+                key={index}
+                className="absolute w-full pb-4"
+                initial="hidden"
+                animate={activeTab === index ? "visible" : "hidden"}
+                transition={fastOpacityTransition}
+                variants={contentVariants}
+                style={{ display: activeTab === index ? 'block' : 'none' }}  // Hide inactive tabs using CSS
+              >
+                {tab.content}
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>
