@@ -1092,7 +1092,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .notifications__notifications___3mmLY.notifications__hasItems___gXxzx > button {
   background: white;
-  z-index: 21;
+  z-index: 21 !important;
   color: var(--better-sub);
 }
 
@@ -1151,7 +1151,8 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 #menu li.active {
-  background: #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.35);
 }
 
 #menu li:first-child {
@@ -1195,6 +1196,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .Viewer__sidebar___1Btu4 {
   color: var(--text-primary);
+  border-right: unset;
 }
 
 .Viewer__sidebar___1Btu4 > header {
@@ -1328,6 +1330,10 @@ iframe.userHTML {
 
 #toolbar {
   color: var(--text-primary);
+  background: unset;
+}
+
+#main:has(.timetablepage) #toolbar {
   background: var(--background-primary);
 }
 
