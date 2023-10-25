@@ -367,7 +367,9 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 
 .document {
   border-radius: 32px !important;
+  background: var(--background-primary) !important;
 }
+
 td.size {
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
