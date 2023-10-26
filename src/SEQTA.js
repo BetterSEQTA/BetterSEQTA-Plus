@@ -99,6 +99,10 @@ function OpenWhatsNewPopup() {
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
     <li>Themes coming soon!</li>
     
+    <h1>3.1.5</h1>
+    <li>Minor bug fixes</li>
+    <h1>3.1.4</h1>
+    <li>Minor bug fixes</li>
     <h1>3.1.3 - Custom Backgrounds</h1>
     <li>Added custom backgrounds with support for images and videos</li>
     <li>Overhauled topbar</li>
