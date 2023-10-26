@@ -1,19 +1,25 @@
-#menu ul.noscroll > li {
+#menu ul.noscroll:has(li.hasChildren.active) > li {
   box-shadow: inset 0px 0 var(--item-colour, transparent) !important;
+  background: transparent !important;
 }
 
-#menu > ul.noscroll > li > label,
-#menu > ul.noscroll > li > svg,
-#menu > ul.noscroll ul.noscroll > li > label,
-#menu > ul.noscroll ul.noscroll > li > svg {
+#menu ul.noscroll:not(:has(li.hasChildren.active)) {
+  overflow: scroll !important;
+}
+
+#menu > ul.noscroll:has(li.hasChildren.active) > li > label,
+#menu > ul.noscroll:has(li.hasChildren.active) > li > svg,
+#menu > ul.noscroll ul.noscroll:has(li.hasChildren.active) > li > label,
+#menu > ul.noscroll ul.noscroll:has(li.hasChildren.active) > li > svg {
   transform: translateX(-20rem);
 }
 
 .sub .sub {
   top: 0 !important;
+  padding-top: 2px;
 }
 
-.sub:has(ul.noscroll) > .nav > .back {
+.sub:has(ul.noscroll>li.hasChildren.active) > .nav > .back {
   display: none !important;
 }
 
@@ -26,15 +32,6 @@
   transition: transform 0.3s ease;
 }
 
-#menu ul.noscroll li.active {
+#menu > ul.noscroll:has(li.hasChildren.active) > li.active {
   background: transparent !important;
 }
-/* 
-#menu ul.noscroll li .sub label,
-#menu ul.noscroll li > svg {
-  transform: translateX(0);
-}
- */
-#menu li.active>.sub {
-  transform: translateX(0);
-} 
