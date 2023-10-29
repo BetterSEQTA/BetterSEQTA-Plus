@@ -34,6 +34,7 @@
     "autoprefixer": "^10.4.15",
     "color": "^4.2.3",
     "install": "^0.13.0",
+    "localforage": "^1.10.0",
     "motion": "^10.16.4",
     "npm": "^10.1.0",
     "postcss": "^8.4.29",
