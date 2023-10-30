@@ -1509,6 +1509,16 @@ ul {
   color: var(--text-primary) !important;
 }
 
+.dailycal>.content>.wrapper>.days>tbody>tr>td>.entriesWrapper>.entry[data-yiq='light'],
+.dailycal>.content>.wrapper>.days>tbody>tr>td>.entriesWrapper>.entry[data-yiq='light'] .title {
+  color: #fff !important;
+}
+
+.dailycal>.content>.wrapper>.days>tbody>tr>td>.entriesWrapper>.entry[data-yiq='dark'],
+.dailycal>.content>.wrapper>.days>tbody>tr>td>.entriesWrapper>.entry[data-yiq='dark'] .title {
+  color: #000 !important;
+}
+
 div.entry.class {
   width: 100% !important;
   border-radius: 0.25rem;
@@ -1781,7 +1791,7 @@ body {
   right: 47px;
   top: 14px;
   width: 42px;
-  z-index: 2;
+  z-index: 21;
 }
 
 #userActions > .details > .name::before {

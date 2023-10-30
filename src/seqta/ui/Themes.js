@@ -1,93 +1,98 @@
 import localforage from "localforage";
 
-// 🎨 Theme Management Functions 🎨
+// Utility function to fetch and parse JSON
+const fetchJSON = async (url) => {
+  const res = await fetch(url);
+  return await res.json();
+};
+
+// Utility function to fetch and parse text
+const fetchText = async (url) => {
+  const res = await fetch(url);
+  return await res.text();
+};
+
+// Check if the theme already exists in IndexedDB
+const themeExistsInDB = async (themeName) => {
+  return (await localforage.getItem(`css_${themeName}`)) !== null;
+};
 
 // Fetch theme details (CSS, images, className) from a given URL
-async function fetchThemeJSON(url) {
-  console.log("Fetching theme from:", url);
-  const response = await fetch(url);
-  const data = await response.json();
-  
-  const cssResponse = await fetch(data.css);
-  const cssText = await cssResponse.text();
-  
-  return {
-    css: cssText,
-    images: data.images,
-    className: data.className
-  };
-}
+const fetchThemeJSON = async (url) => {
+  const { css, images, className } = await fetchJSON(url);
+  const cssText = await fetchText(css);
+  return { css: cssText, images, className };
+};
+
+// Save individual image to IndexedDB
+const saveImageToDB = async (themeName, cssVar, imageUrl) => {
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error(response.statusText);
+    const blob = await response.blob();
+    await localforage.setItem(`images_${themeName}_${cssVar}`, blob);
+  } catch (error) {
+    console.error(`Failed to save image for ${cssVar}: ${error}`);
+  }
+};
 
 // Save theme details to storage via localForage
-async function saveToIndexedDB(theme, themeName) {
-  console.log("Saving theme to IndexedDB:", themeName);
-  await localforage.setItem(`css_${themeName}`, { css: theme.css, className: theme.className, images: theme.images });
-
-  for (const [cssVar, imageUrl] of Object.entries(theme.images)) {
-    try {
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        console.error(`Failed to fetch image: ${response.statusText}`);
-        continue;
-      }
-      const blob = await response.blob();
-      await localforage.setItem(`images_${themeName}_${cssVar}`, blob);
-    } catch (error) {
-      console.error(`Error while handling image for ${cssVar}: ${error}`);
-    }
-  }
-}
+const saveToIndexedDB = async (theme, themeName) => {
+  await localforage.setItem(`css_${themeName}`, theme);
+  await Promise.all(Object.entries(theme.images).map(([cssVar, imageUrl]) => saveImageToDB(themeName, cssVar, imageUrl)));
+};
 
 // Apply theme from storage via localForage to document
-async function applyTheme(themeName) {
-  console.log("Applying theme:", themeName);
-  const themeData = await localforage.getItem(`css_${themeName}`);
-  console.log("Retrieved Theme Data:", themeData); // Debugging info
+const applyTheme = async (themeName) => {
+  const { css, className, images } = await localforage.getItem(`css_${themeName}`);
+  console.log(`Applying theme ${themeName}`);
+  console.log(`CSS: ${css}`);
+  console.log(`className: ${className}`);
+  console.log(`images: ${images}`);
   
+  // Apply CSS
   const style = document.createElement("style");
-  style.innerHTML = themeData.css;
+  style.innerHTML = css;
   document.head.appendChild(style);
 
-  document.body.className = themeData.className;
+  // Apply className
+  document.body.classList.add(className);
 
-  if (themeData.images) {
-    for (const cssVar of Object.keys(themeData.images)) {
-      const imageData = await localforage.getItem(`images_${themeName}_${cssVar}`);
-      console.log(imageData);
-      const objectURL = URL.createObjectURL(imageData);
-      console.log("Applying image:", objectURL);
-      document.documentElement.style.setProperty(cssVar, `url(${objectURL})`);
-    }
-  } else {
-    console.error("themeData.images is not defined!");
+  // Apply images
+  if (images) {
+    await Promise.all(
+      Object.keys(images).map(async (cssVar) => {
+        const imageData = await localforage.getItem(`images_${themeName}_${cssVar}`);
+        const objectURL = URL.createObjectURL(imageData);
+        document.documentElement.style.setProperty(cssVar, `url(${objectURL})`);
+      })
+    );
   }
-}
-
-// Save available themes to localStorage
-function saveAvailableThemes(themeList) {
-  localStorage.setItem("availableThemes", JSON.stringify(themeList));
-}
-
-// Set the currently selected theme in localStorage
-function setSelectedTheme(themeName) {
-  localStorage.setItem("selectedTheme", themeName);
-}
+};
 
 // 🚀 Main function to orchestrate everything 🚀
-export async function EnableThemes() {
-  console.log("Enabling themes!");
+export const EnableThemes = async () => {
   const availableThemes = [
     { name: "dark", url: "https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/themes/test.json" }
   ];
-
-  saveAvailableThemes(availableThemes);
-
+  
+  // Save available themes
+  localStorage.setItem("availableThemes", JSON.stringify(availableThemes));
+  
+  // Determine theme to apply
   const themeToApply = availableThemes[0].name;
-  const themeData = await fetchThemeJSON(availableThemes[0].url);
-
-  await saveToIndexedDB(themeData, themeToApply);
-  setSelectedTheme(themeToApply);
+  
+  // Fetch, save, and apply theme if not already in IndexedDB
+  if (!(await themeExistsInDB(themeToApply))) {
+    console.log(`Theme ${themeToApply} not found in IndexedDB, fetching...`);
+    const themeData = await fetchThemeJSON(availableThemes[0].url);
+    await saveToIndexedDB(themeData, themeToApply);
+    console.log(`Theme ${themeToApply} saved to IndexedDB`, themeData);
+  }
+  
+  // Set and apply the selected theme
+  localStorage.setItem("selectedTheme", themeToApply);
   await applyTheme(themeToApply).catch((error) => {
-    console.error("Error while applying theme:", error);
+    console.error(`Failed to apply theme: ${error}`);
   });
-}
+};
