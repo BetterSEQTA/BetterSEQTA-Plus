@@ -15,8 +15,8 @@ import { MessageHandler } from "./seqta/utils/MessageListener.js";
 import { updateBgDurations } from "./seqta/ui/Animation.js";
 import { updateAllColors } from "./seqta/ui/colors/Manager.js";
 import { appendBackgroundToUI } from "./seqta/ui/ImageBackgrounds.js";
-/* import { EnableThemes } from "./seqta/ui/Themes.js";
- */
+import { EnableThemes } from "./seqta/ui/Themes.js";
+
 export let isChrome = window.chrome;
 let SettingsClicked = false;
 export let MenuOptionsOpen = false;
@@ -774,7 +774,7 @@ document.addEventListener(
 
       chrome.storage.local.get(null, function (items) {
         main(items);
-        /* EnableThemes(); */
+        EnableThemes();
       });
     }
     if (
