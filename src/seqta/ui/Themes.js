@@ -45,10 +45,6 @@ const saveToIndexedDB = async (theme, themeName) => {
 // Apply theme from storage via localForage to document
 const applyTheme = async (themeName) => {
   const { css, className, images } = await localforage.getItem(`css_${themeName}`);
-  console.log(`Applying theme ${themeName}`);
-  console.log(`CSS: ${css}`);
-  console.log(`className: ${className}`);
-  console.log(`images: ${images}`);
   
   // Apply CSS
   const style = document.createElement("style");
@@ -56,7 +52,7 @@ const applyTheme = async (themeName) => {
   document.head.appendChild(style);
 
   // Apply className
-  document.body.classList.add(className);
+  if (className) document.body.classList.add(className);
 
   // Apply images
   if (images) {
@@ -70,8 +66,41 @@ const applyTheme = async (themeName) => {
   }
 };
 
+export const downloadTheme = async (themeName, themeUrl) => {
+  console.log(`Fetching theme ${themeName} from ${themeUrl}...`);
+  const themeData = await fetchThemeJSON(themeUrl);
+  await saveToIndexedDB(themeData, themeName);
+  console.log(`Theme ${themeName} saved to IndexedDB`);
+  setTheme(themeName);
+  return;
+};
+
+export const setTheme = async (themeName, themeUrl) => {
+  if (!(await themeExistsInDB(themeName))) {
+    await downloadTheme(themeName, themeUrl);
+  }
+
+  localStorage.setItem("selectedTheme", themeName);
+  await applyTheme(themeName).catch((error) => {
+    console.error(`Failed to apply theme: ${error}`);
+  });
+};
+
+export const enableCurrentTheme = async () => {
+  const currentTheme = localStorage.getItem("selectedTheme");
+  
+  if (currentTheme) {
+    console.log(`Enabling current theme: ${currentTheme}`);
+    await applyTheme(currentTheme).catch((error) => {
+      console.error(`Failed to apply current theme: ${error}`);
+    });
+  } else {
+    console.log("No current theme set in localStorage.");
+  }
+};
+
 // 🚀 Main function to orchestrate everything 🚀
-export const EnableThemes = async () => {
+/* export const EnableThemes = async () => {
   const availableThemes = [
     { name: "dark", url: "https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/themes/test.json" }
   ];
@@ -95,4 +124,4 @@ export const EnableThemes = async () => {
   await applyTheme(themeToApply).catch((error) => {
     console.error(`Failed to apply theme: ${error}`);
   });
-};
+}; */

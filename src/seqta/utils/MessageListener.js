@@ -1,6 +1,7 @@
 /* global chrome */
 
 import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from "../../SEQTA.js";
+import { downloadTheme, setTheme } from "../ui/Themes.js";
 
 export class MessageHandler {
   constructor() {
@@ -13,8 +14,11 @@ export class MessageHandler {
     case "EditSidebar":
       this.editSidebar();
       break;
-    case "Theme":
-      console.log("Theme message received");
+    case "SetTheme":
+      setTheme(request.body.themeName, request.body.themeURL);
+      break;
+    case "DownloadTheme":
+      downloadTheme(request.body.themeURL, request.body.themeName);
       break;
     
     default:
