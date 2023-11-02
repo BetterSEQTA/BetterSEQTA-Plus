@@ -19,46 +19,58 @@ export default class StorageListener {
   }
 
   handleStorageChanges(changes) {
-    if (changes.selectedColor) {
-      this.handleSelectedColorChange(changes.selectedColor.newValue);
-    }
+    Object.keys(changes).forEach((changeKey) => {
+      switch (changeKey) {
 
-    if (changes.shortcuts) {
-      this.handleShortcutsChange(
-        changes.shortcuts.oldValue,
-        changes.shortcuts.newValue
-      );
-    }
+      case "selectedColor":
+        this.handleSelectedColorChange(changes.selectedColor.newValue);
+        break;
 
-    if (changes.DarkMode) {
-      this.darkMode = changes.DarkMode.newValue;
-      console.log(this.darkMode);
-    }
+      case "shortcuts":
+        this.handleShortcutsChange(
+          changes.shortcuts.oldValue,
+          changes.shortcuts.newValue
+        );
+        break;
 
-    if (changes?.customshortcuts?.newValue) {
-      this.handleCustomShortcutsChange(
-        changes.customshortcuts.oldValue,
-        changes.customshortcuts.newValue
-      );
-    }
+      case "DarkMode":
+        this.darkMode = changes.DarkMode.newValue;
+        console.log(this.darkMode);
+        break;
 
-    if (changes.notificationcollector) {
-      this.handleNotificationCollectorChange(changes.notificationcollector);
-    }
+      case "customshortcuts":
+        if (changes.customshortcuts.newValue) {
+          this.handleCustomShortcutsChange(
+            changes.customshortcuts.oldValue,
+            changes.customshortcuts.newValue
+          );
+        }
+        break;
 
-    if (changes.bksliderinput) {
-      updateBgDurations(changes.bksliderinput.newValue);
-    }
+      case "notificationcollector":
+        this.handleNotificationCollectorChange(changes.notificationcollector);
+        break;
 
-    if (changes.animatedbk !== undefined) {
-      if (changes.animatedbk.newValue) {
-        CreateBackground();
-      } else {
-        RemoveBackground();
-        document.getElementById("container").style.background = "var(--background-secondary)";
+      case "bksliderinput":
+        updateBgDurations(changes.bksliderinput.newValue);
+        break;
+
+      case "animatedbk":
+        if (changes.animatedbk.newValue) {
+          CreateBackground();
+        } else {
+          RemoveBackground();
+          document.getElementById("container").style.background = "var(--background-secondary)";
+        }
+        break;
+
+      // Add default case if you need to handle a case where changeKey does not match any case
+      default:
+        // Handle unknown changeKey if necessary
+        break;
       }
-    }
-  }
+    });
+  }  
 
   handleSelectedColorChange(newColor) {
     try {
