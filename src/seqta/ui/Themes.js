@@ -101,30 +101,3 @@ export const enableCurrentTheme = async () => {
     console.log("No current theme set in localStorage.");
   }
 };
-
-// 🚀 Main function to orchestrate everything 🚀
-/* export const EnableThemes = async () => {
-  const availableThemes = [
-    { name: "dark", url: "https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/themes/test.json" }
-  ];
-  
-  // Save available themes
-  localStorage.setItem("availableThemes", JSON.stringify(availableThemes));
-  
-  // Determine theme to apply
-  const themeToApply = availableThemes[0].name;
-  
-  // Fetch, save, and apply theme if not already in IndexedDB
-  if (!(await themeExistsInDB(themeToApply))) {
-    console.log(`Theme ${themeToApply} not found in IndexedDB, fetching...`);
-    const themeData = await fetchThemeJSON(availableThemes[0].url);
-    await saveToIndexedDB(themeData, themeToApply);
-    console.log(`Theme ${themeToApply} saved to IndexedDB`, themeData);
-  }
-  
-  // Set and apply the selected theme
-  localStorage.setItem("selectedTheme", themeToApply);
-  await applyTheme(themeToApply).catch((error) => {
-    console.error(`Failed to apply theme: ${error}`);
-  });
-}; */
