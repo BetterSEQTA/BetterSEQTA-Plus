@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { downloadPresetBackground, openDB, readAllData, writeData } from "../hooks/BackgroundDataLoader";
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
+import { disableTheme } from "../hooks/ThemeManagment";
 
 // Custom Types and Interfaces
 export interface Background {
@@ -69,6 +70,7 @@ export default function BackgroundSelector() {
   };
   
   const selectBackground = (fileId: string): void => {
+    disableTheme();
     setSelectedBackground(fileId);
     localStorage.setItem('selectedBackground', fileId);
   };
