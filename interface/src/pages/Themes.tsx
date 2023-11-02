@@ -19,7 +19,7 @@ const Themes: FC = () => {
 
   return (
   <div>
-      <button className="absolute top-12 z-10 right-0 p-2 text-[0.8rem] text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
+      <button className="absolute top-12 z-20 right-0 p-2 text-[0.8rem] text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
         {isEditMode ? 'Done' : 'Edit'}
       </button>
     <BackgroundSelector setSelectedType={setSelectedType} selectedType={selectedType} isEditMode={isEditMode} />
