@@ -1,7 +1,6 @@
-/* global chrome */
-
 import { useEffect, useState } from "react";
 import themesList from '../assets/themes';
+import { listThemes, disableTheme, downloadTheme, setTheme } from "../hooks/ThemeManagment";
 
 interface Theme {
   name: string;
@@ -10,59 +9,6 @@ interface Theme {
   isLoading: boolean;
   coverImage: JSX.Element;
 }
-
-interface ThemeList {
-  themes: string[];
-}
-
-const downloadTheme = async (themeName: string, themeURL: string) => {
-  // send message to the background script
-  const response = await chrome.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'DownloadTheme',
-    body: {
-      themeName: themeName,
-      themeURL: themeURL
-    }
-  });
-
-  console.log("Response: ", response);
-}
-
-const setTheme = async (themeName: string, themeURL: string) => {
-  // send message to the background script
-  const response = await chrome.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'SetTheme',
-    body: {
-      themeName: themeName,
-      themeURL: themeURL
-    }
-  });
-
-  console.log("Response: ", response);
-}
-
-const listThemes = async () => {
-  // send message to the background script
-  const response: ThemeList = await chrome.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'ListThemes',
-    body: {}
-  });
-
-  // response.themes is an array of strings that are identical to the theme names that we loop over. Use this list to see which ones are downloaded and which ones need to see the download icon.
-  console.log("Response: ", response);
-
-  return response.themes;
-}
-
-const disableTheme = async () => {
-  await chrome.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'DisableTheme',
-  });
-};
 
 const ThemeSelector = () => {
   const [themes, setThemes] = useState<Theme[]>([]);
