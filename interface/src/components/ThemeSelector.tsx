@@ -10,13 +10,19 @@ interface Theme {
   coverImage: JSX.Element;
 }
 
-const ThemeSelector = () => {
+interface ThemeSelectorProps {
+  selectedType: "background" | "theme";
+  setSelectedType: (type: "background" | "theme") => void;
+  isEditMode: boolean;
+}
+
+const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelectorProps) => {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [enabledThemeName, setEnabledThemeName] = useState<string>('');
 
   useEffect(() => {
     const initializeThemes = async () => {
-      const downloaded = await listThemes();
+      const downloaded = (await listThemes()).themes;
 
       const initializedThemes = themesList.map(theme => ({
         ...theme,
@@ -31,7 +37,6 @@ const ThemeSelector = () => {
   }, []);
 
   const handleThemeAction = async (themeName: string, themeURL: string) => {
-    // Start loading for the selected theme.
     const startLoading = (name: string) => (
       setThemes(prevThemes => prevThemes.map(theme => 
         theme.name === name ? { ...theme, isLoading: true } : theme
@@ -51,7 +56,7 @@ const ThemeSelector = () => {
         theme.name === name ? { ...theme, isDownloaded: true } : theme
       ))
     );
-  
+      
     startLoading(themeName);
   
     // Early return if theme is not found.
@@ -60,11 +65,14 @@ const ThemeSelector = () => {
       stopLoading(themeName);
       return;
     }
+
+    console.log("Theme: ", theme);
   
     // If theme is downloaded and is the currently enabled theme, disable it.
     if (theme.isDownloaded && themeName === enabledThemeName) {
       await disableTheme();
       setEnabledThemeName('');
+      setSelectedType('background');
       stopLoading(themeName);
       return;
     }
@@ -73,6 +81,7 @@ const ThemeSelector = () => {
     if (theme.isDownloaded && themeName !== enabledThemeName) {
       await setTheme(themeName, themeURL);
       setEnabledThemeName(themeName);
+      setSelectedType('theme');
       stopLoading(themeName);
       return;
     }
@@ -81,6 +90,7 @@ const ThemeSelector = () => {
     if (!theme.isDownloaded) {
       await downloadTheme(themeName, themeURL);
       markAsDownloaded(themeName);
+      setSelectedType('theme');
       setEnabledThemeName(themeName);
     }
   
@@ -94,11 +104,17 @@ const ThemeSelector = () => {
         {themes.map((theme) => (
           <button
             key={theme.name}
-            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden bg-zinc-700 transition ring dark:ring-white ring-zinc-300 ${enabledThemeName == theme.name ? 'dark:ring-2 ring-4' : 'ring-0'} ${theme.isLoading ? 'cursor-not-allowed' : ''}`}
+            className={`relative w-full h-16 flex justify-center items-center rounded-lg bg-zinc-700 transition ring dark:ring-white ring-zinc-300 ${enabledThemeName == theme.name && selectedType == "theme" ? 'dark:ring-2 ring-4' : 'ring-0'}`}
             onClick={() => handleThemeAction(theme.name, theme.url)}
             disabled={theme.isLoading}
           >
-            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white group place-items-center ${ theme.isDownloaded ? '' : 'hover:bg-black/20'}`}>
+            {isEditMode && (
+              <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                  onClick={() => console.log("Deleted!")}>
+                <div className="w-4 h-0.5 bg-white"></div>
+              </div>
+            )}
+            <div className={`relative transition rounded-lg overflow-hidden top-0 z-10 flex justify-center w-full h-full text-white group place-items-center ${ theme.isDownloaded ? '' : 'hover:bg-black/20'}`}>
               <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
                 { theme.isDownloaded || theme.isLoading ? '' : ''}
               </span>
@@ -109,7 +125,7 @@ const ThemeSelector = () => {
               </div> }
 
             </div>
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 overflow-hidden rounded-lg">
               {theme.coverImage}
             </div>
           </button>

@@ -17,10 +17,11 @@ export interface Background {
 
 interface BackgroundSelectorProps {
   selectedType: "background" | "theme";
+  setSelectedType: (type: "background" | "theme") => void;
   isEditMode: boolean;
 }
 
-export default function BackgroundSelector({ selectedType, isEditMode }: BackgroundSelectorProps) {
+export default function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
@@ -75,6 +76,7 @@ export default function BackgroundSelector({ selectedType, isEditMode }: Backgro
   
   const selectBackground = (fileId: string): void => {
     disableTheme();
+    setSelectedType('background');
     setSelectedBackground(fileId);
     localStorage.setItem('selectedBackground', fileId);
   };
