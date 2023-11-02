@@ -105,23 +105,24 @@ const ThemeSelector = () => {
         {themes.map((theme) => (
           <button
             key={theme.name}
-            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden ${theme.isDownloaded ? 'bg-zinc-700' : 'bg-green-500'} ${theme.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden bg-zinc-700 ${theme.isLoading ? 'cursor-not-allowed' : ''}`}
             onClick={() => handleThemeAction(theme.name, theme.url)}
             disabled={theme.isLoading}
           >
-            {/* Position the cover image absolutely so that it doesn't affect the button's content layout */}
+            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white group place-items-center ${ theme.isDownloaded ? '' : 'hover:bg-black/20'}`}>
+              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+                { theme.isDownloaded || theme.isLoading ? '' : ''}
+              </span>
+              
+              { theme.isLoading &&
+              <div className="z-10 inline-block w-6 h-6 border-4 border-current rounded-full animate-spin border-t-transparent" role="status">
+                <span className="sr-only">Loading...</span>
+              </div> }
+
+            </div>
             <div className="absolute inset-0 z-0">
               {theme.coverImage}
             </div>
-
-            {/* Content */}
-            {theme.isLoading ? (
-              <div className="z-10 inline-block w-6 h-6 border-4 border-current rounded-full animate-spin border-t-transparent" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-            ) : (
-              <span className="z-10 text-lg font-bold text-white">{theme.name}</span>
-            )}
           </button>
         ))}
       </div>
