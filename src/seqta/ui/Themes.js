@@ -84,9 +84,14 @@ const applyTheme = async (themeName) => {
     );
   }
 };
+
 export const listThemes = async () => {
   const themes = await localforage.keys();
-  return themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", ""));
+  console.log("Themes in IndexedDB:", themes);
+  return {
+    themes: themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", "")),
+    selectedTheme: await localforage.getItem("selectedTheme")
+  };
 };
 
 export const downloadTheme = async (themeName, themeUrl) => {
@@ -101,14 +106,15 @@ export const setTheme = async (themeName, themeUrl) => {
     await downloadTheme(themeName, themeUrl);
   }
 
-  localforage.setItem("selectedTheme", themeName);
+  await localforage.setItem("selectedTheme", themeName);
   await applyTheme(themeName).catch((error) => {
     console.error(`Failed to apply theme: ${error}`);
   });
 };
 
 export const enableCurrentTheme = async () => {
-  const currentTheme = localforage.getItem("selectedTheme");
+  console.log("Enabling current theme...");
+  const currentTheme = await localforage.getItem("selectedTheme");
   
   if (currentTheme) {
     console.log(`Enabling current theme: ${currentTheme}`);
@@ -136,7 +142,7 @@ export const disableTheme = async () => {
   }
 
   // Remove any applied image URLs from the root element
-  const currentTheme = localforage.getItem("selectedTheme");
+  const currentTheme = await localforage.getItem("selectedTheme");
   if (currentTheme) {
     const themeData = await localforage.getItem(`css_${currentTheme}`);
     if (themeData && themeData.images) {

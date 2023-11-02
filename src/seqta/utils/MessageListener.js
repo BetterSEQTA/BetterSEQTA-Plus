@@ -14,6 +14,8 @@ export class MessageHandler {
     case "EditSidebar":
       this.editSidebar();
       break;
+
+    /* Theme related */
     case "SetTheme":
       console.log(request);
       setTheme(request.body.themeName, request.body.themeURL).then(() => {
@@ -26,8 +28,8 @@ export class MessageHandler {
       });
       return true;
     case "ListThemes":
-      listThemes().then((themes) => {
-        sendResponse({ themes });
+      listThemes().then((response) => {
+        sendResponse(response);
       });
       return true;
     case "DisableTheme":

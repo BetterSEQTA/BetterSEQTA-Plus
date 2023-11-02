@@ -772,9 +772,9 @@ document.addEventListener(
       link.rel = "stylesheet";
       document.getElementsByTagName("html")[0].appendChild(link);
 
+      enableCurrentTheme();
       chrome.storage.local.get(null, function (items) {
         main(items);
-        enableCurrentTheme();
       });
     }
     if (
