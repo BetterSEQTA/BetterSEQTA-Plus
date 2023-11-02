@@ -104,7 +104,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   case "currentTab":
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, request, function (response) {
-        // send response from current tab to popup
         sendResponse(response);
       });
     });

@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { downloadPresetBackground, openDB, readAllData, writeData } from "../hooks/BackgroundDataLoader";
+import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
 
 // Custom Types and Interfaces
@@ -8,7 +9,7 @@ export interface Background {
   type: string;
   blob: Blob;
   url?: string;
-  previewUrl?: string;  // New field
+  previewUrl?: string;
   isPreset?: boolean;
   isDownloaded?: boolean;
 }
@@ -19,76 +20,6 @@ export default function BackgroundSelector() {
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-
-
-  const presetBackgrounds = [
-    // Images
-    {
-      id: 'image-preset-1',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-1-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-2',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-2-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-3',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-3-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-4',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-4-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-5',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-5.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-5-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-6',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-6.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-6-thumb.jpg',
-      isPreset: true
-    },
-    {
-      id: 'image-preset-7',
-      type: 'image',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-7.jpg',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/images/background-7-thumb.jpg',
-      isPreset: true
-    },
-    
-    // Videos
-    {
-      id: 'video-preset-1',
-      type: 'video',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animated-1.mp4',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-1-thumb.mp4',
-      isPreset: true
-    },
-    {
-      id: 'video-preset-2',
-      type: 'video',
-      url: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-2.mp4',
-      previewUrl: 'https://raw.githubusercontent.com/SethBurkart123/BetterSEQTA-Themes/main/backgrounds/videos/animation-2-thumb.mp4',
-      isPreset: true
-    }
-  ];
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -112,30 +43,30 @@ export default function BackgroundSelector() {
     setBackgrounds(dataWithUrls);
   };  
 
-const handlePresetClick = async (bg: Background): Promise<void> => {
-  if (bg.isPreset) {
-    // Check if already exists in IndexedDB or is currently being downloaded
-    const existingBackgrounds = await readAllData();
-    const alreadyExists = existingBackgrounds.some(ebg => ebg.id === bg.id) || downloadProgress[bg.id] !== undefined;
-  
-    if (!alreadyExists) {
-      setDownloadProgress(prev => ({ ...prev, [bg.id]: 0 }));
-      const downloadedBg = await downloadPresetBackground(bg, progress => {
-        console.log(`${bg}, ${progress}`);
-        setDownloadProgress(prev => ({ ...prev, [bg.id]: progress }));
-      });
-      setDownloadProgress(prev => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [bg.id]: _, ...rest } = prev;
-        return rest;
-      });
-      await writeData(downloadedBg.id, downloadedBg.type, downloadedBg.blob);
-      setBackgrounds(prev => [...prev, downloadedBg]);
-      setDownloadedPresetIds(prev => [...prev, downloadedBg.id]);
+  const handlePresetClick = async (bg: Background): Promise<void> => {
+    if (bg.isPreset) {
+      // Check if already exists in IndexedDB or is currently being downloaded
+      const existingBackgrounds = await readAllData();
+      const alreadyExists = existingBackgrounds.some(ebg => ebg.id === bg.id) || downloadProgress[bg.id] !== undefined;
+    
+      if (!alreadyExists) {
+        setDownloadProgress(prev => ({ ...prev, [bg.id]: 0 }));
+        const downloadedBg = await downloadPresetBackground(bg, progress => {
+          console.log(`${bg}, ${progress}`);
+          setDownloadProgress(prev => ({ ...prev, [bg.id]: progress }));
+        });
+        setDownloadProgress(prev => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [bg.id]: _, ...rest } = prev;
+          return rest;
+        });
+        await writeData(downloadedBg.id, downloadedBg.type, downloadedBg.blob);
+        setBackgrounds(prev => [...prev, downloadedBg]);
+        setDownloadedPresetIds(prev => [...prev, downloadedBg.id]);
+      }
+      selectBackground(bg.id);
     }
-    selectBackground(bg.id);
-  }
-};
+  };
   
   const selectBackground = (fileId: string): void => {
     setSelectedBackground(fileId);
