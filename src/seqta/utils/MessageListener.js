@@ -15,6 +15,7 @@ export class MessageHandler {
       this.editSidebar();
       break;
     case "SetTheme":
+      console.log(request);
       setTheme(request.body.themeName, request.body.themeURL);
       break;
     case "DownloadTheme":
