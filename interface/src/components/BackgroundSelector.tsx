@@ -141,7 +141,7 @@ export default function BackgroundSelector() {
                 </svg>
               </div>
             )}
-            <div className="relative top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center">
+            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}>
               <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
                 {downloadProgress[bg.id] === undefined ? '' : ''}
               </span>
@@ -187,7 +187,7 @@ export default function BackgroundSelector() {
                 </svg>
               </div>
             )}
-            <div className="relative top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center">
+            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}>
               <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
                 {downloadProgress[bg.id] === undefined ? '' : ''}
               </span>

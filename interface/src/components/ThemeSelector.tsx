@@ -99,29 +99,32 @@ const ThemeSelector = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {themes.map((theme) => (
-        <button
-          key={theme.name}
-          className={`relative w-full h-16 flex justify-center items-center rounded-md overflow-hidden ${theme.isDownloaded ? 'bg-blue-500' : 'bg-green-500'} ${theme.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={() => handleThemeAction(theme.name, theme.url)}
-          disabled={theme.isLoading}
-        >
-          {/* Position the cover image absolutely so that it doesn't affect the button's content layout */}
-          <div className="absolute inset-0 z-0">
-            {theme.coverImage}
-          </div>
-
-          {/* Content */}
-          {theme.isLoading ? (
-            <div className="z-10 inline-block w-6 h-6 border-4 border-current rounded-full animate-spin border-t-transparent" role="status">
-              <span className="sr-only">Loading...</span>
+    <div className="my-2">
+      <h2 className="pb-2 text-lg font-bold">Themes</h2>
+      <div className="flex flex-col gap-4">
+        {themes.map((theme) => (
+          <button
+            key={theme.name}
+            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden ${theme.isDownloaded ? 'bg-zinc-700' : 'bg-green-500'} ${theme.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handleThemeAction(theme.name, theme.url)}
+            disabled={theme.isLoading}
+          >
+            {/* Position the cover image absolutely so that it doesn't affect the button's content layout */}
+            <div className="absolute inset-0 z-0">
+              {theme.coverImage}
             </div>
-          ) : (
-            <span className="z-10 text-lg font-bold text-white">{theme.name}</span>
-          )}
-        </button>
-      ))}
+
+            {/* Content */}
+            {theme.isLoading ? (
+              <div className="z-10 inline-block w-6 h-6 border-4 border-current rounded-full animate-spin border-t-transparent" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            ) : (
+              <span className="z-10 text-lg font-bold text-white">{theme.name}</span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
