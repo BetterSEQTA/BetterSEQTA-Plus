@@ -95,6 +95,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
   };  
 
   const selectNoBackground = (): void => {
+    setSelectedType('background');
     disableTheme();
     setSelectedBackground(null);
     localStorage.removeItem('selectedBackground');

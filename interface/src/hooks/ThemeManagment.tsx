@@ -50,3 +50,13 @@ export const disableTheme = async () => {
     info: 'DisableTheme',
   });
 };
+
+export const deleteTheme = async (themeName: string) => {
+  await chrome.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'DeleteTheme',
+    body: {
+      themeName: themeName
+    }
+  });
+}
