@@ -65,8 +65,6 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
       stopLoading(themeName);
       return;
     }
-
-    console.log("Theme: ", theme);
   
     // If theme is downloaded and is the currently enabled theme, disable it.
     if (theme.isDownloaded && themeName === enabledThemeName) {
@@ -95,7 +93,13 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
     }
   
     stopLoading(themeName);
-  };  
+  };
+
+  useEffect(() => {
+    if (selectedType === 'background') {
+      setEnabledThemeName('');
+    }
+  }, [selectedType]);
 
   return (
     <div className="my-2">
