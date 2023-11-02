@@ -1,7 +1,7 @@
 /* global chrome */
 
 import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from "../../SEQTA.js";
-import { downloadTheme, listThemes, setTheme } from "../ui/Themes.js";
+import { disableTheme, downloadTheme, listThemes, setTheme } from "../ui/Themes.js";
 
 export class MessageHandler {
   constructor() {
@@ -28,6 +28,11 @@ export class MessageHandler {
     case "ListThemes":
       listThemes().then((themes) => {
         sendResponse({ themes });
+      });
+      return true;
+    case "DisableTheme":
+      disableTheme().then(() => {
+        sendResponse({ status: "success" });
       });
       return true;
     

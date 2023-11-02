@@ -1,5 +1,8 @@
 import localforage from "localforage";
 
+let currentThemeStyle = null;
+let currentThemeClass = "";
+
 // Utility function to fetch and parse JSON
 const fetchJSON = async (url) => {
   const res = await fetch(url, {cache: "no-store"});
@@ -44,15 +47,31 @@ const saveToIndexedDB = async (theme, themeName) => {
 
 // Apply theme from storage via localForage to document
 const applyTheme = async (themeName) => {
+  // Remove previous theme's style if it exists
+  if (currentThemeStyle) {
+    document.head.removeChild(currentThemeStyle);
+    currentThemeStyle = null;
+  }
+
+  // Remove previous theme's class if it exists
+  if (currentThemeClass) {
+    document.body.classList.remove(currentThemeClass);
+    currentThemeClass = "";
+  }
+
   const { css, className, images } = await localforage.getItem(`css_${themeName}`);
   
   // Apply CSS
   const style = document.createElement("style");
   style.innerHTML = css;
   document.head.appendChild(style);
+  currentThemeStyle = style; // Keep track of the new style element
 
   // Apply className
-  if (className) document.body.classList.add(className);
+  if (className) {
+    document.body.classList.add(className);
+    currentThemeClass = className; // Keep track of the new class
+  }
 
   // Apply images
   if (images) {
@@ -65,7 +84,6 @@ const applyTheme = async (themeName) => {
     );
   }
 };
-
 export const listThemes = async () => {
   const themes = await localforage.keys();
   return themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", ""));
@@ -100,4 +118,36 @@ export const enableCurrentTheme = async () => {
   } else {
     console.log("No current theme set in localStorage.");
   }
+};
+
+export const disableTheme = async () => {
+  // Remove current theme's style if it exists
+  if (currentThemeStyle) {
+    document.head.removeChild(currentThemeStyle);
+    currentThemeStyle = null;
+    console.log("Current theme's style removed.");
+  }
+
+  // Remove current theme's class if it exists
+  if (currentThemeClass) {
+    document.body.classList.remove(currentThemeClass);
+    currentThemeClass = "";
+    console.log("Current theme's class removed.");
+  }
+
+  // Remove any applied image URLs from the root element
+  const currentTheme = localStorage.getItem("selectedTheme");
+  if (currentTheme) {
+    const themeData = await localforage.getItem(`css_${currentTheme}`);
+    if (themeData && themeData.images) {
+      Object.keys(themeData.images).forEach(cssVar => {
+        document.documentElement.style.removeProperty(cssVar);
+      });
+    }
+    console.log("Current theme's images removed.");
+  }
+
+  // Clear the selected theme from localStorage
+  localStorage.removeItem("selectedTheme");
+  console.log("Current theme disabled.");
 };

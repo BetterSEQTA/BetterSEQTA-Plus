@@ -1,3 +1,5 @@
+/* global chrome */
+
 import { useEffect, useState } from "react";
 import themesList from '../assets/themes';
 
@@ -55,8 +57,16 @@ const listThemes = async () => {
   return response.themes;
 }
 
+const disableTheme = async () => {
+  await chrome.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'DisableTheme',
+  });
+};
+
 const ThemeSelector = () => {
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [enabledThemeName, setEnabledThemeName] = useState<string>('');
 
   useEffect(() => {
     const initializeThemes = async () => {
@@ -75,28 +85,61 @@ const ThemeSelector = () => {
   }, []);
 
   const handleThemeAction = async (themeName: string, themeURL: string) => {
-    // Find the theme in the state and set its loading property to true
-    setThemes(prevThemes => prevThemes.map(theme => 
-      theme.name === themeName ? { ...theme, isLoading: true } : theme
-    ));
-
-    // Call the appropriate method based on whether the theme is downloaded
+    // Start loading for the selected theme.
+    const startLoading = (name: string) => (
+      setThemes(prevThemes => prevThemes.map(theme => 
+        theme.name === name ? { ...theme, isLoading: true } : theme
+      ))
+    );
+  
+    // Stop loading for the selected theme.
+    const stopLoading = (name: string) => (
+      setThemes(prevThemes => prevThemes.map(theme => 
+        theme.name === name ? { ...theme, isLoading: false } : theme
+      ))
+    );
+  
+    // Update the theme as downloaded.
+    const markAsDownloaded = (name: string) => (
+      setThemes(prevThemes => prevThemes.map(theme => 
+        theme.name === name ? { ...theme, isDownloaded: true } : theme
+      ))
+    );
+  
+    startLoading(themeName);
+  
+    // Early return if theme is not found.
     const theme = themes.find(t => t.name === themeName);
-    if (theme && theme.isDownloaded) {
-      await setTheme(themeName, themeURL);
-    } else {
-      await downloadTheme(themeName, themeURL);
-      // After downloading, update the theme to be marked as downloaded
-      setThemes(prevThemes => prevThemes.map(t => 
-        t.name === themeName ? { ...t, isDownloaded: true } : t
-      ));
+    if (!theme) {
+      stopLoading(themeName);
+      return;
     }
-
-    // Once the action is complete, set the theme's loading property to false
-    setThemes(prevThemes => prevThemes.map(theme => 
-      theme.name === themeName ? { ...theme, isLoading: false } : theme
-    ));
-  };
+  
+    // If theme is downloaded and is the currently enabled theme, disable it.
+    if (theme.isDownloaded && themeName === enabledThemeName) {
+      await disableTheme();
+      setEnabledThemeName('');
+      stopLoading(themeName);
+      return;
+    }
+  
+    // If theme is downloaded but not enabled, enable it.
+    if (theme.isDownloaded && themeName !== enabledThemeName) {
+      await setTheme(themeName, themeURL);
+      setEnabledThemeName(themeName);
+      stopLoading(themeName);
+      return;
+    }
+  
+    // If theme is not downloaded, download and enable it.
+    if (!theme.isDownloaded) {
+      await downloadTheme(themeName, themeURL);
+      markAsDownloaded(themeName);
+      setEnabledThemeName(themeName);
+    }
+  
+    stopLoading(themeName);
+  };  
 
   return (
     <div className="my-2">
@@ -105,7 +148,7 @@ const ThemeSelector = () => {
         {themes.map((theme) => (
           <button
             key={theme.name}
-            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden bg-zinc-700 ${theme.isLoading ? 'cursor-not-allowed' : ''}`}
+            className={`relative w-full h-16 flex justify-center items-center rounded-lg overflow-hidden bg-zinc-700 transition ring dark:ring-white ring-zinc-300 ${enabledThemeName == theme.name ? 'dark:ring-2 ring-4' : 'ring-0'} ${theme.isLoading ? 'cursor-not-allowed' : ''}`}
             onClick={() => handleThemeAction(theme.name, theme.url)}
             disabled={theme.isLoading}
           >
