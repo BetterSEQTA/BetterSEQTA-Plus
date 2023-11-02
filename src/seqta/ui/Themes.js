@@ -101,14 +101,14 @@ export const setTheme = async (themeName, themeUrl) => {
     await downloadTheme(themeName, themeUrl);
   }
 
-  localStorage.setItem("selectedTheme", themeName);
+  localforage.setItem("selectedTheme", themeName);
   await applyTheme(themeName).catch((error) => {
     console.error(`Failed to apply theme: ${error}`);
   });
 };
 
 export const enableCurrentTheme = async () => {
-  const currentTheme = localStorage.getItem("selectedTheme");
+  const currentTheme = localforage.getItem("selectedTheme");
   
   if (currentTheme) {
     console.log(`Enabling current theme: ${currentTheme}`);
@@ -116,7 +116,7 @@ export const enableCurrentTheme = async () => {
       console.error(`Failed to apply current theme: ${error}`);
     });
   } else {
-    console.log("No current theme set in localStorage.");
+    console.log("No current theme set in localforage.");
   }
 };
 
@@ -136,7 +136,7 @@ export const disableTheme = async () => {
   }
 
   // Remove any applied image URLs from the root element
-  const currentTheme = localStorage.getItem("selectedTheme");
+  const currentTheme = localforage.getItem("selectedTheme");
   if (currentTheme) {
     const themeData = await localforage.getItem(`css_${currentTheme}`);
     if (themeData && themeData.images) {
@@ -147,7 +147,7 @@ export const disableTheme = async () => {
     console.log("Current theme's images removed.");
   }
 
-  // Clear the selected theme from localStorage
-  localStorage.removeItem("selectedTheme");
+  // Clear the selected theme from localforage
+  localforage.removeItem("selectedTheme");
   console.log("Current theme disabled.");
 };
