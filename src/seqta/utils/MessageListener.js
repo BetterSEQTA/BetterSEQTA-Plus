@@ -1,14 +1,14 @@
 /* global chrome */
 
 import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from "../../SEQTA.js";
-import { downloadTheme, setTheme } from "../ui/Themes.js";
+import { downloadTheme, listThemes, setTheme } from "../ui/Themes.js";
 
 export class MessageHandler {
   constructor() {
     chrome.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
 
-  routeMessage(request) {
+  routeMessage(request, sender, sendResponse) {
     switch (request.info) {
 
     case "EditSidebar":
@@ -16,11 +16,20 @@ export class MessageHandler {
       break;
     case "SetTheme":
       console.log(request);
-      setTheme(request.body.themeName, request.body.themeURL);
-      break;
+      setTheme(request.body.themeName, request.body.themeURL).then(() => {
+        sendResponse({ status: "success" });
+      });
+      return true;
     case "DownloadTheme":
-      downloadTheme(request.body.themeURL, request.body.themeName);
-      break;
+      downloadTheme(request.body.themeName, request.body.themeURL).then(() => {
+        sendResponse({ status: "success" });
+      });
+      return true;
+    case "ListThemes":
+      listThemes().then((themes) => {
+        sendResponse({ themes });
+      });
+      return true;
     
     default:
       console.log("Unknown request info:", request.info);

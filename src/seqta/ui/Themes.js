@@ -66,16 +66,19 @@ const applyTheme = async (themeName) => {
   }
 };
 
+export const listThemes = async () => {
+  const themes = await localforage.keys();
+  return themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", ""));
+};
+
 export const downloadTheme = async (themeName, themeUrl) => {
   console.log(`Fetching theme ${themeName} from ${themeUrl}...`);
   const themeData = await fetchThemeJSON(themeUrl);
   await saveToIndexedDB(themeData, themeName);
   console.log(`Theme ${themeName} saved to IndexedDB`);
-  return;
 };
 
 export const setTheme = async (themeName, themeUrl) => {
-  await downloadTheme(themeName, themeUrl);
   if (!(await themeExistsInDB(themeName))) {
     await downloadTheme(themeName, themeUrl);
   }
