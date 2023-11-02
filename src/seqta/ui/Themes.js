@@ -47,33 +47,26 @@ const saveToIndexedDB = async (theme, themeName) => {
 
 // Apply theme from storage via localForage to document
 const applyTheme = async (themeName) => {
-  // Remove previous theme's style if it exists
-  if (currentThemeStyle) {
-    document.head.removeChild(currentThemeStyle);
-    currentThemeStyle = null;
-  }
-
-  // Remove previous theme's class if it exists
-  if (currentThemeClass) {
-    document.body.classList.remove(currentThemeClass);
-    currentThemeClass = "";
-  }
-
   const { css, className, images } = await localforage.getItem(`css_${themeName}`);
   
-  // Apply CSS
-  const style = document.createElement("style");
-  style.innerHTML = css;
-  document.head.appendChild(style);
-  currentThemeStyle = style; // Keep track of the new style element
-
-  // Apply className
-  if (className) {
-    document.body.classList.add(className);
-    currentThemeClass = className; // Keep track of the new class
+  const newStyle = document.createElement("style");
+  newStyle.innerHTML = css;
+  document.head.appendChild(newStyle);
+  
+  if (window.currentThemeStyle) {
+    document.head.removeChild(window.currentThemeStyle);
   }
 
-  // Apply images
+  window.currentThemeStyle = newStyle;
+
+  if (window.currentThemeClass) {
+    document.body.classList.remove(window.currentThemeClass);
+  }
+  if (className) {
+    document.body.classList.add(className);
+    window.currentThemeClass = className;
+  }
+
   if (images) {
     await Promise.all(
       Object.keys(images).map(async (cssVar) => {
@@ -100,6 +93,15 @@ export const downloadTheme = async (themeName, themeUrl) => {
   await saveToIndexedDB(themeData, themeName);
   console.log(`Theme ${themeName} saved to IndexedDB`);
 };
+
+export const deleteTheme = async (themeName) => {
+  console.log(`Deleting theme ${themeName}...`);
+  await localforage.removeItem(`css_${themeName}`);
+  await Promise.all(
+    (await localforage.keys()).filter((key) => key.startsWith(`images_${themeName}`)).map((key) => localforage.removeItem(key))
+  );
+  console.log(`Theme ${themeName} deleted.`);
+}
 
 export const setTheme = async (themeName, themeUrl) => {
   if (!(await themeExistsInDB(themeName))) {
