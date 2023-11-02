@@ -2,7 +2,7 @@ import localforage from "localforage";
 
 // Utility function to fetch and parse JSON
 const fetchJSON = async (url) => {
-  const res = await fetch(url);
+  const res = await fetch(url, {cache: "no-store"});
   return await res.json();
 };
 
@@ -71,11 +71,11 @@ export const downloadTheme = async (themeName, themeUrl) => {
   const themeData = await fetchThemeJSON(themeUrl);
   await saveToIndexedDB(themeData, themeName);
   console.log(`Theme ${themeName} saved to IndexedDB`);
-  setTheme(themeName);
   return;
 };
 
 export const setTheme = async (themeName, themeUrl) => {
+  await downloadTheme(themeName, themeUrl);
   if (!(await themeExistsInDB(themeName))) {
     await downloadTheme(themeName, themeUrl);
   }
