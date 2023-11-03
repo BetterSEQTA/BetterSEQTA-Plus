@@ -92,10 +92,15 @@ export const downloadTheme = async (themeName, themeUrl) => {
   const themeData = await fetchThemeJSON(themeUrl);
   await saveToIndexedDB(themeData, themeName);
   console.log(`Theme ${themeName} saved to IndexedDB`);
+  await setTheme(themeName, themeUrl);
 };
 
 export const deleteTheme = async (themeName) => {
   console.log(`Deleting theme ${themeName}...`);
+  const currentTheme = await localforage.getItem("selectedTheme");
+  if (currentTheme === themeName) {
+    await disableTheme();
+  }
   await localforage.removeItem(`css_${themeName}`);
   await Promise.all(
     (await localforage.keys()).filter((key) => key.startsWith(`images_${themeName}`)).map((key) => localforage.removeItem(key))
