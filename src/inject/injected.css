@@ -368,12 +368,28 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 .document {
   border-radius: 32px !important;
   background: var(--background-primary) !important;
+  margin-bottom: 4px !important;
+}
+
+#main>.documents>.list>thead>tr>th {
+  border-bottom: transparent 2px solid;
+}
+
+.documents table {
+  border-collapse: separate; 
+  border-spacing: 0 4px;
+}
+
+.documents > .list > tbody td {
+  border-bottom: unset !important;
 }
 
 td.size {
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
+  color: var(--text-primary) !important;
 }
+
 td.colourBar {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -773,7 +789,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 15em;
   display: flex;
   flex-direction: row;
-  border-radius: 0px 0px 15px 15px;
 }
 
 .notices-container {
