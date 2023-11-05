@@ -58,7 +58,6 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
       if (!alreadyExists) {
         setDownloadProgress(prev => ({ ...prev, [bg.id]: 0 }));
         const downloadedBg = await downloadPresetBackground(bg, progress => {
-          console.log(`${bg}, ${progress}`);
           setDownloadProgress(prev => ({ ...prev, [bg.id]: progress }));
         });
         setDownloadProgress(prev => {

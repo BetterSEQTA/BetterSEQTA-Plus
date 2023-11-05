@@ -11,7 +11,7 @@
     "sourceType": "module" // add this line to allow 'import' and 'export' statements
   },
   "rules": {
-    "indent": ["warning", 2],
+    "indent": ["error", 2],
     "quotes": ["error", "double"],
     "semi": ["error", "always"]
   }
