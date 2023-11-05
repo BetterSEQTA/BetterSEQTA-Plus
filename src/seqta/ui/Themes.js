@@ -1,6 +1,5 @@
 import localforage from "localforage";
 
-let currentThemeStyle = null;
 let currentThemeClass = "";
 
 // Utility function to fetch and parse JSON
@@ -80,7 +79,6 @@ const applyTheme = async (themeName) => {
 
 export const listThemes = async () => {
   const themes = await localforage.keys();
-  console.log("Themes in IndexedDB:", themes);
   return {
     themes: themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", "")),
     selectedTheme: await localforage.getItem("selectedTheme")
@@ -88,15 +86,12 @@ export const listThemes = async () => {
 };
 
 export const downloadTheme = async (themeName, themeUrl) => {
-  console.log(`Fetching theme ${themeName} from ${themeUrl}...`);
   const themeData = await fetchThemeJSON(themeUrl);
   await saveToIndexedDB(themeData, themeName);
-  console.log(`Theme ${themeName} saved to IndexedDB`);
   await setTheme(themeName, themeUrl);
 };
 
 export const deleteTheme = async (themeName) => {
-  console.log(`Deleting theme ${themeName}...`);
   const currentTheme = await localforage.getItem("selectedTheme");
   if (currentTheme === themeName) {
     await disableTheme();
@@ -105,8 +100,7 @@ export const deleteTheme = async (themeName) => {
   await Promise.all(
     (await localforage.keys()).filter((key) => key.startsWith(`images_${themeName}`)).map((key) => localforage.removeItem(key))
   );
-  console.log(`Theme ${themeName} deleted.`);
-}
+};
 
 export const setTheme = async (themeName, themeUrl) => {
   if (!(await themeExistsInDB(themeName))) {
@@ -120,32 +114,26 @@ export const setTheme = async (themeName, themeUrl) => {
 };
 
 export const enableCurrentTheme = async () => {
-  console.log("Enabling current theme...");
   const currentTheme = await localforage.getItem("selectedTheme");
   
   if (currentTheme) {
-    console.log(`Enabling current theme: ${currentTheme}`);
     await applyTheme(currentTheme).catch((error) => {
       console.error(`Failed to apply current theme: ${error}`);
     });
-  } else {
-    console.log("No current theme set in localforage.");
   }
 };
 
 export const disableTheme = async () => {
   // Remove current theme's style if it exists
-  if (currentThemeStyle) {
-    document.head.removeChild(currentThemeStyle);
-    currentThemeStyle = null;
-    console.log("Current theme's style removed.");
+  if (window.currentThemeStyle) {
+    document.head.removeChild(window.currentThemeStyle);
+    window.currentThemeStyle = null;
   }
 
   // Remove current theme's class if it exists
   if (currentThemeClass) {
     document.body.classList.remove(currentThemeClass);
     currentThemeClass = "";
-    console.log("Current theme's class removed.");
   }
 
   // Remove any applied image URLs from the root element
@@ -157,10 +145,8 @@ export const disableTheme = async () => {
         document.documentElement.style.removeProperty(cssVar);
       });
     }
-    console.log("Current theme's images removed.");
   }
 
   // Clear the selected theme from localforage
   localforage.removeItem("selectedTheme");
-  console.log("Current theme disabled.");
 };
