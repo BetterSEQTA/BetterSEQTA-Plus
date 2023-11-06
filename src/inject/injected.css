@@ -69,6 +69,10 @@ html {
   background: unset;
 }
 
+#main > .dashboard > section {
+  border-radius: 1rem !important;
+}
+
 #main > .dashboard > .dashlet {
   background: var(--background-primary);
   border-radius: 1rem;
@@ -99,10 +103,8 @@ ul.magicDelete > li.deleting {
   fill: var(--background-primary);
 }
 
-#menu,
-.sub,
-.nav {
-  background: var(--better-main) !important;
+#menu, .sub, .nav {
+  background: transparent !important;
   color: var(--text-color) !important;
 }
 
@@ -204,7 +206,6 @@ html {
 
 /* Messages */
 .menuShown .content .anyoneSelect .listWrapper .list:has(.item) {
-  height: 32px !important;
   width: 100% !important;
 }
 
@@ -229,9 +230,11 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 
 /* Direct Message Menu */
-.wrapper .cke_contents {
-  border-radius: 16px !important;
-  padding: 8px !important;
+.wrapper .cke_contents iframe {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  padding: 8px;
 }
 
 .wrapper .cke_contents::-webkit-scrollbar-thumb {
@@ -366,8 +369,8 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 
 .document {
-  border-radius: 32px !important;
   background: var(--background-primary) !important;
+  border-radius: 8px;
   margin-bottom: 4px !important;
 }
 
@@ -423,6 +426,7 @@ td.colourBar {
 #container #content .search {
   width: 100%;
   border-radius: 16px;
+  background: var(--background-primary);
 }
 
 #container #content .uiButton {
@@ -851,6 +855,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcut-container {
+  background: var(--better-main);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -869,7 +874,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 .shortcuts {
-  background: var(--better-main);
   width: 100%;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -943,7 +947,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
 
   border-left: none !important;
-  border-radius: 1rem !important;
 }
 
 .dashboard .message .ais-wrapper {
@@ -1061,6 +1064,8 @@ div > ol:has(.uiFileHandlerWrapper) {
 .day-empty {
   font-size: 30px;
   display: flex;
+  width: 100%;
+  border-radius: 1rem 0;
   align-items: center;
 }
 
@@ -1467,7 +1472,7 @@ ul {
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
   background: var(--background-primary);
-  margin: 8px 0px 0px 0px;
+  margin: 0 !important;
   border-radius: 1rem;
 }
 
@@ -1633,7 +1638,6 @@ blurred {
 .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
   background: var(--background-primary);
   border-radius: 1rem;
-  padding: 8px;
   overflow-x: hidden;
 }
 
@@ -1676,6 +1680,11 @@ blurred {
 
 .cke_toolbox {
   background: unset !important;
+  gap: 4px;
+}
+
+.cke_toolbox > .cke_toolbar > .cke_toolgroup {
+  margin: 0;
 }
 
 #cke_1_top a:hover {
