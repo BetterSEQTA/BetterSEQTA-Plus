@@ -148,7 +148,7 @@ ul.magicDelete > li.deleting {
 
 #menu {
   width: 270px;
-  background: var(--better-main);
+  background: var(--better-main) !important;
   color: var(--text-color);
   border-right: none;
   font-family: Rubik, sans-serif !important;
