@@ -1,10 +1,10 @@
-import localforage from "localforage";
+import localforage from 'localforage';
 
-let currentThemeClass = "";
+let currentThemeClass = '';
 
 // Utility function to fetch and parse JSON
 const fetchJSON = async (url) => {
-  const res = await fetch(url, {cache: "no-store"});
+  const res = await fetch(url, {cache: 'no-store'});
   return await res.json();
 };
 
@@ -48,7 +48,7 @@ const saveToIndexedDB = async (theme, themeName) => {
 const applyTheme = async (themeName) => {
   const { css, className, images } = await localforage.getItem(`css_${themeName}`);
   
-  const newStyle = document.createElement("style");
+  const newStyle = document.createElement('style');
   newStyle.innerHTML = css;
   document.head.appendChild(newStyle);
   
@@ -80,8 +80,8 @@ const applyTheme = async (themeName) => {
 export const listThemes = async () => {
   const themes = await localforage.keys();
   return {
-    themes: themes.filter((key) => key.startsWith("css_")).map((key) => key.replace("css_", "")),
-    selectedTheme: await localforage.getItem("selectedTheme")
+    themes: themes.filter((key) => key.startsWith('css_')).map((key) => key.replace('css_', '')),
+    selectedTheme: await localforage.getItem('selectedTheme')
   };
 };
 
@@ -92,7 +92,7 @@ export const downloadTheme = async (themeName, themeUrl) => {
 };
 
 export const deleteTheme = async (themeName) => {
-  const currentTheme = await localforage.getItem("selectedTheme");
+  const currentTheme = await localforage.getItem('selectedTheme');
   if (currentTheme === themeName) {
     await disableTheme();
   }
@@ -107,14 +107,14 @@ export const setTheme = async (themeName, themeUrl) => {
     await downloadTheme(themeName, themeUrl);
   }
 
-  await localforage.setItem("selectedTheme", themeName);
+  await localforage.setItem('selectedTheme', themeName);
   await applyTheme(themeName).catch((error) => {
     console.error(`Failed to apply theme: ${error}`);
   });
 };
 
 export const enableCurrentTheme = async () => {
-  const currentTheme = await localforage.getItem("selectedTheme");
+  const currentTheme = await localforage.getItem('selectedTheme');
   
   if (currentTheme) {
     await applyTheme(currentTheme).catch((error) => {
@@ -133,11 +133,11 @@ export const disableTheme = async () => {
   // Remove current theme's class if it exists
   if (currentThemeClass) {
     document.body.classList.remove(currentThemeClass);
-    currentThemeClass = "";
+    currentThemeClass = '';
   }
 
   // Remove any applied image URLs from the root element
-  const currentTheme = await localforage.getItem("selectedTheme");
+  const currentTheme = await localforage.getItem('selectedTheme');
   if (currentTheme) {
     const themeData = await localforage.getItem(`css_${currentTheme}`);
     if (themeData && themeData.images) {
@@ -148,5 +148,5 @@ export const disableTheme = async () => {
   }
 
   // Clear the selected theme from localforage
-  localforage.removeItem("selectedTheme");
+  localforage.removeItem('selectedTheme');
 };

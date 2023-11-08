@@ -1,8 +1,8 @@
-import Color from "color";
+import Color from 'color';
 
 
 export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
-  if (inputColor.includes("gradient")) {
+  if (inputColor.includes('gradient')) {
     const baseColor = findMatchingColor(inputColor);
 
     return lightenAndPaleColor(baseColor, lightenFactor, paleFactor);
@@ -44,11 +44,11 @@ function findMatchingColor(cssGradient) {
     const colorStops = cssGradient.match(regex);
 
     if (!colorStops) {
-      throw new Error("No valid color stops found in the provided CSS gradient.");
+      throw new Error('No valid color stops found in the provided CSS gradient.');
     }
 
     // Normalize and trim the color stops
-    const normalizedColorStops = colorStops.map(color => color.toLowerCase().replace(/\s+/g, ""));
+    const normalizedColorStops = colorStops.map(color => color.toLowerCase().replace(/\s+/g, ''));
 
     // Convert the color stops to Color objects
     const colorObjects = normalizedColorStops.map(color => Color(color));

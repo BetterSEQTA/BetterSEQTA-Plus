@@ -6,7 +6,7 @@
  */
 export function updateBgDurations(speed, minDuration = 0.5, maxDuration = 10) {
   // Class names to look for
-  const bgClasses = ["bg", "bg2", "bg3"];
+  const bgClasses = ['bg', 'bg2', 'bg3'];
   let reversedValue;
 
   if (speed.bksliderinput === undefined) {

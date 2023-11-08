@@ -1,11 +1,11 @@
-import path from "path";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import CopyWebpackPlugin from "copy-webpack-plugin";
-import ESLintPlugin from "eslint-webpack-plugin";
+import path from 'path';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import ESLintPlugin from 'eslint-webpack-plugin';
 
 
 export default {
-  target: "web",
+  target: 'web',
   node: {
     __dirname: true
   },
@@ -14,22 +14,22 @@ export default {
     maxEntrypointSize: 512000,
     maxAssetSize: 512000,
   },
-  devtool: "cheap-module-source-map",
+  devtool: 'cheap-module-source-map',
   entry: {
-    SEQTA: "./src/SEQTA.js",
-    background: "./src/background.js",
-    "inject/documentload": "./src/inject/documentload.css", // Entry for CSS
-    "inject/iframe": "./src/inject/iframe.css", // Entry for CSS
-    "inject/injected": "./src/inject/injected.css", // Entry for CSS
+    SEQTA: './src/SEQTA.js',
+    background: './src/background.js',
+    'inject/documentload': './src/inject/documentload.css', // Entry for CSS
+    'inject/iframe': './src/inject/iframe.css', // Entry for CSS
+    'inject/injected': './src/inject/injected.css', // Entry for CSS
   },
   output: {
     filename: (pathData) => {
-      const name = pathData.chunk.name.replace("inject-", "");
-      return name.includes("inject") ? `inject/${name}.js` : `${name}.js`;
+      const name = pathData.chunk.name.replace('inject-', '');
+      return name.includes('inject') ? `inject/${name}.js` : `${name}.js`;
     },
     // eslint-disable-next-line no-undef
-    path: path.resolve("build"),
-    publicPath: "",
+    path: path.resolve('build'),
+    publicPath: '',
   },
   module: {
     rules: [
@@ -38,7 +38,7 @@ export default {
         use: [
           MiniCssExtractPlugin.loader,
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               importLoaders: 1
             }
@@ -47,9 +47,9 @@ export default {
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: "asset/resource",
+        type: 'asset/resource',
         generator: {
-          filename: "src/[path][name][ext]",
+          filename: 'src/[path][name][ext]',
         },
       },
     ],
@@ -57,15 +57,15 @@ export default {
   plugins: [
     new ESLintPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].css" 
+      filename: '[name].css' 
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: "public", to: "." },
-        { from: "src/inject/preview", to: "inject/preview" },
-        { from: "node_modules/webextension-polyfill/dist/browser-polyfill.js", to: "."},
-        { from: "interface/dist/client", to: "client" },
-        { from: "interface/dist/index.html", to: "interface/index.html" }
+        { from: 'public', to: '.' },
+        { from: 'src/inject/preview', to: 'inject/preview' },
+        { from: 'node_modules/webextension-polyfill/dist/browser-polyfill.js', to: '.'},
+        { from: 'interface/dist/client', to: 'client' },
+        { from: 'interface/dist/index.html', to: 'interface/index.html' }
       ],
     }),
   ],

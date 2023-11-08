@@ -2,11 +2,11 @@
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("MyDatabase", 1);
+    const request = indexedDB.open('MyDatabase', 1);
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      db.createObjectStore("backgrounds", { keyPath: "id" });
+      db.createObjectStore('backgrounds', { keyPath: 'id' });
     };
 
     request.onsuccess = () => {
@@ -14,7 +14,7 @@ export const openDB = () => {
     };
 
     request.onerror = (event) => {
-      reject("Error opening database: " + event.target.errorCode);
+      reject('Error opening database: ' + event.target.errorCode);
     };
   });
 };
@@ -22,9 +22,9 @@ export const openDB = () => {
 export const writeData = async (type, data) => {
   const db = await openDB();
 
-  const tx = db.transaction("backgrounds", "readwrite");
-  const store = tx.objectStore("backgrounds");
-  const request = await store.put({ id: "customBackground", type, data });
+  const tx = db.transaction('backgrounds', 'readwrite');
+  const store = tx.objectStore('backgrounds');
+  const request = await store.put({ id: 'customBackground', type, data });
 
   return request.result;
 };
@@ -33,11 +33,11 @@ export const readData = () => {
   return new Promise((resolve, reject) => {
     openDB()
       .then(db => {
-        const tx = db.transaction("backgrounds", "readonly");
-        const store = tx.objectStore("backgrounds");
+        const tx = db.transaction('backgrounds', 'readonly');
+        const store = tx.objectStore('backgrounds');
         
         // Retrieve the custom background
-        const getRequest = store.get("customBackground");
+        const getRequest = store.get('customBackground');
         
         // Attach success and error event handlers
         getRequest.onsuccess = function(event) {
@@ -45,12 +45,12 @@ export const readData = () => {
         };
         
         getRequest.onerror = function(event) {
-          console.error("An error occurred:", event);
+          console.error('An error occurred:', event);
           reject(event);
         };
       })
       .catch(error => {
-        console.error("An error occurred:", error);
+        console.error('An error occurred:', error);
         reject(error);
       });
   });
@@ -59,7 +59,7 @@ export const readData = () => {
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
-      if (tab.title.includes("SEQTA Learn")) {
+      if (tab.title.includes('SEQTA Learn')) {
         chrome.tabs.reload(tab.id);
       }
     }
@@ -68,12 +68,12 @@ function ReloadSEQTAPages() {
 
 // Helper function to handle setting permissions
 const handleAddPermissions = () => {
-  if (typeof chrome.declarativeContent !== "undefined") {
+  if (typeof chrome.declarativeContent !== 'undefined') {
     chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
   }
   
   chrome.permissions.request(
-    { permissions: ["declarativeContent"], origins: ["*://*/*"] },
+    { permissions: ['declarativeContent'], origins: ['*://*/*'] },
     (granted) => {
       if (granted) {
         const rules = [
@@ -84,7 +84,7 @@ const handleAddPermissions = () => {
           chrome.declarativeContent.onPageChanged.addRules([rule]);
         });
         
-        alert("Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn't work, please contact the developer. It will be an easy fix");
+        alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
       }
     }
   );
@@ -93,15 +93,15 @@ const handleAddPermissions = () => {
 // Main message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
-  case "reloadTabs":
+  case 'reloadTabs':
     ReloadSEQTAPages();
     break;
     
-  case "IndexedDB":
+  case 'IndexedDB':
     HandleIntexedDB(request, sendResponse);
     return true;
   
-  case "currentTab":
+  case 'currentTab':
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, request, function (response) {
         sendResponse(response);
@@ -109,36 +109,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   
-  case "githubTab":
-    chrome.tabs.create({ url: "github.com/SethBurkart123/EvenBetterSEQTA" });
+  case 'githubTab':
+    chrome.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
     break;
     
-  case "setDefaultStorage":
+  case 'setDefaultStorage':
     SetStorageValue(DefaultValues);
     break;
     
-  case "addPermissions":
+  case 'addPermissions':
     handleAddPermissions();
     break;
 
-  case "sendNews":
+  case 'sendNews':
     GetNews(sendResponse);
     return true;
     // eslint-disable-next-line no-unreachable
     break;
     
   default:
-    console.log("Unknown request type");
+    console.log('Unknown request type');
   }
 });
 
 function HandleIntexedDB(request, sendResponse) {
   switch (request.action) {
-  case "write":
+  case 'write':
     writeData(request.data.type, request.data.data);
     break;
 
-  case "read":
+  case 'read':
     readData().then((data) => {
       sendResponse(data);
     });
@@ -152,9 +152,9 @@ function GetNews(sendResponse) {
 
   const from =
     date.getFullYear() +
-    "-" +
+    '-' +
     (date.getMonth() + 1) +
-    "-" +
+    '-' +
     (date.getDate() - 1);
 
   let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
@@ -162,8 +162,8 @@ function GetNews(sendResponse) {
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
-      if (response.code == "rateLimited") {
-        url += "%00";
+      if (response.code == 'rateLimited') {
+        url += '%00';
         GetNews();
       } else {
         sendResponse({ news: response });
@@ -181,55 +181,55 @@ const DefaultValues = {
   menuitems: {},
   menuorder: [],
   subjectfilters: {},
-  selectedColor: "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
+  selectedColor: 'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
   DarkMode: true,
   shortcuts: [
     {
-      name: "YouTube",
+      name: 'YouTube',
       enabled: false,
     },
     {
-      name: "Outlook",
+      name: 'Outlook',
       enabled: true,
     },
     {
-      name: "Office",
+      name: 'Office',
       enabled: true,
     },
     {
-      name: "Spotify",
+      name: 'Spotify',
       enabled: false,
     },
     {
-      name: "Google",
+      name: 'Google',
       enabled: true,
     },
     {
-      name: "DuckDuckGo",
+      name: 'DuckDuckGo',
       enabled: false,
     },
     {
-      name: "Cool Math Games",
+      name: 'Cool Math Games',
       enabled: false,
     },
     {
-      name: "SACE",
+      name: 'SACE',
       enabled: false,
     },
     {
-      name: "Google Scholar",
+      name: 'Google Scholar',
       enabled: false,
     },
     {
-      name: "Gmail",
+      name: 'Gmail',
       enabled: false,
     },
     {
-      name: "Netflix",
+      name: 'Netflix',
       enabled: false,
     },
     {
-      name: "Education Perfect",
+      name: 'Education Perfect',
       enabled: false,
     },
   ],
@@ -250,8 +250,8 @@ function UpdateCurrentValues() {
 
     function CheckInnerElement(element) {
       for (let i in element) {
-        if (typeof element[i] === "object") {
-          if (typeof DefaultValues[i].length == "undefined") {
+        if (typeof element[i] === 'object') {
+          if (typeof DefaultValues[i].length == 'undefined') {
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
           } else {
             // If the object is an array, turn it back after
@@ -268,8 +268,8 @@ function UpdateCurrentValues() {
     }
     CheckInnerElement(DefaultValues);
 
-    if (items["customshortcuts"]) {
-      NewValue["customshortcuts"] = items["customshortcuts"];
+    if (items['customshortcuts']) {
+      NewValue['customshortcuts'] = items['customshortcuts'];
     }
 
     SetStorageValue(NewValue);
@@ -281,7 +281,7 @@ function migrateOldStorage() {
     let shouldUpdate = false; // Flag to check if there is anything to update
     
     // Check for the old "Name" field and convert it to "name"
-    if (items.shortcuts && items.shortcuts.length > 0 && "Name" in items.shortcuts[0]) {
+    if (items.shortcuts && items.shortcuts.length > 0 && 'Name' in items.shortcuts[0]) {
       shouldUpdate = true;
       items.shortcuts = items.shortcuts.map((shortcut) => {
         return {
@@ -294,9 +294,9 @@ function migrateOldStorage() {
     // Check for "educationperfect" and convert it to "Education Perfect"
     if (items.shortcuts && items.shortcuts.length > 0) {
       for (let shortcut of items.shortcuts) {
-        if (shortcut.name === "educationperfect" || shortcut.name === "Education Perfect") {
+        if (shortcut.name === 'educationperfect' || shortcut.name === 'Education Perfect') {
           shouldUpdate = true;
-          shortcut.name = "Education Perfect";
+          shortcut.name = 'Education Perfect';
         }
       }
     }
@@ -304,16 +304,16 @@ function migrateOldStorage() {
     // If there"s something to update, set the new values in storage
     if (shouldUpdate) {
       chrome.storage.local.set({ shortcuts: items.shortcuts }, function() {
-        console.log("Migration completed.");
+        console.log('Migration completed.');
       });
     }
   });
 }
 
 chrome.runtime.onInstalled.addListener(function (event) {
-  chrome.storage.local.remove(["justupdated"]);
+  chrome.storage.local.remove(['justupdated']);
   UpdateCurrentValues();
-  if ( event.reason == "install", event.reason == "update" ) {
+  if ( event.reason == 'install', event.reason == 'update' ) {
     chrome.storage.local.set({ justupdated: true });
     migrateOldStorage();
   }

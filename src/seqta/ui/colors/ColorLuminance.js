@@ -1,4 +1,4 @@
-import Color from "color";
+import Color from 'color';
 
 function adjustLuminance(color, lum) {
   let adjustedColor = Color(color.toLowerCase());
@@ -17,7 +17,7 @@ function adjustLuminance(color, lum) {
 export default function ColorLuminance(color, lum = 0) {
   const colorRegex = /rgba?\(([^)]+)\)/gi;  // Case-insensitive match for rgb() or rgba()
   
-  if (color.toLowerCase().includes("gradient")) {
+  if (color.toLowerCase().includes('gradient')) {
     let gradient = color;
     
     let uniqueColorSet = new Set();
@@ -31,7 +31,7 @@ export default function ColorLuminance(color, lum = 0) {
     // Adjust luminance for each unique color stop
     for (let colorStop of uniqueColorSet) {
       const adjustedColor = adjustLuminance(colorStop, lum);
-      gradient = gradient.replace(new RegExp(colorStop, "gi"), adjustedColor);
+      gradient = gradient.replace(new RegExp(colorStop, 'gi'), adjustedColor);
     }
     
     return gradient;

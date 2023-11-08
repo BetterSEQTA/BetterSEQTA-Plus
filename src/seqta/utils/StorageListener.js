@@ -8,9 +8,9 @@ import {
   addShortcuts,
   disableNotificationCollector,
   enableNotificationCollector,
-} from "../../SEQTA.js";
-import { updateBgDurations } from "../ui/Animation.js";
-import { getDarkMode, updateAllColors } from "../ui/colors/Manager.js";
+} from '../../SEQTA.js';
+import { updateBgDurations } from '../ui/Animation.js';
+import { getDarkMode, updateAllColors } from '../ui/colors/Manager.js';
 
 export default class StorageListener {
   constructor() {
@@ -22,23 +22,23 @@ export default class StorageListener {
     Object.keys(changes).forEach((changeKey) => {
       switch (changeKey) {
 
-      case "selectedColor":
+      case 'selectedColor':
         this.handleSelectedColorChange(changes.selectedColor.newValue);
         break;
 
-      case "shortcuts":
+      case 'shortcuts':
         this.handleShortcutsChange(
           changes.shortcuts.oldValue,
           changes.shortcuts.newValue
         );
         break;
 
-      case "DarkMode":
+      case 'DarkMode':
         this.darkMode = changes.DarkMode.newValue;
         console.log(this.darkMode);
         break;
 
-      case "customshortcuts":
+      case 'customshortcuts':
         if (changes.customshortcuts.newValue) {
           this.handleCustomShortcutsChange(
             changes.customshortcuts.oldValue,
@@ -47,20 +47,20 @@ export default class StorageListener {
         }
         break;
 
-      case "notificationcollector":
+      case 'notificationcollector':
         this.handleNotificationCollectorChange(changes.notificationcollector);
         break;
 
-      case "bksliderinput":
+      case 'bksliderinput':
         updateBgDurations(changes.bksliderinput.newValue);
         break;
 
-      case "animatedbk":
+      case 'animatedbk':
         if (changes.animatedbk.newValue) {
           CreateBackground();
         } else {
           RemoveBackground();
-          document.getElementById("container").style.background = "var(--background-secondary)";
+          document.getElementById('container').style.background = 'var(--background-secondary)';
         }
         break;
 
