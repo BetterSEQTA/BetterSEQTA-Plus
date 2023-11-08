@@ -1,7 +1,7 @@
 /* global chrome */
 
-import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from "../../SEQTA.js";
-import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from "../ui/Themes.js";
+import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from '../../SEQTA.js';
+import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../ui/Themes.js';
 
 export class MessageHandler {
   constructor() {
@@ -11,40 +11,40 @@ export class MessageHandler {
   routeMessage(request, sender, sendResponse) {
     switch (request.info) {
 
-    case "EditSidebar":
+    case 'EditSidebar':
       this.editSidebar();
       break;
 
     /* Theme related */
-    case "SetTheme":
+    case 'SetTheme':
       console.log(request);
       setTheme(request.body.themeName, request.body.themeURL).then(() => {
-        sendResponse({ status: "success" });
+        sendResponse({ status: 'success' });
       });
       return true;
-    case "DownloadTheme":
+    case 'DownloadTheme':
       downloadTheme(request.body.themeName, request.body.themeURL).then(() => {
-        sendResponse({ status: "success" });
+        sendResponse({ status: 'success' });
       });
       return true;
-    case "ListThemes":
+    case 'ListThemes':
       listThemes().then((response) => {
         sendResponse(response);
       });
       return true;
-    case "DisableTheme":
+    case 'DisableTheme':
       disableTheme().then(() => {
-        sendResponse({ status: "success" });
+        sendResponse({ status: 'success' });
       });
       return true;
-    case "DeleteTheme":
+    case 'DeleteTheme':
       deleteTheme(request.body.themeName).then(() => {
-        sendResponse({ status: "success" });
+        sendResponse({ status: 'success' });
       });
       return true;
     
     default:
-      console.log("Unknown request info:", request.info);
+      console.log('Unknown request info:', request.info);
     
     }
   }
