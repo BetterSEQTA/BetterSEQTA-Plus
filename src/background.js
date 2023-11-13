@@ -96,10 +96,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   case 'reloadTabs':
     ReloadSEQTAPages();
     break;
-    
-  case 'IndexedDB':
-    HandleIntexedDB(request, sendResponse);
-    return true;
   
   case 'currentTab':
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -124,27 +120,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   case 'sendNews':
     GetNews(sendResponse);
     return true;
-    // eslint-disable-next-line no-unreachable
-    break;
+  
+  case 'downloadBackground':
+    downloadBackgroundFromUrl(request.url, request.filename).then((fileId) => {
+      sendResponse({ fileId });
+    });
+    return true;
     
   default:
     console.log('Unknown request type');
   }
 });
-
-function HandleIntexedDB(request, sendResponse) {
-  switch (request.action) {
-  case 'write':
-    writeData(request.data.type, request.data.data);
-    break;
-
-  case 'read':
-    readData().then((data) => {
-      sendResponse(data);
-    });
-    return true;
-  }
-}
 
 function GetNews(sendResponse) {
   // Gets the current date
@@ -318,3 +304,23 @@ chrome.runtime.onInstalled.addListener(function (event) {
     migrateOldStorage();
   }
 });
+
+const downloadBackgroundFromUrl = async (url, filename) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+    const blob = await response.blob(); // Create a blob from the response
+    const fileType = blob.type.split('/')[0]; // Assuming that the file type is always the first part of the mime type
+    const fileId = `${Date.now()}-${filename}`; // Unique ID for the file
+
+    await writeData(fileId, fileType, blob); // Write data to your storage system
+
+    // Return the generated file ID
+    return fileId;
+  } catch (error) {
+    console.error('There was an error downloading the background:', error);
+    throw error; // Rethrow the error so that it can be handled by the caller
+  }
+};

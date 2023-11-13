@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import { updateAllColors } from '../ui/colors/Manager.js';
 
 let currentThemeClass = '';
 
@@ -19,11 +20,11 @@ const themeExistsInDB = async (themeName) => {
   return (await localforage.getItem(`css_${themeName}`)) !== null;
 };
 
-// Fetch theme details (CSS, images, className) from a given URL
+// Fetch theme details (CSS, images, className, darkMode, defaultColour) from a given URL
 const fetchThemeJSON = async (url) => {
-  const { css, images, className } = await fetchJSON(url);
+  const { css, images, className, darkMode, defaultColour } = await fetchJSON(url);
   const cssText = await fetchText(css);
-  return { css: cssText, images, className };
+  return { css: cssText, images, className, darkMode, defaultColour };
 };
 
 // Save individual image to IndexedDB
@@ -44,9 +45,9 @@ const saveToIndexedDB = async (theme, themeName) => {
   await Promise.all(Object.entries(theme.images).map(([cssVar, imageUrl]) => saveImageToDB(themeName, cssVar, imageUrl)));
 };
 
-// Apply theme from storage via localForage to document
+// Apply theme from storage via localForage to document, including dark mode and default color
 const applyTheme = async (themeName) => {
-  const { css, className, images } = await localforage.getItem(`css_${themeName}`);
+  const { css, className, images, darkMode, defaultColour } = await localforage.getItem(`css_${themeName}`);
   
   const newStyle = document.createElement('style');
   newStyle.innerHTML = css;
@@ -75,6 +76,9 @@ const applyTheme = async (themeName) => {
       })
     );
   }
+
+  // Update colors based on theme settings
+  updateAllColors(darkMode, defaultColour);
 };
 
 export const listThemes = async () => {
