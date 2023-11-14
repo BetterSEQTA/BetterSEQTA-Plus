@@ -18,9 +18,9 @@ export default {
   entry: {
     SEQTA: './src/SEQTA.js',
     background: './src/background.js',
-    'inject/documentload': './src/inject/documentload.css', // Entry for CSS
-    'inject/iframe': './src/inject/iframe.css', // Entry for CSS
-    'inject/injected': './src/inject/injected.scss', // Entry for CSS
+    'inject/documentload': './src/inject/documentload.scss',
+    'inject/iframe': './src/inject/iframe.scss',
+    'inject/injected': './src/inject/injected.scss',
   },
   output: {
     filename: (pathData) => {
