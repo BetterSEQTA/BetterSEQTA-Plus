@@ -799,42 +799,38 @@ export function closeSettings() {
 }
 
 function addExtensionSettings() {
-  let link = document.createElement('link');
+  const link = document.createElement('link');
   link.href = chrome.runtime.getURL('popup/popup.css');
   link.type = 'text/css';
   link.rel = 'stylesheet';
-  document.getElementsByTagName('html')[0].appendChild(link);
+  document.querySelector('html').appendChild(link);
 
-  let Settings =
-  stringToHTML(
-    String.raw`
-    <div class="outside-container hide" id="ExtensionPopup">
-    </div>
-    `);
-  document.body.append(Settings.firstChild);
+  const extensionPopup = document.createElement('div');
+  extensionPopup.classList.add('outside-container', 'hide');
+  extensionPopup.id = 'ExtensionPopup';
+  document.body.appendChild(extensionPopup);
 
-  let iframe = document.createElement('iframe');
-  iframe.src = chrome.runtime.getURL('interface/index.html');
-  iframe.id = 'ExtensionIframe';
-  iframe.allowTransparency = 'true';
-  iframe.style.width = '384px';
-  iframe.style.height = '600px';
-  iframe.style.border = 'none';
-  iframe.setAttribute('excludeDarkCheck', 'true');
-  
-  document.getElementById('ExtensionPopup').append(iframe);
+  const extensionIframe = document.createElement('iframe');
+  extensionIframe.src = chrome.runtime.getURL('interface/index.html');
+  extensionIframe.id = 'ExtensionIframe';
+  extensionIframe.allowTransparency = true;
+  extensionIframe.style.width = '384px';
+  extensionIframe.style.height = '600px';
+  extensionIframe.style.border = 'none';
+  extensionIframe.setAttribute('excludeDarkCheck', true);
+  extensionPopup.appendChild(extensionIframe);
 
-  var container = document.getElementById('container');
-  var extensionsettings = document.getElementById('ExtensionPopup');
-  var extensionIframe = document.getElementById('ExtensionIframe');
-  
-  container.onclick = function (event) {
+  const container = document.getElementById('container');
+  const closeExtensionPopup = () => {
+    if (!SettingsClicked) {
+      extensionPopup.classList.add('hide');
+      extensionIframe.contentWindow.postMessage('popupClosed', '*');
+    }
+    SettingsClicked = false;
+  };
+  container.onclick = (event) => {
     if (event.target.id !== 'AddedSettings') {
-      if (!SettingsClicked) {
-        extensionsettings.classList.add('hide');
-        extensionIframe.contentWindow.postMessage('popupClosed', '*');
-      }
-      SettingsClicked = false;
+      closeExtensionPopup();
     } else {
       SettingsClicked = false;
     }
