@@ -1,0 +1,23 @@
+/* Assuming the original file looked like this: */
+
+body {
+color: #333;
+background: #f9f9f9;
+}
+
+h1 {
+color: #333;
+margin-top: 20px;
+}
+
+/* The new file with consistent indentation and spacing would look like this: */
+
+body {
+    color: #333;
+    background: #f9f9f9;
+}
+
+h1 {
+    color: #333;
+    margin-top: 20px;
+}
