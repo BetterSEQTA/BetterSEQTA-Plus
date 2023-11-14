@@ -1,15 +1,15 @@
 /* Assuming the original file looked like this: */
 
 iframe {
-border: none;
-height: 100%;
-width: 100%;
+  border: none;
+  height: 100%;
+  width: 100%;
 }
 
 /* The new file with consistent indentation and spacing would look like this: */
 
 iframe {
-    border: none;
-    height: 100%;
-    width: 100%;
+  border: none;
+  height: 100%;
+  width: 100%;
 }
