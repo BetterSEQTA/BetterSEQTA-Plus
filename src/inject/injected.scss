@@ -1042,19 +1042,25 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-family: "IconFamily";
   pointer-events: none;
 }
-.Input__Input___3RSTI > input {
-  outline: none !important;
-  border: none !important;
-  color: var(--text-primary);
-  width: 100%;
-}
 .Input__Input___3RSTI {
   transition: background-color 0.5s, border-color 0.5s;
   background: var(--auto-background);
   position: relative;
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
+
+  > input {
+    outline: none !important;
+    border: none !important;
+    color: var(--text-primary);
+    width: 100%;
+  }
 }
+.uiShortText.search {
+  padding: 0.5rem;
+  position: relative;
+}
+
 .cke_panel > iframe {
   height: 180px;
   background: var(--background-primary);
@@ -1129,6 +1135,9 @@ iframe.userHTML {
 .dailycal > .zoom {
   display: none;
 }
+.navigator {
+  border-top-right-radius: 1rem;
+}
 .programmeNavigator > .navigator, .programmeNavigator > .navigator > li > ul {
   background: var(--background-primary);
   color: var(--text-primary);
@@ -1136,16 +1145,14 @@ iframe.userHTML {
 .programmeNavigator > .navigator > .week > .lessons > .lesson:hover {
   background: var(--auto-background);
 }
-.programmeNavigator > .navigator > .search {
-  background: var(--better-light);
-}
 .programmeNavigator > .navigator > .week > .lessons > .lesson.selected, .programmeNavigator > .navigator > .cover.selected {
-  background: var(--better-light);
-  color: var(--text-color) !important;
+  background: transparent;
+  color: var(--text-primary) !important;
 }
 #main > .course > .content > h1 {
   color: var(--text-primary);
   border-bottom: none;
+  text-shadow: 0 0 10px black;
 }
 #main > .course > .content > .outline > h2, #main > .course > .content > .homework > h2, #main > .course > .content > .resources > h2 {
   color: var(--text-primary);
@@ -1172,6 +1179,8 @@ iframe.userHTML {
 .programmeNavigator {
   width: 400px;
   background: var(--background-primary);
+  border-top-right-radius: 1rem;
+  position: relative;
 }
 #userActions > .details > .code {
   text-transform: initial;
@@ -1332,6 +1341,13 @@ div.entry.class {
 .activelesson {
   box-shadow: inset 0px 10px 0 var(--item-colour, transparent) !important;
 }
+div.bar.flat {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
 .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
   background: var(--background-primary);
   border-radius: 1rem;
@@ -1363,8 +1379,12 @@ div.entry.class {
   border-radius: 1rem !important;
   opacity: 0;
 }
+.document-width-micro .RootModule__root-module___2wT52, .document-width-nano .RootModule__root-module___2wT52 {
+  padding: 1rem;
+  box-sizing: border-box;
+}
 .anyoneSelect.filterBox {
-  background: var(--auto-background);
+  background: transparent;
 }
 .cke_toolbox {
   background: unset !important;
@@ -1395,7 +1415,7 @@ ul.singleSelect, ul.buttonChecklist, ul.buttonMenu, ul.colourButtonOptions, ul.u
   color: var(--text-primary);
 }
 .legacy-root input, .legacy-root textarea, .legacy-root select, .legacy-root option, .legacy-root .input {
-  background: var(--auto-background);
+  background: transparent;
   color: var(--text-primary);
 }
 body {
