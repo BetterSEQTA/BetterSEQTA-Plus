@@ -682,7 +682,7 @@ export async function ObserveMenuItemPosition() {
 }
 
 function main(storedSetting) {
-  const { onoff } = storedSetting;
+  const onoff = storedSetting.onoff;
   DarkMode = storedSetting.DarkMode;
 
   // Handle undefined onoff setting
