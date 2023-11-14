@@ -14,6 +14,10 @@ export function updateAllColors(storedSetting, newColor = null) {
   // Determine the color to use
   const selectedColor = newColor || storedSetting.selectedColor;
 
+  if (storedSetting.transparencyEffects) {
+    document.documentElement.classList.add('transparencyEffects');
+  }
+
   DarkMode = (typeof storedSetting?.DarkMode === 'boolean') ? storedSetting.DarkMode : DarkMode;
 
   if (typeof storedSetting === 'boolean') {
