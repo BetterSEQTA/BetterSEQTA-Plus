@@ -8,6 +8,7 @@ import { BackgroundSwatch } from "./backgroundSelector/BackgroundSwatch";
 import { BackgroundList } from "./backgroundSelector/BackgroundList";
 import { FileUploader } from "./backgroundSelector/FileUploader";
 import { RemoveButton } from "./backgroundSelector/RemoveButton";
+import { useSettingsContext } from "../SettingsContext";
 
 // Custom Types and Interfaces
 export interface Background {
@@ -27,6 +28,7 @@ interface BackgroundSelectorProps {
 }
 
 export default function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
+  const { setSettingsState } = useSettingsContext();
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
@@ -79,6 +81,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
   };
   
   const selectBackground = (fileId: string): void => {
+    setSettingsState(prev => ({ ...prev, animatedBackground: false }));
     disableTheme();
     setSelectedType('background');
     setSelectedBackground(fileId);
