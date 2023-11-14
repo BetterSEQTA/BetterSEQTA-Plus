@@ -1,0 +1,32 @@
+html.transparencyEffects.dark {
+  --background-primary: rgba(35, 35, 35, 0.5);
+  --background-secondary: rgba(26, 26, 26, 0.5);
+}
+
+html.transparencyEffects:not(.dark) {
+  --background-primary: rgba(255, 255, 255, 0.5);
+  --background-secondary: rgba(229, 231, 235, 0.5);
+}
+
+
+/* Blurs */
+#title,
+.LabelList__selected___3Egk7,
+.legacy-root button, .legacy-root a,
+.MessageList__MessageList___3DxoC {
+  backdrop-filter: blur(10px);
+}
+
+#menu {
+  backdrop-filter: blur(20px);
+}
+
+.title > a {
+  backdrop-filter: blur(0px) !important;
+}
+
+.search,
+.document,
+.border {
+  backdrop-filter: blur(8px);
+}
