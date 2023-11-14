@@ -21,6 +21,8 @@ body, html {
 * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
+
+  transition: background-color 200ms ease-in-out;
 }
 @media (min-width: 900px) {
   #title > span {
@@ -43,6 +45,9 @@ body, html {
   color: var(--text-color) !important;
   overflow: hidden;
 }
+.LegacyModuleBody__LegacyModule___20YE2 {
+  background: transparent;
+}
 .addedButton {
   position: absolute !important;
   right: 105px;
@@ -59,13 +64,18 @@ body, html {
 }
 #main > .dashboard {
   background: unset;
-}
-#main > .dashboard > section {
-  border-radius: 1rem !important;
-}
-#main > .dashboard > .dashlet {
-  background: var(--background-primary);
-  border-radius: 1rem;
+
+  // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
+  > section {
+    border-radius: 1rem !important;
+    //opacity: 0;
+  }
+
+  > .dashlet {
+    background: var(--background-primary);
+    border-radius: 1rem;
+    //opacity: 0;
+  }
 }
 .dashlet-notes > ul {
   background: var(--background-primary);
@@ -785,6 +795,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
   box-shadow: unset;
   -webkit-box-shadow: unset;
+  border-radius: 1rem;
 }
 .ais-description {
   color: var(--text-primary) !important;

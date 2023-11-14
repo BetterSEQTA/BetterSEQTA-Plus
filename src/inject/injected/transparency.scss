@@ -10,6 +10,8 @@ html.transparencyEffects:not(.dark) {
 
 
 /* Blurs */
+.message.addMessage,
+.thread,
 #title,
 .LabelList__selected___3Egk7,
 .legacy-root button, .legacy-root a,
@@ -33,4 +35,11 @@ html.transparencyEffects:not(.dark) {
 .document,
 .border {
   backdrop-filter: blur(8px);
+}
+
+#main > .dashboard {
+  section,
+  .dashlet {
+    backdrop-filter: blur(8px);
+  }
 }
