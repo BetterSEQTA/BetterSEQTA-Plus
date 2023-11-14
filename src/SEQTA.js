@@ -1,4 +1,4 @@
-/*global chrome*/
+/* global chrome */
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
 
@@ -24,6 +24,45 @@ let UserInitalCode = '';
 let currentSelectedDate = new Date();
 let LessonInterval;
 export let DarkMode;
+
+var MenuItemMutation = false;
+var NonSEQTAPage = false;
+var IsSEQTAPage = false;
+
+document.addEventListener(
+  'load',
+  function () {
+    CheckForMenuList();
+    if (
+      document.childNodes[1].textContent?.includes(
+        'Copyright (c) SEQTA Software',
+      ) &&
+      document.title.includes('SEQTA Learn') &&
+      !IsSEQTAPage
+    ) {
+      IsSEQTAPage = true;
+      console.log('[BetterSEQTA+] Verified SEQTA Page');
+
+      let link = document.createElement('link');
+      link.href = chrome.runtime.getURL('inject/documentload.css');
+      link.type = 'text/css';
+      link.rel = 'stylesheet';
+      document.getElementsByTagName('html')[0].appendChild(link);
+
+      enableCurrentTheme();
+      chrome.storage.local.get(null, function (items) {
+        main(items);
+      });
+    }
+    if (
+      !document.childNodes[1].textContent?.includes('SEQTA') &&
+      !NonSEQTAPage
+    ) {
+      NonSEQTAPage = true;
+    }
+  },
+  true,
+);
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -643,38 +682,41 @@ export async function ObserveMenuItemPosition() {
 }
 
 function main(storedSetting) {
+  const { onoff } = storedSetting;
   DarkMode = storedSetting.DarkMode;
-  // If the option is 'on', open BetterSEQTA
-  if (typeof storedSetting.onoff == 'undefined') {
+
+  // Handle undefined onoff setting
+  if (typeof onoff === 'undefined') {
     chrome.runtime.sendMessage({ type: 'setDefaultStorage' });
   }
-  if (storedSetting.onoff) {
-    console.log('[BetterSEQTA+] Enabled');
+
+  const initialize = () => {
     InjectStyles();
     InjectCustomIcons();
     updateAllColors(storedSetting);
     ApplyCSSToHiddenMenuItems();
     loading();
     CheckLoadOnPeriods();
+  };
 
-    if (!isChrome || isChrome == 'undefined') {
+  const handleDisabled = () => {
+    waitForElm('.code').then(AppendElementsToDisabledPage);
+  };
+
+  if (onoff) {
+    console.log('[BetterSEQTA+] Enabled');
+    initialize();
+
+    if (!isChrome || isChrome === 'undefined') {
       tryLoad();
     }
 
-    window.addEventListener('load', function () {
-      tryLoad();
-    });
+    window.addEventListener('load', tryLoad);
   } else {
-    if (!isChrome || isChrome == 'undefined') {
-      waitForElm('.code').then(() => {
-        AppendElementsToDisabledPage();
-      });
+    if (!isChrome || isChrome === 'undefined') {
+      handleDisabled();
     }
-    window.addEventListener('load', function () {
-      waitForElm('.code').then(() => {
-        AppendElementsToDisabledPage();
-      });
-    });
+    window.addEventListener('load', handleDisabled);
   }
 }
 
@@ -708,7 +750,7 @@ export function AppendElementsToDisabledPage() {
 
   let settingsStyle = document.createElement('style');
   settingsStyle.innerText = `
-    .addedButton {
+  .addedButton {
     position: absolute !important;
     right: 50px;
     width: 35px;
@@ -748,44 +790,6 @@ async function CheckLoadOnPeriods() {
     }
   }
 }
-
-var MenuItemMutation = false;
-var NonSEQTAPage = false;
-var IsSEQTAPage = false;
-document.addEventListener(
-  'load',
-  function () {
-    CheckForMenuList();
-    if (
-      document.childNodes[1].textContent?.includes(
-        'Copyright (c) SEQTA Software',
-      ) &&
-      document.title.includes('SEQTA Learn') &&
-      !IsSEQTAPage
-    ) {
-      IsSEQTAPage = true;
-      console.log('[BetterSEQTA+] Verified SEQTA Page');
-
-      var link = document.createElement('link');
-      link.href = chrome.runtime.getURL('inject/documentload.css');
-      link.type = 'text/css';
-      link.rel = 'stylesheet';
-      document.getElementsByTagName('html')[0].appendChild(link);
-
-      enableCurrentTheme();
-      chrome.storage.local.get(null, function (items) {
-        main(items);
-      });
-    }
-    if (
-      !document.childNodes[1].textContent?.includes('SEQTA') &&
-      !NonSEQTAPage
-    ) {
-      NonSEQTAPage = true;
-    }
-  },
-  true,
-);
 
 export function closeSettings() {
   var extensionsettings = document.getElementById('ExtensionPopup');
