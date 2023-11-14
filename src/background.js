@@ -161,6 +161,7 @@ const DefaultValues = {
   onoff: true,
   animatedbk: true,
   bksliderinput: 50,
+  transparencyEffects: false,
   lessonalert: true,
   notificationcollector: true,
   defaultmenuorder: [],

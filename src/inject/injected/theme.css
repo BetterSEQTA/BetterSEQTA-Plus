@@ -1,0 +1,11 @@
+html.dark {
+  --background-primary: #232323;
+  --background-secondary: #1a1a1a;
+  --text-primary: white;
+}
+
+html:not(.dark) {
+  --background-primary: #ffffff;
+  --background-secondary: #e5e7eb;
+  --text-primary: black;
+}
