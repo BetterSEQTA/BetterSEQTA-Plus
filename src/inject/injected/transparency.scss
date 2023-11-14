@@ -16,23 +16,31 @@ html.transparencyEffects {
   }
 
   .whatsnewTextContainer h1 {
-    background-color: var(--theme-primary) !important;
+    background-color: transparent !important;
+    position: inherit;
   }
 
   /* Blurs */
   .message.addMessage,
+  .singleSelect,
+  .uiFileHandlerPanel,
+  .Module__wrapper___2sbOo,
+  .notifications__list___rp2L2,
   .thread,
+  .navigator,
   #title,
   .LabelList__selected___3Egk7,
+  .buttonChecklist,
+  .pane,
   .legacy-root button, .legacy-root a,
   .MessageList__MessageList___3DxoC {
     backdrop-filter: blur(10px);
   }
-
+  
   .report {
     backdrop-filter: blur(10px) !important;
   }
-  
+
   .whatsnewContainer,
   .Message__Message___3oJaU {
     backdrop-filter: blur(50px);
