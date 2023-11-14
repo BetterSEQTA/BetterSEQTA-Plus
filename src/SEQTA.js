@@ -14,6 +14,8 @@ import StorageListener from './seqta/utils/StorageListener.js';
 import { MessageHandler } from './seqta/utils/MessageListener.js';
 import { updateBgDurations } from './seqta/ui/Animation.js';
 import { updateAllColors } from './seqta/ui/colors/Manager.js';
+const RIGHT_POSITION_1 = 5;
+const RIGHT_POSITION_2 = 35;
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds.js';
 import { enableCurrentTheme } from './seqta/ui/Themes.js';
 
@@ -1547,11 +1549,11 @@ function makeLessonDiv(lesson, num) {
 
   // Add buttons for assessments and courses if applicable
   if (programmeID !== 0) {
-    lessonString += `
-      <div class="day-button clickable" style="right: 5px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
-      <div class="day-button clickable" style="right: 35px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
-    `;
-  }
+      lessonString += `
+        <div class="day-button clickable" style="right: ${RIGHT_POSITION_1}px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
+        <div class="day-button clickable" style="right: ${RIGHT_POSITION_2}px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
+      `;
+    }
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
