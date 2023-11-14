@@ -22,6 +22,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         betterSEQTAPlus: result.onoff,
         shortcuts: result.shortcuts,
         customshortcuts: result.customshortcuts,
+        transparencyEffects: result.transparencyEffects
       });
       
       if (result.DarkMode) {
@@ -39,6 +40,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "onoff": "betterSEQTAPlus",
     "shortcuts": "shortcuts",
     "customshortcuts": "customshortcuts",
+    "transparencyEffects": "transparencyEffects"
   }), []);
   
   const storageChangeListener = (changes: chrome.storage.StorageChange) => {

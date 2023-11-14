@@ -53,11 +53,11 @@ const Settings: React.FC = () => {
       description: "Customise the sidebar layout.",
       modifyElement: <button onClick={() => chrome.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] bg-blue-500 rounded-md'>Edit</button>
     },
-    /* {
+    {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
-      modifyElement: <Switch state={settingsState.betterSEQTAPlus} onChange={(isOn: boolean) => switchChange('betterSEQTAPlus', isOn)} />
-    }, */
+      modifyElement: <Switch state={settingsState.transparencyEffects} onChange={(isOn: boolean) => switchChange('transparencyEffects', isOn)} />
+    },
     {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",

@@ -7,6 +7,7 @@ export interface SettingsState {
   betterSEQTAPlus: boolean;
   shortcuts: Shortcut[];
   customshortcuts: CustomShortcut[];
+  transparencyEffects: boolean;
 }
 
 interface ToggleItem {
@@ -55,4 +56,5 @@ export interface MainConfig {
   selectedColor: string;
   shortcuts: Shortcut[];
   subjectfilters: Record<string, any>;
+  transparencyEffects: boolean;
 }

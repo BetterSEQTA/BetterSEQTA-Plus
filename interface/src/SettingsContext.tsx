@@ -23,6 +23,7 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
     betterSEQTAPlus: true,
     shortcuts: [],
     customshortcuts: [],
+    transparencyEffects: false,
   });
 
   const [showPicker, setShowPicker] = useState<boolean>(false);

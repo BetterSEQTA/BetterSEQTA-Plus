@@ -31,20 +31,17 @@ export function updateAllColors(storedSetting, newColor = null) {
   let modeProps = {};
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
-      '--background-primary': '#232323',
-      '--background-secondary': '#1a1a1a',
-      '--text-primary': 'white',
       '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-light-full.png')})`
     } : {
-      '--background-primary': '#ffffff',
-      '--background-secondary': '#e5e7eb',
-      '--text-primary': 'black',
       '--better-pale': lightenAndPaleColor(selectedColor),
       '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-dark-full.png')})`
     };
 
     if (DarkMode) {
       document.documentElement.style.removeProperty('--better-pale');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }
 
