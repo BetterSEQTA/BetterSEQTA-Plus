@@ -4,6 +4,7 @@
 @import "./injected/popup.scss";
 @import "./injected/sidebar-animation.scss";
 @import "./injected/theme.scss";
+@import "./injected/transparency.scss";
 
 :root {
   background: var(--better-main) !important;
@@ -27,7 +28,7 @@ body, html {
   }
 }
 .connectedNotificationsWrapper > div > button > svg > g {
-  fill: var(--background-primary) !important;
+  fill: var(--theme-primary) !important;
 }
 #main {
   color: var(--text-primary);
@@ -51,7 +52,7 @@ body, html {
   cursor: pointer;
   background: var(--text-primary) !important;
   border-radius: 10px;
-  color: var(--background-primary) !important;
+  color: var(--theme-primary) !important;
   height: 35px;
   justify-content: center;
   width: 35px !important;
@@ -83,7 +84,7 @@ ul.magicDelete > li.deleting {
 }
 .addedButton svg {
   margin: 6px;
-  fill: var(--background-primary);
+  fill: var(--theme-primary);
 }
 #menu, .sub, .nav {
   background: transparent !important;
@@ -397,6 +398,9 @@ ol > [data-label] {
 }
 [data-type="student"] [style="z-index: 30;"] .header:has(h1) {
   color: black !important;
+}
+.uiFile.rows>.name, .uiResource.rows>.name {
+  padding: 2px;
 }
 div > ol:has(.uiFileHandlerWrapper) {
   border-bottom-left-radius: 16px !important;
@@ -2291,7 +2295,7 @@ body {
   outline: solid 1px black;
 }
 .tooltip svg {
-  fill: var(--background-primary);
+  fill: var(--theme-primary);
 }
 .tooltip {
   display: inline-block;
@@ -2358,7 +2362,7 @@ body {
 .topmenutooltip {
   top: 115% !important;
   background: var(--text-primary) !important;
-  color: var(--background-primary) !important;
+  color: var(--theme-primary) !important;
 }
 .whatsnewContainer {
   position: absolute;
