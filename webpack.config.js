@@ -20,7 +20,7 @@ export default {
     background: './src/background.js',
     'inject/documentload': './src/inject/documentload.css', // Entry for CSS
     'inject/iframe': './src/inject/iframe.css', // Entry for CSS
-    'inject/injected': './src/inject/injected.css', // Entry for CSS
+    'inject/injected': './src/inject/injected.scss', // Entry for CSS
   },
   output: {
     filename: (pathData) => {
@@ -34,15 +34,16 @@ export default {
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.(css|scss)$/,
         use: [
           MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
-              importLoaders: 1
+              importLoaders: 2
             }
-          }
+          },
+          'sass-loader'
         ]
       },
       {
