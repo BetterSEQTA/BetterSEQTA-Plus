@@ -1,1 +1,1 @@
-import './iframe.css';
+import './iframe.scss';
