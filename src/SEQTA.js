@@ -136,7 +136,7 @@ function OpenWhatsNewPopup() {
 
   let text = stringToHTML(
     String.raw`
-  <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
     <li>Themes coming soon!</li>
     
     <h1>3.1.5</h1>
@@ -869,33 +869,27 @@ function dragOver(e) {
 }
 
 function dragDrop() {
-  if (dragSrcEl != this) {
-    const parentA = this.parentNode;
-    const siblingA = this.nextSibling === dragSrcEl ? this : this.nextSibling;
-
-    // Move `this` to before the `dragSrcEl`
-    dragSrcEl.parentNode.insertBefore(this, dragSrcEl);
-
-    // Move `dragSrcEl` to before the sibling of `this`
-    parentA.insertBefore(dragSrcEl, siblingA);
-
-    // Save position of all menu items
-    let children = parentA.childNodes;
-    let listorder = [];
-
-    for (let i = 0; i < children.length; i++) {
-      const elm = children[i];
-      listorder.push(elm.dataset.key);
+    if (result.defaultmenuorder.length != childNodes.length) {
+      for (let i = 0; i < childNodes.length; i++) {
+        const element = childNodes[i];
+        if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
+          let newDefaultMenuOrder = result.defaultmenuorder;
+          newDefaultMenuOrder.push(element.dataset.key);
+          chrome.storage.local.set({ defaultmenuorder: newDefaultMenuOrder });
+        }
+      }
     }
 
-    chrome.storage.local.set({ menuorder: listorder });
-  }
-  return false;
-}
+    MenuOptionsOpen = true;
 
-function dragEnd() {
-  var listItens = document.querySelectorAll('.draggable');
-  [].forEach.call(listItens, function (item) {
+    let cover = document.createElement('div');
+    cover.classList.add('notMenuCover');
+    menu.style.zIndex = '20';
+    menu.style.setProperty('--menuHidden', 'flex');
+    container.append(cover);
+
+    let menuSettings = document.createElement('div');
+  [].forEach.call(listItems, function (item) {
     item.classList.remove('over');
   });
   this.style.opacity = '1';
@@ -922,16 +916,16 @@ export function OpenMenuOptions() {
     var menu = document.getElementById('menu');
 
     if (result.defaultmenuorder.length == '0') {
-      let childnodes = menu.firstChild.childNodes;
-      let newdefaultmenuorder = [];
-      for (let i = 0; i < childnodes.length; i++) {
-        const element = childnodes[i];
-        newdefaultmenuorder.push(element.dataset.key);
-        chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
+      let childNodes = menu.firstChild.childNodes;
+      let newDefaultMenuOrder = [];
+      for (let i = 0; i < childNodes.length; i++) {
+        const element = childNodes[i];
+        newDefaultMenuOrder.push(element.dataset.key);
+        chrome.storage.local.set({ defaultmenuorder: newDefaultMenuOrder });
       }
     }
-    let childnodes = menu.firstChild.childNodes;
-    if (result.defaultmenuorder.length != childnodes.length) {
+    let childNodes = menu.firstChild.childNodes;
+    if (result.defaultmenuorder.length != childNodes.length) {
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
         if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
@@ -950,26 +944,26 @@ export function OpenMenuOptions() {
     menu.style.setProperty('--menuHidden', 'flex');
     container.append(cover);
 
-    let menusettings = document.createElement('div');
-    menusettings.classList.add('editmenuoption-container');
+    let menuSettings = document.createElement('div');
+    menuSettings.classList.add('editmenuoption-container');
 
-    let defaultbutton = document.createElement('div');
-    defaultbutton.classList.add('editmenuoption');
-    defaultbutton.innerText = 'Restore Default';
-    defaultbutton.id = 'restoredefaultoption';
+    let defaultButton = document.createElement('div');
+    defaultButton.classList.add('editmenuoption');
+    defaultButton.innerText = 'Restore Default';
+    defaultButton.id = 'restoredefaultoption';
 
-    let savebutton = document.createElement('div');
-    savebutton.classList.add('editmenuoption');
-    savebutton.innerText = 'Save';
-    savebutton.id = 'restoredefaultoption';
+    let saveButton = document.createElement('div');
+    saveButton.classList.add('editmenuoption');
+    saveButton.innerText = 'Save';
+    saveButton.id = 'restoredefaultoption';
 
-    menusettings.appendChild(defaultbutton);
-    menusettings.appendChild(savebutton);
+    menuSettings.appendChild(defaultButton);
+    menuSettings.appendChild(saveButton);
 
-    menu.appendChild(menusettings);
+    menu.appendChild(menuSettings);
 
-    let ListItems = menu.firstChild.childNodes;
-    for (let i = 0; i < ListItems.length; i++) {
+    let listItems = menu.firstChild.childNodes;
+    for (let i = 0; i < listItems.length; i++) {
       const element = ListItems[i];
 
       element.classList.add('draggable');
@@ -994,10 +988,10 @@ export function OpenMenuOptions() {
     }
 
     if (Object.keys(result.menuitems).length == 0) {
-      menubuttons = menu.firstChild.childNodes;
+      menuButtons = menu.firstChild.childNodes;
       var menuItems = {};
-      for (var i = 0; i < menubuttons.length; i++) {
-        var id = menubuttons[i].dataset.key;
+      for (var i = 0; i < menuButtons.length; i++) {
+        var id = menuButtons[i].dataset.key;
         const element = {};
         element.toggle = true;
         menuItems[id] = element;
@@ -1005,7 +999,7 @@ export function OpenMenuOptions() {
       chrome.storage.local.set({ menuitems: menuItems });
     }
 
-    var menubuttons = document.getElementsByClassName('menuitem');
+    var menuButtons = document.getElementsByClassName('menuitem');
     chrome.storage.local.get(['menuitems'], function (result) {
       var menuItems = result.menuitems;
       let buttons = document.getElementsByClassName('menuitem');
@@ -1066,8 +1060,22 @@ export function OpenMenuOptions() {
       MenuOptionsOpen = false;
       menu.style.setProperty('--menuHidden', 'none');
 
-      for (let i = 0; i < ListItems.length; i++) {
-        const element = ListItems[i];
+    for (let i = 0; i < listItems.length; i++) {
+      const element = listItems[i];
+
+      element.classList.add('draggable');
+      element.setAttribute('draggable', true);
+      if (element.classList.contains('hasChildren')) {
+        element.classList.remove('active');
+        menu.firstChild.classList.remove('noscroll');
+      }
+
+      let menuItemToggle = stringToHTML(
+        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${element.dataset.key}"><label for="${element.dataset.key}" class="onoffswitch-label"></label>`,
+      ).firstChild;
+      element.append(menuItemToggle);
+
+      if (!element.dataset.betterseqta) {
         element.classList.remove('draggable');
         element.setAttribute('draggable', false);
 
@@ -1127,7 +1135,7 @@ function ReplaceMenuSVG(element, svg) {
 async function AddBetterSEQTAElements(toggle) {
   var code = document.getElementsByClassName('code')[0];
   // Replaces students code with the version of BetterSEQTA
-  if (code != null) {
+  if (code !== null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
       UserInitalCode = code.innerText;
       code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`;
@@ -1138,9 +1146,7 @@ async function AddBetterSEQTAElements(toggle) {
           code.innerText = UserInitalCode;
           code.setAttribute('data-hover', 'Click for BetterSEQTA version');
         } else {
-          code.innerText = `BetterSEQTA v${
-            chrome.runtime.getManifest().version
-          }`;
+          code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`;
           code.setAttribute('data-hover', 'Click for user code');
         }
       });
@@ -1361,26 +1367,26 @@ async function AddBetterSEQTAElements(toggle) {
       var AddedSettings = document.getElementById('AddedSettings');
       var extensionsettings = document.getElementById('ExtensionPopup');
       
-      AddedSettings.addEventListener('click', function () {
-        extensionsettings.classList.toggle('hide');
+      AddedSettings.addEventListener('click', function() {
+        extensionSettings.classList.toggle('hide');
         SettingsClicked = true;
       });
     }
   }
 }
 
-let tooltipstring;
+let tooltipString;
 
-function GetLightDarkModeString(darkmodetoggle) {
-  if (darkmodetoggle) {
-    tooltipstring = 'Switch to light theme';
+function getLightDarkModeString(darkModeToggle) {
+  if (darkModeToggle) {
+    tooltipString = 'Switch to light theme';
   } else {
-    tooltipstring = 'Switch to dark theme';
+    tooltipString = 'Switch to dark theme';
   }
-  return tooltipstring;
+  return tooltipString;
 }
 
-function CheckCurrentLesson(lesson, num) {
+function checkCurrentLesson(lesson, num) {
   var startTime = lesson.from;
   var endTime = lesson.until;
   // Gets current time
@@ -1477,7 +1483,7 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-export function GetThresholdOfColor(color) {
+export function getThresholdOfColor(color) {
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
@@ -1511,12 +1517,12 @@ export function GetThresholdOfColor(color) {
   }
 }
 
-function CheckCurrentLessonAll(lessons) {
+function checkCurrentLessonAll(lessons) {
   // Checks each lesson and sets an interval to run every 60 seconds to continue updating
   LessonInterval = setInterval(
     function () {
       for (let i = 0; i < lessons.length; i++) {
-        CheckCurrentLesson(lessons[i], i + 1);
+        checkCurrentLesson(lessons[i], i + 1);
       }
     }.bind(lessons),
     60000,
@@ -1605,8 +1611,26 @@ function callHomeTimetable(date, change) {
           lessonArray.sort(function (a, b) {
             return a.from.localeCompare(b.from);
           });
-          // If items in the response, set each corresponding value into divs
-          // lessonArray = lessonArray.splice(1)
+          function checkCurrentLesson(lesson, num) {
+            var startTime = lesson.from;
+            var endTime = lesson.until;
+            // Gets current time
+            let currentDate = new Date();
+          
+            // Takes start time of current lesson and makes it into a Date function for comparison
+            let startDate = new Date(currentDate.getTime());
+            startDate.setHours(startTime.split(':')[0]);
+            startDate.setMinutes(startTime.split(':')[1]);
+            startDate.setSeconds('00');
+          
+            // Takes end time of current lesson and makes it into a Date function for comparison
+            let endDate = new Date(currentDate.getTime());
+            endDate.setHours(endTime.split(':')[0]);
+            endDate.setMinutes(endTime.split(':')[1]);
+            endDate.setSeconds('00');
+          
+            // Gets the difference between the start time and current time
+            var difference = startDate.getTime() - currentDate.getTime();
           GetLessonColours().then((colours) => {
             let subjects = colours;
             for (let i = 0; i < lessonArray.length; i++) {
@@ -2186,8 +2210,8 @@ function SendHomePage() {
     var main = document.getElementById('main');
     main.innerHTML = '';
 
-    const titlediv = document.getElementById('title').firstChild;
-    titlediv.innerText = 'Home';
+    const titleDiv = document.getElementById('title').firstChild;
+    titleDiv.innerText = 'Home';
     document.querySelector('link[rel*="icon"]').href =
       chrome.runtime.getURL('icons/icon-48.png');
 
@@ -2204,6 +2228,25 @@ function SendHomePage() {
     const date = new Date();
 
     // Formats the current date used send a request for timetable and notices later
+    var todayFormatted =
+      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+
+    var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
+    var Timetable = stringToHTML(TimetableStr);
+    // Appends the timetable container into the home container
+    document.getElementById('home-container').append(timetable.firstChild);
+    
+    var timetableArrowBack = document.getElementById('home-timetable-back');
+    var timetableArrowForward = document.getElementById('home-timetable-forward');
+    
+    function setTimetableSubtitle() {
+    var shortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
+    var shortcut = stringToHTML(shortcutStr);
+    // Appends the shortcut container into the home container
+    document.getElementById('home-container').append(shortcut.firstChild);
+
+    // Creates the container div for the timetable portion of the home page
+    var timetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
     var TodayFormatted =
       date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
 
@@ -2217,7 +2260,9 @@ function SendHomePage() {
     document.getElementById('home-container').append(Shortcut.firstChild);
 
     // Creates the container div for the timetable portion of the home page
-    var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
+    var timetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
+    var timetable = stringToHTML(timetableStr);
+    // Appends the timetable container into the home container
     var Timetable = stringToHTML(TimetableStr);
     // Appends the timetable container into the home container
     document.getElementById('home-container').append(Timetable.firstChild);
@@ -2227,7 +2272,10 @@ function SendHomePage() {
       'home-timetable-forward',
     );
 
-    function SetTimetableSubtitle() {
+    function setTimetableSubtitle() {
+      var homeLessonSubtitle = document.getElementById('home-lesson-subtitle');
+      const date = new Date();
+      if (date.getYear() == currentSelectedDate.getYear() && date.getMonth() == currentSelectedDate.getMonth()) {
       var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
       const date = new Date();
       if (
@@ -2249,7 +2297,32 @@ function SendHomePage() {
             'en-us',
             { weekday: 'short' },
           )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
-        }
+        // Change text to date of the day
+        homeLessonSubtitle.innerText = `${currentSelectedDate.toLocaleString('en-us', { weekday: 'short' })} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+      }
+      }
+      
+      function changeTimetable(value) {
+      currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
+      let formattedDate =
+        currentSelectedDate.getFullYear() +
+        '-' +
+        (currentSelectedDate.getMonth() + 1) +
+        '-' +
+        currentSelectedDate.getDate();
+      callHomeTimetable(formattedDate, true);
+      setTimetableSubtitle();
+      }
+      
+      timetableArrowBack.addEventListener('click', function () {
+      changeTimetable(-1);
+      });
+      timetableArrowForward.addEventListener('click', function () {
+      changeTimetable(1);
+      });
+      
+      // Adds the shortcuts to the shortcut container
+      chrome.storage.local.get(['shortcuts'], function (result) {
       } else {
         // Change text to date of the day
         homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
@@ -2282,10 +2355,25 @@ function SendHomePage() {
     chrome.storage.local.get(['shortcuts'], function (result) {
       const shortcuts = Object.values(result)[0];
       addShortcuts(shortcuts);
-    });
+      'div',
+      'upcoming-filters',
+      'upcoming-filters',
+    );
+    upcomingTitleDiv.append(upcomingFilterDiv);
 
-    // Creates the upcoming container and appends to the home container
-    var upcomingcontainer = document.createElement('div');
+    upcomingContainer.append(upcomingTitleDiv);
+
+    let upcomingItems = document.createElement('div');
+    upcomingItems.id = 'upcoming-items';
+    upcomingItems.classList.add('upcoming-items');
+
+    upcomingContainer.append(upcomingItems);
+
+    document.getElementById('home-container').append(upcomingContainer);
+
+    // Creates the notices container into the home container
+    var noticesStr = '<div class="notices-container border"><h2 class="home-subtitle">Notices</h2><div class="notice-container" id="notice-container"></div></div>';
+    var notices = stringToHTML(noticesStr);
     upcomingcontainer.classList.add('upcoming-container');
     upcomingcontainer.classList.add('border');
 
@@ -2388,9 +2476,23 @@ function SendHomePage() {
                 for (let i = 0; i < content.childNodes.length; i++) {
                   NewNotice.append(content.childNodes[i]);
                 }
-                // Gets the colour for the top section of each notice
-
-                var colour = NoticesPayload.payload[i].colour;
+    function SetTimetableSubtitle() {
+      var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
+      const date = new Date();
+      if (
+        if (date.getDate() == currentSelectedDate.getDate()) {
+          // Change text to Today's Lessons
+          homeLessonSubtitle.innerText = 'Today\'s Lessons';
+        } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
+          // Change text to Yesterday's Lessons
+          homeLessonSubtitle.innerText = 'Yesterday\'s Lessons';
+        } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
+          // Change text to Tomorrow's Lessons
+          homeLessonSubtitle.innerText = 'Tomorrow\'s Lessons';
+        } else {
+          // Change text to date of the day
+          homeLessonSubtitle.innerText = `${currentSelectedDate.toLocaleString('en-us', { weekday: 'short' })} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+        }
                 if (typeof colour == 'string') {
                   let rgb = GetThresholdOfColor(colour);
                   if (rgb < 100 && result.DarkMode) {
@@ -2622,10 +2724,52 @@ async function CheckForMenuList() {
       }
     } catch (error) {
       return;
+        }
+      } else {
+        // Change text to date of the day
+        homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+          'en-us',
+          { weekday: 'short' },
+        )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+      }
     }
-  }
-}
 
+    function changeTimetable(value) {
+      currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
+      let FormattedDate =
+        currentSelectedDate.getFullYear() +
+        '-' +
+        (currentSelectedDate.getMonth() + 1) +
+        '-' +
+        currentSelectedDate.getDate();
+      callHomeTimetable(FormattedDate, true);
+      SetTimetableSubtitle();
+    }
+
+    timetablearrowback.addEventListener('click', function () {
+      changeTimetable(-1);
+    });
+    timetablearrowforward.addEventListener('click', function () {
+      changeTimetable(1);
+    });
+
+    chrome.storage.local.get(['shortcuts'], function (result) {
+      const shortcuts = Object.values(result)[0];
+      addShortcuts(shortcuts);
+    });
+
+    // Creates the upcoming container and appends to the home container
+    var upcomingContainer = document.createElement('div');
+    upcomingContainer.classList.add('upcoming-container');
+    upcomingContainer.classList.add('border');
+
+    let upcomingTitleDiv = CreateElement('div', 'upcoming-title');
+    let upcomingTitle = document.createElement('h2');
+    upcomingTitle.classList.add('home-subtitle');
+    upcomingTitle.innerText = 'Upcoming Assessments';
+    upcomingTitleDiv.append(upcomingTitle);
+
+    let upcomingFilterDiv = CreateElement(
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
   chrome.storage.local.get(null, function (result) {
