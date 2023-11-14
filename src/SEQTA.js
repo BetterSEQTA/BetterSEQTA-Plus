@@ -1548,15 +1548,15 @@ function makeLessonDiv(lesson, num) {
   // Add buttons for assessments and courses if applicable
   if (programmeID !== 0) {
     lessonString += `
-      <div class="day-button clickable" style="right: 5px;" onclick="console.log('clicked'); document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
-      <div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
+      <div class="day-button clickable" style="right: 5px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
+      <div class="day-button clickable" style="right: 35px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
     `;
   }
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
     const assessmentString = assessments.map(element =>
-      `<p onclick="console.log('clicked'); document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
+      `<p onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
     ).join('');
 
     lessonString += `
@@ -1794,6 +1794,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
     subject.innerText = element.title;
     subject.classList.add('upcoming-assessment-title');
     subject.onclick = function () {
+      document.querySelector('#menu ul').classList.add('noscroll'); 
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
     detailsdiv.append(detailstitle);
