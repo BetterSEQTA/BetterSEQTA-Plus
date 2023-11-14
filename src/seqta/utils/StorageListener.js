@@ -64,6 +64,14 @@ export default class StorageListener {
         }
         break;
 
+      case 'transparencyEffects':
+        if (changes.transparencyEffects.newValue) {
+          document.documentElement.classList.add('transparencyEffects');
+        } else {
+          document.documentElement.classList.remove('transparencyEffects');
+        }
+        break;
+
       // Add default case if you need to handle a case where changeKey does not match any case
       default:
         // Handle unknown changeKey if necessary
