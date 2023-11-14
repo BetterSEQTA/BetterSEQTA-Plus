@@ -41,7 +41,7 @@ export default {
               importLoaders: 2
             }
           },
-          'sass-loader'
+            'sass-loader'
         ]
       },
       {
