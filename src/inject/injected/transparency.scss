@@ -9,24 +9,53 @@ html.transparencyEffects:not(.dark) {
 }
 
 
-/* Blurs */
-#title,
-.LabelList__selected___3Egk7,
-.legacy-root button, .legacy-root a,
-.MessageList__MessageList___3DxoC {
-  backdrop-filter: blur(10px);
-}
+html.transparencyEffects {
+  /* Background Fixes */
+  #shortcuts {
+    backdrop-filter: unset;
+  }
 
-#menu {
-  backdrop-filter: blur(20px);
-}
+  .whatsnewTextContainer h1 {
+    background-color: var(--theme-primary) !important;
+  }
 
-.title > a {
-  backdrop-filter: blur(0px) !important;
-}
+  /* Blurs */
+  .message.addMessage,
+  .thread,
+  #title,
+  .LabelList__selected___3Egk7,
+  .legacy-root button, .legacy-root a,
+  .MessageList__MessageList___3DxoC {
+    backdrop-filter: blur(10px);
+  }
 
-.search,
-.document,
-.border {
-  backdrop-filter: blur(8px);
+  .report {
+    backdrop-filter: blur(10px) !important;
+  }
+  
+  .whatsnewContainer,
+  .Message__Message___3oJaU {
+    backdrop-filter: blur(50px);
+  }
+
+  #menu {
+    backdrop-filter: blur(20px);
+  }
+
+  .title > a {
+    backdrop-filter: blur(0px) !important;
+  }
+
+  .search,
+  .document,
+  .border {
+    backdrop-filter: blur(8px);
+  }
+
+  #main > .dashboard {
+    section,
+    .dashlet {
+      backdrop-filter: blur(8px);
+    }
+  }
 }

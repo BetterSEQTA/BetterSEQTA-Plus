@@ -1540,7 +1540,7 @@ function makeLessonDiv(lesson, num) {
     <div class="day" id="${code + num}" style="${colour}">
       <h2>${description || 'Unknown'}</h2>
       <h3>${staff || 'Unknown'}</h3>
-      <h3>${room || 'Unknown'}</h3>s
+      <h3>${room || 'Unknown'}</h3>
       <h4>${from || 'Unknown'} - ${until || 'Unknown'}</h4>
       <h5>${attendanceTitle || 'Unknown'}</h5>
   `;
