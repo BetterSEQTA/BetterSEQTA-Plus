@@ -29,6 +29,10 @@ html.transparencyEffects {
     backdrop-filter: blur(10px);
   }
 
+  .report {
+    backdrop-filter: blur(10px) !important;
+  }
+  
   .whatsnewContainer,
   .Message__Message___3oJaU {
     backdrop-filter: blur(50px);
