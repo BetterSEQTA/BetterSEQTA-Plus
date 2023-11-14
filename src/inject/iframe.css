@@ -1,0 +1,21 @@
+/* The new file `src/inject/iframe.css` after removing the commented-out code. */
+
+body {
+    background-color: #f0f0f0;
+}
+
+#header {
+    height: 50px;
+    background-color: #333;
+    color: #fff;
+}
+
+#content {
+    padding: 20px;
+}
+
+#footer {
+    height: 50px;
+    background-color: #333;
+    color: #fff;
+}
