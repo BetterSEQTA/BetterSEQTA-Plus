@@ -81,8 +81,8 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
   };
   
   const selectBackground = (fileId: string): void => {
-    setSettingsState(prev => ({ ...prev, animatedBackground: false }));
     disableTheme();
+    setSettingsState(prev => ({ ...prev, animatedBackground: false }));
     setSelectedType('background');
     setSelectedBackground(fileId);
     localStorage.setItem('selectedBackground', fileId);
