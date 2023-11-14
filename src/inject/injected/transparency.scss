@@ -16,7 +16,8 @@ html.transparencyEffects {
   }
 
   .whatsnewTextContainer h1 {
-    background-color: var(--theme-primary) !important;
+    background-color: transparent !important;
+    position: inherit;
   }
 
   /* Blurs */
@@ -24,6 +25,7 @@ html.transparencyEffects {
   .singleSelect,
   .uiFileHandlerPanel,
   .Module__wrapper___2sbOo,
+  .notifications__list___rp2L2,
   .thread,
   .navigator,
   #title,
