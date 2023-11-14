@@ -1,4 +1,3 @@
-import path from 'path';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
@@ -20,7 +19,6 @@ export default {
     background: './src/background.js',
     'inject/documentload': './src/inject/documentload.scss',
     'inject/iframe': './src/inject/iframe.scss',
-    'inject/injected': './src/inject/injected.scss',
   },
   output: {
     filename: (pathData) => {
