@@ -388,6 +388,9 @@ ol > [data-label] {
     border-bottom-left-radius: 8px;
   }
 }
+.Message__Message___3oJaU > .uiFrameWrapper .iframeWrapper {
+  background: transparent;
+}
 .Viewer__newMessage___3ToUb {
   border-radius: 0.5rem !important;
   font-size: 0.8rem !important;
@@ -1063,7 +1066,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 iframe.userHTML {
   color: white !important;
-  background: var(--background-primary);
+  background: transparent;
 }
 .userHTML > div:first-of-type {
   color: var(--text-primary);
