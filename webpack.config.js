@@ -18,9 +18,9 @@ export default {
   entry: {
     SEQTA: './src/SEQTA.js',
     background: './src/background.js',
-    'inject/documentload': './src/inject/documentload.css', // Entry for CSS
-    'inject/iframe': './src/inject/iframe.css', // Entry for CSS
-    'inject/injected': './src/inject/injected.css', // Entry for CSS
+    'inject/documentload': './src/inject/documentload.scss',
+    'inject/iframe': './src/inject/iframe.scss',
+    'inject/injected': './src/inject/injected.scss',
   },
   output: {
     filename: (pathData) => {
@@ -34,15 +34,16 @@ export default {
   module: {
     rules: [
       {
-        test: /\.css$/,
+        test: /\.(css|scss)$/,
         use: [
           MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
-              importLoaders: 1
+              importLoaders: 2
             }
-          }
+          },
+          'sass-loader'
         ]
       },
       {
