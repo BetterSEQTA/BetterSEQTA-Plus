@@ -3,12 +3,6 @@ import { downloadPresetBackground, openDB, readAllData, writeData } from "../hoo
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
 import { disableTheme } from "../hooks/ThemeManagment";
-import { DownloadProgressCircle } from "./backgroundSelector/DownloadProgressCircle";
-import { BackgroundSwatch } from "./backgroundSelector/BackgroundSwatch";
-import { BackgroundList } from "./backgroundSelector/BackgroundList";
-import { FileUploader } from "./backgroundSelector/FileUploader";
-import { RemoveButton } from "./backgroundSelector/RemoveButton";
-import { useSettingsContext } from "../SettingsContext";
 
 // Custom Types and Interfaces
 export interface Background {
@@ -28,7 +22,6 @@ interface BackgroundSelectorProps {
 }
 
 export default function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
-  const { setSettingsState } = useSettingsContext();
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
@@ -82,7 +75,6 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
   
   const selectBackground = (fileId: string): void => {
     disableTheme();
-    setSettingsState(prev => ({ ...prev, animatedBackground: false }));
     setSelectedType('background');
     setSelectedBackground(fileId);
     localStorage.setItem('selectedBackground', fileId);
@@ -107,6 +99,8 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
     setSelectedBackground(null);
     localStorage.removeItem('selectedBackground');
   };
+
+  const calcCircumference = (radius: number) => 2 * Math.PI * radius;
   
   useEffect(() => {
     loadBackgrounds();
@@ -114,67 +108,101 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
 
   return (
     <>
-      <RemoveButton selectedBackground={selectedBackground} selectNoBackground={selectNoBackground} />
-
-      <div className="relative">
-        <h2 className="pb-2 text-lg font-bold">Images</h2>
-        <div className="flex flex-wrap gap-4">
-          <FileUploader handleFileChange={handleFileChange} />
-          <BackgroundList
-            backgrounds={backgrounds.filter(bg => bg.type === 'image')}
-            selectBackground={selectBackground}
-            isEditMode={isEditMode}
-            deleteBackground={deleteBackground}
-            selectedBackground={selectedBackground}
-            selectedType={selectedType}
-          />
-          {/* Preset backgrounds handling (images) */}
-          {presetBackgrounds
-            .filter(bg => bg.type === 'image' && bg.isPreset && !downloadedPresetIds.includes(bg.id))
-            .map(bg => (
-              <div key={bg.id} onClick={() => handlePresetClick(bg)} className="relative w-16 h-16">
-                {downloadProgress[bg.id] !== undefined && <DownloadProgressCircle progress={downloadProgress[bg.id]} />}
-                <BackgroundSwatch
-                  background={bg}
-                  selectBackground={selectBackground}
-                  isEditMode={isEditMode}
-                  deleteBackground={deleteBackground}
-                  selectedBackground={selectedBackground}
-                  selectedType={selectedType}
-                />
-              </div>
-          ))}
+    <button disabled={selectedBackground == null ? true : false} className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
+    {selectedBackground == null ? 'No Background' : 'Remove Background'}
+    </button>
+    <div className="relative">
+      <h2 className="pb-2 text-lg font-bold">Images</h2>
+      <div className="flex flex-wrap gap-4">
+        {/* Image uploader swatch */}
+        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
+            {/*  Plus icon */}
+            
+          </div>
+          <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
-
-        <h2 className="py-2 text-lg font-bold">Videos</h2>
-        <div className="flex flex-wrap gap-4">
-          <FileUploader handleFileChange={handleFileChange} />
-          <BackgroundList
-            backgrounds={backgrounds.filter(bg => bg.type === 'video')}
-            selectBackground={selectBackground}
-            isEditMode={isEditMode}
-            deleteBackground={deleteBackground}
-            selectedBackground={selectedBackground}
-            selectedType={selectedType}
-          />
-          {/* Preset backgrounds handling (videos) */}
-          {presetBackgrounds
-            .filter(bg => bg.type === 'video' && bg.isPreset && !downloadedPresetIds.includes(bg.id))
-            .map(bg => (
-              <div key={bg.id} onClick={() => handlePresetClick(bg)} className="relative w-16 h-16">
-                {downloadProgress[bg.id] !== undefined && <DownloadProgressCircle progress={downloadProgress[bg.id]} />}
-                <BackgroundSwatch
-                  background={bg}
-                  selectBackground={selectBackground}
-                  isEditMode={isEditMode}
-                  deleteBackground={deleteBackground}
-                  selectedBackground={selectedBackground}
-                  selectedType={selectedType}
-                />
+        {backgrounds.filter(bg => bg.type === 'image').map(bg => (
+          <div key={bg.id}
+            onClick={() => selectBackground(bg.id)} 
+            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
+            {isEditMode && (
+              <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                  onClick={() => deleteBackground(bg.id)}>
+                <div className="w-4 h-0.5 bg-white"></div>
               </div>
-          ))}
-        </div>
+            )}
+            <img className="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
+          </div>
+        ))}
+        {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
+          <div key={bg.id}
+            onClick={() => handlePresetClick(bg)}
+            className={`relative w-16 h-16 transition cursor-pointer rounded-xl duration-300 ${ isEditMode ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'}`}>
+            {bg.isPreset && downloadProgress[bg.id] !== undefined && (
+              <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
+                  <circle stroke="currentColor" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset="0" transform="rotate(-90 18 18)"></circle>
+                  <circle stroke="#3B82F6" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset={`${calcCircumference(14) * (1 - (downloadProgress[bg.id] / 100))}`} transform="rotate(-90 18 18)"></circle>
+                </svg>
+              </div>
+            )}
+            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}>
+              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+                {downloadProgress[bg.id] === undefined ? '' : ''}
+              </span>
+            </div>
+            <img 
+              className="absolute top-0 object-cover w-full h-full rounded-xl" 
+              src={bg.isPreset ? bg.previewUrl : bg.url}  // Use preview for preset backgrounds
+              alt="swatch" />
+          </div>
+        ))}
       </div>
+
+      <h2 className="py-2 text-lg font-bold">Videos</h2>
+      <div className="flex flex-wrap gap-4">
+        {/* Video uploader swatch */}
+        <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
+            {/*  Plus icon */}
+            
+          </div>
+          <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        </div>
+        {backgrounds.filter(bg => bg.type === 'video').map(bg => (
+          <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
+            {isEditMode && (
+              <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                  onClick={() => deleteBackground(bg.id)}>
+                <div className="w-4 h-0.5 bg-white"></div>
+              </div>
+            )}
+            <video muted loop autoPlay src={bg.url} className="object-cover w-full h-full rounded-xl" />
+          </div>
+        ))}
+        {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'video' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
+          <div key={bg.id}
+            onClick={() => handlePresetClick(bg)}
+            className={`relative w-16 h-16 transition cursor-pointer rounded-xl duration-300 ${ isEditMode ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'}`}>
+            {bg.isPreset && downloadProgress[bg.id] !== undefined && (
+              <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                <svg className="w-full h-full text-zinc-100 dark:text-zinc-700" viewBox="0 0 36 36">
+                  <circle stroke="currentColor" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset="0" transform="rotate(-90 18 18)"></circle>
+                  <circle stroke="#3B82F6" fill="none" strokeWidth="4" strokeLinecap="round" cx="18" cy="18" r="10" strokeDasharray={`${calcCircumference(14)} ${calcCircumference(14)}`} strokeDashoffset={`${calcCircumference(14) * (1 - (downloadProgress[bg.id] / 100))}`} transform="rotate(-90 18 18)"></circle>
+                </svg>
+              </div>
+            )}
+            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}>
+              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+                {downloadProgress[bg.id] === undefined ? '' : ''}
+              </span>
+            </div>
+            <video muted loop autoPlay src={bg.isPreset ? bg.previewUrl : bg.url} className="absolute top-0 object-cover w-full h-full rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
     </>
   );
 }
