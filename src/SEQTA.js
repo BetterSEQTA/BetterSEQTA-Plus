@@ -44,7 +44,7 @@ document.addEventListener(
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
       let link = document.createElement('link');
-      link.href = chrome.runtime.getURL('inject/documentload.css');
+      link.href = chrome.runtime.getURL('css/documentload.css');
       link.type = 'text/css';
       link.rel = 'stylesheet';
       document.getElementsByTagName('html')[0].appendChild(link);
@@ -361,7 +361,7 @@ async function RunColourCheck(element) {
 }
 
 export function GetiFrameCSSElement() {
-  var cssFile = chrome.runtime.getURL('inject/iframe.css');
+  var cssFile = chrome.runtime.getURL('css/iframe.css');
   var fileref = document.createElement('link');
   fileref.setAttribute('rel', 'stylesheet');
   fileref.setAttribute('type', 'text/css');
@@ -721,7 +721,7 @@ function main(storedSetting) {
 }
 
 function InjectStyles() {
-  var cssFile = chrome.runtime.getURL('inject/injected.css');
+  var cssFile = chrome.runtime.getURL('css/injected.css');
   var fileref = document.createElement('link');
   fileref.setAttribute('rel', 'stylesheet');
   fileref.setAttribute('type', 'text/css');
