@@ -4,9 +4,6 @@
 # This setting contains a list of rules that Sweep will check for. If any of these rules are broken in a new commit, Sweep will create an pull request to fix the broken rule.
 rules:
   - "All docstrings and comments should be up to date."
-  - "Ensure consistent indentation and spacing throughout the code."
-  - "Use meaningful variable and function names that accurately describe their purpose."
-  - "Avoid using magic numbers or hard-coded values. Instead, use constants or variables to improve code readability and maintainability."
   - "Remove commented-out code and unused imports to keep the codebase clean and organized."
   - "Follow a consistent naming convention for files, functions, and variables to improve code readability and maintainability."
 
