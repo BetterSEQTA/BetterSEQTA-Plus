@@ -136,13 +136,14 @@ function OpenWhatsNewPopup() {
 
   let text = stringToHTML(
     String.raw`
-  <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-    <li>Themes coming soon!</li>
-    
-    <h1>3.1.5</h1>
-    <li>Minor bug fixes</li>
-    <h1>3.1.4</h1>
-    <li>Minor bug fixes</li>
+  <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
+
+    <h1>3.2.0 - Custom Themes</h1>
+    <li>Added transparency (blur) effects</li>
+    <li>Added custom themes</li>
+    <li>Added colour picker history</li>
+    <li>Heaps of bug fixes</li>
+
     <h1>3.1.3 - Custom Backgrounds</h1>
     <li>Added custom backgrounds with support for images and videos</li>
     <li>Overhauled topbar</li>
