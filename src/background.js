@@ -1,11 +1,10 @@
 /*global chrome*/
 export const openDB = () => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('MyDatabase', 1);
-
+    const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      db.createObjectStore('backgrounds', { keyPath: 'id' });
+      db.createObjectStore(STORE_NAME, { keyPath: 'id' });
     };
 
     request.onsuccess = () => {
@@ -21,6 +20,21 @@ export const openDB = () => {
 export const writeData = async (type, data) => {
   const db = await openDB();
 
+  const tx = db.transaction(STORE_NAME, READ_WRITE_MODE);
+  const store = tx.objectStore(STORE_NAME);
+  const request = await store.put({ id: CUSTOM_BG_ID, type, data });
+
+  return request.result;
+};
+
+export const readData = () => {
+const DB_NAME = "MyDatabase";
+const STORE_NAME = "backgrounds";
+const CUSTOM_BG_ID = "customBackground";
+const READ_WRITE_MODE = "readwrite";
+=======
+  const db = await openDB();
+
   const tx = db.transaction('backgrounds', 'readwrite');
   const store = tx.objectStore('backgrounds');
   const request = await store.put({ id: 'customBackground', type, data });
@@ -32,11 +46,9 @@ export const readData = () => {
   return new Promise((resolve, reject) => {
     openDB()
       .then(db => {
-        const tx = db.transaction('backgrounds', 'readonly');
-        const store = tx.objectStore('backgrounds');
-
-        // Retrieve the custom background
-        const getRequest = store.get('customBackground');
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const getRequest = store.get(CUSTOM_BG_ID);
 
         // Attach success and error event handlers
         getRequest.onsuccess = function(event) {
