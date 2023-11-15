@@ -55,7 +55,7 @@ export const readData = () => {
   });
 };
 
-function ReloadSEQTAPages() {
+function reloadSeqtaPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
       if (tab.title.includes('SEQTA Learn')) {
@@ -92,7 +92,7 @@ Main message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
   case 'reloadTabs':
-    ReloadSEQTAPages();
+    reloadSeqtaPages();
     break;
   
   case 'currentTab':
