@@ -1,4 +1,3 @@
-// @ts-expect-error There aren't any types for the below library
 import ColorPicker from 'react-best-gradient-color-picker';
 import { useSettingsContext } from '../SettingsContext';
 import { motion } from "framer-motion";
