@@ -18,14 +18,14 @@ export default {
   entry: {
     SEQTA: './src/SEQTA.js',
     background: './src/background.js',
-    'inject/documentload': './src/inject/documentload.scss',
-    'inject/iframe': './src/inject/iframe.scss',
-    'inject/injected': './src/inject/injected.scss',
+    'css/documentload': './src/css/documentload.scss',
+    'css/iframe': './src/css/iframe.scss',
+    'css/injected': './src/css/injected.scss',
   },
   output: {
     filename: (pathData) => {
-      const name = pathData.chunk.name.replace('inject-', '');
-      return name.includes('inject') ? `inject/${name}.js` : `${name}.js`;
+      const name = pathData.chunk.name.replace('css-', '');
+      return name.includes('css') ? `css/${name}.js` : `${name}.js`;
     },
     // eslint-disable-next-line no-undef
     path: path.resolve('build'),
@@ -63,7 +63,7 @@ export default {
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public', to: '.' },
-        { from: 'src/inject/preview', to: 'inject/preview' },
+        { from: 'src/css/preview', to: 'css/preview' },
         { from: 'node_modules/webextension-polyfill/dist/browser-polyfill.js', to: '.'},
         { from: 'interface/dist/client', to: 'client' },
         { from: 'interface/dist/index.html', to: 'interface/index.html' }
