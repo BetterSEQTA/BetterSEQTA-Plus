@@ -1,4 +1,59 @@
 /*global chrome*/
+export const openDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('MyDatabase', 1);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      db.createObjectStore('backgrounds', { keyPath: 'id' });
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = (event) => {
+      reject('Error opening database: ' + event.target.errorCode);
+    };
+  });
+};
+
+export const writeData = async (type, data) => {
+  const db = await openDB();
+
+  const tx = db.transaction('backgrounds', 'readwrite');
+  const store = tx.objectStore('backgrounds');
+  const request = await store.put({ id: 'customBackground', type, data });
+
+  return request.result;
+};
+
+export const readData = () => {
+  return new Promise((resolve, reject) => {
+    openDB()
+      .then(db => {
+        const tx = db.transaction('backgrounds', 'readonly');
+        const store = tx.objectStore('backgrounds');
+
+        // Retrieve the custom background
+        const getRequest = store.get('customBackground');
+
+        // Attach success and error event handlers
+        getRequest.onsuccess = function(event) {
+          resolve(event.target.result);
+        };
+
+        getRequest.onerror = function(event) {
+          console.error('An error occurred:', event);
+          reject(event);
+        };
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+        reject(error);
+      });
+  });
+};
 
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
