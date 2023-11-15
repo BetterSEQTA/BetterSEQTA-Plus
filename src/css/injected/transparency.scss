@@ -11,8 +11,9 @@ html.transparencyEffects:not(.dark) {
 
 html.transparencyEffects {
   /* Background Fixes */
+  .notifications__item___2ErJN,
   #shortcuts {
-    backdrop-filter: unset;
+    backdrop-filter: unset !important;
   }
 
   .whatsnewTextContainer h1 {
