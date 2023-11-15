@@ -44,7 +44,7 @@
       "matches": ["*://*/*"]
     },
     {
-      "resources": ["inject/*"],
+      "resources": ["css/*"],
       "matches": ["*://*/*"]
     },
     {
