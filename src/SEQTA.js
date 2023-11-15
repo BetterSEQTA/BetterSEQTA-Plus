@@ -824,11 +824,11 @@ function addExtensionSettings() {
   const closeExtensionPopup = () => {
     if (!SettingsClicked) {
       extensionPopup.classList.add('hide');
-      extensionIframe.contentWindow.postMessage('popupClosed', '*');
     }
     SettingsClicked = false;
   };
   container.onclick = (event) => {
+    extensionIframe.contentWindow.postMessage('popupClosed', '*');
     if (event.target.id !== 'AddedSettings') {
       closeExtensionPopup();
     } else {
