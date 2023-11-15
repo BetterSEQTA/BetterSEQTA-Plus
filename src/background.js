@@ -1,5 +1,3 @@
-/*global chrome*/
-
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
