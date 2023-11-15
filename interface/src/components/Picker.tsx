@@ -3,10 +3,22 @@ import { useSettingsContext } from '../SettingsContext';
 import { motion } from "framer-motion";
 
 import "./Picker.css";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Picker() {
   const { settingsState, setSettingsState, showPicker, setShowPicker } = useSettingsContext();
+
+  const defaultPresets = [
+    'linear-gradient(30deg, rgba(229,209,218,1) 0%, RGBA(235,169,202,1) 46%, rgba(214,155,162,1) 100%)',
+    'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
+    'linear-gradient(40deg, rgba(0, 141, 201, 0.76) 0%, rgba(8, 5, 170, 0.66) 100%)',
+    'rgba(4, 4, 138, 0.77)',
+    
+  ];
+  const [presets, setPresets] = useState(() => {
+    const savedPresets = localStorage.getItem('colorPickerPresets');
+    return savedPresets ? JSON.parse(savedPresets) : defaultPresets;
+  });
 
   const handleMessage = (event: MessageEvent) => {
     if (event.data === "popupClosed") {
@@ -24,6 +36,31 @@ export default function Picker() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Watch for changes in showPicker and update the presets
+    if (!showPicker) {
+      // Check if the selected color is already in the presets
+      const existingIndex = presets.indexOf(settingsState.customThemeColor);
+  
+      let updatedPresets;
+      if (existingIndex > -1) {
+        // If the color exists, move it to the front
+        updatedPresets = [
+          settingsState.customThemeColor,
+          ...presets.slice(0, existingIndex),
+          ...presets.slice(existingIndex + 1)
+        ];
+      } else {
+        // If the color is new, add it to the front and slice the array
+        updatedPresets = [settingsState.customThemeColor, ...presets].slice(0, 18);
+      }
+  
+      setPresets(updatedPresets);
+      localStorage.setItem('colorPickerPresets', JSON.stringify(updatedPresets));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPicker]);
 
   const colorChange = (color: string) => {
     setSettingsState({
@@ -67,7 +104,7 @@ export default function Picker() {
           onClick={(e) => e.stopPropagation()} 
           className="h-auto p-4 bg-white border rounded-lg shadow-lg dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
         >
-          <ColorPicker hideInputs={true} value={settingsState.customThemeColor} onChange={colorChange} />
+          <ColorPicker presets={presets} hideInputs={true} value={settingsState.customThemeColor} onChange={colorChange} />
         </motion.div>
       </div>
     </motion.div>
