@@ -22,7 +22,7 @@ body, html {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 
-  transition: background-color 200ms ease-in-out;
+  transition: background-color 200ms ease-in-out, backdrop-filter 200ms ease-in-out;
 }
 @media (min-width: 900px) {
   #title > span {
