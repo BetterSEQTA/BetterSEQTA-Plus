@@ -1,5 +1,5 @@
 /*global chrome*/
-export const openDB = () => {
+export const openDatabaseConnection = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
 
@@ -18,8 +18,8 @@ export const openDB = () => {
   });
 };
 
-export const writeData = async (type, data) => {
-  const db = await openDB();
+export const saveBackgroundData = async (type, data) => {
+  const db = await openDatabaseConnection();
 
   const tx = db.transaction('backgrounds', 'readwrite');
   const store = tx.objectStore('backgrounds');
@@ -28,9 +28,9 @@ export const writeData = async (type, data) => {
   return request.result;
 };
 
-export const readData = () => {
+export const retrieveBackgroundData = () => {
   return new Promise((resolve, reject) => {
-    openDB()
+    openDatabaseConnection()
       .then(db => {
         const tx = db.transaction('backgrounds', 'readonly');
         const store = tx.objectStore('backgrounds');
