@@ -1,61 +1,5 @@
 /*global chrome*/
 
-export const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('MyDatabase', 1);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('backgrounds', { keyPath: 'id' });
-    };
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = (event) => {
-      reject('Error opening database: ' + event.target.errorCode);
-    };
-  });
-};
-
-export const writeData = async (type, data) => {
-  const db = await openDB();
-
-  const tx = db.transaction('backgrounds', 'readwrite');
-  const store = tx.objectStore('backgrounds');
-  const request = await store.put({ id: 'customBackground', type, data });
-
-  return request.result;
-};
-
-export const readData = () => {
-  return new Promise((resolve, reject) => {
-    openDB()
-      .then(db => {
-        const tx = db.transaction('backgrounds', 'readonly');
-        const store = tx.objectStore('backgrounds');
-        
-        // Retrieve the custom background
-        const getRequest = store.get('customBackground');
-        
-        // Attach success and error event handlers
-        getRequest.onsuccess = function(event) {
-          resolve(event.target.result);
-        };
-        
-        getRequest.onerror = function(event) {
-          console.error('An error occurred:', event);
-          reject(event);
-        };
-      })
-      .catch(error => {
-        console.error('An error occurred:', error);
-        reject(error);
-      });
-  });
-};
-
 function ReloadSEQTAPages() {
   chrome.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
@@ -120,13 +64,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   case 'sendNews':
     GetNews(sendResponse);
     return true;
-  
-  case 'downloadBackground':
-    downloadBackgroundFromUrl(request.url, request.filename).then((fileId) => {
-      sendResponse({ fileId });
-    });
-    return true;
-    
+      
   default:
     console.log('Unknown request type');
   }
@@ -305,23 +243,3 @@ chrome.runtime.onInstalled.addListener(function (event) {
     migrateOldStorage();
   }
 });
-
-const downloadBackgroundFromUrl = async (url, filename) => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.statusText}`);
-    }
-    const blob = await response.blob(); // Create a blob from the response
-    const fileType = blob.type.split('/')[0]; // Assuming that the file type is always the first part of the mime type
-    const fileId = `${Date.now()}-${filename}`; // Unique ID for the file
-
-    await writeData(fileId, fileType, blob); // Write data to your storage system
-
-    // Return the generated file ID
-    return fileId;
-  } catch (error) {
-    console.error('There was an error downloading the background:', error);
-    throw error; // Rethrow the error so that it can be handled by the caller
-  }
-};
