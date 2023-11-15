@@ -1,4 +1,4 @@
-// Open the database
+Open the database
 const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
@@ -13,7 +13,7 @@ const openDB = () => {
   });
 };
 
-// Modified Read Data from IndexedDB
+Modified Read Data from IndexedDB
 const readData = async () => {
   const selectedBackground = localStorage.getItem('selectedBackground');
   if (!selectedBackground) {
@@ -49,7 +49,7 @@ const updateBackground = async () => {
     const url = URL.createObjectURL(data.blob);
     const container = document.getElementById('media-container');
 
-    // Create new element and set properties
+    Create new element and set properties
     let newElement;
     if (data.type === 'image') {
       newElement = document.createElement('img');
@@ -74,7 +74,7 @@ const updateBackground = async () => {
     newElement.classList.add('current-media');
     container.appendChild(newElement);
 
-    // Delay removal of old element
+    Delay removal of old element
     setTimeout(() => {
       const oldMedia = container.querySelector('.old-media');
       if (oldMedia) {
@@ -86,11 +86,11 @@ const updateBackground = async () => {
   }
 };
 
-// Main function to run on page load
+Main function to run on page load
 const main = async () => {
   await updateBackground();  // Initial background update
 
-  // Listen for changes to local storage
+  Listen for changes to local storage
   window.addEventListener('storage', async (event) => {
     if (event.key === 'selectedBackground') {
       await updateBackground();  // Update background if 'selectedBackground' changes
@@ -98,5 +98,5 @@ const main = async () => {
   });
 };
 
-// Run the main function when the document is ready
+Run the main function when the document is ready
 document.addEventListener('DOMContentLoaded', main);
