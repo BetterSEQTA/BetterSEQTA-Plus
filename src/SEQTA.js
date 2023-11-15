@@ -290,7 +290,7 @@ async function DeleteWhatsNew() {
   
   animate(
     [popup, bkelement],
-    { opacity: [1, 0]},
+    { opacity: [1, 0], scale: [1, 0] },
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
     bkelement.remove();
