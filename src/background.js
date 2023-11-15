@@ -1,169 +1,167 @@
 /*global chrome*/
 export const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('MyDatabase', 1);
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('MyDatabase', 1);
 
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('backgrounds', { keyPath: 'id' });
-    };
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            db.createObjectStore('backgrounds', { keyPath: 'id' });
+        };
 
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-    request.onerror = (event) => {
-      reject('Error opening database: ' + event.target.errorCode);
-    };
-  });
+        request.onerror = (event) => {
+            reject('Error opening database: ' + event.target.errorCode);
+        };
+    });
 };
 
 export const writeData = async (type, data) => {
-  const db = await openDB();
+    const db = await openDB();
 
-  const tx = db.transaction('backgrounds', 'readwrite');
-  const store = tx.objectStore('backgrounds');
-  const request = await store.put({ id: 'customBackground', type, data });
+    const tx = db.transaction('backgrounds', 'readwrite');
+    const store = tx.objectStore('backgrounds');
+    const request = await store.put({ id: 'customBackground', type, data });
 
-  return request.result;
+    return request.result;
 };
 
 export const readData = () => {
-  return new Promise((resolve, reject) => {
-    openDB()
-      .then(db => {
-        const tx = db.transaction('backgrounds', 'readonly');
-        const store = tx.objectStore('backgrounds');
+    return new Promise((resolve, reject) => {
+        openDB()
+            .then(db => {
+                const tx = db.transaction('backgrounds', 'readonly');
+                const store = tx.objectStore('backgrounds');
 
-        // Retrieve the custom background
-        const getRequest = store.get('customBackground');
+                // Retrieve the custom background
+                const getRequest = store.get('customBackground');
 
-        // Attach success and error event handlers
-        getRequest.onsuccess = function(event) {
-          resolve(event.target.result);
-        };
+                // Attach success and error event handlers
+                getRequest.onsuccess = function(event) {
+                    resolve(event.target.result);
+                };
 
-        getRequest.onerror = function(event) {
-          console.error('An error occurred:', event);
-          reject(event);
-        };
-      })
-      .catch(error => {
-        console.error('An error occurred:', error);
-        reject(error);
-      });
+                getRequest.onerror = function(event) {
+                    console.error('An error occurred:', event);
+                    reject(event);
+                };
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+                reject(error);
+            });
   });
-};
 
 function ReloadSEQTAPages() {
-  chrome.tabs.query({}, function (tabs) {
-    for (let tab of tabs) {
-      if (tab.title.includes('SEQTA Learn')) {
-        chrome.tabs.reload(tab.id);
-      }
-    }
-  });
+    chrome.tabs.query({}, function (tabs) {
+        for (let tab of tabs) {
+            if (tab.title.includes('SEQTA Learn')) {
+                chrome.tabs.reload(tab.id);
+            }
+        }
+    });
 }
 
 // Helper function to handle setting permissions
 const handleAddPermissions = () => {
-  if (typeof chrome.declarativeContent !== 'undefined') {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
-  }
-  
-  chrome.permissions.request(
-    { permissions: ['declarativeContent'], origins: ['*://*/*'] },
-    (granted) => {
-      if (granted) {
-        const rules = [
-          // Define your rules here
-        ];
-        
-        rules.forEach(rule => {
-          chrome.declarativeContent.onPageChanged.addRules([rule]);
-        });
-        
-        alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
-      }
+    if (typeof chrome.declarativeContent !== 'undefined') {
+        chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
     }
-  );
+  
+    chrome.permissions.request(
+        { permissions: ['declarativeContent'], origins: ['*://*/*'] },
+        (granted) => {
+            if (granted) {
+                const rules = [
+                    // Define your rules here
+                ];
+        
+                rules.forEach(rule => {
+                    chrome.declarativeContent.onPageChanged.addRules([rule]);
+                });
+        
+                alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
+            }
+        }
+    );
 };
 
 // Main message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.type) {
-  case 'reloadTabs':
-    ReloadSEQTAPages();
-    break;
+    switch (request.type) {
+    case 'reloadTabs':
+        ReloadSEQTAPages();
+        break;
   
-  case 'currentTab':
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, request, function (response) {
-        sendResponse(response);
-      });
-    });
-    return true;
+    case 'currentTab':
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, request, function (response) {
+                sendResponse(response);
+            });
+        });
+        return true;
   
-  case 'githubTab':
-    chrome.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
-    break;
+    case 'githubTab':
+        chrome.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
+        break;
     
-  case 'setDefaultStorage':
-    SetStorageValue(DefaultValues);
-    break;
+    case 'setDefaultStorage':
+        SetStorageValue(DefaultValues);
+        break;
     
-  case 'addPermissions':
-    handleAddPermissions();
-    break;
+    case 'addPermissions':
+        handleAddPermissions();
+        break;
 
-  case 'sendNews':
-    GetNews(sendResponse);
-    return true;
+    case 'sendNews':
+        GetNews(sendResponse);
+        return true;
       
-  default:
-    console.log('Unknown request type');
-  }
-});
+    default:
+        console.log('Unknown request type');
+  });
 
 function GetNews(sendResponse) {
-  // Gets the current date
-  const date = new Date();
+    // Gets the current date
+    const date = new Date();
 
-  const from =
-    date.getFullYear() +
-    '-' +
-    (date.getMonth() + 1) +
-    '-' +
-    (date.getDate() - 1);
+    const from =
+        date.getFullYear() +
+        '-' +
+        (date.getMonth() + 1) +
+        '-' +
+        (date.getDate() - 1);
 
-  let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
+    let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
 
-  fetch(url)
-    .then((result) => result.json())
-    .then((response) => {
-      if (response.code == 'rateLimited') {
-        url += '%00';
-        GetNews();
-      } else {
-        sendResponse({ news: response });
-      }
-    });
+    fetch(url)
+        .then((result) => result.json())
+        .then((response) => {
+            if (response.code == 'rateLimited') {
+                url += '%00';
+                GetNews();
+            } else {
+                sendResponse({ news: response });
+            }
+        });
 }
 
 const DefaultValues = {
-  onoff: true,
-  animatedbk: true,
-  bksliderinput: 50,
-  transparencyEffects: false,
-  lessonalert: true,
-  notificationcollector: true,
-  defaultmenuorder: [],
-  menuitems: {},
-  menuorder: [],
-  subjectfilters: {},
-  selectedColor: 'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
-  DarkMode: true,
-  shortcuts: [
+    onoff: true,
+    animatedbk: true,
+    bksliderinput: 50,
+    transparencyEffects: false,
+    lessonalert: true,
+    notificationcollector: true,
+    defaultmenuorder: [],
+    menuitems: {},
+    menuorder: [],
+    subjectfilters: {},
+    selectedColor: 'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
+    DarkMode: true,
+    shortcuts: [
     {
       name: 'YouTube',
       enabled: false,
