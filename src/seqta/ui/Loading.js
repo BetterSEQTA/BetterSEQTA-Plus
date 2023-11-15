@@ -20,7 +20,7 @@ export function AppendLoadingSymbol(givenID, position) {
 export default function loading() {
   let loadinghtml = stringToHTML(
     String.raw`
-    <div class="bkloading" id="loading" style="background-color: var(--background-secondary); color: var(--text-primary); width: 100%;overflow: hidden;opacity: 1;transition: 1s;height: 100%;top: 0;position: absolute;left: 0;z-index: 10000;">
+    <div class="bkloading" id="loading" style="background-color: var(--theme-secondary, var(--background-secondary)); color: var(--text-primary); width: 100%;overflow: hidden;opacity: 1;transition: 1s;height: 100%;transition: color 1ms linear;top: 0;position: absolute;left: 0;z-index: 1000000;">
     <style>
       .svg {
         transform-origin: center;
