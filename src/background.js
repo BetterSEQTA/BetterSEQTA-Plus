@@ -65,7 +65,7 @@ function ReloadSEQTAPages() {
   });
 }
 
-// Helper function to handle setting permissions
+Helper function to handle setting permissions
 const handleAddPermissions = () => {
   if (typeof chrome.declarativeContent !== 'undefined') {
     chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
@@ -76,7 +76,6 @@ const handleAddPermissions = () => {
     (granted) => {
       if (granted) {
         const rules = [
-          // Define your rules here
         ];
         
         rules.forEach(rule => {
@@ -89,7 +88,7 @@ const handleAddPermissions = () => {
   );
 };
 
-// Main message listener
+Main message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
   case 'reloadTabs':
@@ -126,7 +125,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function GetNews(sendResponse) {
-  // Gets the current date
+  Gets the current date
   const date = new Date();
 
   const from =
