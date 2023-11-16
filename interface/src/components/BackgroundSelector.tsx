@@ -87,7 +87,14 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
     store.delete(fileId);
     setBackgrounds(prev => prev.filter(bg => bg.id !== fileId));
   
-    // Check if the background being deleted is currently selected
+            <img 
+              className="object-cover w-full h-full rounded-xl" 
+              src={bg.url} 
+              alt="swatch" 
+            />
+          </div>
+        ))}
+        {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
     if (fileId === selectedBackground) {
       selectNoBackground();  // Disable the current background
     }
@@ -123,16 +130,24 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
           <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
         {backgrounds.filter(bg => bg.type === 'image').map(bg => (
-          <div key={bg.id}
+          <div 
+            key={bg.id}
             onClick={() => selectBackground(bg.id)} 
-            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
+            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}
+          >
             {isEditMode && (
-              <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
-                  onClick={() => deleteBackground(bg.id)}>
+              <div 
+                className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+                onClick={() => deleteBackground(bg.id)}
+              >
                 <div className="w-4 h-0.5 bg-white"></div>
               </div>
             )}
-            <img className="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
+            <img 
+              className="object-cover w-full h-full rounded-xl" 
+              src={bg.url} 
+              alt="swatch" 
+            />
           </div>
         ))}
         {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
@@ -147,15 +162,20 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
                 </svg>
               </div>
             )}
-            <div className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}>
-              <span className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100">
+            <div 
+              className={`relative transition top-0 z-10 flex justify-center w-full h-full text-white rounded-xl group place-items-center ${downloadProgress[bg.id] === undefined ? 'hover:bg-black/20' : ''}`}
+            >
+              <span 
+                className="absolute z-10 text-3xl transition opacity-0 font-IconFamily group-hover:opacity-100"
+              >
                 {downloadProgress[bg.id] === undefined ? '' : ''}
               </span>
             </div>
             <img 
               className="absolute top-0 object-cover w-full h-full rounded-xl" 
               src={bg.isPreset ? bg.previewUrl : bg.url}  // Use preview for preset backgrounds
-              alt="swatch" />
+              alt="swatch" 
+            />
           </div>
         ))}
       </div>
