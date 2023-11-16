@@ -1,4 +1,5 @@
-/* global chrome */
+import browser from 'webextension-polyfill';
+
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
 
@@ -44,13 +45,13 @@ document.addEventListener(
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
       let link = document.createElement('link');
-      link.href = chrome.runtime.getURL('css/documentload.css');
+      link.href = browser.runtime.getURL('css/documentload.css');
       link.type = 'text/css';
       link.rel = 'stylesheet';
       document.getElementsByTagName('html')[0].appendChild(link);
 
       enableCurrentTheme();
-      chrome.storage.local.get(null, function (items) {
+      browser.storage.local.get(null, function (items) {
         main(items);
       });
     }
@@ -83,7 +84,7 @@ function animbkEnable(item) {
 
 export function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = '';
-  chrome.storage.local.get(null, function (result) {
+  browser.storage.local.get(null, function (result) {
     for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
       if (!Object.values(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
@@ -110,14 +111,14 @@ function OpenWhatsNewPopup() {
 
   var header = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
-  <p>BetterSEQTA+ V${chrome.runtime.getManifest().version}</p>
+  <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
   </div>`).firstChild;
 
   let imagecont = document.createElement('div');
   imagecont.classList.add('whatsnewImgContainer');
   let video = document.createElement('video');
   let source = document.createElement('source');
-  source.setAttribute('src', chrome.runtime.getURL('resources/update-video.mp4'));
+  source.setAttribute('src', browser.runtime.getURL('resources/update-video.mp4'));
   source.setAttribute('type', 'video/mp4');
   video.autoplay = true;
   video.muted = true;
@@ -211,7 +212,7 @@ function OpenWhatsNewPopup() {
             <g><path d="M128.00106,0 C57.3172926,0 0,57.3066942 0,128.00106 C0,184.555281 36.6761997,232.535542 87.534937,249.460899 C93.9320223,250.645779 96.280588,246.684165 96.280588,243.303333 C96.280588,240.251045 96.1618878,230.167899 96.106777,219.472176 C60.4967585,227.215235 52.9826207,204.369712 52.9826207,204.369712 C47.1599584,189.574598 38.770408,185.640538 38.770408,185.640538 C27.1568785,177.696113 39.6458206,177.859325 39.6458206,177.859325 C52.4993419,178.762293 59.267365,191.04987 59.267365,191.04987 C70.6837675,210.618423 89.2115753,204.961093 96.5158685,201.690482 C97.6647155,193.417512 100.981959,187.77078 104.642583,184.574357 C76.211799,181.33766 46.324819,170.362144 46.324819,121.315702 C46.324819,107.340889 51.3250588,95.9223682 59.5132437,86.9583937 C58.1842268,83.7344152 53.8029229,70.715562 60.7532354,53.0843636 C60.7532354,53.0843636 71.5019501,49.6441813 95.9626412,66.2049595 C106.172967,63.368876 117.123047,61.9465949 128.00106,61.8978432 C138.879073,61.9465949 149.837632,63.368876 160.067033,66.2049595 C184.49805,49.6441813 195.231926,53.0843636 195.231926,53.0843636 C202.199197,70.715562 197.815773,83.7344152 196.486756,86.9583937 C204.694018,95.9223682 209.660343,107.340889 209.660343,121.315702 C209.660343,170.478725 179.716133,181.303747 151.213281,184.472614 C155.80443,188.444828 159.895342,196.234518 159.895342,208.176593 C159.895342,225.303317 159.746968,239.087361 159.746968,243.303333 C159.746968,246.709601 162.05102,250.70089 168.53925,249.443941 C219.370432,232.499507 256,184.536204 256,128.00106 C256,57.3066942 198.691187,0 128.00106,0 Z M47.9405593,182.340212 C47.6586465,182.976105 46.6581745,183.166873 45.7467277,182.730227 C44.8183235,182.312656 44.2968914,181.445722 44.5978808,180.80771 C44.8734344,180.152739 45.876026,179.97045 46.8023103,180.409216 C47.7328342,180.826786 48.2627451,181.702199 47.9405593,182.340212 Z M54.2367892,187.958254 C53.6263318,188.524199 52.4329723,188.261363 51.6232682,187.366874 C50.7860088,186.474504 50.6291553,185.281144 51.2480912,184.70672 C51.8776254,184.140775 53.0349512,184.405731 53.8743302,185.298101 C54.7115892,186.201069 54.8748019,187.38595 54.2367892,187.958254 Z M58.5562413,195.146347 C57.7719732,195.691096 56.4895886,195.180261 55.6968417,194.042013 C54.9125733,192.903764 54.9125733,191.538713 55.713799,190.991845 C56.5086651,190.444977 57.7719732,190.936735 58.5753181,192.066505 C59.3574669,193.22383 59.3574669,194.58888 58.5562413,195.146347 Z M65.8613592,203.471174 C65.1597571,204.244846 63.6654083,204.03712 62.5716717,202.981538 C61.4524999,201.94927 61.1409122,200.484596 61.8446341,199.710926 C62.5547146,198.935137 64.0575422,199.15346 65.1597571,200.200564 C66.2704506,201.230712 66.6095936,202.705984 65.8613592,203.471174 Z M75.3025151,206.281542 C74.9930474,207.284134 73.553809,207.739857 72.1039724,207.313809 C70.6562556,206.875043 69.7087748,205.700761 70.0012857,204.687571 C70.302275,203.678621 71.7478721,203.20382 73.2083069,203.659543 C74.6539041,204.09619 75.6035048,205.261994 75.3025151,206.281542 Z M86.046947,207.473627 C86.0829806,208.529209 84.8535871,209.404622 83.3316829,209.4237 C81.8013,209.457614 80.563428,208.603398 80.5464708,207.564772 C80.5464708,206.498591 81.7483088,205.631657 83.2786917,205.606221 C84.8005962,205.576546 86.046947,206.424403 86.046947,207.473627 Z M96.6021471,207.069023 C96.7844366,208.099171 95.7267341,209.156872 94.215428,209.438785 C92.7295577,209.710099 91.3539086,209.074206 91.1652603,208.052538 C90.9808515,206.996955 92.0576306,205.939253 93.5413813,205.66582 C95.054807,205.402984 96.4092596,206.021919 96.6021471,207.069023 Z" fill="currentColor" /></g>
           </svg>
         </a>
-        <a href="https://chrome.google.com/webstore/detail/betterseqta%2B/afdgaoaclhkhemfkkkonemoapeinchel" target="_blank" style="background: none !important; margin: 0 5px; padding:0;">
+        <a href="https://browser.google.com/webstore/detail/betterseqta%2B/afdgaoaclhkhemfkkkonemoapeinchel" target="_blank" style="background: none !important; margin: 0 5px; padding:0;">
           <svg style="width:25px;height:25px" viewBox="0 0 24 24">
             <path fill="currentColor" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
           </svg>
@@ -253,7 +254,7 @@ function OpenWhatsNewPopup() {
     }
   );
 
-  chrome.storage.local.remove(['justupdated']);
+  browser.storage.local.remove(['justupdated']);
 
   bkelement.addEventListener('click', function (event) {
     // Check if the click event originated from the element itself and not any of its children
@@ -278,7 +279,7 @@ async function finishLoad() {
     console.log(err);
   }
 
-  chrome.storage.local.get(['justupdated'], function (result) {
+  browser.storage.local.get(['justupdated'], function (result) {
     if (result.justupdated) {
       OpenWhatsNewPopup();
     }
@@ -362,7 +363,7 @@ async function RunColourCheck(element) {
 }
 
 export function GetiFrameCSSElement() {
-  var cssFile = chrome.runtime.getURL('css/iframe.css');
+  var cssFile = browser.runtime.getURL('css/iframe.css');
   var fileref = document.createElement('link');
   fileref.setAttribute('rel', 'stylesheet');
   fileref.setAttribute('type', 'text/css');
@@ -379,7 +380,7 @@ function CheckiFrameItems() {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
         if (added_node.tagName == 'IFRAME') {
-          chrome.storage.local.get(['DarkMode'], function (result) {
+          browser.storage.local.get(['DarkMode'], function (result) {
             DarkMode = result.DarkMode;
             if (DarkMode) {
               RunColourCheck(added_node);
@@ -462,12 +463,12 @@ async function LoadPageElements() {
   switch (sublink) {
   case 'news':
     console.log('[BetterSEQTA+] Started Init');
-    chrome.storage.local.get(null, function (result) {
+    browser.storage.local.get(null, function (result) {
       if (result.onoff) {
         SendNewsPage();
 
         // Sends similar HTTP Post Request for the notices
-        chrome.storage.local.get(null, function (result) {
+        browser.storage.local.get(null, function (result) {
           if (result.notificationcollector) {
             enableNotificationCollector();
           }
@@ -489,7 +490,7 @@ async function LoadPageElements() {
     finishLoad();
 
     // Sends similar HTTP Post Request for the notices
-    chrome.storage.local.get(null, function (result) {
+    browser.storage.local.get(null, function (result) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
@@ -579,7 +580,7 @@ function CheckNoticeTextColour(notice) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        chrome.storage.local.get(['DarkMode'], function (result) {
+        browser.storage.local.get(['DarkMode'], function (result) {
           DarkMode = result.DarkMode;
           if (added_node.classList.contains('notice')) {
             var hex = added_node.style.cssText.split(' ')[1];
@@ -655,7 +656,7 @@ function ChangeMenuItemPositions(storage) {
 }
 
 export async function ObserveMenuItemPosition() {
-  chrome.storage.local.get(null, function (result) {
+  browser.storage.local.get(null, function (result) {
     let menuorder = result.menuorder;
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
@@ -688,7 +689,7 @@ function main(storedSetting) {
 
   // Handle undefined onoff setting
   if (typeof onoff === 'undefined') {
-    chrome.runtime.sendMessage({ type: 'setDefaultStorage' });
+    browser.runtime.sendMessage({ type: 'setDefaultStorage' });
   }
 
   const initialize = () => {
@@ -722,7 +723,7 @@ function main(storedSetting) {
 }
 
 function InjectStyles() {
-  var cssFile = chrome.runtime.getURL('css/injected.css');
+  var cssFile = browser.runtime.getURL('css/injected.css');
   var fileref = document.createElement('link');
   fileref.setAttribute('rel', 'stylesheet');
   fileref.setAttribute('type', 'text/css');
@@ -732,7 +733,7 @@ function InjectStyles() {
 }
 
 function InjectCustomIcons() {
-  const fontURL = chrome.runtime.getURL('fonts/IconFamily.woff');
+  const fontURL = browser.runtime.getURL('fonts/IconFamily.woff');
 
   const style = document.createElement('style');
   style.setAttribute('type', 'text/css');
@@ -801,7 +802,7 @@ export function closeSettings() {
 
 function addExtensionSettings() {
   const link = document.createElement('link');
-  link.href = chrome.runtime.getURL('popup/popup.css');
+  link.href = browser.runtime.getURL('popup/popup.css');
   link.type = 'text/css';
   link.rel = 'stylesheet';
   document.querySelector('html').appendChild(link);
@@ -812,7 +813,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup);
 
   const extensionIframe = document.createElement('iframe');
-  extensionIframe.src = chrome.runtime.getURL('interface/index.html');
+  extensionIframe.src = browser.runtime.getURL('interface/index.html');
   extensionIframe.id = 'ExtensionIframe';
   extensionIframe.allowTransparency = true;
   extensionIframe.style.width = '384px';
@@ -889,7 +890,7 @@ function dragDrop() {
       listorder.push(elm.dataset.key);
     }
 
-    chrome.storage.local.set({ menuorder: listorder });
+    browser.storage.local.set({ menuorder: listorder });
   }
   return false;
 }
@@ -918,7 +919,7 @@ function cloneAttributes(target, source) {
 }
 
 export function OpenMenuOptions() {
-  chrome.storage.local.get(null, function (result) {
+  browser.storage.local.get(null, function (result) {
     var container = document.getElementById('container');
     var menu = document.getElementById('menu');
 
@@ -928,7 +929,7 @@ export function OpenMenuOptions() {
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
         newdefaultmenuorder.push(element.dataset.key);
-        chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
+        browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
       }
     }
     let childnodes = menu.firstChild.childNodes;
@@ -938,7 +939,7 @@ export function OpenMenuOptions() {
         if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
           let newdefaultmenuorder = result.defaultmenuorder;
           newdefaultmenuorder.push(element.dataset.key);
-          chrome.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
+          browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
         }
       }
     }
@@ -1003,11 +1004,11 @@ export function OpenMenuOptions() {
         element.toggle = true;
         menuItems[id] = element;
       }
-      chrome.storage.local.set({ menuitems: menuItems });
+      browser.storage.local.set({ menuitems: menuItems });
     }
 
     var menubuttons = document.getElementsByClassName('menuitem');
-    chrome.storage.local.get(['menuitems'], function (result) {
+    browser.storage.local.get(['menuitems'], function (result) {
       var menuItems = result.menuitems;
       let buttons = document.getElementsByClassName('menuitem');
       for (var i = 0; i < buttons.length; i++) {
@@ -1024,7 +1025,7 @@ export function OpenMenuOptions() {
     ApplyDraggableFunctions();
 
     function StoreMenuSettings() {
-      chrome.storage.local.get(['menuitems'], function () {
+      browser.storage.local.get(['menuitems'], function () {
         var menuItems = {};
         menubuttons = menu.firstChild.childNodes;
         let button = document.getElementsByClassName('menuitem');
@@ -1035,7 +1036,7 @@ export function OpenMenuOptions() {
 
           menuItems[id] = element;
         }
-        chrome.storage.local.set({ menuitems: menuItems });
+        browser.storage.local.set({ menuitems: menuItems });
       });
     }
 
@@ -1093,9 +1094,9 @@ export function OpenMenuOptions() {
     savebutton.addEventListener('click', closeAll);
 
     defaultbutton.addEventListener('click', function () {
-      chrome.storage.local.get(null, function (response) {
+      browser.storage.local.get(null, function (response) {
         const options = response.defaultmenuorder;
-        chrome.storage.local.set({ menuorder: options });
+        browser.storage.local.set({ menuorder: options });
         ChangeMenuItemPositions(options);
 
         for (let i = 0; i < menubuttons.length; i++) {
@@ -1131,7 +1132,7 @@ async function AddBetterSEQTAElements(toggle) {
   if (code != null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
       UserInitalCode = code.innerText;
-      code.innerText = `BetterSEQTA v${chrome.runtime.getManifest().version}`;
+      code.innerText = `BetterSEQTA v${browser.runtime.getManifest().version}`;
       code.setAttribute('data-hover', 'Click for user code');
       code.addEventListener('click', function () {
         var code = document.getElementsByClassName('code')[0];
@@ -1140,7 +1141,7 @@ async function AddBetterSEQTAElements(toggle) {
           code.setAttribute('data-hover', 'Click for BetterSEQTA version');
         } else {
           code.innerText = `BetterSEQTA v${
-            chrome.runtime.getManifest().version
+            browser.runtime.getManifest().version
           }`;
           code.setAttribute('data-hover', 'Click for user code');
         }
@@ -1148,14 +1149,14 @@ async function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        const result = chrome.storage.local.get(['animatedbk']);
-        const sliderVal = chrome.storage.local.get(['bksliderinput']);
+        const result = browser.storage.local.get(['animatedbk']);
+        const sliderVal = browser.storage.local.get(['bksliderinput']);
 
         result.then(animbkEnable);
         sliderVal.then(updateBgDurations);
 
         // Load darkmode state
-        chrome.storage.local.get(['DarkMode'], function (result) {
+        browser.storage.local.get(['DarkMode'], function (result) {
           DarkMode = result.DarkMode;
         });
 
@@ -1307,7 +1308,7 @@ async function AddBetterSEQTAElements(toggle) {
         ContentDiv.append(SettingsButton.firstChild);
 
         const result = await new Promise(resolve => {
-          chrome.storage.local.get(null, resolve);
+          browser.storage.local.get(null, resolve);
         });
         
         const DarkMode = result.DarkMode;
@@ -1339,11 +1340,11 @@ async function AddBetterSEQTAElements(toggle) {
         
         document.getElementById('LightDarkModeButton').addEventListener('click', async () => {
           const result = await new Promise(resolve => {
-            chrome.storage.local.get(null, resolve);
+            browser.storage.local.get(null, resolve);
           });
           
           const newDarkMode = !result.DarkMode;
-          chrome.storage.local.set({ DarkMode: newDarkMode });
+          browser.storage.local.set({ DarkMode: newDarkMode });
           
           updateAllColors(newDarkMode, result.selectedColor);
           
@@ -1432,7 +1433,7 @@ function CheckCurrentLesson(lesson, num) {
 
   // If 5 minutes before the start of another lesson:
   if (minutes == 5) {
-    chrome.storage.local.get('lessonalert', function (result) {
+    browser.storage.local.get('lessonalert', function (result) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
@@ -1663,7 +1664,7 @@ function callHomeTimetable(date, change) {
           var dummyDay = document.createElement('div');
           dummyDay.classList.add('day-empty');
           let img = document.createElement('img');
-          img.src = chrome.runtime.getURL('icons/betterseqta-light-icon.png');
+          img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png');
           let text = document.createElement('p');
           text.innerText = 'No lessons available.';
           dummyDay.append(img);
@@ -1874,12 +1875,12 @@ function CreateSubjectFilter(subjectcode, itemcolour, checked) {
   label.append(span);
 
   input.addEventListener('change', function (change) {
-    chrome.storage.local.get(null, function (storage) {
+    browser.storage.local.get(null, function (storage) {
       let filters = storage.subjectfilters;
       let id = change.target.id.split('-')[1];
       filters[id] = change.target.checked;
 
-      chrome.storage.local.set({ subjectfilters: filters });
+      browser.storage.local.set({ subjectfilters: filters });
     });
   });
 
@@ -1887,7 +1888,7 @@ function CreateSubjectFilter(subjectcode, itemcolour, checked) {
 }
 
 function CreateFilters(subjects) {
-  chrome.storage.local.get(null, function (result) {
+  browser.storage.local.get(null, function (result) {
     let filteroptions = result.subjectfilters;
 
     let filterdiv = document.querySelector('#upcoming-filters');
@@ -1896,7 +1897,7 @@ function CreateFilters(subjects) {
       // eslint-disable-next-line
       if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
         filteroptions[element.code] = true;
-        chrome.storage.local.set({ subjectfilters: filteroptions });
+        browser.storage.local.set({ subjectfilters: filteroptions });
       }
       let elementdiv = CreateSubjectFilter(
         element.code,
@@ -2018,7 +2019,7 @@ function CreateUpcomingSection(assessments) {
       }
 
     }
-    chrome.storage.local.get(null, function (result) {
+    browser.storage.local.get(null, function (result) {
       FilterUpcomingAssessments(result.subjectfilters);
     });
   });
@@ -2082,7 +2083,7 @@ function FilterUpcomingAssessments(subjectoptions) {
   }
 }
 
-chrome.storage.onChanged.addListener(function (changes) {
+browser.storage.onChanged.addListener(function (changes) {
   if (changes.subjectfilters) {
     FilterUpcomingAssessments(changes.subjectfilters.newValue);
   }
@@ -2160,7 +2161,7 @@ export function RemoveShortcutDiv(elements) {
 }
 
 function AddCustomShortcutsToPage() {
-  chrome.storage.local.get(['customshortcuts'], function (result) {
+  browser.storage.local.get(['customshortcuts'], function (result) {
     var customshortcuts = Object.values(result)[0];
     if (customshortcuts.length > 0) {
       document.getElementsByClassName('shortcut-container')[0].style.display =
@@ -2190,7 +2191,7 @@ function SendHomePage() {
     const titlediv = document.getElementById('title').firstChild;
     titlediv.innerText = 'Home';
     document.querySelector('link[rel*="icon"]').href =
-      chrome.runtime.getURL('icons/icon-48.png');
+      browser.runtime.getURL('icons/icon-48.png');
 
     currentSelectedDate = new Date();
 
@@ -2280,7 +2281,7 @@ function SendHomePage() {
     });
 
     // Adds the shortcuts to the shortcut container
-    chrome.storage.local.get(['shortcuts'], function (result) {
+    browser.storage.local.get(['shortcuts'], function (result) {
       const shortcuts = Object.values(result)[0];
       addShortcuts(shortcuts);
     });
@@ -2351,7 +2352,7 @@ function SendHomePage() {
         } else {
           if (!NoticeContainer.innerText) {
             // For each element in the response json:
-            chrome.storage.local.get(['DarkMode'], function (result) {
+            browser.storage.local.get(['DarkMode'], function (result) {
               DarkMode = result.DarkMode;
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
                 // Create a div, and place information from json response
@@ -2417,7 +2418,7 @@ function SendHomePage() {
     xhr2.send(JSON.stringify({ date: TodayFormatted }));
 
     // Sends similar HTTP Post Request for the notices
-    chrome.storage.local.get(null, function (result) {
+    browser.storage.local.get(null, function (result) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
@@ -2570,7 +2571,7 @@ function SendNewsPage() {
     titlediv.innerText = 'News';
     AppendLoadingSymbol('newsloading', '#news-container');
 
-    chrome.runtime.sendMessage({ type: 'sendNews' }, function (response) {
+    browser.runtime.sendMessage({ type: 'sendNews' }, function (response) {
       let newsarticles = response.news.articles;
       var newscontainer = document.querySelector('#news-container');
       document.getElementById('newsloading').remove();
@@ -2584,7 +2585,7 @@ function SendNewsPage() {
         articleimage.classList.add('articleimage');
 
         if (newsarticles[i].urlToImage == 'null') {
-          articleimage.style.backgroundImage = `url(${chrome.runtime.getURL(
+          articleimage.style.backgroundImage = `url(${browser.runtime.getURL(
             'icons/betterseqta-light-outline.png',
           )})`;
           articleimage.style.width = '20%';
@@ -2629,7 +2630,7 @@ async function CheckForMenuList() {
 
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
-  chrome.storage.local.get(null, function (result) {
+  browser.storage.local.get(null, function (result) {
     if (result.onoff) {
       SendHomePage();
     }
