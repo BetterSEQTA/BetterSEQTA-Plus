@@ -1,4 +1,5 @@
-/*global chrome*/
+import browser from 'webextension-polyfill';
+
 export const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
@@ -56,10 +57,10 @@ export const readData = () => {
 };
 
 function reloadSeqtaPages() {
-  chrome.tabs.query({}, function (tabs) {
+  browser.tabs.query({}, function (tabs) {
     for (let tab of tabs) {
       if (tab.title.includes('SEQTA Learn')) {
-        chrome.tabs.reload(tab.id);
+        browser.tabs.reload(tab.id);
       }
     }
   });
@@ -67,11 +68,11 @@ function reloadSeqtaPages() {
 
 // Helper function to handle setting permissions
 const handleAddPermissions = () => {
-  if (typeof chrome.declarativeContent !== 'undefined') {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {});
+  if (typeof browser.declarativeContent !== 'undefined') {
+    browser.declarativeContent.onPageChanged.removeRules(undefined, () => {});
   }
   
-  chrome.permissions.request(
+  browser.permissions.request(
     { permissions: ['declarativeContent'], origins: ['*://*/*'] },
     (granted) => {
       if (granted) {
@@ -80,7 +81,7 @@ const handleAddPermissions = () => {
         ];
         
         rules.forEach(rule => {
-          chrome.declarativeContent.onPageChanged.addRules([rule]);
+          browser.declarativeContent.onPageChanged.addRules([rule]);
         });
         
         alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
@@ -90,22 +91,22 @@ const handleAddPermissions = () => {
 };
 
 // Main message listener
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
   case 'reloadTabs':
     reloadSeqtaPages();
     break;
   
   case 'currentTab':
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, request, function (response) {
+    browser.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      browser.tabs.sendMessage(tabs[0].id, request, function (response) {
         sendResponse(response);
       });
     });
     return true;
   
   case 'githubTab':
-    chrome.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
+    browser.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
     break;
     
   case 'setDefaultStorage':
@@ -218,12 +219,12 @@ const DefaultValues = {
 
 function SetStorageValue(object) {
   for (var i in object) {
-    chrome.storage.local.set({ [i]: object[i] });
+    browser.storage.local.set({ [i]: object[i] });
   }
 }
 
 function UpdateCurrentValues() {
-  chrome.storage.local.get(null, function (items) {
+  browser.storage.local.get(null, function (items) {
     var CurrentValues = items;
 
     const NewValue = Object.assign({}, DefaultValues, CurrentValues);
@@ -257,7 +258,7 @@ function UpdateCurrentValues() {
 }
 
 function migrateOldStorage() {
-  chrome.storage.local.get(null, function (items) {
+  browser.storage.local.get(null, function (items) {
     let shouldUpdate = false; // Flag to check if there is anything to update
     
     // Check for the old "Name" field and convert it to "name"
@@ -283,18 +284,18 @@ function migrateOldStorage() {
 
     // If there"s something to update, set the new values in storage
     if (shouldUpdate) {
-      chrome.storage.local.set({ shortcuts: items.shortcuts }, function() {
+      browser.storage.local.set({ shortcuts: items.shortcuts }, function() {
         console.log('Migration completed.');
       });
     }
   });
 }
 
-chrome.runtime.onInstalled.addListener(function (event) {
-  chrome.storage.local.remove(['justupdated']);
+browser.runtime.onInstalled.addListener(function (event) {
+  browser.storage.local.remove(['justupdated']);
   UpdateCurrentValues();
   if ( event.reason == 'install', event.reason == 'update' ) {
-    chrome.storage.local.set({ justupdated: true });
+    browser.storage.local.set({ justupdated: true });
     migrateOldStorage();
   }
 });
