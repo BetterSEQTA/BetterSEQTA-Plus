@@ -339,7 +339,7 @@ td.colourBar {
   /* Provides space for the icon */
 }
 #toolbar span:has(.search)::before {
-  content: "";
+  content: "\eca5";
   /* Unicode for the search icon */
   position: absolute;
   left: 8px;
@@ -1664,7 +1664,7 @@ body {
   text-shadow: 0 0 5px black;
 }
 [data-label="inbox"] > .LabelList__name___-CHgq::before {
-  content: "";
+  content: "\eb70";
   /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
@@ -1674,7 +1674,7 @@ body {
   pointer-events: none;
 }
 [data-label="outbox"] > .LabelList__name___-CHgq::before {
-  content: "";
+  content: "\eca6";
   /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
@@ -1684,7 +1684,7 @@ body {
   pointer-events: none;
 }
 [data-label="starred"] > .LabelList__name___-CHgq::before {
-  content: "";
+  content: "\ece8";
   color: currentColor;
   font-size: 16px;
   margin-right: 8px;
@@ -1693,7 +1693,7 @@ body {
   pointer-events: none;
 }
 [data-label="trash"] > .LabelList__name___-CHgq::before {
-  content: "";
+  content: "\ed2c";
   /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
@@ -2516,7 +2516,7 @@ body {
   cursor: pointer;
 }
 #whatsnewclosebutton::before {
-  content: "";
+  content: "\ed8a";
   color: currentColor;
   font-size: 24px;
   font-family: "IconFamily";
