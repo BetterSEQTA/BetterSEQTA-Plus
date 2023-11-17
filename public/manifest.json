@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BetterSEQTA+",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
     "32": "icons/icon-32.png",
@@ -25,7 +25,7 @@
   "optional_permissions": ["declarativeContent"],
   "content_scripts": [
     {
-      "matches": ["https://*.edu.au/*"],
+      "matches": ["https://*.*/*"],
       "js": ["purify.min.js", "SEQTA.js"],
       "run_at": "document_start"
     }
