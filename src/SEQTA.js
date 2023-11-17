@@ -1698,18 +1698,23 @@ function GetUpcomingAssessments() {
     .then((response) => response.payload);
 }
 
-function GetActiveClasses() {
-  let func = fetch(`${location.origin}/seqta/student/load/subjects?`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({}),
-  });
+async function GetActiveClasses() {
+  try {
+    const response = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({})
+    });
 
-  return func
-    .then((result) => result.json())
-    .then((response) => response.payload);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.payload;
+  } catch (error) {
+    console.error('Oops! There was a problem fetching active classes:', error);
+  }
 }
 
 function comparedate(obj1, obj2) {
