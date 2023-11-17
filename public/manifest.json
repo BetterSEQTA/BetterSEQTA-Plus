@@ -25,7 +25,7 @@
   "optional_permissions": ["declarativeContent"],
   "content_scripts": [
     {
-      "matches": ["https://*.*/*"],
+      "matches": ["https://*/*"],
       "js": ["purify.min.js", "SEQTA.js"],
       "run_at": "document_start"
     }
