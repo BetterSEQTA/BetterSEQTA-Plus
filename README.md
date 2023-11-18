@@ -52,19 +52,11 @@ git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 npm install
 ```
-OR
-```
-bun install
-```
 
 3. Run the dev script (it updates as you save files)
 
 ```
 npm run dev
-```
-OR
-```
-bun run dev
 ```
 
 ## Folder Structure
