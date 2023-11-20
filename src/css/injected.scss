@@ -1149,6 +1149,10 @@ iframe.userHTML {
   background: transparent;
   color: var(--text-primary) !important;
 }
+.dark #main > .course > .content > h1 {
+  text-shadow: 0 0 10px black;
+}
+
 #main > .course > .content > h1 {
   color: var(--text-primary);
   border-bottom: none;
