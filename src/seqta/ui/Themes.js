@@ -1,5 +1,5 @@
+/* global chrome */
 import localforage from 'localforage';
-import { updateAllColors } from '../ui/colors/Manager.js';
 
 let currentThemeClass = '';
 
@@ -77,8 +77,7 @@ const applyTheme = async (themeName) => {
     );
   }
 
-  // Update colors based on theme settings
-  updateAllColors(darkMode, defaultColour);
+  chrome.storage.local.set({ DarkMode: darkMode, selectedColor: defaultColour });
 };
 
 export const listThemes = async () => {
