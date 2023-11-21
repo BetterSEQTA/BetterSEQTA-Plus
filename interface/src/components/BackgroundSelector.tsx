@@ -136,7 +136,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
           </div>
         ))}
         {backgrounds.concat(presetBackgrounds as Background[]).filter(bg => bg.type === 'image' && bg.isPreset && !bg.isDownloaded && !downloadedPresetIds.includes(bg.id)).map(bg => (
-          <div key={bg.id}
+          <button key={bg.id}
             onClick={() => handlePresetClick(bg)}
             className={`relative w-16 h-16 transition cursor-pointer rounded-xl duration-300 ${ isEditMode ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'}`}>
             {bg.isPreset && downloadProgress[bg.id] !== undefined && (
@@ -156,7 +156,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
               className="absolute top-0 object-cover w-full h-full rounded-xl" 
               src={bg.isPreset ? bg.previewUrl : bg.url}  // Use preview for preset backgrounds
               alt="swatch" />
-          </div>
+          </button>
         ))}
       </div>
 

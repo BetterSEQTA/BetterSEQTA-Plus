@@ -1662,10 +1662,12 @@ body {
   animation: spin 3s linear infinite;
   -moz-animation: spin 3s linear infinite;
 }
+.dark .LabelList__name___-CHgq {
+  text-shadow: 0 0 5px black;
+}
 .LabelList__name___-CHgq {
   display: flex;
   align-items: center;
-  text-shadow: 0 0 5px black;
 }
 [data-label="inbox"] > .LabelList__name___-CHgq::before {
   content: "";
