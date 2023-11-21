@@ -22,13 +22,17 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
 
   useEffect(() => {
     const initializeThemes = async () => {
-      const downloaded = (await listThemes()).themes;
+      const downloaded = (await listThemes());
 
       const initializedThemes = themesList.map(theme => ({
         ...theme,
-        isDownloaded: downloaded.includes(theme.name),
+        isDownloaded: downloaded.themes.includes(theme.name),
         isLoading: false
       }));
+
+      if (downloaded.selectedTheme !== '') {
+        setEnabledThemeName(downloaded.selectedTheme);
+      }
 
       initializedThemes.sort((a, b) => Number(b.isDownloaded) - Number(a.isDownloaded));
 
