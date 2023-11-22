@@ -1326,17 +1326,6 @@ async function AddBetterSEQTAElements(toggle) {
         
         updateAllColors(DarkMode, result.selectedColor);
 
-        // Locate the menuToggle element
-        const menuToggle = document.getElementById('menuToggle');
-        menuToggle.innerHTML = '';
-
-        // Create three divs to act as lines of the hamburger icon
-        for (let i = 0; i < 3; i++) {
-          const line = document.createElement('div');
-          line.className = 'hamburger-line';
-          menuToggle.appendChild(line);
-        }
-        
         document.getElementById('LightDarkModeButton').addEventListener('click', async () => {
           const result = await new Promise(resolve => {
             chrome.storage.local.get(null, resolve);
@@ -1350,6 +1339,17 @@ async function AddBetterSEQTAElements(toggle) {
           const darklightText = document.getElementById('darklighttooliptext');
           darklightText.innerText = GetLightDarkModeString(newDarkMode);
         });
+
+        // Locate the menuToggle element
+        const menuToggle = document.getElementById('menuToggle');
+        menuToggle.innerHTML = '';
+
+        // Create three divs to act as lines of the hamburger icon
+        for (let i = 0; i < 3; i++) {
+          const line = document.createElement('div');
+          line.className = 'hamburger-line';
+          menuToggle.appendChild(line);
+        }
       } else {
         // Creates settings and dashboard buttons next to alerts
         SettingsButton = stringToHTML(
@@ -2319,7 +2319,7 @@ function SendHomePage() {
     document.getElementById('home-container').append(upcomingcontainer);
 
     // Creates the notices container into the home container
-    var NoticesStr = '<div class="notices-container border"><h2 class="home-subtitle">Notices</h2><div class="notice-container" id="notice-container"></div></div>';
+    const NoticesStr = `<div class="notices-container border"><div style="display: flex; justify-content: space-between"><h2 class="home-subtitle">Notices</h2><input type="date" value=${TodayFormatted}><select></select></div><div class="notice-container" id="notice-container"></div></div>`
     var Notices = stringToHTML(NoticesStr);
     // Appends the shortcut container into the home container
     document.getElementById('home-container').append(Notices.firstChild);

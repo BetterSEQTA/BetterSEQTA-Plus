@@ -2330,6 +2330,16 @@ body {
   right: -70px !important;
   top: -2px !important;
 }
+.userInfosvgdiv::before {
+  content: "";
+  width: 70%;
+  height: 70%;
+  background: var(--theme-primary);
+  position: absolute;
+  border-radius: 1000rem;
+  top: 15%;
+  left: 15%;
+}
 .userInfosvg::after {
   width: 35px;
   height: 35px;
