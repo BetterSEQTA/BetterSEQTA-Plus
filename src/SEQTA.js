@@ -795,8 +795,18 @@ async function CheckLoadOnPeriods() {
 export function closeSettings() {
   var extensionsettings = document.getElementById('ExtensionPopup');
 
+  if (SettingsClicked == true) {
+    console.log(SettingsClicked, "Closing Menu!")
+    extensionsettings.classList.add('hide');
+    animate(
+      '#ExtensionPopup',
+      { opacity: [1, 0], scale: [1, 0] },
+      { easing: spring({ stiffness: 220, damping: 18 }) }
+      );
+    SettingsClicked = false;
+  }
+
   extensionsettings.classList.add('hide');
-  SettingsClicked = false;
 }
 
 function addExtensionSettings() {
@@ -823,17 +833,17 @@ function addExtensionSettings() {
 
   const container = document.getElementById('container');
   const closeExtensionPopup = () => {
-    if (!SettingsClicked) {
-      extensionPopup.classList.add('hide');
-    }
+    extensionPopup.classList.add('hide');
+    animate(
+      '#ExtensionPopup',
+      { opacity: [1, 0], scale: [1, 0] },
+      { easing: [.22, .03, .26, 1] }
+    );
     SettingsClicked = false;
   };
   container.onclick = (event) => {
-    extensionIframe.contentWindow.postMessage('popupClosed', '*');
-    if (event.target.id !== 'AddedSettings') {
-      closeExtensionPopup();
-    } else {
-      SettingsClicked = false;
+    if (event.target.closest('#AddedSettings') == null && SettingsClicked) {
+      closeExtensionPopup()
     }
   };
 }
@@ -1360,11 +1370,26 @@ async function AddBetterSEQTAElements(toggle) {
       }
 
       var AddedSettings = document.getElementById('AddedSettings');
-      var extensionsettings = document.getElementById('ExtensionPopup');
+      var extensionPopup = document.getElementById('ExtensionPopup');
       
       AddedSettings.addEventListener('click', function () {
-        extensionsettings.classList.toggle('hide');
-        SettingsClicked = true;
+        if (SettingsClicked) {
+          extensionPopup.classList.add('hide');
+          animate(
+            '#ExtensionPopup',
+            { opacity: [1, 0], scale: [1, 0] },
+            { easing: spring({ stiffness: 220, damping: 18 }) }
+          );
+          SettingsClicked = false;      
+        } else {
+          extensionPopup.classList.remove('hide');
+          animate(
+            '#ExtensionPopup',
+            { opacity: [0, 1], scale: [0, 1] },
+            { easing: spring({ stiffness: 260, damping: 24 }) }
+          )
+          SettingsClicked = true;
+        }
       });
     }
   }
