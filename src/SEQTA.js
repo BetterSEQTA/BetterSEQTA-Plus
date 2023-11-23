@@ -796,7 +796,6 @@ export function closeSettings() {
   var extensionsettings = document.getElementById('ExtensionPopup');
 
   if (SettingsClicked == true) {
-    console.log(SettingsClicked, "Closing Menu!")
     extensionsettings.classList.add('hide');
     animate(
       '#ExtensionPopup',
