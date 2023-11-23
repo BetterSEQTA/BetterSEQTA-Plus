@@ -2343,7 +2343,15 @@ function SendHomePage() {
     document.getElementById('home-container').append(upcomingcontainer);
 
     // Creates the notices container into the home container
-    const NoticesStr = `<div class="notices-container border"><div style="display: flex; justify-content: space-between"><h2 class="home-subtitle">Notices</h2><input type="date" value=${TodayFormatted}</div><div class="notice-container" id="notice-container"></div></div>`
+    const NoticesStr = String.raw`
+      <div class="notices-container border">
+        <div style="display: flex; justify-content: space-between">
+          <h2 class="home-subtitle">Notices</h2>
+          <input type="date" value=${TodayFormatted} />
+        </div>
+        <div class="notice-container" id="notice-container"></div>
+      </div>`
+      
     var Notices = stringToHTML(NoticesStr);
     // Appends the shortcut container into the home container
     document.getElementById('home-container').append(Notices.firstChild);
