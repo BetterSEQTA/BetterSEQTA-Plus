@@ -114,7 +114,8 @@ ul.magicDelete > li.deleting {
   background: none;
 }
 #menu li, #menu section {
-  margin-right: 8px !important;
+  margin: 8px auto !important;
+  width: 85% !important;
   border-bottom: none;
   box-shadow: none;
   border-radius: 12px;
@@ -2408,6 +2409,9 @@ body {
   transform: scale(1);
   transform-origin: top;
   transition: transform 0.2s;
+}
+body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltiptext {
+  transform: scale(0);
 }
 .assessmenttooltip svg {
   fill: var(--text-primary);
