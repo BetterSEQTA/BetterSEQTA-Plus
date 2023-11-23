@@ -158,8 +158,11 @@ ul.magicDelete > li.deleting {
   margin-bottom: 8px !important;
   width: 85% !important;
 }
-li.item.draggable {
+.item.draggable {
   width: 100% !important;
+  > .sub {
+    display: none !important;
+  }
 }
 #menu li.active > .sub > ul > .item {
   box-shadow: inset 3px 0 var(--item-colour, transparent);
