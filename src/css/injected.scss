@@ -521,6 +521,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   background-image: unset !important;
   color: white !important;
 }
+.notices-container input {
+  border: none;
+}
 #main > .notices > .notice > .label, #main > .notices > .notice > .staff, #main > .notices > .notice > h2 {
   color: var(--text-primary);
   color: var(--colour);

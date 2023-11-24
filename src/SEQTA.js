@@ -138,6 +138,10 @@ function OpenWhatsNewPopup() {
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
+    <h1>3.2.2 - Minor Improvements</h1>
+    <li>Added Settings open-close animation</li>
+    <li>Minor Bug Fixes</li>
+
     <h1>3.2.0 - Custom Themes</h1>
     <li>Added transparency (blur) effects</li>
     <li>Added custom themes</li>
