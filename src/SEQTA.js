@@ -773,6 +773,11 @@ export function AppendElementsToDisabledPage() {
   .outside-container {
     top: 48px !important;
   }
+  #ExtensionPopup {
+    border-radius: 1rem;
+    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
+    transform-origin: 70% 0;
+  }
   `;
   document.head.append(settingsStyle);
 }
