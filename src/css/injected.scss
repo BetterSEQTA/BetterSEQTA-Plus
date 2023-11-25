@@ -1285,8 +1285,17 @@ iframe.userHTML {
   color: #000 !important;
 }
 div.entry.class {
-  width: 100% !important;
   border-radius: 0.25rem;
+}
+
+div.entry.class {
+  width: 100% !important;
+}
+div.entry.class[style*="left: 46.5%"] {
+  left: 50% !important;
+}
+div.entry.class[style*="width: 46.5%"] {
+  width: 50% !important;
 }
 .timetablepage .dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper {
   min-width: 0;
