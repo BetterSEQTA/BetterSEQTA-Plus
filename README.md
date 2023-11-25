@@ -52,8 +52,11 @@ git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 npm install
 ```
-
-3. Run the dev script (it updates as you save files)
+3. Install webpack
+```
+npm install -g webpack
+```
+4. Run the dev script (it updates as you save files)
 
 ```
 npm run dev
