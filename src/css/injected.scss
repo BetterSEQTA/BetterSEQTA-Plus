@@ -371,9 +371,31 @@ td.colourBar {
 #toolbar button.toggled, #toolbar button.depressed {
   background: var(--better-main);
 }
-.buttonChecklist {
-  border-radius: 16px;
+ul.buttonChecklist {
+  border-radius: 1rem;
   margin-top: 4px;
+  padding-left: 0 !important;
+  box-shadow: 0 0 10px -5px black;
+
+  > li {
+    border-radius: 0.5rem;
+    border-bottom: unset !important;
+
+    > button {
+      border-radius: 0.5rem;
+      border: unset !important;
+    }
+  }
+}
+ul.buttonChecklist button {
+  border-radius: 0.5rem !important;
+
+}
+ul.buttonChecklist:has(.item.checked) button:nth-child(2) {
+  background: var(--background-secondary) !important;
+}
+ul.buttonChecklist:has(.item.unchecked) button:nth-child(1) {
+  background: var(--background-secondary) !important;
 }
 #toolbar > span:has(input) {
   flex: 1 1 0%;
@@ -961,8 +983,12 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 25px;
   height: 25px;
 }
-.legacy-root button::after {
+.dark .legacy-root button::after {
   background: white;
+}
+
+.legacy-root button::after {
+  background: var(--better-main);
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);
@@ -1029,9 +1055,11 @@ div > ol:has(.uiFileHandlerWrapper) {
 .Viewer__sidebar___1Btu4 {
   color: var(--text-primary);
   border-right: unset;
-}
-.Viewer__sidebar___1Btu4 > header {
   background: unset;
+
+  > header {
+    background: unset;
+  }
 }
 .MessageList__MessageList___3DxoC ::-webkit-scrollbar {
   width: 0px;
@@ -1312,9 +1340,6 @@ div.entry.class[style*="width: 46.5%"] {
 }
 .uiButton:hover {
   box-shadow: none !important;
-}
-.uiButton:not([disabled]):hover {
-  transform: scale(1.01) !important;
 }
 .uiFileHandlerPanel {
   background: var(--background-primary);
