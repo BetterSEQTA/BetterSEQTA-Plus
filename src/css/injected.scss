@@ -1667,10 +1667,11 @@ body {
   --menuHidden: none;
 }
 .editmenuoption {
-  padding: 8px;
-  background: var(--better-light);
+  background: var(--background-primary);
+  color: var(--text-primary);
   border-radius: 5px;
   margin: 0 10px;
+  padding: 8px;
   cursor: pointer;
 }
 .editmenuoption-container {
