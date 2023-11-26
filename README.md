@@ -37,7 +37,7 @@
   - Opera Supported
   - Vivaldi Supported
   - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
-  - Safari (Experimental)
+  - Safari (Experimental - only available via compilation)
 
 ## Getting started
 
@@ -52,13 +52,25 @@ git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 npm install
 ```
+
 3. Install webpack
+
 ```
 npm install -g webpack
 ```
+
 4. Run the dev script (it updates as you save files)
 
 ```
+npm run dev
+```
+
+5. Install and run the dev script for the interface (all custom react components are a separate sub-repository)
+
+```
+cd interface
+
+npm install
 npm run dev
 ```
 
