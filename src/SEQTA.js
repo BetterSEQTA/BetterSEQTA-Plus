@@ -940,7 +940,6 @@ export function OpenMenuOptions() {
       const element = ListItems[i];
 
       element.classList.add('draggable');
-      element.setAttribute('draggable', true);
       if (element.classList.contains('hasChildren')) {
         element.classList.remove('active');
         menu.firstChild.classList.remove('noscroll');
