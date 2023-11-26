@@ -950,13 +950,11 @@ export function OpenMenuOptions() {
       ).firstChild;
       element.append(MenuItemToggle);
 
-      if (!element.dataset.betterseqta) {
-        var a = document.createElement('section');
-        a.innerHTML = element.innerHTML;
-        cloneAttributes(a, element);
-        menu.firstChild.insertBefore(a, element);
-        element.remove();
-      }
+      const replacementElement = document.createElement('section');
+      replacementElement.innerHTML = element.innerHTML;
+      cloneAttributes(replacementElement, element);
+      menu.firstChild.insertBefore(replacementElement, element);
+      element.remove();
     }
 
     if (Object.keys(result.menuitems).length == 0) {
