@@ -857,21 +857,6 @@ function addExtensionSettings() {
   };
 }
 
-function ApplyDraggableFunctions() {
-  Sortable.mount(new AutoScroll());
-
-  var el = document.querySelector('#menu > ul');
-  var sortable = Sortable.create(el, {
-    draggable: '.draggable',
-    dataIdAttr: 'data-key',
-    animation: 150,
-    easing: "cubic-bezier(.5,0,.5,1)",
-    onEnd: function () {
-      saveNewOrder(sortable);  // Save the new order when drag ends
-    },
-  });
-}
-
 function saveNewOrder(sortable) {
   var order = sortable.toArray();
   chrome.storage.local.set({ menuorder: order });
@@ -984,22 +969,21 @@ export function OpenMenuOptions() {
       }
     });
 
-    ApplyDraggableFunctions();
+    Sortable.mount(new AutoScroll());
+
+    var el = document.querySelector('#menu > ul');
+    var sortable = Sortable.create(el, {
+      draggable: '.draggable',
+      dataIdAttr: 'data-key',
+      animation: 150,
+      easing: "cubic-bezier(.5,0,.5,1)",
+      onEnd: function () {
+        saveNewOrder(sortable);  // Save the new order when drag ends
+      },
+    });  
 
     function StoreMenuSettings() {
-      chrome.storage.local.get(['menuitems'], function () {
-        var menuItems = {};
-        menubuttons = menu.firstChild.childNodes;
-        let button = document.getElementsByClassName('menuitem');
-        for (var i = 0; i < menubuttons.length; i++) {
-          var id = menubuttons[i].dataset.key;
-          const element = {};
-          element.toggle = button[i].checked;
-
-          menuItems[id] = element;
-        }
-        chrome.storage.local.set({ menuitems: menuItems });
-      });
+      saveNewOrder(sortable);
     }
 
     function changeDisplayProperty(element) {
