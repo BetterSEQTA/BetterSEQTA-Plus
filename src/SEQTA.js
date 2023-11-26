@@ -820,7 +820,7 @@ export function closeSettings() {
 
 function addExtensionSettings() {
   const link = document.createElement('link');
-  link.href = chrome.runtime.getURL('popup/popup.css');
+  link.href = chrome.runtime.getURL('interface/popup.css');
   link.type = 'text/css';
   link.rel = 'stylesheet';
   document.querySelector('html').appendChild(link);
@@ -831,7 +831,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup);
 
   const extensionIframe = document.createElement('iframe');
-  extensionIframe.src = chrome.runtime.getURL('interface/index.html');
+  extensionIframe.src = `${chrome.runtime.getURL('interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
   extensionIframe.allowTransparency = true;
   extensionIframe.style.width = '384px';
