@@ -1,6 +1,7 @@
 /* global chrome */
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
+import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
@@ -857,76 +858,23 @@ function addExtensionSettings() {
 }
 
 function ApplyDraggableFunctions() {
-  var listItens = document.querySelectorAll('.draggable');
-  [].forEach.call(listItens, function (item) {
-    addEventsDragAndDrop(item);
+  Sortable.mount(new AutoScroll());
+
+  var el = document.querySelector('#menu > ul');
+  var sortable = Sortable.create(el, {
+    draggable: '.draggable',
+    dataIdAttr: 'data-key',
+    animation: 150,
+    easing: "cubic-bezier(.5,0,.5,1)",
+    onEnd: function () {
+      saveNewOrder(sortable);  // Save the new order when drag ends
+    },
   });
 }
 
-var dragSrcEl;
-
-function dragStart(e) {
-  this.style.opacity = '0.4';
-  dragSrcEl = this;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/html', this.innerHTML);
-}
-
-function dragEnter() {
-  this.classList.add('over');
-}
-
-function dragLeave(e) {
-  e.stopPropagation();
-  this.classList.remove('over');
-}
-
-function dragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  return false;
-}
-
-function dragDrop() {
-  if (dragSrcEl != this) {
-    const parentA = this.parentNode;
-    const siblingA = this.nextSibling === dragSrcEl ? this : this.nextSibling;
-
-    // Move `this` to before the `dragSrcEl`
-    dragSrcEl.parentNode.insertBefore(this, dragSrcEl);
-
-    // Move `dragSrcEl` to before the sibling of `this`
-    parentA.insertBefore(dragSrcEl, siblingA);
-
-    // Save position of all menu items
-    let children = parentA.childNodes;
-    let listorder = [];
-
-    for (let i = 0; i < children.length; i++) {
-      const elm = children[i];
-      listorder.push(elm.dataset.key);
-    }
-
-    chrome.storage.local.set({ menuorder: listorder });
-  }
-  return false;
-}
-
-function dragEnd() {
-  var listItens = document.querySelectorAll('.draggable');
-  [].forEach.call(listItens, function (item) {
-    item.classList.remove('over');
-  });
-  this.style.opacity = '1';
-}
-
-function addEventsDragAndDrop(el) {
-  el.addEventListener('dragstart', dragStart, false);
-  el.addEventListener('dragenter', dragEnter, false);
-  el.addEventListener('dragover', dragOver, false);
-  el.addEventListener('dragleave', dragLeave, false);
-  el.addEventListener('drop', dragDrop, false);
-  el.addEventListener('dragend', dragEnd, false);
+function saveNewOrder(sortable) {
+  var order = sortable.toArray();
+  chrome.storage.local.set({ menuorder: order });
 }
 
 function cloneAttributes(target, source) {
