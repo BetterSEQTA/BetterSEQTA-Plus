@@ -27,6 +27,7 @@ export default function loading() {
         position: absolute;
         top: 50%;
         left: 50%;
+        will-change: transform;
       }
       .logo {
         transform: translate(-50%, -50%);
