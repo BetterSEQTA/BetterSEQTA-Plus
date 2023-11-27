@@ -284,7 +284,7 @@ async function finishLoad() {
   }
 
   chrome.storage.local.get(['justupdated'], function (result) {
-    if (result.justupdated) {
+    if (result.justupdated && !document.getElementById('whatsnewbk')) {
       OpenWhatsNewPopup();
     }
   });
@@ -530,10 +530,10 @@ async function LoadPageElements() {
             if (ranOnce) return;
             ranOnce = true;
             animate(
-              '.dashboard *:not(.dashlet-timetable), .dashboard .message *',
+              '.dashboard > *',
               { opacity: [0, 1], y: [10, 0] },
               {
-                delay: stagger(0.01),
+                delay: stagger(0.1),
                 duration: 0.5,
                 easing: [.22, .03, .26, 1]  
               }
