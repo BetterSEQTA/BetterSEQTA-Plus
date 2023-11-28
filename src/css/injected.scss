@@ -65,7 +65,37 @@ html {
   justify-content: center;
   width: 35px !important;
 }
+[style="background-color: rgb(255, 255, 255);"] {
+  color: black;
+}
+
+.pillbox {
+  border-radius: 1rem;
+  overflow: clip;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary) !important;
+
+  button {
+    background: var(--background-primary) !important;
+    height: auto;
+    padding: 8px 16px !important;
+    overflow: clip !important;
+
+    &.depressed {
+      height: auto !important;
+      color: var(--text-primary) !important;
+    }
+  }
+}
+
+.legacy-root button:active, .legacy-root a:active {
+  background-image: unset !important;
+}
+
 #main > .dashboard {
+  grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
   background: unset;
 
   // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
@@ -78,6 +108,18 @@ html {
     background: var(--background-primary);
     border-radius: 1rem;
     //opacity: 0;
+
+    &[data-ident="timetable"] {
+      grid-row: span 2 / auto !important;
+    }
+
+    .header {
+      min-height: unset !important;
+
+      .title {
+        padding: 1rem 1rem !important;
+      }
+    }
   }
 }
 .dashlet-summary-homework > .summary > .subject > .item {
@@ -577,8 +619,20 @@ div > ol:has(.uiFileHandlerWrapper) {
   background-image: unset !important;
   color: white !important;
 }
-.notices-container input {
-  border: none;
+.notices-container {
+  input {
+    border: none;
+
+    &:hover {
+      border: none;
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+    }
+  }
 }
 #main > .notices > .notice > .label,
 #main > .notices > .notice > .staff,
