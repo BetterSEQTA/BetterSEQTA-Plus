@@ -17,7 +17,6 @@ style.innerHTML = `
 }`;
 document.head.appendChild(style);
 
-
 const root = ReactDOM.createRoot(document.getElementById('ExtensionPopup')!);
 
 root.render(

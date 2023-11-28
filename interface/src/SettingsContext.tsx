@@ -1,4 +1,3 @@
-// SettingsContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { SettingsState } from './types/AppProps';
 import useSettingsState from './hooks/settingsState';
