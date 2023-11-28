@@ -811,8 +811,9 @@ export function closeSettings() {
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: spring({ stiffness: 220, damping: 18 }) }
-      );
+    );
     SettingsClicked = false;
+    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
   }
 
   extensionsettings.classList.add('hide');
@@ -841,6 +842,7 @@ function addExtensionSettings() {
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
+  
   const closeExtensionPopup = () => {
     extensionPopup.classList.add('hide');
     animate(
@@ -848,8 +850,10 @@ function addExtensionSettings() {
       { opacity: [1, 0], scale: [1, 0] },
       { easing: [.22, .03, .26, 1] }
     );
+    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
     SettingsClicked = false;
   };
+
   container.onclick = (event) => {
     if (event.target.closest('#AddedSettings') == null && SettingsClicked) {
       closeExtensionPopup()
@@ -1317,6 +1321,7 @@ async function AddBetterSEQTAElements(toggle) {
             { opacity: [1, 0], scale: [1, 0] },
             { easing: spring({ stiffness: 220, damping: 18 }) }
           );
+          document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
           SettingsClicked = false;      
         } else {
           extensionPopup.classList.remove('hide');
