@@ -65,7 +65,7 @@ npm install -g webpack
 npm run dev
 ```
 
-5. Install and run the dev script for the interface (all custom react components are a separate sub-repository)
+5. Install and run the dev script for the interface **at the same time** (all custom react components are a separate sub-repository)
 
 ```
 cd interface
