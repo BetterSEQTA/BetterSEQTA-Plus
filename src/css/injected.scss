@@ -79,7 +79,7 @@ html {
   button {
     background: var(--background-primary) !important;
     height: auto;
-    padding: 8px 16px !important;
+    padding: 4px 16px !important;
     overflow: clip !important;
 
     &.depressed {
@@ -90,8 +90,23 @@ html {
   }
 }
 
+.PillBox__PillBox___3GjAk {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: var(--background-secondary) 1px solid;
+
+  .PillBox__active___3Qpi9 {
+    background: var(--background-secondary) !important;
+  }
+}
+
 .legacy-root button:active, .legacy-root a:active {
   background-image: unset !important;
+}
+
+.ace_editor {
+  border-radius: 1rem;
+  border-top: none !important;
 }
 
 #main > .dashboard {
