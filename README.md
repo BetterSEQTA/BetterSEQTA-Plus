@@ -82,6 +82,8 @@ The folder structure is as follows:
 
 - The `src` folder contains source files that are compiled to the build directory, these can use import statements so that we can do code splitting.
 
+- The `interface` folder contains source React files that are required for the UI/UX of the Settings page. It is compiled into the build directory alongside files within `src/`.
+
 - The `build` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
 
 - The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working (but because of the styling not being designed for phone, its basically useless for now).
