@@ -10,9 +10,5 @@
     "ecmaVersion": "latest",
     "sourceType": "module" // add this line to allow 'import' and 'export' statements
   },
-  "rules": {
-    "indent": ["error", 2],
-    "quotes": ["error", "single"],
-    "semi": ["error", "always"]
-  }
+  "rules": {}
 }

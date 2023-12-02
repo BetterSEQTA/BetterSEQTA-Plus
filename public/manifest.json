@@ -1,49 +1,49 @@
 {
   "manifest_version": 2,
   "name": "BetterSEQTA+",
-  "version": "3.2.0",
-  "description": "A dark-themed Firefox/Chrome Extension that adds additional features and gives an overall better experience for SEQTA Learn.",
+  "version": "3.2.2",
+  "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
       "48": "icons/icon-48.png"
   },
   "browser_action": {
-      "browser_style": true,
-      "default_popup": "popup/info.html",
-      "default_icon": {
-          "32": "icons/icon-32.png",
-          "64": "icons/icon-64.png"
-      }
+    "browser_style": true,
+    "default_popup": "interface/index.html#settings",
+    "default_icon": {
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "64": "icons/icon-64.png"
+    }
   },
-  "permissions": [
-      "tabs",
-      "notifications",
-      "storage",
-      "https://newsapi.org/"
-  ],
+  "permissions": ["tabs", "notifications", "storage", "https://newsapi.org/"],
   "background": {
-      "scripts": [
-          "background.js"
-      ]
-  },
+    "scripts": [
+        "browser-polyfill.js",
+        "background.js"
+    ]
+},
   "optional_permissions": [
-      "*://*/*",
-      "declarativeContent"
+    "*://*/*",
+    "declarativeContent"
   ],
   "content_scripts": [
-      {
-          "matches": [
-              "https://*.edu.au/*"
-          ],
-          "js": [
-              "SEQTA.js"
-          ],
-          "run_at": "document_start"
-      }
+    {
+      "matches": ["*://*/*"],
+      "js": ["browser-polyfill.js", "purify.min.js", "SEQTA.js"],
+      "run_at": "document_start"
+    }
   ],
   "web_accessible_resources": [
-      "icons/*",
-      "images/*",
-      "inject/*",
-      "popup/*"
+    "icons/*",
+    "fonts/*",
+    "images/*",
+    "css/*",
+    "popup/*",
+    "client.js",
+    "index.css",
+    "interface/*",
+    "client/*",
+    "resources/*",
+    "backgrounds/*"
   ]
 }

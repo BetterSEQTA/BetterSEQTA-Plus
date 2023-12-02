@@ -1,12 +1,15 @@
+/* eslint-disable no-inner-declarations */
 import browser from 'webextension-polyfill';
-
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
+import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
 import stringToHTML from './seqta/utils/stringToHTML.js';
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading.js';
+import { response } from './seqta/utils/GetPrefs.js';
+import { onError } from './seqta/utils/onError.js';
 
 // Icons
 import assessmentsicon from './seqta/icons/assessmentsIcon.js';
@@ -44,16 +47,15 @@ document.addEventListener(
       IsSEQTAPage = true;
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
-      let link = document.createElement('link');
-      link.href = browser.runtime.getURL('css/documentload.css');
-      link.type = 'text/css';
-      link.rel = 'stylesheet';
+      const link = GetCSSElement('css/documentload.css');
       document.getElementsByTagName('html')[0].appendChild(link);
 
       enableCurrentTheme();
-      browser.storage.local.get(null, function (items) {
+      const result = browser.storage.local.get()
+      function open (items) {
         main(items);
-      });
+      }
+      result.then(open, onError)
     }
     if (
       !document.childNodes[1].textContent?.includes('SEQTA') &&
@@ -84,7 +86,8 @@ function animbkEnable(item) {
 
 export function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = '';
-  browser.storage.local.get(null, function (result) {
+  const result = browser.storage.local.get()
+  function open (result) {
     for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
       if (!Object.values(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
@@ -98,7 +101,8 @@ export function ApplyCSSToHiddenMenuItems() {
     let MenuItemStyle = document.createElement('style');
     MenuItemStyle.innerText = stylesheetInnerText;
     document.head.appendChild(MenuItemStyle);
-  });
+  }
+  result.then(open, onError)
 }
 
 function OpenWhatsNewPopup() {
@@ -138,6 +142,10 @@ function OpenWhatsNewPopup() {
   let text = stringToHTML(
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
+
+    <h1>3.2.2 - Minor Improvements</h1>
+    <li>Added Settings open-close animation</li>
+    <li>Minor Bug Fixes</li>
 
     <h1>3.2.0 - Custom Themes</h1>
     <li>Added transparency (blur) effects</li>
@@ -279,11 +287,14 @@ async function finishLoad() {
     console.log(err);
   }
 
-  browser.storage.local.get(['justupdated'], function (result) {
-    if (result.justupdated) {
+
+  const result = browser.storage.local.get(['justupdated']);
+  function open (result) {
+    if (result.justupdated && !document.getElementById('whatsnewbk')) {
       OpenWhatsNewPopup();
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 async function DeleteWhatsNew() {
@@ -361,26 +372,41 @@ async function RunColourCheck(element) {
     element.contentDocument.documentElement.childNodes[1].style.color = 'white';
   }
 }
+export function GetCSSElement (file) {
+  const cssFile = browser.runtime.getURL(file)
+  const fileref = document.createElement('link')
+  fileref.setAttribute('rel', 'stylesheet')
+  fileref.setAttribute('type', 'text/css')
+  fileref.setAttribute('href', cssFile)
 
-export function GetiFrameCSSElement() {
-  var cssFile = browser.runtime.getURL('css/iframe.css');
-  var fileref = document.createElement('link');
-  fileref.setAttribute('rel', 'stylesheet');
-  fileref.setAttribute('type', 'text/css');
-  fileref.setAttribute('href', cssFile);
+  return fileref
+}
 
-  return fileref;
+function removeThemeTagsFromNotices () {
+  // Grabs an array of the notice iFrames
+  const userHTMLArray = document.getElementsByClassName('userHTML')
+  // Iterates through the array, applying the iFrame css
+  for (const item of userHTMLArray) {
+    // Grabs the HTML of the body tag
+    const body = item.contentWindow.document.querySelectorAll('body')[0]
+    if (body) {
+    // Replaces the theme tag with nothing
+      const bodyText = body.innerHTML
+      body.innerhtml = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
+    }
+  }
 }
 
 function CheckiFrameItems() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
-  let fileref = GetiFrameCSSElement();
+  let fileref = GetCSSElement('css/iframe.css');
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
         if (added_node.tagName == 'IFRAME') {
-          browser.storage.local.get(['DarkMode'], function (result) {
+          const result = browser.storage.local.get('DarkMode');
+          function open (result) {
             DarkMode = result.DarkMode;
             if (DarkMode) {
               RunColourCheck(added_node);
@@ -419,7 +445,8 @@ function CheckiFrameItems() {
                 }
               });
             }
-          });
+          }
+          result.then(open, onError)
         }
       });
     });
@@ -461,23 +488,27 @@ async function LoadPageElements() {
   await AddBetterSEQTAElements(true);
   var sublink = window.location.href.split('/')[4];
   switch (sublink) {
-  case 'news':
+  case 'news': {
     console.log('[BetterSEQTA+] Started Init');
-    browser.storage.local.get(null, function (result) {
+    const result = browser.storage.local.get()
+    function open (result) {
       if (result.onoff) {
         SendNewsPage();
 
         // Sends similar HTTP Post Request for the notices
-        browser.storage.local.get(null, function (result) {
+        const result = browser.storage.local.get() 
+        function open (result) {
           if (result.notificationcollector) {
             enableNotificationCollector();
           }
-        });
+        }
+        result.then(open, onError)
         finishLoad();
       }
-    });
+    }
+    result.then(open, onError)
     break;
-
+  }
   case 'home':
     window.location.replace(`${location.origin}/#?page=/home`);
     LoadInit();
@@ -486,17 +517,20 @@ async function LoadPageElements() {
     window.location.replace(`${location.origin}/#?page=/home`);
     LoadInit();
     break;
-  default:
+  default: {
     finishLoad();
 
     // Sends similar HTTP Post Request for the notices
-    browser.storage.local.get(null, function (result) {
+    const result1 = browser.storage.local.get()
+    function open1(result) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
-    });
+    }
+    result1.then(open1, onError)
     break;
   }
+}
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
@@ -526,10 +560,10 @@ async function LoadPageElements() {
             if (ranOnce) return;
             ranOnce = true;
             animate(
-              '.dashboard *:not(.dashlet-timetable), .dashboard .message *',
+              '.dashboard > *',
               { opacity: [0, 1], y: [10, 0] },
               {
-                delay: stagger(0.01),
+                delay: stagger(0.1),
                 duration: 0.5,
                 easing: [.22, .03, .26, 1]  
               }
@@ -580,7 +614,8 @@ function CheckNoticeTextColour(notice) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        browser.storage.local.get(['DarkMode'], function (result) {
+        const result = browser.storage.local.get(['DarkMode']) 
+        function open (result) {
           DarkMode = result.DarkMode;
           if (added_node.classList.contains('notice')) {
             var hex = added_node.style.cssText.split(' ')[1];
@@ -589,7 +624,8 @@ function CheckNoticeTextColour(notice) {
               added_node.style.cssText = '--color: undefined;';
             }
           }
-        });
+        }
+        result.then(open, onError)
       });
     });
   });
@@ -622,9 +658,13 @@ export function tryLoad() {
     'load',
     function () {
       CheckiFrameItems();
+      removeThemeTagsFromNotices();
+      documentTextColor();
     },
     true,
   );
+  const observer = new MutationObserver(() => { documentTextColor() })
+  observer.observe(document.getElementById('toolbar'), { attributes: true, childList: true, subtree: true })
 }
 
 function ChangeMenuItemPositions(storage) {
@@ -656,7 +696,8 @@ function ChangeMenuItemPositions(storage) {
 }
 
 export async function ObserveMenuItemPosition() {
-  browser.storage.local.get(null, function (result) {
+  const result = browser.storage.local.get()
+  function open (result) {
     let menuorder = result.menuorder;
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
@@ -680,7 +721,8 @@ export async function ObserveMenuItemPosition() {
         childList: true,
       });
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 function main(storedSetting) {
@@ -723,13 +765,9 @@ function main(storedSetting) {
 }
 
 function InjectStyles() {
-  var cssFile = browser.runtime.getURL('css/injected.css');
-  var fileref = document.createElement('link');
-  fileref.setAttribute('rel', 'stylesheet');
-  fileref.setAttribute('type', 'text/css');
-  fileref.setAttribute('href', cssFile);
-  document.head.appendChild(fileref);
-  document.getElementsByTagName('html')[0].appendChild(fileref);
+  const inject = GetCSSElement('css/injected.css');
+  document.head.appendChild(inject);
+  document.getElementsByTagName('html')[0].appendChild(inject);
 }
 
 function InjectCustomIcons() {
@@ -770,6 +808,11 @@ export function AppendElementsToDisabledPage() {
   .outside-container {
     top: 48px !important;
   }
+  #ExtensionPopup {
+    border-radius: 1rem;
+    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
+    transform-origin: 70% 0;
+  }
   `;
   document.head.append(settingsStyle);
 }
@@ -796,15 +839,22 @@ async function CheckLoadOnPeriods() {
 export function closeSettings() {
   var extensionsettings = document.getElementById('ExtensionPopup');
 
+  if (SettingsClicked == true) {
+    extensionsettings.classList.add('hide');
+    animate(
+      '#ExtensionPopup',
+      { opacity: [1, 0], scale: [1, 0] },
+      { easing: spring({ stiffness: 220, damping: 18 }) }
+    );
+    SettingsClicked = false;
+    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+  }
+
   extensionsettings.classList.add('hide');
-  SettingsClicked = false;
 }
 
 function addExtensionSettings() {
-  const link = document.createElement('link');
-  link.href = browser.runtime.getURL('popup/popup.css');
-  link.type = 'text/css';
-  link.rel = 'stylesheet';
+  const link = GetCSSElement('interface/popup.css');
   document.querySelector('html').appendChild(link);
 
   const extensionPopup = document.createElement('div');
@@ -813,7 +863,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup);
 
   const extensionIframe = document.createElement('iframe');
-  extensionIframe.src = browser.runtime.getURL('interface/index.html');
+  extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
   extensionIframe.allowTransparency = true;
   extensionIframe.style.width = '384px';
@@ -823,93 +873,28 @@ function addExtensionSettings() {
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
+  
   const closeExtensionPopup = () => {
-    if (!SettingsClicked) {
-      extensionPopup.classList.add('hide');
-    }
+    extensionPopup.classList.add('hide');
+    animate(
+      '#ExtensionPopup',
+      { opacity: [1, 0], scale: [1, 0] },
+      { easing: [.22, .03, .26, 1] }
+    );
+    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
     SettingsClicked = false;
   };
+
   container.onclick = (event) => {
-    extensionIframe.contentWindow.postMessage('popupClosed', '*');
-    if (event.target.id !== 'AddedSettings') {
-      closeExtensionPopup();
-    } else {
-      SettingsClicked = false;
+    if (event.target.closest('#AddedSettings') == null && SettingsClicked) {
+      closeExtensionPopup()
     }
   };
 }
 
-function ApplyDraggableFunctions() {
-  var listItens = document.querySelectorAll('.draggable');
-  [].forEach.call(listItens, function (item) {
-    addEventsDragAndDrop(item);
-  });
-}
-
-var dragSrcEl;
-
-function dragStart(e) {
-  this.style.opacity = '0.4';
-  dragSrcEl = this;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/html', this.innerHTML);
-}
-
-function dragEnter() {
-  this.classList.add('over');
-}
-
-function dragLeave(e) {
-  e.stopPropagation();
-  this.classList.remove('over');
-}
-
-function dragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  return false;
-}
-
-function dragDrop() {
-  if (dragSrcEl != this) {
-    const parentA = this.parentNode;
-    const siblingA = this.nextSibling === dragSrcEl ? this : this.nextSibling;
-
-    // Move `this` to before the `dragSrcEl`
-    dragSrcEl.parentNode.insertBefore(this, dragSrcEl);
-
-    // Move `dragSrcEl` to before the sibling of `this`
-    parentA.insertBefore(dragSrcEl, siblingA);
-
-    // Save position of all menu items
-    let children = parentA.childNodes;
-    let listorder = [];
-
-    for (let i = 0; i < children.length; i++) {
-      const elm = children[i];
-      listorder.push(elm.dataset.key);
-    }
-
-    browser.storage.local.set({ menuorder: listorder });
-  }
-  return false;
-}
-
-function dragEnd() {
-  var listItens = document.querySelectorAll('.draggable');
-  [].forEach.call(listItens, function (item) {
-    item.classList.remove('over');
-  });
-  this.style.opacity = '1';
-}
-
-function addEventsDragAndDrop(el) {
-  el.addEventListener('dragstart', dragStart, false);
-  el.addEventListener('dragenter', dragEnter, false);
-  el.addEventListener('dragover', dragOver, false);
-  el.addEventListener('dragleave', dragLeave, false);
-  el.addEventListener('drop', dragDrop, false);
-  el.addEventListener('dragend', dragEnd, false);
+function saveNewOrder(sortable) {
+  var order = sortable.toArray();
+  browser.storage.local.set({ menuorder: order });
 }
 
 function cloneAttributes(target, source) {
@@ -919,7 +904,8 @@ function cloneAttributes(target, source) {
 }
 
 export function OpenMenuOptions() {
-  browser.storage.local.get(null, function (result) {
+  const result = browser.storage.local.get()
+  function open (result) {
     var container = document.getElementById('container');
     var menu = document.getElementById('menu');
 
@@ -975,7 +961,6 @@ export function OpenMenuOptions() {
       const element = ListItems[i];
 
       element.classList.add('draggable');
-      element.setAttribute('draggable', true);
       if (element.classList.contains('hasChildren')) {
         element.classList.remove('active');
         menu.firstChild.classList.remove('noscroll');
@@ -986,13 +971,11 @@ export function OpenMenuOptions() {
       ).firstChild;
       element.append(MenuItemToggle);
 
-      if (!element.dataset.betterseqta) {
-        var a = document.createElement('section');
-        a.innerHTML = element.innerHTML;
-        cloneAttributes(a, element);
-        menu.firstChild.insertBefore(a, element);
-        element.remove();
-      }
+      const replacementElement = document.createElement('section');
+      replacementElement.innerHTML = element.innerHTML;
+      cloneAttributes(replacementElement, element);
+      menu.firstChild.insertBefore(replacementElement, element);
+      element.remove();
     }
 
     if (Object.keys(result.menuitems).length == 0) {
@@ -1008,7 +991,8 @@ export function OpenMenuOptions() {
     }
 
     var menubuttons = document.getElementsByClassName('menuitem');
-    browser.storage.local.get(['menuitems'], function (result) {
+    const result1 = browser.storage.local.get(['menuitems'])
+    function open (result) {
       var menuItems = result.menuitems;
       let buttons = document.getElementsByClassName('menuitem');
       for (var i = 0; i < buttons.length; i++) {
@@ -1020,24 +1004,24 @@ export function OpenMenuOptions() {
           buttons[i].checked = true;
         }
       }
-    });
+    }
+    result1.then(open, onError);
 
-    ApplyDraggableFunctions();
+    Sortable.mount(new AutoScroll());
+
+    var el = document.querySelector('#menu > ul');
+    var sortable = Sortable.create(el, {
+      draggable: '.draggable',
+      dataIdAttr: 'data-key',
+      animation: 150,
+      easing: "cubic-bezier(.5,0,.5,1)",
+      onEnd: function () {
+        saveNewOrder(sortable);  // Save the new order when drag ends
+      },
+    });  
 
     function StoreMenuSettings() {
-      browser.storage.local.get(['menuitems'], function () {
-        var menuItems = {};
-        menubuttons = menu.firstChild.childNodes;
-        let button = document.getElementsByClassName('menuitem');
-        for (var i = 0; i < menubuttons.length; i++) {
-          var id = menubuttons[i].dataset.key;
-          const element = {};
-          element.toggle = button[i].checked;
-
-          menuItems[id] = element;
-        }
-        browser.storage.local.set({ menuitems: menuItems });
-      });
+      saveNewOrder(sortable);
     }
 
     function changeDisplayProperty(element) {
@@ -1094,7 +1078,8 @@ export function OpenMenuOptions() {
     savebutton.addEventListener('click', closeAll);
 
     defaultbutton.addEventListener('click', function () {
-      browser.storage.local.get(null, function (response) {
+      const result = browser.storage.local.get()
+      function open (response) {
         const options = response.defaultmenuorder;
         browser.storage.local.set({ menuorder: options });
         ChangeMenuItemPositions(options);
@@ -1109,9 +1094,11 @@ export function OpenMenuOptions() {
           );
         }
         StoreMenuSettings();
-      });
+      }
+      result.then(open, onError)
     });
-  });
+  }
+  result.then(open, onError)
 }
 
 function ReplaceMenuSVG(element, svg) {
@@ -1156,9 +1143,11 @@ async function AddBetterSEQTAElements(toggle) {
         sliderVal.then(updateBgDurations);
 
         // Load darkmode state
-        browser.storage.local.get(['DarkMode'], function (result) {
+        const result1 = browser.storage.local.get(['DarkMode'])
+        function open (result) {
           DarkMode = result.DarkMode;
-        });
+        }
+        result1.then(open, onError)
 
         var titlebar = document.createElement('div');
         titlebar.classList.add('titlebar');
@@ -1308,7 +1297,8 @@ async function AddBetterSEQTAElements(toggle) {
         ContentDiv.append(SettingsButton.firstChild);
 
         const result = await new Promise(resolve => {
-          browser.storage.local.get(null, resolve);
+          const result = browser.storage.local.get();
+          result.then(resolve, onError)
         });
         
         const DarkMode = result.DarkMode;
@@ -1327,20 +1317,10 @@ async function AddBetterSEQTAElements(toggle) {
         
         updateAllColors(DarkMode, result.selectedColor);
 
-        // Locate the menuToggle element
-        const menuToggle = document.getElementById('menuToggle');
-        menuToggle.innerHTML = '';
-
-        // Create three divs to act as lines of the hamburger icon
-        for (let i = 0; i < 3; i++) {
-          const line = document.createElement('div');
-          line.className = 'hamburger-line';
-          menuToggle.appendChild(line);
-        }
-        
         document.getElementById('LightDarkModeButton').addEventListener('click', async () => {
           const result = await new Promise(resolve => {
-            browser.storage.local.get(null, resolve);
+            const result = browser.storage.local.get();
+            result.then(resolve, onError)
           });
           
           const newDarkMode = !result.DarkMode;
@@ -1351,6 +1331,17 @@ async function AddBetterSEQTAElements(toggle) {
           const darklightText = document.getElementById('darklighttooliptext');
           darklightText.innerText = GetLightDarkModeString(newDarkMode);
         });
+
+        // Locate the menuToggle element
+        const menuToggle = document.getElementById('menuToggle');
+        menuToggle.innerHTML = '';
+
+        // Create three divs to act as lines of the hamburger icon
+        for (let i = 0; i < 3; i++) {
+          const line = document.createElement('div');
+          line.className = 'hamburger-line';
+          menuToggle.appendChild(line);
+        }
       } else {
         // Creates settings and dashboard buttons next to alerts
         SettingsButton = stringToHTML(
@@ -1361,11 +1352,27 @@ async function AddBetterSEQTAElements(toggle) {
       }
 
       var AddedSettings = document.getElementById('AddedSettings');
-      var extensionsettings = document.getElementById('ExtensionPopup');
+      var extensionPopup = document.getElementById('ExtensionPopup');
       
       AddedSettings.addEventListener('click', function () {
-        extensionsettings.classList.toggle('hide');
-        SettingsClicked = true;
+        if (SettingsClicked) {
+          extensionPopup.classList.add('hide');
+          animate(
+            '#ExtensionPopup',
+            { opacity: [1, 0], scale: [1, 0] },
+            { easing: spring({ stiffness: 220, damping: 18 }) }
+          );
+          document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+          SettingsClicked = false;      
+        } else {
+          extensionPopup.classList.remove('hide');
+          animate(
+            '#ExtensionPopup',
+            { opacity: [0, 1], scale: [0, 1] },
+            { easing: spring({ stiffness: 260, damping: 24 }) }
+          )
+          SettingsClicked = true;
+        }
       });
     }
   }
@@ -1433,7 +1440,8 @@ function CheckCurrentLesson(lesson, num) {
 
   // If 5 minutes before the start of another lesson:
   if (minutes == 5) {
-    browser.storage.local.get('lessonalert', function (result) {
+    const result = browser.storage.local.get('lessonalert')
+    function open (result) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
@@ -1475,7 +1483,8 @@ function CheckCurrentLesson(lesson, num) {
           }
         }
       }
-    });
+    }
+    result.then(open, onError)
   }
 }
 
@@ -1699,18 +1708,23 @@ function GetUpcomingAssessments() {
     .then((response) => response.payload);
 }
 
-function GetActiveClasses() {
-  let func = fetch(`${location.origin}/seqta/student/load/subjects?`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({}),
-  });
+async function GetActiveClasses() {
+  try {
+    const response = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({})
+    });
 
-  return func
-    .then((result) => result.json())
-    .then((response) => response.payload);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.payload;
+  } catch (error) {
+    console.error('Oops! There was a problem fetching active classes:', error);
+  }
 }
 
 function comparedate(obj1, obj2) {
@@ -1875,20 +1889,23 @@ function CreateSubjectFilter(subjectcode, itemcolour, checked) {
   label.append(span);
 
   input.addEventListener('change', function (change) {
-    browser.storage.local.get(null, function (storage) {
+    const result = browser.storage.local.get()
+    function open (storage) {
       let filters = storage.subjectfilters;
       let id = change.target.id.split('-')[1];
       filters[id] = change.target.checked;
 
       browser.storage.local.set({ subjectfilters: filters });
-    });
+    }
+    result.then(open, onError)
   });
 
   return label;
 }
 
 function CreateFilters(subjects) {
-  browser.storage.local.get(null, function (result) {
+  const result = browser.storage.local.get()
+  function open (result) {
     let filteroptions = result.subjectfilters;
 
     let filterdiv = document.querySelector('#upcoming-filters');
@@ -1907,7 +1924,8 @@ function CreateFilters(subjects) {
 
       filterdiv.append(elementdiv);
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 function CreateUpcomingSection(assessments) {
@@ -2019,9 +2037,11 @@ function CreateUpcomingSection(assessments) {
       }
 
     }
-    browser.storage.local.get(null, function (result) {
+    const result = browser.storage.local.get()
+    function open (result) {
       FilterUpcomingAssessments(result.subjectfilters);
-    });
+    }
+    result.then(open, onError)
   });
 }
 
@@ -2161,7 +2181,9 @@ export function RemoveShortcutDiv(elements) {
 }
 
 function AddCustomShortcutsToPage() {
-  browser.storage.local.get(['customshortcuts'], function (result) {
+  const result = browser.storage.local.get(['customshortcuts'])
+  function open (result) {
+
     var customshortcuts = Object.values(result)[0];
     if (customshortcuts.length > 0) {
       document.getElementsByClassName('shortcut-container')[0].style.display =
@@ -2171,7 +2193,8 @@ function AddCustomShortcutsToPage() {
         CreateCustomShortcutDiv(element);
       }
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 function SendHomePage() {
@@ -2207,7 +2230,7 @@ function SendHomePage() {
 
     // Formats the current date used send a request for timetable and notices later
     var TodayFormatted =
-      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate();
 
     // Replaces actual date with a selected date. Used for testing.
     // TodayFormatted = "2020-08-31";
@@ -2281,10 +2304,13 @@ function SendHomePage() {
     });
 
     // Adds the shortcuts to the shortcut container
-    browser.storage.local.get(['shortcuts'], function (result) {
+    const result = browser.storage.local.get(['shortcuts'])
+    function open (result) {
+
       const shortcuts = Object.values(result)[0];
       addShortcuts(shortcuts);
-    });
+    }
+    result.then(open, onError)
 
     // Creates the upcoming container and appends to the home container
     var upcomingcontainer = document.createElement('div');
@@ -2315,7 +2341,15 @@ function SendHomePage() {
     document.getElementById('home-container').append(upcomingcontainer);
 
     // Creates the notices container into the home container
-    var NoticesStr = '<div class="notices-container border"><h2 class="home-subtitle">Notices</h2><div class="notice-container" id="notice-container"></div></div>';
+    const NoticesStr = String.raw`
+      <div class="notices-container border">
+        <div style="display: flex; justify-content: space-between">
+          <h2 class="home-subtitle">Notices</h2>
+          <input type="date" value=${TodayFormatted} />
+        </div>
+        <div class="notice-container" id="notice-container"></div>
+      </div>`
+      
     var Notices = stringToHTML(NoticesStr);
     // Appends the shortcut container into the home container
     document.getElementById('home-container').append(Notices.firstChild);
@@ -2331,98 +2365,174 @@ function SendHomePage() {
     );
 
     callHomeTimetable(TodayFormatted);
+    const labelArray = response.payload[1].value.split(' ')
 
-    // Sends similar HTTP Post Request for the notices
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true);
-    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-
+    const xhr2 = new XMLHttpRequest()
+    xhr2.open(
+      'POST',
+      `${location.origin}/seqta/student/load/notices?`,
+      true
+    )
+    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+    
     xhr2.onreadystatechange = function () {
       if (xhr2.readyState === 4) {
-        var NoticesPayload = JSON.parse(xhr2.response);
-        var NoticeContainer = document.getElementById('notice-container');
-        if (NoticesPayload.payload.length == 0) {
+        const NoticesPayload = JSON.parse(xhr2.response)
+        const NoticeContainer = document.getElementById('notice-container')
+        if (NoticesPayload.payload.length === 0) {
           if (!NoticeContainer.innerText) {
             // If no notices: display no notices
-            var dummyNotice = document.createElement('div');
-            dummyNotice.textContent = 'No notices for today.';
-            dummyNotice.classList.add('dummynotice');
-            NoticeContainer.append(dummyNotice);
+            const dummyNotice = document.createElement('div')
+            dummyNotice.textContent = 'No notices for today.'
+            dummyNotice.classList.add('dummynotice')
+            NoticeContainer.append(dummyNotice)
           }
         } else {
           if (!NoticeContainer.innerText) {
             // For each element in the response json:
-            browser.storage.local.get(['DarkMode'], function (result) {
-              DarkMode = result.DarkMode;
+            const result = browser.storage.local.get(['DarkMode'])
+            function noticeInfoDiv (result) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
+                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
                 // Create a div, and place information from json response
-                var NewNotice = document.createElement('div');
-                NewNotice.classList.add('notice');
-                var title = stringToHTML(
-                  '<h3 style="color:var(--colour)">' +
-                    NoticesPayload.payload[i].title +
-                    '</h3>',
-                );
-                NewNotice.append(title.firstChild);
+                  const NewNotice = document.createElement('div')
+                  NewNotice.classList.add('notice')
+                  const title = stringToHTML(
+                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                  )
+                  NewNotice.append(title.firstChild)
 
-                if (NoticesPayload.payload[i].label_title != undefined) {
-                  var label = stringToHTML(
-                    '<h5 style="color:var(--colour)">' +
-                      NoticesPayload.payload[i].label_title +
-                      '</h5>',
-                  );
-                  NewNotice.append(label.firstChild);
-                }
-
-                var staff = stringToHTML(
-                  '<h6 style="color:var(--colour)">' +
-                    NoticesPayload.payload[i].staff +
-                    '</h6>',
-                );
-                NewNotice.append(staff.firstChild);
-                // Converts the string into HTML
-                let styles;
-                var content = stringToHTML(
-                  NoticesPayload.payload[i].contents,
-                  // eslint-disable-next-line
-                  styles = true,
-                );
-                for (let i = 0; i < content.childNodes.length; i++) {
-                  NewNotice.append(content.childNodes[i]);
-                }
-                // Gets the colour for the top section of each notice
-
-                var colour = NoticesPayload.payload[i].colour;
-                if (typeof colour == 'string') {
-                  let rgb = GetThresholdOfColor(colour);
-                  if (rgb < 100 && result.DarkMode) {
-                    colour = undefined;
+                  if (NoticesPayload.payload[i].label_title !== undefined) {
+                    const label = stringToHTML(
+                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
+                    )
+                    NewNotice.append(label.firstChild)
                   }
-                }
 
-                var colourbar = document.createElement('div');
-                colourbar.classList.add('colourbar');
-                colourbar.style.background = 'var(--colour)';
-                NewNotice.style = `--colour: ${colour}`;
-                // Appends the colour bar to the new notice
-                NewNotice.append(colourbar);
-                // Appends the new notice into the notice container
-                NoticeContainer.append(NewNotice);
+                  const staff = stringToHTML(
+                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                  )
+                  NewNotice.append(staff.firstChild)
+                  // Converts the string into HTML
+                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                  for (let i = 0; i < content.childNodes.length; i++) {
+                    NewNotice.append(content.childNodes[i])
+                  }
+                  // Gets the colour for the top section of each notice
+
+                  let colour = NoticesPayload.payload[i].colour
+                  if (typeof (colour) === 'string') {
+                    const rgb = GetThresholdOfColor(colour)
+                    const DarkModeResult = result.DarkMode
+                    if (rgb < 100 && DarkModeResult) {
+                      colour = undefined
+                    }
+                  }
+
+                  const colourbar = document.createElement('div')
+                  colourbar.classList.add('colourbar')
+                  colourbar.style.background = 'var(--colour)'
+                  NewNotice.style = `--colour: ${colour}`
+                  // Appends the colour bar to the new notice
+                  NewNotice.append(colourbar)
+                  // Appends the new notice into the notice container
+                  NoticeContainer.append(NewNotice)
+                }
               }
-            });
+            }
+            result.then(noticeInfoDiv, onError)
           }
         }
       }
-    };
+    }
     // Data sent as the POST request
-    xhr2.send(JSON.stringify({ date: TodayFormatted }));
+    const dateControl = document.querySelector('input[type="date"]')
+    xhr2.send(JSON.stringify({ date: dateControl.value }))
+    function onInputChange (e) {
+      xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
+      xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+      xhr2.send(JSON.stringify({ date: e.target.value }))
+      xhr2.onreadystatechange = function () {
+        if (xhr2.readyState === 4) {
+          const NoticesPayload = JSON.parse(xhr2.response)
+          const NoticeContainer = document.getElementById('notice-container')
+          if (NoticesPayload.payload.length === 0) {
+            if (!NoticeContainer.innerText) {
+              // If no notices: display no notices
+              const dummyNotice = document.createElement('div')
+              dummyNotice.textContent = 'No notices for today.'
+              dummyNotice.classList.add('dummynotice')
+              NoticeContainer.append(dummyNotice)
+            }
+          } else {
+            document.querySelectorAll('.notice').forEach(e => e.remove())
+            // For each element in the response json:
+            const result = browser.storage.local.get(['DarkMode'])
+            function noticeInfoDiv (result) {
+              for (let i = 0; i < NoticesPayload.payload.length; i++) {
+
+                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+                // Create a div, and place information from json response
+                  const NewNotice = document.createElement('div')
+                  NewNotice.classList.add('notice')
+                  const title = stringToHTML(
+                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                  )
+                  NewNotice.append(title.firstChild)
+
+                  if (NoticesPayload.payload[i].label_title !== undefined) {
+                    const label = stringToHTML(
+                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
+                    )
+                    NewNotice.append(label.firstChild)
+                  }
+
+                  const staff = stringToHTML(
+                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                  )
+                  NewNotice.append(staff.firstChild)
+                  // Converts the string into HTML
+                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                  for (let i = 0; i < content.childNodes.length; i++) {
+                    NewNotice.append(content.childNodes[i])
+                  }
+                  // Gets the colour for the top section of each notice
+
+                  let colour = NoticesPayload.payload[i].colour
+                  if (typeof (colour) === 'string') {
+                    const rgb = GetThresholdOfColor(colour)
+                    const DarkModeResult = result.DarkMode
+                    if (rgb < 100 && DarkModeResult) {
+                      colour = undefined
+                    }
+                  }
+
+                  const colourbar = document.createElement('div')
+                  colourbar.classList.add('colourbar')
+                  colourbar.style.background = 'var(--colour)'
+                  NewNotice.style = `--colour: ${colour}`
+                  // Appends the colour bar to the new notice
+                  NewNotice.append(colourbar)
+                  // Appends the new notice into the notice container
+                  NoticeContainer.append(NewNotice)
+                }
+              }
+            }
+            result.then(noticeInfoDiv, onError)
+          }
+        }
+      }
+    }
+    dateControl.addEventListener('input', onInputChange)
 
     // Sends similar HTTP Post Request for the notices
-    browser.storage.local.get(null, function (result) {
+    const result1 = browser.storage.local.get()
+    function open1 (result) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
-    });
+    }
+    result1.then(open1, onError)
     let activeClassList;
     GetUpcomingAssessments().then((assessments) => {
       GetActiveClasses().then((classes) => {
@@ -2628,11 +2738,49 @@ async function CheckForMenuList() {
   }
 }
 
+function documentTextColor () {
+  const result = browser.storage.local.get(['DarkMode'])
+  function changeDocTextCol (result) {
+    const Darkmode = result.DarkMode
+    if (Darkmode) {
+      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+      const fullDocArray = document.querySelectorAll('tr.document')
+      const linkArray = document.querySelectorAll('a.uiFile')
+      for (const item of fullDocArray) {
+        item.classList.add('documentDark')
+      }
+      for (const item of linkArray) {
+        item.setAttribute('style', 'color: #06b4fc;')
+      }
+      for (const item of documentArray) {
+        item.setAttribute('style', 'color: white')
+      }
+    } else {
+      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+      const fullDocArray = document.querySelectorAll('tr.document')
+      const linkArray = document.querySelectorAll('a.uiFile')
+      for (const item of fullDocArray) {
+        item.classList.remove('documentDark')
+      }
+      for (const item of linkArray) {
+        item.setAttribute('style', 'color: #3465a4;')
+      }
+      for (const item of documentArray) {
+        item.setAttribute('style', 'color: black')
+      }
+    }
+  }
+  result.then(changeDocTextCol, onError)
+}
+browser.storage.onChanged.addListener(documentTextColor)
+
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
-  browser.storage.local.get(null, function (result) {
+  const result = browser.storage.local.get()
+  function open (result) {
     if (result.onoff) {
       SendHomePage();
     }
-  });
+  }
+  result.then(open, onError)
 }

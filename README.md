@@ -2,7 +2,7 @@
 ![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for [SEQTA Learn.](https://seqta.com.au/) **Currently looking for contributors** 🔥
+  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://seqta.com.au">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
 </p>
 
 <p align="center">
@@ -37,7 +37,7 @@
   - Opera Supported
   - Vivaldi Supported
   - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
-  - Safari (Experimental)
+  - Safari (Experimental - only available via compilation)
 
 ## Getting started
 
@@ -52,19 +52,26 @@ git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 npm install
 ```
-OR
+
+3. Install webpack
+
 ```
-bun install
+npm install -g webpack
 ```
 
-3. Run the dev script (it updates as you save files)
+4. Run the dev script (it updates as you save files)
 
 ```
 npm run dev
 ```
-OR
+
+5. Install and run the dev script for the interface **at the same time** (all custom react components are a separate sub-repository)
+
 ```
-bun run dev
+cd interface
+
+npm install
+npm run dev
 ```
 
 ## Folder Structure
@@ -79,10 +86,6 @@ The folder structure is as follows:
 
 - The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working (but because of the styling not being designed for phone, its basically useless for now).
 
-## Contributing
-
-If you would like to contribute to this project, please read the [contributing guidelines](CONTRIBUTING.md).
-
 ## Credits
 
-This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [OG-RandomTechChannel](https://github.com/OG-RandomTechChannel) and is currently under active development by [SethBurkart](https://github.com/SethBurkart123)
+This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development by [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph)

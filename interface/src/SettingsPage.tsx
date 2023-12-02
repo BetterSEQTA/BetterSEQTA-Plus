@@ -1,26 +1,16 @@
-import React, { useEffect } from 'react';
 import TabbedContainer from './components/TabbedContainer';
 import Settings from './pages/Settings';
 import logo from './assets/betterseqta-dark-full.png';
 import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
-import { useSettingsContext } from './SettingsContext';
 import Picker from './components/Picker';
 import Themes from './pages/Themes';
-//import About from './pages/About';
-//import About from './pages/About';
 
-const App: React.FC = () => {
-  const { standalone, setStandalone } = useSettingsContext();
+interface SettingsPage {
+  standalone: boolean;
+}
 
-  useEffect(() => {
-    // if body has class standalone
-    if (document.body.classList.contains('standalone')) {
-      // set settingsContext standalone to true
-      setStandalone(true);
-    }
-  })
-
+const SettingsPage = ({ standalone }: SettingsPage) => {
   const tabs = [
     {
       title: 'Settings',
@@ -48,4 +38,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default SettingsPage;
