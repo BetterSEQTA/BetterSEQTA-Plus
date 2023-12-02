@@ -2,7 +2,7 @@
   "name": "betterseqtaplus",
   "version": "1.0.0",
   "type": "module",
-  "description": "![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-light-full.png#gh-dark-mode-only) ![Logo](https://raw.githubusercontent.com/SethBurkart123/BetterThanBetterSeqta/c96edd5956fc11571408310aea98cf7222d6876f/src/icons/betterseqta-dark-full.png#gh-light-mode-only)",
+  "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack --config webpack.config.js --mode production && sh ./package.sh",
@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
@@ -40,6 +40,7 @@
     "npm": "^10.1.0",
     "postcss": "^8.4.29",
     "react": "^18.2.0",
+    "sortablejs": "^1.15.0",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.2.2"
   }

@@ -4,6 +4,18 @@ import { useSettingsContext } from "../SettingsContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { CustomShortcut } from "../types/AppProps";
 
+function formatUrl (inputUrl: string) {
+  // Regular expression to check if the URL starts with http://, https://, or ftp://
+  const protocolRegex = /^(http:\/\/|https:\/\/|ftp:\/\/)/;
+
+  // Check if the URL starts with one of the protocols
+  if (protocolRegex.test(inputUrl)) {
+      return inputUrl;  // The URL is fine as is
+  } else {
+      return `https://${inputUrl}`;  // Prepend https:// to the URL
+  }
+}
+
 export default function Shortcuts() {
   const { settingsState, setSettingsState } = useSettingsContext();
 
@@ -30,7 +42,7 @@ export default function Shortcuts() {
 
   const addNewCustomShortcut = (): void => {
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
-      const newShortcut: CustomShortcut = { name: newTitle.trim(), url: newURL.trim(), icon: newTitle[0] };
+      const newShortcut: CustomShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon: newTitle[0] };
       const updatedCustomShortcuts = [...settingsState.customshortcuts, newShortcut];
       setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
       setNewTitle("");

@@ -1,4 +1,4 @@
-/* global chrome */
+import browser from 'webextension-polyfill'
 
 import {
   CreateBackground,
@@ -15,7 +15,7 @@ import { getDarkMode, updateAllColors } from '../ui/colors/Manager.js';
 export default class StorageListener {
   constructor() {
     this.darkMode = getDarkMode();
-    chrome.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
+    browser.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
   }
 
   handleStorageChanges(changes) {

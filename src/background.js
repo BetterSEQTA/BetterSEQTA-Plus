@@ -1,5 +1,6 @@
-import browser from 'webextension-polyfill';
 
+import browser from 'webextension-polyfill'
+import { onError } from './seqta/utils/onError.js';
 export const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
@@ -57,13 +58,15 @@ export const readData = () => {
 };
 
 function reloadSeqtaPages() {
-  browser.tabs.query({}, function (tabs) {
+  const result = browser.tabs.query({})
+    function open (tabs) {
     for (let tab of tabs) {
       if (tab.title.includes('SEQTA Learn')) {
         browser.tabs.reload(tab.id);
       }
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 // Helper function to handle setting permissions
@@ -98,8 +101,8 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     break;
   
   case 'currentTab':
-    browser.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      browser.tabs.sendMessage(tabs[0].id, request, function (response) {
+    browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+      browser.tabs.sendMessage(tabs[0].id, request).then(function (response) {
         sendResponse(response);
       });
     });
@@ -224,7 +227,8 @@ function SetStorageValue(object) {
 }
 
 function UpdateCurrentValues() {
-  browser.storage.local.get(null, function (items) {
+  const result = browser.storage.local.get()
+  function open (items) {
     var CurrentValues = items;
 
     const NewValue = Object.assign({}, DefaultValues, CurrentValues);
@@ -254,11 +258,13 @@ function UpdateCurrentValues() {
     }
 
     SetStorageValue(NewValue);
-  });
+  }
+  result.then(open, onError)
 }
 
 function migrateOldStorage() {
-  browser.storage.local.get(null, function (items) {
+  const result = browser.storage.local.get()
+  function open (items) {
     let shouldUpdate = false; // Flag to check if there is anything to update
     
     // Check for the old "Name" field and convert it to "name"
@@ -284,11 +290,11 @@ function migrateOldStorage() {
 
     // If there"s something to update, set the new values in storage
     if (shouldUpdate) {
-      browser.storage.local.set({ shortcuts: items.shortcuts }, function() {
-        console.log('Migration completed.');
-      });
+      const setting = browser.storage.local.set({ shortcuts: items.shortcuts })
+      setting.then(() => console.log('Migration Completed.'))
     }
-  });
+  }
+  result.then(open, onError)
 }
 
 browser.runtime.onInstalled.addListener(function (event) {
