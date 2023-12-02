@@ -1,4 +1,4 @@
-/*global chrome*/
+import browser from 'webextension-polyfill'
 import stringToHTML from '../utils/stringToHTML.js';
 
 const loadingSpinner = `
@@ -75,7 +75,7 @@ export default function loading() {
       </style>
     ${loadingSpinner}
   <div style="position: absolute;bottom: 0;right: 0;padding: 10px;color: #4f4f4f;text-anchor: middle;font-size: 20px;">v${
-  chrome.runtime.getManifest().version
+  browser.runtime.getManifest().version
 }</div></div>`,
   );
   var html = document.getElementsByTagName('html')[0];

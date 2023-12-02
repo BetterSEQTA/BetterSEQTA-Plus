@@ -1,4 +1,4 @@
-/* global chrome */
+import browser from 'webextension-polyfill'
 
 export async function appendBackgroundToUI() {
   console.log('Starting appendBackgroundToUI...');
@@ -10,6 +10,6 @@ export async function appendBackgroundToUI() {
   background.id = 'background';
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
-  background.src = chrome.runtime.getURL('backgrounds/background.html');
+  background.src = browser.runtime.getURL('backgrounds/background.html');
   parent.appendChild(background);
 }

@@ -1,4 +1,4 @@
-/* global chrome */
+import browser from 'webextension-polyfill'
 import localforage from 'localforage';
 
 let currentThemeClass = '';
@@ -77,7 +77,7 @@ const applyTheme = async (themeName) => {
     );
   }
 
-  chrome.storage.local.set({ DarkMode: darkMode, selectedColor: defaultColour });
+  browser.storage.local.set({ DarkMode: darkMode, selectedColor: defaultColour });
 };
 
 export const listThemes = async () => {
