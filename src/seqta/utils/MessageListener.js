@@ -1,11 +1,11 @@
-/* global chrome */
+import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from '../../SEQTA.js';
 import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../ui/Themes.js';
 
 export class MessageHandler {
   constructor() {
-    chrome.runtime.onMessage.addListener(this.routeMessage.bind(this));
+    browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
 
   routeMessage(request, sender, sendResponse) {
