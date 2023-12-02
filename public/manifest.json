@@ -4,9 +4,7 @@
   "version": "3.2.2",
   "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "64": "icons/icon-64.png"
+      "48": "icons/icon-48.png"
   },
   "browser_action": {
     "browser_style": true,
@@ -47,5 +45,4 @@
     "client/*",
     "resources/*",
     "backgrounds/*"
-  ]
-}
+]
