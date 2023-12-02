@@ -642,9 +642,12 @@ export function tryLoad() {
     function () {
       CheckiFrameItems();
       removeThemeTagsFromNotices();
+      documentTextColor();
     },
     true,
   );
+  const observer = new MutationObserver(() => { documentTextColor() })
+  observer.observe(document.getElementById('toolbar'), { attributes: true, childList: true, subtree: true })
 }
 
 function ChangeMenuItemPositions(storage) {
@@ -2689,6 +2692,42 @@ async function CheckForMenuList() {
     }
   }
 }
+
+function documentTextColor () {
+  const result = chrome.storage.local.get(['DarkMode'])
+  function changeDocTextCol (result) {
+    const Darkmode = result.DarkMode
+    if (Darkmode) {
+      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+      const fullDocArray = document.querySelectorAll('tr.document')
+      const linkArray = document.querySelectorAll('a.uiFile')
+      for (const item of fullDocArray) {
+        item.classList.add('documentDark')
+      }
+      for (const item of linkArray) {
+        item.setAttribute('style', 'color: #06b4fc;')
+      }
+      for (const item of documentArray) {
+        item.setAttribute('style', 'color: white')
+      }
+    } else {
+      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+      const fullDocArray = document.querySelectorAll('tr.document')
+      const linkArray = document.querySelectorAll('a.uiFile')
+      for (const item of fullDocArray) {
+        item.classList.remove('documentDark')
+      }
+      for (const item of linkArray) {
+        item.setAttribute('style', 'color: #3465a4;')
+      }
+      for (const item of documentArray) {
+        item.setAttribute('style', 'color: black')
+      }
+    }
+  }
+  result.then(changeDocTextCol, onError)
+}
+chrome.storage.onChanged.addListener(documentTextColor)
 
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
