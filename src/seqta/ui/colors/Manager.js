@@ -1,5 +1,5 @@
 /* global chrome */
-import { GetThresholdOfColor, GetiFrameCSSElement } from '../../../SEQTA.js';
+import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA.js';
 import { lightenAndPaleColor } from './lightenAndPaleColor.js';
 import ColorLuminance from './ColorLuminance.js';
 
@@ -66,7 +66,7 @@ export function updateAllColors(storedSetting, newColor = null) {
   }
 
   let alliframes = document.getElementsByTagName('iframe');
-  let fileref = GetiFrameCSSElement();
+  let fileref = GetCSSElement('css/iframe.css');
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
@@ -79,7 +79,7 @@ export function updateAllColors(storedSetting, newColor = null) {
     console.log(element.contentDocument.documentElement);
 
     element.contentDocument.documentElement.childNodes[1].style.color =
-      DarkMode ? 'black' : 'white';
+      DarkMode ? 'white' : 'black';
     element.contentDocument.documentElement.firstChild.appendChild(
       fileref,
     );
