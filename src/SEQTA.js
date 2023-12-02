@@ -1,3 +1,4 @@
+/* eslint-disable no-inner-declarations */
 /* global chrome */
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
@@ -7,6 +8,8 @@ import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
 import stringToHTML from './seqta/utils/stringToHTML.js';
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading.js';
+import { response } from './seqta/utils/GetPrefs.js';
+import { onError } from './seqta/utils/onError.js';
 
 // Icons
 import assessmentsicon from './seqta/icons/assessmentsIcon.js';
@@ -2184,7 +2187,7 @@ function SendHomePage() {
 
     // Formats the current date used send a request for timetable and notices later
     var TodayFormatted =
-      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate();
 
     // Replaces actual date with a selected date. Used for testing.
     // TodayFormatted = "2020-08-31";
@@ -2316,91 +2319,165 @@ function SendHomePage() {
     );
 
     callHomeTimetable(TodayFormatted);
+    const labelArray = response.payload[1].value.split(' ')
 
-    // Sends similar HTTP Post Request for the notices
-    var xhr2 = new XMLHttpRequest();
-    xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true);
-    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-
+    const xhr2 = new XMLHttpRequest()
+    xhr2.open(
+      'POST',
+      `${location.origin}/seqta/student/load/notices?`,
+      true
+    )
+    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+    
     xhr2.onreadystatechange = function () {
       if (xhr2.readyState === 4) {
-        var NoticesPayload = JSON.parse(xhr2.response);
-        var NoticeContainer = document.getElementById('notice-container');
-        if (NoticesPayload.payload.length == 0) {
+        const NoticesPayload = JSON.parse(xhr2.response)
+        const NoticeContainer = document.getElementById('notice-container')
+        if (NoticesPayload.payload.length === 0) {
           if (!NoticeContainer.innerText) {
             // If no notices: display no notices
-            var dummyNotice = document.createElement('div');
-            dummyNotice.textContent = 'No notices for today.';
-            dummyNotice.classList.add('dummynotice');
-            NoticeContainer.append(dummyNotice);
+            const dummyNotice = document.createElement('div')
+            dummyNotice.textContent = 'No notices for today.'
+            dummyNotice.classList.add('dummynotice')
+            NoticeContainer.append(dummyNotice)
           }
         } else {
           if (!NoticeContainer.innerText) {
             // For each element in the response json:
-            chrome.storage.local.get(['DarkMode'], function (result) {
-              DarkMode = result.DarkMode;
+            const result = chrome.storage.local.get(['DarkMode'])
+            function noticeInfoDiv (result) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
+                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
                 // Create a div, and place information from json response
-                var NewNotice = document.createElement('div');
-                NewNotice.classList.add('notice');
-                var title = stringToHTML(
-                  '<h3 style="color:var(--colour)">' +
-                    NoticesPayload.payload[i].title +
-                    '</h3>',
-                );
-                NewNotice.append(title.firstChild);
+                  const NewNotice = document.createElement('div')
+                  NewNotice.classList.add('notice')
+                  const title = stringToHTML(
+                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                  )
+                  NewNotice.append(title.firstChild)
 
-                if (NoticesPayload.payload[i].label_title != undefined) {
-                  var label = stringToHTML(
-                    '<h5 style="color:var(--colour)">' +
-                      NoticesPayload.payload[i].label_title +
-                      '</h5>',
-                  );
-                  NewNotice.append(label.firstChild);
-                }
-
-                var staff = stringToHTML(
-                  '<h6 style="color:var(--colour)">' +
-                    NoticesPayload.payload[i].staff +
-                    '</h6>',
-                );
-                NewNotice.append(staff.firstChild);
-                // Converts the string into HTML
-                let styles;
-                var content = stringToHTML(
-                  NoticesPayload.payload[i].contents,
-                  // eslint-disable-next-line
-                  styles = true,
-                );
-                for (let i = 0; i < content.childNodes.length; i++) {
-                  NewNotice.append(content.childNodes[i]);
-                }
-                // Gets the colour for the top section of each notice
-
-                var colour = NoticesPayload.payload[i].colour;
-                if (typeof colour == 'string') {
-                  let rgb = GetThresholdOfColor(colour);
-                  if (rgb < 100 && result.DarkMode) {
-                    colour = undefined;
+                  if (NoticesPayload.payload[i].label_title !== undefined) {
+                    const label = stringToHTML(
+                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
+                    )
+                    NewNotice.append(label.firstChild)
                   }
-                }
 
-                var colourbar = document.createElement('div');
-                colourbar.classList.add('colourbar');
-                colourbar.style.background = 'var(--colour)';
-                NewNotice.style = `--colour: ${colour}`;
-                // Appends the colour bar to the new notice
-                NewNotice.append(colourbar);
-                // Appends the new notice into the notice container
-                NoticeContainer.append(NewNotice);
+                  const staff = stringToHTML(
+                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                  )
+                  NewNotice.append(staff.firstChild)
+                  // Converts the string into HTML
+                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                  for (let i = 0; i < content.childNodes.length; i++) {
+                    NewNotice.append(content.childNodes[i])
+                  }
+                  // Gets the colour for the top section of each notice
+
+                  let colour = NoticesPayload.payload[i].colour
+                  if (typeof (colour) === 'string') {
+                    const rgb = GetThresholdOfColor(colour)
+                    const DarkModeResult = result.DarkMode
+                    if (rgb < 100 && DarkModeResult) {
+                      colour = undefined
+                    }
+                  }
+
+                  const colourbar = document.createElement('div')
+                  colourbar.classList.add('colourbar')
+                  colourbar.style.background = 'var(--colour)'
+                  NewNotice.style = `--colour: ${colour}`
+                  // Appends the colour bar to the new notice
+                  NewNotice.append(colourbar)
+                  // Appends the new notice into the notice container
+                  NoticeContainer.append(NewNotice)
+                }
               }
-            });
+            }
+            result.then(noticeInfoDiv, onError)
           }
         }
       }
-    };
+    }
     // Data sent as the POST request
-    xhr2.send(JSON.stringify({ date: TodayFormatted }));
+    const dateControl = document.querySelector('input[type="date"]')
+    xhr2.send(JSON.stringify({ date: dateControl.value }))
+    function onInputChange (e) {
+      xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
+      xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+      xhr2.send(JSON.stringify({ date: e.target.value }))
+      xhr2.onreadystatechange = function () {
+        if (xhr2.readyState === 4) {
+          const NoticesPayload = JSON.parse(xhr2.response)
+          const NoticeContainer = document.getElementById('notice-container')
+          if (NoticesPayload.payload.length === 0) {
+            if (!NoticeContainer.innerText) {
+              // If no notices: display no notices
+              const dummyNotice = document.createElement('div')
+              dummyNotice.textContent = 'No notices for today.'
+              dummyNotice.classList.add('dummynotice')
+              NoticeContainer.append(dummyNotice)
+            }
+          } else {
+            document.querySelectorAll('.notice').forEach(e => e.remove())
+            // For each element in the response json:
+            const result = chrome.storage.local.get(['DarkMode'])
+            function noticeInfoDiv (result) {
+              for (let i = 0; i < NoticesPayload.payload.length; i++) {
+
+                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+                // Create a div, and place information from json response
+                  const NewNotice = document.createElement('div')
+                  NewNotice.classList.add('notice')
+                  const title = stringToHTML(
+                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                  )
+                  NewNotice.append(title.firstChild)
+
+                  if (NoticesPayload.payload[i].label_title !== undefined) {
+                    const label = stringToHTML(
+                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
+                    )
+                    NewNotice.append(label.firstChild)
+                  }
+
+                  const staff = stringToHTML(
+                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                  )
+                  NewNotice.append(staff.firstChild)
+                  // Converts the string into HTML
+                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                  for (let i = 0; i < content.childNodes.length; i++) {
+                    NewNotice.append(content.childNodes[i])
+                  }
+                  // Gets the colour for the top section of each notice
+
+                  let colour = NoticesPayload.payload[i].colour
+                  if (typeof (colour) === 'string') {
+                    const rgb = GetThresholdOfColor(colour)
+                    const DarkModeResult = result.DarkMode
+                    if (rgb < 100 && DarkModeResult) {
+                      colour = undefined
+                    }
+                  }
+
+                  const colourbar = document.createElement('div')
+                  colourbar.classList.add('colourbar')
+                  colourbar.style.background = 'var(--colour)'
+                  NewNotice.style = `--colour: ${colour}`
+                  // Appends the colour bar to the new notice
+                  NewNotice.append(colourbar)
+                  // Appends the new notice into the notice container
+                  NoticeContainer.append(NewNotice)
+                }
+              }
+            }
+            result.then(noticeInfoDiv, onError)
+          }
+        }
+      }
+    }
+    dateControl.addEventListener('input', onInputChange)
 
     // Sends similar HTTP Post Request for the notices
     chrome.storage.local.get(null, function (result) {
