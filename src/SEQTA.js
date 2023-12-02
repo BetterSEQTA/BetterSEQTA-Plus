@@ -44,10 +44,7 @@ document.addEventListener(
       IsSEQTAPage = true;
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
-      let link = document.createElement('link');
-      link.href = chrome.runtime.getURL('css/documentload.css');
-      link.type = 'text/css';
-      link.rel = 'stylesheet';
+      const link = GetCSSElement('css/documentload.css');
       document.getElementsByTagName('html')[0].appendChild(link);
 
       enableCurrentTheme();
@@ -366,19 +363,34 @@ async function RunColourCheck(element) {
   }
 }
 
-export function GetiFrameCSSElement() {
-  var cssFile = chrome.runtime.getURL('css/iframe.css');
-  var fileref = document.createElement('link');
-  fileref.setAttribute('rel', 'stylesheet');
-  fileref.setAttribute('type', 'text/css');
-  fileref.setAttribute('href', cssFile);
+export function GetCSSElement (file) {
+  const cssFile = chrome.runtime.getURL(file)
+  const fileref = document.createElement('link')
+  fileref.setAttribute('rel', 'stylesheet')
+  fileref.setAttribute('type', 'text/css')
+  fileref.setAttribute('href', cssFile)
 
-  return fileref;
+  return fileref
+}
+
+function removeThemeTagsFromNotices () {
+  // Grabs an array of the notice iFrames
+  const userHTMLArray = document.getElementsByClassName('userHTML')
+  // Iterates through the array, applying the iFrame css
+  for (const item of userHTMLArray) {
+    // Grabs the HTML of the body tag
+    const body = item.contentWindow.document.querySelectorAll('body')[0]
+    if (body) {
+    // Replaces the theme tag with nothing
+      const bodyText = body.innerHTML
+      body.innerhtml = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
+    }
+  }
 }
 
 function CheckiFrameItems() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
-  let fileref = GetiFrameCSSElement();
+  let fileref = GetCSSElement('css/iframe.css');
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
@@ -626,6 +638,7 @@ export function tryLoad() {
     'load',
     function () {
       CheckiFrameItems();
+      removeThemeTagsFromNotices();
     },
     true,
   );
@@ -727,13 +740,9 @@ function main(storedSetting) {
 }
 
 function InjectStyles() {
-  var cssFile = chrome.runtime.getURL('css/injected.css');
-  var fileref = document.createElement('link');
-  fileref.setAttribute('rel', 'stylesheet');
-  fileref.setAttribute('type', 'text/css');
-  fileref.setAttribute('href', cssFile);
-  document.head.appendChild(fileref);
-  document.getElementsByTagName('html')[0].appendChild(fileref);
+  const inject = GetCSSElement('css/injected.css');
+  document.head.appendChild(inject);
+  document.getElementsByTagName('html')[0].appendChild(inject);
 }
 
 function InjectCustomIcons() {
@@ -820,10 +829,7 @@ export function closeSettings() {
 }
 
 function addExtensionSettings() {
-  const link = document.createElement('link');
-  link.href = chrome.runtime.getURL('interface/popup.css');
-  link.type = 'text/css';
-  link.rel = 'stylesheet';
+  const link = GetCSSElement('interface/popup.css');
   document.querySelector('html').appendChild(link);
 
   const extensionPopup = document.createElement('div');
