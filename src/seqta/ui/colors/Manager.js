@@ -1,11 +1,12 @@
-/* global chrome */
+import browser from 'webextension-polyfill'
 import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA.js';
 import { lightenAndPaleColor } from './lightenAndPaleColor.js';
 import ColorLuminance from './ColorLuminance.js';
+import { onError } from '../../utils/onError.js';
 
 // Helper functions
 const setCSSVar = (varName, value) => document.documentElement.style.setProperty(varName, value);
-const getChromeURL = (path) => chrome.runtime.getURL(path);
+const getChromeURL = (path) => browser.runtime.getURL(path);
 const applyProperties = (props) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
 let DarkMode = null;
@@ -88,11 +89,13 @@ export function updateAllColors(storedSetting, newColor = null) {
 
 export function getDarkMode() {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get('DarkMode', (result) => {
-      if (chrome.runtime.lastError) {
-        return reject(chrome.runtime.lastError);
+    const result = browser.storage.local.get('DarkMode')
+    function open (result) {
+      if (browser.runtime.lastError) {
+        return reject(browser.runtime.lastError);
       }
       resolve(result.DarkMode);
-    });
+    }
+    result.then(open, onError)
   });
 }

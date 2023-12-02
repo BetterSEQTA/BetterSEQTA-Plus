@@ -64,7 +64,7 @@ export default {
       patterns: [
         { from: 'public', to: '.' },
         { from: 'src/css/preview', to: 'css/preview' },
-        { from: 'node_modules/webextension-polyfill/dist/browser-polyfill.js', to: '.'},
+        { from: 'node_modules/webextension-polyfill/dist/browser-polyfill.js' },
         { from: 'interface/dist/client', to: 'client' },
         { from: 'interface/dist/index.html', to: 'interface/index.html' }
       ],
