@@ -47,7 +47,7 @@
 git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 
-### Windows (currently not working - use manual install)
+### Windows
 
 Open the `install.bat` file located inside the `scripts` folder. Then after that is finished, open the `dev.bat` file.
 
