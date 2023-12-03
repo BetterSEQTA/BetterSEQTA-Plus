@@ -53,6 +53,8 @@ Open the `install.bat` file located inside the `scripts` folder. Then after that
 
 ### Mac & Linux
 
+The install and build script is currently fairly finnicky and can cause issues, but manually installing dependencies and running the dev script should be fine.
+
 1. `cd` into the folder
 ```
 cd EvenBetterSEQTA/scripts
