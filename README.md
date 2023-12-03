@@ -66,6 +66,9 @@ chmod a+x *
 3. Run the install and dev scripts
 ```
 sh install.sh
+```
+4. Open a new terminal session to let the new command activate, then run
+```
 sh dev.sh
 ```
 
