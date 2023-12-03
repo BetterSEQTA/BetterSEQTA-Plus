@@ -894,6 +894,7 @@ function addExtensionSettings() {
 
 function saveNewOrder(sortable) {
   var order = sortable.toArray();
+  console.log("Order: ", order);
   browser.storage.local.set({ menuorder: order });
 }
 
@@ -971,11 +972,13 @@ export function OpenMenuOptions() {
       ).firstChild;
       element.append(MenuItemToggle);
 
-      const replacementElement = document.createElement('section');
-      replacementElement.innerHTML = element.innerHTML;
-      cloneAttributes(replacementElement, element);
-      menu.firstChild.insertBefore(replacementElement, element);
-      element.remove();
+      if (!element.dataset.betterseqta) {
+        const a = document.createElement('section')
+        a.innerHTML = element.innerHTML
+        cloneAttributes(a, element)
+        menu.firstChild.insertBefore(a, element)
+        element.remove()
+      }
     }
 
     if (Object.keys(result.menuitems).length == 0) {
@@ -1007,21 +1010,21 @@ export function OpenMenuOptions() {
     }
     result1.then(open, onError);
 
-    Sortable.mount(new AutoScroll());
-
-    var el = document.querySelector('#menu > ul');
-    var sortable = Sortable.create(el, {
-      draggable: '.draggable',
-      dataIdAttr: 'data-key',
-      animation: 150,
-      easing: "cubic-bezier(.5,0,.5,1)",
-      onEnd: function () {
-        saveNewOrder(sortable);  // Save the new order when drag ends
-      },
-    });  
-
-    function StoreMenuSettings() {
-      saveNewOrder(sortable);
+    try {
+      Sortable.mount(new AutoScroll());
+  
+      var el = document.querySelector('#menu > ul');
+      var sortable = Sortable.create(el, {
+        draggable: '.draggable',
+        dataIdAttr: 'data-key',
+        animation: 150,
+        easing: "cubic-bezier(.5,0,.5,1)",
+        onEnd: function () {
+          saveNewOrder(sortable);
+        },
+      });  
+    } catch (err) {
+      console.log(err);
     }
 
     function changeDisplayProperty(element) {
@@ -1037,15 +1040,31 @@ export function OpenMenuOptions() {
       }
     }
 
+    function StoreMenuSettings() {
+      const menuItems = {}
+      const menubuttons = menu.firstChild.childNodes
+      const button = document.getElementsByClassName('menuitem')
+      for (let i = 0; i < menubuttons.length; i++) {
+        const id = menubuttons[i].dataset.key
+        const element = {}
+        element.toggle = button[i].checked
+
+        menuItems[id] = element
+      }
+      browser.storage.local.set({ menuitems: menuItems })
+    }
+
     for (let i = 0; i < menubuttons.length; i++) {
       const element = menubuttons[i];
       element.addEventListener('change', () => {
+        element.parentElement.parentElement.getAttribute('data-key');
         StoreMenuSettings();
         changeDisplayProperty(element);
       });
     }
 
     function closeAll() {
+      console.log("Closing!");
       ListItems = menu.firstChild.childNodes;
       menusettings.remove();
       cover.remove();
@@ -1057,12 +1076,13 @@ export function OpenMenuOptions() {
         element.classList.remove('draggable');
         element.setAttribute('draggable', false);
 
+
         if (!element.dataset.betterseqta) {
-          var a = document.createElement('li');
-          a.innerHTML = element.innerHTML;
-          cloneAttributes(a, element);
-          menu.firstChild.insertBefore(a, element);
-          element.remove();
+          const a = document.createElement('li')
+          a.innerHTML = element.innerHTML
+          cloneAttributes(a, element)
+          menu.firstChild.insertBefore(a, element)
+          element.remove()
         }
       }
 
@@ -1071,7 +1091,6 @@ export function OpenMenuOptions() {
         switches[i].remove();
       }
 
-      StoreMenuSettings();
     }
 
     cover.addEventListener('click', closeAll);
@@ -1093,7 +1112,7 @@ export function OpenMenuOptions() {
             'important',
           );
         }
-        StoreMenuSettings();
+        saveNewOrder(sortable);
       }
       result.then(open, onError)
     });
