@@ -47,32 +47,26 @@
 git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 
-2. Install dependencies
+### Windows
 
+Open the `install.bat` file located inside the `scripts` folder. Then after that is finished, open the `dev.bat` file.
+
+### Mac & Linux
+
+1. `cd` into the folder
 ```
-npm install
+cd EvenBetterSEQTA/scripts
+```
+2. Make the scripts in the folder executable
+```
+chmod a+x *
+```
+3. Run the install and dev scripts
+```
+sh install.sh
+sh dev.sh
 ```
 
-3. Install webpack
-
-```
-npm install -g webpack
-```
-
-4. Run the dev script (it updates as you save files)
-
-```
-npm run dev
-```
-
-5. Install and run the dev script for the interface **at the same time** (all custom react components are a separate sub-repository)
-
-```
-cd interface
-
-npm install
-npm run dev
-```
 
 ## Folder Structure
 
