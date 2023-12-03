@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  macOS (App)
 //
-//  Created by Seth Burkart on 10/9/2023.
+//  Created by Seth Burkart on 3/12/2023.
 //
 
 import Cocoa
