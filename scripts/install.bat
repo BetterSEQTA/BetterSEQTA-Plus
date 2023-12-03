@@ -18,6 +18,7 @@ IF "%HAS_PNPM%"=="false" (
 )
 
 :: Installing dependencies using pnpm
+CD ..
 pnpm install
 CD interface
 pnpm install
