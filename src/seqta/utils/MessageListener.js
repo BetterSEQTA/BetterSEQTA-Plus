@@ -13,6 +13,7 @@ export class MessageHandler {
 
     case 'EditSidebar':
       this.editSidebar();
+      sendResponse({ status: 'success' });
       break;
 
     /* Theme related */
