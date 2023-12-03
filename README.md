@@ -53,7 +53,7 @@ Open the `install.bat` file located inside the `scripts` folder. Then after that
 
 ### Mac & Linux
 
-1. cd into the folder
+1. `cd` into the folder
 ```
 cd EvenBetterSEQTA/scripts
 ```
