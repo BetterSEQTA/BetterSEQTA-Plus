@@ -10,25 +10,11 @@ install_pnpm() {
 
 # Function to install Node.js and npm
 install_npm() {
-    # Detecting OS
-    OS="unknown"
-    case "$(uname -s)" in
-        Darwin) OS="mac" ;;
-        Linux) OS="linux" ;;
-    esac
-
-    # Downloading and installing Node.js
-    if [ "$OS" = "mac" ]; then
-        # Install NVM (Node Version Manager) and Node.js
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        nvm install node
-    elif [ "$OS" = "linux" ]; then
-        # Using NodeSource Node.js Binary Distributions script for Linux
-        curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-    fi
+    # Install NVM (Node Version Manager) and Node.js
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install node
 }
 
 # Function to install packages using pnpm
