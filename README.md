@@ -14,7 +14,6 @@
 
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [Contributing](#contributing)
 
 ## Release Videos
 <video autoplay loop muted controls="false" width="33%" src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/3084644a-edbc-40e5-b1ad-1fdea4f0ca18"></video>
@@ -48,7 +47,7 @@
 git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 
-### Windows
+### Windows (currently not working - use manual install)
 
 Open the `install.bat` file located inside the `scripts` folder. Then after that is finished, open the `dev.bat` file.
 
@@ -66,6 +65,35 @@ chmod a+x *
 ```
 sh install.sh
 sh dev.sh
+```
+
+### Manual
+
+1. Install dependencies
+
+```
+npm install
+```
+
+2. Install webpack
+
+```
+npm install -g webpack
+```
+
+3. Run the dev script (it updates as you save files)
+
+```
+npm run dev
+```
+
+4. Install and run the dev script for the interface **at the same time** (all custom react components are a separate sub-repository)
+
+```
+cd interface
+
+npm install
+npm run dev
 ```
 
 
