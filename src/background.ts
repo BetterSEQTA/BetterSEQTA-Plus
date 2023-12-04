@@ -1,11 +1,11 @@
 
 import browser from 'webextension-polyfill'
-import { onError } from './seqta/utils/onError.js';
+import { onError } from './seqta/utils/onError';
 export const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = (event: any) => {
       const db = event.target.result;
       db.createObjectStore('backgrounds', { keyPath: 'id' });
     };
@@ -14,14 +14,14 @@ export const openDB = () => {
       resolve(request.result);
     };
 
-    request.onerror = (event) => {
+    request.onerror = (event: any) => {
       reject('Error opening database: ' + event.target.errorCode);
     };
   });
 };
 
-export const writeData = async (type, data) => {
-  const db = await openDB();
+export const writeData = async (type: any, data: any) => {
+  const db: any = await openDB();
 
   const tx = db.transaction('backgrounds', 'readwrite');
   const store = tx.objectStore('backgrounds');
@@ -33,7 +33,7 @@ export const writeData = async (type, data) => {
 export const readData = () => {
   return new Promise((resolve, reject) => {
     openDB()
-      .then(db => {
+      .then((db: any) => {
         const tx = db.transaction('backgrounds', 'readonly');
         const store = tx.objectStore('backgrounds');
 
@@ -41,11 +41,11 @@ export const readData = () => {
         const getRequest = store.get('customBackground');
 
         // Attach success and error event handlers
-        getRequest.onsuccess = function(event) {
+        getRequest.onsuccess = function(event: any) {
           resolve(event.target.result);
         };
 
-        getRequest.onerror = function(event) {
+        getRequest.onerror = function(event: any) {
           console.error('An error occurred:', event);
           reject(event);
         };
@@ -59,7 +59,7 @@ export const readData = () => {
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({})
-    function open (tabs) {
+    function open (tabs: any) {
     for (let tab of tabs) {
       if (tab.title.includes('SEQTA Learn')) {
         browser.tabs.reload(tab.id);
@@ -70,31 +70,9 @@ function reloadSeqtaPages() {
 }
 
 // Helper function to handle setting permissions
-const handleAddPermissions = () => {
-  if (typeof browser.declarativeContent !== 'undefined') {
-    browser.declarativeContent.onPageChanged.removeRules(undefined, () => {});
-  }
-  
-  browser.permissions.request(
-    { permissions: ['declarativeContent'], origins: ['*://*/*'] },
-    (granted) => {
-      if (granted) {
-        const rules = [
-          // Define your rules here
-        ];
-        
-        rules.forEach(rule => {
-          browser.declarativeContent.onPageChanged.addRules([rule]);
-        });
-        
-        alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
-      }
-    }
-  );
-};
 
 // Main message listener
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((request, sender, sendResponse: any) => {
   switch (request.type) {
   case 'reloadTabs':
     reloadSeqtaPages();
@@ -102,7 +80,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   case 'currentTab':
     browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      browser.tabs.sendMessage(tabs[0].id, request).then(function (response) {
+      browser.tabs.sendMessage(tabs[0].id!, request).then(function (response) {
         sendResponse(response);
       });
     });
@@ -115,10 +93,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   case 'setDefaultStorage':
     SetStorageValue(DefaultValues);
     break;
-    
-  case 'addPermissions':
-    handleAddPermissions();
-    break;
 
   case 'sendNews':
     GetNews(sendResponse);
@@ -129,7 +103,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-function GetNews(sendResponse) {
+function GetNews(sendResponse: any) {
   // Gets the current date
   const date = new Date();
 
@@ -147,7 +121,7 @@ function GetNews(sendResponse) {
     .then((response) => {
       if (response.code == 'rateLimited') {
         url += '%00';
-        GetNews();
+        GetNews({});
       } else {
         sendResponse({ news: response });
       }
@@ -220,7 +194,7 @@ const DefaultValues = {
   customshortcuts: [],
 };
 
-function SetStorageValue(object) {
+function SetStorageValue(object: any) {
   for (var i in object) {
     browser.storage.local.set({ [i]: object[i] });
   }
@@ -228,12 +202,12 @@ function SetStorageValue(object) {
 
 function UpdateCurrentValues() {
   const result = browser.storage.local.get()
-  function open (items) {
+  function open (items: any) {
     var CurrentValues = items;
 
     const NewValue = Object.assign({}, DefaultValues, CurrentValues);
 
-    function CheckInnerElement(element) {
+    function CheckInnerElement(element: any) {
       for (let i in element) {
         if (typeof element[i] === 'object') {
           if (typeof DefaultValues[i].length == 'undefined') {
