@@ -1,11 +1,11 @@
 /**
  * Uploads an image file to a specified endpoint using a POST request.
  *
- * @param {File} file - The image file to be uploaded.
+ * @param {File} file - The file to be uploaded.
  * @returns {Promise} A promise that resolves to the response from the server.
  * @throws {Error} If no file is provided or if there is an error during upload.
  */
-export async function UploadImage(file: any) {
+export async function UploadImage(file: File): Promise<any> {
   // Ensuring that file is provided
   if (!file) {
     throw new Error("No file provided");
