@@ -22,7 +22,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "optional_permissions": ["declarativeContent"],
   "content_scripts": [
     {
       "matches": ["*://*/*"],
