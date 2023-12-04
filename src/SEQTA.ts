@@ -242,19 +242,19 @@ function OpenWhatsNewPopup() {
   container.append(header);
   container.append(imagecont);
   container.append(textcontainer);
-  container.append(text);
-  container.append(footer);
+  container.append(text as ChildNode);
+  container.append(footer as ChildNode);
   container.append(exitbutton);
 
   background.append(container);
 
-  document.getElementById('container').append(background);
+  document.getElementById('container')!.append(background);
 
   let bkelement = document.getElementById('whatsnewbk');
   let popup = document.getElementsByClassName('whatsnewContainer')[0];
 
   animate(
-    [popup, bkelement],
+    [popup, bkelement as HTMLElement],
     { scale: [0, 1], opacity: [0, 1] },
     { easing: spring({ stiffness: 220, damping: 18 }) }
   );
@@ -271,7 +271,7 @@ function OpenWhatsNewPopup() {
 
   browser.storage.local.remove(['justupdated']);
 
-  bkelement.addEventListener('click', function (event) {
+  bkelement!.addEventListener('click', function (event) {
     // Check if the click event originated from the element itself and not any of its children
     if (event.target === bkelement) {
       DeleteWhatsNew();
@@ -279,7 +279,7 @@ function OpenWhatsNewPopup() {
   });  
 
   var closeelement = document.getElementById('whatsnewclosebutton');
-  closeelement.addEventListener('click', function () {
+  closeelement!.addEventListener('click', function () {
     DeleteWhatsNew();
   });
 }
@@ -287,16 +287,16 @@ function OpenWhatsNewPopup() {
 async function finishLoad() {
   try {
     var loadingbk = document.getElementById('loading');
-    loadingbk.style.opacity = '0';
+    loadingbk!.style.opacity = '0';
     await delay(501);
-    loadingbk.remove();
+    loadingbk!.remove();
   } catch (err) {
     console.log(err);
   }
 
 
   const result = browser.storage.local.get(['justupdated']);
-  function open (result) {
+  function open (result: any) {
     if (result.justupdated && !document.getElementById('whatsnewbk')) {
       OpenWhatsNewPopup();
     }
@@ -309,11 +309,11 @@ async function DeleteWhatsNew() {
   const popup = document.getElementsByClassName('whatsnewContainer')[0];
   
   animate(
-    [popup, bkelement],
+    [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
-    bkelement.remove();
+    bkelement!.remove();
   });
 }
 
@@ -328,17 +328,17 @@ export function CreateBackground() {
   var bk = document.createElement('div');
   bk.classList.add('bg');
 
-  bklocation.insertBefore(bk, menu);
+  bklocation!.insertBefore(bk, menu);
 
   var bk2 = document.createElement('div');
   bk2.classList.add('bg');
   bk2.classList.add('bg2');
-  bklocation.insertBefore(bk2, menu);
+  bklocation!.insertBefore(bk2, menu);
 
   var bk3 = document.createElement('div');
   bk3.classList.add('bg');
   bk3.classList.add('bg3');
-  bklocation.insertBefore(bk3, menu);
+  bklocation!.insertBefore(bk3, menu);
 }
 
 export function RemoveBackground() {
@@ -353,7 +353,7 @@ export function RemoveBackground() {
   console.log('it deleted???')
 }
 
-export function waitForElm(selector) {
+export function waitForElm(selector: any) {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
       return resolve(document.querySelector(selector));
@@ -373,7 +373,7 @@ export function waitForElm(selector) {
   });
 }
 
-async function RunColourCheck(element) {
+async function RunColourCheck(element: any) {
   if (
     typeof element.contentDocument.documentElement.childNodes[1] == 'undefined'
   ) {
@@ -383,7 +383,7 @@ async function RunColourCheck(element) {
     element.contentDocument.documentElement.childNodes[1].style.color = 'white';
   }
 }
-export function GetCSSElement (file) {
+export function GetCSSElement (file: string) {
   const cssFile = browser.runtime.getURL(file)
   const fileref = document.createElement('link')
   fileref.setAttribute('rel', 'stylesheet')
@@ -399,11 +399,12 @@ function removeThemeTagsFromNotices () {
   // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
     // Grabs the HTML of the body tag
-    const body = item.contentWindow.document.querySelectorAll('body')[0]
+    const item1 = item as HTMLIFrameElement
+    const body = item1.contentWindow!.document.querySelectorAll('body')[0]
     if (body) {
     // Replaces the theme tag with nothing
       const bodyText = body.innerHTML
-      body.innerhtml = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
+      body.innerHTML = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
     }
   }
 }
@@ -1410,7 +1411,7 @@ async function AddBetterSEQTAElements(toggle) {
 
 let tooltipstring;
 
-function GetLightDarkModeString(darkmodetoggle) {
+function GetLightDarkModeString(darkmodetoggle: boolean) {
   if (darkmodetoggle) {
     tooltipstring = 'Switch to light theme';
   } else {
@@ -1419,7 +1420,7 @@ function GetLightDarkModeString(darkmodetoggle) {
   return tooltipstring;
 }
 
-function CheckCurrentLesson(lesson, num) {
+function CheckCurrentLesson(lesson: any, num: number) {
   var startTime = lesson.from;
   var endTime = lesson.until;
   // Gets current time
@@ -1429,13 +1430,13 @@ function CheckCurrentLesson(lesson, num) {
   let startDate = new Date(currentDate.getTime());
   startDate.setHours(startTime.split(':')[0]);
   startDate.setMinutes(startTime.split(':')[1]);
-  startDate.setSeconds('00');
+  startDate.setSeconds(parseInt('00'));
 
   // Takes end time of current lesson and makes it into a Date function for comparison
   let endDate = new Date(currentDate.getTime());
   endDate.setHours(endTime.split(':')[0]);
   endDate.setMinutes(endTime.split(':')[1]);
-  endDate.setSeconds('00');
+  endDate.setSeconds(parseInt('00'));
 
   // Gets the difference between the start time and current time
   var difference = startDate.getTime() - currentDate.getTime();
@@ -1518,7 +1519,7 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-export function GetThresholdOfColor(color) {
+export function GetThresholdOfColor(color: any) {
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
@@ -1534,7 +1535,7 @@ export function GetThresholdOfColor(color) {
       const [r, g, b] = rgbaString.split(',').map(str => str.trim());
 
       // Compute the threshold using your existing algorithm
-      const threshold = Math.sqrt(r ** 2 + g ** 2 + b ** 2);
+      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2);
 
       // Store the computed threshold
       gradientThresholds.push(threshold);
@@ -1552,7 +1553,7 @@ export function GetThresholdOfColor(color) {
   }
 }
 
-function CheckCurrentLessonAll(lessons) {
+function CheckCurrentLessonAll(lessons: any) {
   // Checks each lesson and sets an interval to run every 60 seconds to continue updating
   LessonInterval = setInterval(
     function () {
@@ -1565,13 +1566,13 @@ function CheckCurrentLessonAll(lessons) {
 }
 
 // Helper function to build the assessment URL
-function buildAssessmentURL(programmeID, metaID, itemID = '') {
+function buildAssessmentURL(programmeID: any, metaID: any, itemID = '') {
   const base = '../#?page=/assessments/';
   return itemID ? `${base}${programmeID}:${metaID}&item=${itemID}` : `${base}${programmeID}:${metaID}`;
 }
 
 // Function to create a lesson div element from a lesson object
-function makeLessonDiv(lesson, num) {
+function makeLessonDiv(lesson: any, num: number) {
   if (!lesson) throw new Error('No lesson provided.');
 
   const { code, colour, description, staff, room, from, until, attendanceTitle, programmeID, metaID, assessments } = lesson;
@@ -1596,7 +1597,7 @@ function makeLessonDiv(lesson, num) {
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
-    const assessmentString = assessments.map(element =>
+    const assessmentString = assessments.map((element: any) =>
       `<p onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
     ).join('');
 
@@ -1615,7 +1616,7 @@ function makeLessonDiv(lesson, num) {
   return stringToHTML(lessonString);
 }
 
-function CheckUnmarkedAttendance(lessonattendance) {
+function CheckUnmarkedAttendance(lessonattendance: any) {
   if (lessonattendance) {
     var lesson = lessonattendance.label;
   } else {
@@ -1624,7 +1625,7 @@ function CheckUnmarkedAttendance(lessonattendance) {
   return lesson;
 }
 
-function callHomeTimetable(date, change) {
+function callHomeTimetable(date: Date, change: any) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest();
   xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true);
@@ -1635,11 +1636,11 @@ function callHomeTimetable(date, change) {
     // Once the response is ready
     if (xhr.readyState === 4) {
       var serverResponse = JSON.parse(xhr.response);
-      let lessonArray = [];
+      let lessonArray: Array<any> = [];
       var DayContainer = document.getElementById('day-container');
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
-        if (!DayContainer.innerText || change) {
+        if (!DayContainer!.innerText || change) {
           for (let i = 0; i < serverResponse.payload.items.length; i++) {
             lessonArray.push(serverResponse.payload.items[i]);
           }
@@ -1654,7 +1655,7 @@ function callHomeTimetable(date, change) {
               let subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
 
               let subject = subjects.find(
-                (element) => element.name === subjectname,
+                (element: any) => element.name === subjectname,
               );
               if (!subject) {
                 lessonArray[i].colour = '--item-colour: #8e8e8e;';
@@ -1676,15 +1677,16 @@ function callHomeTimetable(date, change) {
               );
             }
             // If on home page, apply each lesson to HTML with information in each div
-            DayContainer.innerText = '';
+            DayContainer!.innerText = '';
             for (let i = 0; i < lessonArray.length; i++) {
               var div = makeLessonDiv(lessonArray[i], i + 1);
               // Append each of the lessons into the day-container
               if (lessonArray[i].invert) {
-                div.firstChild.classList.add('day-inverted');
+                const div1 = div.firstChild! as HTMLElement
+                div1.classList.add('day-inverted');
               }
 
-              DayContainer.append(div.firstChild);
+              DayContainer!.append(div.firstChild as HTMLElement);
             }
 
             const today = new Date();
