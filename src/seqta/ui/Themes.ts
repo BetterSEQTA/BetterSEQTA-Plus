@@ -4,31 +4,31 @@ import localforage from 'localforage';
 let currentThemeClass = '';
 
 // Utility function to fetch and parse JSON
-const fetchJSON = async (url) => {
+const fetchJSON = async (url: any) => {
   const res = await fetch(url, {cache: 'no-store'});
   return await res.json();
 };
 
 // Utility function to fetch and parse text
-const fetchText = async (url) => {
+const fetchText = async (url: any) => {
   const res = await fetch(url);
   return await res.text();
 };
 
 // Check if the theme already exists in IndexedDB
-const themeExistsInDB = async (themeName) => {
+const themeExistsInDB = async (themeName: any) => {
   return (await localforage.getItem(`css_${themeName}`)) !== null;
 };
 
 // Fetch theme details (CSS, images, className, darkMode, defaultColour) from a given URL
-const fetchThemeJSON = async (url) => {
+const fetchThemeJSON = async (url: any) => {
   const { css, images, className, darkMode, defaultColour } = await fetchJSON(url);
   const cssText = await fetchText(css);
   return { css: cssText, images, className, darkMode, defaultColour };
 };
 
 // Save individual image to IndexedDB
-const saveImageToDB = async (themeName, cssVar, imageUrl) => {
+const saveImageToDB = async (themeName: any, cssVar: any, imageUrl: any) => {
   try {
     const response = await fetch(imageUrl);
     if (!response.ok) throw new Error(response.statusText);
@@ -40,14 +40,21 @@ const saveImageToDB = async (themeName, cssVar, imageUrl) => {
 };
 
 // Save theme details to storage via localForage
-const saveToIndexedDB = async (theme, themeName) => {
+const saveToIndexedDB = async (theme: any, themeName: any) => {
   await localforage.setItem(`css_${themeName}`, theme);
   await Promise.all(Object.entries(theme.images).map(([cssVar, imageUrl]) => saveImageToDB(themeName, cssVar, imageUrl)));
 };
 
+declare global {
+  interface Window {
+      currentThemeStyle: any;
+      currentThemeClass: any;
+  }
+}
+
 // Apply theme from storage via localForage to document, including dark mode and default color
-const applyTheme = async (themeName) => {
-  const { css, className, images, darkMode, defaultColour } = await localforage.getItem(`css_${themeName}`);
+const applyTheme = async (themeName: any) => {
+  const { css, className, images, darkMode, defaultColour }: any = await localforage.getItem(`css_${themeName}`);
   
   const newStyle = document.createElement('style');
   newStyle.innerHTML = css;
@@ -70,7 +77,7 @@ const applyTheme = async (themeName) => {
   if (images) {
     await Promise.all(
       Object.keys(images).map(async (cssVar) => {
-        const imageData = await localforage.getItem(`images_${themeName}_${cssVar}`);
+        const imageData: any = await localforage.getItem(`images_${themeName}_${cssVar}`);
         const objectURL = URL.createObjectURL(imageData);
         document.documentElement.style.setProperty(cssVar, `url(${objectURL})`);
       })
@@ -88,13 +95,13 @@ export const listThemes = async () => {
   };
 };
 
-export const downloadTheme = async (themeName, themeUrl) => {
+export const downloadTheme = async (themeName: any, themeUrl: any) => {
   const themeData = await fetchThemeJSON(themeUrl);
   await saveToIndexedDB(themeData, themeName);
   await setTheme(themeName, themeUrl);
 };
 
-export const deleteTheme = async (themeName) => {
+export const deleteTheme = async (themeName: any) => {
   const currentTheme = await localforage.getItem('selectedTheme');
   if (currentTheme === themeName) {
     await disableTheme();
@@ -105,7 +112,7 @@ export const deleteTheme = async (themeName) => {
   );
 };
 
-export const setTheme = async (themeName, themeUrl) => {
+export const setTheme = async (themeName: any, themeUrl: any) => {
   if (!(await themeExistsInDB(themeName))) {
     await downloadTheme(themeName, themeUrl);
   }
@@ -142,7 +149,7 @@ export const disableTheme = async () => {
   // Remove any applied image URLs from the root element
   const currentTheme = await localforage.getItem('selectedTheme');
   if (currentTheme) {
-    const themeData = await localforage.getItem(`css_${currentTheme}`);
+    const themeData: any = await localforage.getItem(`css_${currentTheme}`);
     if (themeData && themeData.images) {
       Object.keys(themeData.images).forEach(cssVar => {
         document.documentElement.style.removeProperty(cssVar);

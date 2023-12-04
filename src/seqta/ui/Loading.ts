@@ -8,7 +8,7 @@ const loadingSpinner = `
     <svg height="220" width="220" viewBox="0 0 1000 1000" class="outer-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:currentColor; stroke:none;" d="M456 954L456 946C438.715 945.258 420.843 941.462 404 937.65C369.403 929.822 335.739 918.116 304 902.247C255.981 878.237 211.768 846.374 175.09 807C62.5744 686.214 23.1598 509.033 78.6921 353C96.4653 303.062 122.84 256.974 156.424 216C207.709 153.43 278.099 103.658 355 78C372.453 72.1767 389.992 67.0399 408 63.2107C413.31 62.0816 418.647 60.9853 424 60.0811C426.508 59.6575 430.352 59.6852 432.397 57.9869C434.897 55.9098 434 50.8766 434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.517 68.7473 294.608 88.2827 254 113.576C215.673 137.45 181.285 167.835 151.87 202C33.9725 338.933 8.37009 541.243 89.2485 703C110.949 746.4 139.693 786.693 174 821C210.688 857.688 253.047 888.542 300 910.781C332.484 926.167 365.934 937.716 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
     `;
 
-export function AppendLoadingSymbol(givenID, position) {
+export function AppendLoadingSymbol(givenID: any, position: any) {
   let loadingsymbol = stringToHTML(String.raw`
     <div id="${givenID}">
     ${loadingSpinner}
@@ -79,5 +79,5 @@ export default function loading() {
 }</div></div>`,
   );
   var html = document.getElementsByTagName('html')[0];
-  html.append(loadinghtml.firstChild);
+  html.append(loadinghtml.firstChild!);
 }

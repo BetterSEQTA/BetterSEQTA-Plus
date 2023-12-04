@@ -8,7 +8,7 @@ export class MessageHandler {
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
 
-  routeMessage(request, sender, sendResponse) {
+  routeMessage(request: any, sender: any, sendResponse: any) {
     switch (request.info) {
 
     case 'EditSidebar':

@@ -1,1 +1,1 @@
-export function onError (error) { console.log(`Error: ${error}`) }
+export function onError (error: string) { console.log(`Error: ${error}`) }
