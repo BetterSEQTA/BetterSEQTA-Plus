@@ -2304,6 +2304,7 @@ function SendHomePage() {
     var Timetable = stringToHTML(TimetableStr);
     // Appends the timetable container into the home container
     document.getElementById('home-container')!.append(Timetable.firstChild!);
+    callHomeTimetable(TodayFormatted, true)
 
     var timetablearrowback = document.getElementById('home-timetable-back');
     var timetablearrowforward = document.getElementById(
