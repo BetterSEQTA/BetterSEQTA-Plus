@@ -4,7 +4,8 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import { SettingsContextProvider } from './SettingsContext.js';
 import SettingsPage from './SettingsPage.js';
-const fontURL = chrome.runtime.getURL("fonts/IconFamily.woff");
+import browser from 'webextension-polyfill'
+const fontURL = browser.runtime.getURL("fonts/IconFamily.woff");
 
 const style = document.createElement("style");
 style.setAttribute("type", "text/css");

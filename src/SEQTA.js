@@ -311,6 +311,10 @@ async function DeleteWhatsNew() {
 }
 
 export function CreateBackground() {
+  var bkCheck = document.getElementsByClassName('bg');
+  if (bkCheck.length !== 0) {
+    return;
+  }
   // Creating and inserting 3 divs containing the background applied to the pages
   var bklocation = document.getElementById('container');
   var menu = document.getElementById('menu');
@@ -336,10 +340,10 @@ export function RemoveBackground() {
   var bk3 = document.getElementsByClassName('bg3');
 
   if (bk.length == 0 || bk2.length == 0 || bk3.length == 0) return;
-
   bk[0].remove();
   bk2[0].remove();
   bk3[0].remove();
+  console.log('it deleted???')
 }
 
 export function waitForElm(selector) {

@@ -5,6 +5,8 @@ import PickerSwatch from '../components/PickerSwatch';
 import { SettingsList } from '../types/SettingsProps';
 import { useSettingsContext } from '../SettingsContext';
 
+import browser from 'webextension-polyfill'
+
 const Settings: React.FC = () => {
   const { settingsState, setSettingsState } = useSettingsContext();
 
@@ -51,7 +53,7 @@ const Settings: React.FC = () => {
     {
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
-      modifyElement: <button onClick={() => chrome.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>Edit</button>
+      modifyElement: <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>Edit</button>
     },
     {
       title: "Transparency Effects",
