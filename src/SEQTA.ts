@@ -416,42 +416,46 @@ function CheckiFrameItems() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.tagName == 'IFRAME') {
+        const node = added_node as HTMLElement
+        if (node.tagName == 'IFRAME') {
           const result = browser.storage.local.get('DarkMode');
-          function open (result) {
+          function open (result: any) {
             DarkMode = result.DarkMode;
+            const node = added_node as HTMLIFrameElement
             if (DarkMode) {
-              RunColourCheck(added_node);
+              RunColourCheck(node);
+              const childNode = node.contentDocument!.documentElement.childNodes[1] as HTMLElement
               if (
-                added_node.contentDocument.documentElement.childNodes[1].style
+                childNode.style
                   .color != 'white'
               ) {
-                added_node.contentDocument.documentElement.childNodes[1].style.color =
+                childNode.style.color =
                   'white';
               }
+              const innerHTMLNode = node.contentDocument!.documentElement.firstChild! as HTMLElement
               if (
-                !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
+                !innerHTMLNode.innerHTML.includes(
                   'iframe.css',
                 )
               ) {
-                added_node.contentDocument.documentElement.firstChild.appendChild(
+                innerHTMLNode.appendChild(
                   fileref,
                 );
               }
               added_node.addEventListener('load', function () {
                 if (
-                  added_node.contentDocument.documentElement.childNodes[1].style
+                  childNode.style
                     .color != 'white'
                 ) {
-                  added_node.contentDocument.documentElement.childNodes[1].style.color =
+                  childNode.style.color =
                     'white';
                 }
                 if (
-                  !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
+                  !innerHTMLNode.innerHTML.includes(
                     'iframe.css',
                   )
                 ) {
-                  added_node.contentDocument.documentElement.firstChild.appendChild(
+                  innerHTMLNode.appendChild(
                     fileref,
                   );
                 }
@@ -470,20 +474,21 @@ function CheckiFrameItems() {
   });
 }
 
-function SortMessagePageItems(messagesParentElement) {
+function SortMessagePageItems(messagesParentElement: any) {
   let filterbutton = document.createElement('div');
   filterbutton.classList.add('messages-filterbutton');
   filterbutton.innerText = 'Filter';
 
   let header = document.getElementsByClassName(
     'MessageList__MessageList___3DxoC',
-  )[0].firstChild;
+  )[0].firstChild as HTMLElement;
   header.append(filterbutton);
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.dataset.message) {
+        const node = added_node as HTMLElement
+        if (node.dataset.message) {
           // Check if added_node.firstChild.title is in block list
         }
       });
@@ -503,13 +508,13 @@ async function LoadPageElements() {
   case 'news': {
     console.log('[BetterSEQTA+] Started Init');
     const result = browser.storage.local.get()
-    function open (result) {
+    function open (result: any) {
       if (result.onoff) {
         SendNewsPage();
 
         // Sends similar HTTP Post Request for the notices
         const result = browser.storage.local.get() 
-        function open (result) {
+        function open (result: any) {
           if (result.notificationcollector) {
             enableNotificationCollector();
           }
