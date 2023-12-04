@@ -2,7 +2,8 @@
 import browser from 'webextension-polyfill';
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
-import Sortable from 'sortablejs';
+// @ts-ignore
+import Sortable, { AutoScroll }  from 'sortablejs/modular/sortable.core.esm';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
@@ -1043,7 +1044,7 @@ export function OpenMenuOptions() {
     result1.then(open, onError);
 
     try {
-      Sortable.mount(new Sortable.AutoScroll());
+      Sortable.mount(new AutoScroll());
   
       var el = document.querySelector('#menu > ul');
       var sortable = Sortable.create((el as HTMLElement), {
