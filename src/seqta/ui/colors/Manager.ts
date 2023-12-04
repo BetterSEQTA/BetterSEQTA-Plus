@@ -1,8 +1,8 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA.js';
-import { lightenAndPaleColor } from './lightenAndPaleColor.js';
-import ColorLuminance from './ColorLuminance.js';
-import { onError } from '../../utils/onError.js';
+import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA';
+import { lightenAndPaleColor } from './lightenAndPaleColor';
+import ColorLuminance from './ColorLuminance';
+import { onError } from '../../utils/onError';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
