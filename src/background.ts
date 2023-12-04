@@ -72,8 +72,7 @@ function reloadSeqtaPages() {
 // Helper function to handle setting permissions
 
 // Main message listener
-// @ts-ignore idk why but sender is required for it to work
-browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: any) => {
+browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse: any) => {
   switch (request.type) {
   case 'reloadTabs':
     reloadSeqtaPages();
