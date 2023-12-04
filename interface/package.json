@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@types/chrome": "^0.0.246",
+    "@types/webextension-polyfill": "^0.10.7",
     "framer-motion": "^10.16.4",
     "react": "^18.2.0",
     "react-best-gradient-color-picker": "2.2.24",
     "react-dom": "^18.2.0",
     "react-router-dom": "latest",
-    "tinycolor2": "^1.6.0"
+    "tinycolor2": "^1.6.0",
+    "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

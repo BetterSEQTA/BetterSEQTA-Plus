@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 interface ThemeList {
   themes: string[];
   selectedTheme: string;
@@ -5,7 +6,7 @@ interface ThemeList {
 
 export const downloadTheme = async (themeName: string, themeURL: string) => {
   // send message to the background script
-  const response = await chrome.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'DownloadTheme',
     body: {
@@ -19,7 +20,7 @@ export const downloadTheme = async (themeName: string, themeURL: string) => {
 
 export const setTheme = async (themeName: string, themeURL: string) => {
   // send message to the background script
-  const response = await chrome.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'SetTheme',
     body: {
@@ -33,7 +34,7 @@ export const setTheme = async (themeName: string, themeURL: string) => {
 
 export const listThemes = async () => {
   // send message to the background script
-  const response: ThemeList = await chrome.runtime.sendMessage({
+  const response: ThemeList = await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'ListThemes'
   });
@@ -45,14 +46,14 @@ export const listThemes = async () => {
 }
 
 export const disableTheme = async () => {
-  await chrome.runtime.sendMessage({
+  await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'DisableTheme',
   });
 };
 
 export const deleteTheme = async (themeName: string) => {
-  await chrome.runtime.sendMessage({
+  await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'DeleteTheme',
     body: {
