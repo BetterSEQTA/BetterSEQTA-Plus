@@ -1813,7 +1813,7 @@ function CreateElement(type: string, class_?: any, id?: any, innerText?: string,
   return element;
 }
 
-function createAssessmentDateDiv(date: string, value: any, datecase = undefined) {
+function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
   var options = { weekday: 'long' as 'long', month: 'long' as 'long', day: 'numeric' as 'numeric' };
   const FormattedDate = new Date(date);
 
@@ -1979,13 +1979,13 @@ function CreateFilters(subjects: any) {
         filteroptions[element.code],
       );
 
-      filterdiv.append(elementdiv);
+      filterdiv!.append(elementdiv);
     }
   }
   result.then(open, onError)
 }
 
-function CreateUpcomingSection(assessments) {
+function CreateUpcomingSection(assessments: any) {
   let upcomingitemcontainer = document.querySelector('#upcoming-items');
   let overdueDates = [];
   let upcomingDates = {};
@@ -2018,7 +2018,7 @@ function CreateUpcomingSection(assessments) {
     for (let i = 0; i < assessments.length; i++) {
       let subjectname = `timetable.subject.colour.${assessments[i].code}`;
 
-      let subject = subjects.find((element) => element.name === subjectname);
+      let subject = subjects.find((element: any) => element.name === subjectname);
       if (!subject) {
         assessments[i].colour = '--item-colour: #8e8e8e;';
       } else {
@@ -2027,11 +2027,11 @@ function CreateUpcomingSection(assessments) {
       }
     }
 
-    let activeSubjects = []; // TODO: IDK what is going on here, but it didn't exist
+    let activeSubjects: any = []; // TODO: IDK what is going on here, but it didn't exist
     for (let i = 0; i < activeSubjects.length; i++) {
       const element = activeSubjects[i];
       let subjectname = `timetable.subject.colour.${element.code}`;
-      let colour = colours.find((element) => element.name === subjectname);
+      let colour = colours.find((element: any) => element.name === subjectname);
       if (!colour) {
         element.colour = '--item-colour: #8e8e8e;';
       } else {
@@ -2049,9 +2049,9 @@ function CreateUpcomingSection(assessments) {
     let class_;
 
     for (let i = 0; i < assessments.length; i++) {
-      const element = assessments[i];
-      if (!upcomingDates[element.due]) {
-        let dateObj = new Object();
+      const element: any = assessments[i];
+      if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
+        let dateObj: any = new Object();
         dateObj.div = CreateElement(
           // TODO: not sure whats going on here?
           // eslint-disable-next-line
@@ -2061,48 +2061,48 @@ function CreateUpcomingSection(assessments) {
         );
         dateObj.assessments = [];
 
-        upcomingDates[element.due] = dateObj;
+        dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any;
       }
-      let assessmentDateDiv = upcomingDates[element.due];
-      assessmentDateDiv.assessments.push(element);
+      let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
+      (assessmentDateDiv as any).assessments.push(element);
     }
 
     for (var date in upcomingDates) {
-      let assessmentdue = new Date(upcomingDates[date].assessments[0].due);
+      let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due);
       let specialcase = CheckSpecialDay(Today, assessmentdue);
       let assessmentDate;
-      let datecase;
 
       if (specialcase) {
+        let datecase: string = specialcase!;
         assessmentDate = createAssessmentDateDiv(
           date,
-          upcomingDates[date],
+          upcomingDates[date as keyof typeof upcomingDates],
           // eslint-disable-next-line
-          datecase = specialcase,
+          datecase,
         );
       } else {
-        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date]);
+        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates]);
       }
 
       if (specialcase === 'Yesterday') {
-        upcomingitemcontainer.insertBefore(
+        upcomingitemcontainer!.insertBefore(
           assessmentDate,
-          upcomingitemcontainer.firstChild,
+          upcomingitemcontainer!.firstChild,
         );
       } else {
-        upcomingitemcontainer.append(assessmentDate);
+        upcomingitemcontainer!.append(assessmentDate);
       }
 
     }
     const result = browser.storage.local.get()
-    function open (result) {
+    function open (result: any) {
       FilterUpcomingAssessments(result.subjectfilters);
     }
     result.then(open, onError)
   });
 }
 
-function AddPlaceHolderToParent(parent, numberofassessments) {
+function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
   let textcontainer = CreateElement('div', 'upcoming-blank');
   let textblank = CreateElement('p', 'upcoming-hiddenassessment');
   let s = '';
@@ -2111,12 +2111,12 @@ function AddPlaceHolderToParent(parent, numberofassessments) {
   }
   textblank.innerText = `${numberofassessments} hidden assessment${s} due`;
   textcontainer.append(textblank);
-  textcontainer.setAttribute('data-hidden', true);
+  textcontainer.setAttribute('data-hidden', 'true');
 
   parent.append(textcontainer);
 }
 
-function FilterUpcomingAssessments(subjectoptions) {
+function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {
     let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
@@ -2129,9 +2129,9 @@ function FilterUpcomingAssessments(subjectoptions) {
       if (subjectoptions[item]) {
         element.classList.remove('hidden');
       }
-      element.parentNode.classList.remove('hidden');
+      (element.parentNode! as HTMLElement).classList.remove('hidden');
 
-      let children = element.parentNode.parentNode.children;
+      let children = element.parentNode!.parentNode!.children;
       for (let i = 0; i < children.length; i++) {
         const element = children[i];
         if (element.hasAttribute('data-hidden')) {
@@ -2140,21 +2140,21 @@ function FilterUpcomingAssessments(subjectoptions) {
       }
 
       if (
-        element.parentNode.children.length ==
-        element.parentNode.querySelectorAll('.hidden').length
+        element.parentNode!.children.length ==
+        element.parentNode!.querySelectorAll('.hidden').length
       ) {
-        if (element.parentNode.querySelectorAll('.hidden').length > 0) {
-          if (!element.parentNode.parentNode.hasAttribute('data-day')) {
-            element.parentNode.parentNode.classList.add('hidden');
+        if (element.parentNode!.querySelectorAll('.hidden').length > 0) {
+          if (!(element.parentNode!.parentNode! as HTMLElement).hasAttribute('data-day')) {
+            (element.parentNode!.parentNode! as HTMLElement).classList.add('hidden');
           } else {
             AddPlaceHolderToParent(
-              element.parentNode.parentNode,
-              element.parentNode.querySelectorAll('.hidden').length,
+              element.parentNode!.parentNode,
+              element.parentNode!.querySelectorAll('.hidden').length,
             );
           }
         }
       } else {
-        element.parentNode.parentNode.classList.remove('hidden');
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove('hidden');
       }
     }
   }
@@ -2179,7 +2179,7 @@ async function GetLessonColours() {
     .then((response) => response.payload);
 }
 
-export function CreateCustomShortcutDiv(element) {
+export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
   var shortcut = document.createElement('a');
   shortcut.setAttribute('href', element.url);
