@@ -128,7 +128,7 @@ function GetNews(sendResponse: any) {
     });
 }
 
-const DefaultValues = {
+const DefaultValues: any = {
   onoff: true,
   animatedbk: true,
   bksliderinput: 50,
@@ -238,13 +238,13 @@ function UpdateCurrentValues() {
 
 function migrateOldStorage() {
   const result = browser.storage.local.get()
-  function open (items) {
+  function open (items: any) {
     let shouldUpdate = false; // Flag to check if there is anything to update
     
     // Check for the old "Name" field and convert it to "name"
     if (items.shortcuts && items.shortcuts.length > 0 && 'Name' in items.shortcuts[0]) {
       shouldUpdate = true;
-      items.shortcuts = items.shortcuts.map((shortcut) => {
+      items.shortcuts = items.shortcuts.map((shortcut: any) => {
         return {
           name: shortcut.Name,  // Convert "Name" to "name"
           enabled: shortcut.enabled // Keep the "enabled" field as is
