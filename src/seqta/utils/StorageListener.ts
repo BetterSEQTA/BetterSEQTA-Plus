@@ -8,9 +8,9 @@ import {
   addShortcuts,
   disableNotificationCollector,
   enableNotificationCollector,
-} from '../../SEQTA.js';
-import { updateBgDurations } from '../ui/Animation.js';
-import { getDarkMode, updateAllColors } from '../ui/colors/Manager.js';
+} from '../../SEQTA';
+import { updateBgDurations } from '../ui/Animation';
+import { getDarkMode, updateAllColors } from '../ui/colors/Manager';
 
 
 export default class StorageListener {

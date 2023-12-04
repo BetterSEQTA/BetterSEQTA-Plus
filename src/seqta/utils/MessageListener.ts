@@ -1,14 +1,14 @@
 import browser from 'webextension-polyfill'
 
-import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from '../../SEQTA.js';
-import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../ui/Themes.js';
+import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from '../../SEQTA';
+import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../ui/Themes';
 
 export class MessageHandler {
   constructor() {
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
 
-  routeMessage(request: any, sender: any, sendResponse: any) {
+  routeMessage(request: any, sendResponse: any) {
     switch (request.info) {
 
     case 'EditSidebar':

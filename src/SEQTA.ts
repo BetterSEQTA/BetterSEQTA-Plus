@@ -2,7 +2,7 @@
 import browser from 'webextension-polyfill';
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
-import Sortable, { AutoScroll } from 'sortablejs';
+import Sortable from 'sortablejs';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
@@ -20,7 +20,6 @@ import { updateBgDurations } from './seqta/ui/Animation';
 import { updateAllColors } from './seqta/ui/colors/Manager';
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import { enableCurrentTheme } from './seqta/ui/Themes';
-import { info } from 'autoprefixer';
 
 declare global {
   interface Window {
@@ -1044,7 +1043,7 @@ export function OpenMenuOptions() {
     result1.then(open, onError);
 
     try {
-      Sortable.mount(new AutoScroll());
+      Sortable.mount(new Sortable.AutoScroll());
   
       var el = document.querySelector('#menu > ul');
       var sortable = Sortable.create((el as HTMLElement), {
@@ -2042,8 +2041,9 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
 
     CreateFilters(activeSubjects);
-
+    // @ts-ignore
     let type;
+    // @ts-ignore
     let class_;
 
     for (let i = 0; i < assessments.length; i++) {
