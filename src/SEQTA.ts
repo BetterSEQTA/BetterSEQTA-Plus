@@ -539,7 +539,7 @@ async function LoadPageElements() {
 
     // Sends similar HTTP Post Request for the notices
     const result1 = browser.storage.local.get()
-    function open1(result) {
+    function open1(result: any) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
@@ -552,8 +552,9 @@ async function LoadPageElements() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.classList.contains('messages')) {
-          let element = document.getElementById('title').firstChild;
+        const node = added_node as HTMLElement
+        if (node.classList.contains('messages')) {
+          let element = document.getElementById('title')!.firstChild as HTMLElement;
           element.innerText = 'Direct Messages';
           document.title = 'Direct Messages ― SEQTA Learn';
           SortMessagePageItems(added_node);
@@ -569,9 +570,9 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('notices')) {
+        } else if (node.classList.contains('notices')) {
           CheckNoticeTextColour(added_node);
-        } else if (added_node.classList.contains('dashboard')) {
+        } else if (node.classList.contains('dashboard')) {
           let ranOnce = false;
           waitForElm('.dashlet').then(() => {
             if (ranOnce) return;
@@ -586,7 +587,7 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('documents')) {
+        } else if (node.classList.contains('documents')) {
           let ranOnce = false;
           waitForElm('.document').then(() => {
             if (ranOnce) return;
@@ -601,7 +602,7 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('reports')) {
+        } else if (node.classList.contains('reports')) {
           let ranOnce = false;
           waitForElm('.report').then(() => {
             if (ranOnce) return;
@@ -621,24 +622,25 @@ async function LoadPageElements() {
     });
   });
 
-  observer.observe(document.querySelector('#main'), {
+  observer.observe(document.querySelector('#main') as HTMLElement, {
     subtree: false,
     childList: true,
   });
 }
 
-function CheckNoticeTextColour(notice) {
+function CheckNoticeTextColour(notice: any) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
+        const node = added_node as HTMLElement;
         const result = browser.storage.local.get(['DarkMode']) 
-        function open (result) {
+        function open (result: any) {
           DarkMode = result.DarkMode;
-          if (added_node.classList.contains('notice')) {
-            var hex = added_node.style.cssText.split(' ')[1];
+          if (node.classList.contains('notice')) {
+            var hex = node.style.cssText.split(' ')[1];
             var threshold = GetThresholdOfColor(hex);
             if (DarkMode && threshold < 100) {
-              added_node.style.cssText = '--color: undefined;';
+              node.style.cssText = '--color: undefined;';
             }
           }
         }
@@ -662,11 +664,11 @@ export function tryLoad() {
     finishLoad();
   });
 
-  waitForElm('[data-key=welcome]').then((elm) => {
+  waitForElm('[data-key=welcome]').then((elm: any) => {
     elm.classList.remove('active');
   });
 
-  waitForElm('.code').then((elm) => {
+  waitForElm('.code').then((elm: any) => {
     if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements();
   });
 
@@ -681,18 +683,19 @@ export function tryLoad() {
     true,
   );
   const observer = new MutationObserver(() => { documentTextColor() })
-  observer.observe(document.getElementById('toolbar'), { attributes: true, childList: true, subtree: true })
+  observer.observe(document.getElementById('toolbar')!, { attributes: true, childList: true, subtree: true })
 }
 
-function ChangeMenuItemPositions(storage) {
+function ChangeMenuItemPositions(storage: any) {
   let menuorder = storage;
 
-  var menuList = document.querySelector('#menu').firstChild.childNodes;
+  var menuList = document.querySelector('#menu')!.firstChild!.childNodes;
 
   let listorder = [];
   for (let i = 0; i < menuList.length; i++) {
+    const menu = menuList[i] as HTMLElement
 
-    let a = menuorder.indexOf(menuList[i].dataset.key);
+    let a = menuorder.indexOf(menu.dataset.key);
 
     listorder.push(a);
   }
@@ -702,25 +705,27 @@ function ChangeMenuItemPositions(storage) {
     newArr[listorder[i]] = menuList[i];
   }
 
-  let listItemsDOM = document.getElementById('menu').firstChild;
+  let listItemsDOM = document.getElementById('menu')!.firstChild;
   for (let i = 0; i < newArr.length; i++) {
     const element = newArr[i];
     if (element) {
-      element.setAttribute('data-checked', 'true');
-      listItemsDOM.appendChild(element);
+      const elem = element as HTMLElement
+      elem.setAttribute('data-checked', 'true');
+      listItemsDOM!.appendChild(element);
     }
   }
 }
 
 export async function ObserveMenuItemPosition() {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     let menuorder = result.menuorder;
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
         mutations_list.forEach(function (mutation) {
           mutation.addedNodes.forEach(function (added_node) {
-            if (!added_node?.dataset?.checked && !MenuOptionsOpen) {
+            const node = added_node as HTMLElement
+            if (!node?.dataset?.checked && !MenuOptionsOpen) {
               if (MenuitemSVGKey[added_node?.dataset?.key]) {
                 ReplaceMenuSVG(
                   added_node,
