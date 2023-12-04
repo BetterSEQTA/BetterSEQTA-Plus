@@ -1,3 +1,4 @@
+
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError.js';
 export const openDB = () => {

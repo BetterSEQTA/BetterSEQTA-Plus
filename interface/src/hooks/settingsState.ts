@@ -1,4 +1,4 @@
-/*global chrome*/
+import browser from 'webextension-polyfill'
 import { useEffect, useMemo } from "react";
 import { SettingsProps } from "../types/SettingsProps";
 import { MainConfig, SettingsState } from "../types/AppProps";
@@ -12,7 +12,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     RanOnce = true;
 
     // get the current settings state
-    chrome.storage.local.get(function(result: MainConfig) {
+    // @ts-expect-error idk js/ts wizardry
+    browser.storage.local.get().then().then(function(result: MainConfig) {
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
@@ -43,7 +44,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "transparencyEffects": "transparencyEffects"
   }), []);
   
-  const storageChangeListener = (changes: chrome.storage.StorageChange) => {
+  const storageChangeListener = (changes: browser.Storage.StorageChange) => {
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {
@@ -66,14 +67,14 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   };
 
   useEffect(() => {
-    chrome.storage.onChanged.addListener(storageChangeListener);
+    browser.storage.onChanged.addListener(storageChangeListener);
     return () => {
-      chrome.storage.onChanged.removeListener(storageChangeListener);
+      browser.storage.onChanged.removeListener(storageChangeListener);
     };
   });
 
   const setStorage = (key: keyof MainConfig, value: any) => {
-    chrome.storage.local.set({ [key]: value });
+    browser.storage.local.set({ [key]: value });
   }
 
   useEffect(() => {
