@@ -1167,20 +1167,20 @@ function ReplaceMenuSVG(element: HTMLElement, svg: string) {
 }
 
 async function AddBetterSEQTAElements(toggle: any) {
-  var code = document.getElementsByClassName('code')[0];
+  const code = document.getElementsByClassName('code')[0];
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
-      UserInitalCode = code.innerText;
-      code.innerText = `BetterSEQTA v${browser.runtime.getManifest().version}`;
+      UserInitalCode = code.innerHTML;
+      code.innerHTML = `BetterSEQTA v${browser.runtime.getManifest().version}`;
       code.setAttribute('data-hover', 'Click for user code');
       code.addEventListener('click', function () {
         var code = document.getElementsByClassName('code')[0];
-        if (code.innerText.includes('BetterSEQTA')) {
-          code.innerText = UserInitalCode;
+        if (code.innerHTML.includes('BetterSEQTA')) {
+          code.innerHTML = UserInitalCode;
           code.setAttribute('data-hover', 'Click for BetterSEQTA version');
         } else {
-          code.innerText = `BetterSEQTA v${
+          code.innerHTML = `BetterSEQTA v${
             browser.runtime.getManifest().version
           }`;
           code.setAttribute('data-hover', 'Click for user code');
@@ -1659,10 +1659,10 @@ function callHomeTimetable(date: Date, change: any) {
     if (xhr.readyState === 4) {
       var serverResponse = JSON.parse(xhr.response);
       let lessonArray: Array<any> = [];
-      var DayContainer = document.getElementById('day-container');
+      const DayContainer = document.getElementById('day-container')!;
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
-        if (!DayContainer!.innerText || change) {
+        if (DayContainer.innerText || change) {
           for (let i = 0; i < serverResponse.payload.items.length; i++) {
             lessonArray.push(serverResponse.payload.items[i]);
           }
@@ -1699,7 +1699,7 @@ function callHomeTimetable(date: Date, change: any) {
               );
             }
             // If on home page, apply each lesson to HTML with information in each div
-            DayContainer!.innerText = '';
+            DayContainer.innerText = '';
             for (let i = 0; i < lessonArray.length; i++) {
               var div = makeLessonDiv(lessonArray[i], i + 1);
               // Append each of the lessons into the day-container
@@ -1708,7 +1708,7 @@ function callHomeTimetable(date: Date, change: any) {
                 div1.classList.add('day-inverted');
               }
 
-              DayContainer!.append(div.firstChild as HTMLElement);
+              DayContainer.append(div.firstChild as HTMLElement);
             }
 
             const today = new Date();
@@ -1781,7 +1781,7 @@ async function GetActiveClasses() {
   }
 }
 
-function comparedate(obj1, obj2) {
+function comparedate(obj1: any, obj2: any) {
   if (obj1.date < obj2.date) {
     return -1;
   }
@@ -1791,7 +1791,7 @@ function comparedate(obj1, obj2) {
   return 0;
 }
 
-function CreateElement(type, class_, id, innerText, innerHTML, style) {
+function CreateElement(type: string, class_, id, innerText, innerHTML, style) {
   let element = document.createElement(type);
   if (class_ !== undefined) {
     element.classList.add(class_);
