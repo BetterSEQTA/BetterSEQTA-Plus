@@ -8,17 +8,19 @@ import {
   addShortcuts,
   disableNotificationCollector,
   enableNotificationCollector,
-} from '../../SEQTA.js';
-import { updateBgDurations } from '../ui/Animation.js';
-import { getDarkMode, updateAllColors } from '../ui/colors/Manager.js';
+} from '../../SEQTA';
+import { updateBgDurations } from '../ui/Animation';
+import { getDarkMode, updateAllColors } from '../ui/colors/Manager';
+
 
 export default class StorageListener {
+  darkMode: any;
   constructor() {
     this.darkMode = getDarkMode();
     browser.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
   }
 
-  handleStorageChanges(changes) {
+  handleStorageChanges(changes: any) {
     Object.keys(changes).forEach((changeKey) => {
       switch (changeKey) {
 
@@ -60,7 +62,7 @@ export default class StorageListener {
           CreateBackground();
         } else {
           RemoveBackground();
-          document.getElementById('container').style.background = 'var(--background-secondary)';
+          document.getElementById('container')!.style.background = 'var(--background-secondary)';
         }
         break;
 
@@ -80,7 +82,7 @@ export default class StorageListener {
     });
   }  
 
-  handleSelectedColorChange(newColor) {
+  handleSelectedColorChange(newColor: any) {
     try {
       updateAllColors(this.darkMode, newColor);
     } catch (err) {
@@ -88,7 +90,7 @@ export default class StorageListener {
     }
   }
 
-  handleNotificationCollectorChange(details) {
+  handleNotificationCollectorChange(details: any) {
     if (details.newValue) {
       enableNotificationCollector();
     } else {
@@ -96,7 +98,7 @@ export default class StorageListener {
     }
   }
 
-  handleCustomShortcutsChange(oldValue, newValue) {
+  handleCustomShortcutsChange(oldValue: any, newValue: any) {
     // Check for addition
     if (newValue.length > oldValue.length) {
       CreateCustomShortcutDiv(newValue[oldValue.length]);
@@ -104,9 +106,9 @@ export default class StorageListener {
     // Check for removal
     else if (newValue.length < oldValue.length) {
       const removedElement = oldValue.find(
-        (oldItem) =>
+        (oldItem: any) =>
           !newValue.some(
-            (newItem) => JSON.stringify(oldItem) === JSON.stringify(newItem)
+            (newItem: any) => JSON.stringify(oldItem) === JSON.stringify(newItem)
           )
       );
 
@@ -116,10 +118,10 @@ export default class StorageListener {
     }
   }
 
-  handleShortcutsChange(oldValue, newValue) {
+  handleShortcutsChange(oldValue: any, newValue: any) {
     // Find Added Shortcuts
-    const addedShortcuts = newValue.filter(newItem => {
-      const isAdded = oldValue.some(oldItem => {
+    const addedShortcuts = newValue.filter((newItem: any) => {
+      const isAdded = oldValue.some((oldItem: any) => {
         const match = oldItem.name === newItem.name;
         const wasDisabled = !oldItem.enabled;
         const isEnabled = newItem.enabled;        
@@ -130,8 +132,8 @@ export default class StorageListener {
     });
   
     // Find Removed Shortcuts
-    const removedShortcuts = newValue.filter(newItem => {
-      const isRemoved = oldValue.some(oldItem => {
+    const removedShortcuts = newValue.filter((newItem: any) => {
+      const isRemoved = oldValue.some((oldItem: any) => {
         const match = oldItem.name === newItem.name;
         const wasEnabled = oldItem.enabled;  // Was enabled in the old array
         const isDisabled = !newItem.enabled;  // Is disabled in the new array

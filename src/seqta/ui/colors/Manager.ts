@@ -1,17 +1,17 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA.js';
-import { lightenAndPaleColor } from './lightenAndPaleColor.js';
-import ColorLuminance from './ColorLuminance.js';
-import { onError } from '../../utils/onError.js';
+import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA';
+import { lightenAndPaleColor } from './lightenAndPaleColor';
+import ColorLuminance from './ColorLuminance';
+import { onError } from '../../utils/onError';
 
 // Helper functions
-const setCSSVar = (varName, value) => document.documentElement.style.setProperty(varName, value);
-const getChromeURL = (path) => browser.runtime.getURL(path);
-const applyProperties = (props) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
+const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
+const getChromeURL = (path: any) => browser.runtime.getURL(path);
+const applyProperties = (props: any) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
-let DarkMode = null;
+let DarkMode: any = null;
 
-export function updateAllColors(storedSetting, newColor = null) {
+export function updateAllColors(storedSetting: any, newColor = null) {
   // Determine the color to use
   const selectedColor = newColor || storedSetting.selectedColor;
 
@@ -63,7 +63,7 @@ export function updateAllColors(storedSetting, newColor = null) {
 
   // Set favicon, if storedSetting is provided
   if (DarkMode !== null) {
-    document.querySelector('link[rel*=\'icon\']').href = getChromeURL('icons/icon-48.png');
+    (document.querySelector('link[rel*=\'icon\']')! as HTMLLinkElement).href = getChromeURL('icons/icon-48.png');
   }
 
   let alliframes = document.getElementsByTagName('iframe');
@@ -77,11 +77,11 @@ export function updateAllColors(storedSetting, newColor = null) {
     }
     
     console.log(element);
-    console.log(element.contentDocument.documentElement);
+    console.log(element.contentDocument!.documentElement);
 
-    element.contentDocument.documentElement.childNodes[1].style.color =
+    (element.contentDocument!.documentElement.childNodes[1] as HTMLIFrameElement).style.color =
       DarkMode ? 'white' : 'black';
-    element.contentDocument.documentElement.firstChild.appendChild(
+    element.contentDocument!.documentElement.firstChild!.appendChild(
       fileref,
     );
   }
@@ -90,7 +90,7 @@ export function updateAllColors(storedSetting, newColor = null) {
 export function getDarkMode() {
   return new Promise((resolve, reject) => {
     const result = browser.storage.local.get('DarkMode')
-    function open (result) {
+    function open (result: any) {
       if (browser.runtime.lastError) {
         return reject(browser.runtime.lastError);
       }

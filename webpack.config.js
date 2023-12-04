@@ -16,8 +16,8 @@ export default {
   },
   devtool: 'cheap-module-source-map',
   entry: {
-    SEQTA: './src/SEQTA.js',
-    background: './src/background.js',
+    SEQTA: './src/SEQTA.ts',
+    background: './src/background.ts',
     'css/documentload': './src/css/documentload.scss',
     'css/iframe': './src/css/iframe.scss',
     'css/injected': './src/css/injected.scss',
