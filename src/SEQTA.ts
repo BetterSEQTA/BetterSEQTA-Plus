@@ -730,7 +730,7 @@ export async function ObserveMenuItemPosition() {
               const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
               if (key) {
                 ReplaceMenuSVG(
-                  added_node,
+                  node,
                   MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
                 );
               }
@@ -1132,7 +1132,7 @@ export function OpenMenuOptions() {
 
     defaultbutton.addEventListener('click', function () {
       const result = browser.storage.local.get()
-      function open (response) {
+      function open (response: any) {
         const options = response.defaultmenuorder;
         browser.storage.local.set({ menuorder: options });
         ChangeMenuItemPositions(options);
@@ -1154,19 +1154,19 @@ export function OpenMenuOptions() {
   result.then(open, onError)
 }
 
-function ReplaceMenuSVG(element, svg) {
-  let item = element.firstChild;
-  item.firstChild.remove();
+function ReplaceMenuSVG(element: HTMLElement, svg: string) {
+  let item = element.firstChild as HTMLElement;
+  item!.firstChild!.remove();
 
   if (element.dataset.key == 'messages') {
-    element.firstChild.innerText = 'Direct Messages';
+    (element!.firstChild! as HTMLElement).innerText! = 'Direct Messages';
   }
 
   let newsvg = stringToHTML(svg).firstChild;
-  item.insertBefore(newsvg, item.firstChild);
+  item.insertBefore((newsvg as Node), item.firstChild);
 }
 
-async function AddBetterSEQTAElements(toggle) {
+async function AddBetterSEQTAElements(toggle: any) {
   var code = document.getElementsByClassName('code')[0];
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
