@@ -861,20 +861,24 @@ async function CheckLoadOnPeriods() {
 }
 
 export function closeSettings() {
-  var extensionsettings = document.getElementById('ExtensionPopup');
+  const ExtensionSettings = document.getElementById('ExtensionPopup')!;
+  const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
 
   if (SettingsClicked == true) {
-    extensionsettings!.classList.add('hide');
+    ExtensionSettings!.classList.add('hide');
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: spring({ stiffness: 220, damping: 18 }) }
     );
     SettingsClicked = false;
-    (document.getElementById('ExtensionIframe') as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
+
+    if (ExtensionIframe.contentWindow) {
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+    }
   }
 
-  extensionsettings!.classList.add('hide');
+  ExtensionSettings!.classList.add('hide');
 }
 
 function addExtensionSettings() {
@@ -889,23 +893,28 @@ function addExtensionSettings() {
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe');
   extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
-  extensionIframe.style.backgroundColor = 'transparent';
+  extensionIframe.setAttribute('allowTransparency', 'true');
+  extensionIframe.setAttribute('excludeDarkCheck', 'true');
   extensionIframe.style.width = '384px';
   extensionIframe.style.height = '600px';
   extensionIframe.style.border = 'none';
-  extensionIframe.setAttribute('excludeDarkCheck', 'true');
+  extensionIframe.setAttribute('excludeDarkCheck', true);
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
   
   const closeExtensionPopup = () => {
+    const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
+
     extensionPopup.classList.add('hide');
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: [.22, .03, .26, 1] }
     );
-    (document.getElementById('ExtensionIframe') as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
+    if (ExtensionIframe.contentWindow) {
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+    }
     SettingsClicked = false;
   };
 
