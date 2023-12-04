@@ -2,32 +2,38 @@
 import browser from 'webextension-polyfill';
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
-import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
+import Sortable, { AutoScroll } from 'sortablejs';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
-import stringToHTML from './seqta/utils/stringToHTML.js';
-import loading, { AppendLoadingSymbol } from './seqta/ui/Loading.js';
-import { response } from './seqta/utils/GetPrefs.js';
-import { onError } from './seqta/utils/onError.js';
+import stringToHTML from './seqta/utils/stringToHTML';
+import loading, { AppendLoadingSymbol } from './seqta/ui/Loading';
+import { response } from './seqta/utils/GetPrefs';
+import { onError } from './seqta/utils/onError';
 
 // Icons
-import assessmentsicon from './seqta/icons/assessmentsIcon.js';
-import coursesicon from './seqta/icons/coursesIcon.js';
-import StorageListener from './seqta/utils/StorageListener.js';
-import { MessageHandler } from './seqta/utils/MessageListener.js';
-import { updateBgDurations } from './seqta/ui/Animation.js';
-import { updateAllColors } from './seqta/ui/colors/Manager.js';
-import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds.js';
-import { enableCurrentTheme } from './seqta/ui/Themes.js';
+import assessmentsicon from './seqta/icons/assessmentsIcon';
+import coursesicon from './seqta/icons/coursesIcon';
+import StorageListener from './seqta/utils/StorageListener';
+import { MessageHandler } from './seqta/utils/MessageListener';
+import { updateBgDurations } from './seqta/ui/Animation';
+import { updateAllColors } from './seqta/ui/colors/Manager';
+import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
+import { enableCurrentTheme } from './seqta/ui/Themes';
+
+declare global {
+  interface Window {
+    chrome?: any;
+  }
+}
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
 export let MenuOptionsOpen = false;
 let UserInitalCode = '';
 let currentSelectedDate = new Date();
-let LessonInterval;
-export let DarkMode;
+let LessonInterval: any;
+export let DarkMode: boolean;
 
 var MenuItemMutation = false;
 var NonSEQTAPage = false;
@@ -52,7 +58,7 @@ document.addEventListener(
 
       enableCurrentTheme();
       const result = browser.storage.local.get()
-      function open (items) {
+      function open (items: any) {
         main(items);
       }
       result.then(open, onError)
@@ -67,19 +73,20 @@ document.addEventListener(
   true,
 );
 
-function delay(ms) {
+function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function SetDisplayNone(ElementName) {
+function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
-function animbkEnable(item) {
+function animbkEnable(item: any) {
   if (item.animatedbk) {
     CreateBackground();
   } else {
     RemoveBackground();
+    // @ts-ignore Element always exists
     document.getElementById('container').style.background = 'var(--background-secondary)';
   }
 }
@@ -87,9 +94,9 @@ function animbkEnable(item) {
 export function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = '';
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
-      if (!Object.values(result.menuitems)[i].toggle) {
+      if (!Object.values<any>(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
         console.log(
           `[BetterSEQTA+] Hiding ${
@@ -113,7 +120,7 @@ function OpenWhatsNewPopup() {
   const container = document.createElement('div');
   container.classList.add('whatsnewContainer');
 
-  var header = stringToHTML(`<div class="whatsnewHeader">
+  var header: any = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
   <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
   </div>`).firstChild;
@@ -134,7 +141,7 @@ function OpenWhatsNewPopup() {
   let textcontainer = document.createElement('div');
   textcontainer.classList.add('whatsnewTextContainer');
 
-  let textheader = stringToHTML(
+  let textheader: any = stringToHTML(
     '<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>',
   ).firstChild;
   textcontainer.append(textheader);
