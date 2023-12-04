@@ -898,7 +898,6 @@ function addExtensionSettings() {
   extensionIframe.style.width = '384px';
   extensionIframe.style.height = '600px';
   extensionIframe.style.border = 'none';
-  extensionIframe.setAttribute('excludeDarkCheck', true);
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
