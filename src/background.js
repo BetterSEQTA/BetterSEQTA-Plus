@@ -69,30 +69,6 @@ function reloadSeqtaPages() {
   result.then(open, onError)
 }
 
-// Helper function to handle setting permissions
-const handleAddPermissions = () => {
-  if (typeof browser.declarativeContent !== 'undefined') {
-    browser.declarativeContent.onPageChanged.removeRules(undefined, () => {});
-  }
-  
-  browser.permissions.request(
-    { permissions: ['declarativeContent'], origins: ['*://*/*'] },
-    (granted) => {
-      if (granted) {
-        const rules = [
-          // Define your rules here
-        ];
-        
-        rules.forEach(rule => {
-          browser.declarativeContent.onPageChanged.addRules([rule]);
-        });
-        
-        alert('Permissions granted. Reload SEQTA pages to see changes. If this workaround doesn\'t work, please contact the developer. It will be an easy fix');
-      }
-    }
-  );
-};
-
 // Main message listener
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.type) {
@@ -114,10 +90,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
   case 'setDefaultStorage':
     SetStorageValue(DefaultValues);
-    break;
-    
-  case 'addPermissions':
-    handleAddPermissions();
     break;
 
   case 'sendNews':
