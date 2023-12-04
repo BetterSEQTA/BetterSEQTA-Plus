@@ -1,12 +1,14 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "BetterSEQTA+",
   "version": "3.2.2",
   "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
-      "48": "icons/icon-48.png"
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "64": "icons/icon-64.png"
   },
-  "browser_action": {
+  "action": {
     "browser_style": true,
     "default_popup": "interface/index.html#settings",
     "default_icon": {
@@ -15,17 +17,12 @@
       "64": "icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage", "https://newsapi.org/"],
+  "permissions": ["tabs", "notifications", "storage"],
+  "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "scripts": [
-        "browser-polyfill.js",
-        "background.js"
-    ]
-},
-  "optional_permissions": [
-    "*://*/*",
-    "declarativeContent"
-  ],
+    "service_worker": "background.js"
+  },
+  "optional_permissions": ["declarativeContent"],
   "content_scripts": [
     {
       "matches": ["*://*/*"],
@@ -34,16 +31,49 @@
     }
   ],
   "web_accessible_resources": [
-    "icons/*",
-    "fonts/*",
-    "images/*",
-    "css/*",
-    "popup/*",
-    "client.js",
-    "index.css",
-    "interface/*",
-    "client/*",
-    "resources/*",
-    "backgrounds/*"
+    {
+      "resources": ["icons/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["fonts/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["images/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["css/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["popup/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client.js"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["index.css"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["interface/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["client/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["resources/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["backgrounds/*"],
+      "matches": ["*://*/*"]
+    }
   ]
 }
