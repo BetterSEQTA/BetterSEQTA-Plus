@@ -20,7 +20,7 @@ import { updateBgDurations } from './seqta/ui/Animation';
 import { updateAllColors } from './seqta/ui/colors/Manager';
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import { enableCurrentTheme } from './seqta/ui/Themes';
-import { ObjectType } from 'typescript';
+import { info } from 'autoprefixer';
 
 declare global {
   interface Window {
@@ -1189,103 +1189,103 @@ async function AddBetterSEQTAElements(toggle: any) {
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        const result = browser.storage.local.get(['animatedbk']);
-        const sliderVal = browser.storage.local.get(['bksliderinput']);
+        const result = await browser.storage.local.get();
 
-        result.then(animbkEnable);
-        sliderVal.then(updateBgDurations);
+        animbkEnable(result);
+        updateBgDurations(result);
 
-        // Load darkmode state
-        const result1 = browser.storage.local.get(['DarkMode'])
-        function open (result: any) {
-          DarkMode = result.DarkMode;
+        DarkMode = result.DarkMode;
+        if (DarkMode) {
+          document.documentElement.classList.add('dark');
         }
-        result1.then(open, onError)
 
-        var titlebar = document.createElement('div');
-        titlebar.classList.add('titlebar');
-        let container = document.getElementById('content');
-        container!.append(titlebar);
-        var NewButtonStr = '<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>';
-        var NewButton = stringToHTML(NewButtonStr);
-        var menu = document.getElementById('menu');
-        var List = menu!.firstChild;
-        List!.insertBefore((NewButton.firstChild!), List!.firstChild);
+        const container = document.getElementById('content')!;
+        container.append(document.createElement('div').classList.add('titlebar')!);
+        const NewButton = stringToHTML('<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>');
 
-        fetch(`${location.origin}/seqta/student/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: JSON.stringify({
-            mode: 'normal',
-            query: null,
-            redirect_url: location.origin,
-          }),
-        })
-          .then((result) => result.json())
-          .then((response) => {
-            let info = response.payload;
+        const menu = document.getElementById('menu')!;
+        const List = menu.firstChild! as HTMLElement;
+        
+        if (NewButton.firstChild) {
+          List.insertBefore(NewButton.firstChild, List.firstChild);
+        }
 
-            var titlebar = document.getElementsByClassName('titlebar')[0];
-            titlebar.append(
-              stringToHTML(
-                '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
-              ).firstChild!,
-            );
-            var userinfostr = `<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`;
-            var userinfo = stringToHTML(userinfostr).firstChild;
-
-            titlebar.append(userinfo!);
-
-            var logoutbutton = document.getElementsByClassName('logout')[0];
-            var userInfosvgdiv = document.getElementById('logouttooltip');
-            userInfosvgdiv!.appendChild(logoutbutton);
-
-            fetch(`${location.origin}/seqta/student/load/message/people`, {
+        try {
+          // Fetch the response and wait for it
+          const response = await fetch(`${location.origin}/seqta/student/login`, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json; charset=utf-8',
+                  'Content-Type': 'application/json; charset=utf-8',
+              },
+              body: JSON.stringify({
+                  mode: 'normal',
+                  query: null,
+                  redirect_url: location.origin,
+              }),
+          });
+      
+          // Parse the JSON response and wait for it
+          const responseData = await response.json();
+          let info = responseData.payload;
+      
+          // Manipulate the DOM as needed
+          const titlebar = document.getElementsByClassName('titlebar')[0];
+          const userInfo = stringToHTML(
+            '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
+          ).firstChild
+          titlebar.append(userInfo!);
+      
+          const userinfo = stringToHTML(`<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`).firstChild;
+          titlebar.append(userinfo!);
+      
+          var logoutbutton = document.getElementsByClassName('logout')[0];
+          var userInfosvgdiv = document.getElementById('logouttooltip')!;
+          userInfosvgdiv.appendChild(logoutbutton);
+      
+        } catch (error) {
+            console.error('Error fetching and processing data:', error);
+        }
+
+        try {
+          // Await the fetch response
+          const response = await fetch(`${location.origin}/seqta/student/load/message/people`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json; charset=utf-8',
               },
               body: JSON.stringify({ mode: 'student' }),
-            })
-              .then((result) => result.json())
-              .then((response) => {
-                let students = response.payload;
-                var index = students.findIndex(function (person: any) {
-                  return (
-                    person.firstname == info.userDesc.split(' ')[0] &&
-                    person.surname == info.userDesc.split(' ')[1]
-                  );
-                });
-
-                let houseelement1 =
-                  document.getElementsByClassName('userInfohouse')[0];
-                const houseelement = houseelement1 as HTMLElement
-                if (students[index]?.house) {
-                  houseelement.style.background = students[index].house_colour;
-                  try {
-                    let colorresult = GetThresholdOfColor(
-                      students[index]?.house_colour,
-                    );
-
-                    if (colorresult && colorresult > 300) {
-                      houseelement.style.color = 'black';
-                    } else if (colorresult < 300) {
-                      houseelement.style.color = 'white';
-                    } else {
-                      houseelement.style.color = 'black';
-                    }
-                    houseelement.innerText =
-                      students[index].year + students[index].house;
-                  } catch (error) {
-                    houseelement.innerText = students[index].house;
-                  }
-                } else {
-                  houseelement.innerText = students[index].year;
-                }
-              });
           });
+      
+          // Await the JSON parsing of the response
+          const responseData = await response.json();
+          let students = responseData.payload;
+      
+          // Process the students data
+          var index = students.findIndex(function (person: any) {
+              return (
+                  person.firstname == info.userDesc.split(' ')[0] &&
+                  person.surname == info.userDesc.split(' ')[1]
+              );
+          });
+      
+          let houseelement = document.getElementsByClassName('userInfohouse')[0];
+          if (students[index]?.house) {
+              houseelement.style.background = students[index].house_colour;
+              try {
+                  let colorresult = GetThresholdOfColor(students[index]?.house_colour);
+      
+                  houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white';
+                  houseelement.innerText = students[index].year + students[index].house;
+              } catch (error) {
+                  houseelement.innerText = students[index].house;
+              }
+          } else {
+              houseelement.innerText = students[index].year;
+          }
+      
+      } catch (error) {
+          console.error('Error fetching and processing student data:', error);
+      }
 
         var NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>';
         var NewsButton = stringToHTML(NewsButtonStr);
