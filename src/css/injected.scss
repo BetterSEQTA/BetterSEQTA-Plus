@@ -59,7 +59,6 @@ html {
   border-radius: 10px !important;
   cursor: pointer;
   background: var(--text-primary) !important;
-  border-radius: 10px;
   color: var(--theme-primary) !important;
   height: 35px;
   justify-content: center;
@@ -132,7 +131,7 @@ html {
       min-height: unset !important;
 
       .title {
-        padding: 1rem 1rem !important;
+        padding: 1rem !important;
       }
     }
   }
@@ -771,7 +770,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .home-container h1 {
   text-align: center;
-  font-weight: 400;
   font-size: 3em !important;
   font-weight: 300;
   margin: 0 auto;
@@ -965,12 +963,11 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-weight: 200;
 }
 .notice h6 {
-  margin: 0px 0px 40px 0px;
+  margin: 0px 0px 40px;
   font-weight: 100;
   color: #c9c9c9;
 }
 .day {
-  box-shadow: inset 0px 0px 10px 0.1px var(--better-sub);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -1066,7 +1063,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 20px;
   padding: 10px;
   text-align: center;
-  margin: 20px auto 0px auto;
+  margin: 20px auto 0px;
   cursor: pointer;
 }
 .connectedNotificationsWrapper > div > button {
@@ -2147,7 +2144,6 @@ body {
   overflow-y: hidden;
 }
 .upcoming-checkbox-container {
-  display: block;
   position: relative;
   padding: none !important;
   padding-left: 25px !important;
@@ -2234,7 +2230,6 @@ body {
   cursor: pointer;
 }
 .day {
-  box-shadow: inset 0px 0px 10px 0.1px var(--better-sub);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -2313,7 +2308,6 @@ body {
 }
 .upcoming-items {
   background: var(--background-primary);
-  transition: 200ms;
   width: 100%;
   max-height: 55em;
   overflow-y: auto;
@@ -2401,7 +2395,6 @@ body {
   overflow-y: hidden;
 }
 .upcoming-checkbox-container {
-  display: block;
   position: relative;
   padding: none !important;
   padding-left: 25px !important;
