@@ -1263,14 +1263,15 @@ async function AddBetterSEQTAElements(toggle: any) {
           // Process the students data
           var index = students.findIndex(function (person: any) {
               return (
-                  person.firstname == info.userDesc.split(' ')[0] &&
-                  person.surname == info.userDesc.split(' ')[1]
+                  person.firstname == students.userDesc.split(' ')[0] &&
+                  person.surname == students.userDesc.split(' ')[1]
               );
           });
       
-          let houseelement = document.getElementsByClassName('userInfohouse')[0];
+          let houseelement1 = document.getElementsByClassName('userInfohouse')[0];
+          const houseelement = houseelement1 as HTMLElement
           if (students[index]?.house) {
-              houseelement.style.background = students[index].house_colour;
+              (houseelement as HTMLElement).style.background = students[index].house_colour;
               try {
                   let colorresult = GetThresholdOfColor(students[index]?.house_colour);
       
@@ -1408,18 +1409,18 @@ async function AddBetterSEQTAElements(toggle: any) {
       var AddedSettings = document.getElementById('AddedSettings');
       var extensionPopup = document.getElementById('ExtensionPopup');
       
-      AddedSettings.addEventListener('click', function () {
+      AddedSettings!.addEventListener('click', function () {
         if (SettingsClicked) {
-          extensionPopup.classList.add('hide');
+          extensionPopup!.classList.add('hide');
           animate(
             '#ExtensionPopup',
             { opacity: [1, 0], scale: [1, 0] },
             { easing: spring({ stiffness: 220, damping: 18 }) }
           );
-          document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+          (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
           SettingsClicked = false;      
         } else {
-          extensionPopup.classList.remove('hide');
+          extensionPopup!.classList.remove('hide');
           animate(
             '#ExtensionPopup',
             { opacity: [0, 1], scale: [0, 1] },
@@ -1495,7 +1496,7 @@ function CheckCurrentLesson(lesson: any, num: number) {
   // If 5 minutes before the start of another lesson:
   if (minutes == 5) {
     const result = browser.storage.local.get('lessonalert')
-    function open (result) {
+    function open (result: any) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
@@ -1792,7 +1793,7 @@ function comparedate(obj1: any, obj2: any) {
   return 0;
 }
 
-function CreateElement(type: string, class_, id, innerText, innerHTML, style) {
+function CreateElement(type: string, class_?: any, id?: any, innerText?: string, innerHTML?: string, style?: string) {
   let element = document.createElement(type);
   if (class_ !== undefined) {
     element.classList.add(class_);
@@ -1807,13 +1808,13 @@ function CreateElement(type: string, class_, id, innerText, innerHTML, style) {
     element.innerHTML = innerHTML;
   }
   if (style !== undefined) {
-    element.style = style;
+    element.style.cssText = style;
   }
   return element;
 }
 
-function createAssessmentDateDiv(date, value, datecase = undefined) {
-  var options = { weekday: 'long', month: 'long', day: 'numeric' };
+function createAssessmentDateDiv(date: string, value: any, datecase = undefined) {
+  var options = { weekday: 'long' as 'long', month: 'long' as 'long', day: 'numeric' as 'numeric' };
   const FormattedDate = new Date(date);
 
   const assessments = value.assessments;
@@ -1846,7 +1847,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
     item.setAttribute('data-subject', element.code);
     item.id = `assessment${element.id}`;
 
-    item.style = element.colour;
+    item.style.cssText = element.colour;
 
     let titlediv = document.createElement('div');
     titlediv.classList.add('upcoming-subject-title');
@@ -1855,7 +1856,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
       stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
     <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
     </svg>`).firstChild;
-    titlediv.append(titlesvg);
+    titlediv.append(titlesvg!);
 
     let detailsdiv = document.createElement('div');
     detailsdiv.classList.add('upcoming-details');
@@ -1865,7 +1866,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
     subject.innerText = element.title;
     subject.classList.add('upcoming-assessment-title');
     subject.onclick = function () {
-      document.querySelector('#menu ul').classList.add('noscroll'); 
+      document.querySelector('#menu ul')!.classList.add('noscroll'); 
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
     detailsdiv.append(detailstitle);
@@ -1897,7 +1898,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
           let submittedtext = document.createElement('div');
           submittedtext.classList.add('upcoming-submittedtext');
           submittedtext.innerText = 'Submitted';
-          assessment.append(submittedtext);
+          assessment!.append(submittedtext);
         }
       });
   }
@@ -1907,7 +1908,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
   return container;
 }
 
-function CheckSpecialDay(date1, date2) {
+function CheckSpecialDay(date1: Date, date2: Date) {
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
@@ -1931,24 +1932,25 @@ function CheckSpecialDay(date1, date2) {
   }
 }
 
-function CreateSubjectFilter(subjectcode, itemcolour, checked) {
+function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any) {
   let label = CreateElement('label', 'upcoming-checkbox-container');
   label.innerText = subjectcode;
-  let input = CreateElement('input');
+  let input1 = CreateElement('input');
+  const input = input1 as HTMLInputElement
   input.type = 'checkbox';
   input.checked = checked;
   input.id = `filter-${subjectcode}`;
-  label.style = itemcolour;
+  label.style.cssText = itemcolour;
   let span = CreateElement('span', 'upcoming-checkmark');
   label.append(input);
   label.append(span);
 
   input.addEventListener('change', function (change) {
     const result = browser.storage.local.get()
-    function open (storage) {
+    function open (storage: any) {
       let filters = storage.subjectfilters;
-      let id = change.target.id.split('-')[1];
-      filters[id] = change.target.checked;
+      let id = (change.target as HTMLInputElement)!.id.split('-')[1];
+      filters[id] = (change.target as HTMLInputElement)!.checked;
 
       browser.storage.local.set({ subjectfilters: filters });
     }
@@ -1958,9 +1960,9 @@ function CreateSubjectFilter(subjectcode, itemcolour, checked) {
   return label;
 }
 
-function CreateFilters(subjects) {
+function CreateFilters(subjects: any) {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     let filteroptions = result.subjectfilters;
 
     let filterdiv = document.querySelector('#upcoming-filters');
