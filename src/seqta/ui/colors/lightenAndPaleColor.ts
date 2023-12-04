@@ -1,7 +1,7 @@
 import Color from 'color';
 
 
-export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor = 0.55) {
+export function lightenAndPaleColor(inputColor: any, lightenFactor = 0.75, paleFactor = 0.55) {
   if (inputColor.includes('gradient')) {
     const baseColor = findMatchingColor(inputColor);
 
@@ -27,9 +27,9 @@ export function lightenAndPaleColor(inputColor, lightenFactor = 0.75, paleFactor
   return result;
 }
 // Utility function to average an array of Color objects
-function averageColors(colors) {
+function averageColors(colors: any) {
   let avgR = 0, avgG = 0, avgB = 0;
-  colors.forEach(color => {
+  colors.forEach((color: any) => {
     avgR += color.red();
     avgG += color.green();
     avgB += color.blue();
@@ -37,7 +37,7 @@ function averageColors(colors) {
   return Color.rgb(avgR / colors.length, avgG / colors.length, avgB / colors.length);
 }
 // Main function to find a matching color for a CSS gradient
-function findMatchingColor(cssGradient) {
+function findMatchingColor(cssGradient: any) {
   try {
     // Step 1: Parse the gradient to extract color stops (case-insensitive)
     const regex = /#[0-9a-fA-F]{6}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)/gi;
@@ -48,10 +48,10 @@ function findMatchingColor(cssGradient) {
     }
 
     // Normalize and trim the color stops
-    const normalizedColorStops = colorStops.map(color => color.toLowerCase().replace(/\s+/g, ''));
+    const normalizedColorStops = colorStops.map((color: any) => color.toLowerCase().replace(/\s+/g, ''));
 
     // Convert the color stops to Color objects
-    const colorObjects = normalizedColorStops.map(color => Color(color));
+    const colorObjects = normalizedColorStops.map((color: any) => Color(color));
 
     // Step 2: Average the color stops
     const baseColor = averageColors(colorObjects);
@@ -59,7 +59,7 @@ function findMatchingColor(cssGradient) {
 
     // Step 4: Return the matching color in HEX format
     return baseColor.hex();
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Error: ${err.message}`);
     return null;
   }

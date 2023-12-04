@@ -1,11 +1,11 @@
 /**
  * Uploads an image file to a specified endpoint using a POST request.
  *
- * @param {File} file - The image file to be uploaded.
+ * @param {File} file - The file to be uploaded.
  * @returns {Promise} A promise that resolves to the response from the server.
  * @throws {Error} If no file is provided or if there is an error during upload.
  */
-export async function UploadImage(file) {
+export async function UploadImage(file: File): Promise<any> {
   // Ensuring that file is provided
   if (!file) {
     throw new Error("No file provided");
@@ -28,12 +28,12 @@ export async function UploadImage(file) {
   };
 
   // Making the fetch request and returning the promise
-  return fetch('/seqta/student/file/upload/xhr2', requestOptions)
-    .then(response => {
+  return await fetch('/seqta/student/file/upload/xhr2', requestOptions)
+    .then(async response => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const json = response.json();
+      const json = await response.json();
       return `/seqta/student/load/file?type=message&file=${json.uuid}`;
     })
     .catch(error => {

@@ -2,32 +2,38 @@
 import browser from 'webextension-polyfill';
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
-import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
+import Sortable  from 'sortablejs';
 
 import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
-import stringToHTML from './seqta/utils/stringToHTML.js';
-import loading, { AppendLoadingSymbol } from './seqta/ui/Loading.js';
-import { response } from './seqta/utils/GetPrefs.js';
-import { onError } from './seqta/utils/onError.js';
+import stringToHTML from './seqta/utils/stringToHTML';
+import loading, { AppendLoadingSymbol } from './seqta/ui/Loading';
+import { response } from './seqta/utils/GetPrefs';
+import { onError } from './seqta/utils/onError';
 
 // Icons
-import assessmentsicon from './seqta/icons/assessmentsIcon.js';
-import coursesicon from './seqta/icons/coursesIcon.js';
-import StorageListener from './seqta/utils/StorageListener.js';
-import { MessageHandler } from './seqta/utils/MessageListener.js';
-import { updateBgDurations } from './seqta/ui/Animation.js';
-import { updateAllColors } from './seqta/ui/colors/Manager.js';
-import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds.js';
-import { enableCurrentTheme } from './seqta/ui/Themes.js';
+import assessmentsicon from './seqta/icons/assessmentsIcon';
+import coursesicon from './seqta/icons/coursesIcon';
+import StorageListener from './seqta/utils/StorageListener';
+import { MessageHandler } from './seqta/utils/MessageListener';
+import { updateBgDurations } from './seqta/ui/Animation';
+import { updateAllColors } from './seqta/ui/colors/Manager';
+import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
+import { enableCurrentTheme } from './seqta/ui/Themes';
+
+declare global {
+  interface Window {
+    chrome?: any;
+  }
+}
 
 export let isChrome = window.chrome;
 let SettingsClicked = false;
 export let MenuOptionsOpen = false;
 let UserInitalCode = '';
 let currentSelectedDate = new Date();
-let LessonInterval;
-export let DarkMode;
+let LessonInterval: any;
+export let DarkMode: boolean;
 
 var MenuItemMutation = false;
 var NonSEQTAPage = false;
@@ -52,7 +58,7 @@ document.addEventListener(
 
       enableCurrentTheme();
       const result = browser.storage.local.get()
-      function open (items) {
+      function open (items: any) {
         main(items);
       }
       result.then(open, onError)
@@ -67,19 +73,20 @@ document.addEventListener(
   true,
 );
 
-function delay(ms) {
+function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function SetDisplayNone(ElementName) {
+function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
-function animbkEnable(item) {
+function animbkEnable(item: any) {
   if (item.animatedbk) {
     CreateBackground();
   } else {
     RemoveBackground();
+    // @ts-ignore Element always exists
     document.getElementById('container').style.background = 'var(--background-secondary)';
   }
 }
@@ -87,9 +94,9 @@ function animbkEnable(item) {
 export function ApplyCSSToHiddenMenuItems() {
   var stylesheetInnerText = '';
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
-      if (!Object.values(result.menuitems)[i].toggle) {
+      if (!Object.values<any>(result.menuitems)[i].toggle) {
         stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
         console.log(
           `[BetterSEQTA+] Hiding ${
@@ -113,7 +120,7 @@ function OpenWhatsNewPopup() {
   const container = document.createElement('div');
   container.classList.add('whatsnewContainer');
 
-  var header = stringToHTML(`<div class="whatsnewHeader">
+  var header: any = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
   <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
   </div>`).firstChild;
@@ -134,7 +141,7 @@ function OpenWhatsNewPopup() {
   let textcontainer = document.createElement('div');
   textcontainer.classList.add('whatsnewTextContainer');
 
-  let textheader = stringToHTML(
+  let textheader: any = stringToHTML(
     '<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>',
   ).firstChild;
   textcontainer.append(textheader);
@@ -235,19 +242,19 @@ function OpenWhatsNewPopup() {
   container.append(header);
   container.append(imagecont);
   container.append(textcontainer);
-  container.append(text);
-  container.append(footer);
+  container.append(text as ChildNode);
+  container.append(footer as ChildNode);
   container.append(exitbutton);
 
   background.append(container);
 
-  document.getElementById('container').append(background);
+  document.getElementById('container')!.append(background);
 
   let bkelement = document.getElementById('whatsnewbk');
   let popup = document.getElementsByClassName('whatsnewContainer')[0];
 
   animate(
-    [popup, bkelement],
+    [popup, bkelement as HTMLElement],
     { scale: [0, 1], opacity: [0, 1] },
     { easing: spring({ stiffness: 220, damping: 18 }) }
   );
@@ -264,7 +271,7 @@ function OpenWhatsNewPopup() {
 
   browser.storage.local.remove(['justupdated']);
 
-  bkelement.addEventListener('click', function (event) {
+  bkelement!.addEventListener('click', function (event) {
     // Check if the click event originated from the element itself and not any of its children
     if (event.target === bkelement) {
       DeleteWhatsNew();
@@ -272,7 +279,7 @@ function OpenWhatsNewPopup() {
   });  
 
   var closeelement = document.getElementById('whatsnewclosebutton');
-  closeelement.addEventListener('click', function () {
+  closeelement!.addEventListener('click', function () {
     DeleteWhatsNew();
   });
 }
@@ -280,16 +287,16 @@ function OpenWhatsNewPopup() {
 async function finishLoad() {
   try {
     var loadingbk = document.getElementById('loading');
-    loadingbk.style.opacity = '0';
+    loadingbk!.style.opacity = '0';
     await delay(501);
-    loadingbk.remove();
+    loadingbk!.remove();
   } catch (err) {
     console.log(err);
   }
 
 
   const result = browser.storage.local.get(['justupdated']);
-  function open (result) {
+  function open (result: any) {
     if (result.justupdated && !document.getElementById('whatsnewbk')) {
       OpenWhatsNewPopup();
     }
@@ -302,11 +309,11 @@ async function DeleteWhatsNew() {
   const popup = document.getElementsByClassName('whatsnewContainer')[0];
   
   animate(
-    [popup, bkelement],
+    [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
-    bkelement.remove();
+    bkelement!.remove();
   });
 }
 
@@ -321,17 +328,17 @@ export function CreateBackground() {
   var bk = document.createElement('div');
   bk.classList.add('bg');
 
-  bklocation.insertBefore(bk, menu);
+  bklocation!.insertBefore(bk, menu);
 
   var bk2 = document.createElement('div');
   bk2.classList.add('bg');
   bk2.classList.add('bg2');
-  bklocation.insertBefore(bk2, menu);
+  bklocation!.insertBefore(bk2, menu);
 
   var bk3 = document.createElement('div');
   bk3.classList.add('bg');
   bk3.classList.add('bg3');
-  bklocation.insertBefore(bk3, menu);
+  bklocation!.insertBefore(bk3, menu);
 }
 
 export function RemoveBackground() {
@@ -346,7 +353,7 @@ export function RemoveBackground() {
   console.log('it deleted???')
 }
 
-export function waitForElm(selector) {
+export function waitForElm(selector: any) {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
       return resolve(document.querySelector(selector));
@@ -366,7 +373,7 @@ export function waitForElm(selector) {
   });
 }
 
-async function RunColourCheck(element) {
+async function RunColourCheck(element: any) {
   if (
     typeof element.contentDocument.documentElement.childNodes[1] == 'undefined'
   ) {
@@ -376,7 +383,7 @@ async function RunColourCheck(element) {
     element.contentDocument.documentElement.childNodes[1].style.color = 'white';
   }
 }
-export function GetCSSElement (file) {
+export function GetCSSElement (file: string) {
   const cssFile = browser.runtime.getURL(file)
   const fileref = document.createElement('link')
   fileref.setAttribute('rel', 'stylesheet')
@@ -392,11 +399,12 @@ function removeThemeTagsFromNotices () {
   // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
     // Grabs the HTML of the body tag
-    const body = item.contentWindow.document.querySelectorAll('body')[0]
+    const item1 = item as HTMLIFrameElement
+    const body = item1.contentWindow!.document.querySelectorAll('body')[0]
     if (body) {
     // Replaces the theme tag with nothing
       const bodyText = body.innerHTML
-      body.innerhtml = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
+      body.innerHTML = bodyText.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')
     }
   }
 }
@@ -408,42 +416,46 @@ function CheckiFrameItems() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.tagName == 'IFRAME') {
+        const node = added_node as HTMLElement
+        if (node.tagName == 'IFRAME') {
           const result = browser.storage.local.get('DarkMode');
-          function open (result) {
+          function open (result: any) {
             DarkMode = result.DarkMode;
+            const node = added_node as HTMLIFrameElement
             if (DarkMode) {
-              RunColourCheck(added_node);
+              RunColourCheck(node);
+              const childNode = node.contentDocument!.documentElement.childNodes[1] as HTMLElement
               if (
-                added_node.contentDocument.documentElement.childNodes[1].style
+                childNode.style
                   .color != 'white'
               ) {
-                added_node.contentDocument.documentElement.childNodes[1].style.color =
+                childNode.style.color =
                   'white';
               }
+              const innerHTMLNode = node.contentDocument!.documentElement.firstChild! as HTMLElement
               if (
-                !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
+                !innerHTMLNode.innerHTML.includes(
                   'iframe.css',
                 )
               ) {
-                added_node.contentDocument.documentElement.firstChild.appendChild(
+                innerHTMLNode.appendChild(
                   fileref,
                 );
               }
               added_node.addEventListener('load', function () {
                 if (
-                  added_node.contentDocument.documentElement.childNodes[1].style
+                  childNode.style
                     .color != 'white'
                 ) {
-                  added_node.contentDocument.documentElement.childNodes[1].style.color =
+                  childNode.style.color =
                     'white';
                 }
                 if (
-                  !added_node.contentDocument.documentElement.firstChild.innerHTML.includes(
+                  !innerHTMLNode.innerHTML.includes(
                     'iframe.css',
                   )
                 ) {
-                  added_node.contentDocument.documentElement.firstChild.appendChild(
+                  innerHTMLNode.appendChild(
                     fileref,
                   );
                 }
@@ -462,20 +474,21 @@ function CheckiFrameItems() {
   });
 }
 
-function SortMessagePageItems(messagesParentElement) {
+function SortMessagePageItems(messagesParentElement: any) {
   let filterbutton = document.createElement('div');
   filterbutton.classList.add('messages-filterbutton');
   filterbutton.innerText = 'Filter';
 
   let header = document.getElementsByClassName(
     'MessageList__MessageList___3DxoC',
-  )[0].firstChild;
+  )[0].firstChild as HTMLElement;
   header.append(filterbutton);
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.dataset.message) {
+        const node = added_node as HTMLElement
+        if (node.dataset.message) {
           // Check if added_node.firstChild.title is in block list
         }
       });
@@ -495,13 +508,13 @@ async function LoadPageElements() {
   case 'news': {
     console.log('[BetterSEQTA+] Started Init');
     const result = browser.storage.local.get()
-    function open (result) {
+    function open (result: any) {
       if (result.onoff) {
         SendNewsPage();
 
         // Sends similar HTTP Post Request for the notices
         const result = browser.storage.local.get() 
-        function open (result) {
+        function open (result: any) {
           if (result.notificationcollector) {
             enableNotificationCollector();
           }
@@ -526,7 +539,7 @@ async function LoadPageElements() {
 
     // Sends similar HTTP Post Request for the notices
     const result1 = browser.storage.local.get()
-    function open1(result) {
+    function open1(result: any) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
@@ -539,8 +552,9 @@ async function LoadPageElements() {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        if (added_node.classList.contains('messages')) {
-          let element = document.getElementById('title').firstChild;
+        const node = added_node as HTMLElement
+        if (node.classList.contains('messages')) {
+          let element = document.getElementById('title')!.firstChild as HTMLElement;
           element.innerText = 'Direct Messages';
           document.title = 'Direct Messages ― SEQTA Learn';
           SortMessagePageItems(added_node);
@@ -556,9 +570,9 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('notices')) {
+        } else if (node.classList.contains('notices')) {
           CheckNoticeTextColour(added_node);
-        } else if (added_node.classList.contains('dashboard')) {
+        } else if (node.classList.contains('dashboard')) {
           let ranOnce = false;
           waitForElm('.dashlet').then(() => {
             if (ranOnce) return;
@@ -573,7 +587,7 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('documents')) {
+        } else if (node.classList.contains('documents')) {
           let ranOnce = false;
           waitForElm('.document').then(() => {
             if (ranOnce) return;
@@ -588,7 +602,7 @@ async function LoadPageElements() {
               }
             );
           });
-        } else if (added_node.classList.contains('reports')) {
+        } else if (node.classList.contains('reports')) {
           let ranOnce = false;
           waitForElm('.report').then(() => {
             if (ranOnce) return;
@@ -608,24 +622,25 @@ async function LoadPageElements() {
     });
   });
 
-  observer.observe(document.querySelector('#main'), {
+  observer.observe(document.querySelector('#main') as HTMLElement, {
     subtree: false,
     childList: true,
   });
 }
 
-function CheckNoticeTextColour(notice) {
+function CheckNoticeTextColour(notice: any) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
+        const node = added_node as HTMLElement;
         const result = browser.storage.local.get(['DarkMode']) 
-        function open (result) {
+        function open (result: any) {
           DarkMode = result.DarkMode;
-          if (added_node.classList.contains('notice')) {
-            var hex = added_node.style.cssText.split(' ')[1];
+          if (node.classList.contains('notice')) {
+            var hex = node.style.cssText.split(' ')[1];
             var threshold = GetThresholdOfColor(hex);
             if (DarkMode && threshold < 100) {
-              added_node.style.cssText = '--color: undefined;';
+              node.style.cssText = '--color: undefined;';
             }
           }
         }
@@ -649,11 +664,11 @@ export function tryLoad() {
     finishLoad();
   });
 
-  waitForElm('[data-key=welcome]').then((elm) => {
+  waitForElm('[data-key=welcome]').then((elm: any) => {
     elm.classList.remove('active');
   });
 
-  waitForElm('.code').then((elm) => {
+  waitForElm('.code').then((elm: any) => {
     if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements();
   });
 
@@ -668,18 +683,19 @@ export function tryLoad() {
     true,
   );
   const observer = new MutationObserver(() => { documentTextColor() })
-  observer.observe(document.getElementById('toolbar'), { attributes: true, childList: true, subtree: true })
+  observer.observe(document.getElementById('toolbar')!, { attributes: true, childList: true, subtree: true })
 }
 
-function ChangeMenuItemPositions(storage) {
+function ChangeMenuItemPositions(storage: any) {
   let menuorder = storage;
 
-  var menuList = document.querySelector('#menu').firstChild.childNodes;
+  var menuList = document.querySelector('#menu')!.firstChild!.childNodes;
 
   let listorder = [];
   for (let i = 0; i < menuList.length; i++) {
+    const menu = menuList[i] as HTMLElement
 
-    let a = menuorder.indexOf(menuList[i].dataset.key);
+    let a = menuorder.indexOf(menu.dataset.key);
 
     listorder.push(a);
   }
@@ -689,29 +705,32 @@ function ChangeMenuItemPositions(storage) {
     newArr[listorder[i]] = menuList[i];
   }
 
-  let listItemsDOM = document.getElementById('menu').firstChild;
+  let listItemsDOM = document.getElementById('menu')!.firstChild;
   for (let i = 0; i < newArr.length; i++) {
     const element = newArr[i];
     if (element) {
-      element.setAttribute('data-checked', 'true');
-      listItemsDOM.appendChild(element);
+      const elem = element as HTMLElement
+      elem.setAttribute('data-checked', 'true');
+      listItemsDOM!.appendChild(element);
     }
   }
 }
 
 export async function ObserveMenuItemPosition() {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     let menuorder = result.menuorder;
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
         mutations_list.forEach(function (mutation) {
           mutation.addedNodes.forEach(function (added_node) {
-            if (!added_node?.dataset?.checked && !MenuOptionsOpen) {
-              if (MenuitemSVGKey[added_node?.dataset?.key]) {
+            const node = added_node as HTMLElement
+            if (!node?.dataset?.checked && !MenuOptionsOpen) {
+              const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
+              if (key) {
                 ReplaceMenuSVG(
-                  added_node,
-                  MenuitemSVGKey[added_node.dataset.key],
+                  node,
+                  MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
                 );
               }
               ChangeMenuItemPositions(menuorder);
@@ -720,7 +739,7 @@ export async function ObserveMenuItemPosition() {
         });
       });
 
-      observer.observe(document.querySelector('#menu').firstChild, {
+      observer.observe(document.querySelector('#menu')!.firstChild!, {
         subtree: true,
         childList: true,
       });
@@ -729,7 +748,7 @@ export async function ObserveMenuItemPosition() {
   result.then(open, onError)
 }
 
-function main(storedSetting) {
+function main(storedSetting: any) {
   const onoff = storedSetting.onoff;
   DarkMode = storedSetting.DarkMode;
 
@@ -841,68 +860,76 @@ async function CheckLoadOnPeriods() {
 }
 
 export function closeSettings() {
-  var extensionsettings = document.getElementById('ExtensionPopup');
+  const ExtensionSettings = document.getElementById('ExtensionPopup')!;
+  const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
 
   if (SettingsClicked == true) {
-    extensionsettings.classList.add('hide');
+    ExtensionSettings!.classList.add('hide');
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: spring({ stiffness: 220, damping: 18 }) }
     );
     SettingsClicked = false;
-    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+
+    if (ExtensionIframe.contentWindow) {
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+    }
   }
 
-  extensionsettings.classList.add('hide');
+  ExtensionSettings!.classList.add('hide');
 }
 
 function addExtensionSettings() {
   const link = GetCSSElement('interface/popup.css');
-  document.querySelector('html').appendChild(link);
+  document.querySelector('html')!.appendChild(link);
 
   const extensionPopup = document.createElement('div');
   extensionPopup.classList.add('outside-container', 'hide');
   extensionPopup.id = 'ExtensionPopup';
   document.body.appendChild(extensionPopup);
 
-  const extensionIframe = document.createElement('iframe');
+  const extensionIframe: HTMLIFrameElement = document.createElement('iframe');
   extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
-  extensionIframe.allowTransparency = true;
+  extensionIframe.setAttribute('allowTransparency', 'true');
+  extensionIframe.setAttribute('excludeDarkCheck', 'true');
   extensionIframe.style.width = '384px';
   extensionIframe.style.height = '600px';
   extensionIframe.style.border = 'none';
-  extensionIframe.setAttribute('excludeDarkCheck', true);
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
   
   const closeExtensionPopup = () => {
+    const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
+
     extensionPopup.classList.add('hide');
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: [.22, .03, .26, 1] }
     );
-    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+    if (ExtensionIframe.contentWindow) {
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+    }
     SettingsClicked = false;
   };
 
-  container.onclick = (event) => {
-    if (event.target.closest('#AddedSettings') == null && SettingsClicked) {
+  container!.onclick = (event) => {
+    if ((event.target as HTMLElement).closest('#AddedSettings') == null && SettingsClicked) {
       closeExtensionPopup()
     }
   };
 }
 
-function saveNewOrder(sortable) {
+function saveNewOrder(sortable: any) {
   var order = sortable.toArray();
   console.log("Order: ", order);
   browser.storage.local.set({ menuorder: order });
 }
 
-function cloneAttributes(target, source) {
+function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue);
   });
@@ -910,26 +937,26 @@ function cloneAttributes(target, source) {
 
 export function OpenMenuOptions() {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     var container = document.getElementById('container');
     var menu = document.getElementById('menu');
 
     if (result.defaultmenuorder.length == '0') {
-      let childnodes = menu.firstChild.childNodes;
+      let childnodes = menu!.firstChild!.childNodes;
       let newdefaultmenuorder = [];
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
-        newdefaultmenuorder.push(element.dataset.key);
+        newdefaultmenuorder.push((element as HTMLElement).dataset.key);
         browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
       }
     }
-    let childnodes = menu.firstChild.childNodes;
+    let childnodes = menu!.firstChild!.childNodes;
     if (result.defaultmenuorder.length != childnodes.length) {
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
-        if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
+        if (!result.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
           let newdefaultmenuorder = result.defaultmenuorder;
-          newdefaultmenuorder.push(element.dataset.key);
+          newdefaultmenuorder.push((element as HTMLElement).dataset.key);
           browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
         }
       }
@@ -939,9 +966,9 @@ export function OpenMenuOptions() {
 
     let cover = document.createElement('div');
     cover.classList.add('notMenuCover');
-    menu.style.zIndex = '20';
-    menu.style.setProperty('--menuHidden', 'flex');
-    container.append(cover);
+    menu!.style.zIndex = '20';
+    menu!.style.setProperty('--menuHidden', 'flex');
+    container!.append(cover);
 
     let menusettings = document.createElement('div');
     menusettings.classList.add('editmenuoption-container');
@@ -959,66 +986,65 @@ export function OpenMenuOptions() {
     menusettings.appendChild(defaultbutton);
     menusettings.appendChild(savebutton);
 
-    menu.appendChild(menusettings);
+    menu!.appendChild(menusettings);
 
-    let ListItems = menu.firstChild.childNodes;
+    let ListItems = menu!.firstChild!.childNodes;
     for (let i = 0; i < ListItems.length; i++) {
-      const element = ListItems[i];
+      const element1 = ListItems[i];
+      const element = element1 as HTMLElement
 
-      element.classList.add('draggable');
-      if (element.classList.contains('hasChildren')) {
-        element.classList.remove('active');
-        menu.firstChild.classList.remove('noscroll');
+      (element as HTMLElement).classList.add('draggable');
+      if ((element as HTMLElement).classList.contains('hasChildren')) {
+        (element as HTMLElement).classList.remove('active');
+        (element.firstChild as HTMLElement).classList.remove('noscroll');
       }
 
       let MenuItemToggle = stringToHTML(
-        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${element.dataset.key}"><label for="${element.dataset.key}" class="onoffswitch-label"></label>`,
+        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
       ).firstChild;
-      element.append(MenuItemToggle);
+      (element as HTMLElement).append(MenuItemToggle!);
 
       if (!element.dataset.betterseqta) {
         const a = document.createElement('section')
         a.innerHTML = element.innerHTML
         cloneAttributes(a, element)
-        menu.firstChild.insertBefore(a, element)
+        menu!.firstChild!.insertBefore(a, element)
         element.remove()
       }
     }
 
     if (Object.keys(result.menuitems).length == 0) {
-      menubuttons = menu.firstChild.childNodes;
+      menubuttons = menu!.firstChild!.childNodes;
       var menuItems = {};
       for (var i = 0; i < menubuttons.length; i++) {
-        var id = menubuttons[i].dataset.key;
-        const element = {};
+        var id = (menubuttons[i] as HTMLElement).dataset.key;
+        const element: any = {};
         element.toggle = true;
-        menuItems[id] = element;
+        (menuItems[id as keyof typeof menuItems] as any) = element;
       }
       browser.storage.local.set({ menuitems: menuItems });
     }
 
-    var menubuttons = document.getElementsByClassName('menuitem');
+    var menubuttons: any = document.getElementsByClassName('menuitem');
     const result1 = browser.storage.local.get(['menuitems'])
-    function open (result) {
+    function open (result: any) {
       var menuItems = result.menuitems;
       let buttons = document.getElementsByClassName('menuitem');
       for (var i = 0; i < buttons.length; i++) {
         var id = buttons[i].id;
         if (menuItems[id]) {
-          buttons[i].checked = menuItems[id].toggle;
+          (buttons[i] as HTMLInputElement).checked = menuItems[id].toggle;
         }
         if (!menuItems[id]) {
-          buttons[i].checked = true;
+          (buttons[i] as HTMLInputElement).checked = true;
         }
       }
     }
     result1.then(open, onError);
 
-    try {
-      Sortable.mount(new AutoScroll());
-  
+    try {  
       var el = document.querySelector('#menu > ul');
-      var sortable = Sortable.create(el, {
+      var sortable = Sortable.create((el as HTMLElement), {
         draggable: '.draggable',
         dataIdAttr: 'data-key',
         animation: 150,
@@ -1031,7 +1057,7 @@ export function OpenMenuOptions() {
       console.log(err);
     }
 
-    function changeDisplayProperty(element) {
+    function changeDisplayProperty(element: any) {
       if (!element.checked) {
         element.parentNode.parentNode.style.display = 'var(--menuHidden)';
       }
@@ -1045,15 +1071,15 @@ export function OpenMenuOptions() {
     }
 
     function StoreMenuSettings() {
-      const menuItems = {}
-      const menubuttons = menu.firstChild.childNodes
+      const menuItems: any = {};
+      const menubuttons = menu!.firstChild!.childNodes
       const button = document.getElementsByClassName('menuitem')
       for (let i = 0; i < menubuttons.length; i++) {
-        const id = menubuttons[i].dataset.key
-        const element = {}
-        element.toggle = button[i].checked
+        const id = (menubuttons[i] as HTMLElement).dataset.key;
+        const element: any = {};
+        element.toggle = (button[i] as HTMLInputElement).checked
 
-        menuItems[id] = element
+        menuItems[id as keyof typeof menuItems] = element;
       }
       browser.storage.local.set({ menuitems: menuItems })
     }
@@ -1069,28 +1095,29 @@ export function OpenMenuOptions() {
 
     function closeAll() {
       console.log("Closing!");
-      ListItems = menu.firstChild.childNodes;
+      ListItems = menu!.firstChild!.childNodes;
       menusettings.remove();
       cover.remove();
       MenuOptionsOpen = false;
-      menu.style.setProperty('--menuHidden', 'none');
+      menu!.style.setProperty('--menuHidden', 'none');
 
       for (let i = 0; i < ListItems.length; i++) {
-        const element = ListItems[i];
+        const element1 = ListItems[i];
+        const element = element1 as HTMLElement
         element.classList.remove('draggable');
-        element.setAttribute('draggable', false);
+        element.setAttribute('draggable', 'false');
 
 
         if (!element.dataset.betterseqta) {
           const a = document.createElement('li')
           a.innerHTML = element.innerHTML
           cloneAttributes(a, element)
-          menu.firstChild.insertBefore(a, element)
+          menu!.firstChild!.insertBefore(a, element)
           element.remove()
         }
       }
 
-      let switches = menu.querySelectorAll('.onoffswitch');
+      let switches = menu!.querySelectorAll('.onoffswitch');
       for (let i = 0; i < switches.length; i++) {
         switches[i].remove();
       }
@@ -1102,7 +1129,7 @@ export function OpenMenuOptions() {
 
     defaultbutton.addEventListener('click', function () {
       const result = browser.storage.local.get()
-      function open (response) {
+      function open (response: any) {
         const options = response.defaultmenuorder;
         browser.storage.local.set({ menuorder: options });
         ChangeMenuItemPositions(options);
@@ -1124,33 +1151,33 @@ export function OpenMenuOptions() {
   result.then(open, onError)
 }
 
-function ReplaceMenuSVG(element, svg) {
-  let item = element.firstChild;
-  item.firstChild.remove();
+function ReplaceMenuSVG(element: HTMLElement, svg: string) {
+  let item = element.firstChild as HTMLElement;
+  item!.firstChild!.remove();
 
   if (element.dataset.key == 'messages') {
-    element.firstChild.innerText = 'Direct Messages';
+    (element!.firstChild! as HTMLElement).innerText! = 'Direct Messages';
   }
 
   let newsvg = stringToHTML(svg).firstChild;
-  item.insertBefore(newsvg, item.firstChild);
+  item.insertBefore((newsvg as Node), item.firstChild);
 }
 
-async function AddBetterSEQTAElements(toggle) {
-  var code = document.getElementsByClassName('code')[0];
+async function AddBetterSEQTAElements(toggle: any) {
+  const code = document.getElementsByClassName('code')[0];
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
-      UserInitalCode = code.innerText;
-      code.innerText = `BetterSEQTA v${browser.runtime.getManifest().version}`;
+      UserInitalCode = code.innerHTML;
+      code.innerHTML = `BetterSEQTA v${browser.runtime.getManifest().version}`;
       code.setAttribute('data-hover', 'Click for user code');
       code.addEventListener('click', function () {
         var code = document.getElementsByClassName('code')[0];
-        if (code.innerText.includes('BetterSEQTA')) {
-          code.innerText = UserInitalCode;
+        if (code.innerHTML.includes('BetterSEQTA')) {
+          code.innerHTML = UserInitalCode;
           code.setAttribute('data-hover', 'Click for BetterSEQTA version');
         } else {
-          code.innerText = `BetterSEQTA v${
+          code.innerHTML = `BetterSEQTA v${
             browser.runtime.getManifest().version
           }`;
           code.setAttribute('data-hover', 'Click for user code');
@@ -1159,106 +1186,110 @@ async function AddBetterSEQTAElements(toggle) {
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        const result = browser.storage.local.get(['animatedbk']);
-        const sliderVal = browser.storage.local.get(['bksliderinput']);
+        const result = await browser.storage.local.get();
 
-        result.then(animbkEnable);
-        sliderVal.then(updateBgDurations);
+        animbkEnable(result);
+        updateBgDurations(result);
 
-        // Load darkmode state
-        const result1 = browser.storage.local.get(['DarkMode'])
-        function open (result) {
-          DarkMode = result.DarkMode;
+        DarkMode = result.DarkMode;
+        if (DarkMode) {
+          document.documentElement.classList.add('dark');
         }
-        result1.then(open, onError)
 
-        var titlebar = document.createElement('div');
-        titlebar.classList.add('titlebar');
-        let container = document.getElementById('content');
-        container.append(titlebar);
-        var NewButtonStr = '<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>';
-        var NewButton = stringToHTML(NewButtonStr);
-        var menu = document.getElementById('menu');
-        var List = menu.firstChild;
-        List.insertBefore(NewButton.firstChild, List.firstChild);
+        const container = document.getElementById('content')!;
+        const div = document.createElement('div')
+        div.classList.add('titlebar');
+        container.append(div);
+        const NewButton = stringToHTML('<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>');
 
-        fetch(`${location.origin}/seqta/student/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: JSON.stringify({
-            mode: 'normal',
-            query: null,
-            redirect_url: location.origin,
-          }),
-        })
-          .then((result) => result.json())
-          .then((response) => {
-            let info = response.payload;
+        const menu = document.getElementById('menu')!;
+        const List = menu.firstChild! as HTMLElement;
+        
+        if (NewButton.firstChild) {
+          List.insertBefore(NewButton.firstChild, List.firstChild);
+        }
 
-            var titlebar = document.getElementsByClassName('titlebar')[0];
-            titlebar.append(
-              stringToHTML(
-                '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
-              ).firstChild,
-            );
-            var userinfostr = `<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`;
-            var userinfo = stringToHTML(userinfostr).firstChild;
-
-            titlebar.append(userinfo);
-
-            var logoutbutton = document.getElementsByClassName('logout')[0];
-            var userInfosvgdiv = document.getElementById('logouttooltip');
-            userInfosvgdiv.appendChild(logoutbutton);
-
-            fetch(`${location.origin}/seqta/student/load/message/people`, {
+        try {
+          // Fetch the response and wait for it
+          const response = await fetch(`${location.origin}/seqta/student/login`, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json; charset=utf-8',
+                  'Content-Type': 'application/json; charset=utf-8',
+              },
+              body: JSON.stringify({
+                  mode: 'normal',
+                  query: null,
+                  redirect_url: location.origin,
+              }),
+          });
+      
+          // Parse the JSON response and wait for it
+          const responseData = await response.json();
+          let info = responseData.payload;
+      
+          // Manipulate the DOM as needed
+          const titlebar = document.getElementsByClassName('titlebar')[0];
+          const userInfo = stringToHTML(
+            '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
+          ).firstChild;
+          titlebar.append(userInfo!);
+      
+          const userinfo = stringToHTML(`<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`).firstChild;
+          titlebar.append(userinfo!);
+      
+          var logoutbutton = document.getElementsByClassName('logout')[0];
+          var userInfosvgdiv = document.getElementById('logouttooltip')!;
+          userInfosvgdiv.appendChild(logoutbutton);
+      
+        } catch (error) {
+            console.error('Error fetching and processing data:', error);
+        }
+
+        try {
+          // Await the fetch response
+          const response = await fetch(`${location.origin}/seqta/student/load/message/people`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json; charset=utf-8',
               },
               body: JSON.stringify({ mode: 'student' }),
-            })
-              .then((result) => result.json())
-              .then((response) => {
-                let students = response.payload;
-                var index = students.findIndex(function (person) {
-                  return (
-                    person.firstname == info.userDesc.split(' ')[0] &&
-                    person.surname == info.userDesc.split(' ')[1]
-                  );
-                });
-
-                let houseelement =
-                  document.getElementsByClassName('userInfohouse')[0];
-                if (students[index]?.house) {
-                  houseelement.style.background = students[index].house_colour;
-                  try {
-                    let colorresult = GetThresholdOfColor(
-                      students[index]?.house_colour,
-                    );
-
-                    if (colorresult && colorresult > 300) {
-                      houseelement.style.color = 'black';
-                    } else if (colorresult < 300) {
-                      houseelement.style.color = 'white';
-                    } else {
-                      houseelement.style.color = 'black';
-                    }
-                    houseelement.innerText =
-                      students[index].year + students[index].house;
-                  } catch (error) {
-                    houseelement.innerText = students[index].house;
-                  }
-                } else {
-                  houseelement.innerText = students[index].year;
-                }
-              });
           });
+      
+          // Await the JSON parsing of the response
+          const responseData = await response.json();
+          let students = responseData.payload;
+      
+          // Process the students data
+          var index = students.findIndex(function (person: any) {
+              return (
+                  person.firstname == students.userDesc.split(' ')[0] &&
+                  person.surname == students.userDesc.split(' ')[1]
+              );
+          });
+      
+          let houseelement1 = document.getElementsByClassName('userInfohouse')[0];
+          const houseelement = houseelement1 as HTMLElement
+          if (students[index]?.house) {
+              (houseelement as HTMLElement).style.background = students[index].house_colour;
+              try {
+                  let colorresult = GetThresholdOfColor(students[index]?.house_colour);
+      
+                  houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white';
+                  houseelement.innerText = students[index].year + students[index].house;
+              } catch (error) {
+                  houseelement.innerText = students[index].house;
+              }
+          } else {
+              houseelement.innerText = students[index].year;
+          }
+      
+      } catch (error) {
+          console.error('Error fetching and processing student data:', error);
+      }
 
         var NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>';
         var NewsButton = stringToHTML(NewsButtonStr);
-        List.appendChild(NewsButton.firstChild);
+        List!.appendChild(NewsButton.firstChild!);
 
         editmenu = document.createElement('div');
         editmenu.classList.add('editmenu');
@@ -1266,33 +1297,33 @@ async function AddBetterSEQTAElements(toggle) {
         let svg = stringToHTML(
           '<svg style="width:24px;height:24px;padding:5px;" id="editmenu" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>',
         );
-        editmenu.append(svg.firstChild);
+        editmenu.append(svg.firstChild!);
 
-        menu.appendChild(editmenu);
+        menu!.appendChild(editmenu);
 
         let a = document.createElement('div');
         a.classList.add('icon-cover');
         a.id = 'icon-cover';
-        menu.appendChild(a);
+        menu!.appendChild(a);
 
         var editmenu = document.querySelector('#editmenu');
-        editmenu.addEventListener('click', function () {
+        editmenu!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
             OpenMenuOptions();
           }
         });
 
         var menuCover = document.querySelector('#icon-cover');
-        menuCover.addEventListener('click', function () {
+        menuCover!.addEventListener('click', function () {
           location.href = '../#?page=/home';
           SendHomePage();
-          document
-            .getElementById('menu')
-            .firstChild.classList.remove('noscroll');
+          (document!
+            .getElementById('menu')!
+            .firstChild! as HTMLElement).classList.remove('noscroll');
         });
         // Creates the home container when the menu button is pressed
         var homebutton = document.getElementById('homebutton');
-        homebutton.addEventListener('click', function () {
+        homebutton!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
             SendHomePage();
           }
@@ -1300,7 +1331,7 @@ async function AddBetterSEQTAElements(toggle) {
 
         // Creates the news container when the menu button is pressed
         var newsbutton = document.getElementById('newsbutton');
-        newsbutton.addEventListener('click', function () {
+        newsbutton!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
             SendNewsPage();
           }
@@ -1317,14 +1348,14 @@ async function AddBetterSEQTAElements(toggle) {
           '<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div></button>',
         );
         var ContentDiv = document.getElementById('content');
-        ContentDiv.append(SettingsButton.firstChild);
+        ContentDiv!.append(SettingsButton.firstChild!);
 
-        const result = await new Promise(resolve => {
+        const result: any = await new Promise(resolve => {
           const result = browser.storage.local.get();
           result.then(resolve, onError)
         });
         
-        const DarkMode = result.DarkMode;
+        const DarkMode = result!.DarkMode;
         const tooltipString = GetLightDarkModeString(DarkMode);
         const svgContent = DarkMode ? '<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>' :
           '<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>';
@@ -1336,34 +1367,34 @@ async function AddBetterSEQTAElements(toggle) {
           </button>
         `);
         
-        ContentDiv.append(LightDarkModeButton.firstChild);
+        ContentDiv!.append(LightDarkModeButton.firstChild!);
         
         updateAllColors(DarkMode, result.selectedColor);
 
-        document.getElementById('LightDarkModeButton').addEventListener('click', async () => {
-          const result = await new Promise(resolve => {
+        document.getElementById('LightDarkModeButton')!.addEventListener('click', async () => {
+          const result: any = await new Promise(resolve => {
             const result = browser.storage.local.get();
             result.then(resolve, onError)
           });
           
-          const newDarkMode = !result.DarkMode;
+          const newDarkMode = !result!.DarkMode;
           browser.storage.local.set({ DarkMode: newDarkMode });
           
           updateAllColors(newDarkMode, result.selectedColor);
           
           const darklightText = document.getElementById('darklighttooliptext');
-          darklightText.innerText = GetLightDarkModeString(newDarkMode);
+          darklightText!.innerText = GetLightDarkModeString(newDarkMode);
         });
 
         // Locate the menuToggle element
         const menuToggle = document.getElementById('menuToggle');
-        menuToggle.innerHTML = '';
+        menuToggle!.innerHTML = '';
 
         // Create three divs to act as lines of the hamburger icon
         for (let i = 0; i < 3; i++) {
           const line = document.createElement('div');
           line.className = 'hamburger-line';
-          menuToggle.appendChild(line);
+          menuToggle!.appendChild(line);
         }
       } else {
         // Creates settings and dashboard buttons next to alerts
@@ -1371,24 +1402,24 @@ async function AddBetterSEQTAElements(toggle) {
           '<button class="addedButton" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: var(--text-color);"><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg></button>',
         );
         ContentDiv = document.getElementById('content');
-        ContentDiv.append(SettingsButton.firstChild);
+        ContentDiv!.append(SettingsButton.firstChild!);
       }
 
       var AddedSettings = document.getElementById('AddedSettings');
       var extensionPopup = document.getElementById('ExtensionPopup');
       
-      AddedSettings.addEventListener('click', function () {
+      AddedSettings!.addEventListener('click', function () {
         if (SettingsClicked) {
-          extensionPopup.classList.add('hide');
+          extensionPopup!.classList.add('hide');
           animate(
             '#ExtensionPopup',
             { opacity: [1, 0], scale: [1, 0] },
             { easing: spring({ stiffness: 220, damping: 18 }) }
           );
-          document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+          (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
           SettingsClicked = false;      
         } else {
-          extensionPopup.classList.remove('hide');
+          extensionPopup!.classList.remove('hide');
           animate(
             '#ExtensionPopup',
             { opacity: [0, 1], scale: [0, 1] },
@@ -1403,7 +1434,7 @@ async function AddBetterSEQTAElements(toggle) {
 
 let tooltipstring;
 
-function GetLightDarkModeString(darkmodetoggle) {
+function GetLightDarkModeString(darkmodetoggle: boolean) {
   if (darkmodetoggle) {
     tooltipstring = 'Switch to light theme';
   } else {
@@ -1412,7 +1443,7 @@ function GetLightDarkModeString(darkmodetoggle) {
   return tooltipstring;
 }
 
-function CheckCurrentLesson(lesson, num) {
+function CheckCurrentLesson(lesson: any, num: number) {
   var startTime = lesson.from;
   var endTime = lesson.until;
   // Gets current time
@@ -1422,13 +1453,13 @@ function CheckCurrentLesson(lesson, num) {
   let startDate = new Date(currentDate.getTime());
   startDate.setHours(startTime.split(':')[0]);
   startDate.setMinutes(startTime.split(':')[1]);
-  startDate.setSeconds('00');
+  startDate.setSeconds(parseInt('00'));
 
   // Takes end time of current lesson and makes it into a Date function for comparison
   let endDate = new Date(currentDate.getTime());
   endDate.setHours(endTime.split(':')[0]);
   endDate.setMinutes(endTime.split(':')[1]);
-  endDate.setSeconds('00');
+  endDate.setSeconds(parseInt('00'));
 
   // Gets the difference between the start time and current time
   var difference = startDate.getTime() - currentDate.getTime();
@@ -1464,7 +1495,7 @@ function CheckCurrentLesson(lesson, num) {
   // If 5 minutes before the start of another lesson:
   if (minutes == 5) {
     const result = browser.storage.local.get('lessonalert')
-    function open (result) {
+    function open (result: any) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
@@ -1511,7 +1542,7 @@ function CheckCurrentLesson(lesson, num) {
   }
 }
 
-export function GetThresholdOfColor(color) {
+export function GetThresholdOfColor(color: any) {
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
@@ -1527,7 +1558,7 @@ export function GetThresholdOfColor(color) {
       const [r, g, b] = rgbaString.split(',').map(str => str.trim());
 
       // Compute the threshold using your existing algorithm
-      const threshold = Math.sqrt(r ** 2 + g ** 2 + b ** 2);
+      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2);
 
       // Store the computed threshold
       gradientThresholds.push(threshold);
@@ -1545,7 +1576,7 @@ export function GetThresholdOfColor(color) {
   }
 }
 
-function CheckCurrentLessonAll(lessons) {
+function CheckCurrentLessonAll(lessons: any) {
   // Checks each lesson and sets an interval to run every 60 seconds to continue updating
   LessonInterval = setInterval(
     function () {
@@ -1558,13 +1589,13 @@ function CheckCurrentLessonAll(lessons) {
 }
 
 // Helper function to build the assessment URL
-function buildAssessmentURL(programmeID, metaID, itemID = '') {
+function buildAssessmentURL(programmeID: any, metaID: any, itemID = '') {
   const base = '../#?page=/assessments/';
   return itemID ? `${base}${programmeID}:${metaID}&item=${itemID}` : `${base}${programmeID}:${metaID}`;
 }
 
 // Function to create a lesson div element from a lesson object
-function makeLessonDiv(lesson, num) {
+function makeLessonDiv(lesson: any, num: number) {
   if (!lesson) throw new Error('No lesson provided.');
 
   const { code, colour, description, staff, room, from, until, attendanceTitle, programmeID, metaID, assessments } = lesson;
@@ -1589,7 +1620,7 @@ function makeLessonDiv(lesson, num) {
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
-    const assessmentString = assessments.map(element =>
+    const assessmentString = assessments.map((element: any) =>
       `<p onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
     ).join('');
 
@@ -1608,7 +1639,7 @@ function makeLessonDiv(lesson, num) {
   return stringToHTML(lessonString);
 }
 
-function CheckUnmarkedAttendance(lessonattendance) {
+function CheckUnmarkedAttendance(lessonattendance: any) {
   if (lessonattendance) {
     var lesson = lessonattendance.label;
   } else {
@@ -1617,7 +1648,7 @@ function CheckUnmarkedAttendance(lessonattendance) {
   return lesson;
 }
 
-function callHomeTimetable(date, change) {
+function callHomeTimetable(date: string, change?: any) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest();
   xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true);
@@ -1628,11 +1659,11 @@ function callHomeTimetable(date, change) {
     // Once the response is ready
     if (xhr.readyState === 4) {
       var serverResponse = JSON.parse(xhr.response);
-      let lessonArray = [];
-      var DayContainer = document.getElementById('day-container');
+      let lessonArray: Array<any> = [];
+      const DayContainer = document.getElementById('day-container')!;
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
-        if (!DayContainer.innerText || change) {
+        if (DayContainer.innerText || change) {
           for (let i = 0; i < serverResponse.payload.items.length; i++) {
             lessonArray.push(serverResponse.payload.items[i]);
           }
@@ -1647,7 +1678,7 @@ function callHomeTimetable(date, change) {
               let subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
 
               let subject = subjects.find(
-                (element) => element.name === subjectname,
+                (element: any) => element.name === subjectname,
               );
               if (!subject) {
                 lessonArray[i].colour = '--item-colour: #8e8e8e;';
@@ -1674,10 +1705,11 @@ function callHomeTimetable(date, change) {
               var div = makeLessonDiv(lessonArray[i], i + 1);
               // Append each of the lessons into the day-container
               if (lessonArray[i].invert) {
-                div.firstChild.classList.add('day-inverted');
+                const div1 = div.firstChild! as HTMLElement
+                div1.classList.add('day-inverted');
               }
 
-              DayContainer.append(div.firstChild);
+              DayContainer.append(div.firstChild as HTMLElement);
             }
 
             const today = new Date();
@@ -1750,7 +1782,7 @@ async function GetActiveClasses() {
   }
 }
 
-function comparedate(obj1, obj2) {
+function comparedate(obj1: any, obj2: any) {
   if (obj1.date < obj2.date) {
     return -1;
   }
@@ -1760,7 +1792,7 @@ function comparedate(obj1, obj2) {
   return 0;
 }
 
-function CreateElement(type, class_, id, innerText, innerHTML, style) {
+function CreateElement(type: string, class_?: any, id?: any, innerText?: string, innerHTML?: string, style?: string) {
   let element = document.createElement(type);
   if (class_ !== undefined) {
     element.classList.add(class_);
@@ -1775,13 +1807,13 @@ function CreateElement(type, class_, id, innerText, innerHTML, style) {
     element.innerHTML = innerHTML;
   }
   if (style !== undefined) {
-    element.style = style;
+    element.style.cssText = style;
   }
   return element;
 }
 
-function createAssessmentDateDiv(date, value, datecase = undefined) {
-  var options = { weekday: 'long', month: 'long', day: 'numeric' };
+function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
+  var options = { weekday: 'long' as 'long', month: 'long' as 'long', day: 'numeric' as 'numeric' };
   const FormattedDate = new Date(date);
 
   const assessments = value.assessments;
@@ -1814,7 +1846,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
     item.setAttribute('data-subject', element.code);
     item.id = `assessment${element.id}`;
 
-    item.style = element.colour;
+    item.style.cssText = element.colour;
 
     let titlediv = document.createElement('div');
     titlediv.classList.add('upcoming-subject-title');
@@ -1823,7 +1855,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
       stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
     <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
     </svg>`).firstChild;
-    titlediv.append(titlesvg);
+    titlediv.append(titlesvg!);
 
     let detailsdiv = document.createElement('div');
     detailsdiv.classList.add('upcoming-details');
@@ -1833,7 +1865,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
     subject.innerText = element.title;
     subject.classList.add('upcoming-assessment-title');
     subject.onclick = function () {
-      document.querySelector('#menu ul').classList.add('noscroll'); 
+      document.querySelector('#menu ul')!.classList.add('noscroll'); 
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
     detailsdiv.append(detailstitle);
@@ -1865,7 +1897,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
           let submittedtext = document.createElement('div');
           submittedtext.classList.add('upcoming-submittedtext');
           submittedtext.innerText = 'Submitted';
-          assessment.append(submittedtext);
+          assessment!.append(submittedtext);
         }
       });
   }
@@ -1875,7 +1907,7 @@ function createAssessmentDateDiv(date, value, datecase = undefined) {
   return container;
 }
 
-function CheckSpecialDay(date1, date2) {
+function CheckSpecialDay(date1: Date, date2: Date) {
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
@@ -1899,24 +1931,25 @@ function CheckSpecialDay(date1, date2) {
   }
 }
 
-function CreateSubjectFilter(subjectcode, itemcolour, checked) {
+function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any) {
   let label = CreateElement('label', 'upcoming-checkbox-container');
   label.innerText = subjectcode;
-  let input = CreateElement('input');
+  let input1 = CreateElement('input');
+  const input = input1 as HTMLInputElement
   input.type = 'checkbox';
   input.checked = checked;
   input.id = `filter-${subjectcode}`;
-  label.style = itemcolour;
+  label.style.cssText = itemcolour;
   let span = CreateElement('span', 'upcoming-checkmark');
   label.append(input);
   label.append(span);
 
   input.addEventListener('change', function (change) {
     const result = browser.storage.local.get()
-    function open (storage) {
+    function open (storage: any) {
       let filters = storage.subjectfilters;
-      let id = change.target.id.split('-')[1];
-      filters[id] = change.target.checked;
+      let id = (change.target as HTMLInputElement)!.id.split('-')[1];
+      filters[id] = (change.target as HTMLInputElement)!.checked;
 
       browser.storage.local.set({ subjectfilters: filters });
     }
@@ -1926,9 +1959,9 @@ function CreateSubjectFilter(subjectcode, itemcolour, checked) {
   return label;
 }
 
-function CreateFilters(subjects) {
+function CreateFilters(subjects: any) {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     let filteroptions = result.subjectfilters;
 
     let filterdiv = document.querySelector('#upcoming-filters');
@@ -1945,13 +1978,13 @@ function CreateFilters(subjects) {
         filteroptions[element.code],
       );
 
-      filterdiv.append(elementdiv);
+      filterdiv!.append(elementdiv);
     }
   }
   result.then(open, onError)
 }
 
-function CreateUpcomingSection(assessments) {
+function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let upcomingitemcontainer = document.querySelector('#upcoming-items');
   let overdueDates = [];
   let upcomingDates = {};
@@ -1984,7 +2017,7 @@ function CreateUpcomingSection(assessments) {
     for (let i = 0; i < assessments.length; i++) {
       let subjectname = `timetable.subject.colour.${assessments[i].code}`;
 
-      let subject = subjects.find((element) => element.name === subjectname);
+      let subject = subjects.find((element: any) => element.name === subjectname);
       if (!subject) {
         assessments[i].colour = '--item-colour: #8e8e8e;';
       } else {
@@ -1992,12 +2025,10 @@ function CreateUpcomingSection(assessments) {
         GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
       }
     }
-
-    let activeSubjects = []; // TODO: IDK what is going on here, but it didn't exist
     for (let i = 0; i < activeSubjects.length; i++) {
       const element = activeSubjects[i];
       let subjectname = `timetable.subject.colour.${element.code}`;
-      let colour = colours.find((element) => element.name === subjectname);
+      let colour = colours.find((element: any) => element.name === subjectname);
       if (!colour) {
         element.colour = '--item-colour: #8e8e8e;';
       } else {
@@ -2010,14 +2041,15 @@ function CreateUpcomingSection(assessments) {
     }
 
     CreateFilters(activeSubjects);
-
+    // @ts-ignore
     let type;
+    // @ts-ignore
     let class_;
 
     for (let i = 0; i < assessments.length; i++) {
-      const element = assessments[i];
-      if (!upcomingDates[element.due]) {
-        let dateObj = new Object();
+      const element: any = assessments[i];
+      if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
+        let dateObj: any = new Object();
         dateObj.div = CreateElement(
           // TODO: not sure whats going on here?
           // eslint-disable-next-line
@@ -2027,48 +2059,48 @@ function CreateUpcomingSection(assessments) {
         );
         dateObj.assessments = [];
 
-        upcomingDates[element.due] = dateObj;
+        dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any;
       }
-      let assessmentDateDiv = upcomingDates[element.due];
-      assessmentDateDiv.assessments.push(element);
+      let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
+      (assessmentDateDiv as any).assessments.push(element);
     }
 
     for (var date in upcomingDates) {
-      let assessmentdue = new Date(upcomingDates[date].assessments[0].due);
+      let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due);
       let specialcase = CheckSpecialDay(Today, assessmentdue);
       let assessmentDate;
-      let datecase;
 
       if (specialcase) {
+        let datecase: string = specialcase!;
         assessmentDate = createAssessmentDateDiv(
           date,
-          upcomingDates[date],
+          upcomingDates[date as keyof typeof upcomingDates],
           // eslint-disable-next-line
-          datecase = specialcase,
+          datecase,
         );
       } else {
-        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date]);
+        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates]);
       }
 
       if (specialcase === 'Yesterday') {
-        upcomingitemcontainer.insertBefore(
+        upcomingitemcontainer!.insertBefore(
           assessmentDate,
-          upcomingitemcontainer.firstChild,
+          upcomingitemcontainer!.firstChild,
         );
       } else {
-        upcomingitemcontainer.append(assessmentDate);
+        upcomingitemcontainer!.append(assessmentDate);
       }
 
     }
     const result = browser.storage.local.get()
-    function open (result) {
+    function open (result: any) {
       FilterUpcomingAssessments(result.subjectfilters);
     }
     result.then(open, onError)
   });
 }
 
-function AddPlaceHolderToParent(parent, numberofassessments) {
+function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
   let textcontainer = CreateElement('div', 'upcoming-blank');
   let textblank = CreateElement('p', 'upcoming-hiddenassessment');
   let s = '';
@@ -2077,12 +2109,12 @@ function AddPlaceHolderToParent(parent, numberofassessments) {
   }
   textblank.innerText = `${numberofassessments} hidden assessment${s} due`;
   textcontainer.append(textblank);
-  textcontainer.setAttribute('data-hidden', true);
+  textcontainer.setAttribute('data-hidden', 'true');
 
   parent.append(textcontainer);
 }
 
-function FilterUpcomingAssessments(subjectoptions) {
+function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {
     let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
@@ -2095,9 +2127,9 @@ function FilterUpcomingAssessments(subjectoptions) {
       if (subjectoptions[item]) {
         element.classList.remove('hidden');
       }
-      element.parentNode.classList.remove('hidden');
+      (element.parentNode! as HTMLElement).classList.remove('hidden');
 
-      let children = element.parentNode.parentNode.children;
+      let children = element.parentNode!.parentNode!.children;
       for (let i = 0; i < children.length; i++) {
         const element = children[i];
         if (element.hasAttribute('data-hidden')) {
@@ -2106,21 +2138,21 @@ function FilterUpcomingAssessments(subjectoptions) {
       }
 
       if (
-        element.parentNode.children.length ==
-        element.parentNode.querySelectorAll('.hidden').length
+        element.parentNode!.children.length ==
+        element.parentNode!.querySelectorAll('.hidden').length
       ) {
-        if (element.parentNode.querySelectorAll('.hidden').length > 0) {
-          if (!element.parentNode.parentNode.hasAttribute('data-day')) {
-            element.parentNode.parentNode.classList.add('hidden');
+        if (element.parentNode!.querySelectorAll('.hidden').length > 0) {
+          if (!(element.parentNode!.parentNode! as HTMLElement).hasAttribute('data-day')) {
+            (element.parentNode!.parentNode! as HTMLElement).classList.add('hidden');
           } else {
             AddPlaceHolderToParent(
-              element.parentNode.parentNode,
-              element.parentNode.querySelectorAll('.hidden').length,
+              element.parentNode!.parentNode,
+              element.parentNode!.querySelectorAll('.hidden').length,
             );
           }
         }
       } else {
-        element.parentNode.parentNode.classList.remove('hidden');
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove('hidden');
       }
     }
   }
@@ -2145,7 +2177,7 @@ async function GetLessonColours() {
     .then((response) => response.payload);
 }
 
-export function CreateCustomShortcutDiv(element) {
+export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
   var shortcut = document.createElement('a');
   shortcut.setAttribute('href', element.url);
@@ -2171,18 +2203,18 @@ export function CreateCustomShortcutDiv(element) {
     </svg>
     `,
   ).firstChild;
-  image.classList.add('shortcuticondiv');
+  (image as HTMLElement).classList.add('shortcuticondiv');
   var text = document.createElement('p');
   text.textContent = element.name;
-  shortcutdiv.append(image);
+  shortcutdiv.append(image!);
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById('shortcuts').append(shortcut);
+  document.getElementById('shortcuts')!.append(shortcut);
 }
 
-export function RemoveShortcutDiv(elements) {
-  elements.forEach((element) => {
+export function RemoveShortcutDiv(elements: any) {
+  elements.forEach((element: any) => {
     const shortcuts = document.querySelectorAll('.shortcut');
     shortcuts.forEach((shortcut) => {
       const anchorElement = shortcut.parentElement; // the <a> element is the parent
@@ -2193,11 +2225,11 @@ export function RemoveShortcutDiv(elements) {
 
       // Check href only if element.url exists
       if (element.url) {
-        shouldRemove = shouldRemove && (anchorElement.getAttribute('href') === element.url);
+        shouldRemove = shouldRemove && (anchorElement!.getAttribute('href') === element.url);
       }
 
       if (shouldRemove) {
-        anchorElement.remove();
+        anchorElement!.remove();
       }
     });
   });
@@ -2205,11 +2237,11 @@ export function RemoveShortcutDiv(elements) {
 
 function AddCustomShortcutsToPage() {
   const result = browser.storage.local.get(['customshortcuts'])
-  function open (result) {
+  function open (result: any) {
 
-    var customshortcuts = Object.values(result)[0];
+    var customshortcuts: any = Object.values(result)[0];
     if (customshortcuts.length > 0) {
-      document.getElementsByClassName('shortcut-container')[0].style.display =
+      (document.getElementsByClassName('shortcut-container')[0] as HTMLElement).style.display =
         'block';
       for (let i = 0; i < customshortcuts.length; i++) {
         const element = customshortcuts[i];
@@ -2228,15 +2260,15 @@ function SendHomePage() {
     var element = document.querySelector('[data-key=home]');
 
     // Apply the active class to indicate clicked on home button
-    element.classList.add('active');
+    element!.classList.add('active');
 
     // Remove all current elements in the main div to add new elements
     var main = document.getElementById('main');
-    main.innerHTML = '';
+    main!.innerHTML = '';
 
-    const titlediv = document.getElementById('title').firstChild;
-    titlediv.innerText = 'Home';
-    document.querySelector('link[rel*="icon"]').href =
+    const titlediv = document.getElementById('title')!.firstChild;
+    ((titlediv!) as HTMLElement).innerText = 'Home';
+    (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
       browser.runtime.getURL('icons/icon-48.png');
 
     currentSelectedDate = new Date();
@@ -2246,7 +2278,7 @@ function SendHomePage() {
     
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main.append(html.firstChild);
+    main!.append(html.firstChild!);
 
     // Gets the current date
     const date = new Date();
@@ -2262,13 +2294,14 @@ function SendHomePage() {
     var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
     var Shortcut = stringToHTML(ShortcutStr);
     // Appends the shortcut container into the home container
-    document.getElementById('home-container').append(Shortcut.firstChild);
+    document.getElementById('home-container')!.append(Shortcut.firstChild!);
 
     // Creates the container div for the timetable portion of the home page
     var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
     var Timetable = stringToHTML(TimetableStr);
     // Appends the timetable container into the home container
-    document.getElementById('home-container').append(Timetable.firstChild);
+    document.getElementById('home-container')!.append(Timetable.firstChild!);
+    callHomeTimetable(TodayFormatted, true)
 
     var timetablearrowback = document.getElementById('home-timetable-back');
     var timetablearrowforward = document.getElementById(
@@ -2279,35 +2312,35 @@ function SendHomePage() {
       var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
       const date = new Date();
       if (
-        date.getYear() == currentSelectedDate.getYear() &&
+        date.getFullYear() == currentSelectedDate.getFullYear() &&
         date.getMonth() == currentSelectedDate.getMonth()
       ) {
         if (date.getDate() == currentSelectedDate.getDate()) {
           // Change text to Today's Lessons
-          homelessonsubtitle.innerText = 'Today\'s Lessons';
+          homelessonsubtitle!.innerText = 'Today\'s Lessons';
         } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
           // Change text to Yesterday's Lessons
-          homelessonsubtitle.innerText = 'Yesterday\'s Lessons';
+          homelessonsubtitle!.innerText = 'Yesterday\'s Lessons';
         } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
           // Change text to Tomorrow's Lessons
-          homelessonsubtitle.innerText = 'Tomorrow\'s Lessons';
+          homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons';
         } else {
           // Change text to date of the day
-          homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+          homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
             'en-us',
             { weekday: 'short' },
           )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
         }
       } else {
         // Change text to date of the day
-        homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+        homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
           'en-us',
           { weekday: 'short' },
         )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
       }
     }
 
-    function changeTimetable(value) {
+    function changeTimetable(value: any) {
       currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
       let FormattedDate =
         currentSelectedDate.getFullYear() +
@@ -2319,16 +2352,16 @@ function SendHomePage() {
       SetTimetableSubtitle();
     }
 
-    timetablearrowback.addEventListener('click', function () {
+    timetablearrowback!.addEventListener('click', function () {
       changeTimetable(-1);
     });
-    timetablearrowforward.addEventListener('click', function () {
+    timetablearrowforward!.addEventListener('click', function () {
       changeTimetable(1);
     });
 
     // Adds the shortcuts to the shortcut container
     const result = browser.storage.local.get(['shortcuts'])
-    function open (result) {
+    function open (result: any) {
 
       const shortcuts = Object.values(result)[0];
       addShortcuts(shortcuts);
@@ -2361,7 +2394,7 @@ function SendHomePage() {
 
     upcomingcontainer.append(upcomingitems);
 
-    document.getElementById('home-container').append(upcomingcontainer);
+    document.getElementById('home-container')!.append(upcomingcontainer);
 
     // Creates the notices container into the home container
     const NoticesStr = String.raw`
@@ -2375,7 +2408,7 @@ function SendHomePage() {
       
     var Notices = stringToHTML(NoticesStr);
     // Appends the shortcut container into the home container
-    document.getElementById('home-container').append(Notices.firstChild);
+    document.getElementById('home-container')!.append(Notices.firstChild!);
 
     animate(
       '.home-container > div',
@@ -2403,18 +2436,18 @@ function SendHomePage() {
         const NoticesPayload = JSON.parse(xhr2.response)
         const NoticeContainer = document.getElementById('notice-container')
         if (NoticesPayload.payload.length === 0) {
-          if (!NoticeContainer.innerText) {
+          if (!NoticeContainer!.innerText) {
             // If no notices: display no notices
             const dummyNotice = document.createElement('div')
             dummyNotice.textContent = 'No notices for today.'
             dummyNotice.classList.add('dummynotice')
-            NoticeContainer.append(dummyNotice)
+            NoticeContainer!.append(dummyNotice)
           }
         } else {
-          if (!NoticeContainer.innerText) {
+          if (!NoticeContainer!.innerText) {
             // For each element in the response json:
             const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result) {
+            function noticeInfoDiv (result: any) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
                 if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
                 // Create a div, and place information from json response
@@ -2423,19 +2456,19 @@ function SendHomePage() {
                   const title = stringToHTML(
                     '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
                   )
-                  NewNotice.append(title.firstChild)
+                  NewNotice.append(title.firstChild!)
 
                   if (NoticesPayload.payload[i].label_title !== undefined) {
                     const label = stringToHTML(
                       '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                     )
-                    NewNotice.append(label.firstChild)
+                    NewNotice.append(label.firstChild!)
                   }
 
                   const staff = stringToHTML(
                     '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
                   )
-                  NewNotice.append(staff.firstChild)
+                  NewNotice.append(staff.firstChild!)
                   // Converts the string into HTML
                   const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
                   for (let i = 0; i < content.childNodes.length; i++) {
@@ -2455,11 +2488,11 @@ function SendHomePage() {
                   const colourbar = document.createElement('div')
                   colourbar.classList.add('colourbar')
                   colourbar.style.background = 'var(--colour)'
-                  NewNotice.style = `--colour: ${colour}`
+                  NewNotice.style.cssText = `--colour: ${colour}`
                   // Appends the colour bar to the new notice
                   NewNotice.append(colourbar)
                   // Appends the new notice into the notice container
-                  NoticeContainer.append(NewNotice)
+                  NoticeContainer!.append(NewNotice)
                 }
               }
             }
@@ -2469,9 +2502,9 @@ function SendHomePage() {
       }
     }
     // Data sent as the POST request
-    const dateControl = document.querySelector('input[type="date"]')
-    xhr2.send(JSON.stringify({ date: dateControl.value }))
-    function onInputChange (e) {
+    const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
+    xhr2.send(JSON.stringify({ date: dateControl!.value }))
+    function onInputChange (e: any) {
       xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
       xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
       xhr2.send(JSON.stringify({ date: e.target.value }))
@@ -2480,18 +2513,18 @@ function SendHomePage() {
           const NoticesPayload = JSON.parse(xhr2.response)
           const NoticeContainer = document.getElementById('notice-container')
           if (NoticesPayload.payload.length === 0) {
-            if (!NoticeContainer.innerText) {
+            if (!NoticeContainer!.innerText) {
               // If no notices: display no notices
               const dummyNotice = document.createElement('div')
               dummyNotice.textContent = 'No notices for today.'
               dummyNotice.classList.add('dummynotice')
-              NoticeContainer.append(dummyNotice)
+              NoticeContainer!.append(dummyNotice)
             }
           } else {
             document.querySelectorAll('.notice').forEach(e => e.remove())
             // For each element in the response json:
             const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result) {
+            function noticeInfoDiv (result: any) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
 
                 if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
@@ -2501,19 +2534,19 @@ function SendHomePage() {
                   const title = stringToHTML(
                     '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
                   )
-                  NewNotice.append(title.firstChild)
+                  NewNotice.append(title.firstChild!)
 
                   if (NoticesPayload.payload[i].label_title !== undefined) {
                     const label = stringToHTML(
                       '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                     )
-                    NewNotice.append(label.firstChild)
+                    NewNotice.append(label.firstChild!)
                   }
 
                   const staff = stringToHTML(
                     '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
                   )
-                  NewNotice.append(staff.firstChild)
+                  NewNotice.append(staff.firstChild!)
                   // Converts the string into HTML
                   const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
                   for (let i = 0; i < content.childNodes.length; i++) {
@@ -2533,11 +2566,11 @@ function SendHomePage() {
                   const colourbar = document.createElement('div')
                   colourbar.classList.add('colourbar')
                   colourbar.style.background = 'var(--colour)'
-                  NewNotice.style = `--colour: ${colour}`
+                  NewNotice.style.cssText = `--colour: ${colour}`
                   // Appends the colour bar to the new notice
                   NewNotice.append(colourbar)
                   // Appends the new notice into the notice container
-                  NoticeContainer.append(NewNotice)
+                  NoticeContainer!.append(NewNotice)
                 }
               }
             }
@@ -2550,13 +2583,13 @@ function SendHomePage() {
 
     // Sends similar HTTP Post Request for the notices
     const result1 = browser.storage.local.get()
-    function open1 (result) {
+    function open1 (result: any) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
     }
     result1.then(open1, onError)
-    let activeClassList;
+    let activeClassList: any;
     GetUpcomingAssessments().then((assessments) => {
       GetActiveClasses().then((classes) => {
         // Gets all subjects for the student
@@ -2594,14 +2627,14 @@ function SendHomePage() {
   }, 8);
 }
 
-export function addShortcuts(shortcuts) {
+export function addShortcuts(shortcuts: any) {
   for (let i = 0; i < shortcuts.length; i++) {
     const currentShortcut = shortcuts[i];
     
     if (currentShortcut?.enabled) {
       const Itemname = (currentShortcut?.name ?? '').replace(/\s/g, '');
 
-      const linkDetails = ShortcutLinks?.[Itemname];
+      const linkDetails = ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks];
       if (linkDetails) {
         createNewShortcut(
           linkDetails.link,
@@ -2648,16 +2681,16 @@ export function enableNotificationCollector() {
 export function disableNotificationCollector() {
   var alertdiv = document.getElementsByClassName('notifications__bubble___1EkSQ')[0];
   if (typeof alertdiv != 'undefined') {
-    var currentNumber = parseInt(alertdiv.textContent);
+    var currentNumber = parseInt(alertdiv.textContent!);
     if (currentNumber < 9) {
-      alertdiv.textContent = currentNumber;
+      alertdiv.textContent = currentNumber.toString();
     } else {
       alertdiv.textContent = '9+';
     }
   }
 }
 
-function createNewShortcut(link, icon, viewBox, title) {
+function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   // Creates the stucture and element information for each seperate shortcut
   let shortcut = document.createElement('a');
   shortcut.setAttribute('href', link);
@@ -2668,14 +2701,14 @@ function createNewShortcut(link, icon, viewBox, title) {
   let image = stringToHTML(
     `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
   ).firstChild;
-  image.classList.add('shortcuticondiv');
+  (image! as HTMLElement).classList.add('shortcuticondiv');
   let text = document.createElement('p');
   text.textContent = title;
-  shortcutdiv.append(image);
+  shortcutdiv.append(image as HTMLElement);
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById('shortcuts').appendChild(shortcut);
+  document.getElementById('shortcuts')!.appendChild(shortcut);
 }
 
 function SendNewsPage() {
@@ -2686,11 +2719,11 @@ function SendNewsPage() {
     var element = document.querySelector('[data-key=news]');
 
     // Apply the active class to indicate clicked on home button
-    element.classList.add('active');
+    element!.classList.add('active');
 
     // Remove all current elements in the main div to add new elements
     var main = document.getElementById('main');
-    main.innerHTML = '';
+    main!.innerHTML = '';
 
     // Creates the root of the home page added to the main div
     var htmlStr = '<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>';
@@ -2698,16 +2731,16 @@ function SendNewsPage() {
     var html = stringToHTML(htmlStr);
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main.append(html.firstChild);
+    main!.append(html.firstChild!);
 
-    const titlediv = document.getElementById('title').firstChild;
-    titlediv.innerText = 'News';
+    const titlediv = document.getElementById('title')!.firstChild;
+    (titlediv! as HTMLElement).innerText = 'News';
     AppendLoadingSymbol('newsloading', '#news-container');
 
-    browser.runtime.sendMessage({ type: 'sendNews' }, function (response) {
+    browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
       let newsarticles = response.news.articles;
       var newscontainer = document.querySelector('#news-container');
-      document.getElementById('newsloading').remove();
+      document.getElementById('newsloading')!.remove();
       for (let i = 0; i < newsarticles.length; i++) {
         let newsarticle = document.createElement('a');
         newsarticle.classList.add('NewsArticle');
@@ -2742,7 +2775,7 @@ function SendNewsPage() {
 
         newsarticle.append(articleimage);
         newsarticle.append(articletext);
-        newscontainer.append(newsarticle);
+        newscontainer!.append(newsarticle);
       }
     });
   }, 8);
@@ -2751,7 +2784,7 @@ function SendNewsPage() {
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
-      if (document.getElementById('menu').firstChild) {
+      if (document.getElementById('menu')!.firstChild) {
         ObserveMenuItemPosition();
         MenuItemMutation = true;
       }
@@ -2763,7 +2796,7 @@ async function CheckForMenuList() {
 
 function documentTextColor () {
   const result = browser.storage.local.get(['DarkMode'])
-  function changeDocTextCol (result) {
+  function changeDocTextCol (result: any) {
     const Darkmode = result.DarkMode
     if (Darkmode) {
       const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
@@ -2800,7 +2833,7 @@ browser.storage.onChanged.addListener(documentTextColor)
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     if (result.onoff) {
       SendHomePage();
     }
