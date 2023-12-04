@@ -53,7 +53,15 @@ export default {
           filename: 'src/[path][name][ext]',
         },
       },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      }
     ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
     new ESLintPlugin(),
