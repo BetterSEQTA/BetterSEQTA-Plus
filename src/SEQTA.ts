@@ -20,6 +20,7 @@ import { updateBgDurations } from './seqta/ui/Animation';
 import { updateAllColors } from './seqta/ui/colors/Manager';
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import { enableCurrentTheme } from './seqta/ui/Themes';
+import { ObjectType } from 'typescript';
 
 declare global {
   interface Window {
@@ -726,10 +727,11 @@ export async function ObserveMenuItemPosition() {
           mutation.addedNodes.forEach(function (added_node) {
             const node = added_node as HTMLElement
             if (!node?.dataset?.checked && !MenuOptionsOpen) {
-              if (MenuitemSVGKey[added_node?.dataset?.key]) {
+              const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
+              if (key) {
                 ReplaceMenuSVG(
                   added_node,
-                  MenuitemSVGKey[added_node.dataset.key],
+                  MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
                 );
               }
               ChangeMenuItemPositions(menuorder);
@@ -738,7 +740,7 @@ export async function ObserveMenuItemPosition() {
         });
       });
 
-      observer.observe(document.querySelector('#menu').firstChild, {
+      observer.observe(document.querySelector('#menu')!.firstChild!, {
         subtree: true,
         childList: true,
       });
@@ -747,7 +749,7 @@ export async function ObserveMenuItemPosition() {
   result.then(open, onError)
 }
 
-function main(storedSetting) {
+function main(storedSetting: any) {
   const onoff = storedSetting.onoff;
   DarkMode = storedSetting.DarkMode;
 
@@ -862,36 +864,36 @@ export function closeSettings() {
   var extensionsettings = document.getElementById('ExtensionPopup');
 
   if (SettingsClicked == true) {
-    extensionsettings.classList.add('hide');
+    extensionsettings!.classList.add('hide');
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: spring({ stiffness: 220, damping: 18 }) }
     );
     SettingsClicked = false;
-    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+    (document.getElementById('ExtensionIframe') as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
   }
 
-  extensionsettings.classList.add('hide');
+  extensionsettings!.classList.add('hide');
 }
 
 function addExtensionSettings() {
   const link = GetCSSElement('interface/popup.css');
-  document.querySelector('html').appendChild(link);
+  document.querySelector('html')!.appendChild(link);
 
   const extensionPopup = document.createElement('div');
   extensionPopup.classList.add('outside-container', 'hide');
   extensionPopup.id = 'ExtensionPopup';
   document.body.appendChild(extensionPopup);
 
-  const extensionIframe = document.createElement('iframe');
+  const extensionIframe: HTMLIFrameElement = document.createElement('iframe');
   extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
-  extensionIframe.allowTransparency = true;
+  extensionIframe.style.backgroundColor = 'transparent';
   extensionIframe.style.width = '384px';
   extensionIframe.style.height = '600px';
   extensionIframe.style.border = 'none';
-  extensionIframe.setAttribute('excludeDarkCheck', true);
+  extensionIframe.setAttribute('excludeDarkCheck', 'true');
   extensionPopup.appendChild(extensionIframe);
 
   const container = document.getElementById('container');
@@ -903,24 +905,24 @@ function addExtensionSettings() {
       { opacity: [1, 0], scale: [1, 0] },
       { easing: [.22, .03, .26, 1] }
     );
-    document.getElementById('ExtensionIframe').contentWindow.postMessage('popupClosed', '*');
+    (document.getElementById('ExtensionIframe') as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
     SettingsClicked = false;
   };
 
-  container.onclick = (event) => {
-    if (event.target.closest('#AddedSettings') == null && SettingsClicked) {
+  container!.onclick = (event) => {
+    if ((event.target as HTMLElement).closest('#AddedSettings') == null && SettingsClicked) {
       closeExtensionPopup()
     }
   };
 }
 
-function saveNewOrder(sortable) {
+function saveNewOrder(sortable: any) {
   var order = sortable.toArray();
   console.log("Order: ", order);
   browser.storage.local.set({ menuorder: order });
 }
 
-function cloneAttributes(target, source) {
+function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue);
   });
@@ -928,26 +930,26 @@ function cloneAttributes(target, source) {
 
 export function OpenMenuOptions() {
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     var container = document.getElementById('container');
     var menu = document.getElementById('menu');
 
     if (result.defaultmenuorder.length == '0') {
-      let childnodes = menu.firstChild.childNodes;
+      let childnodes = menu!.firstChild!.childNodes;
       let newdefaultmenuorder = [];
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
-        newdefaultmenuorder.push(element.dataset.key);
+        newdefaultmenuorder.push((element as HTMLElement).dataset.key);
         browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
       }
     }
-    let childnodes = menu.firstChild.childNodes;
+    let childnodes = menu!.firstChild!.childNodes;
     if (result.defaultmenuorder.length != childnodes.length) {
       for (let i = 0; i < childnodes.length; i++) {
         const element = childnodes[i];
-        if (!result.defaultmenuorder.indexOf(element.dataset.key)) {
+        if (!result.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
           let newdefaultmenuorder = result.defaultmenuorder;
-          newdefaultmenuorder.push(element.dataset.key);
+          newdefaultmenuorder.push((element as HTMLElement).dataset.key);
           browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
         }
       }
@@ -957,9 +959,9 @@ export function OpenMenuOptions() {
 
     let cover = document.createElement('div');
     cover.classList.add('notMenuCover');
-    menu.style.zIndex = '20';
-    menu.style.setProperty('--menuHidden', 'flex');
-    container.append(cover);
+    menu!.style.zIndex = '20';
+    menu!.style.setProperty('--menuHidden', 'flex');
+    container!.append(cover);
 
     let menusettings = document.createElement('div');
     menusettings.classList.add('editmenuoption-container');
@@ -977,56 +979,57 @@ export function OpenMenuOptions() {
     menusettings.appendChild(defaultbutton);
     menusettings.appendChild(savebutton);
 
-    menu.appendChild(menusettings);
+    menu!.appendChild(menusettings);
 
-    let ListItems = menu.firstChild.childNodes;
+    let ListItems = menu!.firstChild!.childNodes;
     for (let i = 0; i < ListItems.length; i++) {
-      const element = ListItems[i];
+      const element1 = ListItems[i];
+      const element = element1 as HTMLElement
 
-      element.classList.add('draggable');
-      if (element.classList.contains('hasChildren')) {
-        element.classList.remove('active');
-        menu.firstChild.classList.remove('noscroll');
+      (element as HTMLElement).classList.add('draggable');
+      if ((element as HTMLElement).classList.contains('hasChildren')) {
+        (element as HTMLElement).classList.remove('active');
+        (element.firstChild as HTMLElement).classList.remove('noscroll');
       }
 
       let MenuItemToggle = stringToHTML(
-        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${element.dataset.key}"><label for="${element.dataset.key}" class="onoffswitch-label"></label>`,
+        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
       ).firstChild;
-      element.append(MenuItemToggle);
+      (element as HTMLElement).append(MenuItemToggle!);
 
       if (!element.dataset.betterseqta) {
         const a = document.createElement('section')
         a.innerHTML = element.innerHTML
         cloneAttributes(a, element)
-        menu.firstChild.insertBefore(a, element)
+        menu!.firstChild!.insertBefore(a, element)
         element.remove()
       }
     }
 
     if (Object.keys(result.menuitems).length == 0) {
-      menubuttons = menu.firstChild.childNodes;
+      menubuttons = menu!.firstChild!.childNodes;
       var menuItems = {};
       for (var i = 0; i < menubuttons.length; i++) {
-        var id = menubuttons[i].dataset.key;
-        const element = {};
+        var id = (menubuttons[i] as HTMLElement).dataset.key;
+        const element: any = {};
         element.toggle = true;
-        menuItems[id] = element;
+        (menuItems[id as keyof typeof menuItems] as any) = element;
       }
       browser.storage.local.set({ menuitems: menuItems });
     }
 
-    var menubuttons = document.getElementsByClassName('menuitem');
+    var menubuttons: any = document.getElementsByClassName('menuitem');
     const result1 = browser.storage.local.get(['menuitems'])
-    function open (result) {
+    function open (result: any) {
       var menuItems = result.menuitems;
       let buttons = document.getElementsByClassName('menuitem');
       for (var i = 0; i < buttons.length; i++) {
         var id = buttons[i].id;
         if (menuItems[id]) {
-          buttons[i].checked = menuItems[id].toggle;
+          (buttons[i] as HTMLInputElement).checked = menuItems[id].toggle;
         }
         if (!menuItems[id]) {
-          buttons[i].checked = true;
+          (buttons[i] as HTMLInputElement).checked = true;
         }
       }
     }
@@ -1036,7 +1039,7 @@ export function OpenMenuOptions() {
       Sortable.mount(new AutoScroll());
   
       var el = document.querySelector('#menu > ul');
-      var sortable = Sortable.create(el, {
+      var sortable = Sortable.create((el as HTMLElement), {
         draggable: '.draggable',
         dataIdAttr: 'data-key',
         animation: 150,
@@ -1049,7 +1052,7 @@ export function OpenMenuOptions() {
       console.log(err);
     }
 
-    function changeDisplayProperty(element) {
+    function changeDisplayProperty(element: any) {
       if (!element.checked) {
         element.parentNode.parentNode.style.display = 'var(--menuHidden)';
       }
@@ -1063,15 +1066,15 @@ export function OpenMenuOptions() {
     }
 
     function StoreMenuSettings() {
-      const menuItems = {}
-      const menubuttons = menu.firstChild.childNodes
+      const menuItems: any = {};
+      const menubuttons = menu!.firstChild!.childNodes
       const button = document.getElementsByClassName('menuitem')
       for (let i = 0; i < menubuttons.length; i++) {
-        const id = menubuttons[i].dataset.key
-        const element = {}
-        element.toggle = button[i].checked
+        const id = (menubuttons[i] as HTMLElement).dataset.key;
+        const element: any = {};
+        element.toggle = (button[i] as HTMLInputElement).checked
 
-        menuItems[id] = element
+        menuItems[id as keyof typeof menuItems] = element;
       }
       browser.storage.local.set({ menuitems: menuItems })
     }
@@ -1087,28 +1090,29 @@ export function OpenMenuOptions() {
 
     function closeAll() {
       console.log("Closing!");
-      ListItems = menu.firstChild.childNodes;
+      ListItems = menu!.firstChild!.childNodes;
       menusettings.remove();
       cover.remove();
       MenuOptionsOpen = false;
-      menu.style.setProperty('--menuHidden', 'none');
+      menu!.style.setProperty('--menuHidden', 'none');
 
       for (let i = 0; i < ListItems.length; i++) {
-        const element = ListItems[i];
+        const element1 = ListItems[i];
+        const element = element1 as HTMLElement
         element.classList.remove('draggable');
-        element.setAttribute('draggable', false);
+        element.setAttribute('draggable', 'false');
 
 
         if (!element.dataset.betterseqta) {
           const a = document.createElement('li')
           a.innerHTML = element.innerHTML
           cloneAttributes(a, element)
-          menu.firstChild.insertBefore(a, element)
+          menu!.firstChild!.insertBefore(a, element)
           element.remove()
         }
       }
 
-      let switches = menu.querySelectorAll('.onoffswitch');
+      let switches = menu!.querySelectorAll('.onoffswitch');
       for (let i = 0; i < switches.length; i++) {
         switches[i].remove();
       }
