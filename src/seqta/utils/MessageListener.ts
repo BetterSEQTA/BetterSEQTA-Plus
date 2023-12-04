@@ -7,8 +7,8 @@ export class MessageHandler {
   constructor() {
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
-
-  routeMessage(request: any, sendResponse: any) {
+  // @ts-ignore
+  routeMessage(request: any, sender: any, sendResponse: any) {
     switch (request.info) {
 
     case 'EditSidebar':
