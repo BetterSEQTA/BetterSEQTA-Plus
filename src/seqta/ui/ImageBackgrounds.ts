@@ -11,5 +11,5 @@ export async function appendBackgroundToUI() {
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
   background.src = browser.runtime.getURL('backgrounds/background.html');
-  parent.appendChild(background);
+  parent!.appendChild(background);
 }
