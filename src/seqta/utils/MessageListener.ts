@@ -7,8 +7,7 @@ export class MessageHandler {
   constructor() {
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
-  // @ts-ignore
-  routeMessage(request: any, sender: any, sendResponse: any) {
+  routeMessage(request: any, _sender: any, sendResponse: any) {
     switch (request.info) {
 
     case 'EditSidebar':
@@ -56,23 +55,4 @@ export class MessageHandler {
       closeSettings();
     }
   }
-
-  // Add more methods for handling other message types
 }
-
-/* // Apply theme from the message
-async function applyThemeFromMessage(themeData) {
-  const style = document.createElement("style");
-  style.innerHTML = themeData.css;
-  document.head.appendChild(style);
-
-  document.body.className = themeData.className;
-
-  if (themeData.images) {
-    for (const [cssVar, objectURL] of Object.entries(themeData.images)) {
-      document.documentElement.style.setProperty(cssVar, `url(${objectURL})`);
-    }
-  } else {
-    console.error("themeData.images is not defined!");
-  }
-} */
