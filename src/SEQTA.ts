@@ -1649,7 +1649,7 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lesson;
 }
 
-function callHomeTimetable(date: Date, change: any) {
+function callHomeTimetable(date: string, change?: any) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest();
   xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true);
@@ -1985,7 +1985,7 @@ function CreateFilters(subjects: any) {
   result.then(open, onError)
 }
 
-function CreateUpcomingSection(assessments: any) {
+function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let upcomingitemcontainer = document.querySelector('#upcoming-items');
   let overdueDates = [];
   let upcomingDates = {};
@@ -2026,8 +2026,6 @@ function CreateUpcomingSection(assessments: any) {
         GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
       }
     }
-
-    let activeSubjects: any = []; // TODO: IDK what is going on here, but it didn't exist
     for (let i = 0; i < activeSubjects.length; i++) {
       const element = activeSubjects[i];
       let subjectname = `timetable.subject.colour.${element.code}`;
@@ -2205,18 +2203,18 @@ export function CreateCustomShortcutDiv(element: any) {
     </svg>
     `,
   ).firstChild;
-  image.classList.add('shortcuticondiv');
+  (image as HTMLElement).classList.add('shortcuticondiv');
   var text = document.createElement('p');
   text.textContent = element.name;
-  shortcutdiv.append(image);
+  shortcutdiv.append(image!);
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById('shortcuts').append(shortcut);
+  document.getElementById('shortcuts')!.append(shortcut);
 }
 
-export function RemoveShortcutDiv(elements) {
-  elements.forEach((element) => {
+export function RemoveShortcutDiv(elements: any) {
+  elements.forEach((element: any) => {
     const shortcuts = document.querySelectorAll('.shortcut');
     shortcuts.forEach((shortcut) => {
       const anchorElement = shortcut.parentElement; // the <a> element is the parent
@@ -2227,11 +2225,11 @@ export function RemoveShortcutDiv(elements) {
 
       // Check href only if element.url exists
       if (element.url) {
-        shouldRemove = shouldRemove && (anchorElement.getAttribute('href') === element.url);
+        shouldRemove = shouldRemove && (anchorElement!.getAttribute('href') === element.url);
       }
 
       if (shouldRemove) {
-        anchorElement.remove();
+        anchorElement!.remove();
       }
     });
   });
@@ -2239,11 +2237,11 @@ export function RemoveShortcutDiv(elements) {
 
 function AddCustomShortcutsToPage() {
   const result = browser.storage.local.get(['customshortcuts'])
-  function open (result) {
+  function open (result: any) {
 
-    var customshortcuts = Object.values(result)[0];
+    var customshortcuts: any = Object.values(result)[0];
     if (customshortcuts.length > 0) {
-      document.getElementsByClassName('shortcut-container')[0].style.display =
+      (document.getElementsByClassName('shortcut-container')[0] as HTMLElement).style.display =
         'block';
       for (let i = 0; i < customshortcuts.length; i++) {
         const element = customshortcuts[i];
@@ -2262,15 +2260,15 @@ function SendHomePage() {
     var element = document.querySelector('[data-key=home]');
 
     // Apply the active class to indicate clicked on home button
-    element.classList.add('active');
+    element!.classList.add('active');
 
     // Remove all current elements in the main div to add new elements
     var main = document.getElementById('main');
-    main.innerHTML = '';
+    main!.innerHTML = '';
 
-    const titlediv = document.getElementById('title').firstChild;
-    titlediv.innerText = 'Home';
-    document.querySelector('link[rel*="icon"]').href =
+    const titlediv = document.getElementById('title')!.firstChild;
+    ((titlediv!) as HTMLElement).innerText = 'Home';
+    (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
       browser.runtime.getURL('icons/icon-48.png');
 
     currentSelectedDate = new Date();
@@ -2280,7 +2278,7 @@ function SendHomePage() {
     
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main.append(html.firstChild);
+    main!.append(html.firstChild!);
 
     // Gets the current date
     const date = new Date();
@@ -2296,13 +2294,13 @@ function SendHomePage() {
     var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
     var Shortcut = stringToHTML(ShortcutStr);
     // Appends the shortcut container into the home container
-    document.getElementById('home-container').append(Shortcut.firstChild);
+    document.getElementById('home-container')!.append(Shortcut.firstChild!);
 
     // Creates the container div for the timetable portion of the home page
     var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
     var Timetable = stringToHTML(TimetableStr);
     // Appends the timetable container into the home container
-    document.getElementById('home-container').append(Timetable.firstChild);
+    document.getElementById('home-container')!.append(Timetable.firstChild!);
 
     var timetablearrowback = document.getElementById('home-timetable-back');
     var timetablearrowforward = document.getElementById(
@@ -2313,35 +2311,35 @@ function SendHomePage() {
       var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
       const date = new Date();
       if (
-        date.getYear() == currentSelectedDate.getYear() &&
+        date.getFullYear() == currentSelectedDate.getFullYear() &&
         date.getMonth() == currentSelectedDate.getMonth()
       ) {
         if (date.getDate() == currentSelectedDate.getDate()) {
           // Change text to Today's Lessons
-          homelessonsubtitle.innerText = 'Today\'s Lessons';
+          homelessonsubtitle!.innerText = 'Today\'s Lessons';
         } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
           // Change text to Yesterday's Lessons
-          homelessonsubtitle.innerText = 'Yesterday\'s Lessons';
+          homelessonsubtitle!.innerText = 'Yesterday\'s Lessons';
         } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
           // Change text to Tomorrow's Lessons
-          homelessonsubtitle.innerText = 'Tomorrow\'s Lessons';
+          homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons';
         } else {
           // Change text to date of the day
-          homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+          homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
             'en-us',
             { weekday: 'short' },
           )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
         }
       } else {
         // Change text to date of the day
-        homelessonsubtitle.innerText = `${currentSelectedDate.toLocaleString(
+        homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
           'en-us',
           { weekday: 'short' },
         )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
       }
     }
 
-    function changeTimetable(value) {
+    function changeTimetable(value: any) {
       currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
       let FormattedDate =
         currentSelectedDate.getFullYear() +
@@ -2353,16 +2351,16 @@ function SendHomePage() {
       SetTimetableSubtitle();
     }
 
-    timetablearrowback.addEventListener('click', function () {
+    timetablearrowback!.addEventListener('click', function () {
       changeTimetable(-1);
     });
-    timetablearrowforward.addEventListener('click', function () {
+    timetablearrowforward!.addEventListener('click', function () {
       changeTimetable(1);
     });
 
     // Adds the shortcuts to the shortcut container
     const result = browser.storage.local.get(['shortcuts'])
-    function open (result) {
+    function open (result: any) {
 
       const shortcuts = Object.values(result)[0];
       addShortcuts(shortcuts);
@@ -2395,7 +2393,7 @@ function SendHomePage() {
 
     upcomingcontainer.append(upcomingitems);
 
-    document.getElementById('home-container').append(upcomingcontainer);
+    document.getElementById('home-container')!.append(upcomingcontainer);
 
     // Creates the notices container into the home container
     const NoticesStr = String.raw`
@@ -2409,7 +2407,7 @@ function SendHomePage() {
       
     var Notices = stringToHTML(NoticesStr);
     // Appends the shortcut container into the home container
-    document.getElementById('home-container').append(Notices.firstChild);
+    document.getElementById('home-container')!.append(Notices.firstChild!);
 
     animate(
       '.home-container > div',
@@ -2437,18 +2435,18 @@ function SendHomePage() {
         const NoticesPayload = JSON.parse(xhr2.response)
         const NoticeContainer = document.getElementById('notice-container')
         if (NoticesPayload.payload.length === 0) {
-          if (!NoticeContainer.innerText) {
+          if (!NoticeContainer!.innerText) {
             // If no notices: display no notices
             const dummyNotice = document.createElement('div')
             dummyNotice.textContent = 'No notices for today.'
             dummyNotice.classList.add('dummynotice')
-            NoticeContainer.append(dummyNotice)
+            NoticeContainer!.append(dummyNotice)
           }
         } else {
-          if (!NoticeContainer.innerText) {
+          if (!NoticeContainer!.innerText) {
             // For each element in the response json:
             const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result) {
+            function noticeInfoDiv (result: any) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
                 if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
                 // Create a div, and place information from json response
@@ -2457,19 +2455,19 @@ function SendHomePage() {
                   const title = stringToHTML(
                     '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
                   )
-                  NewNotice.append(title.firstChild)
+                  NewNotice.append(title.firstChild!)
 
                   if (NoticesPayload.payload[i].label_title !== undefined) {
                     const label = stringToHTML(
                       '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                     )
-                    NewNotice.append(label.firstChild)
+                    NewNotice.append(label.firstChild!)
                   }
 
                   const staff = stringToHTML(
                     '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
                   )
-                  NewNotice.append(staff.firstChild)
+                  NewNotice.append(staff.firstChild!)
                   // Converts the string into HTML
                   const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
                   for (let i = 0; i < content.childNodes.length; i++) {
@@ -2489,11 +2487,11 @@ function SendHomePage() {
                   const colourbar = document.createElement('div')
                   colourbar.classList.add('colourbar')
                   colourbar.style.background = 'var(--colour)'
-                  NewNotice.style = `--colour: ${colour}`
+                  NewNotice.style.cssText = `--colour: ${colour}`
                   // Appends the colour bar to the new notice
                   NewNotice.append(colourbar)
                   // Appends the new notice into the notice container
-                  NoticeContainer.append(NewNotice)
+                  NoticeContainer!.append(NewNotice)
                 }
               }
             }
@@ -2503,9 +2501,9 @@ function SendHomePage() {
       }
     }
     // Data sent as the POST request
-    const dateControl = document.querySelector('input[type="date"]')
-    xhr2.send(JSON.stringify({ date: dateControl.value }))
-    function onInputChange (e) {
+    const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
+    xhr2.send(JSON.stringify({ date: dateControl!.value }))
+    function onInputChange (e: any) {
       xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
       xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
       xhr2.send(JSON.stringify({ date: e.target.value }))
@@ -2514,18 +2512,18 @@ function SendHomePage() {
           const NoticesPayload = JSON.parse(xhr2.response)
           const NoticeContainer = document.getElementById('notice-container')
           if (NoticesPayload.payload.length === 0) {
-            if (!NoticeContainer.innerText) {
+            if (!NoticeContainer!.innerText) {
               // If no notices: display no notices
               const dummyNotice = document.createElement('div')
               dummyNotice.textContent = 'No notices for today.'
               dummyNotice.classList.add('dummynotice')
-              NoticeContainer.append(dummyNotice)
+              NoticeContainer!.append(dummyNotice)
             }
           } else {
             document.querySelectorAll('.notice').forEach(e => e.remove())
             // For each element in the response json:
             const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result) {
+            function noticeInfoDiv (result: any) {
               for (let i = 0; i < NoticesPayload.payload.length; i++) {
 
                 if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
@@ -2535,19 +2533,19 @@ function SendHomePage() {
                   const title = stringToHTML(
                     '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
                   )
-                  NewNotice.append(title.firstChild)
+                  NewNotice.append(title.firstChild!)
 
                   if (NoticesPayload.payload[i].label_title !== undefined) {
                     const label = stringToHTML(
                       '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                     )
-                    NewNotice.append(label.firstChild)
+                    NewNotice.append(label.firstChild!)
                   }
 
                   const staff = stringToHTML(
                     '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
                   )
-                  NewNotice.append(staff.firstChild)
+                  NewNotice.append(staff.firstChild!)
                   // Converts the string into HTML
                   const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
                   for (let i = 0; i < content.childNodes.length; i++) {
@@ -2567,11 +2565,11 @@ function SendHomePage() {
                   const colourbar = document.createElement('div')
                   colourbar.classList.add('colourbar')
                   colourbar.style.background = 'var(--colour)'
-                  NewNotice.style = `--colour: ${colour}`
+                  NewNotice.style.cssText = `--colour: ${colour}`
                   // Appends the colour bar to the new notice
                   NewNotice.append(colourbar)
                   // Appends the new notice into the notice container
-                  NoticeContainer.append(NewNotice)
+                  NoticeContainer!.append(NewNotice)
                 }
               }
             }
@@ -2584,13 +2582,13 @@ function SendHomePage() {
 
     // Sends similar HTTP Post Request for the notices
     const result1 = browser.storage.local.get()
-    function open1 (result) {
+    function open1 (result: any) {
       if (result.notificationcollector) {
         enableNotificationCollector();
       }
     }
     result1.then(open1, onError)
-    let activeClassList;
+    let activeClassList: any;
     GetUpcomingAssessments().then((assessments) => {
       GetActiveClasses().then((classes) => {
         // Gets all subjects for the student
@@ -2628,14 +2626,14 @@ function SendHomePage() {
   }, 8);
 }
 
-export function addShortcuts(shortcuts) {
+export function addShortcuts(shortcuts: any) {
   for (let i = 0; i < shortcuts.length; i++) {
     const currentShortcut = shortcuts[i];
     
     if (currentShortcut?.enabled) {
       const Itemname = (currentShortcut?.name ?? '').replace(/\s/g, '');
 
-      const linkDetails = ShortcutLinks?.[Itemname];
+      const linkDetails = ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks];
       if (linkDetails) {
         createNewShortcut(
           linkDetails.link,
@@ -2682,16 +2680,16 @@ export function enableNotificationCollector() {
 export function disableNotificationCollector() {
   var alertdiv = document.getElementsByClassName('notifications__bubble___1EkSQ')[0];
   if (typeof alertdiv != 'undefined') {
-    var currentNumber = parseInt(alertdiv.textContent);
+    var currentNumber = parseInt(alertdiv.textContent!);
     if (currentNumber < 9) {
-      alertdiv.textContent = currentNumber;
+      alertdiv.textContent = currentNumber.toString();
     } else {
       alertdiv.textContent = '9+';
     }
   }
 }
 
-function createNewShortcut(link, icon, viewBox, title) {
+function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   // Creates the stucture and element information for each seperate shortcut
   let shortcut = document.createElement('a');
   shortcut.setAttribute('href', link);
@@ -2702,14 +2700,14 @@ function createNewShortcut(link, icon, viewBox, title) {
   let image = stringToHTML(
     `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
   ).firstChild;
-  image.classList.add('shortcuticondiv');
+  (image! as HTMLElement).classList.add('shortcuticondiv');
   let text = document.createElement('p');
   text.textContent = title;
-  shortcutdiv.append(image);
+  shortcutdiv.append(image as HTMLElement);
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById('shortcuts').appendChild(shortcut);
+  document.getElementById('shortcuts')!.appendChild(shortcut);
 }
 
 function SendNewsPage() {
@@ -2720,11 +2718,11 @@ function SendNewsPage() {
     var element = document.querySelector('[data-key=news]');
 
     // Apply the active class to indicate clicked on home button
-    element.classList.add('active');
+    element!.classList.add('active');
 
     // Remove all current elements in the main div to add new elements
     var main = document.getElementById('main');
-    main.innerHTML = '';
+    main!.innerHTML = '';
 
     // Creates the root of the home page added to the main div
     var htmlStr = '<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>';
@@ -2732,16 +2730,16 @@ function SendNewsPage() {
     var html = stringToHTML(htmlStr);
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main.append(html.firstChild);
+    main!.append(html.firstChild!);
 
-    const titlediv = document.getElementById('title').firstChild;
-    titlediv.innerText = 'News';
+    const titlediv = document.getElementById('title')!.firstChild;
+    (titlediv! as HTMLElement).innerText = 'News';
     AppendLoadingSymbol('newsloading', '#news-container');
 
-    browser.runtime.sendMessage({ type: 'sendNews' }, function (response) {
+    browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
       let newsarticles = response.news.articles;
       var newscontainer = document.querySelector('#news-container');
-      document.getElementById('newsloading').remove();
+      document.getElementById('newsloading')!.remove();
       for (let i = 0; i < newsarticles.length; i++) {
         let newsarticle = document.createElement('a');
         newsarticle.classList.add('NewsArticle');
@@ -2776,7 +2774,7 @@ function SendNewsPage() {
 
         newsarticle.append(articleimage);
         newsarticle.append(articletext);
-        newscontainer.append(newsarticle);
+        newscontainer!.append(newsarticle);
       }
     });
   }, 8);
@@ -2785,7 +2783,7 @@ function SendNewsPage() {
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
-      if (document.getElementById('menu').firstChild) {
+      if (document.getElementById('menu')!.firstChild) {
         ObserveMenuItemPosition();
         MenuItemMutation = true;
       }
@@ -2797,7 +2795,7 @@ async function CheckForMenuList() {
 
 function documentTextColor () {
   const result = browser.storage.local.get(['DarkMode'])
-  function changeDocTextCol (result) {
+  function changeDocTextCol (result: any) {
     const Darkmode = result.DarkMode
     if (Darkmode) {
       const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
@@ -2834,7 +2832,7 @@ browser.storage.onChanged.addListener(documentTextColor)
 function LoadInit() {
   console.log('[BetterSEQTA] Started Init');
   const result = browser.storage.local.get()
-  function open (result) {
+  function open (result: any) {
     if (result.onoff) {
       SendHomePage();
     }
