@@ -438,11 +438,13 @@ function CheckiFrameItems() {
                   'iframe.css',
                 )
               ) {
-                innerHTMLNode.appendChild(
+                innerHTMLNode.append(
                   fileref,
                 );
               }
-              added_node.addEventListener('load', function () {
+              node.addEventListener('load', function () {
+                const childNode = node.contentDocument!.documentElement.childNodes[1] as HTMLElement
+                const innerHTMLNode = node.contentDocument!.documentElement.firstChild! as HTMLElement
                 if (
                   childNode.style
                     .color != 'white'
@@ -455,7 +457,7 @@ function CheckiFrameItems() {
                     'iframe.css',
                   )
                 ) {
-                  innerHTMLNode.appendChild(
+                  innerHTMLNode.append(
                     fileref,
                   );
                 }
@@ -638,10 +640,13 @@ function CheckNoticeTextColour(notice: any) {
           DarkMode = result.DarkMode;
           if (node.classList.contains('notice')) {
             var hex = node.style.cssText.split(' ')[1];
-            var threshold = GetThresholdOfColor(hex);
+            if (hex) {
+            const hex1 = hex.slice(0,-1)
+            var threshold = GetThresholdOfColor(hex1);
             if (DarkMode && threshold < 100) {
               node.style.cssText = '--color: undefined;';
             }
+          }
           }
         }
         result.then(open, onError)
@@ -683,7 +688,7 @@ export function tryLoad() {
     true,
   );
   const observer = new MutationObserver(() => { documentTextColor() })
-  observer.observe(document.getElementById('toolbar')!, { attributes: true, childList: true, subtree: true })
+  observer.observe(document!, { attributes: true, childList: true, subtree: true, attributeFilter: ['td'], })
 }
 
 function ChangeMenuItemPositions(storage: any) {
@@ -773,16 +778,11 @@ function main(storedSetting: any) {
   if (onoff) {
     console.log('[BetterSEQTA+] Enabled');
     initialize();
-
-    if (!isChrome || isChrome === 'undefined') {
-      tryLoad();
-    }
+    tryLoad();
 
     window.addEventListener('load', tryLoad);
   } else {
-    if (!isChrome || isChrome === 'undefined') {
-      handleDisabled();
-    }
+    handleDisabled()
     window.addEventListener('load', handleDisabled);
   }
 }
