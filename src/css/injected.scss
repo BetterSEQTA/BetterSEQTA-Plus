@@ -170,10 +170,7 @@ ul.magicDelete > li.deleting {
 .tooltip {
   z-index: 5 !important;
 }
-::-webkit-scrollbar {
-  width: 0px !important;
-  background: none;
-}
+
 #menu li,
 #menu section {
   margin: 8px auto !important;
@@ -299,11 +296,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 .MessageList__MessageList___3DxoC .footer {
   background: var(--background-secondary) !important;
 }
-.content [placeholder="Subject…"] {
-  border-radius: 16px;
-  padding-left: 12px !important;
-  background: var(--background-primary) !important;
-}
 .listWrapper {
   padding: 8px;
   border-top-left-radius: 16px;
@@ -328,10 +320,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   padding-left: 12px !important;
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }
-[style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --betterseqta-logo: url(chrome-extension://boikofabjaholheekefimfojfncpjfib/icons/betterseqta-light-full.png); --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
-{
-  top: 14% !important;
-}
+
 [style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --betterseqta-logo: url(chrome-extension://boikofabjaholheekefimfojfncpjfib/icons/betterseqta-light-full.png); --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
 {
   top: 18% !important;
@@ -340,10 +329,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-radius: 4px;
   margin-top: 4px !important;
   margin-bottom: 4px !important;
-}
-.uiSlidePane {
-  background-color: rgba(0, 0, 0, 0);
-  transition-duration: 500ms !important;
 }
 #container #content {
   bottom: unset !important;
@@ -480,11 +465,11 @@ ul.buttonChecklist {
   flex: 1 1 0%;
 }
 #main > .reports > .item > .report {
-  filter: brightness(1) !important;
   border-radius: 16px !important;
   border: 2px solid var(--better-main) !important;
   transform: scale(0.97);
   transition: transform 0.2s ease-out !important;
+  background: var(--background-primary);
 }
 #main > .reports > .item > .report:hover {
   transform: scale(1);
@@ -654,15 +639,20 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
   color: var(--colour);
 }
+
 #main > .course > .content > .homework > .content,
 #main > .course > .content > .resources > .content {
   color: var(--text-primary);
   opacity: 0.8;
 }
+
 #main > .notices > .notice > .contents {
   background: var(--background-primary);
 }
+
 #main > .notices > .notice {
+  background: var(--background-primary);
+  color: var(--text-primary);
   --colour: unset;
 }
 #title span {
@@ -985,12 +975,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background);
   transition: 200ms;
 }
-#main > .notices > .notice > .contents {
-  background: var(--background);
-}
-#main > .notices > .notice {
-  background: var(--background);
-}
+
 .day h2 {
   margin: 0;
   padding: 8px;
@@ -1066,10 +1051,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   margin: 20px auto 0px;
   cursor: pointer;
 }
-.connectedNotificationsWrapper > div > button {
-  height: 45px;
-  width: 45px;
-}
+
 .notifications__notifications___3mmLY.notifications__hasItems___gXxzx > button {
   background: white;
   z-index: 21 !important;
@@ -1235,9 +1217,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
   color: var(--text-primary);
 }
-.Viewer__Viewer___32BH- {
-  background: var(--better-main);
-}
 .Message__Message___3oJaU {
   background: var(--background-primary);
   border-radius: 1rem !important;
@@ -1248,10 +1227,6 @@ iframe.userHTML {
 }
 .userHTML > div:first-of-type {
   color: var(--text-primary);
-}
-#main > .reports > .item > .report {
-  background: var(--background-primary);
-  filter: brightness(0.9);
 }
 #main > .reports {
   background: none;
@@ -1327,6 +1302,8 @@ iframe.userHTML {
   height: 10px;
   transition: 1s;
   border-radius: 1rem;
+  //width: 0px !important;
+  //background: none;
 }
 ::-webkit-scrollbar-track {
   background-color: transparent;
@@ -1345,6 +1322,8 @@ ul {
 }
 .connectedNotificationsWrapper > div > button {
   color: var(--text-primary) !important;
+  height: 45px;
+  width: 45px;
 }
 .programmeNavigator {
   width: 400px;
@@ -1549,6 +1528,7 @@ div.bar.flat {
   transform: translatey(0%) !important;
   transition: background-color 0.5s ease-in-out;
   background-color: rgba(0, 0, 0, 0);
+  transition-duration: 500ms !important;
 }
 .uiSlidePane.shown > .pane {
   transform: translatey(0%) !important;
@@ -1624,9 +1604,6 @@ body {
   background: var(--theme-primary);
   overflow: hidden;
 }
-#main > .notices > .notice {
-  color: var(--text-primary);
-}
 .shortcuticondiv {
   height: 39px;
   width: 39px;
@@ -1644,10 +1621,7 @@ body {
   background: var(--better-main);
 }
 .dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper > .entry {
-  /* border-radius: 15px; */
   padding: 3px;
-  /* width: 93% !important; */
-  /* height: 60px !important; */
 }
 .Viewer__Viewer___32BH- {
   background: unset;
@@ -1667,6 +1641,11 @@ body {
 .modaliser {
   display: none;
 }
+
+li.MessageList__unread___3imtO {
+  position: relative;
+}
+
 .MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
   content: "";
   position: absolute;
@@ -2248,12 +2227,7 @@ body {
   background: var(--auto-background);
   transition: 200ms;
 }
-#main > .notices > .notice > .contents {
-  background: var(--background-primary);
-}
-#main > .notices > .notice {
-  background: var(--background-primary);
-}
+
 .day h2 {
   margin: 0;
   padding: 8px;
