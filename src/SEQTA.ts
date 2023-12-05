@@ -688,7 +688,7 @@ export function tryLoad() {
     true,
   );
   const observer = new MutationObserver(() => { documentTextColor() })
-  observer.observe(document.getElementById('toolbar')!, { attributes: true, childList: true, subtree: true })
+  observer.observe(document!, { attributes: true, childList: true, subtree: true, attributeFilter: ['td'], })
 }
 
 function ChangeMenuItemPositions(storage: any) {
@@ -778,16 +778,11 @@ function main(storedSetting: any) {
   if (onoff) {
     console.log('[BetterSEQTA+] Enabled');
     initialize();
-
-    if (!isChrome || isChrome === 'undefined') {
-      tryLoad();
-    }
+    tryLoad();
 
     window.addEventListener('load', tryLoad);
   } else {
-    if (!isChrome || isChrome === 'undefined') {
-      handleDisabled();
-    }
+    handleDisabled()
     window.addEventListener('load', handleDisabled);
   }
 }

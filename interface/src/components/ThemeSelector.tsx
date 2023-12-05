@@ -23,7 +23,6 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
   useEffect(() => {
     const initializeThemes = async () => {
       const downloaded = (await listThemes());
-
       const initializedThemes = themesList.map(theme => ({
         ...theme,
         isDownloaded: downloaded.themes.includes(theme.name),
