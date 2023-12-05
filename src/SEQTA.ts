@@ -1212,15 +1212,15 @@ async function AddBetterSEQTAElements(toggle: any) {
         try {
           // Fetch the response and wait for it
           const response = await fetch(`${location.origin}/seqta/student/login`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: JSON.stringify({
-                  mode: 'normal',
-                  query: null,
-                  redirect_url: location.origin,
-              }),
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: JSON.stringify({
+              mode: 'normal',
+              query: null,
+              redirect_url: location.origin,
+            }),
           });
       
           // Parse the JSON response and wait for it
@@ -1242,17 +1242,17 @@ async function AddBetterSEQTAElements(toggle: any) {
           userInfosvgdiv.appendChild(logoutbutton);
       
         } catch (error) {
-            console.error('Error fetching and processing data:', error);
+          console.error('Error fetching and processing data:', error);
         }
 
         try {
           // Await the fetch response
           const response = await fetch(`${location.origin}/seqta/student/load/message/people`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json; charset=utf-8',
-              },
-              body: JSON.stringify({ mode: 'student' }),
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: JSON.stringify({ mode: 'student' }),
           });
       
           // Await the JSON parsing of the response
@@ -1261,31 +1261,31 @@ async function AddBetterSEQTAElements(toggle: any) {
       
           // Process the students data
           var index = students.findIndex(function (person: any) {
-              return (
-                  person.firstname == students.userDesc.split(' ')[0] &&
-                  person.surname == students.userDesc.split(' ')[1]
-              );
+            return (
+              person.firstname == students.userDesc.split(' ')[0] &&
+              person.surname == students.userDesc.split(' ')[1]
+            );
           });
       
           let houseelement1 = document.getElementsByClassName('userInfohouse')[0];
           const houseelement = houseelement1 as HTMLElement
           if (students[index]?.house) {
-              (houseelement as HTMLElement).style.background = students[index].house_colour;
-              try {
-                  let colorresult = GetThresholdOfColor(students[index]?.house_colour);
-      
-                  houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white';
-                  houseelement.innerText = students[index].year + students[index].house;
-              } catch (error) {
-                  houseelement.innerText = students[index].house;
-              }
+            (houseelement as HTMLElement).style.background = students[index].house_colour;
+            try {
+              let colorresult = GetThresholdOfColor(students[index]?.house_colour);
+
+              houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white';
+              houseelement.innerText = students[index].year + students[index].house;
+            } catch (error) {
+              houseelement.innerText = students[index].house;
+            }
           } else {
-              houseelement.innerText = students[index].year;
+            houseelement.innerText = students[index].year;
           }
       
-      } catch (error) {
+        } catch (error) {
           console.error('Error fetching and processing student data:', error);
-      }
+        }
 
         var NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>';
         var NewsButton = stringToHTML(NewsButtonStr);
