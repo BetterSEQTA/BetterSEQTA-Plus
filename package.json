@@ -1,6 +1,6 @@
 {
   "name": "betterseqtaplus",
-  "version": "1.0.0",
+  "version": "3.2.2",
   "type": "module",
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "main": "webpack.config.js",
