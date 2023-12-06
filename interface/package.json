@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sentry/react": "^7.85.0",
+    "@sentry/vite-plugin": "^2.10.2",
     "@types/chrome": "^0.0.246",
     "@types/webextension-polyfill": "^0.10.7",
     "framer-motion": "^10.16.4",
