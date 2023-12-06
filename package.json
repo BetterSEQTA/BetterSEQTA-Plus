@@ -30,6 +30,8 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@sentry/browser": "^7.85.0",
+    "@sentry/webpack-plugin": "^2.10.2",
     "@types/color": "^3.0.4",
     "@types/dompurify": "^3.0.5",
     "@types/react": "^18.2.21",

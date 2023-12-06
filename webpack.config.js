@@ -2,6 +2,7 @@ import path from 'path';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
+import { sentryWebpackPlugin } from '@sentry/webpack-plugin';
 
 
 export default {
@@ -76,6 +77,11 @@ export default {
         { from: 'interface/dist/client', to: 'client' },
         { from: 'interface/dist/index.html', to: 'interface/index.html' }
       ],
+    }),
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: "personal-771",
+      project: "betterseqtaplus-main",
     }),
   ],
 };
