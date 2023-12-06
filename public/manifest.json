@@ -1,14 +1,12 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "BetterSEQTA+",
   "version": "3.2.2",
   "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "64": "icons/icon-64.png"
+      "48": "icons/icon-48.png"
   },
-  "action": {
+  "browser_action": {
     "browser_style": true,
     "default_popup": "interface/index.html#settings",
     "default_icon": {
@@ -17,11 +15,16 @@
       "64": "icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage"],
-  "host_permissions": ["https://newsapi.org/", "*://*/*"],
+  "permissions": ["tabs", "notifications", "storage", "https://newsapi.org/"],
   "background": {
-    "service_worker": "background.js"
-  },
+    "scripts": [
+        "browser-polyfill.js",
+        "background.js"
+    ]
+},
+  "optional_permissions": [
+    "*://*/*"
+  ],
   "content_scripts": [
     {
       "matches": ["*://*/*"],
@@ -30,49 +33,16 @@
     }
   ],
   "web_accessible_resources": [
-    {
-      "resources": ["icons/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["fonts/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["images/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["css/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["popup/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["client.js"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["index.css"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["interface/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["client/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["resources/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["backgrounds/*"],
-      "matches": ["*://*/*"]
-    }
+    "icons/*",
+    "fonts/*",
+    "images/*",
+    "css/*",
+    "popup/*",
+    "client.js",
+    "index.css",
+    "interface/*",
+    "client/*",
+    "resources/*",
+    "backgrounds/*"
   ]
 }
