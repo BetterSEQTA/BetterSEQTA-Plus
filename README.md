@@ -120,4 +120,4 @@ This extension was initially developed by [Nulkem](https://github.com/Nulkem/bet
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=sethburkart123/EvenBetterSEQTA&type=Date)](https://star-history.com/#sethburkart123/EvenBetterSEQTA&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=BetterSEQTA/BetterSEQTA-Plus&type=Date)](https://star-history.com/#sethburkart123/EvenBetterSEQTA&Date)
