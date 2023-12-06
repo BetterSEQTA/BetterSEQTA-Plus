@@ -117,3 +117,7 @@ The folder structure is as follows:
 ## Credits
 
 This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development by [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=sethburkart123/EvenBetterSEQTA&type=Date)](https://star-history.com/#sethburkart123/EvenBetterSEQTA&Date)
