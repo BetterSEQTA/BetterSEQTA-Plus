@@ -152,6 +152,7 @@ function GetNews(sendResponse: any) {
 const DefaultValues: any = {
   onoff: true,
   animatedbk: true,
+  telemetry: false,
   bksliderinput: 50,
   transparencyEffects: false,
   lessonalert: true,

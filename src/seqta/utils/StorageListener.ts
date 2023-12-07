@@ -28,6 +28,14 @@ export default class StorageListener {
         this.handleSelectedColorChange(changes.selectedColor.newValue);
         break;
 
+      case 'telemetry':
+        this.handleTelemetryChange();
+        break;
+
+      case 'onoff':
+        this.handleOnOffChange();
+        break;
+
       case 'shortcuts':
         this.handleShortcutsChange(
           changes.shortcuts.oldValue,
@@ -88,6 +96,14 @@ export default class StorageListener {
     } catch (err) {
       console.error(err);
     }
+  }
+
+  handleTelemetryChange() {
+    browser.runtime.sendMessage({ type: 'reloadTabs' })
+  }
+
+  handleOnOffChange() {
+    browser.runtime.sendMessage({ type: 'reloadTabs' })
   }
 
   handleNotificationCollectorChange(details: any) {
