@@ -371,7 +371,6 @@ export function RemoveBackground() {
   bk[0].remove();
   bk2[0].remove();
   bk3[0].remove();
-  console.log('it deleted???')
 }
 
 export function waitForElm(selector: any) {
