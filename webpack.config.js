@@ -15,7 +15,7 @@ export default {
     maxEntrypointSize: 512000,
     maxAssetSize: 512000,
   },
-  devtool: 'cheap-module-source-map',
+  devtool: 'source-map',
   entry: {
     SEQTA: './src/SEQTA.ts',
     background: './src/background.ts',
@@ -80,7 +80,7 @@ export default {
     }),
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
-      org: "personal-771",
+      org: "betterseqta-plus",
       project: "betterseqtaplus-main",
     }),
   ],

@@ -36,6 +36,11 @@ const Settings: React.FC = () => {
       modifyElement: <Switch state={settingsState.lessonAlerts} onChange={(isOn: boolean) => switchChange('lessonAlerts', isOn)} />
     },
     {
+      title: "Telemetry",
+      description: "Enables/disables error collecting.",
+      modifyElement: <Switch state={settingsState.telemetry} onChange={(isOn: boolean) => switchChange('telemetry', isOn)} />
+    },
+    {
       title: "Animated Background",
       description: "Adds an animated background to BetterSEQTA. (May impact battery life)",
       modifyElement: <Switch state={settingsState.animatedBackground} onChange={(isOn: boolean) => switchChange('animatedBackground', isOn)} />
