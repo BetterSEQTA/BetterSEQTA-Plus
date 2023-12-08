@@ -114,6 +114,12 @@ The folder structure is as follows:
 
 - The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working (but because of the styling not being designed for phone, its basically useless for now).
 
+## Contributors
+
+<a href="https://github.com/betterseqta/betterseqta-plus/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=betterseqta/betterseqta-plus" />
+</a>
+
 ## Credits
 
 This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development by [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph)
