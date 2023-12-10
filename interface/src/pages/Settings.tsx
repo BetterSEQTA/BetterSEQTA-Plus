@@ -26,19 +26,9 @@ const Settings: React.FC = () => {
 
   const settings: SettingsList[] = [
     {
-      title: "Notification Collector",
-      description: "Uncaps the 9+ limit for notifications, showing the real number.",
-      modifyElement: <Switch state={settingsState.notificationCollector} onChange={(isOn: boolean) => switchChange('notificationCollector', isOn)} />
-    },
-    {
-      title: "Lesson Alerts",
-      description: "Sends a native browser notification ~5 minutes prior to lessons.",
-      modifyElement: <Switch state={settingsState.lessonAlerts} onChange={(isOn: boolean) => switchChange('lessonAlerts', isOn)} />
-    },
-    {
-      title: "Telemetry",
-      description: "Enables/disables error collecting.",
-      modifyElement: <Switch state={settingsState.telemetry} onChange={(isOn: boolean) => switchChange('telemetry', isOn)} />
+      title: "Transparency Effects",
+      description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
+      modifyElement: <Switch state={settingsState.transparencyEffects} onChange={(isOn: boolean) => switchChange('transparencyEffects', isOn)} />
     },
     {
       title: "Animated Background",
@@ -56,14 +46,24 @@ const Settings: React.FC = () => {
       modifyElement: <PickerSwatch />
     },
     {
+      title: "Telemetry",
+      description: "Enables/disables error collecting.",
+      modifyElement: <Switch state={settingsState.telemetry} onChange={(isOn: boolean) => switchChange('telemetry', isOn)} />
+    },
+    {
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
       modifyElement: <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>Edit</button>
     },
     {
-      title: "Transparency Effects",
-      description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
-      modifyElement: <Switch state={settingsState.transparencyEffects} onChange={(isOn: boolean) => switchChange('transparencyEffects', isOn)} />
+      title: "Notification Collector",
+      description: "Uncaps the 9+ limit for notifications, showing the real number.",
+      modifyElement: <Switch state={settingsState.notificationCollector} onChange={(isOn: boolean) => switchChange('notificationCollector', isOn)} />
+    },
+    {
+      title: "Lesson Alerts",
+      description: "Sends a native browser notification ~5 minutes prior to lessons.",
+      modifyElement: <Switch state={settingsState.lessonAlerts} onChange={(isOn: boolean) => switchChange('lessonAlerts', isOn)} />
     },
     {
       title: "BetterSEQTA+",
