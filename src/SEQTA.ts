@@ -41,6 +41,8 @@ import { updateBgDurations } from './seqta/ui/Animation';
 import { updateAllColors } from './seqta/ui/colors/Manager';
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import { enableCurrentTheme } from './seqta/ui/Themes';
+import { delay } from "./seqta/utils/delay";
+import { SettingsState } from "./types/storage";
 
 declare global {
   interface Window {
@@ -62,15 +64,12 @@ var IsSEQTAPage = false;
 
 document.addEventListener(
   'load',
-  function () {
+  async function () {
     CheckForMenuList();
-    if (
-      document.childNodes[1].textContent?.includes(
-        'Copyright (c) SEQTA Software',
-      ) &&
-      document.title.includes('SEQTA Learn') &&
-      !IsSEQTAPage
-    ) {
+    const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software');
+    const hasSEQTATitle = document.title.includes('SEQTA Learn');
+
+    if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
       IsSEQTAPage = true;
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
@@ -78,25 +77,21 @@ document.addEventListener(
       document.getElementsByTagName('html')[0].appendChild(link);
 
       enableCurrentTheme();
-      const result = browser.storage.local.get()
-      function open (items: any) {
+      try {
+        const items = await browser.storage.local.get() as SettingsState;
+        
         main(items);
+      } catch (error: any) {
+        onError(error);
       }
-      result.then(open, onError)
     }
-    if (
-      !document.childNodes[1].textContent?.includes('SEQTA') &&
-      !NonSEQTAPage
-    ) {
+
+    if (!hasSEQTAText && !NonSEQTAPage) {
       NonSEQTAPage = true;
     }
   },
   true,
 );
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
@@ -107,30 +102,28 @@ function animbkEnable(item: any) {
     CreateBackground();
   } else {
     RemoveBackground();
-    // @ts-ignore Element always exists
-    document.getElementById('container').style.background = 'var(--background-secondary)';
+    document.getElementById('container')!.style.background = 'var(--background-secondary)';
   }
 }
 
-export function ApplyCSSToHiddenMenuItems() {
-  var stylesheetInnerText = '';
-  const result = browser.storage.local.get()
-  function open (result: any) {
-    for (let i = 0; i < Object.keys(result.menuitems).length; i++) {
-      if (!Object.values<any>(result.menuitems)[i].toggle) {
-        stylesheetInnerText += SetDisplayNone(Object.keys(result.menuitems)[i]);
-        console.log(
-          `[BetterSEQTA+] Hiding ${
-            Object.keys(result.menuitems)[i]
-          } menu item`,
-        );
+export async function HideMenuItems(): Promise<void> {
+  try {
+    const result = await browser.storage.local.get() as SettingsState;
+
+    let stylesheetInnerText: string = '';
+    for (const [menuItem, { toggle }] of Object.entries(result.menuitems)) {
+      if (!toggle) {
+        stylesheetInnerText += SetDisplayNone(menuItem);
+        console.log(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
       }
     }
-    let MenuItemStyle = document.createElement('style');
-    MenuItemStyle.innerText = stylesheetInnerText;
-    document.head.appendChild(MenuItemStyle);
+
+    const menuItemStyle: HTMLStyleElement = document.createElement('style');
+    menuItemStyle.innerText = stylesheetInnerText;
+    document.head.appendChild(menuItemStyle);
+  } catch (error) {
+    console.error("An error occurred:", error);
   }
-  result.then(open, onError)
 }
 
 function OpenWhatsNewPopup() {
@@ -438,7 +431,7 @@ function CheckiFrameItems() {
       mutation.addedNodes.forEach(function (added_node) {
         const node = added_node as HTMLElement
         if (node.tagName == 'IFRAME') {
-          const result = browser.storage.local.get('DarkMode');
+          const result = browser.storage.local.get('DarkMode') as Promise<SettingsState>;
           function open (result: any) {
             DarkMode = result.DarkMode;
             const node = added_node as HTMLIFrameElement
@@ -505,8 +498,9 @@ function SortMessagePageItems(messagesParentElement: any) {
     'MessageList__MessageList___3DxoC',
   )[0].firstChild as HTMLElement;
   header.append(filterbutton);
+  messagesParentElement
 
-  const observer = new MutationObserver(function (mutations_list) {
+  /* const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
         const node = added_node as HTMLElement
@@ -520,56 +514,47 @@ function SortMessagePageItems(messagesParentElement: any) {
   observer.observe(messagesParentElement, {
     subtree: true,
     childList: true,
-  });
+  }); */
 }
 
-async function LoadPageElements() {
+async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements(true);
-  var sublink = window.location.href.split('/')[4];
-  switch (sublink) {
-  case 'news': {
+  const sublink: string | undefined = window.location.href.split('/')[4];
+
+  async function handleNewsPage(): Promise<void> {
     console.log('[BetterSEQTA+] Started Init');
-    const result = browser.storage.local.get()
-    function open (result: any) {
-      if (result.onoff) {
-        SendNewsPage();
-
-        // Sends similar HTTP Post Request for the notices
-        const result = browser.storage.local.get() 
-        function open (result: any) {
-          if (result.notificationcollector) {
-            enableNotificationCollector();
-          }
-        }
-        result.then(open, onError)
-        finishLoad();
-      }
-    }
-    result.then(open, onError)
-    break;
-  }
-  case 'home':
-    window.location.replace(`${location.origin}/#?page=/home`);
-    LoadInit();
-    break;
-  case undefined:
-    window.location.replace(`${location.origin}/#?page=/home`);
-    LoadInit();
-    break;
-  default: {
-    finishLoad();
-
-    // Sends similar HTTP Post Request for the notices
-    const result1 = browser.storage.local.get()
-    function open1(result: any) {
-      if (result.notificationcollector) {
+    const settings: SettingsState = await browser.storage.local.get() as SettingsState;
+    if (settings.onoff) {
+      SendNewsPage();
+      const notificationSettings: SettingsState = await browser.storage.local.get() as SettingsState;
+      if (notificationSettings.notificationcollector) {
         enableNotificationCollector();
       }
+      finishLoad();
     }
-    result1.then(open1, onError)
-    break;
   }
-}
+
+  async function handleDefault(): Promise<void> {
+    finishLoad();
+    const settings: SettingsState = await browser.storage.local.get() as SettingsState;
+    if (settings.notificationcollector) {
+      enableNotificationCollector();
+    }
+  }
+
+  switch (sublink) {
+    case 'news':
+      await handleNewsPage();
+      break;
+    case 'home':
+    case undefined:
+      window.location.replace(`${location.origin}/#?page=/home`);
+      LoadInit();
+      break;
+    default:
+      await handleDefault();
+      break;
+  }
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
@@ -580,65 +565,8 @@ async function LoadPageElements() {
           element.innerText = 'Direct Messages';
           document.title = 'Direct Messages ― SEQTA Learn';
           SortMessagePageItems(added_node);
-
-          waitForElm('[data-message]').then(() => {
-            animate(
-              '[data-message]',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            );
-          });
         } else if (node.classList.contains('notices')) {
           CheckNoticeTextColour(added_node);
-        } else if (node.classList.contains('dashboard')) {
-          let ranOnce = false;
-          waitForElm('.dashlet').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
-            animate(
-              '.dashboard > *',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.1),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            );
-          });
-        } else if (node.classList.contains('documents')) {
-          let ranOnce = false;
-          waitForElm('.document').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
-            animate(
-              '.documents tbody tr.document',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            );
-          });
-        } else if (node.classList.contains('reports')) {
-          let ranOnce = false;
-          waitForElm('.report').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
-            animate(
-              '.reports .item',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05, { start: 0.2 }),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            );
-          });
         }
       });
     });
@@ -773,31 +701,28 @@ export async function ObserveMenuItemPosition() {
   result.then(open, onError)
 }
 
-function main(storedSetting: any) {
-  const onoff = storedSetting.onoff;
-  DarkMode = storedSetting.DarkMode;
-
+function main(storedSetting: SettingsState) {
   // Handle undefined onoff setting
-  if (typeof onoff === 'undefined') {
+  if (typeof storedSetting.onoff === 'undefined') {
     browser.runtime.sendMessage({ type: 'setDefaultStorage' });
   }
-
-  const initialize = () => {
-    InjectStyles();
-    InjectCustomIcons();
-    updateAllColors(storedSetting);
-    ApplyCSSToHiddenMenuItems();
-    loading();
-    CheckLoadOnPeriods();
-  };
 
   const handleDisabled = () => {
     waitForElm('.code').then(AppendElementsToDisabledPage);
   };
 
-  if (onoff) {
+  if (storedSetting.DarkMode) {
     console.log('[BetterSEQTA+] Enabled');
-    initialize();
+    if (DarkMode) {
+      document.documentElement.classList.add('dark');
+    }
+
+    InjectStyles();
+    InjectCustomIcons();
+    loading();
+    updateAllColors(storedSetting);
+    HideMenuItems();
+    CheckLoadOnPeriods();
     tryLoad();
 
     window.addEventListener('load', tryLoad);

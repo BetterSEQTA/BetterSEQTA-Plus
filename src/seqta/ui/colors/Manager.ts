@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill'
 import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
-import { onError } from '../../utils/onError';
+import { SettingsState } from '../../../types/storage';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
@@ -76,9 +76,6 @@ export function updateAllColors(storedSetting: any, newColor = null) {
       continue;
     }
     
-    console.log(element);
-    console.log(element.contentDocument!.documentElement);
-
     (element.contentDocument!.documentElement.childNodes[1] as HTMLIFrameElement).style.color =
       DarkMode ? 'white' : 'black';
     element.contentDocument!.documentElement.firstChild!.appendChild(
@@ -87,15 +84,11 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   }
 }
 
-export function getDarkMode() {
-  return new Promise((resolve, reject) => {
-    const result = browser.storage.local.get('DarkMode')
-    function open (result: any) {
-      if (browser.runtime.lastError) {
-        return reject(browser.runtime.lastError);
-      }
-      resolve(result.DarkMode);
-    }
-    result.then(open, onError)
-  });
+export async function getDarkMode() {
+  try {
+    const result = await browser.storage.local.get() as SettingsState;
+    return result.DarkMode;
+  } catch (error) {
+    throw error;
+  }
 }

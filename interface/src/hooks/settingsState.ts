@@ -12,8 +12,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     RanOnce = true;
 
     // get the current settings state
-    // @ts-expect-error idk js/ts wizardry
-    browser.storage.local.get().then().then(function(result: MainConfig) {
+    // @ts-expect-error - TODO: Fix this
+    browser.storage.local.get().then((result: MainConfig) => {
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
