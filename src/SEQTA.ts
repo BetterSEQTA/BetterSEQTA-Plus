@@ -140,7 +140,7 @@ function OpenWhatsNewPopup() {
   </div>`).firstChild;
 
   let imagecont = document.createElement('div');
-  imagecont.classList.add('whatsnewImgContainer');
+  /* imagecont.classList.add('whatsnewImgContainer');
   let video = document.createElement('video');
   let source = document.createElement('source');
   source.setAttribute('src', browser.runtime.getURL('resources/update-video.mp4'));
@@ -150,7 +150,28 @@ function OpenWhatsNewPopup() {
   video.loop = true;
   video.appendChild(source);
   video.classList.add('whatsnewImg');
-  imagecont.appendChild(video);
+  imagecont.appendChild(video); */
+
+  imagecont.innerHTML += '<lite-youtube class="whatsnewImg" style="pointer-events:none" videoid="ogfYd705cRs" params="controls=0&enablejsapi=1&autoplay=1&muted=1"></lite-youtube>';
+
+  const script = document.createElement('script');
+  script.src = browser.runtime.getURL('resources/lite-yt-embed.js');
+  script.async = true;
+  document.body.appendChild(script);
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = browser.runtime.getURL('resources/lite-yt-embed.css');
+  document.body.appendChild(link);
+
+  try {
+    waitForElm('.lty-playbtn').then(async () => {
+      // @ts-ignore
+      document.querySelector('.lty-playbtn')!.click();
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
   let textcontainer = document.createElement('div');
   textcontainer.classList.add('whatsnewTextContainer');
