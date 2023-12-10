@@ -1,4 +1,3 @@
-
 import * as Sentry from "@sentry/browser";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
@@ -20,6 +19,7 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
     });
   }
 })
+
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 export const openDB = () => {
