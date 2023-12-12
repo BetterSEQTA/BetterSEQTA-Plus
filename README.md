@@ -31,11 +31,7 @@
 - Options to remove certain items from the side menu
 - Notification for next lesson (sent 5 minutes prior to lesson end)
 - Browser Support
-  - Chrome Supported
-  - Edge Supported
-  - Brave Supported
-  - Opera Supported
-  - Vivaldi Supported
+  - All Chromium based browsers are supported (eg Chrome, Edge, Opera)
   - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
   - Safari (Experimental - only available via compilation)
 
