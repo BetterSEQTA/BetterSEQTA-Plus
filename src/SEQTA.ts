@@ -716,15 +716,15 @@ function main(storedSetting: SettingsState) {
     if (DarkMode) {
       document.documentElement.classList.add('dark');
     }
-
-    InjectStyles();
-    InjectCustomIcons();
-    loading();
+    
     updateAllColors(storedSetting);
+    InjectStyles();
+    loading();
+    InjectCustomIcons();
     HideMenuItems();
     CheckLoadOnPeriods();
     tryLoad();
-
+    
     window.addEventListener('load', tryLoad);
   } else {
     handleDisabled()
@@ -870,7 +870,6 @@ function addExtensionSettings() {
 
 function saveNewOrder(sortable: any) {
   var order = sortable.toArray();
-  console.log("Order: ", order);
   browser.storage.local.set({ menuorder: order });
 }
 
