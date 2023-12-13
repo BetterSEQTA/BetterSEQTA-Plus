@@ -1,16 +1,16 @@
-#menu ul.noscroll:has(li.hasChildren.active) > li {
+#menu ul:has(li.hasChildren.active) li.hasChildren.active {
   box-shadow: inset 0px 0 var(--item-colour, transparent) !important;
   background: transparent !important;
 }
 
-#menu ul.noscroll:not(:has(li.hasChildren.active)) {
+#menu ul:not(:has(li.hasChildren.active)) {
   overflow: scroll !important;
 }
 
-#menu > ul.noscroll:has(li.hasChildren.active) > li > label,
-#menu > ul.noscroll:has(li.hasChildren.active) > li > svg,
-#menu > ul.noscroll ul.noscroll:has(li.hasChildren.active) > li > label,
-#menu > ul.noscroll ul.noscroll:has(li.hasChildren.active) > li > svg {
+#menu > ul:has(li.hasChildren.active) > li > label,
+#menu > ul:has(li.hasChildren.active) > li > svg,
+#menu > ul ul:has(li.hasChildren.active) > li > label,
+#menu > ul ul:has(li.hasChildren.active) > li > svg {
   transform: translateX(-20rem);
 }
 
@@ -19,7 +19,7 @@
   padding-top: 2px;
 }
 
-.sub:has(ul.noscroll>li.hasChildren.active) > .nav > .back {
+.sub:has(ul>li.hasChildren.active) > .nav > .back {
   display: none !important;
 }
 
@@ -32,6 +32,6 @@
   transition: transform 0.3s ease;
 }
 
-#menu > ul.noscroll:has(li.hasChildren.active) > li.active {
+#menu > ul:has(li.hasChildren.active) > li.active {
   background: transparent !important;
 }
