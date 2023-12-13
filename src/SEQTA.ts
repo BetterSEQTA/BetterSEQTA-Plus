@@ -1184,14 +1184,9 @@ async function AddBetterSEQTAElements(toggle: any) {
           var logoutbutton = document.getElementsByClassName('logout')[0];
           var userInfosvgdiv = document.getElementById('logouttooltip')!;
           userInfosvgdiv.appendChild(logoutbutton);
-      
-        } catch (error) {
-          console.error('Error fetching and processing data:', error);
-        }
 
-        try {
           // Await the fetch response
-          const response = await fetch(`${location.origin}/seqta/student/load/message/people`, {
+          const peopleResponse = await fetch(`${location.origin}/seqta/student/load/message/people`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json; charset=utf-8',
@@ -1200,14 +1195,14 @@ async function AddBetterSEQTAElements(toggle: any) {
           });
       
           // Await the JSON parsing of the response
-          const responseData = await response.json();
-          let students = responseData.payload;
+          const peopleResponseData = await peopleResponse.json();
+          let students = peopleResponseData.payload;
       
           // Process the students data
           var index = students.findIndex(function (person: any) {
             return (
-              person.firstname == students.userDesc.split(' ')[0] &&
-              person.surname == students.userDesc.split(' ')[1]
+              person.firstname == info.userDesc.split(' ')[0] &&
+              person.surname == info.userDesc.split(' ')[1]
             );
           });
       
@@ -1271,10 +1266,10 @@ async function AddBetterSEQTAElements(toggle: any) {
       // If betterSEQTA+ is enabled, run the code
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
-        var SettingsButton = stringToHTML(
+        let SettingsButton = stringToHTML(
           '<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div></button>',
         );
-        var ContentDiv = document.getElementById('content');
+        let ContentDiv = document.getElementById('content');
         ContentDiv!.append(SettingsButton.firstChild!);
 
         const result: any = await new Promise(resolve => {
@@ -1325,10 +1320,10 @@ async function AddBetterSEQTAElements(toggle: any) {
         }
       } else {
         // Creates settings and dashboard buttons next to alerts
-        SettingsButton = stringToHTML(
+        let SettingsButton = stringToHTML(
           '<button class="addedButton" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: var(--text-color);"><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg></button>',
         );
-        ContentDiv = document.getElementById('content');
+        let ContentDiv = document.getElementById('content');
         ContentDiv!.append(SettingsButton.firstChild!);
       }
 
@@ -1359,9 +1354,10 @@ async function AddBetterSEQTAElements(toggle: any) {
   }
 }
 
-let tooltipstring;
 
 function GetLightDarkModeString(darkmodetoggle: boolean) {
+  let tooltipstring;
+  
   if (darkmodetoggle) {
     tooltipstring = 'Switch to light theme';
   } else {
