@@ -31,39 +31,17 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["fonts/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["images/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["css/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["popup/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["interface/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["client/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["resources/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["backgrounds/*"],
+      "resources": [
+        "icons/*",
+        "fonts/*",
+        "images/*",
+        "css/*",
+        "popup/*",
+        "interface/*",
+        "client/*",
+        "resources/*",
+        "backgrounds/*"
+      ],
       "matches": ["*://*/*"]
     }
   ]
