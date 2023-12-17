@@ -20,12 +20,12 @@
   "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.ts"
   },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["browser-polyfill.js", "purify.min.js", "SEQTA.js"],
+      "js": ["src/SEQTA.ts"],
       "run_at": "document_start"
     }
   ],
@@ -48,14 +48,6 @@
     },
     {
       "resources": ["popup/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["client.js"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["index.css"],
       "matches": ["*://*/*"]
     },
     {
