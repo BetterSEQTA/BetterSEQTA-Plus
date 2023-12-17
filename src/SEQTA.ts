@@ -1,26 +1,7 @@
 /* eslint-disable no-inner-declarations */
 import * as Sentry from "@sentry/browser";
-
-browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
-  if (telemetry.telemetry === true) {
-    Sentry.init({
-      dsn: "https://54bdb68e80b45182ded22ecf9fe9529c@o4506347383291904.ingest.sentry.io/4506347462393856",
-      integrations: [
-        new Sentry.BrowserTracing({
-          // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-          tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
-        }),
-        new Sentry.Replay(),
-      ],
-      // Performance Monitoring
-      tracesSampleRate: 1.0, // Capture 100% of the transactions
-      // Session Replay
-      replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-      replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-    });
-  }
-})
 import browser from 'webextension-polyfill';
+
 import { animate, spring, stagger } from 'motion';
 import Color from 'color';
 import Sortable  from 'sortablejs';
@@ -43,6 +24,26 @@ import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import { enableCurrentTheme } from './seqta/ui/Themes';
 import { delay } from "./seqta/utils/delay";
 import { SettingsState } from "./types/storage";
+
+browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
+  if (telemetry.telemetry === true) {
+    Sentry.init({
+      dsn: "https://54bdb68e80b45182ded22ecf9fe9529c@o4506347383291904.ingest.sentry.io/4506347462393856",
+      integrations: [
+        new Sentry.BrowserTracing({
+          // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
+          tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
+        }),
+        new Sentry.Replay(),
+      ],
+      // Performance Monitoring
+      tracesSampleRate: 1.0, // Capture 100% of the transactions
+      // Session Replay
+      replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
+      replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+    });
+  }
+})
 
 declare global {
   interface Window {
@@ -73,8 +74,9 @@ document.addEventListener(
       IsSEQTAPage = true;
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
-      const link = GetCSSElement('css/documentload.css');
-      document.getElementsByTagName('html')[0].appendChild(link);
+      import('./css/documentload.scss');
+      /* const link = GetCSSElement();
+      document.getElementsByTagName('html')[0].appendChild(link); */
 
       enableCurrentTheme();
       try {
@@ -424,6 +426,7 @@ function removeThemeTagsFromNotices () {
 
 function CheckiFrameItems() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
+  import('./css/iframe.scss');
   let fileref = GetCSSElement('css/iframe.css');
 
   const observer = new MutationObserver(function (mutations_list) {
@@ -733,6 +736,7 @@ function main(storedSetting: SettingsState) {
 }
 
 function InjectStyles() {
+  import('./css/injected.scss');
   const inject = GetCSSElement('css/injected.css');
   document.head.appendChild(inject);
   document.getElementsByTagName('html')[0].appendChild(inject);
@@ -1353,7 +1357,6 @@ async function AddBetterSEQTAElements(toggle: any) {
     }
   }
 }
-
 
 function GetLightDarkModeString(darkmodetoggle: boolean) {
   let tooltipstring;

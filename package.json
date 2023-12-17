@@ -5,17 +5,20 @@
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "main": "webpack.config.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js --mode production && sh ./package.sh",
-    "dev": "webpack --config webpack.config.js --watch --mode development",
+    "build": "vite build",
+    "dev": "vite dev",
+    "build-old": "webpack --config webpack.config.js --mode production && sh ./package.sh",
+    "dev-old": "webpack --config webpack.config.js --watch --mode development",
     "eslint": "eslint --fix ."
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@crxjs/vite-plugin": "latest",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
-    "dompurify": "^3.0.5",
+    "dompurify": "^3.0.6",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-webpack-plugin": "^4.0.1",
@@ -25,6 +28,7 @@
     "sass": "^1.69.5",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
+    "vite": "^5.0.10",
     "webextension-polyfill": "^0.10.0",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
