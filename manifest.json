@@ -35,10 +35,6 @@
         "icons/*",
         "fonts/*",
         "images/*",
-        "css/*",
-        "popup/*",
-        "interface/*",
-        "client/*",
         "resources/*",
         "backgrounds/*"
       ],
