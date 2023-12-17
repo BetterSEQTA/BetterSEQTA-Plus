@@ -40,6 +40,7 @@
     "@types/color": "^3.0.4",
     "@types/dompurify": "^3.0.5",
     "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.18",
     "@types/sortablejs": "^1.15.7",
     "@types/webextension-polyfill": "^0.10.7",
     "autoprefixer": "^10.4.15",
