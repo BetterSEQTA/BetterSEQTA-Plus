@@ -25,6 +25,8 @@ import { enableCurrentTheme } from './seqta/ui/Themes';
 import { delay } from "./seqta/utils/delay";
 import { SettingsState } from "./types/storage";
 
+import iframeCSS from "./css/iframe.scss?inline";
+
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
     Sentry.init({
@@ -426,8 +428,10 @@ function removeThemeTagsFromNotices () {
 
 function CheckiFrameItems() {
   // Injecting CSS File to the webpage to overwrite iFrame default CSS
-  import('./css/iframe.scss');
-  let fileref = GetCSSElement('css/iframe.css');
+  const fileref = document.createElement('link')
+  fileref.setAttribute('rel', 'stylesheet')
+  fileref.setAttribute('type', 'text/css')
+  fileref.innerHTML = iframeCSS
 
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
