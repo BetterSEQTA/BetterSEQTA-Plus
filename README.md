@@ -32,7 +32,7 @@
 - Notification for next lesson (sent 5 minutes prior to lesson end)
 - Browser Support
   - All Chromium based browsers are supported (eg Chrome, Edge, Opera)
-  - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
+  - Firefox supported via separate branch
   - Safari (Experimental - only available via compilation)
 
 ## Getting started
