@@ -1,31 +1,32 @@
-/* eslint-disable no-inner-declarations */
 import * as Sentry from "@sentry/browser";
 import browser from 'webextension-polyfill';
 
 import { animate, spring, stagger } from 'motion';
-import Color from 'color';
 import Sortable  from 'sortablejs';
+import Color from 'color';
 
-import ShortcutLinks from './seqta/content/links.json';
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
-import stringToHTML from './seqta/utils/stringToHTML';
+import ShortcutLinks from './seqta/content/links.json';
+
+import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading';
+import { MessageHandler } from './seqta/utils/MessageListener';
+import { updateAllColors } from './seqta/ui/colors/Manager';
+import StorageListener from './seqta/utils/StorageListener';
+import { updateBgDurations } from './seqta/ui/Animation';
+import { enableCurrentTheme } from './seqta/ui/Themes';
+import stringToHTML from './seqta/utils/stringToHTML';
 import { response } from './seqta/utils/GetPrefs';
+import { SettingsState } from "./types/storage";
 import { onError } from './seqta/utils/onError';
+import { delay } from "./seqta/utils/delay";
+
+import iframeCSS from "./css/iframe.scss?inline";
 
 // Icons
 import assessmentsicon from './seqta/icons/assessmentsIcon';
 import coursesicon from './seqta/icons/coursesIcon';
-import StorageListener from './seqta/utils/StorageListener';
-import { MessageHandler } from './seqta/utils/MessageListener';
-import { updateBgDurations } from './seqta/ui/Animation';
-import { updateAllColors } from './seqta/ui/colors/Manager';
-import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
-import { enableCurrentTheme } from './seqta/ui/Themes';
-import { delay } from "./seqta/utils/delay";
-import { SettingsState } from "./types/storage";
 
-import iframeCSS from "./css/iframe.scss?inline";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
