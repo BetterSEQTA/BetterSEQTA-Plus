@@ -1,32 +1,27 @@
 import * as Sentry from "@sentry/browser";
-import browser from 'webextension-polyfill';
 
 import { animate, spring, stagger } from 'motion';
-import Sortable  from 'sortablejs';
-import Color from 'color';
-
-import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
-import ShortcutLinks from './seqta/content/links.json';
-
-import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading';
+
+import Color from 'color';
+import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
 import { MessageHandler } from './seqta/utils/MessageListener';
-import { updateAllColors } from './seqta/ui/colors/Manager';
-import StorageListener from './seqta/utils/StorageListener';
-import { updateBgDurations } from './seqta/ui/Animation';
-import { enableCurrentTheme } from './seqta/ui/Themes';
-import stringToHTML from './seqta/utils/stringToHTML';
-import { response } from './seqta/utils/GetPrefs';
 import { SettingsState } from "./types/storage";
-import { onError } from './seqta/utils/onError';
-import { delay } from "./seqta/utils/delay";
-
-import iframeCSS from "./css/iframe.scss?inline";
-
+import ShortcutLinks from './seqta/content/links.json';
+import Sortable  from 'sortablejs';
+import StorageListener from './seqta/utils/StorageListener';
+import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
 // Icons
 import assessmentsicon from './seqta/icons/assessmentsIcon';
+import browser from 'webextension-polyfill';
 import coursesicon from './seqta/icons/coursesIcon';
-
+import { delay } from "./seqta/utils/delay";
+import { enableCurrentTheme } from './seqta/ui/Themes';
+import iframeCSS from "./css/iframe.scss?inline";
+import { onError } from './seqta/utils/onError';
+import stringToHTML from './seqta/utils/stringToHTML';
+import { updateAllColors } from './seqta/ui/colors/Manager';
+import { updateBgDurations } from './seqta/ui/Animation';
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
@@ -726,7 +721,6 @@ function main(storedSetting: SettingsState) {
     }
     
     updateAllColors(storedSetting);
-    InjectStyles();
     loading();
     InjectCustomIcons();
     HideMenuItems();
@@ -738,13 +732,6 @@ function main(storedSetting: SettingsState) {
     handleDisabled()
     window.addEventListener('load', handleDisabled);
   }
-}
-
-function InjectStyles() {
-  import('./css/injected.scss');
-  const inject = GetCSSElement('css/injected.css');
-  document.head.appendChild(inject);
-  document.getElementsByTagName('html')[0].appendChild(inject);
 }
 
 function InjectCustomIcons() {
@@ -2183,85 +2170,77 @@ function AddCustomShortcutsToPage() {
   result.then(open, onError)
 }
 
-function SendHomePage() {
-  setTimeout(function () {
-    // Sends the html data for the home page
-    console.log('[BetterSEQTA] Started Loading Home Page');
-    document.title = 'Home ― SEQTA Learn';
-    var element = document.querySelector('[data-key=home]');
+async function SendHomePage() {
+  // Sends the html data for the home page
+  console.log('[BetterSEQTA] Started Loading Home Page');
+  document.title = 'Home ― SEQTA Learn';
+  var element = document.querySelector('[data-key=home]');
 
-    // Apply the active class to indicate clicked on home button
-    element!.classList.add('active');
+  // Apply the active class to indicate clicked on home button
+  element!.classList.add('active');
 
-    // Remove all current elements in the main div to add new elements
-    var main = document.getElementById('main');
-    main!.innerHTML = '';
+  // Remove all current elements in the main div to add new elements
+  var main = document.getElementById('main');
+  main!.innerHTML = '';
 
-    const titlediv = document.getElementById('title')!.firstChild;
-    ((titlediv!) as HTMLElement).innerText = 'Home';
-    (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
-      browser.runtime.getURL('icons/icon-48.png');
+  const titlediv = document.getElementById('title')!.firstChild;
+  ((titlediv!) as HTMLElement).innerText = 'Home';
+  (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
+    browser.runtime.getURL('icons/icon-48.png');
 
-    currentSelectedDate = new Date();
+  currentSelectedDate = new Date();
 
-    // Creates the root of the home page added to the main div
-    var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>');
-    
-    // Appends the html file to main div
-    // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main!.append(html.firstChild!);
+  // Creates the root of the home page added to the main div
+  var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>');
+  
+  // Appends the html file to main div
+  // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
+  main!.append(html.firstChild!);
 
-    // Gets the current date
+  // Gets the current date
+  const date = new Date();
+
+  // Formats the current date used send a request for timetable and notices later
+  var TodayFormatted =
+    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate();
+
+  // Replaces actual date with a selected date. Used for testing.
+  // TodayFormatted = "2020-08-31";
+
+  // Creates the shortcut container into the home container
+  var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
+  var Shortcut = stringToHTML(ShortcutStr);
+  // Appends the shortcut container into the home container
+  document.getElementById('home-container')!.append(Shortcut.firstChild!);
+
+  // Creates the container div for the timetable portion of the home page
+  var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
+  var Timetable = stringToHTML(TimetableStr);
+  // Appends the timetable container into the home container
+  document.getElementById('home-container')!.append(Timetable.firstChild!);
+  callHomeTimetable(TodayFormatted, true)
+
+  var timetablearrowback = document.getElementById('home-timetable-back');
+  var timetablearrowforward = document.getElementById(
+    'home-timetable-forward',
+  );
+
+  function SetTimetableSubtitle() {
+    var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
     const date = new Date();
-
-    // Formats the current date used send a request for timetable and notices later
-    var TodayFormatted =
-      date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate();
-
-    // Replaces actual date with a selected date. Used for testing.
-    // TodayFormatted = "2020-08-31";
-
-    // Creates the shortcut container into the home container
-    var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
-    var Shortcut = stringToHTML(ShortcutStr);
-    // Appends the shortcut container into the home container
-    document.getElementById('home-container')!.append(Shortcut.firstChild!);
-
-    // Creates the container div for the timetable portion of the home page
-    var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
-    var Timetable = stringToHTML(TimetableStr);
-    // Appends the timetable container into the home container
-    document.getElementById('home-container')!.append(Timetable.firstChild!);
-    callHomeTimetable(TodayFormatted, true)
-
-    var timetablearrowback = document.getElementById('home-timetable-back');
-    var timetablearrowforward = document.getElementById(
-      'home-timetable-forward',
-    );
-
-    function SetTimetableSubtitle() {
-      var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
-      const date = new Date();
-      if (
-        date.getFullYear() == currentSelectedDate.getFullYear() &&
-        date.getMonth() == currentSelectedDate.getMonth()
-      ) {
-        if (date.getDate() == currentSelectedDate.getDate()) {
-          // Change text to Today's Lessons
-          homelessonsubtitle!.innerText = 'Today\'s Lessons';
-        } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
-          // Change text to Yesterday's Lessons
-          homelessonsubtitle!.innerText = 'Yesterday\'s Lessons';
-        } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
-          // Change text to Tomorrow's Lessons
-          homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons';
-        } else {
-          // Change text to date of the day
-          homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
-            'en-us',
-            { weekday: 'short' },
-          )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
-        }
+    if (
+      date.getFullYear() == currentSelectedDate.getFullYear() &&
+      date.getMonth() == currentSelectedDate.getMonth()
+    ) {
+      if (date.getDate() == currentSelectedDate.getDate()) {
+        // Change text to Today's Lessons
+        homelessonsubtitle!.innerText = 'Today\'s Lessons';
+      } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
+        // Change text to Yesterday's Lessons
+        homelessonsubtitle!.innerText = 'Yesterday\'s Lessons';
+      } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
+        // Change text to Tomorrow's Lessons
+        homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons';
       } else {
         // Change text to date of the day
         homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
@@ -2269,99 +2248,192 @@ function SendHomePage() {
           { weekday: 'short' },
         )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
       }
+    } else {
+      // Change text to date of the day
+      homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
+        'en-us',
+        { weekday: 'short' },
+      )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
     }
+  }
 
-    function changeTimetable(value: any) {
-      currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
-      let FormattedDate =
-        currentSelectedDate.getFullYear() +
-        '-' +
-        (currentSelectedDate.getMonth() + 1) +
-        '-' +
-        currentSelectedDate.getDate();
-      callHomeTimetable(FormattedDate, true);
-      SetTimetableSubtitle();
-    }
+  function changeTimetable(value: any) {
+    currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
+    let FormattedDate =
+      currentSelectedDate.getFullYear() +
+      '-' +
+      (currentSelectedDate.getMonth() + 1) +
+      '-' +
+      currentSelectedDate.getDate();
+    callHomeTimetable(FormattedDate, true);
+    SetTimetableSubtitle();
+  }
 
-    timetablearrowback!.addEventListener('click', function () {
-      changeTimetable(-1);
-    });
-    timetablearrowforward!.addEventListener('click', function () {
-      changeTimetable(1);
-    });
+  timetablearrowback!.addEventListener('click', function () {
+    changeTimetable(-1);
+  });
+  timetablearrowforward!.addEventListener('click', function () {
+    changeTimetable(1);
+  });
 
-    // Adds the shortcuts to the shortcut container
-    const result = browser.storage.local.get(['shortcuts'])
-    function open (result: any) {
+  // Adds the shortcuts to the shortcut container
+  const result = browser.storage.local.get(['shortcuts'])
+  function open (result: any) {
 
-      const shortcuts = Object.values(result)[0];
-      addShortcuts(shortcuts);
-    }
-    result.then(open, onError)
+    const shortcuts = Object.values(result)[0];
+    addShortcuts(shortcuts);
+  }
+  result.then(open, onError)
 
-    // Creates the upcoming container and appends to the home container
-    var upcomingcontainer = document.createElement('div');
-    upcomingcontainer.classList.add('upcoming-container');
-    upcomingcontainer.classList.add('border');
+  // Creates the upcoming container and appends to the home container
+  var upcomingcontainer = document.createElement('div');
+  upcomingcontainer.classList.add('upcoming-container');
+  upcomingcontainer.classList.add('border');
 
-    let upcomingtitlediv = CreateElement('div', 'upcoming-title');
-    let upcomingtitle = document.createElement('h2');
-    upcomingtitle.classList.add('home-subtitle');
-    upcomingtitle.innerText = 'Upcoming Assessments';
-    upcomingtitlediv.append(upcomingtitle);
+  let upcomingtitlediv = CreateElement('div', 'upcoming-title');
+  let upcomingtitle = document.createElement('h2');
+  upcomingtitle.classList.add('home-subtitle');
+  upcomingtitle.innerText = 'Upcoming Assessments';
+  upcomingtitlediv.append(upcomingtitle);
 
-    let upcomingfilterdiv = CreateElement(
-      'div',
-      'upcoming-filters',
-      'upcoming-filters',
-    );
-    upcomingtitlediv.append(upcomingfilterdiv);
+  let upcomingfilterdiv = CreateElement(
+    'div',
+    'upcoming-filters',
+    'upcoming-filters',
+  );
+  upcomingtitlediv.append(upcomingfilterdiv);
 
-    upcomingcontainer.append(upcomingtitlediv);
+  upcomingcontainer.append(upcomingtitlediv);
 
-    let upcomingitems = document.createElement('div');
-    upcomingitems.id = 'upcoming-items';
-    upcomingitems.classList.add('upcoming-items');
+  let upcomingitems = document.createElement('div');
+  upcomingitems.id = 'upcoming-items';
+  upcomingitems.classList.add('upcoming-items');
 
-    upcomingcontainer.append(upcomingitems);
+  upcomingcontainer.append(upcomingitems);
 
-    document.getElementById('home-container')!.append(upcomingcontainer);
+  document.getElementById('home-container')!.append(upcomingcontainer);
 
-    // Creates the notices container into the home container
-    const NoticesStr = String.raw`
-      <div class="notices-container border">
-        <div style="display: flex; justify-content: space-between">
-          <h2 class="home-subtitle">Notices</h2>
-          <input type="date" value=${TodayFormatted} />
-        </div>
-        <div class="notice-container" id="notice-container"></div>
-      </div>`
-      
-    var Notices = stringToHTML(NoticesStr);
-    // Appends the shortcut container into the home container
-    document.getElementById('home-container')!.append(Notices.firstChild!);
-
-    animate(
-      '.home-container > div',
-      { opacity: [0, 1], y: [10, 0] },
-      {
-        delay: stagger(0.2, { start: 0 }),
-        duration: 0.6,
-        easing: [.22, .03, .26, 1]  
-      }
-    );
-
-    callHomeTimetable(TodayFormatted);
-    const labelArray = response.payload[1].value.split(' ')
-
-    const xhr2 = new XMLHttpRequest()
-    xhr2.open(
-      'POST',
-      `${location.origin}/seqta/student/load/notices?`,
-      true
-    )
-    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+  // Creates the notices container into the home container
+  const NoticesStr = String.raw`
+    <div class="notices-container border">
+      <div style="display: flex; justify-content: space-between">
+        <h2 class="home-subtitle">Notices</h2>
+        <input type="date" value=${TodayFormatted} />
+      </div>
+      <div class="notice-container" id="notice-container"></div>
+    </div>`
     
+  var Notices = stringToHTML(NoticesStr);
+  // Appends the shortcut container into the home container
+  document.getElementById('home-container')!.append(Notices.firstChild!);
+
+  animate(
+    '.home-container > div',
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.2, { start: 0 }),
+      duration: 0.6,
+      easing: [.22, .03, .26, 1]  
+    }
+  );
+
+  callHomeTimetable(TodayFormatted);
+
+  const GetPrefs = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ asArray: true, request: 'userPrefs' })
+  })
+
+  const response = await GetPrefs.json()
+
+  const labelArray = response.payload[1].value.split(' ')
+
+  const xhr2 = new XMLHttpRequest()
+  xhr2.open(
+    'POST',
+    `${location.origin}/seqta/student/load/notices?`,
+    true
+  )
+  xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+  
+  xhr2.onreadystatechange = function () {
+    if (xhr2.readyState === 4) {
+      const NoticesPayload = JSON.parse(xhr2.response)
+      const NoticeContainer = document.getElementById('notice-container')
+      if (NoticesPayload.payload.length === 0) {
+        if (!NoticeContainer!.innerText) {
+          // If no notices: display no notices
+          const dummyNotice = document.createElement('div')
+          dummyNotice.textContent = 'No notices for today.'
+          dummyNotice.classList.add('dummynotice')
+          NoticeContainer!.append(dummyNotice)
+        }
+      } else {
+        if (!NoticeContainer!.innerText) {
+          // For each element in the response json:
+          const result = browser.storage.local.get(['DarkMode'])
+          function noticeInfoDiv (result: any) {
+            for (let i = 0; i < NoticesPayload.payload.length; i++) {
+              if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+              // Create a div, and place information from json response
+                const NewNotice = document.createElement('div')
+                NewNotice.classList.add('notice')
+                const title = stringToHTML(
+                  '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                )
+                NewNotice.append(title.firstChild!)
+
+                if (NoticesPayload.payload[i].label_title !== undefined) {
+                  const label = stringToHTML(
+                    '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
+                  )
+                  NewNotice.append(label.firstChild!)
+                }
+
+                const staff = stringToHTML(
+                  '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                )
+                NewNotice.append(staff.firstChild!)
+                // Converts the string into HTML
+                const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                for (let i = 0; i < content.childNodes.length; i++) {
+                  NewNotice.append(content.childNodes[i])
+                }
+                // Gets the colour for the top section of each notice
+
+                let colour = NoticesPayload.payload[i].colour
+                if (typeof (colour) === 'string') {
+                  const rgb = GetThresholdOfColor(colour)
+                  const DarkModeResult = result.DarkMode
+                  if (rgb < 100 && DarkModeResult) {
+                    colour = undefined
+                  }
+                }
+
+                const colourbar = document.createElement('div')
+                colourbar.classList.add('colourbar')
+                colourbar.style.background = 'var(--colour)'
+                NewNotice.style.cssText = `--colour: ${colour}`
+                // Appends the colour bar to the new notice
+                NewNotice.append(colourbar)
+                // Appends the new notice into the notice container
+                NoticeContainer!.append(NewNotice)
+              }
+            }
+          }
+          result.then(noticeInfoDiv, onError)
+        }
+      }
+    }
+  }
+  // Data sent as the POST request
+  const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
+  xhr2.send(JSON.stringify({ date: dateControl!.value }))
+  function onInputChange (e: any) {
+    xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
+    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+    xhr2.send(JSON.stringify({ date: e.target.value }))
     xhr2.onreadystatechange = function () {
       if (xhr2.readyState === 4) {
         const NoticesPayload = JSON.parse(xhr2.response)
@@ -2375,187 +2447,109 @@ function SendHomePage() {
             NoticeContainer!.append(dummyNotice)
           }
         } else {
-          if (!NoticeContainer!.innerText) {
-            // For each element in the response json:
-            const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result: any) {
-              for (let i = 0; i < NoticesPayload.payload.length; i++) {
-                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-                // Create a div, and place information from json response
-                  const NewNotice = document.createElement('div')
-                  NewNotice.classList.add('notice')
-                  const title = stringToHTML(
-                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+          document.querySelectorAll('.notice').forEach(e => e.remove())
+          // For each element in the response json:
+          const result = browser.storage.local.get(['DarkMode'])
+          function noticeInfoDiv (result: any) {
+            for (let i = 0; i < NoticesPayload.payload.length; i++) {
+
+              if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+              // Create a div, and place information from json response
+                const NewNotice = document.createElement('div')
+                NewNotice.classList.add('notice')
+                const title = stringToHTML(
+                  '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+                )
+                NewNotice.append(title.firstChild!)
+
+                if (NoticesPayload.payload[i].label_title !== undefined) {
+                  const label = stringToHTML(
+                    '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                   )
-                  NewNotice.append(title.firstChild!)
-
-                  if (NoticesPayload.payload[i].label_title !== undefined) {
-                    const label = stringToHTML(
-                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                    )
-                    NewNotice.append(label.firstChild!)
-                  }
-
-                  const staff = stringToHTML(
-                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-                  )
-                  NewNotice.append(staff.firstChild!)
-                  // Converts the string into HTML
-                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-                  for (let i = 0; i < content.childNodes.length; i++) {
-                    NewNotice.append(content.childNodes[i])
-                  }
-                  // Gets the colour for the top section of each notice
-
-                  let colour = NoticesPayload.payload[i].colour
-                  if (typeof (colour) === 'string') {
-                    const rgb = GetThresholdOfColor(colour)
-                    const DarkModeResult = result.DarkMode
-                    if (rgb < 100 && DarkModeResult) {
-                      colour = undefined
-                    }
-                  }
-
-                  const colourbar = document.createElement('div')
-                  colourbar.classList.add('colourbar')
-                  colourbar.style.background = 'var(--colour)'
-                  NewNotice.style.cssText = `--colour: ${colour}`
-                  // Appends the colour bar to the new notice
-                  NewNotice.append(colourbar)
-                  // Appends the new notice into the notice container
-                  NoticeContainer!.append(NewNotice)
+                  NewNotice.append(label.firstChild!)
                 }
+
+                const staff = stringToHTML(
+                  '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+                )
+                NewNotice.append(staff.firstChild!)
+                // Converts the string into HTML
+                const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+                for (let i = 0; i < content.childNodes.length; i++) {
+                  NewNotice.append(content.childNodes[i])
+                }
+                // Gets the colour for the top section of each notice
+
+                let colour = NoticesPayload.payload[i].colour
+                if (typeof (colour) === 'string') {
+                  const rgb = GetThresholdOfColor(colour)
+                  const DarkModeResult = result.DarkMode
+                  if (rgb < 100 && DarkModeResult) {
+                    colour = undefined
+                  }
+                }
+
+                const colourbar = document.createElement('div')
+                colourbar.classList.add('colourbar')
+                colourbar.style.background = 'var(--colour)'
+                NewNotice.style.cssText = `--colour: ${colour}`
+                // Appends the colour bar to the new notice
+                NewNotice.append(colourbar)
+                // Appends the new notice into the notice container
+                NoticeContainer!.append(NewNotice)
               }
             }
-            result.then(noticeInfoDiv, onError)
           }
+          result.then(noticeInfoDiv, onError)
         }
       }
     }
-    // Data sent as the POST request
-    const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
-    xhr2.send(JSON.stringify({ date: dateControl!.value }))
-    function onInputChange (e: any) {
-      xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
-      xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
-      xhr2.send(JSON.stringify({ date: e.target.value }))
-      xhr2.onreadystatechange = function () {
-        if (xhr2.readyState === 4) {
-          const NoticesPayload = JSON.parse(xhr2.response)
-          const NoticeContainer = document.getElementById('notice-container')
-          if (NoticesPayload.payload.length === 0) {
-            if (!NoticeContainer!.innerText) {
-              // If no notices: display no notices
-              const dummyNotice = document.createElement('div')
-              dummyNotice.textContent = 'No notices for today.'
-              dummyNotice.classList.add('dummynotice')
-              NoticeContainer!.append(dummyNotice)
-            }
-          } else {
-            document.querySelectorAll('.notice').forEach(e => e.remove())
-            // For each element in the response json:
-            const result = browser.storage.local.get(['DarkMode'])
-            function noticeInfoDiv (result: any) {
-              for (let i = 0; i < NoticesPayload.payload.length; i++) {
+  }
+  dateControl.addEventListener('input', onInputChange)
 
-                if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-                // Create a div, and place information from json response
-                  const NewNotice = document.createElement('div')
-                  NewNotice.classList.add('notice')
-                  const title = stringToHTML(
-                    '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
-                  )
-                  NewNotice.append(title.firstChild!)
-
-                  if (NoticesPayload.payload[i].label_title !== undefined) {
-                    const label = stringToHTML(
-                      '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                    )
-                    NewNotice.append(label.firstChild!)
-                  }
-
-                  const staff = stringToHTML(
-                    '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-                  )
-                  NewNotice.append(staff.firstChild!)
-                  // Converts the string into HTML
-                  const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-                  for (let i = 0; i < content.childNodes.length; i++) {
-                    NewNotice.append(content.childNodes[i])
-                  }
-                  // Gets the colour for the top section of each notice
-
-                  let colour = NoticesPayload.payload[i].colour
-                  if (typeof (colour) === 'string') {
-                    const rgb = GetThresholdOfColor(colour)
-                    const DarkModeResult = result.DarkMode
-                    if (rgb < 100 && DarkModeResult) {
-                      colour = undefined
-                    }
-                  }
-
-                  const colourbar = document.createElement('div')
-                  colourbar.classList.add('colourbar')
-                  colourbar.style.background = 'var(--colour)'
-                  NewNotice.style.cssText = `--colour: ${colour}`
-                  // Appends the colour bar to the new notice
-                  NewNotice.append(colourbar)
-                  // Appends the new notice into the notice container
-                  NoticeContainer!.append(NewNotice)
-                }
-              }
-            }
-            result.then(noticeInfoDiv, onError)
-          }
+  // Sends similar HTTP Post Request for the notices
+  const result1 = browser.storage.local.get()
+  function open1 (result: any) {
+    if (result.notificationcollector) {
+      enableNotificationCollector();
+    }
+  }
+  result1.then(open1, onError)
+  let activeClassList: any;
+  GetUpcomingAssessments().then((assessments) => {
+    GetActiveClasses().then((classes) => {
+      // Gets all subjects for the student
+      for (let i = 0; i < classes.length; i++) {
+        const element = classes[i];
+        // eslint-disable-next-line
+        if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
+          // Finds the active class list with the current subjects
+          activeClassList = classes[i];
         }
       }
-    }
-    dateControl.addEventListener('input', onInputChange)
+      let activeSubjects = activeClassList.subjects;
 
-    // Sends similar HTTP Post Request for the notices
-    const result1 = browser.storage.local.get()
-    function open1 (result: any) {
-      if (result.notificationcollector) {
-        enableNotificationCollector();
+      let activeSubjectCodes = [];
+      // Gets the code for each of the subjects and puts them in an array
+      let element;
+      for (let i = 0; i < activeSubjects.length; i++) {
+        element = activeSubjects[i];
+        activeSubjectCodes.push(element.code);
       }
-    }
-    result1.then(open1, onError)
-    let activeClassList: any;
-    GetUpcomingAssessments().then((assessments) => {
-      GetActiveClasses().then((classes) => {
-        // Gets all subjects for the student
-        for (let i = 0; i < classes.length; i++) {
-          const element = classes[i];
-          // eslint-disable-next-line
-          if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
-            // Finds the active class list with the current subjects
-            activeClassList = classes[i];
-          }
+
+      let CurrentAssessments = [];
+      for (let i = 0; i < assessments.length; i++) {
+        element = assessments[i];
+        if (activeSubjectCodes.includes(element.code)) {
+          CurrentAssessments.push(element);
         }
-        let activeSubjects = activeClassList.subjects;
+      }
 
-        let activeSubjectCodes = [];
-        // Gets the code for each of the subjects and puts them in an array
-        let element;
-        for (let i = 0; i < activeSubjects.length; i++) {
-          element = activeSubjects[i];
-          activeSubjectCodes.push(element.code);
-        }
+      CurrentAssessments.sort(comparedate);
 
-        let CurrentAssessments = [];
-        for (let i = 0; i < assessments.length; i++) {
-          element = assessments[i];
-          if (activeSubjectCodes.includes(element.code)) {
-            CurrentAssessments.push(element);
-          }
-        }
-
-        CurrentAssessments.sort(comparedate);
-
-        CreateUpcomingSection(CurrentAssessments, activeSubjects);
-      });
+      CreateUpcomingSection(CurrentAssessments, activeSubjects);
     });
-  }, 8);
+  });
 }
 
 export function addShortcuts(shortcuts: any) {
