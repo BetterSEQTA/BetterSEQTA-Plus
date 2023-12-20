@@ -1639,14 +1639,14 @@ function callHomeTimetable(date: string, change?: any) {
           });
         }
       } else {
-        if (!DayContainer.innerText || change) {
-          DayContainer.innerText = '';
+        if (DayContainer.innerHTML || change) {
+          DayContainer.innerHTML = '';
           var dummyDay = document.createElement('div');
           dummyDay.classList.add('day-empty');
           let img = document.createElement('img');
           img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png');
           let text = document.createElement('p');
-          text.innerText = 'No lessons available.';
+          text.innerHTML = 'No lessons available.';
           dummyDay.append(img);
           dummyDay.append(text);
           DayContainer.append(dummyDay);
@@ -2182,7 +2182,7 @@ async function SendHomePage() {
   main!.innerHTML = '';
 
   const titlediv = document.getElementById('title')!.firstChild;
-  ((titlediv!) as HTMLElement).innerText = 'Home';
+  ((titlediv!) as HTMLElement).innerHTML = 'Home';
   (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
     browser.runtime.getURL('icons/icon-48.png');
 
@@ -2514,40 +2514,38 @@ async function SendHomePage() {
   }
   result1.then(open1, onError)
   let activeClassList: any;
-  GetUpcomingAssessments().then((assessments) => {
-    GetActiveClasses().then((classes) => {
-      // Gets all subjects for the student
-      for (let i = 0; i < classes.length; i++) {
-        const element = classes[i];
-        // eslint-disable-next-line
-        if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
-          // Finds the active class list with the current subjects
-          activeClassList = classes[i];
-        }
-      }
-      let activeSubjects = activeClassList.subjects;
 
-      let activeSubjectCodes = [];
-      // Gets the code for each of the subjects and puts them in an array
-      let element;
-      for (let i = 0; i < activeSubjects.length; i++) {
-        element = activeSubjects[i];
-        activeSubjectCodes.push(element.code);
-      }
+  const assessments = await GetUpcomingAssessments()
+  const classes = await GetActiveClasses()
 
-      let CurrentAssessments = [];
-      for (let i = 0; i < assessments.length; i++) {
-        element = assessments[i];
-        if (activeSubjectCodes.includes(element.code)) {
-          CurrentAssessments.push(element);
-        }
-      }
+  // Gets all subjects for the student
+  for (let i = 0; i < classes.length; i++) {
+    const element = classes[i];
+    // eslint-disable-next-line
+    if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
+      // Finds the active class list with the current subjects
+      activeClassList = classes[i];
+    }
+  }
+  let activeSubjects = activeClassList.subjects;
 
-      CurrentAssessments.sort(comparedate);
+  let activeSubjectCodes = [];
+  
+  // Gets the code for each of the subjects and puts them in an array
+  for (let i = 0; i < activeSubjects.length; i++) {
+    activeSubjectCodes.push(activeSubjects[i].code);
+  }
 
-      CreateUpcomingSection(CurrentAssessments, activeSubjects);
-    });
-  });
+  let CurrentAssessments = [];
+  for (let i = 0; i < assessments.length; i++) {
+    if (activeSubjectCodes.includes(assessments[i].code)) {
+      CurrentAssessments.push(element);
+    }
+  }
+
+  CurrentAssessments.sort(comparedate);
+
+  CreateUpcomingSection(CurrentAssessments, activeSubjects);
 }
 
 export function addShortcuts(shortcuts: any) {
