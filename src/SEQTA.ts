@@ -11,7 +11,6 @@ import ShortcutLinks from './seqta/content/links.json';
 import Sortable  from 'sortablejs';
 import StorageListener from './seqta/utils/StorageListener';
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
-// Icons
 import assessmentsicon from './seqta/icons/assessmentsIcon';
 import browser from 'webextension-polyfill';
 import coursesicon from './seqta/icons/coursesIcon';
@@ -52,6 +51,7 @@ document.addEventListener(
       IsSEQTAPage = true;
       console.log('[BetterSEQTA+] Verified SEQTA Page');
 
+      import('./css/injected.scss');
       import('./css/documentload.scss');
       /* const link = GetCSSElement();
       document.getElementsByTagName('html')[0].appendChild(link); */
@@ -820,7 +820,7 @@ export function closeSettings() {
 }
 
 function addExtensionSettings() {
-  const link = GetCSSElement('interface/popup.css');
+  const link = GetCSSElement('src/interface/popup.css');
   document.querySelector('html')!.appendChild(link);
 
   const extensionPopup = document.createElement('div');
@@ -829,7 +829,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup);
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe');
-  extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`;
+  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`;
   extensionIframe.id = 'ExtensionIframe';
   extensionIframe.setAttribute('allowTransparency', 'true');
   extensionIframe.setAttribute('excludeDarkCheck', 'true');
