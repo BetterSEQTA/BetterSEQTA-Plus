@@ -328,7 +328,7 @@ async function DeleteWhatsNew() {
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
     bkelement!.remove();
-  });
+  }); 
 }
 
 export function CreateBackground() {
