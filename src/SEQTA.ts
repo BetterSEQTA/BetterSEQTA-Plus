@@ -862,17 +862,6 @@ function addExtensionSettings() {
   };
 }
 
-function saveNewOrder(sortable: any) {
-  var order = sortable.toArray();
-  browser.storage.local.set({ menuorder: order });
-}
-
-function cloneAttributes(target: any, source: any) {
-  [...source.attributes].forEach((attr) => {
-    target.setAttribute(attr.nodeName, attr.nodeValue);
-  });
-}
-
 export function OpenMenuOptions() {
   const result = browser.storage.local.get()
   function open (result: any) {
@@ -1087,6 +1076,17 @@ export function OpenMenuOptions() {
     });
   }
   result.then(open, onError)
+}
+
+function saveNewOrder(sortable: any) {
+  var order = sortable.toArray();
+  browser.storage.local.set({ menuorder: order });
+}
+
+function cloneAttributes(target: any, source: any) {
+  [...source.attributes].forEach((attr) => {
+    target.setAttribute(attr.nodeName, attr.nodeValue);
+  });
 }
 
 function ReplaceMenuSVG(element: HTMLElement, svg: string) {
