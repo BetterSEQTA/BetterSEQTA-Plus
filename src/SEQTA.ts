@@ -402,74 +402,47 @@ function removeThemeTagsFromNotices () {
   }
 }
 
-function CheckiFrameItems() {
-  // Injecting CSS File to the webpage to overwrite iFrame default CSS
-  const fileref = document.createElement('link')
-  fileref.setAttribute('rel', 'stylesheet')
-  fileref.setAttribute('type', 'text/css')
-  fileref.innerHTML = iframeCSS
+async function updateIframesWithDarkMode(): Promise<void> {
+  // Load the CSS file to overwrite iFrame default CSS
+  const cssLink = document.createElement('style');
+  const cssContent = document.createTextNode(iframeCSS);
+  cssLink.appendChild(cssContent);
 
-  const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (node.tagName == 'IFRAME') {
-          const result = browser.storage.local.get('DarkMode') as Promise<SettingsState>;
-          function open (result: any) {
-            DarkMode = result.DarkMode;
-            const node = added_node as HTMLIFrameElement
-            if (DarkMode) {
-              RunColourCheck(node);
-              const childNode = node.contentDocument!.documentElement.childNodes[1] as HTMLElement
-              if (
-                childNode.style
-                  .color != 'white'
-              ) {
-                childNode.style.color =
-                  'white';
-              }
-              const innerHTMLNode = node.contentDocument!.documentElement.firstChild! as HTMLElement
-              if (
-                !innerHTMLNode.innerHTML.includes(
-                  'iframe.css',
-                )
-              ) {
-                innerHTMLNode.append(
-                  fileref,
-                );
-              }
-              node.addEventListener('load', function () {
-                const childNode = node.contentDocument!.documentElement.childNodes[1] as HTMLElement
-                const innerHTMLNode = node.contentDocument!.documentElement.firstChild! as HTMLElement
-                if (
-                  childNode.style
-                    .color != 'white'
-                ) {
-                  childNode.style.color =
-                    'white';
-                }
-                if (
-                  !innerHTMLNode.innerHTML.includes(
-                    'iframe.css',
-                  )
-                ) {
-                  innerHTMLNode.append(
-                    fileref,
-                  );
-                }
-              });
+  const observer = new MutationObserver(async (mutationsList) => {
+    for (const mutation of mutationsList) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeName === 'IFRAME') {
+          const iframe = node as HTMLIFrameElement;
+          try {
+            const settings = await browser.storage.local.get('DarkMode') as SettingsState;
+            if (settings.DarkMode) {
+              //await delay(1);
+              applyDarkModeToIframe(iframe, cssLink);
             }
+          } catch (error) {
+            console.error('Error applying dark mode:', error);
           }
-          result.then(open, onError)
         }
-      });
-    });
+      }
+    }
   });
 
-  observer.observe(document.body, {
-    subtree: true,
-    childList: true,
-  });
+  observer.observe(document.body, { subtree: true, childList: true });
+}
+
+function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement): void {
+  const iframeDocument = iframe.contentDocument;
+  if (!iframeDocument) return;
+
+  const body = iframeDocument.body;
+  if (body && body.style.color !== 'white') {
+    body.style.color = 'white';
+  }
+
+  const head = iframeDocument.head;
+  if (head && !head.innerHTML.includes('iframe.css')) {
+    head.appendChild(cssLink);
+  }
 }
 
 function SortMessagePageItems(messagesParentElement: any) {
@@ -612,7 +585,7 @@ export function tryLoad() {
   document.addEventListener(
     'load',
     function () {
-      CheckiFrameItems();
+      updateIframesWithDarkMode();
       removeThemeTagsFromNotices();
       documentTextColor();
     },
@@ -1639,14 +1612,15 @@ function callHomeTimetable(date: string, change?: any) {
           });
         }
       } else {
-        if (DayContainer.innerHTML || change) {
-          DayContainer.innerHTML = '';
+        console.log(DayContainer);
+        if (DayContainer.innerText || change) {
+          DayContainer.innerText = '';
           var dummyDay = document.createElement('div');
           dummyDay.classList.add('day-empty');
           let img = document.createElement('img');
           img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png');
           let text = document.createElement('p');
-          text.innerHTML = 'No lessons available.';
+          text.innerText = 'No lessons available.';
           dummyDay.append(img);
           dummyDay.append(text);
           DayContainer.append(dummyDay);
