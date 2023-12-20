@@ -1,144 +1,144 @@
-import * as Sentry from "@sentry/browser";
+import * as Sentry from "@sentry/browser"
 
-import { animate, spring, stagger } from 'motion';
-import loading, { AppendLoadingSymbol } from './seqta/ui/Loading';
+import { animate, spring, stagger } from 'motion'
+import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
-import Color from 'color';
-import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json';
-import { MessageHandler } from './seqta/utils/MessageListener';
-import { SettingsState } from "./types/storage";
-import ShortcutLinks from './seqta/content/links.json';
-import Sortable  from 'sortablejs';
-import StorageListener from './seqta/utils/StorageListener';
-import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds';
-import assessmentsicon from './seqta/icons/assessmentsIcon';
-import browser from 'webextension-polyfill';
-import coursesicon from './seqta/icons/coursesIcon';
-import { delay } from "./seqta/utils/delay";
-import { enableCurrentTheme } from './seqta/ui/Themes';
-import iframeCSS from "./css/iframe.scss?inline";
-import { onError } from './seqta/utils/onError';
-import stringToHTML from './seqta/utils/stringToHTML';
-import { updateAllColors } from './seqta/ui/colors/Manager';
-import { updateBgDurations } from './seqta/ui/Animation';
+import Color from 'color'
+import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
+import { MessageHandler } from './seqta/utils/MessageListener'
+import { SettingsState } from "./types/storage"
+import ShortcutLinks from './seqta/content/links.json'
+import Sortable  from 'sortablejs'
+import StorageListener from './seqta/utils/StorageListener'
+import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds'
+import assessmentsicon from './seqta/icons/assessmentsIcon'
+import browser from 'webextension-polyfill'
+import coursesicon from './seqta/icons/coursesIcon'
+import { delay } from "./seqta/utils/delay"
+import { enableCurrentTheme } from './seqta/ui/Themes'
+import iframeCSS from "./css/iframe.scss?inline"
+import { onError } from './seqta/utils/onError'
+import stringToHTML from './seqta/utils/stringToHTML'
+import { updateAllColors } from './seqta/ui/colors/Manager'
+import { updateBgDurations } from './seqta/ui/Animation'
 
 declare global {
   interface Window {
-    chrome?: any;
+    chrome?: any
   }
 }
 
-export let isChrome = window.chrome;
-let SettingsClicked = false;
-export let MenuOptionsOpen = false;
-let UserInitalCode = '';
-let currentSelectedDate = new Date();
-let LessonInterval: any;
-export let DarkMode: boolean;
+export let isChrome = window.chrome
+let SettingsClicked = false
+export let MenuOptionsOpen = false
+let UserInitalCode = ''
+let currentSelectedDate = new Date()
+let LessonInterval: any
+export let DarkMode: boolean
 
-var MenuItemMutation = false;
-var NonSEQTAPage = false;
-var IsSEQTAPage = false;
+var MenuItemMutation = false
+var NonSEQTAPage = false
+var IsSEQTAPage = false
 
 document.addEventListener(
   'load',
   async function () {
-    CheckForMenuList();
-    const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software');
-    const hasSEQTATitle = document.title.includes('SEQTA Learn');
+    CheckForMenuList()
+    const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
+    const hasSEQTATitle = document.title.includes('SEQTA Learn')
 
     if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-      IsSEQTAPage = true;
-      console.log('[BetterSEQTA+] Verified SEQTA Page');
+      IsSEQTAPage = true
+      console.log('[BetterSEQTA+] Verified SEQTA Page')
 
-      import('./css/injected.scss');
-      import('./css/documentload.scss');
-      /* const link = GetCSSElement();
+      import('./css/injected.scss')
+      import('./css/documentload.scss')
+      /* const link = GetCSSElement()
       document.getElementsByTagName('html')[0].appendChild(link); */
 
-      enableCurrentTheme();
+      enableCurrentTheme()
       try {
-        const items = await browser.storage.local.get() as SettingsState;
+        const items = await browser.storage.local.get() as SettingsState
         
-        main(items);
+        main(items)
       } catch (error: any) {
-        onError(error);
+        onError(error)
       }
     }
 
     if (!hasSEQTAText && !NonSEQTAPage) {
-      NonSEQTAPage = true;
+      NonSEQTAPage = true
     }
   },
   true,
-);
+)
 
 function SetDisplayNone(ElementName: string) {
-  return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
+  return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`
 }
 
 function animbkEnable(item: any) {
   if (item.animatedbk) {
-    CreateBackground();
+    CreateBackground()
   } else {
-    RemoveBackground();
-    document.getElementById('container')!.style.background = 'var(--background-secondary)';
+    RemoveBackground()
+    document.getElementById('container')!.style.background = 'var(--background-secondary)'
   }
 }
 
 export async function HideMenuItems(): Promise<void> {
   try {
-    const result = await browser.storage.local.get() as SettingsState;
+    const result = await browser.storage.local.get() as SettingsState
 
-    let stylesheetInnerText: string = '';
+    let stylesheetInnerText: string = ''
     for (const [menuItem, { toggle }] of Object.entries(result.menuitems)) {
       if (!toggle) {
-        stylesheetInnerText += SetDisplayNone(menuItem);
-        console.log(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
+        stylesheetInnerText += SetDisplayNone(menuItem)
+        console.log(`[BetterSEQTA+] Hiding ${menuItem} menu item`)
       }
     }
 
-    const menuItemStyle: HTMLStyleElement = document.createElement('style');
-    menuItemStyle.innerText = stylesheetInnerText;
-    document.head.appendChild(menuItemStyle);
+    const menuItemStyle: HTMLStyleElement = document.createElement('style')
+    menuItemStyle.innerText = stylesheetInnerText
+    document.head.appendChild(menuItemStyle)
   } catch (error) {
-    console.error("An error occurred:", error);
+    console.error("An error occurred:", error)
   }
 }
 
 function OpenWhatsNewPopup() {
-  const background = document.createElement('div');
-  background.id = 'whatsnewbk';
-  background.classList.add('whatsnewBackground');
+  const background = document.createElement('div')
+  background.id = 'whatsnewbk'
+  background.classList.add('whatsnewBackground')
 
-  const container = document.createElement('div');
-  container.classList.add('whatsnewContainer');
+  const container = document.createElement('div')
+  container.classList.add('whatsnewContainer')
 
   var header: any = stringToHTML(`<div class="whatsnewHeader">
   <h1>What's New</h1>
   <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
-  </div>`).firstChild;
+  </div>`).firstChild
 
-  let imagecont = document.createElement('div');
-  imagecont.classList.add('whatsnewImgContainer');
-  let video = document.createElement('video');
-  let source = document.createElement('source');
-  source.setAttribute('src', browser.runtime.getURL('resources/update-video.mp4'));
-  source.setAttribute('type', 'video/mp4');
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.appendChild(source);
-  video.classList.add('whatsnewImg');
-  imagecont.appendChild(video);
+  let imagecont = document.createElement('div')
+  imagecont.classList.add('whatsnewImgContainer')
+  let video = document.createElement('video')
+  let source = document.createElement('source')
+  source.setAttribute('src', browser.runtime.getURL('resources/update-video.mp4'))
+  source.setAttribute('type', 'video/mp4')
+  video.autoplay = true
+  video.muted = true
+  video.loop = true
+  video.appendChild(source)
+  video.classList.add('whatsnewImg')
+  imagecont.appendChild(video)
 
-  let textcontainer = document.createElement('div');
-  textcontainer.classList.add('whatsnewTextContainer');
+  let textcontainer = document.createElement('div')
+  textcontainer.classList.add('whatsnewTextContainer')
 
   let textheader: any = stringToHTML(
     '<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>',
-  ).firstChild;
-  textcontainer.append(textheader);
+  ).firstChild
+  textcontainer.append(textheader)
 
   let text = stringToHTML(
     String.raw`
@@ -209,7 +209,7 @@ function OpenWhatsNewPopup() {
     <li>Found in the BetterSEQTA+ Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
   </div>
   `,
-  ).firstChild;
+  ).firstChild
 
   let footer = stringToHTML(
     String.raw`
@@ -228,30 +228,30 @@ function OpenWhatsNewPopup() {
         </a>
       </div>
     </div>
-  `).firstChild;
+  `).firstChild
 
-  let exitbutton = document.createElement('div');
-  exitbutton.id = 'whatsnewclosebutton';
+  let exitbutton = document.createElement('div')
+  exitbutton.id = 'whatsnewclosebutton'
 
-  container.append(header);
-  container.append(imagecont);
-  container.append(textcontainer);
-  container.append(text as ChildNode);
-  container.append(footer as ChildNode);
-  container.append(exitbutton);
+  container.append(header)
+  container.append(imagecont)
+  container.append(textcontainer)
+  container.append(text as ChildNode)
+  container.append(footer as ChildNode)
+  container.append(exitbutton)
 
-  background.append(container);
+  background.append(container)
 
-  document.getElementById('container')!.append(background);
+  document.getElementById('container')!.append(background)
 
-  let bkelement = document.getElementById('whatsnewbk');
-  let popup = document.getElementsByClassName('whatsnewContainer')[0];
+  let bkelement = document.getElementById('whatsnewbk')
+  let popup = document.getElementsByClassName('whatsnewContainer')[0]
 
   animate(
     [popup, bkelement as HTMLElement],
     { scale: [0, 1], opacity: [0, 1] },
     { easing: spring({ stiffness: 220, damping: 18 }) }
-  );
+  )
 
   animate(
     '.whatsnewTextContainer *',
@@ -261,109 +261,109 @@ function OpenWhatsNewPopup() {
       duration: 0.5,
       easing: [.22, .03, .26, 1]  
     }
-  );
+  )
 
-  browser.storage.local.remove(['justupdated']);
+  browser.storage.local.remove(['justupdated'])
 
   bkelement!.addEventListener('click', function (event) {
     // Check if the click event originated from the element itself and not any of its children
     if (event.target === bkelement) {
-      DeleteWhatsNew();
+      DeleteWhatsNew()
     }
   });  
 
-  var closeelement = document.getElementById('whatsnewclosebutton');
+  var closeelement = document.getElementById('whatsnewclosebutton')
   closeelement!.addEventListener('click', function () {
-    DeleteWhatsNew();
-  });
+    DeleteWhatsNew()
+  })
 }
 
 async function finishLoad() {
   try {
-    var loadingbk = document.getElementById('loading');
-    loadingbk!.style.opacity = '0';
-    await delay(501);
-    loadingbk!.remove();
+    var loadingbk = document.getElementById('loading')
+    loadingbk!.style.opacity = '0'
+    await delay(501)
+    loadingbk!.remove()
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
 
 
-  const result = browser.storage.local.get(['justupdated']);
+  const result = browser.storage.local.get(['justupdated'])
   function open (result: any) {
     if (result.justupdated && !document.getElementById('whatsnewbk')) {
-      OpenWhatsNewPopup();
+      OpenWhatsNewPopup()
     }
   }
   result.then(open, onError)
 }
 
 async function DeleteWhatsNew() {
-  const bkelement = document.getElementById('whatsnewbk');
-  const popup = document.getElementsByClassName('whatsnewContainer')[0];
+  const bkelement = document.getElementById('whatsnewbk')
+  const popup = document.getElementsByClassName('whatsnewContainer')[0]
   
   animate(
     [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
-    bkelement!.remove();
+    bkelement!.remove()
   }); 
 }
 
 export function CreateBackground() {
-  var bkCheck = document.getElementsByClassName('bg');
+  var bkCheck = document.getElementsByClassName('bg')
   if (bkCheck.length !== 0) {
-    return;
+    return
   }
   // Creating and inserting 3 divs containing the background applied to the pages
-  var bklocation = document.getElementById('container');
-  var menu = document.getElementById('menu');
-  var bk = document.createElement('div');
-  bk.classList.add('bg');
+  var bklocation = document.getElementById('container')
+  var menu = document.getElementById('menu')
+  var bk = document.createElement('div')
+  bk.classList.add('bg')
 
-  bklocation!.insertBefore(bk, menu);
+  bklocation!.insertBefore(bk, menu)
 
-  var bk2 = document.createElement('div');
-  bk2.classList.add('bg');
-  bk2.classList.add('bg2');
-  bklocation!.insertBefore(bk2, menu);
+  var bk2 = document.createElement('div')
+  bk2.classList.add('bg')
+  bk2.classList.add('bg2')
+  bklocation!.insertBefore(bk2, menu)
 
-  var bk3 = document.createElement('div');
-  bk3.classList.add('bg');
-  bk3.classList.add('bg3');
-  bklocation!.insertBefore(bk3, menu);
+  var bk3 = document.createElement('div')
+  bk3.classList.add('bg')
+  bk3.classList.add('bg3')
+  bklocation!.insertBefore(bk3, menu)
 }
 
 export function RemoveBackground() {
-  var bk = document.getElementsByClassName('bg');
-  var bk2 = document.getElementsByClassName('bg2');
-  var bk3 = document.getElementsByClassName('bg3');
+  var bk = document.getElementsByClassName('bg')
+  var bk2 = document.getElementsByClassName('bg2')
+  var bk3 = document.getElementsByClassName('bg3')
 
-  if (bk.length == 0 || bk2.length == 0 || bk3.length == 0) return;
-  bk[0].remove();
-  bk2[0].remove();
-  bk3[0].remove();
+  if (bk.length == 0 || bk2.length == 0 || bk3.length == 0) return
+  bk[0].remove()
+  bk2[0].remove()
+  bk3[0].remove()
 }
 
 export function waitForElm(selector: any) {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector));
+      return resolve(document.querySelector(selector))
     }
 
     const observer = new MutationObserver(() => {
       if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector));
-        observer.disconnect();
+        resolve(document.querySelector(selector))
+        observer.disconnect()
       }
-    });
+    })
 
     observer.observe(document.body, {
       childList: true,
       subtree: true,
-    });
-  });
+    })
+  })
 }
 
 export function GetCSSElement (file: string) {
@@ -394,55 +394,55 @@ function removeThemeTagsFromNotices () {
 
 async function updateIframesWithDarkMode(): Promise<void> {
   // Load the CSS file to overwrite iFrame default CSS
-  const cssLink = document.createElement('style');
-  const cssContent = document.createTextNode(iframeCSS);
-  cssLink.appendChild(cssContent);
+  const cssLink = document.createElement('style')
+  const cssContent = document.createTextNode(iframeCSS)
+  cssLink.appendChild(cssContent)
 
   const observer = new MutationObserver(async (mutationsList) => {
     for (const mutation of mutationsList) {
       for (const node of mutation.addedNodes) {
         if (node.nodeName === 'IFRAME') {
-          const iframe = node as HTMLIFrameElement;
+          const iframe = node as HTMLIFrameElement
           try {
-            const settings = await browser.storage.local.get('DarkMode') as SettingsState;
+            const settings = await browser.storage.local.get('DarkMode') as SettingsState
             if (settings.DarkMode) {
-              applyDarkModeToIframe(iframe, cssLink);
+              applyDarkModeToIframe(iframe, cssLink)
             }
           } catch (error) {
-            console.error('Error applying dark mode:', error);
+            console.error('Error applying dark mode:', error)
           }
         }
       }
     }
-  });
+  })
 
-  observer.observe(document.body, { subtree: true, childList: true });
+  observer.observe(document.body, { subtree: true, childList: true })
 }
 
 function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement): void {
-  const iframeDocument = iframe.contentDocument;
-  if (!iframeDocument) return;
+  const iframeDocument = iframe.contentDocument
+  if (!iframeDocument) return
 
-  const body = iframeDocument.body;
+  const body = iframeDocument.body
   if (body && body.style.color !== 'white') {
-    body.style.color = 'white';
+    body.style.color = 'white'
   }
 
-  const head = iframeDocument.head;
+  const head = iframeDocument.head
   if (head && !head.innerHTML.includes('iframe.css')) {
-    head.appendChild(cssLink);
+    head.appendChild(cssLink)
   }
 }
 
 function SortMessagePageItems(messagesParentElement: any) {
-  let filterbutton = document.createElement('div');
-  filterbutton.classList.add('messages-filterbutton');
-  filterbutton.innerText = 'Filter';
+  let filterbutton = document.createElement('div')
+  filterbutton.classList.add('messages-filterbutton')
+  filterbutton.innerText = 'Filter'
 
   let header = document.getElementsByClassName(
     'MessageList__MessageList___3DxoC',
-  )[0].firstChild as HTMLElement;
-  header.append(filterbutton);
+  )[0].firstChild as HTMLElement
+  header.append(filterbutton)
   messagesParentElement
 
   /* const observer = new MutationObserver(function (mutations_list) {
@@ -452,9 +452,9 @@ function SortMessagePageItems(messagesParentElement: any) {
         if (node.dataset.message) {
           // Check if added_node.firstChild.title is in block list
         }
-      });
-    });
-  });
+      })
+    })
+  })
 
   observer.observe(messagesParentElement, {
     subtree: true,
@@ -463,42 +463,42 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements(true);
-  const sublink: string | undefined = window.location.href.split('/')[4];
+  await AddBetterSEQTAElements(true)
+  const sublink: string | undefined = window.location.href.split('/')[4]
 
   async function handleNewsPage(): Promise<void> {
-    console.log('[BetterSEQTA+] Started Init');
-    const settings: SettingsState = await browser.storage.local.get() as SettingsState;
+    console.log('[BetterSEQTA+] Started Init')
+    const settings: SettingsState = await browser.storage.local.get() as SettingsState
     if (settings.onoff) {
-      SendNewsPage();
-      const notificationSettings: SettingsState = await browser.storage.local.get() as SettingsState;
+      SendNewsPage()
+      const notificationSettings: SettingsState = await browser.storage.local.get() as SettingsState
       if (notificationSettings.notificationcollector) {
-        enableNotificationCollector();
+        enableNotificationCollector()
       }
-      finishLoad();
+      finishLoad()
     }
   }
 
   async function handleDefault(): Promise<void> {
-    finishLoad();
-    const settings: SettingsState = await browser.storage.local.get() as SettingsState;
+    finishLoad()
+    const settings: SettingsState = await browser.storage.local.get() as SettingsState
     if (settings.notificationcollector) {
-      enableNotificationCollector();
+      enableNotificationCollector()
     }
   }
 
   switch (sublink) {
     case 'news':
-      await handleNewsPage();
-      break;
+      await handleNewsPage()
+      break
     case 'home':
     case undefined:
-      window.location.replace(`${location.origin}/#?page=/home`);
-      LoadInit();
-      break;
+      window.location.replace(`${location.origin}/#?page=/home`)
+      LoadInit()
+      break
     default:
-      await handleDefault();
-      break;
+      await handleDefault()
+      break
   }
 
   const observer = new MutationObserver(function (mutations_list) {
@@ -506,110 +506,110 @@ async function LoadPageElements(): Promise<void> {
       mutation.addedNodes.forEach(function (added_node) {
         const node = added_node as HTMLElement
         if (node.classList.contains('messages')) {
-          let element = document.getElementById('title')!.firstChild as HTMLElement;
-          element.innerText = 'Direct Messages';
-          document.title = 'Direct Messages ― SEQTA Learn';
-          SortMessagePageItems(added_node);
+          let element = document.getElementById('title')!.firstChild as HTMLElement
+          element.innerText = 'Direct Messages'
+          document.title = 'Direct Messages ― SEQTA Learn'
+          SortMessagePageItems(added_node)
         } else if (node.classList.contains('notices')) {
-          CheckNoticeTextColour(added_node);
+          CheckNoticeTextColour(added_node)
         }
-      });
-    });
-  });
+      })
+    })
+  })
 
   observer.observe(document.querySelector('#main') as HTMLElement, {
     subtree: false,
     childList: true,
-  });
+  })
 }
 
 function CheckNoticeTextColour(notice: any) {
   const observer = new MutationObserver(function (mutations_list) {
     mutations_list.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement;
+        const node = added_node as HTMLElement
         const result = browser.storage.local.get(['DarkMode']) 
         function open (result: any) {
-          DarkMode = result.DarkMode;
+          DarkMode = result.DarkMode
           if (node.classList.contains('notice')) {
-            var hex = node.style.cssText.split(' ')[1];
+            var hex = node.style.cssText.split(' ')[1]
             if (hex) {
             const hex1 = hex.slice(0,-1)
-            var threshold = GetThresholdOfColor(hex1);
+            var threshold = GetThresholdOfColor(hex1)
             if (DarkMode && threshold < 100) {
-              node.style.cssText = '--color: undefined;';
+              node.style.cssText = '--color: undefined;'
             }
           }
           }
         }
         result.then(open, onError)
-      });
-    });
-  });
+      })
+    })
+  })
 
   observer.observe(notice, {
     subtree: true,
     childList: true,
-  });
+  })
 }
 
 export function tryLoad() {
   waitForElm('.login').then(() => {
-    finishLoad();
-  });
+    finishLoad()
+  })
 
   waitForElm('.day-container').then(() => {
-    finishLoad();
-  });
+    finishLoad()
+  })
 
   waitForElm('[data-key=welcome]').then((elm: any) => {
-    elm.classList.remove('active');
-  });
+    elm.classList.remove('active')
+  })
 
   waitForElm('.code').then((elm: any) => {
-    if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements();
-  });
+    if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements()
+  })
 
   // Waits for page to call on load, run scripts
   document.addEventListener(
     'load',
     function () {
-      updateIframesWithDarkMode();
-      removeThemeTagsFromNotices();
-      documentTextColor();
+      updateIframesWithDarkMode()
+      removeThemeTagsFromNotices()
+      documentTextColor()
     },
     true,
-  );
+  )
   const observer = new MutationObserver(() => { documentTextColor() })
   observer.observe(document!, { attributes: true, childList: true, subtree: true, attributeFilter: ['td'], })
 }
 
 function ChangeMenuItemPositions(storage: any) {
-  let menuorder = storage;
+  let menuorder = storage
 
-  var menuList = document.querySelector('#menu')!.firstChild!.childNodes;
+  var menuList = document.querySelector('#menu')!.firstChild!.childNodes
 
-  let listorder = [];
+  let listorder = []
   for (let i = 0; i < menuList.length; i++) {
     const menu = menuList[i] as HTMLElement
 
-    let a = menuorder.indexOf(menu.dataset.key);
+    let a = menuorder.indexOf(menu.dataset.key)
 
-    listorder.push(a);
+    listorder.push(a)
   }
 
-  var newArr = [];
+  var newArr = []
   for (var i = 0; i < listorder.length; i++) {
-    newArr[listorder[i]] = menuList[i];
+    newArr[listorder[i]] = menuList[i]
   }
 
-  let listItemsDOM = document.getElementById('menu')!.firstChild;
+  let listItemsDOM = document.getElementById('menu')!.firstChild
   for (let i = 0; i < newArr.length; i++) {
-    const element = newArr[i];
+    const element = newArr[i]
     if (element) {
       const elem = element as HTMLElement
-      elem.setAttribute('data-checked', 'true');
-      listItemsDOM!.appendChild(element);
+      elem.setAttribute('data-checked', 'true')
+      listItemsDOM!.appendChild(element)
     }
   }
 }
@@ -617,7 +617,7 @@ function ChangeMenuItemPositions(storage: any) {
 export async function ObserveMenuItemPosition() {
   const result = browser.storage.local.get()
   function open (result: any) {
-    let menuorder = result.menuorder;
+    let menuorder = result.menuorder
     if (menuorder && result.onoff) {
       const observer = new MutationObserver(function (mutations_list) {
         mutations_list.forEach(function (mutation) {
@@ -629,18 +629,18 @@ export async function ObserveMenuItemPosition() {
                 ReplaceMenuSVG(
                   node,
                   MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-                );
+                )
               }
-              ChangeMenuItemPositions(menuorder);
+              ChangeMenuItemPositions(menuorder)
             }
-          });
-        });
-      });
+          })
+        })
+      })
 
       observer.observe(document.querySelector('#menu')!.firstChild!, {
         subtree: true,
         childList: true,
-      });
+      })
     }
   }
   result.then(open, onError)
@@ -649,7 +649,7 @@ export async function ObserveMenuItemPosition() {
 function main(storedSetting: SettingsState) {
   // Handle undefined onoff setting
   if (typeof storedSetting.onoff === 'undefined') {
-    browser.runtime.sendMessage({ type: 'setDefaultStorage' });
+    browser.runtime.sendMessage({ type: 'setDefaultStorage' })
   }
 
   if (storedSetting.telemetry && storedSetting.onoff) {
@@ -667,219 +667,219 @@ function main(storedSetting: SettingsState) {
       // Session Replay
       replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
       replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-    });
+    })
   }
 
   const handleDisabled = () => {
-    waitForElm('.code').then(AppendElementsToDisabledPage);
-  };
+    waitForElm('.code').then(AppendElementsToDisabledPage)
+  }
 
   if (storedSetting.DarkMode) {
-    console.log('[BetterSEQTA+] Enabled');
+    console.log('[BetterSEQTA+] Enabled')
     if (DarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     }
     
-    updateAllColors(storedSetting);
-    loading();
-    InjectCustomIcons();
-    HideMenuItems();
-    CheckLoadOnPeriods();
-    tryLoad();
+    updateAllColors(storedSetting)
+    loading()
+    InjectCustomIcons()
+    HideMenuItems()
+    CheckLoadOnPeriods()
+    tryLoad()
     
-    window.addEventListener('load', tryLoad);
+    window.addEventListener('load', tryLoad)
   } else {
     handleDisabled()
-    window.addEventListener('load', handleDisabled);
+    window.addEventListener('load', handleDisabled)
   }
 }
 
 function InjectCustomIcons() {
-  const fontURL = browser.runtime.getURL('fonts/IconFamily.woff');
+  const fontURL = browser.runtime.getURL('fonts/IconFamily.woff')
 
-  const style = document.createElement('style');
-  style.setAttribute('type', 'text/css');
+  const style = document.createElement('style')
+  style.setAttribute('type', 'text/css')
   style.innerHTML = `
     @font-face {
-      font-family: 'IconFamily';
-      src: url('${fontURL}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-  document.head.appendChild(style);
+      font-family: 'IconFamily'
+      src: url('${fontURL}') format('woff')
+      font-weight: normal
+      font-style: normal
+    }`
+  document.head.appendChild(style)
 }
 
 export function AppendElementsToDisabledPage() {
-  AddBetterSEQTAElements(false);
+  AddBetterSEQTAElements(false)
 
-  let settingsStyle = document.createElement('style');
+  let settingsStyle = document.createElement('style')
   settingsStyle.innerText = `
   .addedButton {
-    position: absolute !important;
-    right: 50px;
-    width: 35px;
-    height: 35px;
-    padding: 6px !important;
-    overflow: unset !important;
-    border-radius: 50%;
-    margin: 7px !important;
-    cursor: pointer;
-    color: white !important;
+    position: absolute !important
+    right: 50px
+    width: 35px
+    height: 35px
+    padding: 6px !important
+    overflow: unset !important
+    border-radius: 50%
+    margin: 7px !important
+    cursor: pointer
+    color: white !important
   }
   .addedButton svg {
-    margin: 6px;
+    margin: 6px
   }
   .outside-container {
-    top: 48px !important;
+    top: 48px !important
   }
   #ExtensionPopup {
-    border-radius: 1rem;
-    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
-    transform-origin: 70% 0;
+    border-radius: 1rem
+    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6)
+    transform-origin: 70% 0
   }
-  `;
-  document.head.append(settingsStyle);
+  `
+  document.head.append(settingsStyle)
 }
 
-new StorageListener();
-new MessageHandler();
+new StorageListener()
+new MessageHandler()
 
-var PageLoaded = false;
+var PageLoaded = false
 async function CheckLoadOnPeriods() {
   if (!PageLoaded) {
-    await delay(1000);
-    var code = document.getElementsByClassName('code')[0];
+    await delay(1000)
+    var code = document.getElementsByClassName('code')[0]
     if (code && !UserInitalCode) {
-      LoadPageElements();
-      finishLoad();
-      PageLoaded = true;
+      LoadPageElements()
+      finishLoad()
+      PageLoaded = true
     }
     if (!code) {
-      CheckLoadOnPeriods();
+      CheckLoadOnPeriods()
     }
   }
 }
 
 export function closeSettings() {
-  const ExtensionSettings = document.getElementById('ExtensionPopup')!;
-  const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
+  const ExtensionSettings = document.getElementById('ExtensionPopup')!
+  const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
 
   if (SettingsClicked == true) {
-    ExtensionSettings!.classList.add('hide');
+    ExtensionSettings!.classList.add('hide')
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: spring({ stiffness: 220, damping: 18 }) }
-    );
-    SettingsClicked = false;
+    )
+    SettingsClicked = false
 
     if (ExtensionIframe.contentWindow) {
-      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*')
     }
   }
 
-  ExtensionSettings!.classList.add('hide');
+  ExtensionSettings!.classList.add('hide')
 }
 
 function addExtensionSettings() {
-  const link = GetCSSElement('src/interface/popup.css');
-  document.querySelector('html')!.appendChild(link);
+  const link = GetCSSElement('src/interface/popup.css')
+  document.querySelector('html')!.appendChild(link)
 
-  const extensionPopup = document.createElement('div');
-  extensionPopup.classList.add('outside-container', 'hide');
-  extensionPopup.id = 'ExtensionPopup';
-  document.body.appendChild(extensionPopup);
+  const extensionPopup = document.createElement('div')
+  extensionPopup.classList.add('outside-container', 'hide')
+  extensionPopup.id = 'ExtensionPopup'
+  document.body.appendChild(extensionPopup)
 
-  const extensionIframe: HTMLIFrameElement = document.createElement('iframe');
-  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`;
-  extensionIframe.id = 'ExtensionIframe';
-  extensionIframe.setAttribute('allowTransparency', 'true');
-  extensionIframe.setAttribute('excludeDarkCheck', 'true');
-  extensionIframe.style.width = '384px';
-  extensionIframe.style.height = '600px';
-  extensionIframe.style.border = 'none';
-  extensionPopup.appendChild(extensionIframe);
+  const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
+  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
+  extensionIframe.id = 'ExtensionIframe'
+  extensionIframe.setAttribute('allowTransparency', 'true')
+  extensionIframe.setAttribute('excludeDarkCheck', 'true')
+  extensionIframe.style.width = '384px'
+  extensionIframe.style.height = '600px'
+  extensionIframe.style.border = 'none'
+  extensionPopup.appendChild(extensionIframe)
 
-  const container = document.getElementById('container');
+  const container = document.getElementById('container')
   
   const closeExtensionPopup = () => {
-    const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement;
+    const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
 
-    extensionPopup.classList.add('hide');
+    extensionPopup.classList.add('hide')
     animate(
       '#ExtensionPopup',
       { opacity: [1, 0], scale: [1, 0] },
       { easing: [.22, .03, .26, 1] }
-    );
+    )
     if (ExtensionIframe.contentWindow) {
-      ExtensionIframe.contentWindow.postMessage('popupClosed', '*');
+      ExtensionIframe.contentWindow.postMessage('popupClosed', '*')
     }
-    SettingsClicked = false;
-  };
+    SettingsClicked = false
+  }
 
   container!.onclick = (event) => {
     if ((event.target as HTMLElement).closest('#AddedSettings') == null && SettingsClicked) {
       closeExtensionPopup()
     }
-  };
+  }
 }
 
 export function OpenMenuOptions() {
   const result = browser.storage.local.get()
   function open (result: any) {
-    var container = document.getElementById('container');
-    var menu = document.getElementById('menu');
+    var container = document.getElementById('container')
+    var menu = document.getElementById('menu')
 
     if (result.defaultmenuorder.length == '0') {
-      let childnodes = menu!.firstChild!.childNodes;
-      let newdefaultmenuorder = [];
+      let childnodes = menu!.firstChild!.childNodes
+      let newdefaultmenuorder = []
       for (let i = 0; i < childnodes.length; i++) {
-        const element = childnodes[i];
-        newdefaultmenuorder.push((element as HTMLElement).dataset.key);
-        browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
+        const element = childnodes[i]
+        newdefaultmenuorder.push((element as HTMLElement).dataset.key)
+        browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
       }
     }
-    let childnodes = menu!.firstChild!.childNodes;
+    let childnodes = menu!.firstChild!.childNodes
     if (result.defaultmenuorder.length != childnodes.length) {
       for (let i = 0; i < childnodes.length; i++) {
-        const element = childnodes[i];
+        const element = childnodes[i]
         if (!result.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
-          let newdefaultmenuorder = result.defaultmenuorder;
-          newdefaultmenuorder.push((element as HTMLElement).dataset.key);
-          browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder });
+          let newdefaultmenuorder = result.defaultmenuorder
+          newdefaultmenuorder.push((element as HTMLElement).dataset.key)
+          browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
         }
       }
     }
 
-    MenuOptionsOpen = true;
+    MenuOptionsOpen = true
 
-    let cover = document.createElement('div');
-    cover.classList.add('notMenuCover');
-    menu!.style.zIndex = '20';
-    menu!.style.setProperty('--menuHidden', 'flex');
-    container!.append(cover);
+    let cover = document.createElement('div')
+    cover.classList.add('notMenuCover')
+    menu!.style.zIndex = '20'
+    menu!.style.setProperty('--menuHidden', 'flex')
+    container!.append(cover)
 
-    let menusettings = document.createElement('div');
-    menusettings.classList.add('editmenuoption-container');
+    let menusettings = document.createElement('div')
+    menusettings.classList.add('editmenuoption-container')
 
-    let defaultbutton = document.createElement('div');
-    defaultbutton.classList.add('editmenuoption');
-    defaultbutton.innerText = 'Restore Default';
-    defaultbutton.id = 'restoredefaultoption';
+    let defaultbutton = document.createElement('div')
+    defaultbutton.classList.add('editmenuoption')
+    defaultbutton.innerText = 'Restore Default'
+    defaultbutton.id = 'restoredefaultoption'
 
-    let savebutton = document.createElement('div');
-    savebutton.classList.add('editmenuoption');
-    savebutton.innerText = 'Save';
-    savebutton.id = 'restoredefaultoption';
+    let savebutton = document.createElement('div')
+    savebutton.classList.add('editmenuoption')
+    savebutton.innerText = 'Save'
+    savebutton.id = 'restoredefaultoption'
 
-    menusettings.appendChild(defaultbutton);
-    menusettings.appendChild(savebutton);
+    menusettings.appendChild(defaultbutton)
+    menusettings.appendChild(savebutton)
 
-    menu!.appendChild(menusettings);
+    menu!.appendChild(menusettings)
 
-    let ListItems = menu!.firstChild!.childNodes;
+    let ListItems = menu!.firstChild!.childNodes
     for (let i = 0; i < ListItems.length; i++) {
-      const element1 = ListItems[i];
+      const element1 = ListItems[i]
       const element = element1 as HTMLElement
 
       (element as HTMLElement).classList.add('draggable');
@@ -889,9 +889,9 @@ export function OpenMenuOptions() {
       }
 
       let MenuItemToggle = stringToHTML(
-        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
+        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`
       ).firstChild;
-      (element as HTMLElement).append(MenuItemToggle!);
+      (element as HTMLElement).append(MenuItemToggle!)
 
       if (!element.dataset.betterseqta) {
         const a = document.createElement('section')
@@ -903,98 +903,98 @@ export function OpenMenuOptions() {
     }
 
     if (Object.keys(result.menuitems).length == 0) {
-      menubuttons = menu!.firstChild!.childNodes;
-      var menuItems = {};
+      menubuttons = menu!.firstChild!.childNodes
+      var menuItems = {}
       for (var i = 0; i < menubuttons.length; i++) {
-        var id = (menubuttons[i] as HTMLElement).dataset.key;
-        const element: any = {};
+        var id = (menubuttons[i] as HTMLElement).dataset.key
+        const element: any = {}
         element.toggle = true;
         (menuItems[id as keyof typeof menuItems] as any) = element;
       }
-      browser.storage.local.set({ menuitems: menuItems });
+      browser.storage.local.set({ menuitems: menuItems })
     }
 
-    var menubuttons: any = document.getElementsByClassName('menuitem');
+    var menubuttons: any = document.getElementsByClassName('menuitem')
     const result1 = browser.storage.local.get(['menuitems'])
     function open (result: any) {
-      var menuItems = result.menuitems;
-      let buttons = document.getElementsByClassName('menuitem');
+      var menuItems = result.menuitems
+      let buttons = document.getElementsByClassName('menuitem')
       for (var i = 0; i < buttons.length; i++) {
-        var id = buttons[i].id;
+        var id = buttons[i].id
         if (menuItems[id]) {
-          (buttons[i] as HTMLInputElement).checked = menuItems[id].toggle;
+          (buttons[i] as HTMLInputElement).checked = menuItems[id].toggle
         }
         if (!menuItems[id]) {
-          (buttons[i] as HTMLInputElement).checked = true;
+          (buttons[i] as HTMLInputElement).checked = true
         }
       }
     }
-    result1.then(open, onError);
+    result1.then(open, onError)
 
     try {  
-      var el = document.querySelector('#menu > ul');
+      var el = document.querySelector('#menu > ul')
       var sortable = Sortable.create((el as HTMLElement), {
         draggable: '.draggable',
         dataIdAttr: 'data-key',
         animation: 150,
         easing: "cubic-bezier(.5,0,.5,1)",
         onEnd: function () {
-          saveNewOrder(sortable);
+          saveNewOrder(sortable)
         },
       });  
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
 
     function changeDisplayProperty(element: any) {
       if (!element.checked) {
-        element.parentNode.parentNode.style.display = 'var(--menuHidden)';
+        element.parentNode.parentNode.style.display = 'var(--menuHidden)'
       }
       if (element.checked) {
         element.parentNode.parentNode.style.setProperty(
           'display',
           'flex',
           'important',
-        );
+        )
       }
     }
 
     function StoreMenuSettings() {
-      const menuItems: any = {};
+      const menuItems: any = {}
       const menubuttons = menu!.firstChild!.childNodes
       const button = document.getElementsByClassName('menuitem')
       for (let i = 0; i < menubuttons.length; i++) {
-        const id = (menubuttons[i] as HTMLElement).dataset.key;
-        const element: any = {};
+        const id = (menubuttons[i] as HTMLElement).dataset.key
+        const element: any = {}
         element.toggle = (button[i] as HTMLInputElement).checked
 
-        menuItems[id as keyof typeof menuItems] = element;
+        menuItems[id as keyof typeof menuItems] = element
       }
       browser.storage.local.set({ menuitems: menuItems })
     }
 
     for (let i = 0; i < menubuttons.length; i++) {
-      const element = menubuttons[i];
+      const element = menubuttons[i]
       element.addEventListener('change', () => {
-        element.parentElement.parentElement.getAttribute('data-key');
-        StoreMenuSettings();
-        changeDisplayProperty(element);
-      });
+        element.parentElement.parentElement.getAttribute('data-key')
+        StoreMenuSettings()
+        changeDisplayProperty(element)
+      })
     }
 
     function closeAll() {
-      console.log("Closing!");
-      ListItems = menu!.firstChild!.childNodes;
-      menusettings.remove();
-      cover.remove();
-      MenuOptionsOpen = false;
-      menu!.style.setProperty('--menuHidden', 'none');
+      console.log("Closing!")
+      ListItems = menu!.firstChild!.childNodes
+      menusettings.remove()
+      cover.remove()
+      MenuOptionsOpen = false
+      menu!.style.setProperty('--menuHidden', 'none')
 
       for (let i = 0; i < ListItems.length; i++) {
-        const element1 = ListItems[i];
+        const element1 = ListItems[i]
         const element = element1 as HTMLElement
-        element.classList.remove('draggable');
-        element.setAttribute('draggable', 'false');
+        element.classList.remove('draggable')
+        element.setAttribute('draggable', 'false')
 
 
         if (!element.dataset.betterseqta) {
@@ -1006,107 +1006,107 @@ export function OpenMenuOptions() {
         }
       }
 
-      let switches = menu!.querySelectorAll('.onoffswitch');
+      let switches = menu!.querySelectorAll('.onoffswitch')
       for (let i = 0; i < switches.length; i++) {
-        switches[i].remove();
+        switches[i].remove()
       }
 
     }
 
-    cover.addEventListener('click', closeAll);
-    savebutton.addEventListener('click', closeAll);
+    cover.addEventListener('click', closeAll)
+    savebutton.addEventListener('click', closeAll)
 
     defaultbutton.addEventListener('click', function () {
       const result = browser.storage.local.get()
       function open (response: any) {
-        const options = response.defaultmenuorder;
-        browser.storage.local.set({ menuorder: options });
-        ChangeMenuItemPositions(options);
+        const options = response.defaultmenuorder
+        browser.storage.local.set({ menuorder: options })
+        ChangeMenuItemPositions(options)
 
         for (let i = 0; i < menubuttons.length; i++) {
-          const element = menubuttons[i];
-          element.checked = true;
+          const element = menubuttons[i]
+          element.checked = true
           element.parentNode.parentNode.style.setProperty(
             'display',
             'flex',
             'important',
-          );
+          )
         }
-        saveNewOrder(sortable);
+        saveNewOrder(sortable)
       }
       result.then(open, onError)
-    });
+    })
   }
   result.then(open, onError)
 }
 
 function saveNewOrder(sortable: any) {
-  var order = sortable.toArray();
-  browser.storage.local.set({ menuorder: order });
+  var order = sortable.toArray()
+  browser.storage.local.set({ menuorder: order })
 }
 
 function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
-    target.setAttribute(attr.nodeName, attr.nodeValue);
-  });
+    target.setAttribute(attr.nodeName, attr.nodeValue)
+  })
 }
 
 function ReplaceMenuSVG(element: HTMLElement, svg: string) {
-  let item = element.firstChild as HTMLElement;
-  item!.firstChild!.remove();
+  let item = element.firstChild as HTMLElement
+  item!.firstChild!.remove()
 
   if (element.dataset.key == 'messages') {
-    (element!.firstChild! as HTMLElement).innerText! = 'Direct Messages';
+    (element!.firstChild! as HTMLElement).innerText! = 'Direct Messages'
   }
 
-  let newsvg = stringToHTML(svg).firstChild;
-  item.insertBefore((newsvg as Node), item.firstChild);
+  let newsvg = stringToHTML(svg).firstChild
+  item.insertBefore((newsvg as Node), item.firstChild)
 }
 
 async function AddBetterSEQTAElements(toggle: any) {
-  const code = document.getElementsByClassName('code')[0];
+  const code = document.getElementsByClassName('code')[0]
   // Replaces students code with the version of BetterSEQTA
   if (code != null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
-      UserInitalCode = code.innerHTML;
-      code.innerHTML = `BetterSEQTA v${browser.runtime.getManifest().version}`;
-      code.setAttribute('data-hover', 'Click for user code');
+      UserInitalCode = code.innerHTML
+      code.innerHTML = `BetterSEQTA v${browser.runtime.getManifest().version}`
+      code.setAttribute('data-hover', 'Click for user code')
       code.addEventListener('click', function () {
-        var code = document.getElementsByClassName('code')[0];
+        var code = document.getElementsByClassName('code')[0]
         if (code.innerHTML.includes('BetterSEQTA')) {
-          code.innerHTML = UserInitalCode;
-          code.setAttribute('data-hover', 'Click for BetterSEQTA version');
+          code.innerHTML = UserInitalCode
+          code.setAttribute('data-hover', 'Click for BetterSEQTA version')
         } else {
           code.innerHTML = `BetterSEQTA v${
             browser.runtime.getManifest().version
-          }`;
-          code.setAttribute('data-hover', 'Click for user code');
+          }`
+          code.setAttribute('data-hover', 'Click for user code')
         }
-      });
+      })
       if (toggle) {
         // Creates Home menu button and appends it as the first child of the list
 
-        const result = await browser.storage.local.get();
+        const result = await browser.storage.local.get()
 
-        animbkEnable(result);
-        updateBgDurations(result);
+        animbkEnable(result)
+        updateBgDurations(result)
 
-        DarkMode = result.DarkMode;
+        DarkMode = result.DarkMode
         if (DarkMode) {
-          document.documentElement.classList.add('dark');
+          document.documentElement.classList.add('dark')
         }
 
-        const container = document.getElementById('content')!;
+        const container = document.getElementById('content')!
         const div = document.createElement('div')
-        div.classList.add('titlebar');
-        container.append(div);
-        const NewButton = stringToHTML('<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>');
+        div.classList.add('titlebar')
+        container.append(div)
+        const NewButton = stringToHTML('<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>')
 
-        const menu = document.getElementById('menu')!;
-        const List = menu.firstChild! as HTMLElement;
+        const menu = document.getElementById('menu')!
+        const List = menu.firstChild! as HTMLElement
         
         if (NewButton.firstChild) {
-          List.insertBefore(NewButton.firstChild, List.firstChild);
+          List.insertBefore(NewButton.firstChild, List.firstChild)
         }
 
         try {
@@ -1121,25 +1121,25 @@ async function AddBetterSEQTAElements(toggle: any) {
               query: null,
               redirect_url: location.origin,
             }),
-          });
+          })
       
           // Parse the JSON response and wait for it
-          const responseData = await response.json();
-          let info = responseData.payload;
+          const responseData = await response.json()
+          let info = responseData.payload
       
           // Manipulate the DOM as needed
-          const titlebar = document.getElementsByClassName('titlebar')[0];
+          const titlebar = document.getElementsByClassName('titlebar')[0]
           const userInfo = stringToHTML(
             '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
-          ).firstChild;
-          titlebar.append(userInfo!);
+          ).firstChild
+          titlebar.append(userInfo!)
       
-          const userinfo = stringToHTML(`<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`).firstChild;
-          titlebar.append(userinfo!);
+          const userinfo = stringToHTML(`<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`).firstChild
+          titlebar.append(userinfo!)
       
-          var logoutbutton = document.getElementsByClassName('logout')[0];
-          var userInfosvgdiv = document.getElementById('logouttooltip')!;
-          userInfosvgdiv.appendChild(logoutbutton);
+          var logoutbutton = document.getElementsByClassName('logout')[0]
+          var userInfosvgdiv = document.getElementById('logouttooltip')!
+          userInfosvgdiv.appendChild(logoutbutton)
 
           // Await the fetch response
           const peopleResponse = await fetch(`${location.origin}/seqta/student/load/message/people`, {
@@ -1148,211 +1148,211 @@ async function AddBetterSEQTAElements(toggle: any) {
               'Content-Type': 'application/json; charset=utf-8',
             },
             body: JSON.stringify({ mode: 'student' }),
-          });
+          })
       
           // Await the JSON parsing of the response
-          const peopleResponseData = await peopleResponse.json();
-          let students = peopleResponseData.payload;
+          const peopleResponseData = await peopleResponse.json()
+          let students = peopleResponseData.payload
       
           // Process the students data
           var index = students.findIndex(function (person: any) {
             return (
               person.firstname == info.userDesc.split(' ')[0] &&
               person.surname == info.userDesc.split(' ')[1]
-            );
-          });
+            )
+          })
       
-          let houseelement1 = document.getElementsByClassName('userInfohouse')[0];
+          let houseelement1 = document.getElementsByClassName('userInfohouse')[0]
           const houseelement = houseelement1 as HTMLElement
           if (students[index]?.house) {
-            (houseelement as HTMLElement).style.background = students[index].house_colour;
+            (houseelement as HTMLElement).style.background = students[index].house_colour
             try {
-              let colorresult = GetThresholdOfColor(students[index]?.house_colour);
+              let colorresult = GetThresholdOfColor(students[index]?.house_colour)
 
-              houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white';
-              houseelement.innerText = students[index].year + students[index].house;
+              houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white'
+              houseelement.innerText = students[index].year + students[index].house
             } catch (error) {
-              houseelement.innerText = students[index].house;
+              houseelement.innerText = students[index].house
             }
           } else {
-            houseelement.innerText = students[index].year;
+            houseelement.innerText = students[index].year
           }
       
         } catch (error) {
-          console.error('Error fetching and processing student data:', error);
+          console.error('Error fetching and processing student data:', error)
         }
 
-        const NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>';
-        const NewsButton = stringToHTML(NewsButtonStr);
-        List!.appendChild(NewsButton.firstChild!);
+        const NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg>News</label></li>'
+        const NewsButton = stringToHTML(NewsButtonStr)
+        List!.appendChild(NewsButton.firstChild!)
 
-        let a = document.createElement('div');
-        a.classList.add('icon-cover');
-        a.id = 'icon-cover';
-        menu!.appendChild(a);
+        let a = document.createElement('div')
+        a.classList.add('icon-cover')
+        a.id = 'icon-cover'
+        menu!.appendChild(a)
 
-        const menuCover = document.querySelector('#icon-cover');
+        const menuCover = document.querySelector('#icon-cover')
         menuCover!.addEventListener('click', function () {
-          location.href = '../#?page=/home';
+          location.href = '../#?page=/home'
           SendHomePage();
           (document!
             .getElementById('menu')!
-            .firstChild! as HTMLElement).classList.remove('noscroll');
-        });
+            .firstChild! as HTMLElement).classList.remove('noscroll')
+        })
         // Creates the home container when the menu button is pressed
-        const homebutton = document.getElementById('homebutton');
+        const homebutton = document.getElementById('homebutton')
         homebutton!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
-            SendHomePage();
+            SendHomePage()
           }
-        });
+        })
 
         // Creates the news container when the menu button is pressed
-        const newsbutton = document.getElementById('newsbutton');
+        const newsbutton = document.getElementById('newsbutton')
         newsbutton!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
-            SendNewsPage();
+            SendNewsPage()
           }
-        });
+        })
       }
 
-      appendBackgroundToUI();
-      addExtensionSettings();
+      appendBackgroundToUI()
+      addExtensionSettings()
 
       // If betterSEQTA+ is enabled, run the code
       if (toggle) {
         // Creates settings and dashboard buttons next to alerts
         let SettingsButton = stringToHTML(
           '<button class="addedButton tooltip" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg><div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div></button>',
-        );
-        let ContentDiv = document.getElementById('content');
-        ContentDiv!.append(SettingsButton.firstChild!);
+        )
+        let ContentDiv = document.getElementById('content')
+        ContentDiv!.append(SettingsButton.firstChild!)
 
         const result: any = await new Promise(resolve => {
-          const result = browser.storage.local.get();
+          const result = browser.storage.local.get()
           result.then(resolve, onError)
-        });
+        })
         
-        const DarkMode = result!.DarkMode;
-        const tooltipString = GetLightDarkModeString(DarkMode);
+        const DarkMode = result!.DarkMode
+        const tooltipString = GetLightDarkModeString(DarkMode)
         const svgContent = DarkMode ? '<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>' :
-          '<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>';
+          '<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>'
         
         const LightDarkModeButton = stringToHTML(`
           <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
             <svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>
             <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipString}</div>
           </button>
-        `);
+        `)
         
-        ContentDiv!.append(LightDarkModeButton.firstChild!);
+        ContentDiv!.append(LightDarkModeButton.firstChild!)
         
-        updateAllColors(DarkMode, result.selectedColor);
+        updateAllColors(DarkMode, result.selectedColor)
 
         document.getElementById('LightDarkModeButton')!.addEventListener('click', async () => {
           const result: any = await new Promise(resolve => {
-            const result = browser.storage.local.get();
+            const result = browser.storage.local.get()
             result.then(resolve, onError)
-          });
+          })
           
-          const newDarkMode = !result!.DarkMode;
-          browser.storage.local.set({ DarkMode: newDarkMode });
+          const newDarkMode = !result!.DarkMode
+          browser.storage.local.set({ DarkMode: newDarkMode })
           
-          updateAllColors(newDarkMode, result.selectedColor);
+          updateAllColors(newDarkMode, result.selectedColor)
           
-          const darklightText = document.getElementById('darklighttooliptext');
-          darklightText!.innerText = GetLightDarkModeString(newDarkMode);
-        });
+          const darklightText = document.getElementById('darklighttooliptext')
+          darklightText!.innerText = GetLightDarkModeString(newDarkMode)
+        })
 
         // Locate the menuToggle element
-        const menuToggle = document.getElementById('menuToggle');
-        menuToggle!.innerHTML = '';
+        const menuToggle = document.getElementById('menuToggle')
+        menuToggle!.innerHTML = ''
 
         // Create three divs to act as lines of the hamburger icon
         for (let i = 0; i < 3; i++) {
-          const line = document.createElement('div');
-          line.className = 'hamburger-line';
-          menuToggle!.appendChild(line);
+          const line = document.createElement('div')
+          line.className = 'hamburger-line'
+          menuToggle!.appendChild(line)
         }
       } else {
         // Creates settings and dashboard buttons next to alerts
         let SettingsButton = stringToHTML(
           '<button class="addedButton" id="AddedSettings""><svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: var(--text-color);"><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g></svg></button>',
-        );
-        let ContentDiv = document.getElementById('content');
-        ContentDiv!.append(SettingsButton.firstChild!);
+        )
+        let ContentDiv = document.getElementById('content')
+        ContentDiv!.append(SettingsButton.firstChild!)
       }
 
-      var AddedSettings = document.getElementById('AddedSettings');
-      var extensionPopup = document.getElementById('ExtensionPopup');
+      var AddedSettings = document.getElementById('AddedSettings')
+      var extensionPopup = document.getElementById('ExtensionPopup')
       
       AddedSettings!.addEventListener('click', function () {
         if (SettingsClicked) {
-          extensionPopup!.classList.add('hide');
+          extensionPopup!.classList.add('hide')
           animate(
             '#ExtensionPopup',
             { opacity: [1, 0], scale: [1, 0] },
             { easing: spring({ stiffness: 220, damping: 18 }) }
           );
-          (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
+          (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*')
           SettingsClicked = false;      
         } else {
-          extensionPopup!.classList.remove('hide');
+          extensionPopup!.classList.remove('hide')
           animate(
             '#ExtensionPopup',
             { opacity: [0, 1], scale: [0, 1] },
             { easing: spring({ stiffness: 260, damping: 24 }) }
           )
-          SettingsClicked = true;
+          SettingsClicked = true
         }
-      });
+      })
     }
   }
 }
 
 function GetLightDarkModeString(darkmodetoggle: boolean) {
-  let tooltipstring;
+  let tooltipstring
   
   if (darkmodetoggle) {
-    tooltipstring = 'Switch to light theme';
+    tooltipstring = 'Switch to light theme'
   } else {
-    tooltipstring = 'Switch to dark theme';
+    tooltipstring = 'Switch to dark theme'
   }
-  return tooltipstring;
+  return tooltipstring
 }
 
 function CheckCurrentLesson(lesson: any, num: number) {
-  var startTime = lesson.from;
-  var endTime = lesson.until;
+  var startTime = lesson.from
+  var endTime = lesson.until
   // Gets current time
-  let currentDate = new Date();
+  let currentDate = new Date()
 
   // Takes start time of current lesson and makes it into a Date function for comparison
-  let startDate = new Date(currentDate.getTime());
-  startDate.setHours(startTime.split(':')[0]);
-  startDate.setMinutes(startTime.split(':')[1]);
-  startDate.setSeconds(parseInt('00'));
+  let startDate = new Date(currentDate.getTime())
+  startDate.setHours(startTime.split(':')[0])
+  startDate.setMinutes(startTime.split(':')[1])
+  startDate.setSeconds(parseInt('00'))
 
   // Takes end time of current lesson and makes it into a Date function for comparison
-  let endDate = new Date(currentDate.getTime());
-  endDate.setHours(endTime.split(':')[0]);
-  endDate.setMinutes(endTime.split(':')[1]);
-  endDate.setSeconds(parseInt('00'));
+  let endDate = new Date(currentDate.getTime())
+  endDate.setHours(endTime.split(':')[0])
+  endDate.setMinutes(endTime.split(':')[1])
+  endDate.setSeconds(parseInt('00'))
 
   // Gets the difference between the start time and current time
-  var difference = startDate.getTime() - currentDate.getTime();
+  var difference = startDate.getTime() - currentDate.getTime()
   // Converts the difference into minutes
-  var minutes = Math.floor(difference / 1000 / 60);
+  var minutes = Math.floor(difference / 1000 / 60)
 
   // Checks if current time is between the start time and end time of current tested lesson
-  let valid = startDate < currentDate && endDate > currentDate;
+  let valid = startDate < currentDate && endDate > currentDate
 
-  let id = lesson.code + num;
-  const date = new Date();
+  let id = lesson.code + num
+  const date = new Date()
 
-  var elementA = document.getElementById(id);
+  var elementA = document.getElementById(id)
   if (!elementA) {
-    clearInterval(LessonInterval);
+    clearInterval(LessonInterval)
   } else {
     if (
       currentSelectedDate.toLocaleDateString('en-au') ==
@@ -1360,11 +1360,11 @@ function CheckCurrentLesson(lesson: any, num: number) {
     ) {
       if (valid) {
         // Apply the activelesson class to increase the box-shadow of current lesson
-        elementA.classList.add('activelesson');
+        elementA.classList.add('activelesson')
       } else {
         // Removes the activelesson class to ensure only the active lesson have the class
         if (elementA != null) {
-          elementA.classList.remove('activelesson');
+          elementA.classList.remove('activelesson')
         }
       }
     }
@@ -1377,7 +1377,7 @@ function CheckCurrentLesson(lesson: any, num: number) {
       if (result.lessonalert) {
         // Checks if notifications are supported
         if (!window.Notification) {
-          console.log('Browser does not support notifications.');
+          console.log('Browser does not support notifications.')
         } else {
           // check if permission is already granted
           if (Notification.permission === 'granted') {
@@ -1389,7 +1389,7 @@ function CheckCurrentLesson(lesson: any, num: number) {
                 lesson.room +
                 ' \nTeacher: ' +
                 lesson.staff,
-            });
+            })
           } else {
             // request permission from user
             Notification.requestPermission()
@@ -1404,14 +1404,14 @@ function CheckCurrentLesson(lesson: any, num: number) {
                       lesson.room +
                       ' \nTeacher: ' +
                       lesson.staff,
-                  });
+                  })
                 } else {
-                  console.log('User blocked notifications.');
+                  console.log('User blocked notifications.')
                 }
               })
               .catch(function (err) {
-                console.error(err);
-              });
+                console.error(err)
+              })
           }
         }
       }
@@ -1422,35 +1422,35 @@ function CheckCurrentLesson(lesson: any, num: number) {
 
 export function GetThresholdOfColor(color: any) {
   // Case-insensitive regular expression for matching RGBA colors
-  const rgbaRegex = /rgba?\(([^)]+)\)/gi;
+  const rgbaRegex = /rgba?\(([^)]+)\)/gi
 
   // Check if the color string is a gradient (linear or radial)
   if (color.includes('gradient')) {
-    let gradientThresholds = [];
+    let gradientThresholds = []
 
     // Find and replace all instances of RGBA in the gradient
-    let match;
+    let match
     while ((match = rgbaRegex.exec(color)) !== null) {
       // Extract the individual components (r, g, b, a)
-      const rgbaString = match[1];
-      const [r, g, b] = rgbaString.split(',').map(str => str.trim());
+      const rgbaString = match[1]
+      const [r, g, b] = rgbaString.split(',').map(str => str.trim())
 
       // Compute the threshold using your existing algorithm
-      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2);
+      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2)
 
       // Store the computed threshold
-      gradientThresholds.push(threshold);
+      gradientThresholds.push(threshold)
     }
 
     // Calculate the average threshold
-    const averageThreshold = gradientThresholds.reduce((acc, val) => acc + val, 0) / gradientThresholds.length;
+    const averageThreshold = gradientThresholds.reduce((acc, val) => acc + val, 0) / gradientThresholds.length
     
-    return averageThreshold;
+    return averageThreshold
 
   } else {
     // Handle the color as a simple RGBA (or hex, or whatever the Color library supports)
-    const rgb = Color.rgb(color).object();
-    return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
+    const rgb = Color.rgb(color).object()
+    return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2)
   }
 }
 
@@ -1459,24 +1459,24 @@ function CheckCurrentLessonAll(lessons: any) {
   LessonInterval = setInterval(
     function () {
       for (let i = 0; i < lessons.length; i++) {
-        CheckCurrentLesson(lessons[i], i + 1);
+        CheckCurrentLesson(lessons[i], i + 1)
       }
     }.bind(lessons),
     60000,
-  );
+  )
 }
 
 // Helper function to build the assessment URL
 function buildAssessmentURL(programmeID: any, metaID: any, itemID = '') {
-  const base = '../#?page=/assessments/';
-  return itemID ? `${base}${programmeID}:${metaID}&item=${itemID}` : `${base}${programmeID}:${metaID}`;
+  const base = '../#?page=/assessments/'
+  return itemID ? `${base}${programmeID}:${metaID}&item=${itemID}` : `${base}${programmeID}:${metaID}`
 }
 
 // Function to create a lesson div element from a lesson object
 function makeLessonDiv(lesson: any, num: number) {
-  if (!lesson) throw new Error('No lesson provided.');
+  if (!lesson) throw new Error('No lesson provided.')
 
-  const { code, colour, description, staff, room, from, until, attendanceTitle, programmeID, metaID, assessments } = lesson;
+  const { code, colour, description, staff, room, from, until, attendanceTitle, programmeID, metaID, assessments } = lesson
 
   // Construct the base lesson string with default values using ternary operators
   let lessonString = `
@@ -1486,21 +1486,21 @@ function makeLessonDiv(lesson: any, num: number) {
       <h3>${room || 'Unknown'}</h3>
       <h4>${from || 'Unknown'} - ${until || 'Unknown'}</h4>
       <h5>${attendanceTitle || 'Unknown'}</h5>
-  `;
+  `
 
   // Add buttons for assessments and courses if applicable
   if (programmeID !== 0) {
     lessonString += `
       <div class="day-button clickable" style="right: 5px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
       <div class="day-button clickable" style="right: 35px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
-    `;
+    `
   }
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
     const assessmentString = assessments.map((element: any) =>
       `<p onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
-    ).join('');
+    ).join('')
 
     lessonString += `
       <div class="tooltip assessmenttooltip">
@@ -1509,114 +1509,114 @@ function makeLessonDiv(lesson: any, num: number) {
         </svg>
         <div class="tooltiptext">${assessmentString}</div>
       </div>
-    `;
+    `
   }
 
-  lessonString += '</div>';
+  lessonString += '</div>'
 
-  return stringToHTML(lessonString);
+  return stringToHTML(lessonString)
 }
 
 function CheckUnmarkedAttendance(lessonattendance: any) {
   if (lessonattendance) {
-    var lesson = lessonattendance.label;
+    var lesson = lessonattendance.label
   } else {
-    lesson = ' ';
+    lesson = ' '
   }
-  return lesson;
+  return lesson
 }
 
 function callHomeTimetable(date: string, change?: any) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true);
+  var xhr = new XMLHttpRequest()
+  xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true)
   // Sets the response type to json
-  xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+  xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
 
   xhr.onreadystatechange = function () {
     // Once the response is ready
     if (xhr.readyState === 4) {
-      var serverResponse = JSON.parse(xhr.response);
-      let lessonArray: Array<any> = [];
-      const DayContainer = document.getElementById('day-container')!;
+      var serverResponse = JSON.parse(xhr.response)
+      let lessonArray: Array<any> = []
+      const DayContainer = document.getElementById('day-container')!
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
         if (DayContainer.innerText || change) {
           for (let i = 0; i < serverResponse.payload.items.length; i++) {
-            lessonArray.push(serverResponse.payload.items[i]);
+            lessonArray.push(serverResponse.payload.items[i])
           }
           lessonArray.sort(function (a, b) {
-            return a.from.localeCompare(b.from);
-          });
+            return a.from.localeCompare(b.from)
+          })
           // If items in the response, set each corresponding value into divs
           // lessonArray = lessonArray.splice(1)
           GetLessonColours().then((colours) => {
-            let subjects = colours;
+            let subjects = colours
             for (let i = 0; i < lessonArray.length; i++) {
-              let subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
+              let subjectname = `timetable.subject.colour.${lessonArray[i].code}`
 
               let subject = subjects.find(
                 (element: any) => element.name === subjectname,
-              );
+              )
               if (!subject) {
-                lessonArray[i].colour = '--item-colour: #8e8e8e;';
+                lessonArray[i].colour = '--item-colour: #8e8e8e;'
               } else {
-                lessonArray[i].colour = `--item-colour: ${subject.value};`;
-                let result = GetThresholdOfColor(subject.value);
+                lessonArray[i].colour = `--item-colour: ${subject.value};`
+                let result = GetThresholdOfColor(subject.value)
 
                 if (result > 300) {
-                  lessonArray[i].invert = true;
+                  lessonArray[i].invert = true
                 }
               }
               // Removes seconds from the start and end times
-              lessonArray[i].from = lessonArray[i].from.substring(0, 5);
-              lessonArray[i].until = lessonArray[i].until.substring(0, 5);
+              lessonArray[i].from = lessonArray[i].from.substring(0, 5)
+              lessonArray[i].until = lessonArray[i].until.substring(0, 5)
 
               // Checks if attendance is unmarked, and sets the string to " ".
               lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
                 lessonArray[i].attendance,
-              );
+              )
             }
             // If on home page, apply each lesson to HTML with information in each div
-            DayContainer.innerText = '';
+            DayContainer.innerText = ''
             for (let i = 0; i < lessonArray.length; i++) {
-              var div = makeLessonDiv(lessonArray[i], i + 1);
+              var div = makeLessonDiv(lessonArray[i], i + 1)
               // Append each of the lessons into the day-container
               if (lessonArray[i].invert) {
                 const div1 = div.firstChild! as HTMLElement
-                div1.classList.add('day-inverted');
+                div1.classList.add('day-inverted')
               }
 
-              DayContainer.append(div.firstChild as HTMLElement);
+              DayContainer.append(div.firstChild as HTMLElement)
             }
 
-            const today = new Date();
+            const today = new Date()
             if (currentSelectedDate.getDate() == today.getDate()) {
               for (let i = 0; i < lessonArray.length; i++) {
-                CheckCurrentLesson(lessonArray[i], i + 1);
+                CheckCurrentLesson(lessonArray[i], i + 1)
               }
               // For each lesson, check the start and end times
-              CheckCurrentLessonAll(lessonArray);
+              CheckCurrentLessonAll(lessonArray)
             }
-          });
+          })
         }
       } else {
-        console.log(DayContainer);
+        console.log(DayContainer)
         if (DayContainer.innerText || change) {
-          DayContainer.innerText = '';
-          var dummyDay = document.createElement('div');
-          dummyDay.classList.add('day-empty');
-          let img = document.createElement('img');
-          img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png');
-          let text = document.createElement('p');
-          text.innerText = 'No lessons available.';
-          dummyDay.append(img);
-          dummyDay.append(text);
-          DayContainer.append(dummyDay);
+          DayContainer.innerText = ''
+          var dummyDay = document.createElement('div')
+          dummyDay.classList.add('day-empty')
+          let img = document.createElement('img')
+          img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png')
+          let text = document.createElement('p')
+          text.innerText = 'No lessons available.'
+          dummyDay.append(img)
+          dummyDay.append(text)
+          DayContainer.append(dummyDay)
         }
       }
     }
-  };
+  }
   xhr.send(
     JSON.stringify({
       // Information sent to SEQTA page as a request with the dates and student number
@@ -1625,7 +1625,7 @@ function callHomeTimetable(date: string, change?: any) {
       // Funny number
       student: 69,
     }),
-  );
+  )
 }
 
 function GetUpcomingAssessments() {
@@ -1635,11 +1635,11 @@ function GetUpcomingAssessments() {
       'Content-Type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify({ student: 69 }),
-  });
+  })
 
   return func
     .then((result) => result.json())
-    .then((response) => response.payload);
+    .then((response) => response.payload)
 }
 
 async function GetActiveClasses() {
@@ -1648,111 +1648,111 @@ async function GetActiveClasses() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({})
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`)
     }
 
-    const data = await response.json();
-    return data.payload;
+    const data = await response.json()
+    return data.payload
   } catch (error) {
-    console.error('Oops! There was a problem fetching active classes:', error);
+    console.error('Oops! There was a problem fetching active classes:', error)
   }
 }
 
 function comparedate(obj1: any, obj2: any) {
   if (obj1.date < obj2.date) {
-    return -1;
+    return -1
   }
   if (obj1.date > obj2.date) {
-    return 1;
+    return 1
   }
-  return 0;
+  return 0
 }
 
 function CreateElement(type: string, class_?: any, id?: any, innerText?: string, innerHTML?: string, style?: string) {
-  let element = document.createElement(type);
+  let element = document.createElement(type)
   if (class_ !== undefined) {
-    element.classList.add(class_);
+    element.classList.add(class_)
   }
   if (id !== undefined) {
-    element.id = id;
+    element.id = id
   }
   if (innerText !== undefined) {
-    element.innerText = innerText;
+    element.innerText = innerText
   }
   if (innerHTML !== undefined) {
-    element.innerHTML = innerHTML;
+    element.innerHTML = innerHTML
   }
   if (style !== undefined) {
-    element.style.cssText = style;
+    element.style.cssText = style
   }
-  return element;
+  return element
 }
 
 function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
-  var options = { weekday: 'long' as 'long', month: 'long' as 'long', day: 'numeric' as 'numeric' };
-  const FormattedDate = new Date(date);
+  var options = { weekday: 'long' as 'long', month: 'long' as 'long', day: 'numeric' as 'numeric' }
+  const FormattedDate = new Date(date)
 
-  const assessments = value.assessments;
-  const container = value.div;
+  const assessments = value.assessments
+  const container = value.div
 
-  let DateTitleDiv = document.createElement('div');
-  DateTitleDiv.classList.add('upcoming-date-title');
+  let DateTitleDiv = document.createElement('div')
+  DateTitleDiv.classList.add('upcoming-date-title')
 
   if (datecase) {
-    let datetitle = document.createElement('h5');
-    datetitle.classList.add('upcoming-special-day');
-    datetitle.innerText = datecase;
-    DateTitleDiv.append(datetitle);
-    container.setAttribute('data-day', datecase);
+    let datetitle = document.createElement('h5')
+    datetitle.classList.add('upcoming-special-day')
+    datetitle.innerText = datecase
+    DateTitleDiv.append(datetitle)
+    container.setAttribute('data-day', datecase)
   }
 
-  let DateTitle = document.createElement('h5');
-  DateTitle.innerText = FormattedDate.toLocaleDateString('en-AU', options);
-  DateTitleDiv.append(DateTitle);
+  let DateTitle = document.createElement('h5')
+  DateTitle.innerText = FormattedDate.toLocaleDateString('en-AU', options)
+  DateTitleDiv.append(DateTitle)
 
-  container.append(DateTitleDiv);
+  container.append(DateTitleDiv)
 
-  let assessmentContainer = document.createElement('div');
-  assessmentContainer.classList.add('upcoming-date-assessments');
+  let assessmentContainer = document.createElement('div')
+  assessmentContainer.classList.add('upcoming-date-assessments')
 
   for (let i = 0; i < assessments.length; i++) {
-    const element = assessments[i];
-    let item = document.createElement('div');
-    item.classList.add('upcoming-assessment');
-    item.setAttribute('data-subject', element.code);
-    item.id = `assessment${element.id}`;
+    const element = assessments[i]
+    let item = document.createElement('div')
+    item.classList.add('upcoming-assessment')
+    item.setAttribute('data-subject', element.code)
+    item.id = `assessment${element.id}`
 
-    item.style.cssText = element.colour;
+    item.style.cssText = element.colour
 
-    let titlediv = document.createElement('div');
-    titlediv.classList.add('upcoming-subject-title');
+    let titlediv = document.createElement('div')
+    titlediv.classList.add('upcoming-subject-title')
 
     let titlesvg =
       stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
     <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
-    </svg>`).firstChild;
-    titlediv.append(titlesvg!);
+    </svg>`).firstChild
+    titlediv.append(titlesvg!)
 
-    let detailsdiv = document.createElement('div');
-    detailsdiv.classList.add('upcoming-details');
-    let detailstitle = document.createElement('h5');
-    detailstitle.innerText = `${element.subject} assessment`;
-    let subject = document.createElement('p');
-    subject.innerText = element.title;
-    subject.classList.add('upcoming-assessment-title');
+    let detailsdiv = document.createElement('div')
+    detailsdiv.classList.add('upcoming-details')
+    let detailstitle = document.createElement('h5')
+    detailstitle.innerText = `${element.subject} assessment`
+    let subject = document.createElement('p')
+    subject.innerText = element.title
+    subject.classList.add('upcoming-assessment-title')
     subject.onclick = function () {
       document.querySelector('#menu ul')!.classList.add('noscroll'); 
-      location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
-    };
-    detailsdiv.append(detailstitle);
-    detailsdiv.append(subject);
+      location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`
+    }
+    detailsdiv.append(detailstitle)
+    detailsdiv.append(subject)
 
-    item.append(titlediv);
-    item.append(detailsdiv);
-    assessmentContainer.append(item);
+    item.append(titlediv)
+    item.append(detailsdiv)
+    assessmentContainer.append(item)
 
     fetch(`${location.origin}/seqta/student/assessment/submissions/get`, {
       method: 'POST',
@@ -1768,22 +1768,22 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
       .then((result) => result.json())
       .then((response) => {
         if (response.payload.length > 0) {
-          const assessment = document.querySelector(`#assessment${element.id}`);
+          const assessment = document.querySelector(`#assessment${element.id}`)
 
           // ticksvg = stringToHTML(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="var(--item-colour)" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>`).firstChild
-          // ticksvg.classList.add('upcoming-tick');
-          // assessment.append(ticksvg);
-          let submittedtext = document.createElement('div');
-          submittedtext.classList.add('upcoming-submittedtext');
-          submittedtext.innerText = 'Submitted';
-          assessment!.append(submittedtext);
+          // ticksvg.classList.add('upcoming-tick')
+          // assessment.append(ticksvg)
+          let submittedtext = document.createElement('div')
+          submittedtext.classList.add('upcoming-submittedtext')
+          submittedtext.innerText = 'Submitted'
+          assessment!.append(submittedtext)
         }
-      });
+      })
   }
 
-  container.append(assessmentContainer);
+  container.append(assessmentContainer)
 
-  return container;
+  return container
 }
 
 function CheckSpecialDay(date1: Date, date2: Date) {
@@ -1792,227 +1792,227 @@ function CheckSpecialDay(date1: Date, date2: Date) {
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() - 1 === date2.getDate()
   ) {
-    return 'Yesterday';
+    return 'Yesterday'
   }
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() === date2.getDate()
   ) {
-    return 'Today';
+    return 'Today'
   }
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() + 1 === date2.getDate()
   ) {
-    return 'Tomorrow';
+    return 'Tomorrow'
   }
 }
 
 function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any) {
-  let label = CreateElement('label', 'upcoming-checkbox-container');
-  label.innerText = subjectcode;
-  let input1 = CreateElement('input');
+  let label = CreateElement('label', 'upcoming-checkbox-container')
+  label.innerText = subjectcode
+  let input1 = CreateElement('input')
   const input = input1 as HTMLInputElement
-  input.type = 'checkbox';
-  input.checked = checked;
-  input.id = `filter-${subjectcode}`;
-  label.style.cssText = itemcolour;
-  let span = CreateElement('span', 'upcoming-checkmark');
-  label.append(input);
-  label.append(span);
+  input.type = 'checkbox'
+  input.checked = checked
+  input.id = `filter-${subjectcode}`
+  label.style.cssText = itemcolour
+  let span = CreateElement('span', 'upcoming-checkmark')
+  label.append(input)
+  label.append(span)
 
   input.addEventListener('change', function (change) {
     const result = browser.storage.local.get()
     function open (storage: any) {
-      let filters = storage.subjectfilters;
-      let id = (change.target as HTMLInputElement)!.id.split('-')[1];
-      filters[id] = (change.target as HTMLInputElement)!.checked;
+      let filters = storage.subjectfilters
+      let id = (change.target as HTMLInputElement)!.id.split('-')[1]
+      filters[id] = (change.target as HTMLInputElement)!.checked
 
-      browser.storage.local.set({ subjectfilters: filters });
+      browser.storage.local.set({ subjectfilters: filters })
     }
     result.then(open, onError)
-  });
+  })
 
-  return label;
+  return label
 }
 
 function CreateFilters(subjects: any) {
   const result = browser.storage.local.get()
   function open (result: any) {
-    let filteroptions = result.subjectfilters;
+    let filteroptions = result.subjectfilters
 
-    let filterdiv = document.querySelector('#upcoming-filters');
+    let filterdiv = document.querySelector('#upcoming-filters')
     for (let i = 0; i < subjects.length; i++) {
-      const element = subjects[i];
+      const element = subjects[i]
       // eslint-disable-next-line
       if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
-        filteroptions[element.code] = true;
-        browser.storage.local.set({ subjectfilters: filteroptions });
+        filteroptions[element.code] = true
+        browser.storage.local.set({ subjectfilters: filteroptions })
       }
       let elementdiv = CreateSubjectFilter(
         element.code,
         element.colour,
         filteroptions[element.code],
-      );
+      )
 
-      filterdiv!.append(elementdiv);
+      filterdiv!.append(elementdiv)
     }
   }
   result.then(open, onError)
 }
 
 function CreateUpcomingSection(assessments: any, activeSubjects: any) {
-  let upcomingitemcontainer = document.querySelector('#upcoming-items');
-  let overdueDates = [];
-  let upcomingDates = {};
+  let upcomingitemcontainer = document.querySelector('#upcoming-items')
+  let overdueDates = []
+  let upcomingDates = {}
 
-  // date = '2022/3/20';
-  // var Today = new Date(date);
+  // date = '2022/3/20'
+  // var Today = new Date(date)
 
-  var Today = new Date();
+  var Today = new Date()
 
   // Removes overdue assessments from the upcoming assessments array and pushes to overdue array
   for (let i = 0; i < assessments.length; i++) {
-    const element = assessments[i];
-    let assessmentdue = new Date(element.due);
+    const element = assessments[i]
+    let assessmentdue = new Date(element.due)
 
-    CheckSpecialDay(Today, assessmentdue);
+    CheckSpecialDay(Today, assessmentdue)
     if (assessmentdue < Today) {
       if (!CheckSpecialDay(Today, assessmentdue)) {
-        overdueDates.push(element);
-        assessments.splice(i, 1);
-        i--;
+        overdueDates.push(element)
+        assessments.splice(i, 1)
+        i--
       }
     }
   }
 
-  var TomorrowDate = new Date();
-  TomorrowDate.setDate(TomorrowDate.getDate() + 1);
+  var TomorrowDate = new Date()
+  TomorrowDate.setDate(TomorrowDate.getDate() + 1)
 
   GetLessonColours().then((colours) => {
-    let subjects = colours;
+    let subjects = colours
     for (let i = 0; i < assessments.length; i++) {
-      let subjectname = `timetable.subject.colour.${assessments[i].code}`;
+      let subjectname = `timetable.subject.colour.${assessments[i].code}`
 
-      let subject = subjects.find((element: any) => element.name === subjectname);
+      let subject = subjects.find((element: any) => element.name === subjectname)
       if (!subject) {
-        assessments[i].colour = '--item-colour: #8e8e8e;';
+        assessments[i].colour = '--item-colour: #8e8e8e;'
       } else {
-        assessments[i].colour = `--item-colour: ${subject.value};`;
+        assessments[i].colour = `--item-colour: ${subject.value};`
         GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
       }
     }
     for (let i = 0; i < activeSubjects.length; i++) {
-      const element = activeSubjects[i];
-      let subjectname = `timetable.subject.colour.${element.code}`;
-      let colour = colours.find((element: any) => element.name === subjectname);
+      const element = activeSubjects[i]
+      let subjectname = `timetable.subject.colour.${element.code}`
+      let colour = colours.find((element: any) => element.name === subjectname)
       if (!colour) {
-        element.colour = '--item-colour: #8e8e8e;';
+        element.colour = '--item-colour: #8e8e8e;'
       } else {
-        element.colour = `--item-colour: ${colour.value};`;
-        let result = GetThresholdOfColor(colour.value);
+        element.colour = `--item-colour: ${colour.value};`
+        let result = GetThresholdOfColor(colour.value)
         if (result > 300) {
-          element.invert = true;
+          element.invert = true
         }
       }
     }
 
-    CreateFilters(activeSubjects);
+    CreateFilters(activeSubjects)
     // @ts-ignore
-    let type;
+    let type
     // @ts-ignore
-    let class_;
+    let class_
 
     for (let i = 0; i < assessments.length; i++) {
-      const element: any = assessments[i];
+      const element: any = assessments[i]
       if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
-        let dateObj: any = new Object();
+        let dateObj: any = new Object()
         dateObj.div = CreateElement(
           // TODO: not sure whats going on here?
           // eslint-disable-next-line
           type = "div",
           // eslint-disable-next-line
           class_ = "upcoming-date-container",
-        );
-        dateObj.assessments = [];
+        )
+        dateObj.assessments = []
 
-        dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any;
+        dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any
       }
       let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
-      (assessmentDateDiv as any).assessments.push(element);
+      (assessmentDateDiv as any).assessments.push(element)
     }
 
     for (var date in upcomingDates) {
-      let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due);
-      let specialcase = CheckSpecialDay(Today, assessmentdue);
-      let assessmentDate;
+      let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due)
+      let specialcase = CheckSpecialDay(Today, assessmentdue)
+      let assessmentDate
 
       if (specialcase) {
-        let datecase: string = specialcase!;
+        let datecase: string = specialcase!
         assessmentDate = createAssessmentDateDiv(
           date,
           upcomingDates[date as keyof typeof upcomingDates],
           // eslint-disable-next-line
           datecase,
-        );
+        )
       } else {
-        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates]);
+        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates])
       }
 
       if (specialcase === 'Yesterday') {
         upcomingitemcontainer!.insertBefore(
           assessmentDate,
           upcomingitemcontainer!.firstChild,
-        );
+        )
       } else {
-        upcomingitemcontainer!.append(assessmentDate);
+        upcomingitemcontainer!.append(assessmentDate)
       }
 
     }
     const result = browser.storage.local.get()
     function open (result: any) {
-      FilterUpcomingAssessments(result.subjectfilters);
+      FilterUpcomingAssessments(result.subjectfilters)
     }
     result.then(open, onError)
-  });
+  })
 }
 
 function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
-  let textcontainer = CreateElement('div', 'upcoming-blank');
-  let textblank = CreateElement('p', 'upcoming-hiddenassessment');
-  let s = '';
+  let textcontainer = CreateElement('div', 'upcoming-blank')
+  let textblank = CreateElement('p', 'upcoming-hiddenassessment')
+  let s = ''
   if (numberofassessments > 1) {
-    s = 's';
+    s = 's'
   }
-  textblank.innerText = `${numberofassessments} hidden assessment${s} due`;
-  textcontainer.append(textblank);
-  textcontainer.setAttribute('data-hidden', 'true');
+  textblank.innerText = `${numberofassessments} hidden assessment${s} due`
+  textcontainer.append(textblank)
+  textcontainer.setAttribute('data-hidden', 'true')
 
-  parent.append(textcontainer);
+  parent.append(textcontainer)
 }
 
 function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {
-    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
+    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`)
 
     for (let i = 0; i < subjectdivs.length; i++) {
-      const element = subjectdivs[i];
+      const element = subjectdivs[i]
 
       if (!subjectoptions[item]) {
-        element.classList.add('hidden');
+        element.classList.add('hidden')
       }
       if (subjectoptions[item]) {
-        element.classList.remove('hidden');
+        element.classList.remove('hidden')
       }
-      (element.parentNode! as HTMLElement).classList.remove('hidden');
+      (element.parentNode! as HTMLElement).classList.remove('hidden')
 
-      let children = element.parentNode!.parentNode!.children;
+      let children = element.parentNode!.parentNode!.children
       for (let i = 0; i < children.length; i++) {
-        const element = children[i];
+        const element = children[i]
         if (element.hasAttribute('data-hidden')) {
-          element.remove();
+          element.remove()
         }
       }
 
@@ -2022,16 +2022,16 @@ function FilterUpcomingAssessments(subjectoptions: any) {
       ) {
         if (element.parentNode!.querySelectorAll('.hidden').length > 0) {
           if (!(element.parentNode!.parentNode! as HTMLElement).hasAttribute('data-day')) {
-            (element.parentNode!.parentNode! as HTMLElement).classList.add('hidden');
+            (element.parentNode!.parentNode! as HTMLElement).classList.add('hidden')
           } else {
             AddPlaceHolderToParent(
               element.parentNode!.parentNode,
               element.parentNode!.querySelectorAll('.hidden').length,
-            );
+            )
           }
         }
       } else {
-        (element.parentNode!.parentNode! as HTMLElement).classList.remove('hidden');
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove('hidden')
       }
     }
   }
@@ -2039,9 +2039,9 @@ function FilterUpcomingAssessments(subjectoptions: any) {
 
 browser.storage.onChanged.addListener(function (changes) {
   if (changes.subjectfilters) {
-    FilterUpcomingAssessments(changes.subjectfilters.newValue);
+    FilterUpcomingAssessments(changes.subjectfilters.newValue)
   }
-});
+})
 
 async function GetLessonColours() {
   let func = fetch(`${location.origin}/seqta/student/load/prefs?`, {
@@ -2050,20 +2050,20 @@ async function GetLessonColours() {
       'Content-Type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify({ request: 'userPrefs', asArray: true, user: 69 }),
-  });
+  })
   return func
     .then((result) => result.json())
-    .then((response) => response.payload);
+    .then((response) => response.payload)
 }
 
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
-  var shortcut = document.createElement('a');
-  shortcut.setAttribute('href', element.url);
-  shortcut.setAttribute('target', '_blank');
-  var shortcutdiv = document.createElement('div');
-  shortcutdiv.classList.add('shortcut');
-  shortcutdiv.classList.add('customshortcut');
+  var shortcut = document.createElement('a')
+  shortcut.setAttribute('href', element.url)
+  shortcut.setAttribute('target', '_blank')
+  var shortcutdiv = document.createElement('div')
+  shortcutdiv.classList.add('shortcut')
+  shortcutdiv.classList.add('customshortcut')
 
   let image = stringToHTML(
     `
@@ -2082,49 +2082,49 @@ export function CreateCustomShortcutDiv(element: any) {
     </svg>
     `,
   ).firstChild;
-  (image as HTMLElement).classList.add('shortcuticondiv');
-  var text = document.createElement('p');
-  text.textContent = element.name;
-  shortcutdiv.append(image!);
-  shortcutdiv.append(text);
-  shortcut.append(shortcutdiv);
+  (image as HTMLElement).classList.add('shortcuticondiv')
+  var text = document.createElement('p')
+  text.textContent = element.name
+  shortcutdiv.append(image!)
+  shortcutdiv.append(text)
+  shortcut.append(shortcutdiv)
 
-  document.getElementById('shortcuts')!.append(shortcut);
+  document.getElementById('shortcuts')!.append(shortcut)
 }
 
 export function RemoveShortcutDiv(elements: any) {
   elements.forEach((element: any) => {
-    const shortcuts = document.querySelectorAll('.shortcut');
+    const shortcuts = document.querySelectorAll('.shortcut')
     shortcuts.forEach((shortcut) => {
       const anchorElement = shortcut.parentElement; // the <a> element is the parent
       const textElement = shortcut.querySelector('p'); // <p> is a direct child of .shortcut
-      const title = textElement ? textElement.textContent : '';
+      const title = textElement ? textElement.textContent : ''
 
-      let shouldRemove = title === element.name;
+      let shouldRemove = title === element.name
 
       // Check href only if element.url exists
       if (element.url) {
-        shouldRemove = shouldRemove && (anchorElement!.getAttribute('href') === element.url);
+        shouldRemove = shouldRemove && (anchorElement!.getAttribute('href') === element.url)
       }
 
       if (shouldRemove) {
-        anchorElement!.remove();
+        anchorElement!.remove()
       }
-    });
-  });
+    })
+  })
 }
 
 function AddCustomShortcutsToPage() {
   const result = browser.storage.local.get(['customshortcuts'])
   function open (result: any) {
 
-    var customshortcuts: any = Object.values(result)[0];
+    var customshortcuts: any = Object.values(result)[0]
     if (customshortcuts.length > 0) {
       (document.getElementsByClassName('shortcut-container')[0] as HTMLElement).style.display =
-        'block';
+        'block'
       for (let i = 0; i < customshortcuts.length; i++) {
-        const element = customshortcuts[i];
-        CreateCustomShortcutDiv(element);
+        const element = customshortcuts[i]
+        CreateCustomShortcutDiv(element)
       }
     }
   }
@@ -2133,146 +2133,146 @@ function AddCustomShortcutsToPage() {
 
 async function SendHomePage() {
   // Sends the html data for the home page
-  console.log('[BetterSEQTA] Started Loading Home Page');
-  document.title = 'Home ― SEQTA Learn';
-  var element = document.querySelector('[data-key=home]');
+  console.log('[BetterSEQTA] Started Loading Home Page')
+  document.title = 'Home ― SEQTA Learn'
+  var element = document.querySelector('[data-key=home]')
 
   // Apply the active class to indicate clicked on home button
-  element!.classList.add('active');
+  element!.classList.add('active')
 
   // Remove all current elements in the main div to add new elements
-  var main = document.getElementById('main');
-  main!.innerHTML = '';
+  var main = document.getElementById('main')
+  main!.innerHTML = ''
 
   const titlediv = document.getElementById('title')!.firstChild;
   ((titlediv!) as HTMLElement).innerHTML = 'Home';
   (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
-    browser.runtime.getURL('icons/icon-48.png');
+    browser.runtime.getURL('icons/icon-48.png')
 
-  currentSelectedDate = new Date();
+  currentSelectedDate = new Date()
 
   // Creates the root of the home page added to the main div
-  var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>');
+  var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
   
   // Appends the html file to main div
   // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-  main!.append(html.firstChild!);
+  main!.append(html.firstChild!)
 
   // Gets the current date
-  const date = new Date();
+  const date = new Date()
 
   // Formats the current date used send a request for timetable and notices later
   var TodayFormatted =
-    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate();
+    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
 
   // Replaces actual date with a selected date. Used for testing.
-  // TodayFormatted = "2020-08-31";
+  // TodayFormatted = "2020-08-31"
 
   // Creates the shortcut container into the home container
-  var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>';
-  var Shortcut = stringToHTML(ShortcutStr);
+  var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>'
+  var Shortcut = stringToHTML(ShortcutStr)
   // Appends the shortcut container into the home container
-  document.getElementById('home-container')!.append(Shortcut.firstChild!);
+  document.getElementById('home-container')!.append(Shortcut.firstChild!)
 
   // Creates the container div for the timetable portion of the home page
-  var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>';
-  var Timetable = stringToHTML(TimetableStr);
+  var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>'
+  var Timetable = stringToHTML(TimetableStr)
   // Appends the timetable container into the home container
-  document.getElementById('home-container')!.append(Timetable.firstChild!);
+  document.getElementById('home-container')!.append(Timetable.firstChild!)
   callHomeTimetable(TodayFormatted, true)
 
-  var timetablearrowback = document.getElementById('home-timetable-back');
+  var timetablearrowback = document.getElementById('home-timetable-back')
   var timetablearrowforward = document.getElementById(
     'home-timetable-forward',
-  );
+  )
 
   function SetTimetableSubtitle() {
-    var homelessonsubtitle = document.getElementById('home-lesson-subtitle');
-    const date = new Date();
+    var homelessonsubtitle = document.getElementById('home-lesson-subtitle')
+    const date = new Date()
     if (
       date.getFullYear() == currentSelectedDate.getFullYear() &&
       date.getMonth() == currentSelectedDate.getMonth()
     ) {
       if (date.getDate() == currentSelectedDate.getDate()) {
         // Change text to Today's Lessons
-        homelessonsubtitle!.innerText = 'Today\'s Lessons';
+        homelessonsubtitle!.innerText = 'Today\'s Lessons'
       } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
         // Change text to Yesterday's Lessons
-        homelessonsubtitle!.innerText = 'Yesterday\'s Lessons';
+        homelessonsubtitle!.innerText = 'Yesterday\'s Lessons'
       } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
         // Change text to Tomorrow's Lessons
-        homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons';
+        homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons'
       } else {
         // Change text to date of the day
         homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
           'en-us',
           { weekday: 'short' },
-        )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+        )} ${currentSelectedDate.toLocaleDateString('en-au')}`
       }
     } else {
       // Change text to date of the day
       homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
         'en-us',
         { weekday: 'short' },
-      )} ${currentSelectedDate.toLocaleDateString('en-au')}`;
+      )} ${currentSelectedDate.toLocaleDateString('en-au')}`
     }
   }
 
   function changeTimetable(value: any) {
-    currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
+    currentSelectedDate.setDate(currentSelectedDate.getDate() + value)
     let FormattedDate =
       currentSelectedDate.getFullYear() +
       '-' +
       (currentSelectedDate.getMonth() + 1) +
       '-' +
-      currentSelectedDate.getDate();
-    callHomeTimetable(FormattedDate, true);
-    SetTimetableSubtitle();
+      currentSelectedDate.getDate()
+    callHomeTimetable(FormattedDate, true)
+    SetTimetableSubtitle()
   }
 
   timetablearrowback!.addEventListener('click', function () {
-    changeTimetable(-1);
-  });
+    changeTimetable(-1)
+  })
   timetablearrowforward!.addEventListener('click', function () {
-    changeTimetable(1);
-  });
+    changeTimetable(1)
+  })
 
   // Adds the shortcuts to the shortcut container
   const result = browser.storage.local.get(['shortcuts'])
   function open (result: any) {
 
-    const shortcuts = Object.values(result)[0];
-    addShortcuts(shortcuts);
+    const shortcuts = Object.values(result)[0]
+    addShortcuts(shortcuts)
   }
   result.then(open, onError)
 
   // Creates the upcoming container and appends to the home container
-  var upcomingcontainer = document.createElement('div');
-  upcomingcontainer.classList.add('upcoming-container');
-  upcomingcontainer.classList.add('border');
+  var upcomingcontainer = document.createElement('div')
+  upcomingcontainer.classList.add('upcoming-container')
+  upcomingcontainer.classList.add('border')
 
-  let upcomingtitlediv = CreateElement('div', 'upcoming-title');
-  let upcomingtitle = document.createElement('h2');
-  upcomingtitle.classList.add('home-subtitle');
-  upcomingtitle.innerText = 'Upcoming Assessments';
-  upcomingtitlediv.append(upcomingtitle);
+  let upcomingtitlediv = CreateElement('div', 'upcoming-title')
+  let upcomingtitle = document.createElement('h2')
+  upcomingtitle.classList.add('home-subtitle')
+  upcomingtitle.innerText = 'Upcoming Assessments'
+  upcomingtitlediv.append(upcomingtitle)
 
   let upcomingfilterdiv = CreateElement(
     'div',
     'upcoming-filters',
     'upcoming-filters',
-  );
-  upcomingtitlediv.append(upcomingfilterdiv);
+  )
+  upcomingtitlediv.append(upcomingfilterdiv)
 
-  upcomingcontainer.append(upcomingtitlediv);
+  upcomingcontainer.append(upcomingtitlediv)
 
-  let upcomingitems = document.createElement('div');
-  upcomingitems.id = 'upcoming-items';
-  upcomingitems.classList.add('upcoming-items');
+  let upcomingitems = document.createElement('div')
+  upcomingitems.id = 'upcoming-items'
+  upcomingitems.classList.add('upcoming-items')
 
-  upcomingcontainer.append(upcomingitems);
+  upcomingcontainer.append(upcomingitems)
 
-  document.getElementById('home-container')!.append(upcomingcontainer);
+  document.getElementById('home-container')!.append(upcomingcontainer)
 
   // Creates the notices container into the home container
   const NoticesStr = String.raw`
@@ -2284,9 +2284,9 @@ async function SendHomePage() {
       <div class="notice-container" id="notice-container"></div>
     </div>`
     
-  var Notices = stringToHTML(NoticesStr);
+  var Notices = stringToHTML(NoticesStr)
   // Appends the shortcut container into the home container
-  document.getElementById('home-container')!.append(Notices.firstChild!);
+  document.getElementById('home-container')!.append(Notices.firstChild!)
 
   animate(
     '.home-container > div',
@@ -2296,9 +2296,9 @@ async function SendHomePage() {
       duration: 0.6,
       easing: [.22, .03, .26, 1]  
     }
-  );
+  )
 
-  callHomeTimetable(TodayFormatted);
+  callHomeTimetable(TodayFormatted)
 
   const GetPrefs = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
     method: 'POST',
@@ -2472,208 +2472,208 @@ async function SendHomePage() {
   const result1 = browser.storage.local.get()
   function open1 (result: any) {
     if (result.notificationcollector) {
-      enableNotificationCollector();
+      enableNotificationCollector()
     }
   }
   result1.then(open1, onError)
-  let activeClassList: any;
+  let activeClassList: any
 
   const assessments = await GetUpcomingAssessments()
   const classes = await GetActiveClasses()
 
   // Gets all subjects for the student
   for (let i = 0; i < classes.length; i++) {
-    const element = classes[i];
+    const element = classes[i]
     // eslint-disable-next-line
     if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
       // Finds the active class list with the current subjects
-      activeClassList = classes[i];
+      activeClassList = classes[i]
     }
   }
-  let activeSubjects = activeClassList.subjects;
+  let activeSubjects = activeClassList.subjects
 
-  let activeSubjectCodes = [];
+  let activeSubjectCodes = []
   
   // Gets the code for each of the subjects and puts them in an array
   for (let i = 0; i < activeSubjects.length; i++) {
-    activeSubjectCodes.push(activeSubjects[i].code);
+    activeSubjectCodes.push(activeSubjects[i].code)
   }
 
-  let CurrentAssessments = [];
+  let CurrentAssessments = []
   for (let i = 0; i < assessments.length; i++) {
     if (activeSubjectCodes.includes(assessments[i].code)) {
-      CurrentAssessments.push(element);
+      CurrentAssessments.push(element)
     }
   }
 
-  CurrentAssessments.sort(comparedate);
+  CurrentAssessments.sort(comparedate)
 
-  CreateUpcomingSection(CurrentAssessments, activeSubjects);
+  CreateUpcomingSection(CurrentAssessments, activeSubjects)
 }
 
 export function addShortcuts(shortcuts: any) {
   for (let i = 0; i < shortcuts.length; i++) {
-    const currentShortcut = shortcuts[i];
+    const currentShortcut = shortcuts[i]
     
     if (currentShortcut?.enabled) {
-      const Itemname = (currentShortcut?.name ?? '').replace(/\s/g, '');
+      const Itemname = (currentShortcut?.name ?? '').replace(/\s/g, '')
 
-      const linkDetails = ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks];
+      const linkDetails = ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks]
       if (linkDetails) {
         createNewShortcut(
           linkDetails.link,
           linkDetails.icon,
           linkDetails.viewBox,
           currentShortcut?.name
-        );
+        )
       } else {
-        console.warn(`No link details found for '${Itemname}'`);
+        console.warn(`No link details found for '${Itemname}'`)
       }
     }
   }
-  AddCustomShortcutsToPage();
+  AddCustomShortcutsToPage()
 }
 
 export function enableNotificationCollector() {
-  var xhr3 = new XMLHttpRequest();
-  xhr3.open('POST', `${location.origin}/seqta/student/heartbeat?`, true);
+  var xhr3 = new XMLHttpRequest()
+  xhr3.open('POST', `${location.origin}/seqta/student/heartbeat?`, true)
   xhr3.setRequestHeader(
     'Content-Type',
     'application/json; charset=utf-8'
-  );
+  )
   xhr3.onreadystatechange = function () {
     if (xhr3.readyState === 4) {
-      var Notifications = JSON.parse(xhr3.response);
+      var Notifications = JSON.parse(xhr3.response)
       var alertdiv = document.getElementsByClassName(
         'notifications__bubble___1EkSQ'
-      )[0];
+      )[0]
       if (typeof alertdiv == 'undefined') {
-        console.log('[BetterSEQTA] No notifications currently');
+        console.log('[BetterSEQTA] No notifications currently')
       } else {
-        alertdiv.textContent = Notifications.payload.notifications.length;
+        alertdiv.textContent = Notifications.payload.notifications.length
       }
     }
-  };
+  }
   xhr3.send(
     JSON.stringify({
       timestamp: '1970-01-01 00:00:00.0',
       hash: '#?page=/home',
     })
-  );
+  )
 }
 
 export function disableNotificationCollector() {
-  var alertdiv = document.getElementsByClassName('notifications__bubble___1EkSQ')[0];
+  var alertdiv = document.getElementsByClassName('notifications__bubble___1EkSQ')[0]
   if (typeof alertdiv != 'undefined') {
-    var currentNumber = parseInt(alertdiv.textContent!);
+    var currentNumber = parseInt(alertdiv.textContent!)
     if (currentNumber < 9) {
-      alertdiv.textContent = currentNumber.toString();
+      alertdiv.textContent = currentNumber.toString()
     } else {
-      alertdiv.textContent = '9+';
+      alertdiv.textContent = '9+'
     }
   }
 }
 
 function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   // Creates the stucture and element information for each seperate shortcut
-  let shortcut = document.createElement('a');
-  shortcut.setAttribute('href', link);
-  shortcut.setAttribute('target', '_blank');
-  let shortcutdiv = document.createElement('div');
-  shortcutdiv.classList.add('shortcut');
+  let shortcut = document.createElement('a')
+  shortcut.setAttribute('href', link)
+  shortcut.setAttribute('target', '_blank')
+  let shortcutdiv = document.createElement('div')
+  shortcutdiv.classList.add('shortcut')
 
   let image = stringToHTML(
     `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
   ).firstChild;
-  (image! as HTMLElement).classList.add('shortcuticondiv');
-  let text = document.createElement('p');
-  text.textContent = title;
-  shortcutdiv.append(image as HTMLElement);
-  shortcutdiv.append(text);
-  shortcut.append(shortcutdiv);
+  (image! as HTMLElement).classList.add('shortcuticondiv')
+  let text = document.createElement('p')
+  text.textContent = title
+  shortcutdiv.append(image as HTMLElement)
+  shortcutdiv.append(text)
+  shortcut.append(shortcutdiv)
 
-  document.getElementById('shortcuts')!.appendChild(shortcut);
+  document.getElementById('shortcuts')!.appendChild(shortcut)
 }
 
 function SendNewsPage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log('[BetterSEQTA] Started Loading News Page');
-    document.title = 'News ― SEQTA Learn';
-    var element = document.querySelector('[data-key=news]');
+    console.log('[BetterSEQTA] Started Loading News Page')
+    document.title = 'News ― SEQTA Learn'
+    var element = document.querySelector('[data-key=news]')
 
     // Apply the active class to indicate clicked on home button
-    element!.classList.add('active');
+    element!.classList.add('active')
 
     // Remove all current elements in the main div to add new elements
-    var main = document.getElementById('main');
-    main!.innerHTML = '';
+    var main = document.getElementById('main')
+    main!.innerHTML = ''
 
     // Creates the root of the home page added to the main div
-    var htmlStr = '<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>';
+    var htmlStr = '<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>'
 
-    var html = stringToHTML(htmlStr);
+    var html = stringToHTML(htmlStr)
     // Appends the html file to main div
     // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main!.append(html.firstChild!);
+    main!.append(html.firstChild!)
 
     const titlediv = document.getElementById('title')!.firstChild;
-    (titlediv! as HTMLElement).innerText = 'News';
-    AppendLoadingSymbol('newsloading', '#news-container');
+    (titlediv! as HTMLElement).innerText = 'News'
+    AppendLoadingSymbol('newsloading', '#news-container')
 
     browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
-      let newsarticles = response.news.articles;
-      var newscontainer = document.querySelector('#news-container');
-      document.getElementById('newsloading')!.remove();
+      let newsarticles = response.news.articles
+      var newscontainer = document.querySelector('#news-container')
+      document.getElementById('newsloading')!.remove()
       for (let i = 0; i < newsarticles.length; i++) {
-        let newsarticle = document.createElement('a');
-        newsarticle.classList.add('NewsArticle');
-        newsarticle.href = newsarticles[i].url;
-        newsarticle.target = '_blank';
+        let newsarticle = document.createElement('a')
+        newsarticle.classList.add('NewsArticle')
+        newsarticle.href = newsarticles[i].url
+        newsarticle.target = '_blank'
 
-        let articleimage = document.createElement('div');
-        articleimage.classList.add('articleimage');
+        let articleimage = document.createElement('div')
+        articleimage.classList.add('articleimage')
 
         if (newsarticles[i].urlToImage == 'null') {
           articleimage.style.backgroundImage = `url(${browser.runtime.getURL(
             'icons/betterseqta-light-outline.png',
-          )})`;
-          articleimage.style.width = '20%';
-          articleimage.style.margin = '0 7.5%';
+          )})`
+          articleimage.style.width = '20%'
+          articleimage.style.margin = '0 7.5%'
         } else {
-          articleimage.style.backgroundImage = `url(${newsarticles[i].urlToImage})`;
+          articleimage.style.backgroundImage = `url(${newsarticles[i].urlToImage})`
         }
 
-        let articletext = document.createElement('div');
-        articletext.classList.add('ArticleText');
-        let title = document.createElement('a');
-        title.innerText = newsarticles[i].title;
-        title.href = newsarticles[i].url;
-        title.target = '_blank';
+        let articletext = document.createElement('div')
+        articletext.classList.add('ArticleText')
+        let title = document.createElement('a')
+        title.innerText = newsarticles[i].title
+        title.href = newsarticles[i].url
+        title.target = '_blank'
 
-        let description = document.createElement('p');
-        description.innerHTML = newsarticles[i].description;
+        let description = document.createElement('p')
+        description.innerHTML = newsarticles[i].description
 
-        articletext.append(title);
-        articletext.append(description);
+        articletext.append(title)
+        articletext.append(description)
 
-        newsarticle.append(articleimage);
-        newsarticle.append(articletext);
-        newscontainer!.append(newsarticle);
+        newsarticle.append(articleimage)
+        newsarticle.append(articletext)
+        newscontainer!.append(newsarticle)
       }
-    });
-  }, 8);
+    })
+  }, 8)
 }
 
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
       if (document.getElementById('menu')!.firstChild) {
-        ObserveMenuItemPosition();
-        MenuItemMutation = true;
+        ObserveMenuItemPosition()
+        MenuItemMutation = true
       }
     } catch (error) {
-      return;
+      return
     }
   }
 }
@@ -2715,11 +2715,11 @@ function documentTextColor () {
 browser.storage.onChanged.addListener(documentTextColor)
 
 function LoadInit() {
-  console.log('[BetterSEQTA] Started Init');
+  console.log('[BetterSEQTA] Started Init')
   const result = browser.storage.local.get()
   function open (result: any) {
     if (result.onoff) {
-      SendHomePage();
+      SendHomePage()
     }
   }
   result.then(open, onError)
