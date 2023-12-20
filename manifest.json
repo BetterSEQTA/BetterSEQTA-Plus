@@ -10,7 +10,7 @@
   },
   "action": {
     "browser_style": true,
-    "default_popup": "interface/index.html#settings",
+    "default_popup": "src/interface/index.html#settings",
     "default_icon": {
       "32": "icons/icon-32.png",
       "48": "icons/icon-48.png",
