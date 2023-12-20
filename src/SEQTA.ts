@@ -366,16 +366,6 @@ export function waitForElm(selector: any) {
   });
 }
 
-async function RunColourCheck(element: any) {
-  if (
-    typeof element.contentDocument.documentElement.childNodes[1] == 'undefined'
-  ) {
-    await delay(1000);
-    RunColourCheck(element);
-  } else {
-    element.contentDocument.documentElement.childNodes[1].style.color = 'white';
-  }
-}
 export function GetCSSElement (file: string) {
   const cssFile = browser.runtime.getURL(file)
   const fileref = document.createElement('link')
@@ -416,7 +406,6 @@ async function updateIframesWithDarkMode(): Promise<void> {
           try {
             const settings = await browser.storage.local.get('DarkMode') as SettingsState;
             if (settings.DarkMode) {
-              //await delay(1);
               applyDarkModeToIframe(iframe, cssLink);
             }
           } catch (error) {
