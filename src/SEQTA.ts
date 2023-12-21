@@ -674,7 +674,6 @@ function main(storedSetting: SettingsState) {
     waitForElm('.code').then(AppendElementsToDisabledPage)
   }
 
-  console.log("Enabled > ", storedSetting.onoff)
   if (storedSetting.onoff) {
     console.log('[BetterSEQTA+] Enabled')
     if (DarkMode) document.documentElement.classList.add('dark')
