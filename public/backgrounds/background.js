@@ -17,7 +17,6 @@ const openDB = () => {
 const readData = async () => {
   const selectedBackground = localStorage.getItem('selectedBackground');
   if (!selectedBackground) {
-    console.log('No selected background in local storage.');
     return null;
   }
 
