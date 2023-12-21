@@ -674,11 +674,13 @@ function main(storedSetting: SettingsState) {
     waitForElm('.code').then(AppendElementsToDisabledPage)
   }
 
-  if (storedSetting.DarkMode) {
+  console.log("Enabled > ", storedSetting.onoff)
+  if (storedSetting.onoff) {
     console.log('[BetterSEQTA+] Enabled')
-    if (DarkMode) {
-      document.documentElement.classList.add('dark')
-    }
+    if (DarkMode) document.documentElement.classList.add('dark')
+
+    new StorageListener()
+    new MessageHandler()
     
     updateAllColors(storedSetting)
     loading()
@@ -695,16 +697,17 @@ function main(storedSetting: SettingsState) {
 }
 
 function InjectCustomIcons() {
+  console.log('[BetterSEQTA+] Injecting Icons')
   const fontURL = browser.runtime.getURL('fonts/IconFamily.woff')
 
   const style = document.createElement('style')
   style.setAttribute('type', 'text/css')
   style.innerHTML = `
     @font-face {
-      font-family: 'IconFamily'
-      src: url('${fontURL}') format('woff')
-      font-weight: normal
-      font-style: normal
+      font-family: 'IconFamily';
+      src: url('${fontURL}') format('woff');
+      font-weight: normal;
+      font-style: normal;
     }`
   document.head.appendChild(style)
 }
@@ -740,9 +743,6 @@ export function AppendElementsToDisabledPage() {
   `
   document.head.append(settingsStyle)
 }
-
-new StorageListener()
-new MessageHandler()
 
 var PageLoaded = false
 async function CheckLoadOnPeriods() {
