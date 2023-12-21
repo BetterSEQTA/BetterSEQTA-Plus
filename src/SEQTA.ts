@@ -1193,7 +1193,7 @@ async function AddBetterSEQTAElements(toggle: any) {
         const menuCover = document.querySelector('#icon-cover')
         menuCover!.addEventListener('click', function () {
           location.href = '../#?page=/home'
-          SendHomePage();
+          loadHomePage();
           (document!
             .getElementById('menu')!
             .firstChild! as HTMLElement).classList.remove('noscroll')
@@ -1202,7 +1202,7 @@ async function AddBetterSEQTAElements(toggle: any) {
         const homebutton = document.getElementById('homebutton')
         homebutton!.addEventListener('click', function () {
           if (!MenuOptionsOpen) {
-            SendHomePage()
+            loadHomePage()
           }
         })
 
@@ -2130,7 +2130,7 @@ function AddCustomShortcutsToPage() {
   result.then(open, onError)
 }
 
-async function SendHomePage() {
+async function loadHomePage() {
   // Sends the html data for the home page
   console.log('[BetterSEQTA] Started Loading Home Page')
   document.title = 'Home ― SEQTA Learn'
@@ -2718,7 +2718,7 @@ function LoadInit() {
   const result = browser.storage.local.get()
   function open (result: any) {
     if (result.onoff) {
-      SendHomePage()
+      loadHomePage()
     }
   }
   result.then(open, onError)
