@@ -3,6 +3,14 @@ import * as Sentry from "@sentry/browser"
 import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
+import updateVideo from 'url:./resources/update-video.mp4'
+import IconFamily from 'url:./resources/fonts/IconFamily.woff'
+import LogoLight from 'url:./resources/icons/betterseqta-light-icon.png'
+import LogoLightOutline from 'url:./resources/icons/betterseqta-light-outline.png'
+import icon48 from 'url:./resources/icons/icon-48.png'
+
+import Popup from 'url:./interface/index.html'
+
 import Color from 'color'
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
 import { MessageHandler } from './seqta/utils/MessageListener'
@@ -16,7 +24,7 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import iframeCSS from "./css/iframe.scss?inline"
+import iframeCSS from "url:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
@@ -53,7 +61,8 @@ document.addEventListener(
 
       import('./css/injected.scss')
       import('./css/documentload.scss')
-      /* const link = GetCSSElement()
+
+        /* const link = GetCSSElement()
       document.getElementsByTagName('html')[0].appendChild(link); */
 
       enableCurrentTheme()
@@ -123,7 +132,7 @@ function OpenWhatsNewPopup() {
   imagecont.classList.add('whatsnewImgContainer')
   let video = document.createElement('video')
   let source = document.createElement('source')
-  source.setAttribute('src', browser.runtime.getURL('resources/update-video.mp4'))
+  source.setAttribute('src', updateVideo)
   source.setAttribute('type', 'video/mp4')
   video.autoplay = true
   video.muted = true
@@ -253,7 +262,7 @@ function OpenWhatsNewPopup() {
     { easing: spring({ stiffness: 220, damping: 18 }) }
   )
 
-  animate(
+  /* animate(
     '.whatsnewTextContainer *',
     { opacity: [0, 1], y: [10, 0] },
     {
@@ -261,7 +270,7 @@ function OpenWhatsNewPopup() {
       duration: 0.5,
       easing: [.22, .03, .26, 1]  
     }
-  )
+  ) */
 
   browser.storage.local.remove(['justupdated'])
 
@@ -280,6 +289,7 @@ function OpenWhatsNewPopup() {
 
 async function finishLoad() {
   try {
+    document.querySelector('.legacy-root')!.classList.remove('hidden')
     var loadingbk = document.getElementById('loading')
     loadingbk!.style.opacity = '0'
     await delay(501)
@@ -366,7 +376,7 @@ export function waitForElm(selector: any) {
   })
 }
 
-export function GetCSSElement (file: string) {
+export function GetCSSElement(file: string) {
   const cssFile = browser.runtime.getURL(file)
   const fileref = document.createElement('link')
   fileref.setAttribute('rel', 'stylesheet')
@@ -678,6 +688,8 @@ function main(storedSetting: SettingsState) {
     console.log('[BetterSEQTA+] Enabled')
     if (DarkMode) document.documentElement.classList.add('dark')
 
+    document.querySelector('.legacy-root')?.classList.add('hidden')
+
     new StorageListener()
     new MessageHandler()
     
@@ -697,14 +709,13 @@ function main(storedSetting: SettingsState) {
 
 function InjectCustomIcons() {
   console.log('[BetterSEQTA+] Injecting Icons')
-  const fontURL = browser.runtime.getURL('fonts/IconFamily.woff')
 
   const style = document.createElement('style')
   style.setAttribute('type', 'text/css')
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${fontURL}') format('woff');
+      src: url('${IconFamily}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`
@@ -790,7 +801,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
+  extensionIframe.src = `${Popup}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')
@@ -1600,13 +1611,14 @@ function callHomeTimetable(date: string, change?: any) {
           })
         }
       } else {
-        console.log(DayContainer)
-        if (DayContainer.innerText || change) {
-          DayContainer.innerText = ''
+        if (DayContainer == null) {
+
+        } else (!DayContainer.innerHTML || change); {
+          DayContainer.innerHTML = ''
           var dummyDay = document.createElement('div')
           dummyDay.classList.add('day-empty')
           let img = document.createElement('img')
-          img.src = browser.runtime.getURL('icons/betterseqta-light-icon.png')
+          img.src = LogoLight
           let text = document.createElement('p')
           text.innerText = 'No lessons available.'
           dummyDay.append(img)
@@ -2141,12 +2153,10 @@ async function loadHomePage() {
 
   // Remove all current elements in the main div to add new elements
   var main = document.getElementById('main')
-  main!.innerHTML = ''
+  main!.innerHTML = '';
 
-  const titlediv = document.getElementById('title')!.firstChild;
-  ((titlediv!) as HTMLElement).innerHTML = 'Home';
-  (document.querySelector('link[rel*="icon"]')! as HTMLLinkElement).href =
-    browser.runtime.getURL('icons/icon-48.png')
+  const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
+  icon.href = icon48
 
   currentSelectedDate = new Date()
 
@@ -2154,36 +2164,30 @@ async function loadHomePage() {
   var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
   
   // Appends the html file to main div
-  // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
+  // Note: firstChild of html is done due to needing to grab the body from the stringToHTML function
   main!.append(html.firstChild!)
 
   // Gets the current date
   const date = new Date()
 
   // Formats the current date used send a request for timetable and notices later
-  var TodayFormatted =
+  const TodayFormatted =
     date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
 
-  // Replaces actual date with a selected date. Used for testing.
-  // TodayFormatted = "2020-08-31"
 
   // Creates the shortcut container into the home container
-  var ShortcutStr = '<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>'
-  var Shortcut = stringToHTML(ShortcutStr)
+  const Shortcut = stringToHTML('<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>')
   // Appends the shortcut container into the home container
   document.getElementById('home-container')!.append(Shortcut.firstChild!)
 
   // Creates the container div for the timetable portion of the home page
-  var TimetableStr = '<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>'
-  var Timetable = stringToHTML(TimetableStr)
+  const Timetable = stringToHTML('<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
   // Appends the timetable container into the home container
   document.getElementById('home-container')!.append(Timetable.firstChild!)
   callHomeTimetable(TodayFormatted, true)
 
-  var timetablearrowback = document.getElementById('home-timetable-back')
-  var timetablearrowforward = document.getElementById(
-    'home-timetable-forward',
-  )
+  const timetablearrowback = document.getElementById('home-timetable-back')
+  const timetablearrowforward = document.getElementById('home-timetable-forward')
 
   function SetTimetableSubtitle() {
     var homelessonsubtitle = document.getElementById('home-lesson-subtitle')
@@ -2287,7 +2291,7 @@ async function loadHomePage() {
   // Appends the shortcut container into the home container
   document.getElementById('home-container')!.append(Notices.firstChild!)
 
-  animate(
+  /* animate(
     '.home-container > div',
     { opacity: [0, 1], y: [10, 0] },
     {
@@ -2295,7 +2299,7 @@ async function loadHomePage() {
       duration: 0.6,
       easing: [.22, .03, .26, 1]  
     }
-  )
+  ) */
 
   callHomeTimetable(TodayFormatted)
 
@@ -2634,9 +2638,7 @@ function SendNewsPage() {
         articleimage.classList.add('articleimage')
 
         if (newsarticles[i].urlToImage == 'null') {
-          articleimage.style.backgroundImage = `url(${browser.runtime.getURL(
-            'icons/betterseqta-light-outline.png',
-          )})`
+          articleimage.style.backgroundImage = `url(${LogoLightOutline})`
           articleimage.style.width = '20%'
           articleimage.style.margin = '0 7.5%'
         } else {
