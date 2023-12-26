@@ -4,23 +4,24 @@
   "version": "3.2.2",
   "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
   "icons": {
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "64": "icons/icon-64.png"
+    "32": "src/resources/icons/icon-32.png",
+    "48": "src/resources/icons/icon-48.png",
+    "64": "src/resources/icons/icon-64.png"
   },
   "action": {
     "browser_style": true,
     "default_popup": "src/interface/index.html#settings",
     "default_icon": {
-      "32": "icons/icon-32.png",
-      "48": "icons/icon-48.png",
-      "64": "icons/icon-64.png"
+      "32": "src/resources/icons/icon-32.png",
+      "48": "src/resources/icons/icon-48.png",
+      "64": "src/resources/icons/icon-64.png"
     }
   },
   "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "service_worker": "src/background.ts"
+    "service_worker": "src/background.ts",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -32,11 +33,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icons/*",
-        "fonts/*",
-        "images/*",
-        "resources/*",
-        "backgrounds/*"
+        "public/*",
+        "src/*"
       ],
       "matches": ["*://*/*"]
     }

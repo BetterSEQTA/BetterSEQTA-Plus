@@ -3,8 +3,9 @@
   "version": "3.2.2",
   "type": "module",
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
-  "main": "webpack.config.js",
   "scripts": {
+    "start": "parcel watch manifest.json --host localhost --config @parcel/config-webextension",
+    "build-test": "parcel build manifest.json --config @parcel/config-webextension",
     "build": "vite build",
     "dev": "vite dev",
     "build-old": "webpack --config webpack.config.js --mode production && sh ./package.sh",
@@ -16,22 +17,31 @@
   "license": "MIT",
   "devDependencies": {
     "@crxjs/vite-plugin": "latest",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "^6.8.1",
-    "dompurify": "^3.0.6",
+    "@parcel/config-webextension": "^2.10.3",
+    "@parcel/optimizer-data-url": "2.10.3",
+    "@parcel/transformer-inline-string": "2.10.3",
+    "@parcel/transformer-sass": "2.10.3",
+    "assert": "^2.0.0",
+    "browserify-zlib": "^0.2.0",
+    "crypto-browserify": "^3.12.0",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-webpack-plugin": "^4.0.1",
-    "file-loader": "^6.2.0",
-    "mini-css-extract-plugin": "^2.7.6",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "parcel": "^2.10.3",
+    "path-browserify": "^1.0.0",
     "prettier": "3.0.2",
+    "querystring-es3": "^0.2.1",
     "sass": "^1.69.5",
     "sass-loader": "^13.3.2",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.1.0",
     "style-loader": "^3.3.3",
-    "vite": "^5.0.10",
-    "webextension-polyfill": "^0.10.0",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4"
+    "tty-browserify": "^0.0.1",
+    "url": "^0.11.0",
+    "util": "^0.12.3",
+    "yarn": "^1.22.21"
   },
   "dependencies": {
     "@sentry/browser": "^7.85.0",
@@ -45,6 +55,7 @@
     "@types/webextension-polyfill": "^0.10.7",
     "autoprefixer": "^10.4.15",
     "color": "^4.2.3",
+    "dompurify": "^3.0.6",
     "framer-motion": "^10.16.16",
     "install": "^0.13.0",
     "localforage": "^1.10.0",
@@ -58,6 +69,7 @@
     "sortablejs": "^1.15.0",
     "tailwindcss": "^3.3.3",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "webextension-polyfill": "^0.10.0"
   }
 }
