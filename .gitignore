@@ -3,6 +3,9 @@ node_modules/
 package-lock.json
 bun.lockb
 pnpm-lock.yaml
+yarn.lock
+
+.parcel-cache
 
 # Build
 package.zip

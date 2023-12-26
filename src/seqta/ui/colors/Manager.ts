@@ -1,8 +1,10 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA';
+import { GetThresholdOfColor } from '../../../SEQTA';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { SettingsState } from '../../../types/storage';
+
+import iFrameCSS from 'url:../../../css/iframe.scss';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
@@ -35,12 +37,9 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
   if (DarkMode !== null) {
-    modeProps = DarkMode ? {
-      '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-light-full.png')})`
-    } : {
-      '--better-pale': lightenAndPaleColor(selectedColor),
-      '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-dark-full.png')})`
-    };
+    if (!DarkMode) {
+      modeProps = { '--better-pale': lightenAndPaleColor(selectedColor) };
+    }
 
     if (DarkMode) {
       document.documentElement.style.removeProperty('--better-pale');
@@ -67,7 +66,7 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   }
 
   let alliframes = document.getElementsByTagName('iframe');
-  let fileref = GetCSSElement('css/iframe.css');
+  let fileref = iFrameCSS;
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
