@@ -5,11 +5,7 @@
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "scripts": {
     "start": "parcel watch manifest.json --host localhost --config @parcel/config-webextension",
-    "build-test": "parcel build manifest.json --config @parcel/config-webextension",
-    "build": "vite build",
-    "dev": "vite dev",
-    "build-old": "webpack --config webpack.config.js --mode production && sh ./package.sh",
-    "dev-old": "webpack --config webpack.config.js --watch --mode development",
+    "build": "parcel build manifest.json --config @parcel/config-webextension",
     "eslint": "eslint --fix ."
   },
   "keywords": [],
@@ -31,6 +27,7 @@
     "parcel": "^2.10.3",
     "path-browserify": "^1.0.0",
     "prettier": "3.0.2",
+    "process": "^0.11.10",
     "querystring-es3": "^0.2.1",
     "sass": "^1.69.5",
     "sass-loader": "^13.3.2",
