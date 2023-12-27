@@ -16,7 +16,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@crxjs/vite-plugin": "latest",
     "@parcel/config-webextension": "^2.10.3",
     "@parcel/optimizer-data-url": "2.10.3",
     "@parcel/transformer-inline-string": "2.10.3",
