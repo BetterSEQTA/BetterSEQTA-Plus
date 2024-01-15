@@ -525,7 +525,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 #menu ul {
   width: 280px; // TODO: I know its 10px larger than its parent, but for some reason there is a 10px right padding that doesn't show up properly in devtools???
 }
-.student #menu > ul::before {
+/* .student #menu > ul::before {
   background-image: url(data-url:../resources/icons/betterseqta-dark-full.png);
   position: -webkit-sticky;
   position: sticky;
@@ -536,7 +536,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .dark .student #menu > ul::before {
   background-image: url(data-url:../resources/icons/betterseqta-light-full.png);
-}
+} */
 
 .assessmentsWrapper .message {
   display: none;
@@ -685,12 +685,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   left: 0;
   width: 100%;
 }
-.dark #title::before {
-  background-image: url(data-url:../resources/icons/betterseqta-light-full.png);
-}
 
 #title::before {
-  background-image: url(data-url:../resources/icons/betterseqta-dark-full.png);
+  background-image: var(--betterseqta-logo);
   background-position: left;
   background-repeat: no-repeat;
   background-size: auto 48px;
@@ -1682,7 +1679,7 @@ li.MessageList__unread___3imtO {
   content: "";
   width: 14px;
   height: 12px;
-  background-image: url("data-url:../resources/icons/betterseqta-light-outline.png");
+  background-image: url("../resources/icons/betterseqta-light-outline.png");
   display: inline-block;
   background-size: 18px 18px;
   color: #fff;
