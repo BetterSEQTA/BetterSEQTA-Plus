@@ -30,6 +30,10 @@ import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
 
+/* import injected from 'url:./css/injected.scss';
+ */ /* import documentLoad from 'url:./css/documentload.scss'; */
+
+
 declare global {
   interface Window {
     chrome?: any
@@ -62,8 +66,18 @@ document.addEventListener(
       import('./css/injected.scss')
       import('./css/documentload.scss')
 
-        /* const link = GetCSSElement()
-      document.getElementsByTagName('html')[0].appendChild(link); */
+      /* const injectedCSS = document.createElement('link')
+      injectedCSS.setAttribute('rel', 'stylesheet')
+      injectedCSS.setAttribute('type', 'text/css')
+      injectedCSS.setAttribute('href', injected) */
+
+      /* const documentLoadCSS = document.createElement('link')
+      documentLoadCSS.setAttribute('rel', 'stylesheet')
+      documentLoadCSS.setAttribute('type', 'text/css')
+      documentLoadCSS.setAttribute('href', documentLoad) */
+
+      /* document.head.appendChild(documentLoadCSS) */
+      /* document.head.appendChild(injectedCSS) */
 
       enableCurrentTheme()
       try {
