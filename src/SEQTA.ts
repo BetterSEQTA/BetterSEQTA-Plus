@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser"
 
-import { animate, spring, stagger } from 'motion'
+import { animate, spring, /* stagger */ } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
 import updateVideo from 'url:./resources/update-video.mp4'
@@ -370,24 +370,37 @@ export function RemoveBackground() {
   bk3[0].remove()
 }
 
-export function waitForElm(selector: any) {
+export function waitForElm(selector: string) {
   return new Promise((resolve) => {
-    if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector))
+    const querySelector = () => document.querySelector(selector);
+
+    if (querySelector()) {
+      return resolve(querySelector());
     }
 
     const observer = new MutationObserver(() => {
-      if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector))
-        observer.disconnect()
+      if (querySelector()) {
+        resolve(querySelector());
+        observer.disconnect();
       }
-    })
+    });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    })
-  })
+    // 🛡️ Safety check: Ensure document.body is available
+    if (document.body) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    } else {
+      // 🚨 Fallback: Wait for the document to be ready
+      document.addEventListener('DOMContentLoaded', () => {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+      });
+    }
+  });
 }
 
 export function GetCSSElement(file: string) {
@@ -440,7 +453,19 @@ async function updateIframesWithDarkMode(): Promise<void> {
     }
   })
 
-  observer.observe(document.body, { subtree: true, childList: true })
+  if (document.body) {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    });
+  }
 }
 
 function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement): void {
@@ -806,8 +831,8 @@ export function closeSettings() {
 }
 
 function addExtensionSettings() {
-  const link = GetCSSElement('src/interface/popup.css')
-  document.querySelector('html')!.appendChild(link)
+  /* const link = GetCSSElement('src/interface/popup.css')
+  document.querySelector('html')!.appendChild(link) */
 
   const extensionPopup = document.createElement('div')
   extensionPopup.classList.add('outside-container', 'hide')
@@ -1189,14 +1214,16 @@ async function AddBetterSEQTAElements(toggle: any) {
           let houseelement1 = document.getElementsByClassName('userInfohouse')[0]
           const houseelement = houseelement1 as HTMLElement
           if (students[index]?.house) {
-            (houseelement as HTMLElement).style.background = students[index].house_colour
-            try {
-              let colorresult = GetThresholdOfColor(students[index]?.house_colour)
-
-              houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white'
-              houseelement.innerText = students[index].year + students[index].house
-            } catch (error) {
-              houseelement.innerText = students[index].house
+            if (students[index]?.house_colour) {
+              houseelement.style.background = students[index].house_colour
+              try {
+                let colorresult = GetThresholdOfColor(students[index]?.house_colour)
+      
+                houseelement.style.color = colorresult && colorresult > 300 ? 'black' : 'white'
+                houseelement.innerText = students[index].year + students[index].house
+              } catch (error) {
+                houseelement.innerText = students[index].house
+              }
             }
           } else {
             houseelement.innerText = students[index].year
@@ -1626,19 +1653,20 @@ function callHomeTimetable(date: string, change?: any) {
         }
       } else {
         if (DayContainer == null) {
-
-        } else (!DayContainer.innerHTML || change); {
-          DayContainer.innerHTML = ''
-          var dummyDay = document.createElement('div')
-          dummyDay.classList.add('day-empty')
-          let img = document.createElement('img')
-          img.src = LogoLight
-          let text = document.createElement('p')
-          text.innerText = 'No lessons available.'
-          dummyDay.append(img)
-          dummyDay.append(text)
-          DayContainer.append(dummyDay)
+          console.log('DayContainer is null')
+          //DayContainer = document.getElementById('day-container')!
         }
+        console.log(DayContainer);
+        DayContainer.innerHTML = ''
+        var dummyDay = document.createElement('div')
+        dummyDay.classList.add('day-empty')
+        let img = document.createElement('img')
+        img.src = LogoLight
+        let text = document.createElement('p')
+        text.innerText = 'No lessons available.'
+        dummyDay.append(img)
+        dummyDay.append(text)
+        DayContainer.append(dummyDay)
       }
     }
   }
@@ -2160,14 +2188,20 @@ async function loadHomePage() {
   // Sends the html data for the home page
   console.log('[BetterSEQTA] Started Loading Home Page')
   document.title = 'Home ― SEQTA Learn'
-  var element = document.querySelector('[data-key=home]')
+  const element = document.querySelector('[data-key=home]')
 
   // Apply the active class to indicate clicked on home button
   element!.classList.add('active')
 
   // Remove all current elements in the main div to add new elements
-  var main = document.getElementById('main')
-  main!.innerHTML = '';
+  const main = document.getElementById('main')
+
+  if (!main) {
+    console.error('Main element not found.')
+    return
+  }
+
+  //main.innerHTML = '';
 
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
   icon.href = icon48
@@ -2198,7 +2232,12 @@ async function loadHomePage() {
   const Timetable = stringToHTML('<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
   // Appends the timetable container into the home container
   document.getElementById('home-container')!.append(Timetable.firstChild!)
-  callHomeTimetable(TodayFormatted, true)
+  if (document.getElementById('home-container')) {
+    callHomeTimetable(TodayFormatted, true)
+  } else {
+    console.error("HELP! THERE IS NO HOME CONTAINER")
+  }
+
 
   const timetablearrowback = document.getElementById('home-timetable-back')
   const timetablearrowforward = document.getElementById('home-timetable-forward')
@@ -2507,7 +2546,11 @@ async function loadHomePage() {
       activeClassList = classes[i]
     }
   }
-  let activeSubjects = activeClassList.subjects
+  
+  let activeSubjects = []
+  if (activeClassList?.subjects) {
+    activeSubjects = activeClassList.subjects
+  }
 
   let activeSubjectCodes = []
   
@@ -2683,7 +2726,7 @@ function SendNewsPage() {
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
-      if (document.getElementById('menu')!.firstChild) {
+      if (document.getElementById('menu')?.firstChild) {
         ObserveMenuItemPosition()
         MenuItemMutation = true
       }

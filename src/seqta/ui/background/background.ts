@@ -1,20 +1,31 @@
-// Open the database
-const openDB = () => {
+interface Data {
+  blob: Blob;
+  type: 'image' | 'video';
+}
+
+interface DatabaseEventTarget extends EventTarget {
+  result: IDBDatabase;
+}
+
+interface DatabaseEvent extends Event {
+  target: DatabaseEventTarget;
+}
+
+const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
 
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
 
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('backgrounds', { keyPath: 'id' });
+    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+      // @ts-expect-error
+      event?.target?.result.createObjectStore('backgrounds', { keyPath: 'id' });
     };
   });
 };
 
-// Modified Read Data from IndexedDB
-const readData = async () => {
+const readData = async (): Promise<Data | null> => {
   const selectedBackground = localStorage.getItem('selectedBackground');
   if (!selectedBackground) {
     return null;
@@ -25,20 +36,20 @@ const readData = async () => {
   const store = tx.objectStore('backgrounds');
   const request = store.get(selectedBackground);
 
-  return await new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result as Data);
     request.onerror = () => reject(request.error);
   });
 };
 
-const updateBackground = async () => {
+const updateBackground = async (): Promise<void> => {
   try {
     const data = await readData();
     if (!data) {
       console.log('No data found in IndexedDB.');
 
       const container = document.getElementById('media-container');
-      const currentMedia = container.querySelector('.current-media');
+      const currentMedia = container?.querySelector('.current-media');
       if (currentMedia) {
         currentMedia.remove();
       }
@@ -63,19 +74,19 @@ const updateBackground = async () => {
     }
 
     // Mark the old element for removal
-    const oldElement = container.querySelector('.current-media');
+    const oldElement = container?.querySelector('.current-media');
     if (oldElement) {
       oldElement.classList.remove('current-media');
       oldElement.classList.add('old-media');
     }
 
     // Add the new element and mark it as current
-    newElement.classList.add('current-media');
-    container.appendChild(newElement);
+    newElement?.classList.add('current-media');
+    container?.appendChild(newElement as Node);
 
     // Delay removal of old element
     setTimeout(() => {
-      const oldMedia = container.querySelector('.old-media');
+      const oldMedia = container?.querySelector('.old-media');
       if (oldMedia) {
         oldMedia.remove();
       }
@@ -86,13 +97,12 @@ const updateBackground = async () => {
 };
 
 // Main function to run on page load
-const main = async () => {
-  await updateBackground();  // Initial background update
+const main = async (): Promise<void> => {
+  await updateBackground();
 
   // Listen for changes to local storage
   window.addEventListener('storage', async (event) => {
     if (event.key === 'selectedBackground') {
-      await updateBackground();  // Update background if 'selectedBackground' changes
     }
   });
 };

@@ -1,4 +1,4 @@
-import browser from 'webextension-polyfill'
+import backgroundPage from 'url:./background/background.html'
 
 export async function appendBackgroundToUI() {
   console.log('Starting appendBackgroundToUI...');
@@ -10,6 +10,6 @@ export async function appendBackgroundToUI() {
   background.id = 'background';
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
-  background.src = browser.runtime.getURL('backgrounds/background.html');
+  background.src = backgroundPage;
   parent!.appendChild(background);
 }
