@@ -2218,25 +2218,23 @@ async function loadHomePage() {
   // Gets the current date
   const date = new Date()
 
-  // Formats the current date used send a request for timetable and notices later
-  const TodayFormatted =
-    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
-
-
+  
+  
   // Creates the shortcut container into the home container
   const Shortcut = stringToHTML('<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>')
   // Appends the shortcut container into the home container
   document.getElementById('home-container')!.append(Shortcut.firstChild!)
-
+  
   // Creates the container div for the timetable portion of the home page
   const Timetable = stringToHTML('<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
   // Appends the timetable container into the home container
   document.getElementById('home-container')!.append(Timetable.firstChild!)
-  if (document.getElementById('home-container')) {
-    callHomeTimetable(TodayFormatted, true)
-  } else {
-    console.error("HELP! THERE IS NO HOME CONTAINER")
-  }
+  
+  // Formats the current date used send a request for timetable and notices later
+  const TodayFormatted =
+    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
+
+  callHomeTimetable(TodayFormatted, true)
 
 
   const timetablearrowback = document.getElementById('home-timetable-back')
