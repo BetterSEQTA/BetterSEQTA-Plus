@@ -4,9 +4,8 @@
   "type": "module",
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "scripts": {
-    "start": "parcel watch manifest.json --host localhost --config @parcel/config-webextension",
-    "build": "rm -r .parcel-cache; parcel build manifest.json --config @parcel/config-webextension --no-content-hash",
-    "build-unix": "rm -r .parcel-cache; parcel build manifest.json --config @parcel/config-webextension --no-content-hash",
+    "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension",
+    "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash",
     "eslint": "eslint --fix ."
   },
   "keywords": [],

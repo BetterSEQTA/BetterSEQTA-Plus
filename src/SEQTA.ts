@@ -2201,7 +2201,7 @@ async function loadHomePage() {
     return
   }
 
-  //main.innerHTML = '';
+  main.innerHTML = '';
 
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
   icon.href = icon48
