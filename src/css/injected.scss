@@ -525,8 +525,8 @@ div > ol:has(.uiFileHandlerWrapper) {
 #menu ul {
   width: 280px; // TODO: I know its 10px larger than its parent, but for some reason there is a 10px right padding that doesn't show up properly in devtools???
 }
-/* .student #menu > ul::before {
-  background-image: url(data-url:../resources/icons/betterseqta-dark-full.png);
+.student #menu > ul::before {
+  background-image: var(--betterseqta-logo);
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -534,9 +534,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 69.5px;
   box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2);
 }
-.dark .student #menu > ul::before {
-  background-image: url(data-url:../resources/icons/betterseqta-light-full.png);
-} */
 
 .assessmentsWrapper .message {
   display: none;
