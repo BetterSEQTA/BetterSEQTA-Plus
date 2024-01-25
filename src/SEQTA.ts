@@ -1578,6 +1578,8 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
 }
 
 function callHomeTimetable(date: string, change?: any) {
+  const DayContainer = document.getElementById('day-container')!
+  console.log("Daycontainer: ", DayContainer)
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest()
   xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true)
@@ -1652,10 +1654,6 @@ function callHomeTimetable(date: string, change?: any) {
           })
         }
       } else {
-        if (DayContainer == null) {
-          console.log('DayContainer is null')
-          //DayContainer = document.getElementById('day-container')!
-        }
         console.log(DayContainer);
         DayContainer.innerHTML = ''
         var dummyDay = document.createElement('div')
@@ -2187,8 +2185,14 @@ function AddCustomShortcutsToPage() {
 async function loadHomePage() {
   // Sends the html data for the home page
   console.log('[BetterSEQTA] Started Loading Home Page')
+
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
+
+  await new Promise((resolve) => {
+    // Delay to prevent SEQTA from removing the UI elements
+    setTimeout(resolve, 8)
+  })
 
   // Apply the active class to indicate clicked on home button
   element!.classList.add('active')
@@ -2201,34 +2205,33 @@ async function loadHomePage() {
     return
   }
 
-  main.innerHTML = '';
-
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
   icon.href = icon48
 
   currentSelectedDate = new Date()
 
   // Creates the root of the home page added to the main div
-  var html = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
+  let homeContainer = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
   
+  console.log(homeContainer?.firstChild!)
   // Appends the html file to main div
   // Note: firstChild of html is done due to needing to grab the body from the stringToHTML function
-  main!.append(html.firstChild!)
+  main.append(homeContainer?.firstChild!)
 
   // Gets the current date
   const date = new Date()
 
-  
-  
+  console.log(document.getElementById('main'))
+
   // Creates the shortcut container into the home container
   const Shortcut = stringToHTML('<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>')
   // Appends the shortcut container into the home container
-  document.getElementById('home-container')!.append(Shortcut.firstChild!)
+  document.getElementById('home-container')?.append(Shortcut?.firstChild!)
   
   // Creates the container div for the timetable portion of the home page
   const Timetable = stringToHTML('<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
   // Appends the timetable container into the home container
-  document.getElementById('home-container')!.append(Timetable.firstChild!)
+  document.getElementById('home-container')?.append(Timetable?.firstChild!)
   
   // Formats the current date used send a request for timetable and notices later
   const TodayFormatted =

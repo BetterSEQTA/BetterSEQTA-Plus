@@ -51,7 +51,7 @@
     "@types/webextension-polyfill": "^0.10.7",
     "autoprefixer": "^10.4.15",
     "color": "^4.2.3",
-    "dompurify": "^3.0.6",
+    "dompurify": "^3.0.8",
     "framer-motion": "^10.16.16",
     "install": "^0.13.0",
     "localforage": "^1.10.0",
