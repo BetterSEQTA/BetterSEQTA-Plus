@@ -30,10 +30,6 @@ import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
 
-/* import injected from 'url:./css/injected.scss';
- */ /* import documentLoad from 'url:./css/documentload.scss'; */
-
-
 declare global {
   interface Window {
     chrome?: any
@@ -65,19 +61,6 @@ document.addEventListener(
 
       import('./css/injected.scss')
       import('./css/documentload.scss')
-
-      /* const injectedCSS = document.createElement('link')
-      injectedCSS.setAttribute('rel', 'stylesheet')
-      injectedCSS.setAttribute('type', 'text/css')
-      injectedCSS.setAttribute('href', injected) */
-
-      /* const documentLoadCSS = document.createElement('link')
-      documentLoadCSS.setAttribute('rel', 'stylesheet')
-      documentLoadCSS.setAttribute('type', 'text/css')
-      documentLoadCSS.setAttribute('href', documentLoad) */
-
-      /* document.head.appendChild(documentLoadCSS) */
-      /* document.head.appendChild(injectedCSS) */
 
       enableCurrentTheme()
       try {
@@ -385,14 +368,12 @@ export function waitForElm(selector: string) {
       }
     });
 
-    // 🛡️ Safety check: Ensure document.body is available
     if (document.body) {
       observer.observe(document.body, {
         childList: true,
         subtree: true,
       });
     } else {
-      // 🚨 Fallback: Wait for the document to be ready
       document.addEventListener('DOMContentLoaded', () => {
         observer.observe(document.body, {
           childList: true,
@@ -1578,8 +1559,6 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
 }
 
 function callHomeTimetable(date: string, change?: any) {
-  const DayContainer = document.getElementById('day-container')!
-  console.log("Daycontainer: ", DayContainer)
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest()
   xhr.open('POST', `${location.origin}/seqta/student/load/timetable?`, true)
@@ -1654,7 +1633,6 @@ function callHomeTimetable(date: string, change?: any) {
           })
         }
       } else {
-        console.log(DayContainer);
         DayContainer.innerHTML = ''
         var dummyDay = document.createElement('div')
         dummyDay.classList.add('day-empty')
@@ -2213,15 +2191,12 @@ async function loadHomePage() {
   // Creates the root of the home page added to the main div
   let homeContainer = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
   
-  console.log(homeContainer?.firstChild!)
   // Appends the html file to main div
   // Note: firstChild of html is done due to needing to grab the body from the stringToHTML function
   main.append(homeContainer?.firstChild!)
 
   // Gets the current date
   const date = new Date()
-
-  console.log(document.getElementById('main'))
 
   // Creates the shortcut container into the home container
   const Shortcut = stringToHTML('<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>')
