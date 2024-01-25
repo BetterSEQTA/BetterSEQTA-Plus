@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser"
 
-import { animate, spring, /* stagger */ } from 'motion'
+import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
 import updateVideo from 'url:./resources/update-video.mp4'
@@ -259,7 +259,7 @@ function OpenWhatsNewPopup() {
     { easing: spring({ stiffness: 220, damping: 18 }) }
   )
 
-  /* animate(
+  animate(
     '.whatsnewTextContainer *',
     { opacity: [0, 1], y: [10, 0] },
     {
@@ -267,7 +267,7 @@ function OpenWhatsNewPopup() {
       duration: 0.5,
       easing: [.22, .03, .26, 1]  
     }
-  ) */
+  )
 
   browser.storage.local.remove(['justupdated'])
 
@@ -2320,7 +2320,7 @@ async function loadHomePage() {
   // Appends the shortcut container into the home container
   document.getElementById('home-container')!.append(Notices.firstChild!)
 
-  /* animate(
+  animate(
     '.home-container > div',
     { opacity: [0, 1], y: [10, 0] },
     {
@@ -2328,7 +2328,7 @@ async function loadHomePage() {
       duration: 0.6,
       easing: [.22, .03, .26, 1]  
     }
-  ) */
+  )
 
   callHomeTimetable(TodayFormatted)
 
