@@ -94,15 +94,13 @@ npm run package # this requires 7zip to be installed in order to work
 
 The folder structure is as follows:
 
-- The `public` folder contains files that are not compiled, but only copied across to the build directory
+- The `src` folder contains source files that are compiled to the build directory.
 
-- The `src` folder contains source files that are compiled to the build directory, these can use import statements so that we can do code splitting.
+- The `src/interface` folder contains source React files that are required for the Settings page.
 
-- The `interface` folder contains source React files that are required for the UI/UX of the Settings page. It is compiled into the build directory alongside files within `src/`.
+- The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
 
-- The `build` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
-
-- The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working (but because of the styling not being designed for phone, its basically useless for now).
+- The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working.
 
 ## Contributors
 
