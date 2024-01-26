@@ -1,15 +1,18 @@
 @charset "UTF-8";
-@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
+@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
 
-@import "./injected/popup.scss";
-@import "./injected/sidebar-animation.scss";
-@import "./injected/theme.scss";
-@import "./injected/transparency.scss";
+@import './injected/popup.scss';
+@import './injected/sidebar-animation.scss';
+@import './injected/theme.scss';
+@import './injected/transparency.scss';
 
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
+}
+.hidden {
+  display: none;
 }
 body,
 html {
@@ -167,9 +170,6 @@ ul.magicDelete > li.deleting {
   background: transparent !important;
   color: var(--text-color) !important;
 }
-.tooltip {
-  z-index: 5 !important;
-}
 
 #menu li,
 #menu section {
@@ -200,6 +200,7 @@ ul.magicDelete > li.deleting {
 }
 #menu {
   width: 270px;
+  z-index: 19;
   background: var(--better-main) !important;
   color: var(--text-color);
   border-right: none;
@@ -321,7 +322,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }
 
-[style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --betterseqta-logo: url(chrome-extension://boikofabjaholheekefimfojfncpjfib/icons/betterseqta-light-full.png); --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
+[style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
 {
   top: 18% !important;
 }
@@ -534,6 +535,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 69.5px;
   box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2);
 }
+
 .assessmentsWrapper .message {
   display: none;
 }
@@ -681,6 +683,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   left: 0;
   width: 100%;
 }
+
 #title::before {
   background-image: var(--betterseqta-logo);
   background-position: left;
@@ -1674,7 +1677,7 @@ li.MessageList__unread___3imtO {
   content: "";
   width: 14px;
   height: 12px;
-  background-image: url("../../public/icons/betterseqta-light-outline.png");
+  background-image: url("../resources/icons/betterseqta-light-outline.png");
   display: inline-block;
   background-size: 18px 18px;
   color: #fff;
@@ -2528,6 +2531,8 @@ li.MessageList__unread___3imtO {
 }
 .tooltip {
   display: inline-block;
+  background: transparent;
+  z-index: 5 !important;
   width: 28px;
   background: none;
   box-shadow: none;
