@@ -1,0 +1,37 @@
+{
+  "manifest_version": 2,
+  "name": "BetterSEQTA+",
+  "version": "3.2.2",
+  "description": "Make SEQTA usable and beautiful! A fork of BetterSEQTA to continue development and add WAY more features!!!",
+  "icons": {
+    "32": "../src/resources/icons/icon-32.png",
+    "48": "../src/resources/icons/icon-48.png",
+    "64": "../src/resources/icons/icon-64.png"
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_popup": "../src/interface/index.html#settings",
+    "default_icon": {
+      "32": "../src/resources/icons/icon-32.png",
+      "48": "../src/resources/icons/icon-48.png",
+      "64": "../src/resources/icons/icon-64.png"
+    }
+  },
+  "permissions": ["tabs", "notifications", "storage", "https://newsapi.org/"],
+  "background": {
+    "scripts": [
+      "../src/background.ts"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["../src/SEQTA.ts"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    "../src/*",
+    "../public/*"
+  ]
+}

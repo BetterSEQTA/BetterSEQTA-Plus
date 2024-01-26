@@ -5,7 +5,10 @@ import './index.css';
 import { SettingsContextProvider } from './SettingsContext.js';
 import SettingsPage from './SettingsPage.js';
 import browser from 'webextension-polyfill';
+import font from 'url:../resources/fonts/IconFamily.woff'
+
 import * as Sentry from "@sentry/react";
+
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true)
   Sentry.init({
@@ -24,14 +27,13 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
     replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
   });
 })
-const fontURL = browser.runtime.getURL("fonts/IconFamily.woff");
 
 const style = document.createElement("style");
 style.setAttribute("type", "text/css");
 style.innerHTML = `
 @font-face {
   font-family: 'IconFamily';
-  src: url('${fontURL}') format('woff');
+  src: url('${font}') format('woff');
   font-weight: normal;
   font-style: normal;
 }`;
