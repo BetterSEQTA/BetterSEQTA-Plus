@@ -27,7 +27,7 @@ import { enableCurrentTheme } from './seqta/ui/Themes'
 import iframeCSS from "bundle-text:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
-import { getDarkMode, updateAllColors } from './seqta/ui/colors/Manager'
+import { updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
 
 declare global {
