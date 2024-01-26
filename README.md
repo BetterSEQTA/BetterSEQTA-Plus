@@ -1,5 +1,5 @@
-![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-light-full.png#gh-dark-mode-only)
-![Logo](https://raw.githubusercontent.com/SethBurkart123/EvenBetterSEQTA/master/public/icons/betterseqta-dark-full.png#gh-light-mode-only)
+![Logo](https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/master/public/icons/betterseqta-light-full.png#gh-dark-mode-only)
+![Logo](https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/master/public/icons/betterseqta-dark-full.png#gh-light-mode-only)
 
 <p align="center">
   A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://seqta.com.au">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
