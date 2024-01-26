@@ -24,10 +24,10 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import iframeCSS from "url:./css/iframe.scss"
+import iframeCSS from "bundle-text:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
-import { updateAllColors } from './seqta/ui/colors/Manager'
+import { getDarkMode, updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
 
 declare global {
@@ -413,6 +413,7 @@ function removeThemeTagsFromNotices () {
 async function updateIframesWithDarkMode(): Promise<void> {
   // Load the CSS file to overwrite iFrame default CSS
   const cssLink = document.createElement('style')
+  cssLink.classList.add('iframecss')
   const cssContent = document.createTextNode(iframeCSS)
   cssLink.appendChild(cssContent)
 
@@ -423,16 +424,14 @@ async function updateIframesWithDarkMode(): Promise<void> {
           const iframe = node as HTMLIFrameElement
           try {
             const settings = await browser.storage.local.get('DarkMode') as SettingsState
-            if (settings.DarkMode) {
-              applyDarkModeToIframe(iframe, cssLink)
-            }
+            applyDarkModeToIframe(iframe, cssLink, settings.DarkMode);
           } catch (error) {
             console.error('Error applying dark mode:', error)
           }
         }
       }
     }
-  })
+  });
 
   if (document.body) {
     observer.observe(document.body, {
@@ -449,17 +448,14 @@ async function updateIframesWithDarkMode(): Promise<void> {
   }
 }
 
-function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement): void {
+function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement, DarkMode: boolean): void {
   const iframeDocument = iframe.contentDocument
   if (!iframeDocument) return
 
-  const body = iframeDocument.body
-  if (body && body.style.color !== 'white') {
-    body.style.color = 'white'
-  }
+  if (DarkMode) iframeDocument.body.classList.add('dark')
 
   const head = iframeDocument.head
-  if (head && !head.innerHTML.includes('iframe.css')) {
+  if (head && !head.innerHTML.includes('iframecss')) {
     head.appendChild(cssLink)
   }
 }
