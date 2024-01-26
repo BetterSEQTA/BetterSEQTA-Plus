@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
     "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash",
-    "eslint": "eslint --fix ."
+    "eslint": "eslint --fix .",
+    "package": "7z a -tzip extension.zip ./build/*"
   },
   "keywords": [],
   "author": "",

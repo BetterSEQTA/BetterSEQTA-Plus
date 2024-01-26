@@ -47,58 +47,48 @@
 git clone https://github.com/SethBurkart123/EvenBetterSEQTA
 ```
 
-### Windows
-
-Open the `install.bat` file located inside the `scripts` folder. Then after that is finished, open the `dev.bat` file.
-
-### Mac & Linux
-
-1. `cd` into the seqta folder
-```
-cd EvenBetterSEQTA/scripts
-```
-2. Make the scripts in the folder executable
-```
-chmod a+x *
-```
-3. Run the install and dev scripts
-```
-sh install.sh
-```
-4. Open a new terminal session to let the new command activate, then run
-```
-sh dev.sh
-```
-
-### Manual
+### Running Development
 
 1. Install dependencies
 
 ```
-npm install
+npm install # or your preferred package manager like pnpm or yarn
 ```
 
-2. Install webpack
-
-```
-npm install -g webpack
-```
-
-3. Run the dev script (it updates as you save files)
+2. Run the dev script (it updates as you save files)
 
 ```
 npm run dev
 ```
 
-4. Install and run the dev script for the interface **at the same time** (all custom react components are a separate sub-repository)
+3. Load the extension into chrome
+
+- Go to `chrome://extensions`
+- Enable developer mode
+- Click `Load unpacked`
+- Select the `dist` folder
+
+Just remember, in order to update changes to the extension, you need to click the refresh button on the extension in `chrome://extensions` whenever anything's changed.
+
+### Building for production
+
+1. Install dependencies
 
 ```
-cd interface
-
-npm install
-npm run dev
+npm install # or your preferred package manager like pnpm or yarn
 ```
 
+2. Run the build script
+
+```
+npm run build
+```
+
+3. Package it up (optional)
+
+```
+npm run package # this requires 7zip to be installed in order to work
+```
 
 ## Folder Structure
 
