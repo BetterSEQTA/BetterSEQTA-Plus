@@ -6,7 +6,6 @@ import { SettingsState } from '../../../types/storage';
 
 import darkLogo from 'url:../../../resources/icons/betterseqta-light-full.png';
 import lightLogo from 'url:../../../resources/icons/betterseqta-dark-full.png';
-import iFrameCSS from 'url:../../../css/iframe.scss';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
@@ -71,7 +70,6 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   }
 
   let alliframes = document.getElementsByTagName('iframe');
-  let fileref = iFrameCSS;
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
@@ -80,11 +78,11 @@ export function updateAllColors(storedSetting: any, newColor = null) {
       continue;
     }
     
-    (element.contentDocument!.documentElement.childNodes[1] as HTMLIFrameElement).style.color =
-      DarkMode ? 'white' : 'black';
-    element.contentDocument!.documentElement.firstChild!.appendChild(
-      fileref,
-    );
+    if (DarkMode) {
+      element.contentDocument?.body.classList.add('dark');
+    } else {
+      element.contentDocument?.body.classList.remove('dark');
+    }
   }
 }
 
