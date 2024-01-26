@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/browser";
+import browser from 'webextension-polyfill'
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
@@ -20,7 +21,6 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   }
 })
 
-import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 export const openDB = () => {
   return new Promise((resolve, reject) => {

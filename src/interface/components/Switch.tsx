@@ -11,7 +11,7 @@ export default function Switch(props: SwitchProps) {
   return (
     <div
       className="flex w-14 p-1 cursor-pointer rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
-      data-isOn={props.state}
+      data-ison={props.state}
       onClick={toggleSwitch}
     >
       <motion.div

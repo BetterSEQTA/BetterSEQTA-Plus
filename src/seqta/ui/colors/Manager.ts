@@ -1,8 +1,11 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor, GetCSSElement } from '../../../SEQTA';
+import { GetThresholdOfColor } from '../../../SEQTA';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { SettingsState } from '../../../types/storage';
+
+import darkLogo from 'url:../../../resources/icons/betterseqta-light-full.png';
+import lightLogo from 'url:../../../resources/icons/betterseqta-dark-full.png';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
@@ -36,10 +39,10 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   let modeProps = {};
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
-      '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-light-full.png')})`
+      '--betterseqta-logo': `url(${darkLogo})`
     } : {
       '--better-pale': lightenAndPaleColor(selectedColor),
-      '--betterseqta-logo': `url(${getChromeURL('icons/betterseqta-dark-full.png')})`
+      '--betterseqta-logo': `url(${lightLogo})`
     };
 
     if (DarkMode) {
@@ -67,7 +70,6 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   }
 
   let alliframes = document.getElementsByTagName('iframe');
-  let fileref = GetCSSElement('css/iframe.css');
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
@@ -76,11 +78,11 @@ export function updateAllColors(storedSetting: any, newColor = null) {
       continue;
     }
     
-    (element.contentDocument!.documentElement.childNodes[1] as HTMLIFrameElement).style.color =
-      DarkMode ? 'white' : 'black';
-    element.contentDocument!.documentElement.firstChild!.appendChild(
-      fileref,
-    );
+    if (DarkMode) {
+      element.contentDocument?.body.classList.add('dark');
+    } else {
+      element.contentDocument?.body.classList.remove('dark');
+    }
   }
 }
 

@@ -45,7 +45,6 @@ export default class StorageListener {
 
       case 'DarkMode':
         this.darkMode = changes.DarkMode.newValue;
-        console.log(this.darkMode);
         break;
 
       case 'customshortcuts':

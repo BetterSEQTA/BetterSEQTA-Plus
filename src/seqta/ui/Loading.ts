@@ -54,18 +54,21 @@ export default function loading() {
       }
       .big-circle {
         margin: -88px;
+        will-change: transform;
         animation-timing-function: ease;
         animation: spin 3s linear infinite;
         -moz-animation: spin 3s linear infinite;
       }
       .small-circle {
         margin: -66px;
+        will-change: transform;
         animation-timing-function: ease;
         animation: spin 3s linear infinite;
         -moz-animation: spin 3s linear infinite;
       }
       .outer-circle {
         margin: -108px;
+        will-change: transform;
         animation-direction: alternate-reverse;
         animation: spinback 1s linear infinite;
         -moz-animation: spinback 1s linear infinite;

@@ -10,5 +10,22 @@
     "ecmaVersion": "latest",
     "sourceType": "module" // add this line to allow 'import' and 'export' statements
   },
-  "rules": {}
+  "rules": {
+    // allow importing ts extensions
+    "sort-imports": ["error", {
+      "ignoreCase": true,
+      "ignoreDeclarationSort": true,
+      "ignoreMemberSort": false,
+      "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+    }],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
+  }
 }
