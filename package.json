@@ -6,10 +6,8 @@
   "scripts": {
     "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
     "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
-
     "dev-firefox": "parcel watch firefox/manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
     "build-firefox": "parcel build firefox/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
-    
     "eslint": "eslint --fix .",
     "package": "7z a -tzip extension.zip ./build/*"
   },
@@ -20,7 +18,7 @@
     "@parcel/config-webextension": "^2.10.3",
     "@parcel/optimizer-data-url": "^2.11.0",
     "@parcel/transformer-inline-string": "^2.11.0",
-    "@parcel/transformer-sass": "2.10.3",
+    "@parcel/transformer-sass": "^2.11.0",
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "crypto-browserify": "^3.12.0",
