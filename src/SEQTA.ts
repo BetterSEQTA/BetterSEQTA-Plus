@@ -58,13 +58,16 @@ document.addEventListener(
     if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
       IsSEQTAPage = true
       console.log('[BetterSEQTA+] Verified SEQTA Page')
-
-      import('./css/injected.scss')
       import('./css/documentload.scss')
 
+      
       enableCurrentTheme()
       try {
         const items = await browser.storage.local.get() as SettingsState
+
+        if (items.onoff) {
+          import('./css/injected.scss')
+        }
         
         main(items)
       } catch (error: any) {
@@ -739,32 +742,33 @@ function InjectCustomIcons() {
 }
 
 export function AppendElementsToDisabledPage() {
+  console.log("Appending elements to disabled page")
   AddBetterSEQTAElements(false)
 
   let settingsStyle = document.createElement('style')
-  settingsStyle.innerText = `
+  settingsStyle.innerHTML = `
   .addedButton {
-    position: absolute !important
-    right: 50px
-    width: 35px
-    height: 35px
-    padding: 6px !important
-    overflow: unset !important
-    border-radius: 50%
-    margin: 7px !important
-    cursor: pointer
-    color: white !important
+    position: absolute !important;
+    right: 50px;
+    width: 35px;
+    height: 35px;
+    padding: 6px !important;
+    overflow: unset !important;
+    border-radius: 50%;
+    margin: 7px !important;
+    cursor: pointer;
+    color: white !important;
   }
   .addedButton svg {
-    margin: 6px
+    margin: 6px;
   }
   .outside-container {
-    top: 48px !important
+    top: 48px !important;
   }
   #ExtensionPopup {
-    border-radius: 1rem
-    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6)
-    transform-origin: 70% 0
+    border-radius: 1rem;
+    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
+    transform-origin: 70% 0;
   }
   `
   document.head.append(settingsStyle)
