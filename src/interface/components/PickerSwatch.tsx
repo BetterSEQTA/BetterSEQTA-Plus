@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSettingsContext } from '../SettingsContext';
 
 const PickerSwatch = () => {
@@ -16,4 +17,4 @@ const PickerSwatch = () => {
   );
 };
 
-export default PickerSwatch;
+export default memo(PickerSwatch);

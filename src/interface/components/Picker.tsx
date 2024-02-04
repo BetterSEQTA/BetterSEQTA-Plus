@@ -3,9 +3,9 @@ import { useSettingsContext } from '../SettingsContext';
 import { motion } from "framer-motion";
 
 import "./Picker.css";
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
-export default function Picker() {
+function Picker() {
   const { settingsState, setSettingsState, showPicker, setShowPicker } = useSettingsContext();
 
   const defaultPresets = [
@@ -124,3 +124,5 @@ export default function Picker() {
     </motion.div>
   );
 }
+
+export default memo(Picker);

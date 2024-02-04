@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useSettingsContext } from "../SettingsContext";
 import "./Slider.css";
 
@@ -24,4 +25,4 @@ const Slider: React.FC<SliderProps> = ({ state, onChange }) => {
   );
 };
 
-export default Slider;
+export default memo(Slider);

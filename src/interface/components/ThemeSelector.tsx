@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import themesList from '../assets/themes';
 import { listThemes, disableTheme, downloadTheme, setTheme, deleteTheme } from "../hooks/ThemeManagment";
 
@@ -171,4 +171,4 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
   );
 };
 
-export default ThemeSelector;
+export default memo(ThemeSelector);

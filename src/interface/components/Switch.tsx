@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import "./Switch.css";
 import type { SwitchProps } from "../types/SwitchProps";
+import { memo } from "react";
 
-export default function Switch(props: SwitchProps) {
+function Switch(props: SwitchProps) {
   const toggleSwitch = () => {
     const newIsOn = !props.state;
     props.onChange(newIsOn);
@@ -30,3 +31,5 @@ const spring = {
   stiffness: 700,
   damping: 30
 };
+
+export default memo(Switch);
