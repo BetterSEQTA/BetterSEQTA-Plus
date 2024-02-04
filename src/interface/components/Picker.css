@@ -1,95 +1,32 @@
-.dark #rbgcp-wrapper [style="height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ box-sizing\:\ border-box\;"] {
-  background-color: #37373b !important;
-}
-
-.dark #rbgcp-wrapper [style="height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ box-sizing\:\ border-box\;"] [style="padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ display\:\ flex\;\ align-items\:\ center\;\ justify-content\:\ center\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;"] {
-  color: white !important;
-}
-
-.dark #rbgcp-wrapper [style="height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ box-sizing\:\ border-box\;"] [style="padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ display\:\ flex\;\ align-items\:\ center\;\ justify-content\:\ center\;\ background\:\ white\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;"] {
-  background-color: #4b4b53 !important;
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ justify-content\:\ space-between\;\ margin-top\:\ 12px\;\ margin-bottom\:\ -4px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ box-sizing\:\ border-box\;\ padding-left\:\ 0px\;"]:has(svg) {
+.dark [class*="rbgcpColorModelDropdown"],
+.dark [class*="rbgcpControlBtnWrapper"],
+.dark #rbgcp-gradient-controls-wrap {
   background-color: #37373b !important;
   color: white !important;
 }
 
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ height\:\ 28px\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ width\:\ 30px\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;\ margin-right\:\ 1px\;"] svg {
-  filter: invert();
+.dark [class*="rbgcpControlBtn"][class*="rbgcpControlBtnSelected"] {
+  color: #568cf5 !important;
 }
 
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ justify-content\:\ space-between\;\ margin-top\:\ 12px\;\ margin-bottom\:\ -4px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ box-sizing\:\ border-box\;\ padding-left\:\ 0px\;"] [style="position\:\ relative\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ align-items\:\ center\;"]:has(svg) {
-  background: transparent !important;
-  filter: invert();
-  color: #39393b !important;
+.dark [class*="rbgcpControlBtn"] {
+  color: #CDCEC9 !important;
 }
 
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ justify-content\:\ space-between\;\ margin-top\:\ 12px\;\ margin-bottom\:\ -4px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ box-sizing\:\ border-box\;\ padding-left\:\ 0px\;"] [style^="display\: "]:has(svg) {
-  background-color: #3f3f44 !important;
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ box-sizing\:\ border-box\;"] [style="padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ display\:\ flex\;\ align-items\:\ center\;\ justify-content\:\ center\;\ background\:\ white\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;"]:has(svg) {
-  background-color: #4b4b53 !important;
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ box-sizing\:\ border-box\;"] [style="padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ display\:\ flex\;\ align-items\:\ center\;\ justify-content\:\ center\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;"] svg {
-  filter: invert();
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\ 2px\ 2px\ 8px\;"] svg {
-  filter: invert();
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\ 2px\ 2px\ 8px\;"] input {
-  color: white !important;
-}
-
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"]:has(svg) {
-  background-color: #37373b !important;
-}
-
-.dark #rbgcp-wrapper [style^="width\: "] [style^="width\: "] {
-  color: white !important;
-}
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"] [style="width\:\ 30px\;\ height\:\ 24px\;\ border-radius\:\ 4px\;\ display\:\ flex\;\ align-items\:\ center\;\ justify-content\:\ center\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;"]:has(svg) svg,
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"] [style="width\:\ 30px\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;\ height\:\ 24px\;\ border-radius\:\ 4px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ position\:\ relative\;"]:has(svg) svg,
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"] [style="width\:\ 30px\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;\ height\:\ 24px\;\ border-radius\:\ 4px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;"]:has(svg) svg {
-  filter: invert();
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ justify-content\:\ center\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;"] {
-  color: white !important;
-}
-
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ position\:\ relative\;\ padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 86\,\ 86\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ justify-content\:\ center\;\ background\:\ rgba\(255\,\ 255\,\ 255\,\ 0\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\)\ 1px\ 1px\ 3px\;"] {
-  color: white !important;
-}
-
-.dark #rbgcp-wrapper :last-child > [style$=" relative\;"] [style$=" \31 px\;"] {
+.dark [class*="rbgcpControlBtnSelected"] svg {
   filter: none !important;
-  background-color: #37373b !important;
 }
 
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ position\:\ relative\;\ padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ justify-content\:\ center\;\ background\:\ white\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;"],
-.dark #rbgcp-wrapper [style="display\:\ flex\;\ align-items\:\ center\;\ padding-left\:\ 8px\;\ padding-right\:\ 8px\;\ line-height\:\ 1\;\ border-radius\:\ 4px\;\ font-weight\:\ 700\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ font-size\:\ 12px\;\ height\:\ 24px\;\ transition\:\ all\ 160ms\ ease\ 0s\;\ justify-content\:\ center\;\ background\:\ white\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;"] {
-  background-color: #3f3f44 !important;
+.dark [class*="rbgcpControlBtnSelected"] {
+  background-color: #28282b !important;
 }
 
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"] [style="width\:\ 30px\;\ background\:\ white\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;\ height\:\ 24px\;\ border-radius\:\ 4px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;\ position\:\ relative\;"]:has(svg) {
-  background-color: #3f3f44 !important;
+.dark [class*="rbgcpComparibleLabel"] {
+  color: #CDCEC9 !important;
 }
 
-.dark #rbgcp-wrapper [style="height\:\ 216px\;\ width\:\ 100\%\;\ transition\:\ all\ 120ms\ linear\ 0s\;"] [style="text-align\:\ center\;\ color\:\ rgb\(50\,\ 49\,\ 54\)\;\ font-size\:\ 12px\;\ font-weight\:\ 500\;\ margin-top\:\ 3px\;"],
-.dark #rbgcp-wrapper [style="height\:\ 216px\;\ width\:\ 100\%\;\ transition\:\ all\ 120ms\ linear\ 0s\;"] [style="text-align\:\ center\;\ color\:\ rgb\(50\,\ 49\,\ 54\)\;\ font-size\:\ 13px\;\ font-weight\:\ 600\;\ position\:\ absolute\;\ top\:\ 6\.5px\;\ left\:\ 2px\;"] {
-  color: white !important;
-}
-
-.dark #rbgcp-wrapper [style="height\:\ 98px\;\ width\:\ 100\%\;\ transition\:\ all\ 120ms\ linear\ 0s\;"] [style="cursor\:\ ew-resize\;\ position\:\ relative\;"] [style="text-align\:\ center\;color\:\ rgb\(255\,\ 255\,\ 255\)\;font-size\:\ 12px\;font-weight\:\ 500\;line-height\:\ 1\;position\:\ absolute\;left\:\ 50\%\;transform\:\ translate\(-50\%\,\ 0\%\)\;top\:\ 0px\;z-index\:\ 10\;text-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.6\)\ 1px\ 1px\ 1px\;"] {
-  text-shadow: none !important;
-  background-color: transparent !important;
-}
-
-.dark #rbgcp-wrapper [style="align-items\:\ center\;\ justify-content\:\ flex-end\;\ height\:\ 28px\;\ background\:\ rgb\(233\,\ 233\,\ 245\)\;\ border-radius\:\ 6px\;\ padding\:\ 2px\;\ display\:\ flex\;\ box-sizing\:\ border-box\;"] [style="width\:\ 30px\;\ background\:\ white\;\ color\:\ rgb\(86\,\ 140\,\ 245\)\;\ box-shadow\:\ rgba\(0\,\ 0\,\ 0\,\ 0\.2\)\ 1px\ 1px\ 3px\;\ height\:\ 24px\;\ border-radius\:\ 4px\;\ display\:\ flex\;\ justify-content\:\ center\;\ align-items\:\ center\;"]:has(svg) {
-  background-color: #3f3f44 !important;
+.dark #rbgcp-stop-input,
+.dark #rbgcp-degree-input,
+.dark [class*="rbgcpControlBtnWrapper"] svg {
+  filter: invert();
 }

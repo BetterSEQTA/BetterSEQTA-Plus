@@ -1970,7 +1970,10 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
         dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any
       }
       let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
-      (assessmentDateDiv as any).assessments.push(element)
+
+      if (assessmentDateDiv) {
+        (assessmentDateDiv as any).assessments.push(element)
+      }
     }
 
     for (var date in upcomingDates) {
