@@ -526,9 +526,6 @@ div > ol:has(.uiFileHandlerWrapper) {
 [aria-labelledby="lixycoxs-tab-1"] [minlength="0"] {
   min-height: 8rem !important;
 }
-#menu ul {
-  width: 280px; // TODO: I know its 10px larger than its parent, but for some reason there is a 10px right padding that doesn't show up properly in devtools???
-}
 .student #menu > ul::before {
   background-image: var(--betterseqta-logo);
   position: -webkit-sticky;
