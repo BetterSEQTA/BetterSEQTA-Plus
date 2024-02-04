@@ -112,7 +112,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
     {selectedBackground == null ? 'No Background' : 'Remove Background'}
     </button>
     <div className="relative">
-      <h2 className="pb-2 text-lg font-bold">Images</h2>
+      <h2 className="pb-2 text-lg font-bold">Background Images</h2>
       <div className="flex flex-wrap gap-4">
         {/* Image uploader swatch */}
         <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
@@ -160,7 +160,7 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
         ))}
       </div>
 
-      <h2 className="py-2 text-lg font-bold">Videos</h2>
+      <h2 className="py-2 text-lg font-bold">Background Videos</h2>
       <div className="flex flex-wrap gap-4">
         {/* Video uploader swatch */}
         <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">

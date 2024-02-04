@@ -59,12 +59,12 @@ document.addEventListener(
       IsSEQTAPage = true
       console.log('[BetterSEQTA+] Verified SEQTA Page')
       import('./css/documentload.scss')
-
+      
       
       enableCurrentTheme()
       try {
         const items = await browser.storage.local.get() as SettingsState
-
+        
         if (items.onoff) {
           import('./css/injected.scss')
         }
