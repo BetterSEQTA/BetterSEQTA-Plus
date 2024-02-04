@@ -4,7 +4,7 @@
 }
 
 #menu ul:not(:has(li.hasChildren.active)) {
-  overflow: scroll !important;
+  overflow-y: scroll !important;
 }
 
 #menu > ul:has(li.hasChildren.active) > li > label,
