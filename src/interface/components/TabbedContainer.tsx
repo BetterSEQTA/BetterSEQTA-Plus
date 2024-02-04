@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
-import { useSettingsContext } from '../SettingsContext';
 
 const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -9,7 +8,6 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   const [tabWidth, setTabWidth] = useState(0);
   const [position, setPosition] = useState(0);
   const positionRef = useRef(position);
-  const themeColor = useSettingsContext().settingsState.customThemeColor;
 
 
     // Function to handle message
