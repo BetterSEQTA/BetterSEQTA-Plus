@@ -118,7 +118,7 @@ export default function Picker() {
           onClick={(e) => e.stopPropagation()} 
           className="h-auto p-4 bg-white border rounded-lg shadow-lg dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
         >
-          <ColorPicker presets={presets} hideInputs={true} value={settingsState.customThemeColor} onChange={colorChange} />
+          <ColorPicker disableDarkMode={true} presets={presets} hideInputs={true} value={settingsState.customThemeColor} onChange={colorChange} />
         </motion.div>
       </div>
     </motion.div>
