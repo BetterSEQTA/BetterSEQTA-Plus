@@ -25,7 +25,6 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
       return () => {
         window.removeEventListener("message", handleMessage);
       };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
