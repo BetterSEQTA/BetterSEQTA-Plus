@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
 
@@ -111,4 +111,4 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   );
 };
 
-export default TabbedContainer;
+export default memo(TabbedContainer);

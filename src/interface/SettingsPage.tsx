@@ -5,6 +5,7 @@ import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
 import Picker from './components/Picker';
 import Themes from './pages/Themes';
+import { memo } from 'react';
 
 interface SettingsPage {
   standalone: boolean;
@@ -38,4 +39,4 @@ const SettingsPage = ({ standalone }: SettingsPage) => {
   );
 };
 
-export default SettingsPage;
+export default memo(SettingsPage);

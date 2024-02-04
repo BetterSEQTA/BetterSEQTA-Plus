@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, memo, useEffect, useState } from "react";
 import { downloadPresetBackground, openDB, readAllData, writeData } from "../hooks/BackgroundDataLoader";
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
@@ -21,7 +21,7 @@ interface BackgroundSelectorProps {
   isEditMode: boolean;
 }
 
-export default function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
+function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
@@ -206,3 +206,5 @@ export default function BackgroundSelector({ selectedType, setSelectedType, isEd
     </>
   );
 }
+
+export default memo(BackgroundSelector);
