@@ -742,7 +742,7 @@ function InjectCustomIcons() {
 }
 
 export function AppendElementsToDisabledPage() {
-  console.log("Appending elements to disabled page")
+  console.log("[BetterSEQTA+] Appending elements to disabled page")
   AddBetterSEQTAElements(false)
 
   let settingsStyle = document.createElement('style')
@@ -2165,7 +2165,7 @@ function AddCustomShortcutsToPage() {
 
 async function loadHomePage() {
   // Sends the html data for the home page
-  console.log('[BetterSEQTA] Started Loading Home Page')
+  console.log('[BetterSEQTA+] Started Loading Home Page')
 
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
@@ -2587,7 +2587,7 @@ export function enableNotificationCollector() {
         'notifications__bubble___1EkSQ'
       )[0]
       if (typeof alertdiv == 'undefined') {
-        console.log('[BetterSEQTA] No notifications currently')
+        console.log('[BetterSEQTA+] No notifications currently')
       } else {
         alertdiv.textContent = Notifications.payload.notifications.length
       }
@@ -2637,7 +2637,7 @@ function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
 function SendNewsPage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log('[BetterSEQTA] Started Loading News Page')
+    console.log('[BetterSEQTA+] Started Loading News Page')
     document.title = 'News ― SEQTA Learn'
     var element = document.querySelector('[data-key=news]')
 
@@ -2752,7 +2752,7 @@ function documentTextColor () {
 browser.storage.onChanged.addListener(documentTextColor)
 
 function LoadInit() {
-  console.log('[BetterSEQTA] Started Init')
+  console.log('[BetterSEQTA+] Started Init')
   const result = browser.storage.local.get()
   function open (result: any) {
     if (result.onoff) {
