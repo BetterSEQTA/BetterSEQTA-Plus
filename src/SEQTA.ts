@@ -294,9 +294,7 @@ async function finishLoad() {
     loadingbk!.style.opacity = '0'
     await delay(501)
     loadingbk!.remove()
-  } catch (err) {
-    console.log(err)
-  }
+  } catch (err) {}
 
 
   const result = browser.storage.local.get(['justupdated'])
@@ -495,6 +493,84 @@ async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements(true)
   const sublink: string | undefined = window.location.href.split('/')[4]
 
+  const observer = new MutationObserver(function (mutations_list) {
+    mutations_list.forEach(function (mutation) {
+      mutation.addedNodes.forEach(function (added_node) {
+        const node = added_node as HTMLElement
+        if (node.classList.contains('messages')) {
+          let element = document.getElementById('title')!.firstChild as HTMLElement
+          element.innerText = 'Direct Messages'
+          document.title = 'Direct Messages ― SEQTA Learn'
+          SortMessagePageItems(added_node)
+
+          waitForElm('[data-message]').then(() => {
+            animate(
+              '[data-message]',
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            )
+          })
+        } else if (node.classList.contains('notices')) {
+          CheckNoticeTextColour(added_node)
+        } else if (node.classList.contains('dashboard')) {
+          let ranOnce = false;
+          waitForElm('.dashlet').then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              '.dashboard > *',
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.1),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            )
+          })
+        } else if (node.classList.contains('documents')) {
+          let ranOnce = false;
+          waitForElm('.document').then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              '.documents tbody tr.document',
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            )
+          })
+        } else if (node.classList.contains('reports')) {
+          let ranOnce = false;
+          waitForElm('.report').then(() => {
+            if (ranOnce) return;
+            ranOnce = true;
+            animate(
+              '.reports .item',
+              { opacity: [0, 1], y: [10, 0] },
+              {
+                delay: stagger(0.05, { start: 0.2 }),
+                duration: 0.5,
+                easing: [.22, .03, .26, 1]  
+              }
+            )
+          })
+        }
+      })
+    })
+  })
+
+  observer.observe(document.querySelector('#main') as HTMLElement, {
+    subtree: false,
+    childList: true,
+  })
+
   async function handleNewsPage(): Promise<void> {
     console.log('[BetterSEQTA+] Started Init')
     const settings: SettingsState = await browser.storage.local.get() as SettingsState
@@ -529,27 +605,6 @@ async function LoadPageElements(): Promise<void> {
       await handleDefault()
       break
   }
-
-  const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (node.classList.contains('messages')) {
-          let element = document.getElementById('title')!.firstChild as HTMLElement
-          element.innerText = 'Direct Messages'
-          document.title = 'Direct Messages ― SEQTA Learn'
-          SortMessagePageItems(added_node)
-        } else if (node.classList.contains('notices')) {
-          CheckNoticeTextColour(added_node)
-        }
-      })
-    })
-  })
-
-  observer.observe(document.querySelector('#main') as HTMLElement, {
-    subtree: false,
-    childList: true,
-  })
 }
 
 function CheckNoticeTextColour(notice: any) {
@@ -1099,15 +1154,15 @@ async function AddBetterSEQTAElements(toggle: any) {
   if (code != null) {
     if (!code.innerHTML.includes('BetterSEQTA')) {
       UserInitalCode = code.innerHTML
-      code.innerHTML = `BetterSEQTA v${browser.runtime.getManifest().version}`
+      code.innerHTML = `BetterSEQTA+ v${browser.runtime.getManifest().version}`
       code.setAttribute('data-hover', 'Click for user code')
       code.addEventListener('click', function () {
         var code = document.getElementsByClassName('code')[0]
         if (code.innerHTML.includes('BetterSEQTA')) {
           code.innerHTML = UserInitalCode
-          code.setAttribute('data-hover', 'Click for BetterSEQTA version')
+          code.setAttribute('data-hover', 'Click for BetterSEQTA+ version')
         } else {
-          code.innerHTML = `BetterSEQTA v${
+          code.innerHTML = `BetterSEQTA+ v${
             browser.runtime.getManifest().version
           }`
           code.setAttribute('data-hover', 'Click for user code')
