@@ -24,7 +24,7 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import * as iframeCSS from "bundle-text:./css/iframe.scss"
+import iframeCSS from "bundle-text:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
@@ -455,7 +455,14 @@ function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElem
   const iframeDocument = iframe.contentDocument
   if (!iframeDocument) return
 
-  if (DarkMode) iframeDocument.body.classList.add('dark')
+  if (iframeDocument.readyState !== 'complete') {
+    iframe.onload = () => {
+      applyDarkModeToIframe(iframe, cssLink, DarkMode)
+    }
+    return
+  }
+  
+  if (DarkMode) iframeDocument.documentElement.classList.add('dark')
 
   const head = iframeDocument.head
   if (head && !head.innerHTML.includes('iframecss')) {
@@ -521,8 +528,6 @@ async function LoadPageElements(): Promise<void> {
         } else if (node.classList.contains('dashboard')) {
           let ranOnce = false;
           waitForElm('.dashlet').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
             animate(
               '.dashboard > *',
               { opacity: [0, 1], y: [10, 0] },
@@ -532,6 +537,8 @@ async function LoadPageElements(): Promise<void> {
                 easing: [.22, .03, .26, 1]  
               }
             )
+            if (ranOnce) return;
+            ranOnce = true;
           })
         } else if (node.classList.contains('documents')) {
           let ranOnce = false;

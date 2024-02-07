@@ -318,6 +318,9 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border: none !important;
   border-radius: 16px !important;
 }
+.actions .uiButton {
+  color: var(--text-primary) !important;
+}
 .singleSelect {
   border-radius: 16px !important;
   padding: 4px !important;
@@ -1515,6 +1518,17 @@ div.bar.flat {
   z-index: 10;
 }
 
+.dashlet {
+  .cke_contents {
+    background: var(--background-secondary) !important;
+  }
+
+  .cke_button,
+  .cke_combo_button {
+    background: var(--background-secondary) !important;
+  }
+}
+
 .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
   background: var(--background-primary);
   border-radius: 1rem;
@@ -1581,6 +1595,13 @@ div.bar.flat {
 .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
 .cke_toolbox > .cke_toolbar .cke_button_on {
   background-color: #797979 !important;
+}
+.dark {
+  .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
+  .cke_toolbox > .cke_toolbar .cke_button_on {
+    background-color: #3d3d3e !important;
+  }
+
 }
 .legacy-root input.singleSelect:focus {
   background: var(--auto-background);

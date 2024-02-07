@@ -22,7 +22,8 @@
 .dark {
   p,
   div,
-  span {
+  span,
+  body {
     color: white !important;
     text-shadow: 1px 1px 2px #161616, 0 0 1em #161616;
   }
