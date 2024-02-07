@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/browser"
+import * as Sentry from "@sentry/browser";
 
 import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
@@ -24,7 +24,7 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import iframeCSS from "bundle-text:./css/iframe.scss"
+import * as iframeCSS from "bundle-text:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
@@ -742,11 +742,7 @@ function main(storedSetting: SettingsState) {
     Sentry.init({
       dsn: "https://54bdb68e80b45182ded22ecf9fe9529c@o4506347383291904.ingest.sentry.io/4506347462393856",
       integrations: [
-        new Sentry.BrowserTracing({
-          // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-          tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
-        }),
-        new Sentry.Replay(),
+        Sentry.replayIntegration(),
       ],
       // Performance Monitoring
       tracesSampleRate: 1.0, // Capture 100% of the transactions
