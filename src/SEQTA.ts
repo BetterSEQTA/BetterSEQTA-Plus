@@ -155,6 +155,9 @@ function OpenWhatsNewPopup() {
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
+    <h1>3.2.3 - Bug Fixes</h1>
+    <li>Fixed a memory overflow bug with Education Perfect</li>
+
     <h1>3.2.2 - Minor Improvements</h1>
     <li>Added Settings open-close animation</li>
     <li>Minor Bug Fixes</li>
