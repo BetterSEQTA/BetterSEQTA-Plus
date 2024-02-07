@@ -48,11 +48,13 @@ var MenuItemMutation = false
 var NonSEQTAPage = false
 var IsSEQTAPage = false
 
+// This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
+const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
+
 document.addEventListener(
   'load',
   async function () {
     CheckForMenuList()
-    const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
     const hasSEQTATitle = document.title.includes('SEQTA Learn')
 
     if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
