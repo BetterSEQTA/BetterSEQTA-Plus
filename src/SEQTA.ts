@@ -2244,6 +2244,8 @@ async function loadHomePage() {
   // Remove all current elements in the main div to add new elements
   const main = document.getElementById('main')
 
+  main!.innerHTML = ''
+
   if (!main) {
     console.error('Main element not found.')
     return
