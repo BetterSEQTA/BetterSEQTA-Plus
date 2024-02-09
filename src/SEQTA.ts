@@ -2726,6 +2726,7 @@ function SendNewsPage() {
     AppendLoadingSymbol('newsloading', '#news-container')
 
     browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
+      console.log(response)
       let newsarticles = response.news.articles
       var newscontainer = document.querySelector('#news-container')
       document.getElementById('newsloading')!.remove()
