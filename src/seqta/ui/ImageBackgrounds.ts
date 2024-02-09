@@ -1,7 +1,13 @@
 import backgroundPage from 'url:./background/background.html'
+import browser from 'webextension-polyfill';
+import { SettingsState } from '../../types/storage';
 
 export async function appendBackgroundToUI() {
-  console.log('Starting appendBackgroundToUI...');
+  const settings = await browser.storage.local.get() as SettingsState;
+
+  console.log(settings.theme);
+
+  if (settings.theme == '') return; 
 
   const parent = document.getElementById('container');
 
