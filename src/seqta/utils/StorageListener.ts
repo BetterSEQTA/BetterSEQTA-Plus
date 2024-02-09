@@ -86,15 +86,10 @@ export default class StorageListener {
       case 'theme':
         if (changes.theme.newValue === '' && changes.theme.oldValue !== '') {
           document.querySelector('iframe#background')?.remove();
-        } else if (changes.theme.newValue !== '' && changes.theme.oldValue === '') {
-          appendBackgroundToUI();
-        }
-
+        } else if (changes.theme.newValue !== '' && changes.theme.oldValue === '') appendBackgroundToUI();
         break;
 
-      // Add default case if you need to handle a case where changeKey does not match any case
       default:
-        // Handle unknown changeKey if necessary
         break;
       }
     });
