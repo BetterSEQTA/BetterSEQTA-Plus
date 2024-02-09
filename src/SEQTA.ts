@@ -155,8 +155,12 @@ export function OpenWhatsNewPopup() {
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
-    <h1>3.2.3 - Bug Fixes</h1>
+    <h1>3.2.4 - Bug Fixes</h1>
     <li>Fixed a memory overflow bug with Education Perfect</li>
+    <li>Added an open changelog button to settings</li>
+    <li>Fixed a bug where the background wouldn't change instantly</li>
+    <li>Fixed news feed not loading</li>
+    <li>Fixed home items duplicating</li>
 
     <h1>3.2.2 - Minor Improvements</h1>
     <li>Added Settings open-close animation</li>
