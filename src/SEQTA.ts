@@ -24,7 +24,7 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import iframeCSS from "bundle-text:./css/iframe.scss"
+import * as iframeCSS from "bundle-text:./css/iframe.scss"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
@@ -134,6 +134,7 @@ export function OpenWhatsNewPopup() {
   imagecont.classList.add('whatsnewImgContainer')
   let video = document.createElement('video')
   let source = document.createElement('source')
+  // Perhaps we host this on a server and then grab it instead of having it locally?
   source.setAttribute('src', updateVideo)
   source.setAttribute('type', 'video/mp4')
   video.autoplay = true
