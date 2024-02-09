@@ -1,0 +1,5 @@
+{
+"transformers": {
+    "raw:*": ["@parcel/transformer-raw"]
+  }
+}

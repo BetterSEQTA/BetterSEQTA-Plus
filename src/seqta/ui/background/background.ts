@@ -19,7 +19,7 @@ const openDB = (): Promise<IDBDatabase> => {
     request.onsuccess = () => resolve(request.result);
 
     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      // @ts-expect-error
+      // @ts-expect-error - The event type is not recognized by TypeScript
       event?.target?.result.createObjectStore('backgrounds', { keyPath: 'id' });
     };
   });
@@ -27,7 +27,9 @@ const openDB = (): Promise<IDBDatabase> => {
 
 const readData = async (): Promise<Data | null> => {
   const selectedBackground = localStorage.getItem('selectedBackground');
-  if (!selectedBackground) {
+
+  //const selectedBackground = localStorage.getItem('selectedBackground');
+  if (!selectedBackground || selectedBackground === '') {
     return null;
   }
 
@@ -46,8 +48,6 @@ const updateBackground = async (): Promise<void> => {
   try {
     const data = await readData();
     if (!data) {
-      console.log('No data found in IndexedDB.');
-
       const container = document.getElementById('media-container');
       const currentMedia = container?.querySelector('.current-media');
       if (currentMedia) {

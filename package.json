@@ -3,6 +3,7 @@
   "version": "3.2.4",
   "type": "module",
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
     "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash --no-cache --no-source-maps",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@parcel/config-webextension": "^2.11.0",
     "@parcel/optimizer-data-url": "^2.11.0",
+    "@parcel/packager-ts": "2.11.0",
     "@parcel/transformer-inline-string": "^2.11.0",
     "@parcel/transformer-sass": "2.11.0",
     "assert": "^2.0.0",
@@ -50,6 +52,7 @@
     "yarn": "^1.22.21"
   },
   "dependencies": {
+    "@parcel/transformer-raw": "^2.11.0",
     "@sentry/browser": "^7.85.0",
     "@sentry/react": "^7.88.0",
     "@sentry/webpack-plugin": "^2.10.2",

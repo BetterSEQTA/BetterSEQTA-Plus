@@ -11,6 +11,7 @@ import {
 } from '../../SEQTA';
 import { updateBgDurations } from '../ui/Animation';
 import { getDarkMode, updateAllColors } from '../ui/colors/Manager';
+import { appendBackgroundToUI } from '../ui/ImageBackgrounds';
 
 
 export default class StorageListener {
@@ -21,6 +22,7 @@ export default class StorageListener {
   }
 
   handleStorageChanges(changes: any) {
+    console.log('Storage changed:', changes);
     Object.keys(changes).forEach((changeKey) => {
       switch (changeKey) {
 
@@ -79,6 +81,15 @@ export default class StorageListener {
         } else {
           document.documentElement.classList.remove('transparencyEffects');
         }
+        break;
+      
+      case 'theme':
+        if (changes.theme.newValue === '' && changes.theme.oldValue !== '') {
+          document.querySelector('iframe#background')?.remove();
+        } else if (changes.theme.newValue !== '' && changes.theme.oldValue === '') {
+          appendBackgroundToUI();
+        }
+
         break;
 
       // Add default case if you need to handle a case where changeKey does not match any case
