@@ -117,7 +117,7 @@ export async function HideMenuItems(): Promise<void> {
   }
 }
 
-function OpenWhatsNewPopup() {
+export function OpenWhatsNewPopup() {
   const background = document.createElement('div')
   background.id = 'whatsnewbk'
   background.classList.add('whatsnewBackground')
