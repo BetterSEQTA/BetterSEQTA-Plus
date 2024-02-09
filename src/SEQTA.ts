@@ -2278,9 +2278,9 @@ async function loadHomePage() {
   
   // Formats the current date used send a request for timetable and notices later
   const TodayFormatted =
-    date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
+    date.getFullYear() + '-' + ((date.getMonth() + 1) < 10 ? '0' : '') + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
 
-  callHomeTimetable(TodayFormatted, true)
+    callHomeTimetable(TodayFormatted, true)
 
 
   const timetablearrowback = document.getElementById('home-timetable-back')
@@ -2490,7 +2490,8 @@ async function loadHomePage() {
   }
   // Data sent as the POST request
   const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
-  xhr2.send(JSON.stringify({ date: dateControl!.value }))
+  console.log(dateControl.value)
+  xhr2.send(JSON.stringify({ date: dateControl.value }))
   function onInputChange (e: any) {
     xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
     xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
