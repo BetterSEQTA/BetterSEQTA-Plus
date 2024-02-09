@@ -103,6 +103,7 @@ const main = async (): Promise<void> => {
   // Listen for changes to local storage
   window.addEventListener('storage', async (event) => {
     if (event.key === 'selectedBackground') {
+      await updateBackground();
     }
   });
 };
