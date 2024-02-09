@@ -116,7 +116,19 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
     break;
 
   case 'sendNews':
-    GetNews(sendResponse);
+    console.log("Sending news")
+    const date = new Date();
+
+    const from =
+      date.getFullYear() +
+      '-' +
+      (date.getMonth() + 1) +
+      '-' +
+      (date.getDate() - 1);
+
+    const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
+
+    GetNews(sendResponse, url);
     return true;
       
   default:
@@ -124,25 +136,12 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
   }
 });
 
-function GetNews(sendResponse: any) {
-  // Gets the current date
-  const date = new Date();
-
-  const from =
-    date.getFullYear() +
-    '-' +
-    (date.getMonth() + 1) +
-    '-' +
-    (date.getDate() - 1);
-
-  let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
-
+function GetNews(sendResponse: any, url: string) {
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
       if (response.code == 'rateLimited') {
-        url += '%00';
-        GetNews({});
+        GetNews(sendResponse, url += '%00');
       } else {
         sendResponse({ news: response });
       }
