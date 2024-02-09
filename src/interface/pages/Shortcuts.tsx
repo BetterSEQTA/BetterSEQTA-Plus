@@ -36,7 +36,7 @@ export default function Shortcuts() {
   const isValidTitle = (title: string): boolean => title.trim() !== "";
   
   const isValidURL = (url: string): boolean => {
-    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+[\\w.-]+$", "i");
+    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+[\\w.-]+(/[\\w.-]*)*$", "i");
     return pattern.test(url);
   };
 
