@@ -101,7 +101,7 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
     return true;
   
   case 'githubTab':
-    browser.tabs.create({ url: 'github.com/SethBurkart123/EvenBetterSEQTA' });
+    browser.tabs.create({ url: 'github.com/BetterSEQTA/BetterSEQTA-Plus' });
     break;
     
   case 'setDefaultStorage':
