@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
 
-import { MenuOptionsOpen, OpenMenuOptions, closeSettings } from '../../SEQTA';
+import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../SEQTA';
 import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../ui/Themes';
 
 export class MessageHandler {
@@ -42,6 +42,9 @@ export class MessageHandler {
         sendResponse({ status: 'success' });
       });
       return true;
+    case 'OpenChangelog':
+      OpenWhatsNewPopup();
+      break;
     
     default:
       console.log('Unknown request info:', request.info);

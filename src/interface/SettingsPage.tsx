@@ -5,6 +5,8 @@ import logoDark from './assets/betterseqta-light-full.png';
 import Shortcuts from './pages/Shortcuts';
 import Picker from './components/Picker';
 import Themes from './pages/Themes';
+
+import browser from 'webextension-polyfill';
 import { memo } from 'react';
 
 interface SettingsPage {
@@ -32,6 +34,7 @@ const SettingsPage = ({ standalone }: SettingsPage) => {
       <div className="grid border-b border-b-zinc-200/40 place-items-center">
         <img src={logo} className="w-4/5 dark:hidden" />
         <img src={logoDark} className="hidden w-4/5 dark:block" />
+        <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenChangelog' })} className="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-1 bg-zinc-100 dark:bg-zinc-700"></button>
       </div>
       <Picker />
       <TabbedContainer tabs={tabs} />
