@@ -2490,7 +2490,6 @@ async function loadHomePage() {
   }
   // Data sent as the POST request
   const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
-  console.log(dateControl.value)
   xhr2.send(JSON.stringify({ date: dateControl.value }))
   function onInputChange (e: any) {
     xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
