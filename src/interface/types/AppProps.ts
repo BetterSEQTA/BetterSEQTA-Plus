@@ -1,5 +1,6 @@
 export interface SettingsState {
   notificationCollector: boolean;
+  theme: string;
   lessonAlerts: boolean;
   telemetry: boolean;
   animatedBackground: boolean;

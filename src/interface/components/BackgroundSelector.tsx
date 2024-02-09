@@ -3,6 +3,7 @@ import { downloadPresetBackground, openDB, readAllData, writeData } from "../hoo
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
 import { disableTheme } from "../hooks/ThemeManagment";
+import browser from "webextension-polyfill";
 
 // Custom Types and Interfaces
 export interface Background {
@@ -21,11 +22,26 @@ interface BackgroundSelectorProps {
   isEditMode: boolean;
 }
 
+async function GetTheme() {
+  return localStorage.getItem('selectedBackground');
+}
+
+async function SetTheme(theme: string) {
+  localStorage.setItem('selectedBackground', theme);
+  await browser.storage.local.set({ theme });
+}
+
 function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
-  const [selectedBackground, setSelectedBackground] = useState<string | null>(localStorage.getItem('selectedBackground'));
+  const [selectedBackground, setSelectedBackground] = useState<string | null>();
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    GetTheme().then((theme) => {
+      setSelectedBackground(theme);
+    });
+  }, []);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -77,7 +93,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
     disableTheme();
     setSelectedType('background');
     setSelectedBackground(fileId);
-    localStorage.setItem('selectedBackground', fileId);
+    SetTheme(fileId);
   };
 
   const deleteBackground = async (fileId: string): Promise<void> => {
@@ -97,7 +113,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
     setSelectedType('background');
     disableTheme();
     setSelectedBackground(null);
-    localStorage.removeItem('selectedBackground');
+    SetTheme('');
   };
 
   const calcCircumference = (radius: number) => 2 * Math.PI * radius;
