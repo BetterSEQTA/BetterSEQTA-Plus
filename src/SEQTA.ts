@@ -13,11 +13,11 @@ import Popup from 'url:./interface/index.html'
 
 import Color from 'color'
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
-import { MessageHandler } from './seqta/utils/MessageListener'
+import { MessageHandler } from './seqta/utils/listeners/MessageListener'
 import { SettingsState } from "./types/storage"
 import ShortcutLinks from './seqta/content/links.json'
 import Sortable  from 'sortablejs'
-import StorageListener from './seqta/utils/StorageListener'
+import StorageListener from './seqta/utils/listeners/StorageListener'
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds'
 import assessmentsicon from './seqta/icons/assessmentsIcon'
 import browser from 'webextension-polyfill'

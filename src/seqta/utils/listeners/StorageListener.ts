@@ -8,10 +8,10 @@ import {
   addShortcuts,
   disableNotificationCollector,
   enableNotificationCollector,
-} from '../../SEQTA';
-import { updateBgDurations } from '../ui/Animation';
-import { getDarkMode, updateAllColors } from '../ui/colors/Manager';
-import { appendBackgroundToUI } from '../ui/ImageBackgrounds';
+} from '../../../SEQTA';
+import { updateBgDurations } from '../../ui/Animation';
+import { getDarkMode, updateAllColors } from '../../ui/colors/Manager';
+import { appendBackgroundToUI } from '../../ui/ImageBackgrounds';
 
 
 export default class StorageListener {
