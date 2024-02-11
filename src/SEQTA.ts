@@ -1960,20 +1960,17 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let overdueDates = []
   let upcomingDates = {}
 
-  // date = '2022/3/20'
-  // var Today = new Date(date)
-
   var Today = new Date()
 
   // Removes overdue assessments from the upcoming assessments array and pushes to overdue array
   for (let i = 0; i < assessments.length; i++) {
-    const element = assessments[i]
-    let assessmentdue = new Date(element.due)
+    const assessment = assessments[i]
+    let assessmentdue = new Date(assessment.due)
 
     CheckSpecialDay(Today, assessmentdue)
     if (assessmentdue < Today) {
       if (!CheckSpecialDay(Today, assessmentdue)) {
-        overdueDates.push(element)
+        overdueDates.push(assessment)
         assessments.splice(i, 1)
         i--
       }
@@ -1984,11 +1981,13 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   TomorrowDate.setDate(TomorrowDate.getDate() + 1)
 
   GetLessonColours().then((colours) => {
+    
     let subjects = colours
     for (let i = 0; i < assessments.length; i++) {
       let subjectname = `timetable.subject.colour.${assessments[i].code}`
 
       let subject = subjects.find((element: any) => element.name === subjectname)
+      
       if (!subject) {
         assessments[i].colour = '--item-colour: #8e8e8e;'
       } else {
@@ -1996,6 +1995,7 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
         GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
       }
     }
+    
     for (let i = 0; i < activeSubjects.length; i++) {
       const element = activeSubjects[i]
       let subjectname = `timetable.subject.colour.${element.code}`
@@ -2012,6 +2012,7 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
 
     CreateFilters(activeSubjects)
+    
     // @ts-ignore
     let type
     // @ts-ignore
@@ -2028,9 +2029,9 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
           // eslint-disable-next-line
           class_ = "upcoming-date-container",
         )
-        dateObj.assessments = []
+        dateObj.assessments = [];
 
-        dateObj = upcomingDates[element.due as keyof typeof upcomingDates] as any
+        (upcomingDates[element.due as keyof typeof upcomingDates] as any) = dateObj
       }
       let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
 
@@ -2280,7 +2281,7 @@ async function loadHomePage() {
   const TodayFormatted =
     date.getFullYear() + '-' + ((date.getMonth() + 1) < 10 ? '0' : '') + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
 
-    callHomeTimetable(TodayFormatted, true)
+  callHomeTimetable(TodayFormatted, true)
 
 
   const timetablearrowback = document.getElementById('home-timetable-back')
@@ -2576,24 +2577,25 @@ async function loadHomePage() {
     }
   }
   result1.then(open1, onError)
-  let activeClassList: any
-
+  
   const assessments = await GetUpcomingAssessments()
   const classes = await GetActiveClasses()
 
+  let activeClass;
+  
   // Gets all subjects for the student
   for (let i = 0; i < classes.length; i++) {
-    const element = classes[i]
-    // eslint-disable-next-line
-    if (element.hasOwnProperty("active")) { // for some reason eslint gets mad, even though it works?
+    const element = classes[i];
+    
+    if (element.hasOwnProperty("active")) {
       // Finds the active class list with the current subjects
-      activeClassList = classes[i]
+      activeClass = classes[i]
     }
   }
   
   let activeSubjects = []
-  if (activeClassList?.subjects) {
-    activeSubjects = activeClassList.subjects
+  if (activeClass?.subjects) {
+    activeSubjects = activeClass.subjects
   }
 
   let activeSubjectCodes = []
@@ -2606,7 +2608,7 @@ async function loadHomePage() {
   let CurrentAssessments = []
   for (let i = 0; i < assessments.length; i++) {
     if (activeSubjectCodes.includes(assessments[i].code)) {
-      CurrentAssessments.push(element)
+      CurrentAssessments.push(assessments[i])
     }
   }
 
