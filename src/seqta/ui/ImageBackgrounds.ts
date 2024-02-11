@@ -5,8 +5,6 @@ import { SettingsState } from '../../types/storage';
 export async function appendBackgroundToUI() {
   const settings = await browser.storage.local.get() as SettingsState;
 
-  console.log(settings.theme);
-
   if (settings.theme == '') return; 
 
   const parent = document.getElementById('container');

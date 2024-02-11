@@ -22,7 +22,6 @@ export default class StorageListener {
   }
 
   handleStorageChanges(changes: any) {
-    console.log('Storage changed:', changes);
     Object.keys(changes).forEach((changeKey) => {
       switch (changeKey) {
 
