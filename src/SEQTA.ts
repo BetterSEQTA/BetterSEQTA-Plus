@@ -29,6 +29,7 @@ import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
+import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 
 declare global {
   interface Window {
@@ -890,11 +891,13 @@ function addExtensionSettings() {
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')
   extensionIframe.style.width = '384px'
-  extensionIframe.style.height = '600px'
+  extensionIframe.style.height = '100%'
   extensionIframe.style.border = 'none'
   extensionPopup.appendChild(extensionIframe)
 
   const container = document.getElementById('container')
+
+  new SettingsResizer();
   
   const closeExtensionPopup = () => {
     const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
