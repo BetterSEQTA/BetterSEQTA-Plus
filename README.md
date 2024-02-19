@@ -100,7 +100,7 @@ The folder structure is as follows:
 
 - The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
 
-- The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working.
+- The `safari` folder is an Xcode project, building it for MacOS does work, IOS needs a few modifications to the manifest to work, but I have managed to get it working. It will give an error, to fix this you need to regenerate it, you can delete the safari folder and then run the command `xcrun safari-web-extension-converter <extension-folder>/dist` and it will automatically generate the xcode project where you are.
 
 ## Contributors
 
