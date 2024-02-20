@@ -1414,6 +1414,12 @@ ul {
 }
 .days td {
   overflow: hidden;
+  .title {
+    width: 100% !important;
+  }
+}
+.content .days tbody tr > td {
+  overflow: hidden;
   height: 1440px !important;
 }
 .title {
