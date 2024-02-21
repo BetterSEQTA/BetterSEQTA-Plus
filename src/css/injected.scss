@@ -318,16 +318,15 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border: none !important;
   border-radius: 16px !important;
 }
-.actions .uiButton {
-  color: var(--text-primary) !important;
-}
 .singleSelect {
   border-radius: 16px !important;
   padding: 4px !important;
   padding-left: 12px !important;
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }
-
+.quickbar[data-yiq='light'] .actions {
+  color: white !important;
+}
 [style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
 {
   top: 18% !important;
@@ -356,6 +355,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main .timetablepage .quickbar {
   border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
   border-radius: 1rem;
 }
 .quickbar .actions {
@@ -366,14 +366,36 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-top-left-radius: 100%;
   border-bottom-right-radius: 1rem !important;
 }
+.quickbar::before {
+  background-color: inherit;
+  clip-path: polygon(50% 40%, 0 100%, 100% 100%);
+  border-bottom-color: transparent !important;
+}
 #main > .timetablepage > .quickbar.below::before {
-  border-bottom-color: var(--background-primary);
+  border-bottom-color: transparent;
   top: -1.75rem;
+  background-color: inherit;
+  clip-path: polygon(50% 40%, 0 100%, 100% 100%);
+  border-bottom-color: transparent !important;
+}
+#main > .timetablepage > .quickbar.above::after {
+  content: "";
+  position: absolute;
+  bottom: -1.75rem;
+  z-index: 2;
+  left: 50%;
+  margin: 0 0 0 -12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  clip-path: polygon(50% 40%, 0 0, 100% 0);
+  border: 12px solid rgba(255,255,255,0);
+  border-top-color: transparent;
 }
 #main > .timetablepage > .quickbar.above::before {
-  border-bottom-color: var(--background-primary);
+  border-bottom-color: transparent;
   bottom: -1.75rem !important;
-  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  background-color: inherit;
+  clip-path: polygon(50% 40%, 0 0, 100% 0);
+  border-top-color: transparent !important;
 }
 #main .timetablepage .actions a,
 #main .timetablepage .actions button {
@@ -2221,6 +2243,23 @@ li.MessageList__unread___3imtO {
 .calendarEventEditor > .tabset > .item {
   border-radius: 0 !important;
 }
+
+.calendar {
+  background: var(--better-main) !important;
+  color: var(--text-color) !important;
+  border-radius: 1rem !important;
+  margin-top: 4px;
+
+  table {
+    background: transparent !important;
+  }
+
+  .uiButton {
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
 .MessageList__MessageList___3DxoC > header {
   display: flex;
   justify-content: space-between;

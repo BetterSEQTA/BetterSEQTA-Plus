@@ -733,6 +733,22 @@ export async function ObserveMenuItemPosition() {
                   node,
                   MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
                 )
+              } else if (node?.firstChild?.nodeName === 'LABEL') {
+                // Assuming `node` is an <li> element containing a <label>
+                const label = node.firstChild as HTMLElement;
+                
+                // The magical step: We find the last child. If it's a text node, embrace it with <span>
+                let textNode = label.lastChild as HTMLElement;
+                
+                // A quick check to ensure it's a text node and not already ensconced in a <span>
+                if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
+                  // The text node is indeed bare, and not in a <span>. Time to act!
+                  const span = document.createElement('span'); // The creation of the <span>
+                  span.textContent = textNode.nodeValue; // Transferring the text
+                  
+                  // Replacing the text node with our newly minted <span> full of text
+                  label.replaceChild(span, textNode);
+                }
               }
               ChangeMenuItemPositions(menuorder)
             }
@@ -1152,9 +1168,7 @@ function ReplaceMenuSVG(element: HTMLElement, svg: string) {
   let item = element.firstChild as HTMLElement
   item!.firstChild!.remove()
 
-  if (element.dataset.key == 'messages') {
-    (element!.firstChild! as HTMLElement).innerText! = 'Direct Messages'
-  }
+  item.innerHTML = `<span>${item.innerHTML}</span>`
 
   let newsvg = stringToHTML(svg).firstChild
   item.insertBefore((newsvg as Node), item.firstChild)
