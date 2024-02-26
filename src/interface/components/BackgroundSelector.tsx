@@ -75,7 +75,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
       } catch (error) {
         // @ts-expect-error - Brave is not in the navigator type (unless you are actually using brave browser, then it is there)
         if (navigator.brave && await navigator.brave.isBrave() || false) {
-          console.log('[BetterSEQTA+] Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.');
+          console.log('[BetterSEQTA+] Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel. (or you can just disable brave shields for SEQTA)');
           setBackgroundsBlocked(true);
           return;
         }
@@ -149,7 +149,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
     {BackgroundsBlocked && (
       <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-md dark:text-red-300 dark:bg-red-500 dark:bg-opacity-20">
         <h2 className="mb-2 text-lg font-bold">File Storage Blocked</h2>
-        <p>Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.</p>
+        <p>Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel. (or you can just disable brave shields for SEQTA)</p>
         <img src="https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/brave.png" alt="Brave browser logo" className="w-1/2 mt-4" />
       </div>
     )}
