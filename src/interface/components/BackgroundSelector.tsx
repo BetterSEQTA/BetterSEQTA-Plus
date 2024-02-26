@@ -37,6 +37,8 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
 
+  const [BackgroundsBlocked, setBackgroundsBlocked] = useState<boolean>(false);
+
   useEffect(() => {
     GetTheme().then((theme) => {
       setSelectedBackground(theme);
@@ -73,8 +75,11 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
       } catch (error) {
         // @ts-expect-error - Brave is not in the navigator type (unless you are actually using brave browser, then it is there)
         if (navigator.brave && await navigator.brave.isBrave() || false) {
-          alert('Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.');
+          console.log('[BetterSEQTA+] Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.');
+          setBackgroundsBlocked(true);
+          return;
         }
+        alert("[BetterSEQTA+] IndexedDB is not accessible. Please check your browser settings (It's probably cross-site cookies that are blocked).");
         return;
       }
 
@@ -140,6 +145,15 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
       className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null && selectedType != 'theme' ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
     {selectedBackground == null && selectedType != 'theme' ? 'No Background' : 'Remove Background'}
     </button>
+
+    {BackgroundsBlocked && (
+      <div className="p-4 mb-4 text-red-600 bg-red-100 rounded-md dark:text-red-300 dark:bg-red-500 dark:bg-opacity-20">
+        <h2 className="mb-2 text-lg font-bold">File Storage Blocked</h2>
+        <p>Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.</p>
+        <img src="https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/brave.png" alt="Brave browser logo" className="w-1/2 mt-4" />
+      </div>
+    )}
+
     <div className="relative">
       <h2 className="pb-2 text-lg font-bold">Background Images</h2>
       <div className="flex flex-wrap gap-4">
