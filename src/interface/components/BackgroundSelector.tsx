@@ -106,6 +106,11 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
   };
   
   const selectBackground = (fileId: string): void => {
+    if (selectedType == 'background' && selectedBackground == fileId) {
+      selectNoBackground();
+      return;
+    }
+
     disableTheme();
     setSelectedType('background');
     setSelectedBackground(fileId);
