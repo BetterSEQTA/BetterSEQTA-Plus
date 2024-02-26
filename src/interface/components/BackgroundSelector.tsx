@@ -67,6 +67,17 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
 
   const handlePresetClick = async (bg: Background): Promise<void> => {
     if (bg.isPreset) {
+      // Check if indexed DB is accessible or whether cross site cookies blocks it
+      try {
+        await openDB();
+      } catch (error) {
+        // @ts-expect-error - Brave is not in the navigator type (unless you are actually using brave browser, then it is there)
+        if (navigator.brave && await navigator.brave.isBrave() || false) {
+          alert('Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel.');
+        }
+        return;
+      }
+
       // Check if already exists in IndexedDB or is currently being downloaded
       const existingBackgrounds = await readAllData();
       const alreadyExists = existingBackgrounds.some(ebg => ebg.id === bg.id) || downloadProgress[bg.id] !== undefined;
@@ -124,8 +135,10 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
 
   return (
     <>
-    <button disabled={selectedBackground == null ? true : false} className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
-    {selectedBackground == null ? 'No Background' : 'Remove Background'}
+    <button
+      disabled={selectedBackground == null && selectedType != 'theme' ? true : false}
+      className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null && selectedType != 'theme' ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
+    {selectedBackground == null && selectedType != 'theme' ? 'No Background' : 'Remove Background'}
     </button>
     <div className="relative">
       <h2 className="pb-2 text-lg font-bold">Background Images</h2>
