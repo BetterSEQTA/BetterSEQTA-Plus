@@ -1186,6 +1186,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 0px;
   background: none;
 }
+.MessageList__primary___1zTHa > :last-child {
+  display: none !important;
+}
 .MessageList__MessageList___3DxoC .Button__Button___3SRFo {
   width: 100%;
   min-height: 2rem;
