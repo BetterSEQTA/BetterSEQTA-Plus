@@ -48,7 +48,6 @@ function Picker() {
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -56,7 +55,7 @@ function Picker() {
     if (!showPicker) {
       // Check if the selected color is already in the presets
       const existingIndex = presets.indexOf(settingsState.customThemeColor);
-  
+
       let updatedPresets;
       if (existingIndex > -1) {
         // If the color exists, move it to the front
@@ -69,7 +68,7 @@ function Picker() {
         // If the color is new, add it to the front and slice the array
         updatedPresets = [settingsState.customThemeColor, ...presets].slice(0, 18);
       }
-  
+
       setPresets(updatedPresets);
       localStorage.setItem('colorPickerPresets', JSON.stringify(updatedPresets));
     }
@@ -98,7 +97,7 @@ function Picker() {
 
   return (
     // Apply fade-in animation to background
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate={showPicker ? "visible" : "exit"}
       exit="exit"
@@ -109,13 +108,13 @@ function Picker() {
     >
       <div>
         {/* Apply springy scale animation */}
-        <motion.div 
+        <motion.div
           initial="hidden"
           animate={showPicker ? "visible" : "exit"}
           exit="exit"
           variants={scaleVariants}
           transition={{ type: "spring", stiffness: 500, damping: 40 }}
-          onClick={(e) => e.stopPropagation()} 
+          onClick={(e) => e.stopPropagation()}
           className="h-auto p-4 bg-white border rounded-lg shadow-lg dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
         >
           <ColorPicker disableDarkMode={true} presets={presets} hideInputs={true} value={settingsState.customThemeColor} onChange={colorChange} />
