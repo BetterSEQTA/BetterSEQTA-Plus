@@ -95,8 +95,13 @@ html {
   overflow: hidden;
 
   .PillBox__active___3Qpi9 {
-    background: var(--background-secondary) !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: black !important;
   }
+}
+
+.dark .PillBox__active___3Qpi9 {
+  color: white;
 }
 
 .legacy-root button:active, .legacy-root a:active {
@@ -1162,6 +1167,9 @@ div > ol:has(.uiFileHandlerWrapper) {
 .dark .legacy-root button::after {
   background: white;
 }
+.legacy-root button::after {
+  background: black !important;
+}
 
 .legacy-root button::after {
   background: var(--better-main);
@@ -1259,14 +1267,19 @@ div > ol:has(.uiFileHandlerWrapper) {
 .MessageList__MessageList___3DxoC ol .Button__Button___3SRFo {
   width: calc(100% - 32px);
   border-radius: 1rem;
-  margin: 0.5rem 1rem;
+  margin: 0.5rem 16px;
   padding: 0.8rem;
   place-content: center;
   text-align: center;
 }
 
-.MessageList__MessageList___3DxoC .Button__Button___3SRFo {
+.dark .MessageList__MessageList___3DxoC .Button__Button___3SRFo {
   background: rgba(255, 255, 255, 0.1);
+  color: white !important;
+}
+
+.MessageList__MessageList___3DxoC .Button__Button___3SRFo {
+  background: rgba(0, 0, 0, 0.1);
   width: 100%;
   min-height: 2rem;
   text-align: center;
