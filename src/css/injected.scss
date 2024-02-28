@@ -1809,7 +1809,11 @@ body {
 
 li.MessageList__unread___3imtO {
   position: relative;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgb(228 225 225);
+}
+
+.dark li.MessageList__unread___3imtO {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .MessageList__MessageList___3DxoC > ol > li:hover {
@@ -1913,9 +1917,14 @@ li.MessageList__unread___3imtO {
   overflow: hidden;
   cursor: pointer;
 }
+
+.dark .MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz {
+  background: var(--background-secondary);
+}
+
 .MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz {
-  background: var(--auto-background);
-  color: var(--text-color);
+  background: rgb(228 225 225);
+  color: var(--text-primary);
 }
 .NewsArticle {
   border-radius: 1rem !important;
