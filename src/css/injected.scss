@@ -29,11 +29,6 @@ html {
     background-color 200ms ease-in-out,
     backdrop-filter 200ms ease-in-out;
 }
-@media (min-width: 900px) {
-  #title > span {
-    transform: translateY(2px);
-  }
-}
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
@@ -517,12 +512,6 @@ ol > [data-label] {
   margin-left: 4px;
   margin-bottom: 4px;
 }
-@media (min-width: 1000px) {
-  ol > [data-label] {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-  }
-}
 .Message__Message___3oJaU > .uiFrameWrapper .iframeWrapper {
   background: transparent;
 }
@@ -570,21 +559,25 @@ div > ol:has(.uiFileHandlerWrapper) {
 #main > .timetablepage > .container {
   background: var(--background-primary);
 }
+
 #content {
   transition: 0.4s;
   left: 270px;
   background: unset;
 }
+
 @media (max-width: 420px) {
   .userInfo {
     display: none !important;
   }
 }
+
 @media (max-width: 490px) {
   .userInfohouse {
     display: none;
   }
 }
+
 @media (max-width: 900px) {
   .student #menu > ul::before {
     background-color: var(--background-primary);
@@ -610,6 +603,31 @@ div > ol:has(.uiFileHandlerWrapper) {
   .menuShown #content {
     -webkit-transform: translatex(270px);
     transform: translatex(270px);
+  }
+}
+
+@media (max-width: 1145px) {
+  .home-container {
+    padding: 2rem !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .home-container {
+    padding: 2rem 1rem !important;
+  }
+}
+
+@media (min-width: 900px) {
+  #title > span {
+    transform: translateY(2px);
+  }
+}
+
+@media (min-width: 1000px) {
+  ol > [data-label] {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
   }
 }
 .welcome
