@@ -805,6 +805,9 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .timetable-container {
   width: 100%;
+  overflow: visible !important;
+  border-radius: 0 1rem 0 1rem;
+  z-index: 1;
   height: auto;
   background: var(--better-main);
   display: flex;
@@ -819,6 +822,14 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 15em;
   display: flex;
   flex-direction: row;
+  border-radius: 1rem;
+
+  .day:first-child {
+    border-bottom-left-radius: 1rem;
+  }
+  .day:last-child {
+    border-bottom-right-radius: 1rem;
+  }
 }
 .notices-container {
   width: 100%;
@@ -2075,13 +2086,6 @@ li.MessageList__unread___3imtO {
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
 }
-.upcoming-items {
-  width: 100%;
-  max-height: 55em;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
 .upcoming-container h2 {
   margin: 20px;
   font-size: 20px;
@@ -2627,7 +2631,7 @@ li.MessageList__unread___3imtO {
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent var(--text-primary) transparent;
+  border-color: transparent transparent var(--background-primary) transparent;
 }
 .tooltiptext p:hover {
   cursor: pointer;
