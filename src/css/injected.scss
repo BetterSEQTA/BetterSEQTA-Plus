@@ -1806,6 +1806,7 @@ body {
 
 li.MessageList__unread___3imtO {
   position: relative;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .MessageList__MessageList___3DxoC > ol > li:hover {
@@ -1816,15 +1817,28 @@ li.MessageList__unread___3imtO {
   border-radius: 100rem;
 }
 
-.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
+.MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz.MessageList__unread___3imtO {
+  box-shadow: none;
+}
+
+.Message__Message___3oJaU.Message__unread___23XIq > header {
+  box-shadow: none;
+}
+
+.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before,
+.MessageList__MessageList___3DxoC > ol > li::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 3px;
-  /* Same width as your box-shadow */
   background: var(--better-main);
+  width: 0px;
+  transition: width 0.2s;
+}
+
+.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
+  width: 3px;
 }
 .connectedNotificationsWrapper > div > button {
   background: var(--text-primary) !important;
@@ -1897,7 +1911,7 @@ li.MessageList__unread___3imtO {
   cursor: pointer;
 }
 .MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz {
-  background: var(--better-main);
+  background: var(--auto-background);
   color: var(--text-color);
 }
 .NewsArticle {
