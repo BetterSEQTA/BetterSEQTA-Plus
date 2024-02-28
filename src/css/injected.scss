@@ -93,7 +93,6 @@ html {
 .PillBox__PillBox___3GjAk {
   border-radius: 1rem;
   overflow: hidden;
-  border: var(--background-secondary) 1px solid;
 
   .PillBox__active___3Qpi9 {
     background: var(--background-secondary) !important;
@@ -615,6 +614,12 @@ div > ol:has(.uiFileHandlerWrapper) {
 @media (max-width: 1100px) {
   .home-container {
     padding: 2rem 1rem !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .LabelList__LabelList___2RJFf > li {
+    border-radius: 0.5rem !important;
   }
 }
 
@@ -1218,7 +1223,26 @@ div > ol:has(.uiFileHandlerWrapper) {
 .MessageList__primary___1zTHa > :last-child {
   display: none !important;
 }
+.MessageList__MessageList___3DxoC ol .Button__Button___3SRFo::before {
+  // plus icon
+  content: "";
+  font-size: 12px;
+  margin-right: 4px;
+  font-family: "IconFamily";
+  pointer-events: none;  
+}
+
+.MessageList__MessageList___3DxoC ol .Button__Button___3SRFo {
+  width: calc(100% - 32px);
+  border-radius: 1rem;
+  margin: 0.5rem 1rem;
+  padding: 0.8rem;
+  place-content: center;
+  text-align: center;
+}
+
 .MessageList__MessageList___3DxoC .Button__Button___3SRFo {
+  background: rgba(255, 255, 255, 0.1);
   width: 100%;
   min-height: 2rem;
   text-align: center;
@@ -1730,6 +1754,14 @@ body {
 
 li.MessageList__unread___3imtO {
   position: relative;
+}
+
+.MessageList__MessageList___3DxoC > ol > li:hover {
+  background: var(--theme-offset-bg-more);
+}
+
+.MenuButton__Menu___gXTaY > button {
+  border-radius: 100rem;
 }
 
 .MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
@@ -2813,4 +2845,22 @@ body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltipt
   background: var(--background-primary) !important;
   z-index: 1;
   padding: 10px;
+}
+
+li[data-message] {
+  animation: cubic-bezier(.22, .03, .26, 1) 1s fade-up-and-in;
+  animation-timeline: view(90% 0px) !important;
+}
+
+@keyframes fade-up-and-in {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+    scale: 0.9;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    scale: 1;
+  }
 }
