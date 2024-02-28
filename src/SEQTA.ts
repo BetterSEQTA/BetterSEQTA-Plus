@@ -1604,15 +1604,15 @@ function makeLessonDiv(lesson: any, num: number) {
   // Add buttons for assessments and courses if applicable
   if (programmeID !== 0) {
     lessonString += `
-      <div class="day-button clickable" style="right: 5px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
-      <div class="day-button clickable" style="right: 35px;" onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
+      <div class="day-button clickable" style="right: 5px;" onclick="location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
+      <div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
     `
   }
 
   // Add assessments if they exist
   if (assessments && assessments.length > 0) {
     const assessmentString = assessments.map((element: any) =>
-      `<p onclick="document.querySelector('#menu ul').classList.add('noscroll'); location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
+      `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
     ).join('')
 
     lessonString += `
