@@ -6,11 +6,16 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
-    "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
     "dev:firefox": "parcel watch firefox/manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
+
+    "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
     "build:firefox": "parcel build firefox/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
-    "eslint": "eslint --fix .",
-    "package": "7z a -tzip extension.zip ./dist/*"
+
+    "production": "rimraf ./dist/* && npm-run-all build sentry:sourcemaps sentry:popup-sourcemaps package",
+
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org betterseqta-plus --project betterseqtaplus-main ./dist && sentry-cli sourcemaps upload --org betterseqta-plus --project betterseqtaplus-main ./dist",
+    "sentry:popup-sourcemaps": "sentry-cli sourcemaps inject --org betterseqta-plus --project betterseqtaplus-popup ./dist && sentry-cli sourcemaps upload --org betterseqta-plus --project betterseqtaplus-popup ./dist",
+    "package": "rimraf ./dist/*.map && 7z a -tzip extension.zip ./dist/*"
   },
   "targets": {
     "prod": {
@@ -40,6 +45,7 @@
   "dependencies": {
     "@parcel/transformer-raw": "^2.11.0",
     "@sentry/browser": "^7.100.1",
+    "@sentry/cli": "^2.28.6",
     "@sentry/react": "^7.100.1",
     "@types/color": "^3.0.6",
     "@types/dompurify": "^3.0.5",
@@ -55,11 +61,13 @@
     "localforage": "^1.10.0",
     "motion": "^10.17.0",
     "npm": "^10.4.0",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-best-gradient-color-picker": "^3.0.5",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
+    "rimraf": "^5.0.5",
     "sortablejs": "^1.15.2",
     "tailwindcss": "^3.4.1",
     "ts-loader": "^9.5.1",
