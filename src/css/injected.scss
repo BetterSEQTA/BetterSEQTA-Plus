@@ -5,13 +5,16 @@
 @import './injected/theme.scss';
 @import './injected/transparency.scss';
 
+@tailwind components;
+@tailwind utilities;
+
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
 }
 .hidden {
-  display: none;
+  @apply hidden;
 }
 body,
 html {
@@ -1834,7 +1837,7 @@ li.MessageList__unread___3imtO {
   bottom: 0;
   background: var(--better-main);
   width: 0px;
-  transition: width 0.2s;
+  transition: width 0.1s;
 }
 
 .MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
