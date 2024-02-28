@@ -14,7 +14,7 @@
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
 }
 .hidden {
-  @apply hidden;
+  display: none;
 }
 body,
 html {
