@@ -108,6 +108,12 @@ html {
   border-top: none !important;
 }
 
+.dark .dashboard section {
+  input, select {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
 #main > .dashboard {
   grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
   background: unset;
@@ -116,6 +122,22 @@ html {
   > section {
     border-radius: 1rem !important;
     //opacity: 0;
+
+    button {
+      border-radius: 1rem;
+      transition: all 500ms;
+    }
+
+    input,
+    select {
+      border: transparent;
+      background: rgba(0, 0, 0, .1);
+      color: var(--text-primary);
+    }
+
+    .ais-btnSearch .material-icons {
+      font-size: 18px !important;
+    }
   }
 
   > .dashlet {
@@ -127,8 +149,10 @@ html {
       grid-row: span 2 / auto !important;
     }
 
-    .header {
+    > .header {
       min-height: unset !important;
+      border-bottom: 1px solid transparent !important;
+      background: rgba(0, 0, 0, 0.2);
 
       .title {
         padding: 1rem !important;
@@ -149,7 +173,7 @@ html {
   color: var(--text-primary);
 }
 ul.magicDelete > li:hover {
-  background: var(--better-sub);
+  background: rgba(0, 0, 0, .1);
 }
 .dashlet-notes > .editor {
   background: unset;
@@ -1496,7 +1520,7 @@ ul {
     width: 100% !important;
   }
 }
-.content .days tbody tr > td {
+.content > .wrapper .days tbody tr > td {
   overflow: hidden;
   height: 1440px !important;
 }
@@ -1542,6 +1566,15 @@ div.entry.class[style*="width: 46.5%"] {
 .uiButton:hover {
   box-shadow: none !important;
 }
+
+.uiButton {
+  border: solid 1px transparent !important;
+
+  svg {
+    color: var(--text-primary);
+  }
+}
+
 .uiFileHandlerPanel {
   background: var(--background-primary);
   color: var(--text-primary);
@@ -1611,6 +1644,12 @@ div.bar.flat {
   .cke_button,
   .cke_combo_button {
     background: var(--background-secondary) !important;
+  }
+
+  .dashlet-motd {
+    .message {
+      font-size: 1.5rem !important;
+    }
   }
 }
 
