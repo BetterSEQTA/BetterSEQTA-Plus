@@ -149,7 +149,7 @@ export function OpenWhatsNewPopup() {
   textcontainer.classList.add('whatsnewTextContainer')
 
   let textheader: any = stringToHTML(
-    '<h1 class="whatsnewTextHeader">DESIGN OVERHAUL</h1>',
+    '<h1 class="whatsnewTextHeader">RECENT UPDATES</h1>',
   ).firstChild
   textcontainer.append(textheader)
 
