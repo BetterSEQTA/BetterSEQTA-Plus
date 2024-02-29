@@ -24,7 +24,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         betterSEQTAPlus: result.onoff,
         shortcuts: result.shortcuts,
         customshortcuts: result.customshortcuts,
-        transparencyEffects: result.transparencyEffects
+        transparencyEffects: result.transparencyEffects,
+        theme: result.theme
       });
       
       if (result.DarkMode) {
