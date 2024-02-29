@@ -344,6 +344,9 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border: none !important;
   border-radius: 16px !important;
 }
+.uiButton.selected {
+  background: var(--background-secondary) !important;
+}
 .singleSelect {
   border-radius: 16px !important;
   padding: 4px !important;
