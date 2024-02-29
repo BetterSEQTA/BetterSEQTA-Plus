@@ -60,4 +60,5 @@ export interface MainConfig {
   shortcuts: Shortcut[];
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
+  theme: string;
 }
