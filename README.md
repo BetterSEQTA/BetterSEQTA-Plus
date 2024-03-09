@@ -29,7 +29,7 @@
   - Shortcuts
   - Easier Access Notices
 - Options to remove certain items from the side menu
-- Notification for next lesson (sent 5 minutes prior to lesson end)
+- Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
   - Chrome Supported
   - Edge Supported
