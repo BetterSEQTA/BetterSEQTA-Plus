@@ -148,11 +148,6 @@ export function OpenWhatsNewPopup() {
   let textcontainer = document.createElement('div')
   textcontainer.classList.add('whatsnewTextContainer')
 
-  let textheader: any = stringToHTML(
-    '<h1 class="whatsnewTextHeader">RECENT UPDATES</h1>',
-  ).firstChild
-  textcontainer.append(textheader)
-
   let text = stringToHTML(
     String.raw`
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
