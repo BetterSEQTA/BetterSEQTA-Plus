@@ -4,8 +4,8 @@ import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { SettingsState } from '../../../types/storage';
 
-import darkLogo from 'url:../../../resources/icons/betterseqta-light-full.png';
-import lightLogo from 'url:../../../resources/icons/betterseqta-dark-full.png';
+import darkLogo from '../../../resources/icons/betterseqta-light-full.png';
+import lightLogo from '../../../resources/icons/betterseqta-dark-full.png';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
@@ -39,10 +39,10 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   let modeProps = {};
   if (DarkMode !== null) {
     modeProps = DarkMode ? {
-      '--betterseqta-logo': `url(${darkLogo})`
+      '--betterseqta-logo': `url(${browser.runtime.getURL(darkLogo)})`
     } : {
       '--better-pale': lightenAndPaleColor(selectedColor),
-      '--betterseqta-logo': `url(${lightLogo})`
+      '--betterseqta-logo': `url(${browser.runtime.getURL(lightLogo)})`
     };
 
     if (DarkMode) {

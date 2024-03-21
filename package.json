@@ -5,16 +5,8 @@
   "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "parcel watch manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
-    "dev:firefox": "parcel watch firefox/manifest.json --host localhost --config @parcel/config-webextension --no-hmr --no-content-hash",
-
-    "build": "parcel build manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
-    "build:firefox": "parcel build firefox/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
-
-    "production": "rimraf ./dist/* && npm-run-all build sentry:sourcemaps sentry:popup-sourcemaps package",
-
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org betterseqta-plus --project betterseqtaplus-main ./dist && sentry-cli sourcemaps upload --org betterseqta-plus --project betterseqtaplus-main ./dist",
-    "sentry:popup-sourcemaps": "sentry-cli sourcemaps inject --org betterseqta-plus --project betterseqtaplus-popup ./dist && sentry-cli sourcemaps upload --org betterseqta-plus --project betterseqtaplus-popup ./dist",
+    "dev": "vite dev",
+    "build": "vite build",
     "package": "rimraf ./dist/*.map && 7z a -tzip extension.zip ./dist/*"
   },
   "targets": {
@@ -28,41 +20,40 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@parcel/config-webextension": "^2.11.0",
-    "@parcel/optimizer-data-url": "^2.11.0",
-    "@parcel/packager-ts": "2.11.0",
-    "@parcel/transformer-inline-string": "^2.11.0",
-    "@parcel/transformer-sass": "2.12.0",
+    "@crxjs/vite-plugin": "beta",
+    "@vitejs/plugin-react-swc": "^3.6.0",
     "eslint": "^8.56.0",
     "parcel": "^2.11.0",
     "prettier": "^3.2.5",
     "process": "^0.11.10",
-    "querystring-es3": "^0.2.1",
     "sass": "^1.70.0",
     "sass-loader": "^13.3.3",
     "url": "^0.11.3"
   },
   "dependencies": {
-    "@parcel/transformer-raw": "^2.11.0",
+    "@million/lint": "latest",
     "@sentry/browser": "^7.100.1",
     "@sentry/cli": "^2.28.6",
     "@sentry/react": "^7.100.1",
+    "@sentry/vite-plugin": "^2.16.0",
     "@types/color": "^3.0.6",
     "@types/dompurify": "^3.0.5",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@types/sortablejs": "^1.15.7",
     "@types/webextension-polyfill": "^0.10.7",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "color": "^4.2.3",
     "dompurify": "^3.0.8",
     "framer-motion": "^10.18.0",
     "install": "^0.13.0",
     "localforage": "^1.10.0",
+    "million": "latest",
     "motion": "^10.17.0",
     "npm": "^10.4.0",
     "npm-run-all": "^4.1.5",
-    "postcss": "^8.4.35",
+    "preact": "^10.20.0",
     "react": "^18.2.0",
     "react-best-gradient-color-picker": "^3.0.5",
     "react-dom": "^18.2.0",
@@ -72,6 +63,7 @@
     "tailwindcss": "^3.4.1",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
+    "vite": "^5.2.2",
     "webextension-polyfill": "^0.10.0"
   }
 }

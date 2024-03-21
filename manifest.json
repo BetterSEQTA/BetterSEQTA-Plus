@@ -20,8 +20,7 @@
   "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "service_worker": "src/background.ts",
-    "type": "module"
+    "service_worker": "src/background.ts"
   },
   "content_scripts": [
     {
