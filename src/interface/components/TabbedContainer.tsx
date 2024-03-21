@@ -38,13 +38,6 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
 
   const springTransition = { type: 'spring', stiffness: 250, damping: 25 };
 
-  const contentVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  };
-
-  const fastOpacityTransition = { duration: 0.2 }; 
-
   useEffect(() => {
     if (containerRef.current) {
       // @ts-expect-error for some reason its giving an error in TS but it works...
@@ -90,19 +83,12 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
           animate={{ x: `${position}%` }}
           transition={springTransition}
         >
-          <div className="absolute flex w-full" style={{ left: `${-position}%` }}>
+          <div className="flex">
             {tabs.map((tab, index) => (
-              <motion.div
-                key={index}
-                className="absolute w-full pb-4"
-                initial="hidden"
-                animate={activeTab === index ? "visible" : "hidden"}
-                transition={fastOpacityTransition}
-                variants={contentVariants}
-                style={{ display: activeTab === index ? 'block' : 'none' }}  // Hide inactive tabs using CSS
-              >
+            <div className={`absolute w-full transition-opacity duration-300 pb-4 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
+              style={{left: `${index * 100}%`}}>
                 {tab.content}
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>
