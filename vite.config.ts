@@ -21,5 +21,4 @@ export default defineConfig({
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],
-  server: { port: 6000, hmr: { port: 6000 } }
 })
