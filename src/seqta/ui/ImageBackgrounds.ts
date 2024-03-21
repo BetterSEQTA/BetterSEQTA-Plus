@@ -1,4 +1,3 @@
-import backgroundPage from 'url:./background/background.html'
 import browser from 'webextension-polyfill';
 import { SettingsState } from '../../types/storage';
 
@@ -14,6 +13,6 @@ export async function appendBackgroundToUI() {
   background.id = 'background';
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
-  background.src = backgroundPage;
+  background.src = browser.runtime.getURL('src/seqta/ui/background/background.html');
   parent!.appendChild(background);
 }

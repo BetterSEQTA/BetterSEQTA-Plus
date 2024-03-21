@@ -3,13 +3,11 @@ import * as Sentry from "@sentry/browser";
 import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
-import updateVideo from 'url:./resources/update-video.mp4'
-import IconFamily from 'url:./resources/fonts/IconFamily.woff'
-import LogoLight from 'url:./resources/icons/betterseqta-light-icon.png'
-import LogoLightOutline from 'url:./resources/icons/betterseqta-light-outline.png'
-import icon48 from 'url:./resources/icons/icon-48.png'
-
-import Popup from 'url:./interface/index.html'
+import updateVideo from './resources/update-video.mp4'
+import IconFamily from './resources/fonts/IconFamily.woff'
+import LogoLight from './resources/icons/betterseqta-light-icon.png'
+import LogoLightOutline from './resources/icons/betterseqta-light-outline.png'
+import icon48 from './resources/icons/icon-48.png'
 
 import Color from 'color'
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
@@ -24,12 +22,14 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import * as iframeCSS from "bundle-text:./css/iframe.scss"
+import iframeCSSURL from "./css/iframe.scss?raw"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { updateBgDurations } from './seqta/ui/Animation'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
+import documentLoadCSS from './css/documentload.scss?inline'
+import injectedCSS from './css/injected.scss?inline'
 
 declare global {
   interface Window {
@@ -44,6 +44,7 @@ let UserInitalCode = ''
 let currentSelectedDate = new Date()
 let LessonInterval: any
 export let DarkMode: boolean
+let iframeCSS: string
 
 var MenuItemMutation = false
 var NonSEQTAPage = false
@@ -61,15 +62,25 @@ document.addEventListener(
     if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
       IsSEQTAPage = true
       console.log('[BetterSEQTA+] Verified SEQTA Page')
-      import('./css/documentload.scss')
-      
+      console.log('[BetterSEQTA+] Injecting CSS')
+      const documentLoadStyle = document.createElement('style')
+      documentLoadStyle.textContent = documentLoadCSS
+      document.head.appendChild(documentLoadStyle)
+      /* console.log(browser.runtime.getURL(documentLoadCSS))
+      console.log(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`))
+      document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`).firstChild as HTMLLinkElement)
+       */
       
       enableCurrentTheme()
       try {
         const items = await browser.storage.local.get() as SettingsState
         
         if (items.onoff) {
-          import('./css/injected.scss')
+          const injectedStyle = document.createElement('style')
+          injectedStyle.textContent = injectedCSS
+
+          document.head.appendChild(injectedStyle)
+          //document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(injectedCSS)}" />`).firstChild as HTMLLinkElement)
         }
         
         main(items)
@@ -136,7 +147,7 @@ export function OpenWhatsNewPopup() {
   let video = document.createElement('video')
   let source = document.createElement('source')
   // Perhaps we host this on a server and then grab it instead of having it locally?
-  source.setAttribute('src', updateVideo)
+  source.setAttribute('src', browser.runtime.getURL(updateVideo))
   source.setAttribute('type', 'video/mp4')
   video.autoplay = true
   video.muted = true
@@ -428,6 +439,11 @@ function removeThemeTagsFromNotices () {
 }
 
 async function updateIframesWithDarkMode(): Promise<void> {
+  if (iframeCSS === undefined) {
+    //iframeCSS = await (await fetch(iframeCSSURL)).text()
+    iframeCSS = iframeCSSURL
+  }
+
   // Load the CSS file to overwrite iFrame default CSS
   const cssLink = document.createElement('style')
   cssLink.classList.add('iframecss')
@@ -819,7 +835,7 @@ function InjectCustomIcons() {
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${IconFamily}') format('woff');
+      src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`
@@ -906,7 +922,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${Popup}#settings/embedded`
+  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')
@@ -1722,7 +1738,7 @@ function callHomeTimetable(date: string, change?: any) {
         var dummyDay = document.createElement('div')
         dummyDay.classList.add('day-empty')
         let img = document.createElement('img')
-        img.src = LogoLight
+        img.src = browser.runtime.getURL(LogoLight)
         let text = document.createElement('p')
         text.innerText = 'No lessons available.'
         dummyDay.append(img)
@@ -2275,7 +2291,7 @@ async function loadHomePage() {
   }
 
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
-  icon.href = icon48
+  icon.href = browser.runtime.getURL(icon48)
 
   currentSelectedDate = new Date()
 
@@ -2764,7 +2780,7 @@ function SendNewsPage() {
         articleimage.classList.add('articleimage')
 
         if (newsarticles[i].urlToImage == 'null') {
-          articleimage.style.backgroundImage = `url(${LogoLightOutline})`
+          articleimage.style.backgroundImage = `url(${browser.runtime.getURL(LogoLightOutline)})`
           articleimage.style.width = '20%'
           articleimage.style.margin = '0 7.5%'
         } else {

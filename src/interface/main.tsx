@@ -5,7 +5,7 @@ import './index.css';
 import { SettingsContextProvider } from './SettingsContext.js';
 import SettingsPage from './SettingsPage.js';
 import browser from 'webextension-polyfill';
-import font from 'url:../resources/fonts/IconFamily.woff'
+import font from '../resources/fonts/IconFamily.woff'
 
 import * as Sentry from "@sentry/react";
 
@@ -26,7 +26,7 @@ style.setAttribute("type", "text/css");
 style.innerHTML = `
 @font-face {
   font-family: 'IconFamily';
-  src: url('${font}') format('woff');
+  src: url('${browser.runtime.getURL(font)}') format('woff');
   font-weight: normal;
   font-style: normal;
 }`;
