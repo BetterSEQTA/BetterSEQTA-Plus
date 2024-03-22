@@ -52,49 +52,46 @@ var IsSEQTAPage = false
 
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
 const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
+init()
 
-document.addEventListener(
-  'load',
-  async function () {
-    CheckForMenuList()
-    const hasSEQTATitle = document.title.includes('SEQTA Learn')
+async function init() {
+  CheckForMenuList()
+  const hasSEQTATitle = document.title.includes('SEQTA Learn')
 
-    if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-      IsSEQTAPage = true
-      console.log('[BetterSEQTA+] Verified SEQTA Page')
-      console.log('[BetterSEQTA+] Injecting CSS')
-      const documentLoadStyle = document.createElement('style')
-      documentLoadStyle.textContent = documentLoadCSS
-      document.head.appendChild(documentLoadStyle)
-      /* console.log(browser.runtime.getURL(documentLoadCSS))
-      console.log(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`))
-      document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`).firstChild as HTMLLinkElement)
-       */
+  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
+    IsSEQTAPage = true
+    console.log('[BetterSEQTA+] Verified SEQTA Page')
+    console.log('[BetterSEQTA+] Injecting CSS')
+    const documentLoadStyle = document.createElement('style')
+    documentLoadStyle.textContent = documentLoadCSS
+    document.head.appendChild(documentLoadStyle)
+    /* console.log(browser.runtime.getURL(documentLoadCSS))
+    console.log(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`))
+    document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`).firstChild as HTMLLinkElement)
+      */
+    
+    enableCurrentTheme()
+    try {
+      const items = await browser.storage.local.get() as SettingsState
       
-      enableCurrentTheme()
-      try {
-        const items = await browser.storage.local.get() as SettingsState
-        
-        if (items.onoff) {
-          const injectedStyle = document.createElement('style')
-          injectedStyle.textContent = injectedCSS
+      if (items.onoff) {
+        const injectedStyle = document.createElement('style')
+        injectedStyle.textContent = injectedCSS
 
-          document.head.appendChild(injectedStyle)
-          //document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(injectedCSS)}" />`).firstChild as HTMLLinkElement)
-        }
-        
-        main(items)
-      } catch (error: any) {
-        onError(error)
+        document.head.appendChild(injectedStyle)
+        //document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(injectedCSS)}" />`).firstChild as HTMLLinkElement)
       }
+      
+      main(items)
+    } catch (error: any) {
+      onError(error)
     }
+  }
 
-    if (!hasSEQTAText && !NonSEQTAPage) {
-      NonSEQTAPage = true
-    }
-  },
-  true,
-)
+  if (!hasSEQTAText && !NonSEQTAPage) {
+    NonSEQTAPage = true
+  }
+}
 
 function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`
