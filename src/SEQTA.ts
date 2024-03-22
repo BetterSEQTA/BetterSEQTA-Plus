@@ -61,15 +61,10 @@ async function init() {
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     IsSEQTAPage = true
     console.log('[BetterSEQTA+] Verified SEQTA Page')
-    console.log('[BetterSEQTA+] Injecting CSS')
     const documentLoadStyle = document.createElement('style')
     documentLoadStyle.textContent = documentLoadCSS
     document.head.appendChild(documentLoadStyle)
-    /* console.log(browser.runtime.getURL(documentLoadCSS))
-    console.log(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`))
-    document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(documentLoadCSS)}" />`).firstChild as HTMLLinkElement)
-      */
-    
+
     enableCurrentTheme()
     try {
       const items = await browser.storage.local.get() as SettingsState
@@ -79,7 +74,6 @@ async function init() {
         injectedStyle.textContent = injectedCSS
 
         document.head.appendChild(injectedStyle)
-        //document.head.appendChild(stringToHTML(`<link rel="stylesheet" href="${browser.runtime.getURL(injectedCSS)}" />`).firstChild as HTMLLinkElement)
       }
       
       main(items)
