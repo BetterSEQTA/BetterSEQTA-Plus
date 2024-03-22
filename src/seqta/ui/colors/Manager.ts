@@ -4,6 +4,8 @@ import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { SettingsState } from '../../../types/storage';
 
+import icon48 from '../../../resources/icons/icon-48.png';
+
 import darkLogo from '../../../resources/icons/betterseqta-light-full.png';
 import lightLogo from '../../../resources/icons/betterseqta-dark-full.png';
 
@@ -66,7 +68,7 @@ export function updateAllColors(storedSetting: any, newColor = null) {
 
   // Set favicon, if storedSetting is provided
   if (DarkMode !== null) {
-    (document.querySelector('link[rel*=\'icon\']')! as HTMLLinkElement).href = getChromeURL('icons/icon-48.png');
+    (document.querySelector('link[rel*=\'icon\']')! as HTMLLinkElement).href = getChromeURL(icon48);
   }
 
   let alliframes = document.getElementsByTagName('iframe');
