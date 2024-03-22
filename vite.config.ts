@@ -21,4 +21,12 @@ export default defineConfig({
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],
+  server: {
+    port: 5173,
+    hmr: {
+      host: "localhost",
+      protocol: "ws",
+      port: 5173,
+    },
+  },
 })
