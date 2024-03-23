@@ -22,7 +22,7 @@ import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from './seqta/ui/Themes'
-import iframeCSSURL from "./css/iframe.scss?raw"
+import iframeCSS from "./css/iframe.scss?raw"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
@@ -30,6 +30,7 @@ import { updateBgDurations } from './seqta/ui/Animation'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
 import injectedCSS from './css/injected.scss?inline'
+import popup from './interface/index.html?url'
 
 declare global {
   interface Window {
@@ -44,7 +45,6 @@ let UserInitalCode = ''
 let currentSelectedDate = new Date()
 let LessonInterval: any
 export let DarkMode: boolean
-let iframeCSS: string
 
 var MenuItemMutation = false
 var NonSEQTAPage = false
@@ -430,10 +430,6 @@ function removeThemeTagsFromNotices () {
 }
 
 async function updateIframesWithDarkMode(): Promise<void> {
-  if (iframeCSS === undefined) {
-    //iframeCSS = await (await fetch(iframeCSSURL)).text()
-    iframeCSS = iframeCSSURL
-  }
 
   // Load the CSS file to overwrite iFrame default CSS
   const cssLink = document.createElement('style')
@@ -913,7 +909,7 @@ function addExtensionSettings() {
   document.body.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
+  extensionIframe.src = `${browser.runtime.getURL(popup)}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')

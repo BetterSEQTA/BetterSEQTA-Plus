@@ -16,7 +16,7 @@ function formatUrl (inputUrl: string) {
   }
 }
 
-export default function Shortcuts() {
+function Shortcuts() {
   const { settingsState, setSettingsState } = useSettingsContext();
 
   const switchChange = (shortcutName: string, isOn: boolean): void => {
@@ -153,3 +153,5 @@ export default function Shortcuts() {
     </div>
   );
 }
+
+export default Shortcuts;

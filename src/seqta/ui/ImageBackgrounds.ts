@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import { SettingsState } from '../../types/storage';
+import backgroundURL from './background/background.html?url'
 
 export async function appendBackgroundToUI() {
   const settings = await browser.storage.local.get() as SettingsState;
@@ -13,6 +14,6 @@ export async function appendBackgroundToUI() {
   background.id = 'background';
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
-  background.src = browser.runtime.getURL('src/seqta/ui/background/background.html');
+  background.src = browser.runtime.getURL(backgroundURL);
   parent!.appendChild(background);
 }

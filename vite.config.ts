@@ -8,7 +8,12 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 export default defineConfig({
   plugins: [
     react(),
-    million.vite({}),
+    million.vite({
+      auto: {
+        threshold: 0.005, // default: 0.1,
+        skip: [], // default []
+      }      
+    }),
     crx({ manifest }),
     sentryVitePlugin({
       org: process.env.SENTRY_ORG,
