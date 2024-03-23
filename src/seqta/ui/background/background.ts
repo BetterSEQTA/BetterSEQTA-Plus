@@ -99,14 +99,19 @@ const updateBackground = async (): Promise<void> => {
 // Main function to run on page load
 const main = async (): Promise<void> => {
   await updateBackground();
-
+  
   // Listen for changes to local storage
-  window.addEventListener('storage', async (event) => {
-    if (event.key === 'selectedBackground') {
-      await updateBackground();
-    }
-  });
+  try {
+    window.addEventListener('storage', async (event) => {
+      if (event.key === 'selectedBackground') {
+        await updateBackground();
+      }
+    });
+  } catch (error) {
+    console.log('An error occurred:', error);
+  }
 };
 
+main()
 // Run the main function when the document is ready
-document.addEventListener('DOMContentLoaded', main);
+//document.addEventListener('DOMContentLoaded', main);
