@@ -4,6 +4,7 @@ import million from "million/compiler"
 import manifest from './manifest.json'
 import react from '@vitejs/plugin-react-swc'
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { join } from 'path'
 
 export default defineConfig({
   plugins: [
@@ -32,6 +33,14 @@ export default defineConfig({
       host: "localhost",
       protocol: "ws",
       port: 5173,
+    },
+  },
+  build: {
+    minify: false,
+    rollupOptions: {
+      input: {
+        settings: join(__dirname, 'src', 'interface', 'index.html'),
+      }
     },
   },
 })
