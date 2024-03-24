@@ -28,5 +28,11 @@
       "js": ["src/SEQTA.ts"],
       "run_at": "document_start"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/interface/index.html"],
+      "matches": ["*://*/*"]
+    }
   ]
 }
