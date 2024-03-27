@@ -1,50 +1,44 @@
-import { useState, memo } from "react";
+import { useState, memo, useCallback } from "react";
 import Switch from "../components/Switch";
 import { useSettingsContext } from "../SettingsContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { CustomShortcut } from "../types/AppProps";
 
-function formatUrl (inputUrl: string) {
-  // Regular expression to check if the URL starts with http://, https://, or ftp://
+function formatUrl(inputUrl: string) {
   const protocolRegex = /^(http:\/\/|https:\/\/|ftp:\/\/)/;
-
-  // Check if the URL starts with one of the protocols
-  if (protocolRegex.test(inputUrl)) {
-      return inputUrl;  // The URL is fine as is
-  } else {
-      return `https://${inputUrl}`;  // Prepend https:// to the URL
-  }
+  return protocolRegex.test(inputUrl) ? inputUrl : `https://${inputUrl}`;
 }
 
-function Shortcuts() {
+const Shortcuts = memo(() => {
   const { settingsState, setSettingsState } = useSettingsContext();
 
-  const switchChange = (shortcutName: string, isOn: boolean): void => {
-    const updatedShortcuts = settingsState.shortcuts.map((shortcut) => {
-      if (shortcut.name === shortcutName) {
-        return { ...shortcut, enabled: isOn };
-      }
-      return shortcut;
-    });
-
-    setSettingsState({ ...settingsState, shortcuts: updatedShortcuts });
-  };
-
   const [newTitle, setNewTitle] = useState<string>("");
+  const [isFormVisible, setFormVisible] = useState(false);
   const [newURL, setNewURL] = useState<string>("");
 
-  const isValidTitle = (title: string): boolean => title.trim() !== "";
   
-  const isValidURL = (url: string): boolean => {
+  const switchChange = useCallback((shortcutName: string, isOn: boolean) => {
+    setSettingsState((prevState) => {
+      const updatedShortcuts = prevState.shortcuts.map((shortcut) =>
+        shortcut.name === shortcutName ? { ...shortcut, enabled: isOn } : shortcut
+      );
+      return { ...prevState, shortcuts: updatedShortcuts };
+    });
+  }, [setSettingsState]);
+
+  const isValidTitle = useCallback((title: string) => title.trim() !== "", []);
+  
+  const isValidURL = useCallback((url: string) => {
     const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+[\\w.-]+(/[\\w.-]*)*$", "i");
     return pattern.test(url);
-  };
+  }, []);
 
-  const addNewCustomShortcut = (): void => {
+  const addNewCustomShortcut = useCallback(() => {
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
       const newShortcut: CustomShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon: newTitle[0] };
       const updatedCustomShortcuts = [...settingsState.customshortcuts, newShortcut];
-      setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
+      setSettingsState(prevState => ({ ...prevState, updatedCustomShortcuts }));
+
       setNewTitle("");
       setNewURL("");
 
@@ -53,18 +47,18 @@ function Shortcuts() {
       // Replace with a more user-friendly way to display errors
       console.error("Please enter a valid title and URL.");
     }
-  };
+  }, [newTitle, newURL, isValidTitle, isValidURL, setSettingsState]);
 
-  const deleteCustomShortcut = (index: number): void => {
-    const updatedCustomShortcuts = settingsState.customshortcuts.filter((_, i) => i !== index);
-    setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
-  };
+  const deleteCustomShortcut = useCallback((index: number) => {
+    setSettingsState((prevState) => ({
+      ...prevState,
+      customshortcuts: prevState.customshortcuts.filter((_, i) => i !== index),
+    }));
+  }, [setSettingsState]);
 
-  const [isFormVisible, setFormVisible] = useState(false);
-
-  const toggleForm = () => {
-    setFormVisible(!isFormVisible);
-  };
+  const toggleForm = useCallback(() => {
+    setFormVisible((isVisible) => !isVisible);
+  }, []);
 
   return (
     <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
@@ -77,48 +71,48 @@ function Shortcuts() {
           transition={{ type: "spring", damping: 20 }}
         >
         {isFormVisible &&
-            <div className="flex flex-col items-center mb-4">
-              <motion.input
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="w-full p-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
-                type="text"
-                placeholder="Shortcut Name"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-              />
-              <motion.input
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="w-full p-2 my-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
-                type="text"
-                placeholder="URL eg. https://google.com"
-                value={newURL}
-                onChange={(e) => setNewURL(e.target.value)}
-              />
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="w-full px-4 py-2 text-white bg-blue-500 rounded-md"
-                onClick={ addNewCustomShortcut }
-              >
-                Add
-              </motion.button>
-            </div>
+          <div className="flex flex-col items-center mb-4">
+            <motion.input
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="w-full p-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
+              type="text"
+              placeholder="Shortcut Name"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+            />
+            <motion.input
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="w-full p-2 my-2 rounded-md bg-zinc-100 dark:bg-zinc-700 focus:outline-none"
+              type="text"
+              placeholder="URL eg. https://google.com"
+              value={newURL}
+              onChange={(e) => setNewURL(e.target.value)}
+            />
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="w-full px-4 py-2 text-white bg-blue-500 rounded-md"
+              onClick={ addNewCustomShortcut }
+            >
+              Add
+            </motion.button>
+          </div>
         }
         </motion.div>
-        {!isFormVisible && (
-          <button
-            className="w-full px-4 py-2 mb-4 text-white bg-blue-500 rounded"
-            onClick={toggleForm}
-          >
-            Add Custom Shortcut
-          </button>
-        )}
       </AnimatePresence>
+      {!isFormVisible && (
+        <button
+          className="w-full px-4 py-2 mb-4 text-white bg-blue-500 rounded"
+          onClick={toggleForm}
+        >
+          Add Custom Shortcut
+        </button>
+      )}
 
       {/* Shortcuts Section */}
       {settingsState.shortcuts ? (
@@ -149,6 +143,6 @@ function Shortcuts() {
       )}
     </div>
   );
-}
+});
 
-export default memo(Shortcuts);
+export default Shortcuts;
