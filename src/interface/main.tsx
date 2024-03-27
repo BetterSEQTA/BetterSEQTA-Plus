@@ -8,8 +8,10 @@ import font from '../resources/fonts/IconFamily.woff'
 
 import * as Sentry from "@sentry/react";
 
-browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
-  if (telemetry.telemetry === true)
+browser.storage.local.get().then(({ telemetry, DarkMode }) => {
+  if (DarkMode) document.body.classList.add('dark');
+
+  if (telemetry === true)
   Sentry.init({
     dsn: "https://4bc7197431b170218e15daba4095d08b@o4506347383291904.ingest.sentry.io/4506347394105344",
     integrations: [
