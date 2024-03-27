@@ -133,7 +133,7 @@ export default class StorageListener {
       );
 
       if (removedElement) {
-        RemoveShortcutDiv(removedElement);
+        RemoveShortcutDiv([ removedElement ]);
       }
     }
   }

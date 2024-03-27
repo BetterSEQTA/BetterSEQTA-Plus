@@ -2196,7 +2196,6 @@ async function GetLessonColours() {
 
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
-  console.log(`[BetterSEQTA+] Adding shortcut: ${element.name}`)
   var shortcut = document.createElement('a')
   shortcut.setAttribute('href', element.url)
   shortcut.setAttribute('target', '_blank')
@@ -2232,6 +2231,8 @@ export function CreateCustomShortcutDiv(element: any) {
 }
 
 export function RemoveShortcutDiv(elements: any) {
+  if (elements.length === 0) return
+  
   elements.forEach((element: any) => {
     const shortcuts = document.querySelectorAll('.shortcut')
     shortcuts.forEach((shortcut) => {
@@ -2377,21 +2378,19 @@ async function loadHomePage() {
   })
 
   // Adds the shortcuts to the shortcut container
-  const result = browser.storage.local.get(['shortcuts'])
-  function open (result: any) {
-
-    const shortcuts = Object.values(result)[0]
-    addShortcuts(shortcuts)
-  }
-  result.then(open, onError)
+  const result = await browser.storage.local.get(['shortcuts'])
+  
+  const shortcuts = Object.values(result)[0]
+  addShortcuts(shortcuts)
+  AddCustomShortcutsToPage()
 
   // Creates the upcoming container and appends to the home container
-  var upcomingcontainer = document.createElement('div')
+  const upcomingcontainer = document.createElement('div')
   upcomingcontainer.classList.add('upcoming-container')
   upcomingcontainer.classList.add('border')
 
-  let upcomingtitlediv = CreateElement('div', 'upcoming-title')
-  let upcomingtitle = document.createElement('h2')
+  const upcomingtitlediv = CreateElement('div', 'upcoming-title')
+  const upcomingtitle = document.createElement('h2')
   upcomingtitle.classList.add('home-subtitle')
   upcomingtitle.innerText = 'Upcoming Assessments'
   upcomingtitlediv.append(upcomingtitle)
@@ -2405,7 +2404,7 @@ async function loadHomePage() {
 
   upcomingcontainer.append(upcomingtitlediv)
 
-  let upcomingitems = document.createElement('div')
+  const upcomingitems = document.createElement('div')
   upcomingitems.id = 'upcoming-items'
   upcomingitems.classList.add('upcoming-items')
 
@@ -2675,7 +2674,6 @@ export function addShortcuts(shortcuts: any) {
       }
     }
   }
-  AddCustomShortcutsToPage()
 }
 
 export function enableNotificationCollector() {
