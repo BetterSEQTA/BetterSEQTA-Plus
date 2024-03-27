@@ -77,20 +77,19 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
         ))}
       </div>
     </div>
-    <div className="h-full px-4 overflow-y-scroll overflow-x-clip">
+    <div className="h-full px-4 overflow-x-clip">
         <motion.div
           initial={false}
           animate={{ x: `${position}%` }}
           transition={springTransition}
+          className='flex'
         >
-          <div className="flex">
-            {tabs.map((tab, index) => (
-            <div key={index} className={`absolute w-full transition-opacity duration-300 pb-4 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
-              style={{left: `${index * 100}%`}}>
-                {tab.content}
-              </div>
-            ))}
-          </div>
+          {tabs.map((tab, index) => (
+          <div key={index} className={`absolute h-[100vh] overflow-y-scroll w-full pb-40 transition-opacity duration-300 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
+            style={{left: `${index * 100}%`}}>
+              {tab.content}
+            </div>
+          ))}
         </motion.div>
       </div>
     </>

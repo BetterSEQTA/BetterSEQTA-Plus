@@ -31,7 +31,7 @@ const SettingsPage = ({ standalone }: SettingsPage) => {
 
   return (
     <SettingsContextProvider>
-      <div className={`flex flex-col w-[384px] shadow-2xl gap-2 bg-white ${ standalone ? '' : 'rounded-xl' } ${ standalone ? 'h-[600px]' : 'h-[100vh]' } overflow-clip dark:bg-zinc-800 dark:text-white`}>
+      <div className={`flex flex-col w-[384px] shadow-2xl gap-2 bg-white ${ standalone ? 'h-[600px]' : 'h-[100vh] rounded-xl' } overflow-clip dark:bg-zinc-800 dark:text-white`}>
         <div className="grid border-b border-b-zinc-200/40 place-items-center">
           <img src={logo} className="w-4/5 dark:hidden" />
           <img src={logoDark} className="hidden w-4/5 dark:block" />
