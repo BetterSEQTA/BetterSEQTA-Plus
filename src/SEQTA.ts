@@ -128,10 +128,13 @@ export function OpenWhatsNewPopup() {
   const container = document.createElement('div')
   container.classList.add('whatsnewContainer')
 
-  var header: any = stringToHTML(`<div class="whatsnewHeader">
-  <h1>What's New</h1>
-  <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
-  </div>`).firstChild
+  var header: any = stringToHTML(
+    /* html */ 
+    `<div class="whatsnewHeader">
+      <h1>What's New</h1>
+      <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
+    </div>`
+  ).firstChild
 
   let imagecont = document.createElement('div')
   imagecont.classList.add('whatsnewImgContainer')
@@ -151,7 +154,7 @@ export function OpenWhatsNewPopup() {
   textcontainer.classList.add('whatsnewTextContainer')
 
   let text = stringToHTML(
-    String.raw`
+    /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
     <h1>3.2.5 - More Bug Fixes</h1>
@@ -239,7 +242,7 @@ export function OpenWhatsNewPopup() {
   ).firstChild
 
   let footer = stringToHTML(
-    String.raw`
+    /* html */ `
     <div class="whatsnewFooter">
       <div>
       Report bugs and feedback: 
@@ -1248,11 +1251,25 @@ async function AddBetterSEQTAElements(toggle: any) {
           // Manipulate the DOM as needed
           const titlebar = document.getElementsByClassName('titlebar')[0]
           const userInfo = stringToHTML(
-            '<div class="userInfosvgdiv tooltip"><svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg><div class="tooltiptext topmenutooltip" id="logouttooltip"></div></div>',
+            /* html */`
+            <div class="userInfosvgdiv tooltip">
+              <svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg>
+              <div class="tooltiptext topmenutooltip" id="logouttooltip"></div>
+            </div>
+          `
           ).firstChild
           titlebar.append(userInfo!)
       
-          const userinfo = stringToHTML(`<div class="userInfo"><div class="userInfoText"><div style="display: flex; align-items: center;"><p class="userInfohouse userInfoCode"></p><p class="userInfoName">${info.userDesc}</p></div><p class="userInfoCode">${UserInitalCode}</p></div></div>`).firstChild
+          const userinfo = stringToHTML(/* html */
+          `<div class="userInfo">
+            <div class="userInfoText">
+              <div style="display: flex; align-items: center;">
+                <p class="userInfohouse userInfoCode"></p>
+                <p class="userInfoName">${info.userDesc}</p>
+              </div>
+              <p class="userInfoCode">${UserInitalCode}</p>
+            </div>
+          </div>`).firstChild
           titlebar.append(userinfo!)
       
           var logoutbutton = document.getElementsByClassName('logout')[0]
@@ -2401,7 +2418,7 @@ async function loadHomePage() {
   document.getElementById('home-container')!.append(upcomingcontainer)
 
   // Creates the notices container into the home container
-  const NoticesStr = String.raw`
+  const NoticesStr = /* html */ `
     <div class="notices-container border">
       <div style="display: flex; justify-content: space-between">
         <h2 class="home-subtitle">Notices</h2>
