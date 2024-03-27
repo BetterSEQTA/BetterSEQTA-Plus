@@ -2196,6 +2196,7 @@ async function GetLessonColours() {
 
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
+  console.log(`[BetterSEQTA+] Adding shortcut: ${element.name}`)
   var shortcut = document.createElement('a')
   shortcut.setAttribute('href', element.url)
   shortcut.setAttribute('target', '_blank')
@@ -2252,21 +2253,16 @@ export function RemoveShortcutDiv(elements: any) {
   })
 }
 
-function AddCustomShortcutsToPage() {
-  const result = browser.storage.local.get(['customshortcuts'])
-  function open (result: any) {
-
-    var customshortcuts: any = Object.values(result)[0]
-    if (customshortcuts.length > 0) {
-      (document.getElementsByClassName('shortcut-container')[0] as HTMLElement).style.display =
-        'block'
-      for (let i = 0; i < customshortcuts.length; i++) {
-        const element = customshortcuts[i]
-        CreateCustomShortcutDiv(element)
-      }
+async function AddCustomShortcutsToPage() {
+  const result = await browser.storage.local.get(['customshortcuts'])   
+   
+  let customshortcuts: any = Object.values(result)[0]
+  if (customshortcuts.length > 0) {
+    for (let i = 0; i < customshortcuts.length; i++) {
+      const element = customshortcuts[i]
+      CreateCustomShortcutDiv(element)
     }
   }
-  result.then(open, onError)
 }
 
 async function loadHomePage() {
