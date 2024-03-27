@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import Switch from "../components/Switch";
 import { useSettingsContext } from "../SettingsContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -70,13 +70,13 @@ function Shortcuts() {
     <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
 
       <AnimatePresence>
-        {isFormVisible ? (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ type: "spring", damping: 20 }}
-          >
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={isFormVisible ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ type: "spring", damping: 20 }}
+        >
+        {isFormVisible &&
             <div className="flex flex-col items-center mb-4">
               <motion.input
                 initial={{ opacity: 0, y: -10 }}
@@ -108,18 +108,15 @@ function Shortcuts() {
                 Add
               </motion.button>
             </div>
-          </motion.div>
-        ) : (
-          <motion.button
-            initial={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
-            animate={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
-            exit={{ backgroundColor: "rgba(29, 161, 242, 1)", height: "auto" }}
-            transition={{ type: 'tween', ease: "easeOut" }}
-            className="px-4 py-2 mb-4 text-white bg-blue-500 rounded"
+        }
+        </motion.div>
+        {!isFormVisible && (
+          <button
+            className="w-full px-4 py-2 mb-4 text-white bg-blue-500 rounded"
             onClick={toggleForm}
           >
             Add Custom Shortcut
-          </motion.button>
+          </button>
         )}
       </AnimatePresence>
 
@@ -154,4 +151,4 @@ function Shortcuts() {
   );
 }
 
-export default Shortcuts;
+export default memo(Shortcuts);
