@@ -37,7 +37,7 @@ const Shortcuts = memo(() => {
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
       const newShortcut: CustomShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon: newTitle[0] };
       const updatedCustomShortcuts = [...settingsState.customshortcuts, newShortcut];
-      setSettingsState(prevState => ({ ...prevState, updatedCustomShortcuts }));
+      setSettingsState({ ...settingsState, customshortcuts: updatedCustomShortcuts });
 
       setNewTitle("");
       setNewURL("");
@@ -45,7 +45,7 @@ const Shortcuts = memo(() => {
       setFormVisible(false);
     } else {
       // Replace with a more user-friendly way to display errors
-      console.error("Please enter a valid title and URL.");
+      alert("Please enter a valid title and URL.");
     }
   }, [newTitle, newURL, isValidTitle, isValidURL, setSettingsState]);
 
