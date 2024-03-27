@@ -5,9 +5,6 @@
 @import './injected/theme.scss';
 @import './injected/transparency.scss';
 
-@tailwind components;
-@tailwind utilities;
-
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
@@ -2024,6 +2021,10 @@ li.MessageList__unread___3imtO {
   width: 50px !important;
   margin-left: -28px !important;
   top: 105% !important;
+
+  .uiButton svg g {
+    color: var(--background-primary) !important;
+  }
 }
 .svg {
   transform-origin: center;
@@ -2762,7 +2763,7 @@ li.MessageList__unread___3imtO {
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent var(--background-primary) transparent;
+  border-color: transparent transparent var(--text-primary) transparent;
 }
 .tooltiptext p:hover {
   cursor: pointer;
