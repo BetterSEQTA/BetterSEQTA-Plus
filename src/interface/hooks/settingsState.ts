@@ -11,7 +11,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     if (RanOnce) return;
     RanOnce = true;
 
-    // get the current settings state
     // @ts-expect-error - TODO: Fix this
     browser.storage.local.get().then((result: MainConfig) => {
       setSettingsState({
@@ -27,10 +26,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         transparencyEffects: result.transparencyEffects,
         theme: result.theme
       });
-      
-      if (result.DarkMode) {
-        document.body.classList.add('dark');
-      }
     });
   });
   
