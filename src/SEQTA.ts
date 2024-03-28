@@ -2297,7 +2297,10 @@ async function loadHomePage() {
   currentSelectedDate = new Date()
 
   // Creates the root of the home page added to the main div
-  let homeContainer = stringToHTML('<div class="home-root"><div class="home-container" id="home-container"></div></div>')
+  let homeContainer = stringToHTML(/* html */`
+    <div class="home-root">
+      <div class="home-container" id="home-container"></div>
+    </div>`)
   
   // Appends the html file to main div
   // Note: firstChild of html is done due to needing to grab the body from the stringToHTML function
@@ -2307,12 +2310,12 @@ async function loadHomePage() {
   const date = new Date()
 
   // Creates the shortcut container into the home container
-  const Shortcut = stringToHTML('<div class="shortcut-container border"><div class="shortcuts border" id="shortcuts"></div></div>')
+  const Shortcut = stringToHTML('<div class="shortcut-container border" style="opacity: 0;"><div class="shortcuts border" id="shortcuts"></div></div>')
   // Appends the shortcut container into the home container
   document.getElementById('home-container')?.append(Shortcut?.firstChild!)
   
   // Creates the container div for the timetable portion of the home page
-  const Timetable = stringToHTML('<div class="timetable-container border"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
+  const Timetable = stringToHTML('<div class="timetable-container border" style="opacity: 0;"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
   // Appends the timetable container into the home container
   document.getElementById('home-container')?.append(Timetable?.firstChild!)
   
