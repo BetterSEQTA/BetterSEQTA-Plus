@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
 import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme } from '../../ui/Themes';
+import { OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
   constructor() {
@@ -44,6 +45,9 @@ export class MessageHandler {
       return true;
     case 'OpenChangelog':
       OpenWhatsNewPopup();
+      break;
+    case 'OpenThemeCreator':
+      OpenThemeCreator();
       break;
     
     default:

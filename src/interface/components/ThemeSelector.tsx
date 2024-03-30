@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import themesList from '../assets/themes';
 import { listThemes, disableTheme, downloadTheme, setTheme, deleteTheme } from "../hooks/ThemeManagment";
+import Browser from "webextension-polyfill";
 
 interface Theme {
   name: string;
@@ -133,7 +134,8 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
   return (
     <div className="my-2">
       {(isEditMode ? themes.some(theme => theme.isDownloaded) : themes.length > 0) && (
-        <h2 className="pb-2 text-lg font-bold">Themes</h2>)}
+        <h2 className="pb-2 text-lg font-bold">Themes</h2>
+      )}
       <div className="flex flex-col gap-4">
         {themes
           .filter(theme => !isEditMode || theme.isDownloaded) // Only show downloaded themes in edit mode
@@ -166,6 +168,13 @@ const ThemeSelector = ({ selectedType, setSelectedType, isEditMode }: ThemeSelec
               </div>
             </button>
         ))}
+
+        <button
+          onClick={() => Browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator' })}
+          className="flex items-center justify-center w-full h-16 transition rounded-lg bg-zinc-700">
+          <span className="text-xl font-IconFamily">{'\uec60'}</span>
+          <span className="ml-2">Create Theme</span>
+        </button>
       </div>
     </div>
   );
