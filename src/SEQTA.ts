@@ -30,7 +30,6 @@ import { updateBgDurations } from './seqta/ui/Animation'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
 import injectedCSS from './css/injected.scss?inline'
-import popup from './interface/index.html?url'
 
 declare global {
   interface Window {
@@ -911,7 +910,7 @@ function addExtensionSettings() {
   if (extensionContainer) extensionContainer.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL(popup)}#settings/embedded`
+  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')
