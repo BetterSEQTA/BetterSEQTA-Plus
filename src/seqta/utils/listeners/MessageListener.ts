@@ -13,6 +13,7 @@ export class MessageHandler {
 
     case 'EditSidebar':
       this.editSidebar();
+      closeSettings();
       sendResponse({ status: 'success' });
       break;
 
@@ -45,9 +46,13 @@ export class MessageHandler {
       return true;
     case 'OpenChangelog':
       OpenWhatsNewPopup();
+      closeSettings();
+      sendResponse({ status: 'success' });
       break;
     case 'OpenThemeCreator':
       OpenThemeCreator();
+      closeSettings();
+      sendResponse({ status: 'success' });
       break;
     
     default:

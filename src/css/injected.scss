@@ -33,7 +33,7 @@ html {
   position: fixed;
   right: 0;
   height: 100%;
-  width: 200px;
+  z-index: 100;
 }
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;

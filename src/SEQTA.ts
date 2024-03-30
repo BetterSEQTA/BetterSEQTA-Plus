@@ -837,7 +837,7 @@ export function AppendElementsToDisabledPage() {
   AddBetterSEQTAElements(false)
 
   let settingsStyle = document.createElement('style')
-  settingsStyle.innerHTML = `
+  settingsStyle.innerHTML = /* css */`
   .addedButton {
     position: absolute !important;
     right: 50px;
@@ -903,18 +903,12 @@ export function closeSettings() {
 }
 
 function addExtensionSettings() {
-  /* const link = GetCSSElement('src/interface/popup.css')
-  document.querySelector('html')!.appendChild(link) */
-
   const extensionPopup = document.createElement('div')
   extensionPopup.classList.add('outside-container', 'hide')
   extensionPopup.id = 'ExtensionPopup'
-  document.body.appendChild(extensionPopup)
-
-  const extensionpopup2div = document.createElement('div')
-  extensionpopup2div.classList.add('ExtensionPopup2')
-  extensionpopup2div.id = 'ExtensionPopup2'
-  extensionPopup.appendChild(extensionpopup2div)
+  
+  const extensionContainer = document.querySelector('#container') as HTMLDivElement
+  if (extensionContainer) extensionContainer.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
   extensionIframe.src = `${browser.runtime.getURL(popup)}#settings/embedded`
