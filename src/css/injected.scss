@@ -29,6 +29,12 @@ html {
     background-color 200ms ease-in-out,
     backdrop-filter 200ms ease-in-out;
 }
+#themeCreatorIframe {
+  position: fixed;
+  right: 0;
+  height: 100%;
+  width: 200px;
+}
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
