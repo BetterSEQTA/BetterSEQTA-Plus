@@ -911,6 +911,11 @@ function addExtensionSettings() {
   extensionPopup.id = 'ExtensionPopup'
   document.body.appendChild(extensionPopup)
 
+  const extensionpopup2div = document.createElement('div')
+  extensionpopup2div.classList.add('ExtensionPopup2')
+  extensionpopup2div.id = 'ExtensionPopup2'
+  extensionPopup.appendChild(extensionpopup2div)
+
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
   extensionIframe.src = `${browser.runtime.getURL(popup)}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
