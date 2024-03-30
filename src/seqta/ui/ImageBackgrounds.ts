@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import { SettingsState } from '../../types/storage';
 import backgroundURL from './background/background.html?url'
+import { renderInShadowDom } from './otherFunction';
 
 export async function appendBackgroundToUI() {
   const settings = await browser.storage.local.get() as SettingsState;
@@ -16,4 +17,7 @@ export async function appendBackgroundToUI() {
   background.setAttribute('excludeDarkCheck', 'true');
   background.src = browser.runtime.getURL(backgroundURL);
   parent!.appendChild(background);
+
+
+  renderInShadowDom('#ExtensionPopup2')
 }
