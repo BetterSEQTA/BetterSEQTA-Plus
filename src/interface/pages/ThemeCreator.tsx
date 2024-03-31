@@ -3,7 +3,14 @@ import Accordion from '../components/Accordian';
 import { useState } from 'react';
 
 export default function ThemeCreator() {
-  const [theme, setTheme] = useState();
+  const [theme, setTheme] = useState<CustomTheme>({
+    name: '',
+    description: '',
+    defaultColour: '',
+    CanChangeColour: false,
+    CustomCSS: '',
+    CustomImages: []
+  });
 
   const handleSave = (value: string) => {
     // Save the theme
