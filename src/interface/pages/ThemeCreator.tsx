@@ -62,7 +62,11 @@ export default function ThemeCreator() {
       ...prevTheme,
       CustomCSS: value,
     }));
-  }  
+  }
+
+  const saveTheme = () => {
+    // Save the theme to the database
+  }
 
   useEffect(() => {
     sendThemeUpdate(theme);
@@ -161,8 +165,8 @@ export default function ThemeCreator() {
             callback={CodeUpdate} />
         </Accordion>
         
-        <button onClick={() => console.log('shared!')} className='w-full px-4 py-2 my-4 text-white transition bg-blue-500 rounded dark:text-white'>
-          Share theme
+        <button onClick={saveTheme} className='w-full px-4 py-2 my-4 text-white transition bg-blue-500 rounded dark:text-white'>
+          Save theme
         </button>
       </div>
     </div>
