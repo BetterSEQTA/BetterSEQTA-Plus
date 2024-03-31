@@ -9,6 +9,7 @@
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
+  font-family: Rubik, sans-serif !important;
 }
 .hidden {
   display: none;
@@ -22,7 +23,6 @@ html {
   background: var(--auto-background) !important;
 }
 * {
-  font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 
   transition:
