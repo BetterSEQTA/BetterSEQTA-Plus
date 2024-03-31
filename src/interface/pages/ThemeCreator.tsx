@@ -1,7 +1,10 @@
 import CodeEditor from '../components/CodeEditor';
 import Accordion from '../components/Accordian';
+import { useState } from 'react';
 
 export default function ThemeCreator() {
+  const [theme, setTheme] = useState();
+
   const handleSave = (value: string) => {
     // Save the theme
     console.log(value)
