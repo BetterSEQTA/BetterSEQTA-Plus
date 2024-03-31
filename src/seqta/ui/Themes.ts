@@ -164,8 +164,6 @@ export const disableTheme = async () => {
 const imageData: Record<string, { url: string; variableName: string }> = {};
 
 export const UpdateThemePreview = async (updatedTheme: CustomTheme) => {
-  console.log(updatedTheme);
-
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
   // Update image data
