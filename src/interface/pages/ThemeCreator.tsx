@@ -26,7 +26,7 @@ export default function ThemeCreator() {
       reader.onload = () => {
         const imageUrl = reader.result as string;
         const imageId = generateImageId();
-        const variableName = `--custom-image-${theme.CustomImages.length}`;
+        const variableName = `custom-image-${theme.CustomImages.length}`;
         const updatedTheme = {
           ...theme,
           CustomImages: [...theme.CustomImages, { id: imageId, url: imageUrl, variableName }],
@@ -57,9 +57,11 @@ export default function ThemeCreator() {
   };
 
   function CodeUpdate(value: string) {
-    const updatedTheme = { ...theme, CustomCSS: value };
-    setTheme(updatedTheme);
-  }
+    setTheme((prevTheme) => ({
+      ...prevTheme,
+      CustomCSS: value,
+    }));
+  }  
 
   useEffect(() => {
     sendThemeUpdate(theme);
@@ -113,25 +115,29 @@ export default function ThemeCreator() {
         
         <div className='h-4'></div>
 
-        <Accordion defaultOpened title='Custom Images'>
-          {theme.CustomImages.map((image, index) => (
-            <div key={image.id}>
-              <img src={image.url} alt={`Custom Image ${index + 1}`} />
-              <input
-                type='text'
-                value={image.variableName}
-                onChange={(e) => handleImageVariableChange(image.id, e.target.value)}
-                placeholder='CSS Variable Name'
-              />
-              <button onClick={() => handleRemoveImage(image.id)}>Remove</button>
+        {theme.CustomImages.map((image, index) => (
+          <div key={image.id} className="flex items-center p-2 mb-4 bg-white rounded-lg shadow dark:bg-zinc-900">
+            <div className="flex-grow mr-4">
+              <img src={image.url} alt={`Custom Image ${index + 1}`} className="object-contain w-auto rounded max-h-32" />
             </div>
-          ))}
-          <input
-            type='file'
-            accept='image/*'
-            onChange={handleImageUpload}
-          />
-        </Accordion>
+            <input
+              type="text"
+              value={image.variableName}
+              onChange={(e) => handleImageVariableChange(image.id, e.target.value)}
+              placeholder="CSS Variable Name"
+              className="flex-grow w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white"
+            />
+            <button onClick={() => handleRemoveImage(image.id)} className="px-4 py-2 ml-4 text-sm text-white transition bg-red-500 rounded hover:bg-red-600 dark:text-white">
+              Remove
+            </button>
+          </div>
+        ))}
+
+        <input
+          type='file'
+          accept='image/*'
+          onChange={handleImageUpload}
+        />
 
         
         <div className='h-4'></div>

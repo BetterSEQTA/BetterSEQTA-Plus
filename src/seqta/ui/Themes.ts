@@ -161,51 +161,80 @@ export const disableTheme = async () => {
   localforage.removeItem('selectedTheme');
 };
 
-let imageData: CustomImage[] = [];
-let previousTheme: CustomTheme = null;
+const imageData: Record<string, { url: string; variableName: string }> = {};
 
 export const UpdateThemePreview = async (updatedTheme: CustomTheme) => {
-  console.log(updatedTheme)
-
-  if (updatedTheme.CustomImages.length !== imageData.length) {
-    updatedTheme.CustomImages.forEach((image) => {
-      updateImage(image.id, image.url);
-    })
-  }
+  console.log(updatedTheme);
 
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
+  // Update image data
+  const currentImageIds = Object.keys(imageData);
+  const updatedImageIds = CustomImages.map((image) => image.id);
+
+  // Remove unused images from imageData and document
+  currentImageIds.forEach((imageId) => {
+    if (!updatedImageIds.includes(imageId)) {
+      const { variableName } = imageData[imageId];
+      removeImageFromDocument(variableName);
+      delete imageData[imageId];
+    }
+  });
+
+  // Update or add new images to imageData
+  CustomImages.forEach((image) => {
+    const existingImage = imageData[image.id];
+
+    if (existingImage && existingImage.variableName !== image.variableName) {
+      // Remove the previous variableName from the document
+      removeImageFromDocument(existingImage.variableName);
+    }
+
+    imageData[image.id] = {
+      url: updateImage(image),
+      variableName: image.variableName,
+    };
+  });
+
   // Apply custom CSS
-  let styleElement = document.getElementById('theme-preview-styles');
-  if (!styleElement) {
-    styleElement = document.createElement('style');
-    styleElement.id = 'theme-preview-styles';
-    document.head.appendChild(styleElement);
-  }
-  styleElement.textContent = CustomCSS;
+  applyCustomCSS(CustomCSS);
 
   // Apply default color
   if (defaultColour !== '') {
     browser.storage.local.set({ selectedColor: defaultColour });
   }
 
+  // Apply custom images
   CustomImages.forEach((image) => {
-    // @ts-expect-error - not sure why its yelling at me :(
-    const imageUrl = imageData[image.id];
+    const imageUrl = imageData[image.id]?.url;
     if (imageUrl) {
-      document.documentElement.style.setProperty(image.variableName, `url(${imageUrl})`);
+      document.documentElement.style.setProperty('--' + image.variableName, `url(${imageUrl})`);
     }
   });
+};
+
+function applyCustomCSS(customCSS: string) {
+  let styleElement = document.getElementById('theme-preview-styles');
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.id = 'theme-preview-styles';
+    document.head.appendChild(styleElement);
+  }
+  styleElement.textContent = customCSS;
 }
 
-export function updateImage(imageId: string, imageDataURI: string) {
+function removeImageFromDocument(variableName: string) {
+  document.documentElement.style.removeProperty('--' + variableName);
+}
+
+export function updateImage(image: CustomImage) {
   // Extract base64 data from the data URI
-  const base64Index = imageDataURI.indexOf(',') + 1;
-  const imageBase64 = imageDataURI.substring(base64Index);
+  const base64Index = image.url.indexOf(',') + 1;
+  const imageBase64 = image.url.substring(base64Index);
 
   // Convert base64 to blob
   const byteCharacters = atob(imageBase64);
-  const byteNumbers = new Array(byteCharacters.length);
+  const byteNumbers = new Uint8Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
@@ -215,6 +244,5 @@ export function updateImage(imageId: string, imageDataURI: string) {
   // Convert blob to blob URL
   const imageUrl = URL.createObjectURL(blob);
 
-  // @ts-expect-error - same problem 😭
-  imageData[imageId] = imageUrl;
+  return imageUrl;
 }
