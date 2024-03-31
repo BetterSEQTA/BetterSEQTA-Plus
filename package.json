@@ -31,6 +31,7 @@
     "url": "^0.11.3"
   },
   "dependencies": {
+    "@codemirror/lang-less": "^6.0.2",
     "@million/lint": "latest",
     "@sentry/browser": "^7.100.1",
     "@sentry/cli": "^2.28.6",
@@ -43,6 +44,8 @@
     "@types/react-dom": "^18.2.19",
     "@types/sortablejs": "^1.15.7",
     "@types/webextension-polyfill": "^0.10.7",
+    "@uiw/codemirror-theme-github": "^4.21.25",
+    "@uiw/react-codemirror": "^4.21.25",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "color": "^4.2.3",
