@@ -30,8 +30,8 @@ export default function CodeEditor({ callback, initialState, height }: { callbac
         tabSize: 2,
       }}
       theme={ darkMode ? githubDark : githubLight }
-      placeholder={"It's time to dream up some code!"}
-      className='rounded-lg'
+      placeholder={"Happy coding!"}
+      className='rounded-lg text-[13px]'
       value={value}
       height={height}
       extensions={[less(), color]}
