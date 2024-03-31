@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
-import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme, updateImage, UpdateThemePreview } from '../../ui/Themes';
+import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme, UpdateThemePreview } from '../../ui/Themes';
 import { OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {

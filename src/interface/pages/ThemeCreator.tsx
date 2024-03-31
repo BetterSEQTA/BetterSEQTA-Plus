@@ -71,14 +71,16 @@ export default function ThemeCreator() {
   return (
     <div className='w-full min-h-[100vh] bg-zinc-100 dark:bg-zinc-800 dark:text-white transition duration-30'>
       <div className='flex flex-col p-2'>
-        <h1 className='pb-2 text-xl font-semibold'>Theme Creator</h1>
+        <h1 className='text-xl font-semibold'>Theme Creator</h1>
+
+        <Divider />
 
         <div>
           <div className='pb-2 text-sm'>Theme Name</div>
           <input
             id='themeName'
             type='text'
-            placeholder='Whatcha calling it?'
+            placeholder='What is your theme called?'
             value={theme.name}
             onChange={e => setTheme({ ...theme, name: e.target.value })}
             className='w-full p-2 mb-4 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white' />
@@ -88,6 +90,7 @@ export default function ThemeCreator() {
           <div className='pb-2 text-sm'>Description <span className='italic opacity-80'>(optional)</span></div>
           <textarea
           id='themeDescription'
+          placeholder="Don't worry, this one's optional!"
           value={theme.description}
           onChange={e => setTheme({ ...theme, description: e.target.value })}
           className='w-full p-2 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white' />
