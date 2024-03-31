@@ -35,6 +35,23 @@ html {
   height: 100%;
   z-index: 100;
 }
+
+.resizeBar {
+  background-color: rgb(228 228 231);
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
