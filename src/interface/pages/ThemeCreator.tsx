@@ -22,7 +22,20 @@ export default function ThemeCreator() {
       <div className='flex flex-col gap-2 p-2'>
         <h1 className='text-xl font-semibold pb-0.5'>Theme Creator</h1>
 
-        <input type='text' placeholder='Theme Name' className='w-full p-2 mb-4 rounded-lg dark:border-gray-700 dark:bg-zinc-900 dark:text-white' />
+        <div>
+          <label htmlFor='themeName' className='pb-1 text-sm'>Theme Name</label>
+          <input id='themeName' type='text' placeholder='Whatcha calling it?' value={theme.name} onChange={e => setTheme({ ...theme, name: e.target.value })} className='w-full p-2 mb-4 rounded-lg dark:border-gray-700 dark:bg-zinc-900 dark:text-white' />
+        </div>
+
+        <div>
+          <label htmlFor='themeDescription' className='pb-1 text-sm'>Description <span className='italic opacity-80'>(optional)</span></label>
+          <textarea id='themeDescription' placeholder='' value={theme.description} onChange={e => setTheme({ ...theme, description: e.target.value })} className='w-full p-2 mb-4 rounded-lg dark:border-gray-700 dark:bg-zinc-900 dark:text-white' />
+        </div>
+
+        <div>
+          <label htmlFor='defaultColour' className='pb-1 text-sm'>Default Colour</label>
+          <input id='defaultColour' type='color' value={theme.defaultColour} onChange={e => setTheme({ ...theme, defaultColour: e.target.value })} className='w-full h-12 p-2 mb-4 rounded-lg dark:border-gray-700 dark:bg-zinc-900 dark:text-white' />
+        </div>
       
         
 
