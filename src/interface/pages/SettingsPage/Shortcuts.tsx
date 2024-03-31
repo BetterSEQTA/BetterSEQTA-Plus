@@ -1,8 +1,8 @@
 import { useState, memo, useCallback } from "react";
-import Switch from "../components/Switch";
-import { useSettingsContext } from "../SettingsContext";
+import Switch from "../../components/Switch";
+import { useSettingsContext } from "../../SettingsContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { CustomShortcut } from "../types/AppProps";
+import { CustomShortcut } from "../../types/AppProps";
 
 function formatUrl(inputUrl: string) {
   const protocolRegex = /^(http:\/\/|https:\/\/|ftp:\/\/)/;

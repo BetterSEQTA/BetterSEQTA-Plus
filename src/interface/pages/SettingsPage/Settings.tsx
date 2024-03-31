@@ -1,9 +1,9 @@
-import Switch from '../components/Switch';
-import Slider from '../components/Slider';
-import PickerSwatch from '../components/PickerSwatch';
+import Switch from '../../components/Switch';
+import Slider from '../../components/Slider';
+import PickerSwatch from '../../components/PickerSwatch';
 
-import { SettingsList } from '../types/SettingsProps';
-import { useSettingsContext } from '../SettingsContext';
+import { SettingsList } from '../../types/SettingsProps';
+import { useSettingsContext } from '../../SettingsContext';
 
 import browser from 'webextension-polyfill'
 

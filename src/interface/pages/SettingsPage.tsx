@@ -1,11 +1,11 @@
-import TabbedContainer from './components/TabbedContainer';
-import Settings from './pages/Settings';
-import logo from './assets/betterseqta-dark-full.png';
-import logoDark from './assets/betterseqta-light-full.png';
-import { SettingsContextProvider } from './SettingsContext';
-import Shortcuts from './pages/Shortcuts';
-import Picker from './components/Picker';
-import Themes from './pages/Themes';
+import TabbedContainer from '../components/TabbedContainer';
+import Settings from './SettingsPage/Settings';
+import logo from '../../resources/icons/betterseqta-dark-full.png';
+import logoDark from '../../resources/icons/betterseqta-light-full.png';
+import { SettingsContextProvider } from '../SettingsContext';
+import Shortcuts from './SettingsPage/Shortcuts';
+import Picker from '../components/Picker';
+import Themes from './SettingsPage/Themes';
 
 import browser from 'webextension-polyfill';
 

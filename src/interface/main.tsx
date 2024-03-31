@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-import SettingsPage from './SettingsPage.js';
+import SettingsPage from './pages/SettingsPage.js';
 import browser from 'webextension-polyfill';
 import font from '../resources/fonts/IconFamily.woff'
 

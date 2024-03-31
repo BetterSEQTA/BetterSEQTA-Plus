@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
-import BackgroundSelector from '../components/BackgroundSelector';
-import ThemeSelector from '../components/ThemeSelector';
-import { listThemes } from '../hooks/ThemeManagment';
+import BackgroundSelector from '../../components/BackgroundSelector';
+import ThemeSelector from '../../components/ThemeSelector';
+import { listThemes } from '../../hooks/ThemeManagment';
 
 const Themes: FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);

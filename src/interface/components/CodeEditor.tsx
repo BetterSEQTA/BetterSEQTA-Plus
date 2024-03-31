@@ -28,7 +28,6 @@ export default function CodeEditor({ callback, initialState, height }: { callbac
         foldGutter: false,
         dropCursor: true,
         tabSize: 2,
-        
       }}
       theme={ darkMode ? githubDark : githubLight }
       placeholder={"It's time to dream up some code!"}
