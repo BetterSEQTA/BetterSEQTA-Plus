@@ -1,9 +1,9 @@
 import CodeEditor from '../components/CodeEditor';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ColorPicker from 'react-best-gradient-color-picker';
-import { SettingsContextProvider } from '../SettingsContext';
 import Accordion from '../components/Accordian';
 import Switch from '../components/Switch';
+import { sendThemeUpdate } from '../hooks/ThemeManagment';
 
 export default function ThemeCreator() {
   const [theme, setTheme] = useState<CustomTheme>({
@@ -15,15 +15,56 @@ export default function ThemeCreator() {
     CustomImages: []
   });
 
-  function saveTheme() {
-    console.log(theme);
-  }
+  const generateImageId = () => {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  };  
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageUrl = reader.result as string;
+        const imageId = generateImageId();
+        const variableName = `--custom-image-${theme.CustomImages.length}`;
+        const updatedTheme = {
+          ...theme,
+          CustomImages: [...theme.CustomImages, { id: imageId, url: imageUrl, variableName }],
+        };
+        setTheme(updatedTheme);
+        sendThemeUpdate(updatedTheme);
+      };
+      reader.readAsDataURL(file);
+    }
+  };  
+  
+  const handleRemoveImage = (imageId: string) => {
+    const updatedTheme = {
+      ...theme,
+      CustomImages: theme.CustomImages.filter((image) => image.id !== imageId),
+    };
+    setTheme(updatedTheme);
+  };
+  
+  const handleImageVariableChange = (imageId: string, variableName: string) => {
+    const updatedTheme = {
+      ...theme,
+      CustomImages: theme.CustomImages.map((image) =>
+        image.id === imageId ? { ...image, variableName } : image
+      ),
+    };
+    setTheme(updatedTheme);
+  };
 
   function CodeUpdate(value: string) {
-    console.log(value);
-    setTheme((previousTheme) => ({ ...previousTheme, CustomCSS: value }));
+    const updatedTheme = { ...theme, CustomCSS: value };
+    setTheme(updatedTheme);
   }
 
+  useEffect(() => {
+    sendThemeUpdate(theme);
+  }, [theme]);
+  
   return (
     <div className='w-full min-h-[100vh] bg-zinc-100 dark:bg-zinc-800 dark:text-white transition duration-30'>
       <div className='flex flex-col p-2'>
@@ -73,8 +114,25 @@ export default function ThemeCreator() {
         <div className='h-4'></div>
 
         <Accordion defaultOpened title='Custom Images'>
-          child
+          {theme.CustomImages.map((image, index) => (
+            <div key={image.id}>
+              <img src={image.url} alt={`Custom Image ${index + 1}`} />
+              <input
+                type='text'
+                value={image.variableName}
+                onChange={(e) => handleImageVariableChange(image.id, e.target.value)}
+                placeholder='CSS Variable Name'
+              />
+              <button onClick={() => handleRemoveImage(image.id)}>Remove</button>
+            </div>
+          ))}
+          <input
+            type='file'
+            accept='image/*'
+            onChange={handleImageUpload}
+          />
         </Accordion>
+
         
         <div className='h-4'></div>
 
@@ -86,11 +144,9 @@ export default function ThemeCreator() {
             callback={CodeUpdate} />
         </Accordion>
         
-        <button onClick={saveTheme} className='w-full px-4 py-2 my-4 text-white transition bg-blue-500 rounded dark:text-white'>
-          Save Theme
+        <button onClick={() => console.log('shared!')} className='w-full px-4 py-2 my-4 text-white transition bg-blue-500 rounded dark:text-white'>
+          Share theme
         </button>
-
-        <SettingsContextProvider><></></SettingsContextProvider>
       </div>
     </div>
   );
