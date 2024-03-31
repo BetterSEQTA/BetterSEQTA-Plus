@@ -5,7 +5,7 @@ import { less } from '@codemirror/lang-less'
 import { useCallback, useEffect, useState } from 'react';
 import './CodeEditor.css'
 
-export default function CodeEditor({ callback, initialState, height }: { callback: (value: string) => void, initialState: string, height: string }) {
+export default function CodeEditor({ callback, initialState, height, className }: { callback: (value: string) => void, initialState: string, height: string, className?: string}) {
   const [value, setValue] = useState(initialState)
   const [darkMode, setDarkMode] = useState(false)
 
@@ -31,7 +31,7 @@ export default function CodeEditor({ callback, initialState, height }: { callbac
       }}
       theme={ darkMode ? githubDark : githubLight }
       placeholder={"Happy coding!"}
-      className='rounded-lg text-[13px]'
+      className={`rounded-lg text-[13px] ${className}`}
       value={value}
       height={height}
       extensions={[less(), color]}
