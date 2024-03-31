@@ -4,5 +4,11 @@ type CustomTheme = {
   defaultColour: string;
   CanChangeColour: boolean;
   CustomCSS: string;
-  CustomImages: string[];
+  CustomImages: CustomImage[];
+}
+
+type CustomImage = {
+  id: string;
+  url: string;
+  variableName: string;
 }

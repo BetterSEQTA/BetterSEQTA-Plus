@@ -160,3 +160,61 @@ export const disableTheme = async () => {
   // Clear the selected theme from localforage
   localforage.removeItem('selectedTheme');
 };
+
+let imageData: CustomImage[] = [];
+let previousTheme: CustomTheme = null;
+
+export const UpdateThemePreview = async (updatedTheme: CustomTheme) => {
+  console.log(updatedTheme)
+
+  if (updatedTheme.CustomImages.length !== imageData.length) {
+    updatedTheme.CustomImages.forEach((image) => {
+      updateImage(image.id, image.url);
+    })
+  }
+
+  const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
+
+  // Apply custom CSS
+  let styleElement = document.getElementById('theme-preview-styles');
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.id = 'theme-preview-styles';
+    document.head.appendChild(styleElement);
+  }
+  styleElement.textContent = CustomCSS;
+
+  // Apply default color
+  if (defaultColour !== '') {
+    browser.storage.local.set({ selectedColor: defaultColour });
+  }
+
+  CustomImages.forEach((image) => {
+    // @ts-expect-error - not sure why its yelling at me :(
+    const imageUrl = imageData[image.id];
+    if (imageUrl) {
+      document.documentElement.style.setProperty(image.variableName, `url(${imageUrl})`);
+    }
+  });
+}
+
+export function updateImage(imageId: string, imageDataURI: string) {
+  // Extract base64 data from the data URI
+  const base64Index = imageDataURI.indexOf(',') + 1;
+  const imageBase64 = imageDataURI.substring(base64Index);
+
+  // Convert base64 to blob
+  const byteCharacters = atob(imageBase64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'image/png' });
+
+  // Convert blob to blob URL
+  const imageUrl = URL.createObjectURL(blob);
+
+  // @ts-expect-error - same problem 😭
+  imageData[imageId] = imageUrl;
+}

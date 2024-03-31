@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import browser from 'webextension-polyfill'
 interface ThemeList {
   themes: string[];
@@ -54,3 +55,12 @@ export const deleteTheme = async (themeName: string) => {
     }
   });
 }
+
+export const sendThemeUpdate = debounce((updatedTheme: CustomTheme) => {
+  // Send the updated theme to the content script for live preview
+  browser.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'UpdateThemePreview',
+    body: updatedTheme,
+  });
+}, 100);
