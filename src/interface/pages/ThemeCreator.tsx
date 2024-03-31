@@ -7,8 +7,11 @@ export default function ThemeCreator() {
   }
 
   return (
-    <div className='w-full h-full'>
-      <CodeEditor initialState={'.hi {}'} callback={handleSave} />
+    <div className='w-full h-[100vh] bg-zinc-100 dark:bg-zinc-800'>
+
+      <div className='p-2'>
+        <CodeEditor height='100px' initialState={'.exampleCode {}'} callback={handleSave} />
+      </div>
     </div>
   );
 }

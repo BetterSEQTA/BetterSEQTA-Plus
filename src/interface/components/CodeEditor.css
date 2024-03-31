@@ -1,0 +1,11 @@
+.cm-editor {
+  border-radius: 8px;
+}
+
+body:not(.dark) .cm-editor {
+  @apply bg-zinc-200;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
