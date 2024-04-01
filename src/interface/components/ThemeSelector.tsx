@@ -1,29 +1,25 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
 import { listThemes, deleteTheme, setTheme, disableTheme } from '../hooks/ThemeManagment';
 import { ThemeCover } from './ThemeCover';
 import Browser from 'webextension-polyfill';
 import { CustomTheme } from '../types/CustomThemes';
 
 interface ThemeSelectorProps {
-  setSelectedType: React.Dispatch<React.SetStateAction<'background' | 'theme'>>;
-  selectedType: 'background' | 'theme';
   isEditMode: boolean;
+  ref: React.Ref<any>;
 }
 
-const ThemeSelector: React.FC<ThemeSelectorProps> = ({
-  setSelectedType,
-  selectedType,
-  isEditMode,
-}) => {
+const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> & RefAttributes<any>> = forwardRef(({ isEditMode = false }, ref) => {
   const [themes, setThemes] = useState<Omit<CustomTheme, 'CustomImages'>[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedType === 'background') {
+  useImperativeHandle(ref, () => ({
+    disableTheme: async () => {
+      await disableTheme();
       setSelectedThemeId(null);
     }
-  }, [selectedType]);
+  }));
 
   useEffect(() => {
     const fetchThemes = async () => {
@@ -49,17 +45,15 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       if (themeId === selectedThemeId) {
         await disableTheme();
         setSelectedThemeId(null);
-        setSelectedType('background');
       } else {
         const selectedTheme = themes.find((theme) => theme.id === themeId);
         if (selectedTheme) {
           await setTheme(selectedTheme.id);
           setSelectedThemeId(themeId);
-          setSelectedType('theme');
         }
       }
     },
-    [selectedThemeId, themes, setSelectedType]
+    [selectedThemeId, themes]
   );
 
   const handleThemeDelete = useCallback(
@@ -69,13 +63,12 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
         setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
         if (themeId === selectedThemeId) {
           setSelectedThemeId(null);
-          setSelectedType('background');
         }
       } catch (error) {
         console.error('Error deleting theme:', error);
       }
     },
-    [selectedThemeId, setSelectedType]
+    [selectedThemeId]
   );
 
   if (isLoading) {
@@ -83,9 +76,9 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   }
 
   return (
-    <div className="my-2">
+    <div className="my-3">
       <h2 className="pb-2 text-lg font-bold">Themes</h2>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         {themes.map((theme) => (
           <ThemeCover
             key={theme.id}
@@ -107,6 +100,6 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default ThemeSelector;

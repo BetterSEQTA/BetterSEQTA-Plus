@@ -2,7 +2,6 @@ import { ChangeEvent, memo, useEffect, useState } from "react";
 import { downloadPresetBackground, openDB, readAllData, writeData } from "../hooks/BackgroundDataLoader";
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
-import { disableTheme } from "../hooks/ThemeManagment";
 import browser from "webextension-polyfill";
 
 // Custom Types and Interfaces
@@ -17,9 +16,8 @@ export interface Background {
 }
 
 interface BackgroundSelectorProps {
-  selectedType: "background" | "theme";
-  setSelectedType: (type: "background" | "theme") => void;
   isEditMode: boolean;
+  disableTheme: () => void;
 }
 
 async function GetTheme() {
@@ -31,7 +29,7 @@ async function SetTheme(theme: string) {
   await browser.storage.local.set({ theme });
 }
 
-function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: BackgroundSelectorProps) {
+function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProps) {
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [selectedBackground, setSelectedBackground] = useState<string | null>();
   const [downloadedPresetIds, setDownloadedPresetIds] = useState<string[]>([]);
@@ -106,13 +104,11 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
   };
   
   const selectBackground = (fileId: string): void => {
-    if (selectedType == 'background' && selectedBackground == fileId) {
+    if (selectedBackground == fileId) {
       selectNoBackground();
       return;
     }
 
-    disableTheme();
-    setSelectedType('background');
     setSelectedBackground(fileId);
     SetTheme(fileId);
   };
@@ -131,8 +127,6 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
   };  
 
   const selectNoBackground = (): void => {
-    setSelectedType('background');
-    disableTheme();
     setSelectedBackground(null);
     SetTheme('');
   };
@@ -146,9 +140,10 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
   return (
     <>
     <button
-      disabled={selectedBackground == null && selectedType != 'theme' ? true : false}
-      className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null && selectedType != 'theme' ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`} onClick={() => selectNoBackground()}>
-    {selectedBackground == null && selectedType != 'theme' ? 'No Background' : 'Remove Background'}
+      disabled={selectedBackground == null ? true : false}
+      className={`w-full px-4 py-2 mb-4 dark:text-white transition ${selectedBackground == null ? 'dark:bg-zinc-900 bg-zinc-100' : 'bg-blue-500 text-white'} rounded`}
+      onClick={() => { disableTheme(), selectNoBackground() }}>
+        {selectedBackground == null ? 'No Theme' : 'Remove Theme'}
     </button>
 
     {BackgroundsBlocked && (
@@ -173,7 +168,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
         {backgrounds.filter(bg => bg.type === 'image').map(bg => (
           <div key={bg.id}
             onClick={() => selectBackground(bg.id)} 
-            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
+            className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
             {isEditMode && (
               <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
                   onClick={() => deleteBackground(bg.id)}>
@@ -202,7 +197,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
             </div>
             <img 
               className="absolute top-0 object-cover w-full h-full rounded-xl" 
-              src={bg.isPreset ? bg.previewUrl : bg.url}  // Use preview for preset backgrounds
+              src={bg.isPreset ? bg.previewUrl : bg.url}
               alt="swatch" />
           </button>
         ))}
@@ -219,7 +214,7 @@ function BackgroundSelector({ selectedType, setSelectedType, isEditMode }: Backg
           <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
         {backgrounds.filter(bg => bg.type === 'video').map(bg => (
-          <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id && selectedType === "background" ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
+          <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
             {isEditMode && (
               <div className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
                   onClick={() => deleteBackground(bg.id)}>
