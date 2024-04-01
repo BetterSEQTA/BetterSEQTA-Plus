@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
-import { UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, saveTheme, setTheme } from '../../ui/Themes';
+import { UpdateImageData, UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, saveTheme, setTheme } from '../../ui/Themes';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
@@ -27,6 +27,11 @@ export class MessageHandler {
           UpdateThemePreview(request.body);
           sendResponse({ status: 'success' });
         }
+        break;
+
+      case 'UpdateThemeImageData':
+        UpdateImageData(request.body);
+        sendResponse({ status: 'success' });
         break;
   
       case 'SaveTheme':

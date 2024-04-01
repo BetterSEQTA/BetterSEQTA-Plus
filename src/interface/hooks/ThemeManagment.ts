@@ -62,39 +62,43 @@ export const deleteTheme = async (themeID: string) => {
   });
 }
 
-export const sendThemeUpdate = debounce((updatedTheme: CustomTheme, saveTheme?: boolean) => {
+export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean) => {
   // Create a copy of the updatedTheme object
   const updatedThemeCopy: CustomTheme = { ...updatedTheme };
 
   saveTheme = saveTheme || false;
 
-  // Convert image blobs to base64
-  const base64ConversionPromises = updatedThemeCopy.CustomImages.map(async (image) => {
-    const base64 = await blobToBase64(image.blob);
-    return { ...image, base64 };
+  // Send the updated theme (without image data) to the content script for live preview
+  browser.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'UpdateThemePreview',
+    body: {
+      ...updatedThemeCopy,
+      CustomImages: updatedThemeCopy.CustomImages.map(image => ({
+        id: image.id,
+        variableName: image.variableName,
+      })),
+    },
+    save: saveTheme,
   });
 
-  Promise.all(base64ConversionPromises)
-    .then((convertedImages) => {
-      // Update the CustomImages array with the converted base64 images
-      updatedThemeCopy.CustomImages = convertedImages;
-
-      // Send the updated theme to the content script for live preview
-      browser.runtime.sendMessage({
-        type: 'currentTab',
-        info: 'UpdateThemePreview',
-        body: updatedThemeCopy,
-        save: saveTheme,
-      });
-
-      if (saveTheme) {
-        browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' })
-      }
-    })
-    .catch((error) => {
-      console.error('Error converting image blobs to base64:', error);
+  // Send image data separately
+  updatedThemeCopy.CustomImages.forEach(async (image) => {
+    const base64 = await blobToBase64(image.blob);
+    browser.runtime.sendMessage({
+      type: 'currentTab',
+      info: 'UpdateThemeImageData',
+      body: {
+        id: image.id,
+        base64,
+      },
     });
-}, 100);
+  });
+
+  if (saveTheme) {
+    browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' });
+  }
+};
 
 // Helper function to convert a Blob to base64
 const blobToBase64 = (blob: Blob): Promise<string> => {
