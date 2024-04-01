@@ -56,6 +56,18 @@ html {
   background-color: rgb(28 28 30);
 }
 
+.themeCloseButton {
+  position: absolute !important;
+  color: var(--text-primary) !important;
+  font-size: x-large !important;
+  top: 5px;
+  right: 5px;
+  border-radius: 5rem !important;
+  padding: 8px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
