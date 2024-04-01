@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
 import localforage from 'localforage';
-import { CustomImageBase64, CustomTheme, CustomThemeBase64, ThemeList } from '../../interface/types/CustomThemes';
+import { CustomImage, CustomImageBase64, CustomTheme, CustomThemeBase64, ThemeList } from '../../interface/types/CustomThemes';
 
 const imageData: Record<string, { url: string; variableName: string }> = {};
 
@@ -95,7 +95,7 @@ export const saveTheme = async (theme: CustomThemeBase64) => {
   }
 };
 
-export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64) => {
+export const UpdateThemePreview = async (updatedTheme: Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] }) => {
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
   // Update image data
@@ -121,7 +121,7 @@ export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64) => {
     }
 
     imageData[image.id] = {
-      url: updateImage(image),
+      url: '',
       variableName: image.variableName,
     };
   });
@@ -133,14 +133,16 @@ export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64) => {
   if (defaultColour !== '') {
     browser.storage.local.set({ selectedColor: defaultColour });
   }
+};
 
-  // Apply custom images
-  CustomImages.forEach((image) => {
-    const imageUrl = imageData[image.id]?.url;
-    if (imageUrl) {
-      document.documentElement.style.setProperty('--' + image.variableName, `url(${imageUrl})`);
-    }
-  });
+export const UpdateImageData = (imageData2: { id: string; base64: string }) => {
+  const { id, base64 } = imageData2;
+
+  if (imageData[id]) {
+    imageData[id].url = base64;
+    const { variableName } = imageData[id];
+    document.documentElement.style.setProperty('--' + variableName, `url(${base64})`);
+  }
 };
 
 function applyCustomCSS(customCSS: string) {

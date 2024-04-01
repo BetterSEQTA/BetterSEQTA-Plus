@@ -26,8 +26,6 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       try {
         const { themes, selectedTheme } = await listThemes();
 
-        console.log(await listThemes());
-
         setThemes(themes);
         setSelectedThemeId(selectedTheme ? selectedTheme : null);
       } catch (error) {
