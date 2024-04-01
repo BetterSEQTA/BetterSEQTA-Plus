@@ -2,9 +2,13 @@ import { FC, createRef, useState } from 'react';
 import BackgroundSelector from '../../components/BackgroundSelector';
 import ThemeSelector from '../../components/ThemeSelector';
 
+type ThemeSelectorRef = {
+  disableTheme: () => void;
+};
+
 const Themes: FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const themeSelectorRef = createRef();
+  const themeSelectorRef = createRef<ThemeSelectorRef>(); // Add type annotation here
 
   const disableTheme = async () => {
     themeSelectorRef?.current?.disableTheme();
