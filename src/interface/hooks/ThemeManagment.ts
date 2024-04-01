@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import browser from 'webextension-polyfill'
 import { CustomTheme, ThemeList } from '../types/CustomThemes';
 
