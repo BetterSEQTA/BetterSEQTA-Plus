@@ -5,9 +5,12 @@ import Accordion from '../components/Accordian';
 import Switch from '../components/Switch';
 import { sendThemeUpdate } from '../hooks/ThemeManagment';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import localforage from 'localforage';
+import { v4 as uuidv4 } from 'uuid';
 
-function ThemeCreator() {
+function ThemeCreator({ themeID }: { themeID?: string }) {
   const [theme, setTheme] = useState<CustomTheme>({
+    id: uuidv4(),
     name: '',
     description: '',
     defaultColour: '',
@@ -16,28 +19,38 @@ function ThemeCreator() {
     CustomImages: []
   });
 
+  useEffect(() => {
+    if (themeID) {
+      localforage.getItem(themeID).then((theme) => {
+        if (theme) {
+          setTheme(theme as CustomTheme);
+        }
+      });
+    }
+  });
+
   const generateImageId = () => {
     return '_' + Math.random().toString(36).substr(2, 9);
-  };  
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        const imageUrl = reader.result as string;
+      reader.onload = async () => {
+        const imageBlob = await fetch(reader.result as string).then(res => res.blob());
         const imageId = generateImageId();
         const variableName = `custom-image-${theme.CustomImages.length}`;
         const updatedTheme = {
           ...theme,
-          CustomImages: [...theme.CustomImages, { id: imageId, url: imageUrl, variableName }],
+          CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName }],
         };
         setTheme(updatedTheme);
         sendThemeUpdate(updatedTheme);
       };
       reader.readAsDataURL(file);
     }
-  };  
+  };
   
   const handleRemoveImage = (imageId: string) => {
     const updatedTheme = {
@@ -64,9 +77,25 @@ function ThemeCreator() {
     }));
   }
 
-  const saveTheme = () => {
-    // Save the theme to the database
-  }
+  const saveTheme = async () => {
+    try {
+      await localforage.setItem(theme.id, theme);
+      await localforage.getItem('customThemes').then((themes: unknown) => {
+        const themeList = themes as string[] | null;
+        if (themeList) {
+          if (!themeList.includes(theme.id)) {
+            themeList.push(theme.id);
+            localforage.setItem('customThemes', themeList);
+          }
+        } else {
+          localforage.setItem('customThemes', [theme.id]);
+        }
+      });
+      console.log('Theme saved successfully!');
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  };
 
   useEffect(() => {
     sendThemeUpdate(theme);
@@ -131,7 +160,7 @@ function ThemeCreator() {
         {theme.CustomImages.map((image) => (
           <div key={image.id} className="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-900">
             <div className="flex-1 h-full ">
-              <img src={image.url} alt={image.variableName} className="object-contain h-full rounded" />
+              <img src={URL.createObjectURL(image.blob)} alt={image.variableName} className="object-contain h-full rounded" />
             </div>
             <input
               type="text"
