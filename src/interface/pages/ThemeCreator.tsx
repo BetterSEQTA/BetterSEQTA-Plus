@@ -4,7 +4,7 @@ import ColorPicker from 'react-best-gradient-color-picker';
 import Accordion from '../components/Accordian';
 import Switch from '../components/Switch';
 import { sendThemeUpdate } from '../hooks/ThemeManagment';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import localforage from 'localforage';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomTheme } from '../types/CustomThemes';
@@ -160,12 +160,9 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
           </div>
         ))}
 
-        <div className="relative flex justify-center w-full h-8 overflow-hidden transition place-items-center rounded-xl bg-zinc-100 dark:bg-zinc-900">
-          <div className="flex items-center justify-center text-3xl font-bold transition dark:text-white font-IconFamily dark:hover:text-zinc-200 hover:text-zinc-800">
-            {/*  Plus icon */}
-            
-          </div>
-          <span className='gap-2 dark:text-white'>Add image</span>
+        <div className="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-900">
+          <PlusIcon height={18} />
+          <span className='dark:text-white'>Add image</span>
           <input type="file" accept='image/*' onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
 
@@ -178,8 +175,10 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
             initialState={theme.CustomCSS}
             callback={CodeUpdate} />
         </Accordion>
+
+        <Divider />
         
-        <button onClick={saveTheme} className='w-full px-4 py-2 my-4 text-white transition bg-blue-500 rounded dark:text-white'>
+        <button disabled={ theme.name === '' } onClick={saveTheme} className='w-full px-4 py-2 text-white transition bg-blue-500 rounded-lg dark:disabled:bg-zinc-700 disabled:bg-zinc-100 disabled:cursor-not-allowed dark:text-white'>
           Save theme
         </button>
       </div>
