@@ -1,4 +1,5 @@
 type CustomTheme = {
+  id: string;
   name: string;
   description: string;
   defaultColour: string;
@@ -9,6 +10,6 @@ type CustomTheme = {
 
 type CustomImage = {
   id: string;
-  url: string;
+  blob: Blob;
   variableName: string;
 }
