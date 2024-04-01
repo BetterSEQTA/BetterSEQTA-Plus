@@ -9,7 +9,7 @@ const Themes: FC = () => {
 
   useEffect(() => {
     listThemes().then(themes => {
-      if (themes.selectedTheme) {
+      if (themes?.selectedTheme) {
         setSelectedType('theme');
       } else {
         setSelectedType('background');
@@ -18,12 +18,12 @@ const Themes: FC = () => {
   }, [])
 
   return (
-  <div>
+  <div className="px-0.5">
       <button className="absolute top-12 z-20 right-0 p-2 text-[0.8rem] text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
         {isEditMode ? 'Done' : 'Edit'}
       </button>
     <BackgroundSelector setSelectedType={setSelectedType} selectedType={selectedType} isEditMode={isEditMode} />
-    <ThemeSelector setSelectedType={setSelectedType} selectedType={selectedType} isEditMode={isEditMode} />
+    <ThemeSelector selectedType={selectedType} setSelectedType={setSelectedType} isEditMode={isEditMode} />
   </div>
   );
 };

@@ -1,169 +1,97 @@
 import browser from 'webextension-polyfill'
 import localforage from 'localforage';
-
-let currentThemeClass = '';
-
-// Utility function to fetch and parse JSON
-const fetchJSON = async (url: any) => {
-  const res = await fetch(url, {cache: 'no-store'});
-  return await res.json();
-};
-
-// Utility function to fetch and parse text
-const fetchText = async (url: any) => {
-  const res = await fetch(url);
-  return await res.text();
-};
-
-// Check if the theme already exists in IndexedDB
-const themeExistsInDB = async (themeName: any) => {
-  return (await localforage.getItem(`css_${themeName}`)) !== null;
-};
-
-// Fetch theme details (CSS, images, className, darkMode, defaultColour) from a given URL
-const fetchThemeJSON = async (url: any) => {
-  const { css, images, className, darkMode, defaultColour } = await fetchJSON(url);
-  const cssText = await fetchText(css);
-  return { css: cssText, images, className, darkMode, defaultColour };
-};
-
-// Save individual image to IndexedDB
-const saveImageToDB = async (themeName: any, cssVar: any, imageUrl: any) => {
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error(response.statusText);
-    const blob = await response.blob();
-    await localforage.setItem(`images_${themeName}_${cssVar}`, blob);
-  } catch (error) {
-    console.error(`Failed to save image for ${cssVar}: ${error}`);
-  }
-};
-
-// Save theme details to storage via localForage
-const saveToIndexedDB = async (theme: any, themeName: any) => {
-  await localforage.setItem(`css_${themeName}`, theme);
-  await Promise.all(Object.entries(theme.images).map(([cssVar, imageUrl]) => saveImageToDB(themeName, cssVar, imageUrl)));
-};
-
-declare global {
-  interface Window {
-      currentThemeStyle: any;
-      currentThemeClass: any;
-  }
-}
-
-// Apply theme from storage via localForage to document, including dark mode and default color
-const applyTheme = async (themeName: any) => {
-  const { css, className, images, darkMode, defaultColour }: any = await localforage.getItem(`css_${themeName}`);
-  
-  const newStyle = document.createElement('style');
-  newStyle.innerHTML = css;
-  document.head.appendChild(newStyle);
-  
-  if (window.currentThemeStyle) {
-    document.head.removeChild(window.currentThemeStyle);
-  }
-
-  window.currentThemeStyle = newStyle;
-
-  if (window.currentThemeClass) {
-    document.body.classList.remove(window.currentThemeClass);
-  }
-  if (className) {
-    document.body.classList.add(className);
-    window.currentThemeClass = className;
-  }
-
-  if (images) {
-    await Promise.all(
-      Object.keys(images).map(async (cssVar) => {
-        const imageData: any = await localforage.getItem(`images_${themeName}_${cssVar}`);
-        const objectURL = URL.createObjectURL(imageData);
-        document.documentElement.style.setProperty(cssVar, `url(${objectURL})`);
-      })
-    );
-  }
-
-  browser.storage.local.set({ DarkMode: darkMode, selectedColor: defaultColour });
-};
-
-export const listThemes = async () => {
-  const themes = await localforage.keys();
-  return {
-    themes: themes.filter((key) => key.startsWith('css_')).map((key) => key.replace('css_', '')),
-    selectedTheme: await localforage.getItem('selectedTheme')
-  };
-};
-
-export const downloadTheme = async (themeName: any, themeUrl: any) => {
-  const themeData = await fetchThemeJSON(themeUrl);
-  await saveToIndexedDB(themeData, themeName);
-  await setTheme(themeName, themeUrl);
-};
-
-export const deleteTheme = async (themeName: any) => {
-  const currentTheme = await localforage.getItem('selectedTheme');
-  if (currentTheme === themeName) {
-    await disableTheme();
-  }
-  await localforage.removeItem(`css_${themeName}`);
-  await Promise.all(
-    (await localforage.keys()).filter((key) => key.startsWith(`images_${themeName}`)).map((key) => localforage.removeItem(key))
-  );
-};
-
-export const setTheme = async (themeName: any, themeUrl: any) => {
-  if (!(await themeExistsInDB(themeName))) {
-    await downloadTheme(themeName, themeUrl);
-  }
-
-  await localforage.setItem('selectedTheme', themeName);
-  await applyTheme(themeName).catch((error) => {
-    console.error(`Failed to apply theme: ${error}`);
-  });
-};
-
-export const enableCurrentTheme = async () => {
-  const currentTheme = await localforage.getItem('selectedTheme');
-  
-  if (currentTheme) {
-    await applyTheme(currentTheme).catch((error) => {
-      console.error(`Failed to apply current theme: ${error}`);
-    });
-  }
-};
-
-export const disableTheme = async () => {
-  // Remove current theme's style if it exists
-  if (window.currentThemeStyle) {
-    document.head.removeChild(window.currentThemeStyle);
-    window.currentThemeStyle = null;
-  }
-
-  // Remove current theme's class if it exists
-  if (currentThemeClass) {
-    document.body.classList.remove(currentThemeClass);
-    currentThemeClass = '';
-  }
-
-  // Remove any applied image URLs from the root element
-  const currentTheme = await localforage.getItem('selectedTheme');
-  if (currentTheme) {
-    const themeData: any = await localforage.getItem(`css_${currentTheme}`);
-    if (themeData && themeData.images) {
-      Object.keys(themeData.images).forEach(cssVar => {
-        document.documentElement.style.removeProperty(cssVar);
-      });
-    }
-  }
-
-  // Clear the selected theme from localforage
-  localforage.removeItem('selectedTheme');
-};
+import { CustomImageBase64, CustomTheme, CustomThemeBase64, ThemeList } from '../../interface/types/CustomThemes';
 
 const imageData: Record<string, { url: string; variableName: string }> = {};
 
-export const UpdateThemePreview = async (updatedTheme: CustomTheme) => {
+export const enableCurrentTheme = async () => {
+  const themeId = await browser.storage.local.get('selectedTheme') as { selectedTheme: string };
+  if (themeId.selectedTheme) {
+    const theme = await localforage.getItem(themeId.selectedTheme) as CustomTheme;
+    if (theme) {
+      await applyTheme(theme);
+    }
+  }
+}
+
+export const deleteTheme = async (themeId: string) => {
+  try {
+    await localforage.removeItem(themeId);
+    const themeIds = await localforage.getItem('customThemes') as string[] | null;
+    if (themeIds) {
+      const updatedThemeIds = themeIds.filter((id) => id !== themeId);
+      await localforage.setItem('customThemes', updatedThemeIds);
+    }
+    console.log('Theme deleted successfully!');
+  } catch (error) {
+    console.error('Error deleting theme:', error);
+  }
+};
+
+export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
+  try {
+    const themeIds = await localforage.getItem('customThemes') as string[] | null;
+    console.log('Available themes:', themeIds);
+    if (themeIds) {
+      const themes = await Promise.all(
+        themeIds.map(async (id) => {
+          const theme = await localforage.getItem(id) as CustomTheme;
+          const { CustomImages, ...themeWithoutImages } = theme;
+          return themeWithoutImages;
+        })
+      );
+      
+      const selectedTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string };
+
+      return { themes, selectedTheme: selectedTheme.selectedTheme ? selectedTheme.selectedTheme : '' };
+    }
+    return {
+      themes: [],
+      selectedTheme: '',
+    };
+  } catch (error) {
+    console.error('Error getting available themes:', error);
+    return {
+      themes: [],
+      selectedTheme: ''
+    };
+  }
+};
+
+export const saveTheme = async (theme: CustomThemeBase64) => {
+  try {
+    const updatedTheme: CustomTheme = {
+      ...theme,
+      CustomImages: await Promise.all(
+        theme.CustomImages.map(async (image) => ({
+          id: image.id,
+          blob: await fetch(image.url).then((res) => res.blob()),
+          variableName: image.variableName,
+        }))
+      ),
+    };
+
+    console.log('Theme to save:', updatedTheme)
+
+    await localforage.setItem(updatedTheme.id, updatedTheme);
+    await localforage.getItem('customThemes').then((themes: unknown) => {
+      const themeList = themes as string[] | null;
+      if (themeList) {
+        if (!themeList.includes(updatedTheme.id)) {
+          themeList.push(updatedTheme.id);
+          localforage.setItem('customThemes', themeList);
+        }
+      } else {
+        localforage.setItem('customThemes', [updatedTheme.id]);
+      }
+    });
+    console.log('Theme saved successfully!');
+  } catch (error) {
+    console.error('Error saving theme:', error);
+  }
+};
+
+export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64) => {
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
   // Update image data
@@ -225,7 +153,7 @@ function removeImageFromDocument(variableName: string) {
   document.documentElement.style.removeProperty('--' + variableName);
 }
 
-export function updateImage(image: CustomImage) {
+export function updateImage(image: CustomImageBase64) {
   // Extract base64 data from the data URI
   const base64Index = image.url.indexOf(',') + 1;
   const imageBase64 = image.url.substring(base64Index);
@@ -243,4 +171,75 @@ export function updateImage(image: CustomImage) {
   const imageUrl = URL.createObjectURL(blob);
 
   return imageUrl;
+}
+
+const applyTheme = async (theme: CustomTheme) => {
+  const { CustomCSS, CustomImages, defaultColour } = theme;
+
+  // Apply custom CSS
+  applyCustomCSS(CustomCSS);
+
+  // Apply default color
+  if (defaultColour !== '') {
+    browser.storage.local.set({ selectedColor: defaultColour });
+  }
+
+  // Apply custom images
+  CustomImages.forEach((image) => {
+    const imageUrl = URL.createObjectURL(image.blob);
+    document.documentElement.style.setProperty('--' + image.variableName, `url(${imageUrl})`);
+  });
+};
+
+const removeTheme = (theme: CustomTheme) => {
+  // Remove custom CSS
+  const styleElement = document.getElementById('theme-preview-styles');
+  if (styleElement) {
+    styleElement.parentNode?.removeChild(styleElement);
+  }
+
+  // Reset default color
+  //browser.storage.local.set({ selectedColor: '' });
+
+  // Remove custom images
+  const customImageVariables = theme.CustomImages.map((image) => image.variableName);
+  customImageVariables.forEach((variableName) => {
+    document.documentElement.style.removeProperty('--' + variableName);
+  });
+};
+
+export const setTheme = async (themeId: string) => {
+  try {
+    const enabledTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string };
+    const theme = await localforage.getItem(themeId) as CustomTheme;
+
+    // Remove the currently enabled theme
+    if (enabledTheme.selectedTheme) {
+      const currentTheme = await localforage.getItem(enabledTheme.selectedTheme) as CustomTheme;
+      if (currentTheme) {
+        removeTheme(currentTheme);
+      }
+    }
+
+    await applyTheme(theme);
+    await browser.storage.local.set({ selectedTheme: themeId });
+
+  } catch (error) {
+    console.error('Error setting theme:', error);
+  }
+}
+
+export const disableTheme = async () => {
+  try {
+    const enabledTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string };
+    if (enabledTheme.selectedTheme) {
+      const theme = await localforage.getItem(enabledTheme.selectedTheme) as CustomTheme;
+      if (theme) {
+        removeTheme(theme);
+      }
+    }
+    await browser.storage.local.set({ selectedTheme: '' });
+  } catch (error) {
+    console.error('Error disabling theme:', error);
+  }
 }

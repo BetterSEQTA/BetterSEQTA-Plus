@@ -7,6 +7,7 @@ import { sendThemeUpdate } from '../hooks/ThemeManagment';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import localforage from 'localforage';
 import { v4 as uuidv4 } from 'uuid';
+import { CustomTheme } from '../types/CustomThemes';
 
 function ThemeCreator({ themeID }: { themeID?: string }) {
   const [theme, setTheme] = useState<CustomTheme>({
@@ -77,24 +78,8 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
     }));
   }
 
-  const saveTheme = async () => {
-    try {
-      await localforage.setItem(theme.id, theme);
-      await localforage.getItem('customThemes').then((themes: unknown) => {
-        const themeList = themes as string[] | null;
-        if (themeList) {
-          if (!themeList.includes(theme.id)) {
-            themeList.push(theme.id);
-            localforage.setItem('customThemes', themeList);
-          }
-        } else {
-          localforage.setItem('customThemes', [theme.id]);
-        }
-      });
-      console.log('Theme saved successfully!');
-    } catch (error) {
-      console.error('Error saving theme:', error);
-    }
+  const saveTheme = () => {
+    sendThemeUpdate(theme, true);
   };
 
   useEffect(() => {
