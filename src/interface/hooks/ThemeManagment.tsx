@@ -86,6 +86,10 @@ export const sendThemeUpdate = debounce((updatedTheme: CustomTheme, saveTheme?: 
         body: updatedThemeCopy,
         save: saveTheme,
       });
+
+      if (saveTheme) {
+        browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' })
+      }
     })
     .catch((error) => {
       console.error('Error converting image blobs to base64:', error);
