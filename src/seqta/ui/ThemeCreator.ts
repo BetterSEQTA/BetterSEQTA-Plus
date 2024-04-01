@@ -18,6 +18,13 @@ export function OpenThemeCreator() {
   const mainContent = document.querySelector('#container') as HTMLDivElement;
   if (mainContent) mainContent.style.width = `calc(100% - ${width})`;
 
+  // close button
+  const closeButton = document.createElement('button');
+  closeButton.classList.add('themeCloseButton');
+  closeButton.textContent = '×';
+  closeButton.addEventListener('click', CloseThemeCreator);
+  document.body.appendChild(closeButton);
+
   const resizeBar = document.createElement('div');
   resizeBar.classList.add('resizeBar');
   resizeBar.style.right = '307.5px';
@@ -66,11 +73,13 @@ export function OpenThemeCreator() {
  */
 export function CloseThemeCreator() {
   const themeCreatorIframe = document.getElementById('themeCreatorIframe');
+  const closeButton = document.querySelector('.themeCloseButton') as HTMLButtonElement;
+  const resizeBar = document.querySelector('.resizeBar') as HTMLDivElement;
+  
   if (themeCreatorIframe) themeCreatorIframe.remove();
+  if (closeButton) closeButton.remove();
+  if (resizeBar) resizeBar.remove();
 
   const mainContent = document.querySelector('#container') as HTMLDivElement;
   if (mainContent) mainContent.style.width = '100%';
-
-  const resizeBar = document.querySelector('.resizeBar') as HTMLDivElement;
-  if (resizeBar) resizeBar.remove();
 }
