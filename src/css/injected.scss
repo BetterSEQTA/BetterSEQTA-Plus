@@ -52,6 +52,10 @@ html {
   }
 }
 
+.dark .resizeBar {
+  background-color: rgb(28 28 30);
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
