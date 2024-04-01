@@ -6,7 +6,7 @@ import Switch from '../components/Switch';
 import { sendThemeUpdate } from '../hooks/ThemeManagment';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-export default function ThemeCreator() {
+function ThemeCreator() {
   const [theme, setTheme] = useState<CustomTheme>({
     name: '',
     description: '',
@@ -176,3 +176,5 @@ export default function ThemeCreator() {
 function Divider() {
   return <div className='w-full h-0.5 my-4 bg-zinc-200 dark:bg-zinc-700'></div>;
 }
+
+export default ThemeCreator;
