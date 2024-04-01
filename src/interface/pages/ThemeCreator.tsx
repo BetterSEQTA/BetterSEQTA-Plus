@@ -78,8 +78,8 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
     }));
   }
 
-  const saveTheme = () => {
-    sendThemeUpdate(theme, true);
+  const saveTheme = async () => {
+    sendThemeUpdate(theme, true)
   };
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
 import { UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, saveTheme, setTheme } from '../../ui/Themes';
-import { OpenThemeCreator } from '../../ui/ThemeCreator';
+import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
   constructor() {
@@ -68,6 +68,11 @@ export class MessageHandler {
       case 'OpenThemeCreator':
         OpenThemeCreator();
         closeSettings();
+        sendResponse({ status: 'success' });
+        break;
+
+      case 'CloseThemeCreator':
+        CloseThemeCreator();
         sendResponse({ status: 'success' });
         break;
   
