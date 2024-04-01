@@ -5,6 +5,8 @@ import browser from "webextension-polyfill";
  * @returns void
  */
 export function OpenThemeCreator() {
+  CloseThemeCreator();
+  
   const width = '310px';
 
   const themeCreatorIframe: HTMLIFrameElement = document.createElement('iframe');
