@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
-import { deleteTheme, disableTheme, downloadTheme, listThemes, setTheme, UpdateThemePreview } from '../../ui/Themes';
+import { UpdateThemePreview, deleteTheme, disableTheme, enableCurrentTheme, getAvailableThemes, saveTheme, setTheme } from '../../ui/Themes';
 import { OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
@@ -10,59 +10,69 @@ export class MessageHandler {
   }
   routeMessage(request: any, _sender: any, sendResponse: any) {
     switch (request.info) {
+      case 'EditSidebar':
+        this.editSidebar();
+        closeSettings();
+        sendResponse({ status: 'success' });
+        break;
+  
+      case 'UpdateThemePreview':
+        if (request?.save == true) {
+          saveTheme(request.body).then(() => {
+            setTheme(request.body.themeID).then(() => {
+              sendResponse({ status: 'success' });
+            });
+          });
+        } else {
+          UpdateThemePreview(request.body);
+          sendResponse({ status: 'success' });
+        }
+        break;
+  
+      case 'SaveTheme':
+        saveTheme(request.body).then(() => {
+          sendResponse({ status: 'success' });
+        });
+        break;
+  
+      case 'SetTheme':
+        setTheme(request.body.themeID).then(() => {
+          sendResponse({ status: 'success' });
+        });
+        break;
+  
+      case 'DisableTheme':
+        disableTheme().then(() => {
+          sendResponse({ status: 'success' });
+        });
+        break;
+  
+      case 'DeleteTheme':
+        deleteTheme(request.body.themeID).then(() => {
+          sendResponse({ status: 'success' });
+        });
+        break;
 
-    case 'EditSidebar':
-      this.editSidebar();
-      closeSettings();
-      sendResponse({ status: 'success' });
-      break;
-
-    /* Theme related */
-    case 'SetTheme':
-      console.log(request);
-      setTheme(request.body.themeName, request.body.themeURL).then(() => {
+      case 'ListThemes':
+        getAvailableThemes().then((themes) => {
+          sendResponse(themes);
+        });
+        return true;
+  
+      case 'OpenChangelog':
+        OpenWhatsNewPopup();
+        closeSettings();
         sendResponse({ status: 'success' });
-      });
-      return true;
-    case 'DownloadTheme':
-      downloadTheme(request.body.themeName, request.body.themeURL).then(() => {
+        break;
+  
+      case 'OpenThemeCreator':
+        OpenThemeCreator();
+        closeSettings();
         sendResponse({ status: 'success' });
-      });
-      return true;
-    case 'ListThemes':
-      listThemes().then((response) => {
-        sendResponse(response);
-      });
-      return true;
-    case 'DisableTheme':
-      disableTheme().then(() => {
-        sendResponse({ status: 'success' });
-      });
-      return true;
-    case 'DeleteTheme':
-      deleteTheme(request.body.themeName).then(() => {
-        sendResponse({ status: 'success' });
-      });
-      return true;
-    case 'UpdateThemePreview':
-      UpdateThemePreview(request.body).then(() => {
-        sendResponse({ status: 'success' });
-      });
-      break;
-    case 'OpenChangelog':
-      OpenWhatsNewPopup();
-      closeSettings();
-      sendResponse({ status: 'success' });
-      break;
-    case 'OpenThemeCreator':
-      OpenThemeCreator();
-      closeSettings();
-      sendResponse({ status: 'success' });
-      break;
-    
-    default:
-      console.log('Unknown request info:', request.info);
-    
+        break;
+  
+      default:
+        console.log('Unknown request info:', request.info);      
     }
   }
 

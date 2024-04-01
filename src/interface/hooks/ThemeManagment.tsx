@@ -1,9 +1,6 @@
 import { debounce } from 'lodash';
 import browser from 'webextension-polyfill'
-interface ThemeList {
-  themes: string[];
-  selectedTheme: string;
-}
+import { CustomTheme, ThemeList } from '../types/CustomThemes';
 
 export const downloadTheme = async (themeName: string, themeURL: string) => {
   // send message to the background script
@@ -17,23 +14,32 @@ export const downloadTheme = async (themeName: string, themeURL: string) => {
   });
 }
 
-export const setTheme = async (themeName: string, themeURL: string) => {
+export const setTheme = async (themeID: string) => {
   // send message to the background script
   await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'SetTheme',
     body: {
-      themeName: themeName,
-      themeURL: themeURL
+      themeID: themeID
     }
   });
 }
 
-export const listThemes = async () => {
+export const listThemes = async (): Promise<ThemeList> => {
   // send message to the background script
-  const response: ThemeList = await browser.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'ListThemes'
+  const response: ThemeList = await new Promise((resolve, reject) => {
+    browser.runtime.sendMessage({
+      type: 'currentTab',
+      info: 'ListThemes'
+    }).then((response) => {
+      if (response) {
+        resolve(response);
+      } else {
+        reject(new Error('Failed to get response'));
+      }
+    }).catch((error: any) => {
+      reject(error);
+    });
   });
 
   return response;
@@ -46,19 +52,21 @@ export const disableTheme = async () => {
   });
 };
 
-export const deleteTheme = async (themeName: string) => {
+export const deleteTheme = async (themeID: string) => {
   await browser.runtime.sendMessage({
     type: 'currentTab',
     info: 'DeleteTheme',
     body: {
-      themeName: themeName
+      themeID: themeID
     }
   });
 }
 
-export const sendThemeUpdate = debounce((updatedTheme: CustomTheme) => {
+export const sendThemeUpdate = debounce((updatedTheme: CustomTheme, saveTheme?: boolean) => {
   // Create a copy of the updatedTheme object
   const updatedThemeCopy: CustomTheme = { ...updatedTheme };
+
+  saveTheme = saveTheme || false;
 
   // Convert image blobs to base64
   const base64ConversionPromises = updatedThemeCopy.CustomImages.map(async (image) => {
@@ -76,6 +84,7 @@ export const sendThemeUpdate = debounce((updatedTheme: CustomTheme) => {
         type: 'currentTab',
         info: 'UpdateThemePreview',
         body: updatedThemeCopy,
+        save: saveTheme,
       });
     })
     .catch((error) => {
@@ -95,5 +104,20 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
       reject(error);
     };
     reader.readAsDataURL(blob);
+  });
+};
+
+export const enableCurrentTheme = async () => {
+  await browser.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'EnableCurrentTheme',
+  });
+};
+
+export const saveUpdatedTheme = async (updatedTheme: CustomTheme) => {
+  await browser.runtime.sendMessage({
+    type: 'currentTab',
+    info: 'SaveTheme',
+    body: updatedTheme,
   });
 };
