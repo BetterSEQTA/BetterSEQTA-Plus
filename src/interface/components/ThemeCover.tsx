@@ -27,7 +27,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
 
   return (
     <button
-      className={`relative w-full h-16 flex justify-center items-center rounded-lg bg-zinc-700 transition ring dark:ring-white ring-zinc-300 ${
+      className={`relative w-full h-16 flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
         isSelected ? 'dark:ring-2 ring-4' : 'ring-0'
       }`}
       onClick={handleThemeClick}
@@ -40,7 +40,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
           <div className="w-4 h-0.5 bg-white"></div>
         </div>
       )}
-      <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden text-white transition rounded-lg group place-items-center bg-zinc-200 dark:bg-zinc-900">
+      <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
         {/* Render theme cover image or placeholder */}
         {/* {theme.CustomImages.length > 0 ? (
           <img
