@@ -36,6 +36,7 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (file) {
       const reader = new FileReader();
       reader.onload = async () => {
