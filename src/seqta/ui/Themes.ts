@@ -95,7 +95,7 @@ export const saveTheme = async (theme: CustomThemeBase64) => {
   }
 };
 
-export const UpdateThemePreview = async (updatedTheme: Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] }) => {
+export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] } */) => {
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
   // Update image data
@@ -120,6 +120,13 @@ export const UpdateThemePreview = async (updatedTheme: Omit<CustomTheme, 'Custom
       removeImageFromDocument(existingImage.variableName);
     }
 
+    if (image.url) {
+      UpdateImageData({
+        id: image.id,
+        base64: image.url
+      });
+    }
+
     imageData[image.id] = {
       url: '',
       variableName: image.variableName,
@@ -139,9 +146,9 @@ export const UpdateImageData = (imageData2: { id: string; base64: string }) => {
   const { id, base64 } = imageData2;
 
   if (imageData[id]) {
-    imageData[id].url = base64;
+    imageData[id].url = updateImage({ id, url: base64, variableName: imageData[id].variableName });
     const { variableName } = imageData[id];
-    document.documentElement.style.setProperty('--' + variableName, `url(${base64})`);
+    document.documentElement.style.setProperty('--' + variableName, `url(${imageData[id].url})`);
   }
 };
 
@@ -180,7 +187,13 @@ export function updateImage(image: CustomImageBase64) {
 }
 
 const applyTheme = async (theme: CustomTheme) => {
-  const { CustomCSS, CustomImages, defaultColour } = theme;
+  let CustomCSS = '';
+  let CustomImages: CustomImage[] = [];
+  let defaultColour = '';
+
+  if (theme?.CustomCSS) CustomCSS = theme.CustomCSS;
+  if (theme?.CustomImages) CustomImages = theme.CustomImages;
+  if (theme?.defaultColour) defaultColour = theme.defaultColour; 
 
   // Apply custom CSS
   applyCustomCSS(CustomCSS);

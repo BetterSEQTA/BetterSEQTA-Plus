@@ -61,42 +61,42 @@ export const deleteTheme = async (themeID: string) => {
   });
 }
 
-export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean) => {
-  // Create a copy of the updatedTheme object
-  const updatedThemeCopy: CustomTheme = { ...updatedTheme };
-
+export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, updateImages?: boolean) => {
   saveTheme = saveTheme || false;
 
-  // Send the updated theme (without image data) to the content script for live preview
-  browser.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'UpdateThemePreview',
-    body: {
-      ...updatedThemeCopy,
-      CustomImages: updatedThemeCopy.CustomImages.map(image => ({
+  const imageDataPromises = updatedTheme.CustomImages.map(async (image) => {
+    if (saveTheme || updateImages) {
+      console.log('Saving image:', image);
+      const base64 = await blobToBase64(image.blob);
+      return {
         id: image.id,
         variableName: image.variableName,
-      })),
-    },
-    save: saveTheme,
+        url: base64,
+      };
+    }
+    return {
+      id: image.id,
+      variableName: image.variableName,
+      url: ''
+    };
   });
 
-  // Send image data separately
-  updatedThemeCopy.CustomImages.forEach(async (image) => {
-    const base64 = await blobToBase64(image.blob);
+  Promise.all(imageDataPromises).then((imageData) => {
+    // Send the updated theme with image data to the content script for live preview or saving
     browser.runtime.sendMessage({
       type: 'currentTab',
-      info: 'UpdateThemeImageData',
+      info: 'UpdateThemePreview',
       body: {
-        id: image.id,
-        base64,
+        ...updatedTheme,
+        CustomImages: imageData,
       },
+      save: saveTheme,
     });
-  });
 
-  if (saveTheme) {
-    browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' });
-  }
+    if (saveTheme) {
+      browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' });
+    }
+  });
 };
 
 // Helper function to convert a Blob to base64
