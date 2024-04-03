@@ -47,7 +47,7 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
           CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName }],
         };
         setTheme(updatedTheme);
-        sendThemeUpdate(updatedTheme);
+        sendThemeUpdate(updatedTheme, false, true);
       };
       reader.readAsDataURL(file);
     }
