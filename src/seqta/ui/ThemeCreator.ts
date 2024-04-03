@@ -2,15 +2,16 @@ import browser from "webextension-polyfill";
 
 /**
  * Open the Theme Creator sidebar, it is an embedded page loaded similar to the extension popup
+ * @param themeID - The ID of the theme to load in the Theme Creator
  * @returns void
  */
-export function OpenThemeCreator() {
+export function OpenThemeCreator( themeID: string = '' ) {
   CloseThemeCreator();
   
   const width = '310px';
 
   const themeCreatorIframe: HTMLIFrameElement = document.createElement('iframe');
-  themeCreatorIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#themeCreator`;
+  themeCreatorIframe.src = `${browser.runtime.getURL('src/interface/index.html')}${ themeID != '' ? `?themeID=${themeID}` : '' }#themeCreator`;
   themeCreatorIframe.id = 'themeCreatorIframe';
   themeCreatorIframe.setAttribute('allowTransparency', 'true');
   themeCreatorIframe.setAttribute('excludeDarkCheck', 'true');

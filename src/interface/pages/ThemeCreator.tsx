@@ -5,11 +5,11 @@ import Accordion from '../components/Accordian';
 import Switch from '../components/Switch';
 import { sendThemeUpdate } from '../hooks/ThemeManagment';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import localforage from 'localforage';
 import { v4 as uuidv4 } from 'uuid';
-import { CustomTheme } from '../types/CustomThemes';
+import { CustomTheme, CustomThemeBase64 } from '../types/CustomThemes';
+import browser from 'webextension-polyfill';
 
-function ThemeCreator({ themeID }: { themeID?: string }) {
+function ThemeCreator() {
   const [theme, setTheme] = useState<CustomTheme>({
     id: uuidv4(),
     name: '',
@@ -17,18 +17,65 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
     defaultColour: '',
     CanChangeColour: true,
     CustomCSS: '',
-    CustomImages: []
+    CustomImages: [],
   });
 
   useEffect(() => {
-    if (themeID) {
-      localforage.getItem(themeID).then((theme) => {
-        if (theme) {
-          setTheme(theme as CustomTheme);
+    const getTheme = async (themeID: string) => {
+      const theme = await browser.runtime.sendMessage({
+        type: 'currentTab',
+        info: 'GetTheme',
+        body: {
+          themeID: themeID,
         }
-      });
+      }) as CustomThemeBase64 | undefined;
+
+      if (theme) {        
+        // base64toblob to convert it to a blob url
+        const CustomImages = theme.CustomImages.map((image) => {
+          const base64Index = image.url.indexOf(',') + 1;
+          const imageBase64 = image.url.substring(base64Index);
+        
+          // Convert base64 to blob
+          const byteCharacters = atob(imageBase64);
+          const byteNumbers = new Uint8Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'image/png' });
+        
+          return {
+            id: image.id,
+            blob: blob,
+            variableName: image.variableName,
+          };
+        });
+
+        setTheme({
+          ...theme,
+          CustomImages,
+        });
+        
+        sendThemeUpdate({
+          ...theme,
+          CustomImages: CustomImages,
+        }, false, true);
+      }
+
+    };
+
+    // get ThemeID from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeID = urlParams.get('themeID');
+
+    console.log('ThemeID:', themeID);
+
+    if (themeID) {
+      getTheme(themeID);
     }
-  });
+
+  }, []);
 
   const generateImageId = () => {
     return '_' + Math.random().toString(36).substr(2, 9);
@@ -173,8 +220,8 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
           <CodeEditor
             className='mt-2'
             height='300px'
-            initialState={theme.CustomCSS}
-            callback={CodeUpdate} />
+            value={theme.CustomCSS}
+            setValue={CodeUpdate} />
         </Accordion>
 
         <Divider />
