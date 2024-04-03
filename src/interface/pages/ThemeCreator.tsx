@@ -115,6 +115,16 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
           className='w-full p-2 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white' />
         </div>
 
+        <div className='flex items-center justify-between pt-4'>
+          <div>
+            <div className='pr-2 text-sm font-semibold'>Custom Theme Colour</div>
+            <div className='pr-2 text-[11px]'>Allow users to change the theme colour</div>
+          </div>
+          <Switch
+            state={theme.CanChangeColour}
+            onChange={value => setTheme({ ...theme, CanChangeColour: value })} />
+        </div>
+
         <Divider />
         
         <Accordion defaultOpened title='Default Theme Colour'>
@@ -125,16 +135,6 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
               hideInputs={true}
               value={theme.defaultColour}
               onChange={(color: string) => setTheme({ ...theme, defaultColour: color })} />
-          </div>
-          
-          <div className='flex items-center justify-between pt-4'>
-            <div>
-              <div className='pr-2 text-sm font-semibold'>Customisable</div>
-              <div className='pr-2 text-[11px]'>Allow users to change the theme colour</div>
-            </div>
-            <Switch
-              state={theme.CanChangeColour}
-              onChange={value => setTheme({ ...theme, CanChangeColour: value })} />
           </div>
         </Accordion>
         
