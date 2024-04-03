@@ -1,5 +1,7 @@
 import React from 'react';
 import { CustomTheme } from '../types/CustomThemes';
+import browser from 'webextension-polyfill';
+import { PencilIcon } from '@heroicons/react/24/outline';
 
 type ThemeCoverProps = {
   theme: Omit<CustomTheme, 'CustomImages'>;
@@ -40,6 +42,14 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
           <div className="w-4 h-0.5 bg-white"></div>
         </div>
       )}
+      {/* edit button */}
+      <div
+        className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full place-items-center"
+        onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } })}
+      >
+        <PencilIcon className="w-4 h-4" />
+      </div>
+
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
         {/* Render theme cover image or placeholder */}
         {/* {theme.CustomImages.length > 0 ? (

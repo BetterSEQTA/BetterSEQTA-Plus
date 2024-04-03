@@ -5,8 +5,17 @@ import { less } from '@codemirror/lang-less'
 import { useCallback, useEffect, useState } from 'react';
 import './CodeEditor.css'
 
-export default function CodeEditor({ callback, initialState, height, className }: { callback: (value: string) => void, initialState: string, height: string, className?: string}) {
-  const [value, setValue] = useState(initialState)
+export default function CodeEditor({ 
+  className = '', 
+  height = '100%', 
+  value,
+  setValue
+}: {
+  className?: string;
+  height?: string;
+  value: string;
+  setValue: (value: string) => void;
+}) {
   const [darkMode, setDarkMode] = useState(false)
 
   useEffect(() => {
@@ -17,7 +26,6 @@ export default function CodeEditor({ callback, initialState, height, className }
 
   const onChange = useCallback((value: string, _: ViewUpdate) => {
     setValue(value)
-    callback(value)
   }, [])
 
   return(

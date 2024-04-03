@@ -152,7 +152,7 @@ export const UpdateImageData = (imageData2: { id: string; base64: string }) => {
   const { id, base64 } = imageData2;
 
   if (imageData[id]) {
-    imageData[id].url = updateImage({ id, url: base64, variableName: imageData[id].variableName });
+    imageData[id].url = base64toblob(base64);
     const { variableName } = imageData[id];
     document.documentElement.style.setProperty('--' + variableName, `url(${imageData[id].url})`);
   }
@@ -172,10 +172,10 @@ function removeImageFromDocument(variableName: string) {
   document.documentElement.style.removeProperty('--' + variableName);
 }
 
-export function updateImage(image: CustomImageBase64) {
+export function base64toblob(base64: string) {
   // Extract base64 data from the data URI
-  const base64Index = image.url.indexOf(',') + 1;
-  const imageBase64 = image.url.substring(base64Index);
+  const base64Index = base64.indexOf(',') + 1;
+  const imageBase64 = base64.substring(base64Index);
 
   // Convert base64 to blob
   const byteCharacters = atob(imageBase64);
@@ -232,6 +232,43 @@ const removeTheme = (theme: CustomTheme) => {
     document.documentElement.style.removeProperty('--' + variableName);
   });
 };
+
+const blobToBase64 = (blob: Blob) => {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+export const getTheme = async (themeId: string): Promise<CustomThemeBase64 | null> => {
+  try {
+    const theme = await localforage.getItem(themeId) as CustomTheme;
+    
+    const CustomImages: CustomImageBase64[] = await Promise.all(
+      theme.CustomImages.map(async (image) => {
+        const base64 = await blobToBase64(image.blob);
+        return {
+          id: image.id,
+          variableName: image.variableName,
+          url: base64,
+        };
+      })
+    );
+
+    return {
+      ...theme,
+      CustomImages,
+    };
+  } catch (error) {
+    console.error('Error getting theme:', error);
+    return null;
+  }
+}
 
 export const setTheme = async (themeId: string) => {
   try {
