@@ -141,7 +141,7 @@ function ThemeCreator({ themeID }: { themeID?: string }) {
         <Divider />
 
         <h2 className='pb-1 text-lg font-semibold'>Custom Images</h2>
-        <p className='pb-3 text-sm'>Upload images to include them in your theme via CSS variables.</p>
+        <p className='pb-3 text-sm'>Upload images to include them in your theme via CSS variables (gifs supported).</p>
 
         {theme.CustomImages.map((image) => (
           <div key={image.id} className="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-900">
