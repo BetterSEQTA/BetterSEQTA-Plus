@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill'
 import localforage from 'localforage';
 import { CustomImage, CustomImageBase64, CustomTheme, CustomThemeBase64, ThemeList } from '../../interface/types/CustomThemes';
+import { base64toblobURL } from '../utils/imageConversions';
 
 const imageData: Record<string, { url: string; variableName: string }> = {};
 
@@ -152,7 +153,7 @@ export const UpdateImageData = (imageData2: { id: string; base64: string }) => {
   const { id, base64 } = imageData2;
 
   if (imageData[id]) {
-    imageData[id].url = base64toblob(base64);
+    imageData[id].url = base64toblobURL(base64);
     const { variableName } = imageData[id];
     document.documentElement.style.setProperty('--' + variableName, `url(${imageData[id].url})`);
   }
@@ -170,26 +171,6 @@ function applyCustomCSS(customCSS: string) {
 
 function removeImageFromDocument(variableName: string) {
   document.documentElement.style.removeProperty('--' + variableName);
-}
-
-export function base64toblob(base64: string) {
-  // Extract base64 data from the data URI
-  const base64Index = base64.indexOf(',') + 1;
-  const imageBase64 = base64.substring(base64Index);
-
-  // Convert base64 to blob
-  const byteCharacters = atob(imageBase64);
-  const byteNumbers = new Uint8Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/png' });
-
-  // Convert blob to blob URL
-  const imageUrl = URL.createObjectURL(blob);
-
-  return imageUrl;
 }
 
 const applyTheme = async (theme: CustomTheme) => {
