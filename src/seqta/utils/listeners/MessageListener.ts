@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
-import { UpdateImageData, UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, getTheme, saveTheme, setTheme } from '../../ui/Themes';
+import { UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, getTheme, saveTheme, setTheme } from '../../ui/Themes';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
@@ -18,16 +18,18 @@ export class MessageHandler {
   
       case 'UpdateThemePreview':
         if (request?.save == true) {
-          saveTheme(request.body).then(() => {
-            setTheme(request.body.themeID).then(() => {
-              sendResponse({ status: 'success' });
-            });
-          });
+          const save = async () => {
+            console.log('Saving theme:', request.body)
+            await saveTheme(request.body)
+            await setTheme(request.body.id)
+            sendResponse({ status: 'success' });
+          }
+          save()
         } else {
           UpdateThemePreview(request.body);
           sendResponse({ status: 'success' });
         }
-        break;
+        return true;
       
       case 'GetTheme':
         getTheme(request.body.themeID).then((theme) => {

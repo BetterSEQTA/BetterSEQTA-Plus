@@ -76,7 +76,9 @@ export const saveTheme = async (theme: CustomThemeBase64) => {
       ),
     };
 
-    console.log('Theme to save:', updatedTheme)
+    disableTheme();
+
+    console.debug('Theme to save:', updatedTheme)
 
     await localforage.setItem(updatedTheme.id, updatedTheme);
     await localforage.getItem('customThemes').then((themes: unknown) => {
@@ -90,7 +92,7 @@ export const saveTheme = async (theme: CustomThemeBase64) => {
         localforage.setItem('customThemes', [updatedTheme.id]);
       }
     });
-    console.log('Theme saved successfully!');
+    console.debug('Theme saved successfully!');
   } catch (error) {
     console.error('Error saving theme:', error);
   }
@@ -255,6 +257,8 @@ export const setTheme = async (themeId: string) => {
   try {
     const enabledTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string };
     const theme = await localforage.getItem(themeId) as CustomTheme;
+
+    console.debug('Loading theme', theme)
 
     // Remove the currently enabled theme
     if (enabledTheme.selectedTheme) {
