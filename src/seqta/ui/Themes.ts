@@ -118,6 +118,12 @@ export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit
     if (existingImage && existingImage.variableName !== image.variableName) {
       // Remove the previous variableName from the document
       removeImageFromDocument(existingImage.variableName);
+      
+      // Update the variableName in imageData
+      imageData[image.id].variableName = image.variableName;
+
+      // Update the variableName in the document
+      document.documentElement.style.setProperty('--' + image.variableName, `url(${existingImage.url})`);
     }
 
     if (image.url) {
@@ -128,7 +134,7 @@ export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit
     }
 
     imageData[image.id] = {
-      url: '',
+      url: imageData[image.id]?.url || '',
       variableName: image.variableName,
     };
   });
