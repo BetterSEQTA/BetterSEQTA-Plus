@@ -153,10 +153,10 @@ export const UpdateImageData = (imageData2: { id: string; base64: string }) => {
 };
 
 function applyCustomCSS(customCSS: string) {
-  let styleElement = document.getElementById('theme-preview-styles');
+  let styleElement = document.getElementById('custom-theme');
   if (!styleElement) {
     styleElement = document.createElement('style');
-    styleElement.id = 'theme-preview-styles';
+    styleElement.id = 'custom-theme';
     document.head.appendChild(styleElement);
   }
   styleElement.textContent = customCSS;
@@ -212,7 +212,7 @@ const applyTheme = async (theme: CustomTheme) => {
 
 const removeTheme = (theme: CustomTheme) => {
   // Remove custom CSS
-  const styleElement = document.getElementById('theme-preview-styles');
+  const styleElement = document.getElementById('custom-theme');
   if (styleElement) {
     styleElement.parentNode?.removeChild(styleElement);
   }
