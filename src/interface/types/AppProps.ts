@@ -1,6 +1,6 @@
 export interface SettingsState {
   notificationCollector: boolean;
-  theme: string;
+  selectedTheme: string;
   lessonAlerts: boolean;
   telemetry: boolean;
   animatedBackground: boolean;
@@ -60,5 +60,5 @@ export interface MainConfig {
   shortcuts: Shortcut[];
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
-  theme: string;
+  selectedTheme: string;
 }

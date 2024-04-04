@@ -3,6 +3,8 @@ import { listThemes, deleteTheme, setTheme, disableTheme } from '../hooks/ThemeM
 import { ThemeCover } from './ThemeCover';
 import Browser from 'webextension-polyfill';
 import { CustomTheme } from '../types/CustomThemes';
+import { useSettingsContext } from '../SettingsContext';
+import { SettingsState } from '../types/AppProps';
 
 interface ThemeSelectorProps {
   isEditMode: boolean;
@@ -12,12 +14,20 @@ interface ThemeSelectorProps {
 const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> & RefAttributes<any>> = forwardRef(({ isEditMode = false }, ref) => {
   const [themes, setThemes] = useState<Omit<CustomTheme, 'CustomImages'>[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
+  const { settingsState, setSettingsState } = useSettingsContext();
+
+  const setSelectedTheme = (themeId: string) => {
+    setSettingsState((prevState: SettingsState) => ({
+      ...prevState,
+      selectedTheme: themeId,
+    }));
+  }
+
 
   useImperativeHandle(ref, () => ({
     disableTheme: async () => {
       await disableTheme();
-      setSelectedThemeId(null);
+      setSelectedTheme('');
     }
   }));
 
@@ -27,7 +37,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         const { themes, selectedTheme } = await listThemes();
 
         setThemes(themes);
-        setSelectedThemeId(selectedTheme ? selectedTheme : null);
+        setSelectedTheme(selectedTheme ? selectedTheme : '');
       } catch (error) {
         console.error('Error fetching themes:', error);
       } finally {
@@ -40,18 +50,18 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
   const handleThemeSelect = useCallback(
     async (themeId: string) => {
-      if (themeId === selectedThemeId) {
+      if (themeId === settingsState.selectedTheme) {
         await disableTheme();
-        setSelectedThemeId(null);
+        setSelectedTheme('');
       } else {
         const selectedTheme = themes.find((theme) => theme.id === themeId);
         if (selectedTheme) {
           await setTheme(selectedTheme.id);
-          setSelectedThemeId(themeId);
+          setSelectedTheme(themeId);
         }
       }
     },
-    [selectedThemeId, themes]
+    [settingsState.selectedTheme, themes]
   );
 
   const handleThemeDelete = useCallback(
@@ -59,14 +69,14 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       try {
         await deleteTheme(themeId);
         setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
-        if (themeId === selectedThemeId) {
-          setSelectedThemeId(null);
+        if (themeId === settingsState.selectedTheme) {
+          setSelectedTheme('');
         }
       } catch (error) {
         console.error('Error deleting theme:', error);
       }
     },
-    [selectedThemeId]
+    [settingsState.selectedTheme]
   );
 
   if (isLoading) {
@@ -81,7 +91,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           <ThemeCover
             key={theme.id}
             theme={theme}
-            isSelected={theme.id === selectedThemeId}
+            isSelected={theme.id === settingsState.selectedTheme}
             isEditMode={isEditMode}
             onThemeSelect={handleThemeSelect}
             onThemeDelete={handleThemeDelete}
