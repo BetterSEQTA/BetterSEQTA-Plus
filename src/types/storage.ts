@@ -1,6 +1,6 @@
 export interface SettingsState {
   DarkMode: boolean;
-  theme: string;
+  selectedTheme: string;
   animatedbk: boolean;
   bksliderinput: string;
   customshortcuts: CustomShortcut[];

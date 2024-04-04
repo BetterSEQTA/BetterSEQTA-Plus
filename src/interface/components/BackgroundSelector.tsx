@@ -4,7 +4,6 @@ import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
 import browser from "webextension-polyfill";
 
-// Custom Types and Interfaces
 export interface Background {
   id: string;
   type: string;
@@ -71,9 +70,9 @@ function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProp
       try {
         await openDB();
       } catch (error) {
-        // @ts-expect-error - Brave is not in the navigator type (unless you are actually using brave browser, then it is there)
+        // @ts-expect-error - Brave is not in the navigator type (unless you are actually using brave browser)
         if (navigator.brave && await navigator.brave.isBrave() || false) {
-          console.log('[BetterSEQTA+] Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel. (or you can just disable brave shields for SEQTA)');
+          console.error('[BetterSEQTA+] Brave browser is blocking access to IndexedDB. Please disable the "Cross-site cookies blocked" setting in the Shields panel. (or you can just disable brave shields for SEQTA)');
           setBackgroundsBlocked(true);
           return;
         }
