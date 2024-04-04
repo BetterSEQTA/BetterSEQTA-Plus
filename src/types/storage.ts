@@ -29,6 +29,7 @@ export interface SettingsState {
   telemetry: boolean;
   onoff: boolean;
   selectedColor: string;
+  originalSelectedColor: string;
   shortcuts: Shortcut[];
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
