@@ -20,8 +20,14 @@ export const setTheme = async (themeId: string) => {
       }
     }
 
+    const originalSelectedColor = await browser.storage.local.get('selectedColor') as { selectedColor: string; };
     await applyTheme(theme);
-    await browser.storage.local.set({ selectedTheme: themeId });
+
+    await browser.storage.local.set({
+      selectedTheme: themeId,
+      selectedColor: theme.defaultColour,
+      originalSelectedColor: originalSelectedColor.selectedColor
+    });
 
   } catch (error) {
     console.error('Error setting theme:', error);
