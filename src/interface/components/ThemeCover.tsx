@@ -29,7 +29,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
 
   return (
     <button
-      className={`relative w-full h-16 flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
+      className={`relative group w-full h-16 flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
         isSelected ? 'dark:ring-2 ring-4' : 'ring-0'
       }`}
       onClick={handleThemeClick}
@@ -44,7 +44,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       )}
       {/* edit button */}
       <div
-        className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full place-items-center"
+        className="absolute top-0 z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-2"
         onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } })}
       >
         <PencilIcon className="w-4 h-4" />
