@@ -4,6 +4,7 @@ export type CustomTheme = {
   description: string;
   defaultColour: string;
   CanChangeColour: boolean;
+  allowBackgrounds: boolean;
   CustomCSS: string;
   CustomImages: CustomImage[];
 }

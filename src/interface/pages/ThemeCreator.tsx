@@ -16,6 +16,7 @@ function ThemeCreator() {
     description: '',
     defaultColour: '',
     CanChangeColour: true,
+    allowBackgrounds: true,
     CustomCSS: '',
     CustomImages: [],
   });
@@ -167,9 +168,15 @@ function ThemeCreator() {
             <div className='pr-2 text-sm font-semibold'>Custom Theme Colour</div>
             <div className='pr-2 text-[11px]'>Allow users to change the theme colour</div>
           </div>
-          <Switch
-            state={theme.CanChangeColour}
-            onChange={value => setTheme({ ...theme, CanChangeColour: value })} />
+          <Switch state={theme.CanChangeColour} onChange={value => setTheme({ ...theme, CanChangeColour: value })} />
+        </div>
+
+        <div className='flex items-center justify-between pt-4'>
+          <div>
+            <div className='pr-2 text-sm font-semibold'>Custom Backgrounds</div>
+            <div className='pr-2 text-[11px]'>Allow users to set image and video backgrounds</div>
+          </div>
+          <Switch state={theme.allowBackgrounds} onChange={value => setTheme({ ...theme, allowBackgrounds: value })} />
         </div>
 
         <Divider />

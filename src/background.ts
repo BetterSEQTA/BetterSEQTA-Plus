@@ -15,6 +15,7 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
 })
 
 import { onError } from './seqta/utils/onError';
+import { SettingsState } from "./types/storage";
 export const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
@@ -141,16 +142,33 @@ function GetNews(sendResponse: any, url: string) {
     });
 }
 
-const DefaultValues: any = {
+const DefaultValues: SettingsState = {
   onoff: true,
   animatedbk: true,
   telemetry: false,
-  bksliderinput: 50,
+  bksliderinput: "50",
   transparencyEffects: false,
   lessonalert: true,
   notificationcollector: true,
   defaultmenuorder: [],
-  menuitems: {},
+  menuitems: {
+    assessments: { toggle: true },
+    courses: { toggle: true },
+    dashboard: { toggle: true },
+    documents: { toggle: true },
+    forums: { toggle: true },
+    goals: { toggle: true },
+    home: { toggle: true },
+    messages: { toggle: true },
+    myed: { toggle: true },
+    news: { toggle: true },
+    notices: { toggle: true },
+    portals: { toggle: true },
+    reports: { toggle: true },
+    settings: { toggle: true },
+    timetable: { toggle: true },
+    welcome: { toggle: true },
+  },
   menuorder: [],
   subjectfilters: {},
   selectedTheme: '',
