@@ -1,7 +1,13 @@
 import browser from 'webextension-polyfill'
 
 import { MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, closeSettings } from '../../../SEQTA';
-import { UpdateThemePreview, deleteTheme, disableTheme, getAvailableThemes, getTheme, saveTheme, setTheme } from '../../ui/Themes';
+import { deleteTheme } from '../../ui/themes/deleteTheme';
+import { getAvailableThemes } from '../../ui/themes/getAvailableThemes';
+import { saveTheme } from '../../ui/themes/saveTheme';
+import { UpdateThemePreview } from '../../ui/themes/UpdateThemePreview';
+import { getTheme } from '../../ui/themes/getTheme';
+import { setTheme } from '../../ui/themes/setTheme';
+import { disableTheme } from '../../ui/themes/disableTheme';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 
 export class MessageHandler {
@@ -9,6 +15,8 @@ export class MessageHandler {
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
   routeMessage(request: any, _sender: any, sendResponse: any) {
+    console.debug('Message received:', request)
+    
     switch (request.info) {
       case 'EditSidebar':
         this.editSidebar();
@@ -19,7 +27,6 @@ export class MessageHandler {
       case 'UpdateThemePreview':
         if (request?.save == true) {
           const save = async () => {
-            console.log('Saving theme:', request.body)
             await saveTheme(request.body)
             await setTheme(request.body.id)
             sendResponse({ status: 'success' });
