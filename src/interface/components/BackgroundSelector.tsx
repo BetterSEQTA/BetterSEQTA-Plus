@@ -157,14 +157,14 @@ function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProp
     <div className="relative">
       <h2 className="pb-2 text-lg font-bold">Background Images</h2>
       <div className="flex flex-wrap gap-4">
-        {/* Image uploader swatch */}
+        { isEditMode ? <></> :
         <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
           <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
             {/*  Plus icon */}
             
           </div>
           <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-        </div>
+        </div>}
         {backgrounds.filter(bg => bg.type === 'image').map(bg => (
           <div key={bg.id}
             onClick={() => selectBackground(bg.id)} 
@@ -205,7 +205,7 @@ function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProp
 
       <h2 className="py-2 text-lg font-bold">Background Videos</h2>
       <div className="flex flex-wrap gap-4">
-        {/* Video uploader swatch */}
+        { isEditMode ? <></> :
         <div className="relative w-16 h-16 overflow-hidden transition rounded-xl bg-zinc-100 dark:bg-zinc-900">
           <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition font-IconFamily hover:text-gray-500">
             {/*  Plus icon */}
@@ -213,6 +213,7 @@ function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProp
           </div>
           <input type="file" accept='image/*, video/*' onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
+        }
         {backgrounds.filter(bg => bg.type === 'video').map(bg => (
           <div key={bg.id} onClick={() => selectBackground(bg.id)} className={`relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 ${isEditMode ? 'animate-shake' : ''} ${selectedBackground === bg.id ? 'dark:ring-2 ring-4' : 'ring-0'}`}>
             {isEditMode && (
