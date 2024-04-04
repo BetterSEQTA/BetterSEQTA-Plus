@@ -243,11 +243,15 @@ function UpdateCurrentValues() {
     function CheckInnerElement(element: any) {
       for (let i in element) {
         if (typeof element[i] === 'object') {
+          // @ts-expect-error
           if (typeof DefaultValues[i].length == 'undefined') {
+            // @ts-expect-error
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
           } else {
             // If the object is an array, turn it back after
+            // @ts-expect-error
             let length = DefaultValues[i].length;
+            // @ts-expect-error
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
             let NewArray = [];
             for (let j = 0; j < length; j++) {
