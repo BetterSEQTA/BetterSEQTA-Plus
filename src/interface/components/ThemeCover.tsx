@@ -19,6 +19,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   onThemeDelete,
 }) => {
   const handleThemeClick = () => {
+    if (isEditMode) return;
     onThemeSelect(theme.id);
   };
 
@@ -36,19 +37,21 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
     >
       {isEditMode && (
         <div
-          className="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
+          className="absolute z-20 flex w-6 h-6 p-2 text-white transition-all rounded-full opacity-0 top-1 right-2 dark:bg-red-600 place-items-center group-hover:opacity-100 group-hover:top-2"
           onClick={handleDeleteClick}
         >
           <div className="w-4 h-0.5 bg-white"></div>
         </div>
       )}
-      {/* edit button */}
-      <div
-        className="absolute top-0 z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-2"
-        onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } })}
-      >
-        <PencilIcon className="w-4 h-4" />
-      </div>
+      
+      { isEditMode ? <></> :
+        <div
+          className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 top-1 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-2"
+          onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } })}
+        >
+          <PencilIcon className="w-4 h-4" />
+        </div>
+      }
 
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
         {/* Render theme cover image or placeholder */}
