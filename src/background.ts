@@ -153,6 +153,7 @@ const DefaultValues: any = {
   menuitems: {},
   menuorder: [],
   subjectfilters: {},
+  selectedTheme: '',
   selectedColor: 'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
   DarkMode: true,
   shortcuts: [
