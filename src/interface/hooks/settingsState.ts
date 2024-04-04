@@ -24,7 +24,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         shortcuts: result.shortcuts,
         customshortcuts: result.customshortcuts,
         transparencyEffects: result.transparencyEffects,
-        theme: result.theme
+        selectedTheme: result.selectedTheme
       });
     });
   });
@@ -39,7 +39,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "onoff": "betterSEQTAPlus",
     "shortcuts": "shortcuts",
     "customshortcuts": "customshortcuts",
-    "transparencyEffects": "transparencyEffects"
+    "transparencyEffects": "transparencyEffects",
+    "selectedTheme": "selectedTheme"
   }), []);
   
   const storageChangeListener = (changes: browser.Storage.StorageChange) => {
