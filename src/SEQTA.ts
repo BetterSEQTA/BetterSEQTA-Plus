@@ -21,7 +21,7 @@ import assessmentsicon from './seqta/icons/assessmentsIcon'
 import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
-import { enableCurrentTheme } from './seqta/ui/Themes'
+import { enableCurrentTheme } from "./seqta/ui/themes/enableCurrent";
 import iframeCSS from "./css/iframe.scss?raw"
 import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
