@@ -168,9 +168,9 @@ function ThemeCreator() {
         <Divider />
 
         <p className='pr-2 text-sm font-semibold'>Cover Image <span className='italic font-light opacity-80'>(optional)</span></p>
-        <p className='pb-3 text-sm'>Upload an image to use as the cover image for your theme. <span className='italic font-light'>Recommended resolution: 368x120</span></p>
+        <p className='pb-3 text-sm'>Upload an image to use as the cover image for your theme. <span className='italic font-light'>Recommended resolution: 512x128</span></p>
 
-        <div className="relative flex justify-center w-full h-24 gap-1 overflow-hidden transition rounded-lg group place-items-center bg-zinc-100 dark:bg-zinc-900">
+        <div className="relative flex justify-center aspect-[4/1] w-full gap-1 overflow-hidden transition rounded-lg group place-items-center bg-zinc-100 dark:bg-zinc-900">
           <PlusIcon className={`transition pointer-events-none z-30 ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`} height={18} />
           <span className={`dark:text-white pointer-events-none z-30 transition ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>{theme.coverImage ? 'Change' : 'Add'} cover image</span>
           <input type="file" accept='image/*' onChange={(e) => {
