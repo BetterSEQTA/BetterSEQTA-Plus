@@ -100,7 +100,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
         <button
           onClick={() => Browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator' })}
-          className="flex items-center justify-center w-full h-16 transition rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+          className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
         >
           <span className="text-xl font-IconFamily">{'\uec60'}</span>
           <span className="ml-2">Create Theme</span>

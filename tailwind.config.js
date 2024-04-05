@@ -29,6 +29,9 @@ export default {
     extend: {
       fontFamily: {
         "IconFamily": "IconFamily"
+      },
+      aspectRatio: {
+        "theme": "5 / 1"
       }
     }
   },
