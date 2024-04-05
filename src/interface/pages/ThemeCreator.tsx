@@ -168,11 +168,11 @@ function ThemeCreator() {
         <Divider />
 
         <p className='pr-2 text-sm font-semibold'>Cover Image <span className='italic font-light opacity-80'>(optional)</span></p>
-        <p className='pb-3 text-sm'>Upload an image to use as the cover image for your theme. <span className='italic font-light'>Recommended resolution: 348x64</span></p>
+        <p className='pb-3 text-sm'>Upload an image to use as the cover image for your theme. <span className='italic font-light'>Recommended resolution: 368x120</span></p>
 
-        <div className="relative flex justify-center w-full h-32 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-900">
-          <PlusIcon height={18} />
-          <span className='dark:text-white'>Add cover image</span>
+        <div className="relative flex justify-center w-full h-24 gap-1 overflow-hidden transition rounded-lg group place-items-center bg-zinc-100 dark:bg-zinc-900">
+          <PlusIcon className={`transition pointer-events-none z-30 ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`} height={18} />
+          <span className={`dark:text-white pointer-events-none z-30 transition ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>{theme.coverImage ? 'Change' : 'Add'} cover image</span>
           <input type="file" accept='image/*' onChange={(e) => {
             const file = e.target.files?.[0];
             e.target.value = '';
@@ -184,7 +184,15 @@ function ThemeCreator() {
               };
               reader.readAsDataURL(file);
             }
-          }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+          }} className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" />
+          {
+            theme.coverImage && (
+              <>
+              <div className="absolute z-20 w-full h-full transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 bg-black/20"></div>
+              <img src={URL.createObjectURL(theme.coverImage)} alt='Cover Image' className="absolute z-0 object-cover w-full h-full rounded" />
+              </>
+            )
+          }
         </div>
 
         <div className='flex items-center justify-between pt-4'>
