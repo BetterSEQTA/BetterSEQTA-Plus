@@ -7,6 +7,8 @@ export type CustomTheme = {
   allowBackgrounds: boolean;
   CustomCSS: string;
   CustomImages: CustomImage[];
+  coverImage: Blob | null;
+  isEditable: boolean;
 }
 
 export type CustomImage = {
@@ -23,6 +25,7 @@ export type CustomImageBase64 = {
 
 export type CustomThemeBase64 = Omit<CustomTheme, 'CustomImages'> & {
   CustomImages: CustomImageBase64[];
+  coverImage: string | null;
 }
 
 export type ThemeList = {

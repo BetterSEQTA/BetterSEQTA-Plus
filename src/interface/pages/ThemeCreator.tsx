@@ -19,6 +19,8 @@ function ThemeCreator() {
     allowBackgrounds: true,
     CustomCSS: '',
     CustomImages: [],
+    coverImage: null,
+    isEditable: true
   });
 
   useEffect(() => {
@@ -154,13 +156,35 @@ function ThemeCreator() {
         </div>
 
         <div>
-          <div className='pb-2 text-sm'>Description <span className='italic opacity-80'>(optional)</span></div>
+          <div className='pb-2 text-sm'>Description <span className='italic font-light opacity-80'>(optional)</span></div>
           <textarea
           id='themeDescription'
           placeholder="Don't worry, this one's optional!"
           value={theme.description}
           onChange={e => setTheme({ ...theme, description: e.target.value })}
           className='w-full p-2 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white' />
+        </div>
+
+        <Divider />
+
+        <p className='pr-2 text-sm font-semibold'>Cover Image <span className='italic font-light opacity-80'>(optional)</span></p>
+        <p className='pb-3 text-sm'>Upload an image to use as the cover image for your theme. <span className='italic font-light'>Recommended resolution: 348x64</span></p>
+
+        <div className="relative flex justify-center w-full h-32 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-900">
+          <PlusIcon height={18} />
+          <span className='dark:text-white'>Add cover image</span>
+          <input type="file" accept='image/*' onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = async () => {
+                const imageBlob = await fetch(reader.result as string).then(res => res.blob());
+                setTheme({ ...theme, coverImage: imageBlob });
+              };
+              reader.readAsDataURL(file);
+            }
+          }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         </div>
 
         <div className='flex items-center justify-between pt-4'>
