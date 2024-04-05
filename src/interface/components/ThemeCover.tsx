@@ -30,7 +30,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
 
   return (
     <button
-      className={`relative group w-full h-16 flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
+      className={`relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
         isSelected ? 'dark:ring-2 ring-4' : 'ring-0'
       }`}
       onClick={handleThemeClick}
