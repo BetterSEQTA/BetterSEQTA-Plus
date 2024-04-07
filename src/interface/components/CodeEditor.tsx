@@ -19,7 +19,7 @@ export default function CodeEditor({
   const [darkMode, setDarkMode] = useState(false)
 
   useEffect(() => {
-    if (document.body.classList.contains('dark')) {
+    if (document.documentElement.classList.contains('dark')) {
       setDarkMode(true)
     }
   }, [])
