@@ -15,6 +15,10 @@ function adjustLuminance(color: any, lum: any) {
 }
 
 export default function ColorLuminance(color: any, lum = 0) {
+  if (color == '' || color == null) {
+    // light cyan blue
+    return '#00bfff';
+  }
   const colorRegex = /rgba?\(([^)]+)\)/gi;  // Case-insensitive match for rgb() or rgba()
   
   if (color.toLowerCase().includes('gradient')) {

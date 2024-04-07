@@ -1556,6 +1556,7 @@ function CheckCurrentLesson(lesson: any, num: number) {
 }
 
 export function GetThresholdOfColor(color: any) {
+  if (!color) return 0
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi
 
