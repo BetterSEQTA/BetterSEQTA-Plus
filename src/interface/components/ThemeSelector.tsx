@@ -31,19 +31,40 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   }));
 
   useEffect(() => {
-    const fetchThemes = async () => {
-      try {
-        const { themes, selectedTheme } = await listThemes();
-
-        setThemes(themes);
-        setSelectedTheme(selectedTheme ? selectedTheme : '');
-      } catch (error) {
-        console.error('Error fetching themes:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    const handleThemeChange = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      fetchThemes();
     };
 
+    Browser.runtime.onMessage.addListener((message) => {
+      if (message.info === 'themeChanged') {
+        handleThemeChange();
+      }
+    });
+
+    return () => {
+      Browser.runtime.onMessage.removeListener((message) => {
+        if (message.info === 'themeChanged') {
+          handleThemeChange();
+        }
+      });
+    };
+  }, []);
+
+  const fetchThemes = async () => {
+    try {
+      const { themes, selectedTheme } = await listThemes();
+
+      setThemes(themes);
+      setSelectedTheme(selectedTheme ? selectedTheme : '');
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchThemes();
   }, []);
 
