@@ -112,6 +112,7 @@ export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, 
 
     if (saveTheme) {
       browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' });
+      browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
     }
   });
 };

@@ -87,7 +87,7 @@ export class MessageHandler {
         break;
   
       default:
-        console.log('Unknown request info:', request.info);      
+        console.debug('Unknown request info:', request.info);      
     }
   }
 

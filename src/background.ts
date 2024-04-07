@@ -93,6 +93,16 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
     reloadSeqtaPages();
     break;
   
+  case 'extensionPages':
+    browser.tabs.query({}).then(function (tabs) {
+      for (let tab of tabs) {
+        if (tab.url?.includes('chrome-extension://')) {
+          browser.tabs.sendMessage(tab.id!, request);
+        }
+      }
+    });
+    break;
+  
   case 'currentTab':
     browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
       browser.tabs.sendMessage(tabs[0].id!, request).then(function (response) {
