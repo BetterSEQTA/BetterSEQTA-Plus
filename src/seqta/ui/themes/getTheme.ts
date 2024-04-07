@@ -20,6 +20,7 @@ export const getTheme = async (themeId: string): Promise<CustomThemeBase64 | nul
 
     return {
       ...theme,
+      coverImage: theme.coverImage ? await blobToBase64(theme.coverImage as Blob) : null,
       CustomImages,
     };
   } catch (error) {

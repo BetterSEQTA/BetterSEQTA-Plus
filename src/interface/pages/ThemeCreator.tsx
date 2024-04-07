@@ -33,7 +33,7 @@ function ThemeCreator() {
         }
       }) as CustomThemeBase64 | undefined;
 
-      if (theme) {        
+      if (theme) {
         // base64toblob to convert it to a blob url
         const CustomImages = theme.CustomImages.map((image) => {
           const base64Index = image.url.indexOf(',') + 1;
@@ -55,9 +55,27 @@ function ThemeCreator() {
           };
         });
 
+        const coverImageBase64 = theme.coverImage;
+        let coverImageBlob = null;
+
+        if (coverImageBase64) {
+          const base64Index = coverImageBase64.indexOf(',') + 1;
+          const imageBase64 = coverImageBase64.substring(base64Index);
+        
+          // Convert base64 to blob
+          const byteCharacters = atob(imageBase64);
+          const byteNumbers = new Uint8Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          coverImageBlob = new Blob([byteArray], { type: 'image/png' });
+        }
+
         setTheme({
           ...theme,
           CustomImages,
+          coverImage: coverImageBlob
         });
         
         sendThemeUpdate({
@@ -189,7 +207,7 @@ function ThemeCreator() {
             theme.coverImage && (
               <>
               <div className="absolute z-20 w-full h-full transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-              <img src={URL.createObjectURL(theme.coverImage)} alt='Cover Image' className="absolute z-0 object-cover w-full h-full rounded" />
+              <img src={URL.createObjectURL(theme.coverImage as Blob)} alt='Cover Image' className="absolute z-0 object-cover w-full h-full rounded" />
               </>
             )
           }

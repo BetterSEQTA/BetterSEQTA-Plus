@@ -7,7 +7,7 @@ export type CustomTheme = {
   allowBackgrounds: boolean;
   CustomCSS: string;
   CustomImages: CustomImage[];
-  coverImage: Blob | null;
+  coverImage: Blob | string | null;
   isEditable: boolean;
 }
 

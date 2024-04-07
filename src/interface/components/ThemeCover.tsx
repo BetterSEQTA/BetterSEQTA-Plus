@@ -54,16 +54,13 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       }
 
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
-        {/* Render theme cover image or placeholder */}
-        {/* {theme.CustomImages.length > 0 ? (
+        {theme.coverImage &&
           <img
-            src={URL.createObjectURL(theme.CustomImages[0].blob)}
+            src={theme.coverImage as string}
             alt={theme.name}
             className="absolute inset-0 z-0 object-cover"
           />
-        ) : (
-          <div className="absolute inset-0 z-0 bg-gray-300 rounded-lg"></div>
-        )} */}
+        }
         <div className="z-10">{theme.name}</div>
       </div>
     </button>
