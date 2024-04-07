@@ -24,7 +24,7 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
     shortcuts: [],
     customshortcuts: [],
     transparencyEffects: false,
-    theme: ""
+    selectedTheme: ''
   });
 
   const [showPicker, setShowPicker] = useState<boolean>(false);

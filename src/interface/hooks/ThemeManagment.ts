@@ -97,7 +97,7 @@ export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, 
       CustomImages: imageData,
     };
 
-    if (saveTheme) {
+    if (saveTheme && updatedTheme.coverImage instanceof Blob) {
       themeData.coverImage = await blobToBase64(updatedTheme.coverImage as Blob);
     } else {
       themeData.coverImage = null;
