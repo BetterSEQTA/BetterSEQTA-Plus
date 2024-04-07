@@ -61,7 +61,10 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
             className="absolute inset-0 z-0 object-cover"
           />
         }
-        <div className="z-10">{theme.name}</div>
+        {
+          theme.hideThemeName ? <></> :
+          <div className="z-10">{theme.name}</div>
+        }
       </div>
     </button>
   );

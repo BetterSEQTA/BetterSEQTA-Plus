@@ -10,6 +10,7 @@ import { CustomTheme, CustomThemeBase64 } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
 
 function ThemeCreator() {
+  // default settings for new themes
   const [theme, setTheme] = useState<CustomTheme>({
     id: uuidv4(),
     name: '',
@@ -20,7 +21,8 @@ function ThemeCreator() {
     CustomCSS: '',
     CustomImages: [],
     coverImage: null,
-    isEditable: true
+    isEditable: true,
+    hideThemeName: false,
   });
 
   useEffect(() => {
@@ -204,16 +206,29 @@ function ThemeCreator() {
             }
           }} className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" />
           {
-            theme.coverImage && (
+            !theme.hideThemeName && theme.coverImage ?
+            <div className="absolute z-30">{theme.name}</div> : <></>
+          }
+          {
+            theme.coverImage &&
               <>
               <div className="absolute z-20 w-full h-full transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 bg-black/20"></div>
               <img src={URL.createObjectURL(theme.coverImage as Blob)} alt='Cover Image' className="absolute z-0 object-cover w-full h-full rounded" />
               </>
-            )
           }
         </div>
 
         <div className='flex items-center justify-between pt-4'>
+          <div>
+            <div className='pr-2 text-sm font-semibold'>Hide Name</div>
+            <div className='pr-2 text-[11px]'>Useful when your cover image contains text</div>
+          </div>
+          <Switch state={theme.hideThemeName} onChange={value => setTheme({ ...theme, hideThemeName: value })} />
+        </div>
+
+        <Divider />
+
+        <div className='flex items-center justify-between'>
           <div>
             <div className='pr-2 text-sm font-semibold'>Custom Theme Colour</div>
             <div className='pr-2 text-[11px]'>Allow users to change the theme colour</div>

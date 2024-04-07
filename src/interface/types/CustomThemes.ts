@@ -9,6 +9,7 @@ export type CustomTheme = {
   CustomImages: CustomImage[];
   coverImage: Blob | string | null;
   isEditable: boolean;
+  hideThemeName: boolean;
 }
 
 export type CustomImage = {
