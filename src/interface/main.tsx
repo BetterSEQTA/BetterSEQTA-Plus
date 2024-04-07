@@ -11,7 +11,7 @@ import ThemeCreator from './pages/ThemeCreator';
 import Store from './pages/Store';
 
 browser.storage.local.get().then(({ telemetry, DarkMode }) => {
-  if (DarkMode) document.body.classList.add('dark');
+  if (DarkMode) document.documentElement.classList.add('dark');
 
   if (telemetry === true)
   Sentry.init({
