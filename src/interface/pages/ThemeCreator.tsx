@@ -226,7 +226,7 @@ function ThemeCreator() {
 
         <Divider />
 
-        <div className='flex items-center justify-between'>
+        {/* <div className='flex items-center justify-between'>
           <div>
             <div className='pr-2 text-sm font-semibold'>Custom Theme Colour</div>
             <div className='pr-2 text-[11px]'>Allow users to change the theme colour</div>
@@ -242,7 +242,7 @@ function ThemeCreator() {
           <Switch state={theme.allowBackgrounds} onChange={value => setTheme({ ...theme, allowBackgrounds: value })} />
         </div>
 
-        <Divider />
+        <Divider /> */}
         
         <Accordion defaultOpened title='Default Theme Colour'>
           <div className='p-2 mt-2 bg-white rounded-lg w-fit dark:bg-zinc-900'>

@@ -23,7 +23,6 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
     }));
   }
 
-
   useImperativeHandle(ref, () => ({
     disableTheme: async () => {
       await disableTheme();
