@@ -119,6 +119,14 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         ))}
 
         <button
+          onClick={() => Browser.tabs.create({ url: Browser.runtime.getURL('src/interface/index.html#store')})}
+          className="flex items-center justify-center w-full mt-2 transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+        >
+          <span className="text-xl font-IconFamily">{'\uecc5'}</span>
+          <span className="ml-2">Theme Store</span>
+        </button>
+
+        <button
           onClick={() => Browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator' })}
           className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
         >

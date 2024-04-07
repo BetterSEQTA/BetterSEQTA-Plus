@@ -8,6 +8,7 @@ import font from '../resources/fonts/IconFamily.woff'
 
 import * as Sentry from "@sentry/react";
 import ThemeCreator from './pages/ThemeCreator';
+import Store from './pages/Store';
 
 browser.storage.local.get().then(({ telemetry, DarkMode }) => {
   if (DarkMode) document.body.classList.add('dark');
@@ -42,6 +43,7 @@ root.render(
         <Routes>
           <Route path="/settings" element={<SettingsPage standalone={true} />} />
           <Route path="/settings/embedded" element={<SettingsPage standalone={false} />} />
+          <Route path="/store" element={<Store />} />
           <Route path="/themeCreator" element={<ThemeCreator />} />
         </Routes>
       </HashRouter>
