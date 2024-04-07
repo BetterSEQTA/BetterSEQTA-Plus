@@ -25,7 +25,7 @@ async function GetTheme() {
 
 async function SetTheme(theme: string) {
   localStorage.setItem('selectedBackground', theme);
-  await browser.storage.local.set({ theme });
+  //await browser.storage.local.set({ theme });
 }
 
 function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProps) {

@@ -10,7 +10,9 @@ export const removeTheme = async (theme: CustomTheme) => {
 
   // Reset default color
   const originalSelectedColor = await browser.storage.local.get('originalSelectedColor') as { originalSelectedColor: string; };
-  await browser.storage.local.set({ selectedColor: originalSelectedColor.originalSelectedColor });
+  if (originalSelectedColor.originalSelectedColor !== '') {
+    await browser.storage.local.set({ selectedColor: originalSelectedColor.originalSelectedColor });
+  }
   
   // Remove custom images
   const customImageVariables = theme.CustomImages.map((image) => image.variableName);
