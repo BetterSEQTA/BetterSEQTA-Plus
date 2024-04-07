@@ -205,7 +205,7 @@ function ThemeCreator() {
           }} className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" />
           {
             !theme.hideThemeName && theme.coverImage ?
-            <div className="absolute z-30">{theme.name}</div> : <></>
+            <div className="absolute z-30 transition-opacity opacity-100 pointer-events-none group-hover:opacity-0">{theme.name}</div> : <></>
           }
           {
             theme.coverImage &&
