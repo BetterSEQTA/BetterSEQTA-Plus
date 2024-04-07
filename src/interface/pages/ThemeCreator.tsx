@@ -92,8 +92,6 @@ function ThemeCreator() {
     const urlParams = new URLSearchParams(window.location.search);
     const themeID = urlParams.get('themeID');
 
-    console.log('ThemeID:', themeID);
-
     if (themeID) {
       getTheme(themeID);
     }

@@ -77,7 +77,6 @@ export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, 
 
   const imageDataPromises = updatedTheme.CustomImages.map(async (image) => {
     if (saveTheme || updateImages) {
-      console.log('Saving image:', image);
       const base64 = await blobToBase64(image.blob);
       return {
         id: image.id,

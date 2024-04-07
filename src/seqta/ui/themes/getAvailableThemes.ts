@@ -7,12 +7,10 @@ import { blobToBase64 } from '../../utils/blobToBase64';
 export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
   try {
     const themeIds = await localforage.getItem('customThemes') as string[] | null;
-    console.log('Available themes:', themeIds);
     if (themeIds) {
       const themes = await Promise.all(
         themeIds.map(async (id) => {
           const theme = await localforage.getItem(id) as CustomTheme;
-          console.log('CoverImage: ', theme.coverImage)
           const { CustomImages, ...themeWithoutImages } = theme;
           return {
             ...themeWithoutImages,
