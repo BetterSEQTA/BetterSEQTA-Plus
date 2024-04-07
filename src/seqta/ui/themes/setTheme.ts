@@ -18,7 +18,7 @@ export const setTheme = async (themeId: string) => {
     if (enabledTheme.selectedTheme) {
       const currentTheme = await localforage.getItem(enabledTheme.selectedTheme) as CustomTheme;
       if (currentTheme) {
-        removeTheme(currentTheme);
+        await removeTheme(currentTheme);
       }
       const color = await browser.storage.local.get('originalSelectedColor') as { originalSelectedColor: string; };
       originalSelectedColor = { selectedColor: color.originalSelectedColor };
