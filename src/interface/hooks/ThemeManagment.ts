@@ -30,8 +30,19 @@ export const listThemes = async (): Promise<ThemeList> => {
     browser.runtime.sendMessage({
       type: 'currentTab',
       info: 'ListThemes'
-    }).then((response) => {
+    }).then(async (response) => {
       if (response) {
+        // convert the response themes coverImage to a bloburl
+        response.themes = await Promise.all(
+          response.themes.map(async (theme: Omit<CustomTheme, 'CustomImages'>) => {
+            if (theme.coverImage) {
+              const blob = await fetch(theme.coverImage as string).then((res) => res.blob());
+              theme.coverImage = URL.createObjectURL(blob);
+            }
+            return theme;
+          })
+        );
+
         resolve(response);
       } else {
         reject(new Error('Failed to get response'));
@@ -81,15 +92,22 @@ export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, 
     };
   });
 
-  Promise.all(imageDataPromises).then((imageData) => {
-    // Send the updated theme with image data to the content script for live preview or saving
+  Promise.all(imageDataPromises).then(async (imageData) => {
+    const themeData = {
+      ...updatedTheme,
+      CustomImages: imageData,
+    };
+
+    if (saveTheme) {
+      themeData.coverImage = await blobToBase64(updatedTheme.coverImage as Blob);
+    } else {
+      themeData.coverImage = null;
+    }
+
     browser.runtime.sendMessage({
       type: 'currentTab',
       info: 'UpdateThemePreview',
-      body: {
-        ...updatedTheme,
-        CustomImages: imageData,
-      },
+      body: themeData,
       save: saveTheme,
     });
 

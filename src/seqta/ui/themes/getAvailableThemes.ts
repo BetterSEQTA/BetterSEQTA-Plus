@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import localforage from 'localforage';
 import { CustomTheme, ThemeList } from '../../../interface/types/CustomThemes';
+import { blobToBase64 } from '../../utils/blobToBase64';
 
 
 export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
@@ -11,8 +12,12 @@ export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
       const themes = await Promise.all(
         themeIds.map(async (id) => {
           const theme = await localforage.getItem(id) as CustomTheme;
+          console.log('CoverImage: ', theme.coverImage)
           const { CustomImages, ...themeWithoutImages } = theme;
-          return themeWithoutImages;
+          return {
+            ...themeWithoutImages,
+            coverImage: theme.coverImage ? await blobToBase64(theme.coverImage as Blob) : '',
+          };
         })
       );
 

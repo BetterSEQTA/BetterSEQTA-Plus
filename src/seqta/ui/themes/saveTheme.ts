@@ -7,6 +7,7 @@ export const saveTheme = async (theme: CustomThemeBase64) => {
   try {
     const updatedTheme: CustomTheme = {
       ...theme,
+      coverImage: theme.coverImage ? await fetch(theme.coverImage).then((res) => res.blob()) : null,
       CustomImages: await Promise.all(
         theme.CustomImages.map(async (image) => ({
           id: image.id,
