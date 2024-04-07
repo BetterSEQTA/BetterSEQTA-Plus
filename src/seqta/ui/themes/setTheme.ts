@@ -30,7 +30,7 @@ export const setTheme = async (themeId: string) => {
 
     await browser.storage.local.set({
       selectedTheme: themeId,
-      selectedColor: theme.defaultColour,
+      selectedColor: theme.defaultColour !== '' ? theme.defaultColour : '#007bff',
       originalSelectedColor: originalSelectedColor.selectedColor
     });
 
