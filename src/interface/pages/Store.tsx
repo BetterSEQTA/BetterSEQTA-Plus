@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { CardBody, CardContainer, CardItem } from '../components/store/card';
 import { Autoplay } from 'swiper/modules';
 import Header from '../components/store/header';
 import { motion } from 'framer-motion';
@@ -8,8 +9,6 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/autoplay';
-import { CardBody, CardContainer, CardItem } from '../components/store/card';
-import { spring } from 'motion';
 
 const Store = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,7 +118,7 @@ const Store = () => {
                 </CardItem>
                 <CardItem>
                   <button className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
-                    Install
+                    Download
                   </button>
                 </CardItem>
               </CardBody>
