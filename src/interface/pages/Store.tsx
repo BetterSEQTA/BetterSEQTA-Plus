@@ -1,68 +1,83 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Scrollbar, Autoplay } from 'swiper/modules';
+import { Autoplay } from 'swiper/modules';
 import Header from '../components/store/header';
+import { motion } from 'framer-motion';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/autoplay';
+import { CardBody, CardContainer, CardItem } from '../components/store/card';
+import { spring } from 'motion';
 
 const Store = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const swiperCover = useRef<any | null>(null);
+  const [filteredThemes, setFilteredThemes] = useState<typeof gridThemes>([]);
+
 
   const coverThemes = [
-    {
-      coverImage: 'https://via.placeholder.com/300x200',
-      name: 'Theme Name',
-      description: 'Theme description goes here.'
-    },
-    {
-      coverImage: 'https://via.placeholder.com/300x200',
-      name: 'Theme Name',
-      description: 'Theme description goes here.'
-    },
-    {
-      coverImage: 'https://via.placeholder.com/300x200',
-      name: 'Theme Name',
-      description: 'Theme description goes here.'
-    }
-  ]
+    { coverImage: 'https://source.unsplash.com/random', name: 'Ocean View', description: 'Feel the ocean breeze with this theme.' },
+    { coverImage: 'https://source.unsplash.com/random?2', name: 'Mountain Majesty', description: 'Elevate your desktop to new heights.' },
+    { coverImage: 'https://source.unsplash.com/random?3', name: 'Urban Explorer', description: 'Bring the city life to your screen.' }
+  ];
+
+  // Additional mocked themes for the grid with varied names
+  const gridThemes = [
+    { image: 'https://source.unsplash.com/random', name: 'Serene Landscapes', description: 'Calm landscapes to soothe your soul.' },
+    { image: 'https://source.unsplash.com/random?4', name: 'Cosmic Energy', description: 'Explore the outer space.' },
+    { image: 'https://source.unsplash.com/random?5', name: 'Abstract Art', description: 'Artistic and abstract designs.' },
+    { image: 'https://source.unsplash.com/random?6', name: 'Nature’s Wonders', description: 'The beauty of nature captured in one theme.' },
+    { image: 'https://source.unsplash.com/random?7', name: 'Techie Vibes', description: 'For the tech enthusiasts.' },
+    { image: 'https://source.unsplash.com/random?8', name: 'Cafe Culture', description: 'Experience the cafe culture on your screen.' },
+  ];
+
+  useEffect(() => {
+    setFilteredThemes(gridThemes.filter(theme =>
+      theme.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ));
+  }, [searchTerm]);
 
   return (
     <div className="w-screen h-screen overflow-y-scroll bg-zinc-100 dark:bg-zinc-900">
       
       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <div className="px-32 py-12">
-        <div className="relative w-full bg-green-100 aspect-[8/3] rounded-xl overflow-clip">
-          <Swiper
-            ref={swiperCover}
-            spaceBetween={0}
-            slidesPerView={1}
-            modules={[Scrollbar, Autoplay]}
-            navigation
-            autoplay={{
-              delay: 5000,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: true
-            }}
-            pagination={{ clickable: true }}
-            scrollbar={{ draggable: true }}    
-            onSlideChange={() => console.log('slide change')}
-            onSwiper={(swiper) => console.log(swiper)}
-          >
-            { coverThemes.map((theme, index) => (
-                <SwiperSlide key={index}>
-                  <img
-                    src={theme.coverImage}
-                    alt="Theme Preview"
-                    className="object-cover w-full h-full"
-                  />
-                </SwiperSlide>
-              )) }
-          </Swiper>
+      <div className="px-24 py-12">
+        <div className={`relative w-full rounded-xl overflow-clip transition-opacity ${searchTerm == '' ? 'opacity-100' : 'opacity-0'}`}>
+          <motion.div className='overflow-clip' animate={{
+            height: searchTerm == '' ? 'auto' : '0px'
+          }} transition={{
+            type: 'spring',
+            bounce: 0,
+            duration: 1,
+            stiffness: 200,
+            damping: 30
+          }}>
+            <Swiper
+              ref={swiperCover}
+              spaceBetween={20}
+              slidesPerView={1}
+              className='w-full aspect-[8/3]'
+              modules={[Autoplay]}
+              autoplay={{
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+              }}
+            >
+              { coverThemes.map((theme, index) => (
+                  <SwiperSlide className='rounded-xl overflow-clip' key={index}>
+                    <img
+                      src={theme.coverImage}
+                      alt="Theme Preview"
+                      className="object-cover w-full h-full"
+                    />
+                  </SwiperSlide>
+                )) }
+            </Swiper>
+          </motion.div>
 
           {/* pagination */}
           <div className='absolute z-10 flex gap-2 bottom-2 right-2'>
@@ -81,30 +96,38 @@ const Store = () => {
 
           </div>
         </div>
+
+        <div className="grid grid-cols-1 gap-8 py-4 mx-auto md:grid-cols-2 lg:grid-cols-3">
+          {filteredThemes.map((theme, index) => (
+            <CardContainer key={index} className='w-full cursor-pointer'>
+              <CardBody className="bg-gray-50 w-full transition-all duration-300 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] h-auto rounded-xl p-6 border">
+                <CardItem
+                    translateZ={30}
+                    className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
+                  {theme.name}
+                </CardItem>
+                <CardItem
+                    as="p"
+                    translateZ={25}
+                    className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
+                  {theme.description}
+                </CardItem>
+                <CardItem
+                    className='w-full'
+                    translateZ={15}>
+                  <img src={theme.image} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
+                </CardItem>
+                <CardItem>
+                  <button className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                    Install
+                  </button>
+                </CardItem>
+              </CardBody>
+            </CardContainer>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {
-          Array.from({ length: 30 }).map((_, index) => (
-          <div key={index} className="overflow-hidden bg-white rounded-lg shadow-md dark:bg-zinc-800">
-            <img
-              src="https://via.placeholder.com/300x200"
-              alt="Theme Preview"
-              className="object-cover w-full h-48"
-            />
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                Theme Name
-              </h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Theme description goes here.
-              </p>
-              <button className="px-4 py-2 mt-4 text-white bg-blue-500 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Install
-              </button>
-            </div>
-          </div>))}
-      </div>
     </div>
   );
 };
