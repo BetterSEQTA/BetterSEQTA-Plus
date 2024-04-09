@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CustomTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
-import { ArrowUpOnSquareIcon, PencilIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 type ThemeCoverProps = {
   theme: Omit<CustomTheme, 'CustomImages'>;
@@ -18,6 +18,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   onThemeSelect,
   onThemeDelete,
 }) => {
+  const [uploading, setUploading] = useState<boolean>(false);
   const handleThemeClick = () => {
     if (isEditMode) return;
     onThemeSelect(theme.id);
@@ -26,6 +27,15 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onThemeDelete(theme.id);
+  };
+
+  const handleShareClick = (event: React.MouseEvent) => {
+    event?.preventDefault();
+    setUploading(true);
+    browser.runtime.sendMessage({ type: 'currentTab', info: 'ShareTheme', body: { themeID: theme.id } }).then((response) => {
+      setUploading(false);
+      browser.tabs.create({ url: `https://share.betterseqta/theme?id=${response.id}&justCreated=true` });
+    });
   };
 
   return (
@@ -55,9 +65,9 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
 
         <div
           className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 top-1 right-12 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
-          onClick={(event) => { event?.preventDefault(), browser.runtime.sendMessage({ type: 'currentTab', info: 'ShareTheme', body: { themeID: theme.id } }) }}
+          onClick={handleShareClick}
         >
-          <ArrowUpOnSquareIcon className="w-4 h-4" />
+          {uploading ? <LoadingSpinner size={16} /> : <ArrowUpOnSquareIcon className="w-4 h-4" />}
         </div>
       </>
       }
@@ -78,3 +88,8 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
     </button>
   );
 };
+
+const LoadingSpinner = ({ size }: { size: number }) => {
+  return <div style={{ width: `${size}px`, height: `${size}px` }} className={`animate-spin rounded-full border-2 border-white border-t-2 border-t-transparent`}></div>;
+};
+
