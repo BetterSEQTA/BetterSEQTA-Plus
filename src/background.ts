@@ -1,5 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import browser from 'webextension-polyfill'
+import { onError } from './seqta/utils/onError';
+import { SettingsState } from "./types/storage";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
@@ -14,8 +16,6 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   }
 })
 
-import { onError } from './seqta/utils/onError';
-import { SettingsState } from "./types/storage";
 export const openDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('MyDatabase', 1);
@@ -84,7 +84,13 @@ function reloadSeqtaPages() {
   result.then(open, onError)
 }
 
-// Helper function to handle setting permissions
+browser.tabs.onUpdated.addListener((tabId, _, tab) => {
+  if (tab.url?.includes('share.betterseqta')) {
+    const id = new URL(tab.url).searchParams.get('id');
+    const justCreated = new URL(tab.url).searchParams.get('justCreated');
+    browser.tabs.update(tabId, { url: `${browser.runtime.getURL('src/interface/index.html')}?id=${id}&justCreated=${justCreated}#theme` });
+  }
+});
 
 // Main message listener
 browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse: any) => {
