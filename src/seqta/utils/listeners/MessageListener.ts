@@ -9,6 +9,7 @@ import { getTheme } from '../../ui/themes/getTheme';
 import { setTheme } from '../../ui/themes/setTheme';
 import { disableTheme } from '../../ui/themes/disableTheme';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
+import ShareTheme from '../../ui/themes/shareTheme';
 
 export class MessageHandler {
   constructor() {
@@ -80,6 +81,12 @@ export class MessageHandler {
         closeSettings();
         sendResponse({ status: 'success' });
         break;
+      
+      case 'ShareTheme':
+        ShareTheme(request.body.themeID).then((id) => {
+          sendResponse({ status: 'success', id });
+        });
+        return true;
 
       case 'CloseThemeCreator':
         CloseThemeCreator();
