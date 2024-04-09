@@ -1,7 +1,7 @@
 import React from 'react';
 import { CustomTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import { ArrowUpOnSquareIcon, PencilIcon, ShareIcon } from '@heroicons/react/24/outline';
 
 type ThemeCoverProps = {
   theme: Omit<CustomTheme, 'CustomImages'>;
@@ -45,12 +45,21 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       )}
       
       { isEditMode ? <></> :
+      <>
         <div
-          className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 top-1 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-2"
-          onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } })}
+          className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
+          onClick={(event) => { event?.preventDefault(), browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator', body: { themeID: theme.id } }) }}
         >
           <PencilIcon className="w-4 h-4" />
         </div>
+
+        <div
+          className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full opacity-0 top-1 right-12 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
+          onClick={(event) => { event?.preventDefault(), browser.runtime.sendMessage({ type: 'currentTab', info: 'ShareTheme', body: { themeID: theme.id } }) }}
+        >
+          <ArrowUpOnSquareIcon className="w-4 h-4" />
+        </div>
+      </>
       }
 
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
