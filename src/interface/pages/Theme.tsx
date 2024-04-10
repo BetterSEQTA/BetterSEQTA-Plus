@@ -96,7 +96,7 @@ const Theme = () => {
             <p className="mb-8">{theme.description}</p>
             <button
                 className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-pointer rounded-2xl ring-white/20 hover:ring-white/10 ring-1 bg-zinc-950/20 hover:bg-zinc-950/40"
-                onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'DownloadTheme', body: { themeID: themeID } }) }
+                onClick={() => browser.runtime.sendMessage({ type: 'DownloadTheme', body: { theme } }) }
             >
               Install Theme
             </button>

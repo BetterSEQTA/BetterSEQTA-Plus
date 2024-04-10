@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/browser";
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
+import DownloadTheme from "./seqta/ui/themes/downloadTheme";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
@@ -140,6 +141,10 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
 
     GetNews(sendResponse, url);
     return true;
+  
+  case 'DownloadTheme':
+    DownloadTheme(request.body.theme);
+    break;
       
   default:
     console.log('Unknown request type');

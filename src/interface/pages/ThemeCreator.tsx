@@ -99,7 +99,7 @@ function ThemeCreator() {
   }, []);
 
   const generateImageId = () => {
-    return '_' + Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).substr(2, 9);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -25,7 +25,6 @@ const shareTheme = async (themeID: string) => {
         id: image.id,
         data: finalImage,
       });
-
     }
 
 
