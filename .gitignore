@@ -6,6 +6,7 @@ pnpm-lock.yaml
 yarn.lock
 
 .parcel-cache
+.env
 
 # Build
 extension.zip
