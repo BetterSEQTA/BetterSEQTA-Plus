@@ -66,7 +66,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
         </div>
       )}
       
-      { !isEditMode || !downloaded &&
+      { isEditMode || !downloaded &&
       <>
         <div
           className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"

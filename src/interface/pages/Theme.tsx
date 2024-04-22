@@ -7,6 +7,7 @@ import { LinkIcon } from "@heroicons/react/24/outline";
 import { ToastContainer, toast } from 'react-toastify';
 import browser from 'webextension-polyfill';
 import 'react-toastify/dist/ReactToastify.css';
+import localforage from "localforage";
 
 const pb = new PocketBase('https://betterseqta.pockethost.io');
 
@@ -16,6 +17,7 @@ const Theme = () => {
   const [themeID, setThemeID] = useState<string>('');
   const [justCreated, setJustCreated] = useState(false);
   const [displayConfetti, setDisplayConfetti] = useState(true);
+  const [currentThemes, setCurrentThemes] = useState<string[]>([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -37,6 +39,9 @@ const Theme = () => {
       console.log(theme);
       setIsLoading(false);
       setTheme(theme);
+
+      const availableThemes = await localforage.getItem('availableThemes') as string[];
+      setCurrentThemes(availableThemes)  
     }
 
     if (themeID && themeID !== 'null') {
@@ -94,12 +99,24 @@ const Theme = () => {
             <div className="text-center">
             <h2 className="mb-2 text-2xl font-bold">{theme.name}</h2>
             <p className="mb-8">{theme.description}</p>
-            <button
-                className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-pointer rounded-2xl ring-white/20 hover:ring-white/10 ring-1 bg-zinc-950/20 hover:bg-zinc-950/40"
-                onClick={() => browser.runtime.sendMessage({ type: 'DownloadTheme', body: { theme } }) }
-            >
-              Install Theme
-            </button>
+            {
+              /* currentThemes.includes((theme.theme as { id: string }).id) */ false ?
+              <button
+                  className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-not-allowed rounded-2xl ring-white/20 ring-1 bg-zinc-950/20"
+              >
+                Theme Installed
+              </button>
+            :
+              <button
+                  className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-pointer rounded-2xl ring-white/20 hover:ring-white/10 ring-1 bg-zinc-950/20 hover:bg-zinc-950/40"
+                  onClick={() => {
+                    browser.runtime.sendMessage({ type: 'DownloadTheme', body: { theme } });
+                    setCurrentThemes([...currentThemes, (theme.theme as { id: string }).id]);
+                  }}
+              >
+                Install Theme
+              </button>
+            }
             </div>
           )}
           <ToastContainer theme="dark" />
