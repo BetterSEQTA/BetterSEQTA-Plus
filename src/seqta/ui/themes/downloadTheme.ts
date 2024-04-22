@@ -2,7 +2,6 @@
 import localforage from 'localforage';
 import { ThemesResponse } from '../../../interface/types/pocketbase-types';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
-import browser from 'webextension-polyfill';
 
 const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { images: { id: string, variableName: string }[] } }) => {
   const images: { imageData: Blob, imageID: string }[] = []
@@ -36,12 +35,12 @@ const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { im
     CustomImages: theme.theme.images.map((image) => {
       return {
         ...image,
-        blob: images.find((i) => i.imageID.split('_')[0] === image.id)?.imageData
+        blob: images.find((img) => {
+          return image.id.includes(img.imageID.split('_')[0]);
+        })?.imageData
       }
     })
   });
-
-  browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
 }
 
 export default DownloadTheme;

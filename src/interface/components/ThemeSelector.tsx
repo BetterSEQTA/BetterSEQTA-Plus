@@ -59,6 +59,17 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       setThemes(themes);
       setDownloadedThemes(await getDownloadedThemes());
       setSelectedTheme(selectedTheme ? selectedTheme : '');
+
+      const matchingThemes = themes.filter(theme => downloadedThemes.some((downloadedTheme: DownloadedTheme) => downloadedTheme.id === theme.id));
+      if (matchingThemes.length > 0) {
+        matchingThemes.forEach((theme) => {
+          browser.runtime.sendMessage({
+            type: 'DeleteDownloadedTheme',
+            body: theme.id
+          })
+        })
+      }
+
     } catch (error) {
       console.error('Error fetching themes:', error);
     } finally {
