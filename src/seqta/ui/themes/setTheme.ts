@@ -34,6 +34,7 @@ export const setTheme = async (themeId: string) => {
       originalSelectedColor: originalSelectedColor.selectedColor
     });
 
+    browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
   } catch (error) {
     console.error('Error setting theme:', error);
   }
