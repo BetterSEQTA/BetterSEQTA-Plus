@@ -22,10 +22,14 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   onThemeDelete,
 }) => {
   const [uploading, setUploading] = useState<boolean>(false);
-  const handleThemeClick = () => {
+  const handleThemeClick = async () => {
     if (isEditMode) return;
     if (downloaded) {
-      sendThemeUpdate(theme as DownloadedTheme, true)
+      await sendThemeUpdate(theme as DownloadedTheme, true)
+      browser.runtime.sendMessage({
+        type: 'DeleteDownloadedTheme',
+        body: theme.id
+      })
     } else {
       console.log(theme)
       onThemeSelect(theme.id);

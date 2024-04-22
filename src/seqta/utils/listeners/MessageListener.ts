@@ -31,6 +31,7 @@ export class MessageHandler {
             await saveTheme(request.body)
             await setTheme(request.body.id)
             sendResponse({ status: 'success' });
+            browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
           }
           save()
         } else {

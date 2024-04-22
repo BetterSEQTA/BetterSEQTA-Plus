@@ -2,6 +2,7 @@
 import localforage from 'localforage';
 import { ThemesResponse } from '../../../interface/types/pocketbase-types';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
+import browser from 'webextension-polyfill';
 
 const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { images: { id: string, variableName: string }[] } }) => {
   const images: { imageData: Blob, imageID: string }[] = []
@@ -39,6 +40,8 @@ const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { im
       }
     })
   });
+
+  browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
 }
 
 export default DownloadTheme;
