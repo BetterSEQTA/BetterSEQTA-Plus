@@ -12,6 +12,10 @@ export type CustomTheme = {
   hideThemeName: boolean;
 }
 
+export type DownloadedTheme = CustomTheme & {
+  webURL: string;
+}
+
 export type CustomImage = {
   id: string;
   blob: Blob;

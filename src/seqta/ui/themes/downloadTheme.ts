@@ -15,7 +15,9 @@ const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { im
     images.push({ imageData, imageID });
   }
 
-  console.log("Original Theme", theme);
+  const coverImage = await fetch(
+    `https://betterseqta.pockethost.io/api/files/${theme.collectionId}/${theme.id}/${theme.coverImage}`
+  );
 
   // add to temp storage index
   let availableThemes = await localforage.getItem('availableThemes') as string[];
@@ -26,13 +28,14 @@ const DownloadTheme = async (theme: ThemesResponse & { theme: CustomTheme & { im
   }
   localforage.setItem('availableThemes', availableThemes);
 
-  // save the theme to the temp storage
   localforage.setItem(theme.theme.id, {
     ...theme.theme,
-    images: theme.theme.images.map((image) => {
+    webURL: theme.id,
+    coverImage: await coverImage.blob(),
+    CustomImages: theme.theme.images.map((image) => {
       return {
         ...image,
-        imageData: images.find((i) => i.imageID.split('_')[0] === image.id)?.imageData
+        blob: images.find((i) => i.imageID.split('_')[0] === image.id)?.imageData
       }
     })
   });

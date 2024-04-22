@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
-import { listThemes, deleteTheme, setTheme, disableTheme } from '../hooks/ThemeManagment';
+import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
 import { ThemeCover } from './ThemeCover';
 import Browser from 'webextension-polyfill';
-import { CustomTheme } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
 
@@ -13,6 +13,7 @@ interface ThemeSelectorProps {
 
 const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> & RefAttributes<any>> = forwardRef(({ isEditMode = false }, ref) => {
   const [themes, setThemes] = useState<Omit<CustomTheme, 'CustomImages'>[]>([]);
+  const [downloadedThemes, setDownloadedThemes] = useState<DownloadedTheme[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { settingsState, setSettingsState } = useSettingsContext();
 
@@ -56,6 +57,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       const { themes, selectedTheme } = await listThemes();
 
       setThemes(themes);
+      setDownloadedThemes(await getDownloadedThemes());
       setSelectedTheme(selectedTheme ? selectedTheme : '');
     } catch (error) {
       console.error('Error fetching themes:', error);
@@ -110,6 +112,18 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         {themes.map((theme) => (
           <ThemeCover
             key={theme.id}
+            theme={theme}
+            isSelected={theme.id === settingsState.selectedTheme}
+            isEditMode={isEditMode}
+            onThemeSelect={handleThemeSelect}
+            onThemeDelete={handleThemeDelete}
+          />
+        ))}
+
+        {downloadedThemes.map((theme) => (
+          <ThemeCover
+            key={theme.id}
+            downloaded={true}
             theme={theme}
             isSelected={theme.id === settingsState.selectedTheme}
             isEditMode={isEditMode}
