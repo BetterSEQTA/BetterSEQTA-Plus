@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
 import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
 import { ThemeCover } from './ThemeCover';
-import Browser from 'webextension-polyfill';
+import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
@@ -37,14 +37,14 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       fetchThemes();
     };
 
-    Browser.runtime.onMessage.addListener((message) => {
+    browser.runtime.onMessage.addListener((message) => {
       if (message.info === 'themeChanged') {
         handleThemeChange();
       }
     });
 
     return () => {
-      Browser.runtime.onMessage.removeListener((message) => {
+      browser.runtime.onMessage.removeListener((message) => {
         if (message.info === 'themeChanged') {
           handleThemeChange();
         }
@@ -133,7 +133,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         ))}
 
         <button
-          onClick={() => Browser.tabs.create({ url: Browser.runtime.getURL('src/interface/index.html#store')})}
+          onClick={() => browser.tabs.create({ url: browser.runtime.getURL('src/interface/index.html#store')})}
           className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
         >
           <span className="text-xl font-IconFamily">{'\uecc5'}</span>
@@ -141,7 +141,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         </button>
 
         <button
-          onClick={() => Browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator' })}
+          onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenThemeCreator' })}
           className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
         >
           <span className="text-xl font-IconFamily">{'\uec60'}</span>

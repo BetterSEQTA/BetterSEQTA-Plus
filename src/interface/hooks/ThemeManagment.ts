@@ -96,7 +96,7 @@ export const deleteTheme = async (themeID: string) => {
   });
 }
 
-export const sendThemeUpdate = (updatedTheme: CustomTheme | DownloadedTheme, saveTheme?: boolean, updateImages?: boolean) => {
+export const sendThemeUpdate = async (updatedTheme: CustomTheme | DownloadedTheme, saveTheme?: boolean, updateImages?: boolean) => {
   saveTheme = saveTheme || false;
 
   const imageDataPromises = updatedTheme.CustomImages.map(async (image) => {

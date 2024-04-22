@@ -3,6 +3,7 @@ import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
 import DownloadTheme from "./seqta/ui/themes/downloadTheme";
+import localforage from "localforage";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
   if (telemetry.telemetry === true) {
@@ -16,6 +17,26 @@ browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
     });
   }
 })
+
+const DeleteDownloadedTheme = async (themeID: string) => {
+  console.log('DeleteDownloaded Theme:', themeID)
+  await localforage.removeItem(themeID);
+
+  const availableThemesList = await localforage.getItem('availableThemes') as string[];
+  const updatedThemesList = availableThemesList.filter(theme => theme !== themeID);
+
+  await localforage.setItem('availableThemes', updatedThemesList);
+
+  browser.tabs.query({}).then(function (tabs) {
+    for (let tab of tabs) {
+      if (tab.url?.includes('chrome-extension://')) {
+        browser.tabs.sendMessage(tab.id!, {
+          info: 'themeChanged'
+        });
+      }
+    }
+  });
+}
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {
@@ -144,6 +165,10 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
   
   case 'DownloadTheme':
     DownloadTheme(request.body.theme);
+    break;
+
+  case 'DeleteDownloadedTheme':
+    DeleteDownloadedTheme(request.body);
     break;
       
   default:
