@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { CustomTheme } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
 import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { sendThemeUpdate } from '../hooks/ThemeManagment';
 
 type ThemeCoverProps = {
-  theme: Omit<CustomTheme, 'CustomImages'>;
+  theme: Omit<CustomTheme, 'CustomImages'> | DownloadedTheme;
   isSelected: boolean;
   isEditMode: boolean;
+  downloaded?: boolean;
   onThemeSelect: (themeId: string) => void;
   onThemeDelete: (themeId: string) => void;
 };
 
 export const ThemeCover: React.FC<ThemeCoverProps> = ({
   theme,
+  downloaded,
   isSelected,
   isEditMode,
   onThemeSelect,
@@ -21,7 +24,12 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   const [uploading, setUploading] = useState<boolean>(false);
   const handleThemeClick = () => {
     if (isEditMode) return;
-    onThemeSelect(theme.id);
+    if (downloaded) {
+      sendThemeUpdate(theme as DownloadedTheme, true)
+    } else {
+      console.log(theme)
+      onThemeSelect(theme.id);
+    }
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -54,7 +62,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
         </div>
       )}
       
-      { isEditMode ? <></> :
+      { !isEditMode || !downloaded &&
       <>
         <div
           className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1 right-2 dark:bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
@@ -75,7 +83,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
         {theme.coverImage &&
           <img
-            src={theme.coverImage as string}
+            src={(typeof theme.coverImage) == 'string' ? theme.coverImage as string : URL.createObjectURL(theme.coverImage as Blob)}
             alt={theme.name}
             className="absolute inset-0 z-0 object-cover"
           />

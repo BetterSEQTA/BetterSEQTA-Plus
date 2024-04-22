@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill'
-import { CustomTheme, ThemeList } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme, ThemeList } from '../types/CustomThemes';
+import localforage from 'localforage';
 
 export const downloadTheme = async (themeName: string, themeURL: string) => {
   // send message to the background script
@@ -22,6 +23,29 @@ export const setTheme = async (themeID: string) => {
       themeID: themeID
     }
   });
+}
+
+export const getDownloadedThemes = async (): Promise<DownloadedTheme[]> => {
+  // send message to the background script
+  const response: DownloadedTheme[] = await new Promise(async (resolve, reject) => {
+    try {
+      let availableThemes = await localforage.getItem('availableThemes') as string[];
+      availableThemes = Array.from(new Set(availableThemes));
+
+      const downloadedThemes: DownloadedTheme[] = [];
+      for (let i = 0; i < availableThemes.length; i++) {
+        let themeData = await localforage.getItem(availableThemes[i]) as DownloadedTheme;
+
+        downloadedThemes.push(themeData);
+      }
+  
+      resolve(downloadedThemes);
+    } catch(error) {
+      reject(error);
+    }
+  });
+
+  return response;
 }
 
 export const listThemes = async (): Promise<ThemeList> => {
@@ -72,7 +96,7 @@ export const deleteTheme = async (themeID: string) => {
   });
 }
 
-export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, updateImages?: boolean) => {
+export const sendThemeUpdate = (updatedTheme: CustomTheme | DownloadedTheme, saveTheme?: boolean, updateImages?: boolean) => {
   saveTheme = saveTheme || false;
 
   const imageDataPromises = updatedTheme.CustomImages.map(async (image) => {
@@ -97,7 +121,7 @@ export const sendThemeUpdate = (updatedTheme: CustomTheme, saveTheme?: boolean, 
       CustomImages: imageData,
     };
 
-    if (saveTheme && updatedTheme.coverImage instanceof Blob) {
+    if (saveTheme && updatedTheme.coverImage) {
       themeData.coverImage = await blobToBase64(updatedTheme.coverImage as Blob);
     } else {
       themeData.coverImage = null;
