@@ -98,31 +98,27 @@ const Store = () => {
 
         <div className="grid grid-cols-1 gap-8 py-4 mx-auto md:grid-cols-2 lg:grid-cols-3">
           {filteredThemes.map((theme, index) => (
-            <CardContainer key={index} className='w-full cursor-pointer'>
-              <CardBody className="bg-gray-50 w-full transition-all duration-300 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] h-auto rounded-xl p-6 border">
-                <CardItem
-                    translateZ={30}
+            <div key={index} className='w-full cursor-pointer'>
+              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] h-auto rounded-xl p-6 border">
+                <div
                     className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
                   {theme.name}
-                </CardItem>
-                <CardItem
-                    as="p"
-                    translateZ={25}
-                    className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
+                </div>
+                <p
+                  className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
                   {theme.description}
-                </CardItem>
-                <CardItem
-                    className='w-full'
-                    translateZ={15}>
+                </p>
+                <div
+                    className='w-full'>
                   <img src={theme.image} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
-                </CardItem>
-                <CardItem>
+                </div>
+                <div>
                   <button className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
                     Download
                   </button>
-                </CardItem>
-              </CardBody>
-            </CardContainer>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
