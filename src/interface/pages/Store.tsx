@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { CardBody, CardContainer, CardItem } from '../components/store/card';
 import { Autoplay } from 'swiper/modules';
 import Header from '../components/store/header';
 import { motion } from 'framer-motion';
@@ -96,18 +95,20 @@ const Store = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 py-4 mx-auto md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
           {filteredThemes.map((theme, index) => (
             <div key={index} className='w-full cursor-pointer'>
-              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] h-auto rounded-xl p-6 border">
-                <div
-                    className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
-                  {theme.name}
+              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card flex flex-col dark:hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl p-6 border">
+                <div>
+
+                  <div className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
+                    {theme.name}
+                  </div>
+                  <p className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
+                    {theme.description}
+                  </p>
+
                 </div>
-                <p
-                  className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
-                  {theme.description}
-                </p>
                 <div
                     className='w-full'>
                   <img src={theme.image} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
