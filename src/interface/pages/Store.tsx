@@ -3,39 +3,47 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import Header from '../components/store/header';
 import { motion } from 'framer-motion';
-
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/autoplay';
 
+interface Theme {
+  name: string;
+  description: string;
+  coverImage: string;
+  marqueeImage: string;
+  id: string;
+}
+
+interface ThemesResponse {
+  themes: Theme[];
+}
+
 const Store = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const swiperCover = useRef<any | null>(null);
-  const [filteredThemes, setFilteredThemes] = useState<typeof gridThemes>([]);
+  const [gridThemes, setGridThemes] = useState<Theme[]>([]);
+  const [filteredThemes, setFilteredThemes] = useState<Theme[]>([]);
+  const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
 
-
-  const coverThemes = [
-    { coverImage: 'https://source.unsplash.com/random', name: 'Ocean View', description: 'Feel the ocean breeze with this theme.' },
-    { coverImage: 'https://source.unsplash.com/random?2', name: 'Mountain Majesty', description: 'Elevate your desktop to new heights.' },
-    { coverImage: 'https://source.unsplash.com/random?3', name: 'Urban Explorer', description: 'Bring the city life to your screen.' }
-  ];
-
-  // Additional mocked themes for the grid with varied names
-  const gridThemes = [
-    { image: 'https://source.unsplash.com/random', name: 'Serene Landscapes', description: 'Calm landscapes to soothe your soul.' },
-    { image: 'https://source.unsplash.com/random?4', name: 'Cosmic Energy', description: 'Explore the outer space.' },
-    { image: 'https://source.unsplash.com/random?5', name: 'Abstract Art', description: 'Artistic and abstract designs.' },
-    { image: 'https://source.unsplash.com/random?6', name: 'Nature’s Wonders', description: 'The beauty of nature captured in one theme.' },
-    { image: 'https://source.unsplash.com/random?7', name: 'Techie Vibes', description: 'For the tech enthusiasts.' },
-    { image: 'https://source.unsplash.com/random?8', name: 'Cafe Culture', description: 'Experience the cafe culture on your screen.' },
-  ];
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json')
+      .then(response => response.json())
+      .then((data: ThemesResponse) => {
+        setGridThemes(data.themes);
+        // Select up to 3 random themes to display in coverThemes
+        const shuffled = [...data.themes].sort(() => 0.5 - Math.random());
+        setCoverThemes(shuffled.slice(0, 3));
+      })
+      .catch(error => console.error('Failed to fetch themes', error));
+  }, []);
 
   useEffect(() => {
     setFilteredThemes(gridThemes.filter(theme =>
       theme.name.toLowerCase().includes(searchTerm.toLowerCase())
     ));
-  }, [searchTerm]);
+  }, [searchTerm, gridThemes]);
 
   return (
     <div className="w-screen h-screen overflow-y-scroll bg-zinc-100 dark:bg-zinc-900">
@@ -66,12 +74,19 @@ const Store = () => {
               }}
             >
               { coverThemes.map((theme, index) => (
-                  <SwiperSlide className='rounded-xl overflow-clip' key={index}>
+                  <SwiperSlide className='relative rounded-xl overflow-clip' key={index}>
                     <img
-                      src={theme.coverImage}
+                      src={theme.marqueeImage}
                       alt="Theme Preview"
                       className="object-cover w-full h-full"
                     />
+                    <div className='absolute bottom-0 left-0 p-8 z-[1]'>
+                      <h2 className='text-4xl font-bold text-white'>{theme.name}</h2>
+                      <p className='text-lg text-white'>{theme.description}</p>
+                    </div>
+
+                    {/* shadow from the bottom of the image */}
+                    <div className='absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/80 to-transparent' />
                   </SwiperSlide>
                 )) }
             </Swiper>
@@ -111,7 +126,7 @@ const Store = () => {
                 </div>
                 <div
                     className='w-full'>
-                  <img src={theme.image} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
+                  <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
                 </div>
                 <div>
                   <button className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
