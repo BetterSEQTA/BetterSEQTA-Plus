@@ -5,8 +5,8 @@ export default function header({ searchTerm, setSearchTerm }: { searchTerm: stri
   return <header className="sticky top-0 z-50 w-full bg-white border-b shadow-md border-b-white/10 dark:bg-zinc-800/90 backdrop-blur-xl">
     <div className="flex items-center justify-between px-4 py-1">
       <div className="cursor-pointer" onClick={() => setSearchTerm('')}>
-        <img src={logo} className="h-16 dark:hidden" />
-        <img src={logoDark} className="hidden h-16 dark:block" />
+        <img src={logo} className="h-14 dark:hidden" />
+        <img src={logoDark} className="hidden h-14 dark:block" />
       </div>
       <div className="relative">
         <input

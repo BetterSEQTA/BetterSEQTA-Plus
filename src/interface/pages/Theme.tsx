@@ -100,11 +100,11 @@ const Theme = () => {
                 <h2 className="mb-2 text-2xl font-bold">{theme.name}</h2>
                 <p className="mb-8">{theme.description}</p>
                 {
-                  /* currentThemes.includes((theme.theme as { id: string }).id) */ false ?
+                  currentThemes.includes((theme.theme as { id: string }).id) ?
                   <button
                       className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-not-allowed rounded-2xl ring-white/20 ring-1 bg-zinc-950/20"
                   >
-                    Theme Installed
+                    Theme Downloaded!
                   </button>
                 :
                   <button
@@ -114,7 +114,7 @@ const Theme = () => {
                         setCurrentThemes([...currentThemes, (theme.theme as { id: string }).id]);
                       }}
                   >
-                    Install Theme
+                    Download Theme
                   </button>
                 }
               </>
