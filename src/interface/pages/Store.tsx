@@ -45,8 +45,12 @@ const Store = () => {
     ));
   }, [searchTerm, gridThemes]);
 
+  const downloadTheme = (id: string) => {
+    window.open(`https://betterseqta.pockethost.io/api/v1/themes/${id}/download`, '_blank');
+  };
+
   return (
-    <div className="w-screen h-screen overflow-y-scroll bg-zinc-100 dark:bg-zinc-900">
+    <div className="w-screen h-screen overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900">
       
       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
@@ -131,7 +135,9 @@ const Store = () => {
                   <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
                 </div>
                 <div>
-                  <button className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                  <button
+                    onClick={() => downloadTheme(theme.id)}
+                    className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
                     Download
                   </button>
                 </div>
