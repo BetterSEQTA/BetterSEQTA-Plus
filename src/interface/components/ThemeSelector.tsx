@@ -79,20 +79,10 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   
   useEffect(() => {
     fetchThemes();
-
-    /* const interval = setInterval(() => {
-      console.log("Done!");
-      if (isLoading == true) {
-        fetchThemes();
-      } else {
-        clearInterval(interval);
-      }
-    }, 1000); */
   }, []);
 
   const handleThemeSelect = useCallback(
     async (themeId: string) => {
-      console.log(themeId === settingsState.selectedTheme);
       if (themeId === settingsState.selectedTheme) {
         await disableTheme();
         setSelectedTheme('');
