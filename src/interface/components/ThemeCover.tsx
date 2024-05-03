@@ -25,14 +25,17 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   const handleThemeClick = async () => {
     if (isEditMode) return;
     if (downloaded) {
+      // move the theme from temporary storage to SEQTAs storage
       await sendThemeUpdate(theme as DownloadedTheme, true)
+      // remove from temp storage
       await browser.runtime.sendMessage({
         type: 'DeleteDownloadedTheme',
         body: theme.id
       })
+      // set it!
       setTheme(theme.id);
     } else {
-      console.log(theme)
+      console.debug(theme)
       onThemeSelect(theme.id);
     }
   };
