@@ -83,9 +83,7 @@ export default class StorageListener {
         break;
       
       case 'theme':
-        if (changes.theme.newValue === '' && changes.theme.oldValue !== '') {
-          document.querySelector('iframe#background')?.remove();
-        } else if (changes.theme.newValue !== '' && changes.theme.oldValue === '') appendBackgroundToUI();
+        console.log(changes.theme.newValue)
         break;
 
       default:
