@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill'
+import { debounce } from 'lodash';
 
 import {
   CreateBackground,
@@ -11,13 +12,18 @@ import {
 } from '../../../SEQTA';
 import { updateBgDurations } from '../../ui/Animation';
 import { getDarkMode, updateAllColors } from '../../ui/colors/Manager';
-import { appendBackgroundToUI } from '../../ui/ImageBackgrounds';
+//import { appendBackgroundToUI } from '../../ui/ImageBackgrounds';
+import { setTheme } from '../../ui/themes/setTheme';
+import { disableTheme } from '../../ui/themes/disableTheme';
 
 
 export default class StorageListener {
   darkMode: any;
+  debouncedSetTheme: any;
+  
   constructor() {
     this.darkMode = getDarkMode();
+    this.debouncedSetTheme = debounce(this.applyTheme, 300); // 300 ms debounce period
     browser.storage.onChanged.addListener(this.handleStorageChanges.bind(this));
   }
 
@@ -82,15 +88,23 @@ export default class StorageListener {
         }
         break;
       
-      case 'theme':
-        console.log(changes.theme.newValue)
+      case 'selectedTheme':
+        this.debouncedSetTheme(changes.selectedTheme.newValue);
         break;
 
       default:
         break;
       }
     });
-  }  
+  }
+
+  applyTheme(theme: string) {
+    if (theme === '') {
+      disableTheme();
+    } else {
+      setTheme(theme);
+    }
+  }
 
   handleSelectedColorChange(newColor: any) {
     try {
