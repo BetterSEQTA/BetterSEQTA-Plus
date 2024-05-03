@@ -28,7 +28,7 @@ const Store = () => {
   const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json')
+    fetch('https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json', { cache: 'no-store' })
       .then(response => response.json())
       .then((data: ThemesResponse) => {
         setGridThemes(data.themes);
@@ -41,7 +41,7 @@ const Store = () => {
 
   useEffect(() => {
     setFilteredThemes(gridThemes.filter(theme =>
-      theme.name.toLowerCase().includes(searchTerm.toLowerCase())
+      theme.name.toLowerCase().includes(searchTerm.toLowerCase()) || theme.description.toLowerCase().includes(searchTerm.toLowerCase())
     ));
   }, [searchTerm, gridThemes]);
 
@@ -65,10 +65,12 @@ const Store = () => {
               ref={swiperCover}
               spaceBetween={20}
               slidesPerView={1}
+              loop={true}
               className='w-full aspect-[8/3]'
               modules={[Autoplay]}
               autoplay={{
                 delay: 5000,
+                stopOnLastSlide: false,
                 disableOnInteraction: false,
                 pauseOnMouseEnter: true
               }}
@@ -113,7 +115,7 @@ const Store = () => {
         <div className="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
           {filteredThemes.map((theme, index) => (
             <div key={index} className='w-full cursor-pointer'>
-              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card flex flex-col dark:hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl p-6 border">
+              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl p-6 border">
                 <div>
 
                   <div className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
@@ -136,7 +138,14 @@ const Store = () => {
               </div>
             </div>
           ))}
+
         </div>
+        {filteredThemes.length == 0 && (
+          <div className="flex flex-col items-center justify-center w-full text-center h-96">
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">That doesnt exist! 😭😭😭</h1>
+            <p className="mt-6 text-lg leading-7 text-gray-600">Sorry, we couldn’t find the theme you’re looking for. Maybe... you could create it?</p>
+          </div>
+        )}
       </div>
 
     </div>
