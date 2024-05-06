@@ -5,6 +5,7 @@ import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
+import { debounce } from 'lodash';
 
 interface ThemeSelectorProps {
   isEditMode: boolean;
@@ -22,6 +23,13 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       ...prevState,
       selectedTheme: themeId,
     }));
+
+    /* debounce(() => {
+      setSettingsState((prevState: SettingsState) => ({
+        ...prevState,
+        selectedTheme: themeId,
+      }));
+    }, 50); */
   }
 
   useImperativeHandle(ref, () => ({
@@ -33,19 +41,19 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
   useEffect(() => {
     const handleThemeChange = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      //await new Promise((resolve) => setTimeout(resolve, 500));
       fetchThemes();
     };
 
-    browser.runtime.onMessage.addListener((message) => {
-      if (message.info === 'themeChanged') {
+    window.addEventListener('message', (message) => {
+      if (message.data.type === 'themeChanged') {
         handleThemeChange();
       }
     });
 
     return () => {
-      browser.runtime.onMessage.removeListener((message) => {
-        if (message.info === 'themeChanged') {
+      window.removeEventListener('message', (message) => {
+        if (message.data.type === 'themeChanged') {
           handleThemeChange();
         }
       });
@@ -91,6 +99,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         if (selectedTheme) {
           await setTheme(selectedTheme.id);
           setSelectedTheme(themeId);
+          //debounce(() => setSelectedTheme(selectedTheme.id), 100);
         }
       }
     },
@@ -113,7 +122,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   );
 
   if (isLoading) {
-    return <div>Loading themes...</div>;
+    return <div className='text-center'>Loading themes...</div>;
   }
 
   return (

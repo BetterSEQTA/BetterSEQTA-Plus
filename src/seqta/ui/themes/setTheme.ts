@@ -3,6 +3,7 @@ import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import { applyTheme } from './applyTheme';
 import { removeTheme } from './removeTheme';
+import sendThemeUpdate from '../../utils/sendThemeUpdate';
 
 
 export const setTheme = async (themeId: string) => {
@@ -10,12 +11,16 @@ export const setTheme = async (themeId: string) => {
     const enabledTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
     const theme = await localforage.getItem(themeId) as CustomTheme;
 
+    console.log(enabledTheme, theme)
+
     console.debug('Loading theme', theme);
 
     let originalSelectedColor = { selectedColor: '' };
 
+    const styleElement = document.getElementById('custom-theme');
+
     // Remove the currently enabled theme
-    if (enabledTheme.selectedTheme) {
+    if (enabledTheme.selectedTheme || styleElement) {
       const currentTheme = await localforage.getItem(enabledTheme.selectedTheme) as CustomTheme;
       if (currentTheme) {
         await removeTheme(currentTheme);
@@ -34,7 +39,7 @@ export const setTheme = async (themeId: string) => {
       originalSelectedColor: originalSelectedColor.selectedColor
     });
 
-    browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
+    sendThemeUpdate();
   } catch (error) {
     console.error('Error setting theme:', error);
   }

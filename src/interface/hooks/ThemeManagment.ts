@@ -136,7 +136,6 @@ export const sendThemeUpdate = async (updatedTheme: CustomTheme | DownloadedThem
 
     if (saveTheme) {
       browser.runtime.sendMessage({ type: 'currentTab', info: 'CloseThemeCreator' });
-      browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
     }
   });
 };
