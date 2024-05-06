@@ -32,7 +32,6 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       })
       setTheme(theme.id);
     } else {
-      console.log(theme)
       onThemeSelect(theme.id);
     }
   };

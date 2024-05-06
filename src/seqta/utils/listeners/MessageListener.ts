@@ -10,6 +10,7 @@ import { setTheme } from '../../ui/themes/setTheme';
 import { disableTheme } from '../../ui/themes/disableTheme';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 import ShareTheme from '../../ui/themes/shareTheme';
+import sendThemeUpdate from '../sendThemeUpdate';
 
 export class MessageHandler {
   constructor() {
@@ -30,8 +31,8 @@ export class MessageHandler {
           const save = async () => {
             await saveTheme(request.body)
             await setTheme(request.body.id)
-            sendResponse({ status: 'success' });
-            browser.runtime.sendMessage({ type: 'extensionPages', info: 'themeChanged' });
+            sendResponse({ status: 'success' })
+            sendThemeUpdate()
           }
           save()
         } else {
