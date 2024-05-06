@@ -23,13 +23,6 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       ...prevState,
       selectedTheme: themeId,
     }));
-
-    /* debounce(() => {
-      setSettingsState((prevState: SettingsState) => ({
-        ...prevState,
-        selectedTheme: themeId,
-      }));
-    }, 50); */
   }
 
   useImperativeHandle(ref, () => ({
@@ -99,12 +92,13 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         if (selectedTheme) {
           await setTheme(selectedTheme.id);
           setSelectedTheme(themeId);
-          //debounce(() => setSelectedTheme(selectedTheme.id), 100);
         }
       }
     },
     [settingsState.selectedTheme, themes]
   );
+
+  const handleThemeSelectDebounced = debounce(handleThemeSelect, 50);
 
   const handleThemeDelete = useCallback(
     async (themeId: string) => {
@@ -135,7 +129,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
             theme={theme}
             isSelected={theme.id === settingsState.selectedTheme}
             isEditMode={isEditMode}
-            onThemeSelect={handleThemeSelect}
+            onThemeSelect={handleThemeSelectDebounced}
             onThemeDelete={handleThemeDelete}
           />
         ))}
@@ -147,7 +141,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
             theme={theme}
             isSelected={theme.id === settingsState.selectedTheme}
             isEditMode={isEditMode}
-            onThemeSelect={handleThemeSelect}
+            onThemeSelect={handleThemeSelectDebounced}
             onThemeDelete={handleThemeDelete}
           />
         ))}
