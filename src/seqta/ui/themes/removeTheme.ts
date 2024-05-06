@@ -1,6 +1,5 @@
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import browser from 'webextension-polyfill';
-import sendThemeUpdate from '../../utils/sendThemeUpdate';
 
 export const removeTheme = async (theme: CustomTheme) => {
   // Remove custom CSS
@@ -20,6 +19,4 @@ export const removeTheme = async (theme: CustomTheme) => {
   customImageVariables.forEach((variableName) => {
     document.documentElement.style.removeProperty('--' + variableName);
   });
-
-  sendThemeUpdate();
 };

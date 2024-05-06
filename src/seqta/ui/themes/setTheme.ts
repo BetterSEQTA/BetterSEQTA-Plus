@@ -3,7 +3,6 @@ import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import { applyTheme } from './applyTheme';
 import { removeTheme } from './removeTheme';
-import sendThemeUpdate from '../../utils/sendThemeUpdate';
 
 
 export const setTheme = async (themeId: string) => {
@@ -39,7 +38,6 @@ export const setTheme = async (themeId: string) => {
       originalSelectedColor: originalSelectedColor.selectedColor
     });
 
-    sendThemeUpdate();
   } catch (error) {
     console.error('Error setting theme:', error);
   }
