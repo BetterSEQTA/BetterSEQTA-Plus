@@ -166,10 +166,6 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
   case 'DownloadTheme':
     DownloadTheme(request.body.theme);
     break;
-  
-  case 'StoreDownloadTheme':
-    StoreDownloadTheme(request.body);
-    break;
 
   case 'DeleteDownloadedTheme':
     DeleteDownloadedTheme(request.body);
