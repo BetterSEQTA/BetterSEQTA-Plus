@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
-import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
+import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes, sendThemeUpdate } from '../hooks/ThemeManagment';
 import { ThemeCover } from './ThemeCover';
 import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
@@ -61,7 +61,10 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       setDownloadedThemes(await getDownloadedThemes());
       setSelectedTheme(selectedTheme ? selectedTheme : '');
 
-      const matchingThemes = themes.filter(theme => downloadedThemes.some((downloadedTheme: DownloadedTheme) => downloadedTheme.id === theme.id));
+      const matchingThemes = themes.filter(theme => 
+        downloadedThemes.some(downloadedTheme => downloadedTheme.id === theme.id)
+      );
+
       if (matchingThemes.length > 0) {
         matchingThemes.forEach((theme) => {
           browser.runtime.sendMessage({

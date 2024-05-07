@@ -95,11 +95,6 @@ const Store = () => {
       setInstallingThemes(installingThemes.filter(theme => theme !== id));
       setCurrentThemes(currentThemes.filter(theme => theme !== id));
     });
-
-    /* browser.runtime.sendMessage({ type: 'StoreRemoveTheme', body: { themeContent } }).then(async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setInstallingThemes(installingThemes.filter(theme => theme !== id));
-    }); */
   }
 
   return (
