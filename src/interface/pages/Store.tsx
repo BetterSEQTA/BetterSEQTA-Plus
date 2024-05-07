@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
 import Header from '../components/store/header';
+import browser from 'webextension-polyfill';
+import { Autoplay } from 'swiper/modules';
 import { motion } from 'framer-motion';
+
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/autoplay';
 
-interface Theme {
+export type Theme = {
   name: string;
   description: string;
   coverImage: string;
@@ -16,7 +18,7 @@ interface Theme {
   id: string;
 }
 
-interface ThemesResponse {
+type ThemesResponse = {
   themes: Theme[];
 }
 
@@ -46,7 +48,13 @@ const Store = () => {
   }, [searchTerm, gridThemes]);
 
   const downloadTheme = (id: string) => {
-    window.open(`https://betterseqta.pockethost.io/api/v1/themes/${id}/download`, '_blank');
+    const themeContent = gridThemes.find(theme => theme.id === id);
+    if (!themeContent) {
+      alert('There was an error, The theme was not found!')
+      return
+    };
+
+    browser.runtime.sendMessage({ type: 'StoreDownloadTheme', body: { themeContent } });
   };
 
   return (
@@ -138,7 +146,7 @@ const Store = () => {
                   <button
                     onClick={() => downloadTheme(theme.id)}
                     className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
-                    Download
+                    Install
                   </button>
                 </div>
               </div>

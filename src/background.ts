@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
-import DownloadTheme from "./seqta/ui/themes/downloadTheme";
+import DownloadTheme, { StoreDownloadTheme } from "./seqta/ui/themes/downloadTheme";
 import localforage from "localforage";
 
 browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
@@ -165,6 +165,10 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
   
   case 'DownloadTheme':
     DownloadTheme(request.body.theme);
+    break;
+  
+  case 'StoreDownloadTheme':
+    StoreDownloadTheme(request.body);
     break;
 
   case 'DeleteDownloadedTheme':
