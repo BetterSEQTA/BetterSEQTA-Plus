@@ -9,6 +9,9 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 import 'swiper/css/autoplay';
+import SpinnerIcon from '../components/LoadingSpinner';
+import localforage from 'localforage';
+import { StoreDownloadTheme } from '../../seqta/ui/themes/downloadTheme';
 
 export type Theme = {
   name: string;
@@ -22,12 +25,24 @@ type ThemesResponse = {
   themes: Theme[];
 }
 
+const DeleteDownloadedTheme = async (themeID: string) => {
+  console.log('DeleteDownloaded Theme:', themeID)
+  await localforage.removeItem(themeID);
+
+  const availableThemesList = await localforage.getItem('availableThemes') as string[];
+  const updatedThemesList = availableThemesList.filter(theme => theme !== themeID);
+
+  await localforage.setItem('availableThemes', updatedThemesList);
+}
+
 const Store = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const swiperCover = useRef<any | null>(null);
   const [gridThemes, setGridThemes] = useState<Theme[]>([]);
   const [filteredThemes, setFilteredThemes] = useState<Theme[]>([]);
   const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
+  const [installingThemes, setInstallingThemes] = useState<string[]>([]);
+  const [currentThemes, setCurrentThemes] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' })
@@ -39,6 +54,11 @@ const Store = () => {
         setCoverThemes(shuffled.slice(0, 3));
       })
       .catch(error => console.error('Failed to fetch themes', error));
+    
+    (async () => {
+      const availableThemes = await localforage.getItem('availableThemes') as string[];
+      setCurrentThemes(availableThemes)
+    })();
   }, []);
 
   useEffect(() => {
@@ -54,8 +74,33 @@ const Store = () => {
       return
     };
 
-    browser.runtime.sendMessage({ type: 'StoreDownloadTheme', body: { themeContent } });
+    setInstallingThemes([...installingThemes, id]);
+
+    StoreDownloadTheme({ themeContent }).then(() => {
+      setInstallingThemes(installingThemes.filter(theme => theme !== id));
+      setCurrentThemes([...currentThemes, id]);
+    });
   };
+
+  const removeTheme = async (id: string) => {
+    const themeContent = gridThemes.find(theme => theme.id === id);
+    if (!themeContent) {
+      alert('There was an error, The theme was not found!')
+      return
+    };
+
+    setInstallingThemes([...installingThemes, id]);
+
+    DeleteDownloadedTheme(id).then(() => {
+      setInstallingThemes(installingThemes.filter(theme => theme !== id));
+      setCurrentThemes(currentThemes.filter(theme => theme !== id));
+    });
+
+    /* browser.runtime.sendMessage({ type: 'StoreRemoveTheme', body: { themeContent } }).then(async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setInstallingThemes(installingThemes.filter(theme => theme !== id));
+    }); */
+  }
 
   return (
     <div className="w-screen h-screen overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900">
@@ -143,11 +188,31 @@ const Store = () => {
                   <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
                 </div>
                 <div>
-                  <button
-                    onClick={() => downloadTheme(theme.id)}
-                    className="px-4 py-2 mt-4 transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
-                    Install
-                  </button>
+                  {
+                    currentThemes.includes(theme.id) ?
+                    <button
+                      onClick={() => removeTheme(theme.id)}
+                      className="flex px-4 py-2 mt-4 ml-auto transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                      { installingThemes.includes(theme.id) ? 
+                        <>
+                        <SpinnerIcon className="w-4 h-4 mr-2" />
+                        Removing...
+                        </> :
+                        <> Remove </>
+                      }
+                    </button> :
+                    <button
+                      onClick={() => downloadTheme(theme.id)}
+                      className="flex px-4 py-2 mt-4 ml-auto transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                      { installingThemes.includes(theme.id) ? 
+                        <>
+                        <SpinnerIcon className="w-4 h-4 mr-2" />
+                        Installing...
+                        </> :
+                        <> Install </>
+                      }
+                    </button>
+                  }
                 </div>
               </div>
             </div>
