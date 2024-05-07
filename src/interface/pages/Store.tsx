@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import Header from '../components/store/header';
-import browser from 'webextension-polyfill';
 import { Autoplay } from 'swiper/modules';
 import { motion } from 'framer-motion';
 

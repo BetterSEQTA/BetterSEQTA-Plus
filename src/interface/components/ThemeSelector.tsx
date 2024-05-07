@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
-import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes, sendThemeUpdate } from '../hooks/ThemeManagment';
+import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
 import { ThemeCover } from './ThemeCover';
 import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
