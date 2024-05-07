@@ -30,7 +30,7 @@ const Store = () => {
   const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
 
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json', { cache: 'no-store' })
+    fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' })
       .then(response => response.json())
       .then((data: ThemesResponse) => {
         setGridThemes(data.themes);
