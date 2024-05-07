@@ -35,7 +35,7 @@ const Theme = () => {
 
     const getTheme = async (themeID: string) => {
       const theme = await pb.collection<ThemesRecord>('themes').getOne(themeID);
-      console.log(theme);
+      console.debug(theme);
       setIsLoading(false);
       setTheme(theme);
 
@@ -104,7 +104,7 @@ const Theme = () => {
                   <button
                       className="flex justify-center w-full gap-1 px-3 py-2 text-white transition cursor-not-allowed rounded-2xl ring-white/20 ring-1 bg-zinc-950/20"
                   >
-                    Theme Downloaded!
+                    Theme Installed!
                   </button>
                 :
                   <button
@@ -114,7 +114,7 @@ const Theme = () => {
                         setCurrentThemes([...currentThemes, (theme.theme as { id: string }).id]);
                       }}
                   >
-                    Download Theme
+                    Install Theme
                   </button>
                 }
               </>
