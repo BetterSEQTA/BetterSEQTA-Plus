@@ -146,6 +146,11 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           />
         ))}
 
+        <div
+          id="divider"
+          className="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"
+        ></div>
+
         <button
           onClick={() => browser.tabs.create({ url: browser.runtime.getURL('src/interface/index.html#store')})}
           className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
@@ -159,7 +164,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           className="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
         >
           <span className="text-xl font-IconFamily">{'\uec60'}</span>
-          <span className="ml-2">Create Theme</span>
+          <span className="ml-2">Create your own</span>
         </button>
       </div>
     </div>
