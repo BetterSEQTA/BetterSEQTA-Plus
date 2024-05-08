@@ -11,6 +11,7 @@ export type CustomTheme = {
   isEditable: boolean;
   hideThemeName: boolean;
   webURL?: string;
+  selectedColor?: string;
 }
 
 export type DownloadedTheme = CustomTheme & {
