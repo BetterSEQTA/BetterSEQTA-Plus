@@ -10,6 +10,7 @@ export type CustomTheme = {
   coverImage: Blob | string | null;
   isEditable: boolean;
   hideThemeName: boolean;
+  webURL?: string;
 }
 
 export type DownloadedTheme = CustomTheme & {
