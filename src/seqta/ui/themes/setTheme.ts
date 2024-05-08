@@ -10,8 +10,6 @@ export const setTheme = async (themeId: string) => {
     const enabledTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
     const theme = await localforage.getItem(themeId) as CustomTheme;
 
-    console.log(enabledTheme, theme)
-
     console.debug('Loading theme', theme);
 
     let originalSelectedColor = { selectedColor: '' };
@@ -34,7 +32,7 @@ export const setTheme = async (themeId: string) => {
 
     await browser.storage.local.set({
       selectedTheme: themeId,
-      selectedColor: theme.defaultColour !== '' ? theme.defaultColour : '#007bff',
+      selectedColor: theme.selectedColor ? theme.selectedColor : (theme.defaultColour !== '' ? theme.defaultColour : '#007bff'),
       originalSelectedColor: originalSelectedColor.selectedColor
     });
 
