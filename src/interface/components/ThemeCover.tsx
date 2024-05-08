@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
 import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
@@ -52,6 +52,10 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
     });
   };
 
+  useEffect(() => {
+    console.log(!theme.webURL);
+  });
+  
   return (
     <button
       className={`relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
@@ -68,7 +72,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
         </div>
       )}
       
-      { isEditMode || !downloaded &&
+      { ( !isEditMode ) && !downloaded && !theme.webURL ? (
       <>
         <div
           className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
@@ -84,7 +88,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
           {uploading ? <LoadingSpinner size={16} /> : <ArrowUpOnSquareIcon className="w-4 h-4" />}
         </div>
       </>
-      }
+      ) : null}
 
       <div className="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
         {theme.coverImage &&
