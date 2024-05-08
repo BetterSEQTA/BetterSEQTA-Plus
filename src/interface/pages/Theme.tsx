@@ -27,17 +27,17 @@ const Theme = () => {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    document.title = 'BetterSEQTA+' // Reset the title
     const themeID = urlParams.get('id');
     const justCreated = urlParams.get('justCreated');
-    if (themeID) {
-      setThemeID(themeID);
-    }
-
+    if (themeID) setThemeID(themeID);
+    
     const getTheme = async (themeID: string) => {
       const theme = await pb.collection<ThemesRecord>('themes').getOne(themeID);
       console.debug(theme);
       setIsLoading(false);
       setTheme(theme);
+      document.title = theme.name;
 
       const availableThemes = await localforage.getItem('availableThemes') as string[];
       setCurrentThemes(availableThemes)  
