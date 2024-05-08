@@ -91,7 +91,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
           <img
             src={(typeof theme.coverImage) == 'string' ? theme.coverImage as string : URL.createObjectURL(theme.coverImage as Blob)}
             alt={theme.name}
-            className="absolute inset-0 z-0 object-cover w-full h-full"
+            className="absolute inset-0 z-0 object-cover w-full h-full pointer-events-none"
           />
         }
         {
