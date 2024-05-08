@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
 import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
@@ -52,10 +52,6 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
     });
   };
 
-  useEffect(() => {
-    console.log(!theme.webURL);
-  });
-  
   return (
     <button
       className={`relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 ${
