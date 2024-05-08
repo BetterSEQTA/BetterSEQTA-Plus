@@ -42,19 +42,27 @@ const Store = () => {
   const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
   const [installingThemes, setInstallingThemes] = useState<string[]>([]);
   const [currentThemes, setCurrentThemes] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchThemes = async () => {
+    try {
+    const response = await fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' });
+    const data: ThemesResponse = await response.json();
+    setGridThemes(data.themes);
+    // Select up to 3 random themes to display in coverThemes
+    const shuffled = [...data.themes].sort(() => 0.5 - Math.random());
+    setCoverThemes(shuffled.slice(0, 3));
+    setLoading(false);
+    } catch (error) {
+    console.error('Failed to fetch themes', error);
+    // Retry after 5 seconds
+    setTimeout(fetchThemes, 5000);
+    }
+  };
 
   useEffect(() => {
-    fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' })
-      .then(response => response.json())
-      .then((data: ThemesResponse) => {
-        setGridThemes(data.themes);
-        // Select up to 3 random themes to display in coverThemes
-        const shuffled = [...data.themes].sort(() => 0.5 - Math.random());
-        setCoverThemes(shuffled.slice(0, 3));
-      })
-      .catch(error => console.error('Failed to fetch themes', error));
-    
     (async () => {
+      fetchThemes();
       const availableThemes = await localforage.getItem('availableThemes') as string[];
       setCurrentThemes(availableThemes)
     })();
@@ -97,11 +105,16 @@ const Store = () => {
   }
 
   return (
-    <div className="w-screen h-screen overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900">
+    <div className="w-screen h-screen overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900 dark:text-white">
       
       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <div className="px-24 py-12">
+      {/* loader */}
+      <div className={`flex items-center justify-center w-full h-full ${!loading && 'hidden'}`}>
+        <SpinnerIcon className="w-16 h-16" />
+      </div>
+
+      <div className={`px-24 py-12 ${loading && 'hidden'}`}>
         <div className={`relative w-full rounded-xl overflow-clip transition-opacity ${searchTerm == '' ? 'opacity-100' : 'opacity-0'}`}>
           <motion.div className='overflow-clip' animate={{
             height: searchTerm == '' ? 'auto' : '0px'
@@ -213,7 +226,7 @@ const Store = () => {
           ))}
 
         </div>
-        {filteredThemes.length == 0 && (
+        {filteredThemes.length == 0 && !loading && (
           <div className="flex flex-col items-center justify-center w-full text-center h-96">
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">That doesnt exist! 😭😭😭</h1>
             <p className="mt-6 text-lg leading-7 text-gray-600">Sorry, we couldn’t find the theme you’re looking for. Maybe... you could create it?</p>
