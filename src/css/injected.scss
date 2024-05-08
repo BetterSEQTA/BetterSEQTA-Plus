@@ -1584,11 +1584,13 @@ ul {
 }
 .entry[data-yiq="light"],
 .quickbar[data-yiq="light"] .title,
+.quickbar[data-yiq="dark"] .actions button svg,
 .entry[data-yiq="light"] .title {
   color: #fff !important;
 }
 .entry[data-yiq="dark"],
 .quickbar[data-yiq="dark"] .title,
+.quickbar[data-yiq="dark"] .actions button svg,
 .entry[data-yiq="dark"] .title {
   color: #000 !important;
 }
