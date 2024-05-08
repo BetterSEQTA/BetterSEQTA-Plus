@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
 import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
+import { DeleteDownloadedTheme } from '../pages/Store';
 import { ThemeCover } from './ThemeCover';
 import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
@@ -56,21 +57,23 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   const fetchThemes = async () => {
     try {
       const { themes, selectedTheme } = await listThemes();
-
+      const tempDownloadedThemes = await getDownloadedThemes();
+      
       setThemes(themes);
-      setDownloadedThemes(await getDownloadedThemes());
+      setDownloadedThemes(tempDownloadedThemes);
       setSelectedTheme(selectedTheme ? selectedTheme : '');
-
+            
       const matchingThemes = themes.filter(theme => 
-        downloadedThemes.some(downloadedTheme => downloadedTheme.id === theme.id)
+        tempDownloadedThemes.some(downloadedTheme => downloadedTheme.id === theme.id)
       );
 
       if (matchingThemes.length > 0) {
         matchingThemes.forEach((theme) => {
-          browser.runtime.sendMessage({
-            type: 'DeleteDownloadedTheme',
-            body: theme.id
-          })
+          DeleteDownloadedTheme(theme.id);
+          
+          setDownloadedThemes(
+            downloadedThemes.filter(downloadedTheme => downloadedTheme.id !== theme.id)
+          )
         })
       }
 
@@ -149,10 +152,10 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           />
         ))}
 
-        <div
+        { downloadedThemes.length + themes.length > 0 && <div
           id="divider"
           className="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"
-        ></div>
+        ></div> }
 
         <button
           onClick={() => browser.tabs.create({ url: browser.runtime.getURL('src/interface/index.html#store')})}

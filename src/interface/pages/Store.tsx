@@ -24,8 +24,8 @@ type ThemesResponse = {
   themes: Theme[];
 }
 
-const DeleteDownloadedTheme = async (themeID: string) => {
-  console.log('DeleteDownloaded Theme:', themeID)
+export const DeleteDownloadedTheme = async (themeID: string) => {
+  console.debug('DeleteDownloaded Theme:', themeID)
   await localforage.removeItem(themeID);
 
   const availableThemesList = await localforage.getItem('availableThemes') as string[];

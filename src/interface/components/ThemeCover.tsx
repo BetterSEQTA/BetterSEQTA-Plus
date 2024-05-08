@@ -3,6 +3,7 @@ import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
 import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { sendThemeUpdate, setTheme } from '../hooks/ThemeManagment';
+import { DeleteDownloadedTheme } from '../pages/Store';
 
 type ThemeCoverProps = {
   theme: Omit<CustomTheme, 'CustomImages'> | DownloadedTheme;
@@ -26,10 +27,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
     if (isEditMode) return;
     if (downloaded) {
       await sendThemeUpdate(theme as DownloadedTheme, true)
-      await browser.runtime.sendMessage({
-        type: 'DeleteDownloadedTheme',
-        body: theme.id
-      })
+      DeleteDownloadedTheme(theme.id);
       setTheme(theme.id);
     } else {
       onThemeSelect(theme.id);
@@ -39,10 +37,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (downloaded) {
-      browser.runtime.sendMessage({
-        type: 'DeleteDownloadedTheme',
-        body: theme.id
-      })
+      DeleteDownloadedTheme(theme.id);
     } else {
       onThemeDelete(theme.id);
     }
