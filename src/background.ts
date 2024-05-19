@@ -1,21 +1,8 @@
-import * as Sentry from "@sentry/browser";
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
 import DownloadTheme from "./seqta/ui/themes/downloadTheme";
 
-browser.storage.local.get([ "telemetry" ]).then((telemetry) => {
-  if (telemetry.telemetry === true) {
-    Sentry.init({
-      dsn: "https://54bdb68e80b45182ded22ecf9fe9529c@o4506347383291904.ingest.sentry.io/4506347462393856",
-      integrations: [
-        Sentry.browserTracingIntegration()
-      ],
-      // Performance Monitoring
-      tracesSampleRate: 1.0, // Capture 100% of the transactions
-    });
-  }
-})
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {

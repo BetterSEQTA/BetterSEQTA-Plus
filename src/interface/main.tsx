@@ -8,7 +8,6 @@ import SettingsPage from './pages/SettingsPage.js';
 import browser from 'webextension-polyfill';
 import font from '../resources/fonts/IconFamily.woff'
 
-import * as Sentry from "@sentry/react";
 import ThemeCreator from './pages/ThemeCreator';
 import Store from './pages/Store';
 import Theme from './pages/Theme';
@@ -16,15 +15,7 @@ import Theme from './pages/Theme';
 browser.storage.local.get().then(({ telemetry, DarkMode }) => {
   if (DarkMode) document.documentElement.classList.add('dark');
 
-  if (telemetry === true)
-  Sentry.init({
-    dsn: "https://4bc7197431b170218e15daba4095d08b@o4506347383291904.ingest.sentry.io/4506347394105344",
-    integrations: [
-      Sentry.browserTracingIntegration()
-    ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of the transactions
-  });
+  if (telemetry === true) {};
 })
 
 const style = document.createElement("style");
