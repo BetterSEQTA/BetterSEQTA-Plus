@@ -1,5 +1,3 @@
-import * as Sentry from "@sentry/browser";
-
 import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
@@ -781,12 +779,6 @@ function main(storedSetting: SettingsState) {
   }
 
   if (storedSetting.telemetry && storedSetting.onoff) {
-    Sentry.init({
-      dsn: "https://54bdb68e80b45182ded22ecf9fe9529c@o4506347383291904.ingest.sentry.io/4506347462393856",
-      integrations: [Sentry.browserTracingIntegration()],
-      // Performance Monitoring
-      tracesSampleRate: 1.0, // Capture 100% of the transactions
-    })
   }
 
   const handleDisabled = () => {
