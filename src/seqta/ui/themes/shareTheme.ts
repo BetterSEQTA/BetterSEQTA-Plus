@@ -50,19 +50,13 @@ const shareTheme = async (themeID: string) => {
 
     // Prepare the non-file data for uploading
     const data = {
-      name: themeData.name || 'Unnamed Theme',
-      description: themeData.description || 'No description',
-      theme: JSON.stringify({
-        ...themeWithoutImages,
-        images: finalImages.map((image) => ({
-          id: image.id,
-          variableName: image.variableName,
-          data: image.data,
-        })),
-      }),
-      submitted: true,
+      ...themeWithoutImages,
+      images: finalImages.map((image) => ({
+        id: image.id,
+        variableName: image.variableName,
+        data: image.data,
+      })),
       coverImage: coverImageBase64,
-      images: finalImages,
     };
 
     saveThemeFile(data, themeData.name || 'Unnamed_Theme');
