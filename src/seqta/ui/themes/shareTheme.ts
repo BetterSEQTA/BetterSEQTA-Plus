@@ -6,7 +6,7 @@ const saveThemeFile = (data: object, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${fileName}.theme`;
+  a.download = `${fileName}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -67,7 +67,7 @@ const shareTheme = async (themeID: string) => {
     };
 
     console.log('Final data', data);
-    
+
     saveThemeFile(data, themeData.name || 'Unnamed_Theme');
   } catch (error) {
     console.error('Error sharing theme:', error);
