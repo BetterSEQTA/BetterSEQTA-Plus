@@ -24,7 +24,6 @@ const shareTheme = async (themeID: string) => {
 
     // Extract images and coverImage from themeData, if they exist
     const { CustomImages = [], coverImage, ...themeWithoutImages } = themeData;
-    console.log('themeData', themeData);
 
     // Helper function to convert Blob to Base64
     const blobToBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
@@ -65,8 +64,6 @@ const shareTheme = async (themeID: string) => {
       coverImage: coverImageBase64,
       images: finalImages,
     };
-
-    console.log('Final data', data);
 
     saveThemeFile(data, themeData.name || 'Unnamed_Theme');
   } catch (error) {
