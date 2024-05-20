@@ -46,9 +46,8 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
   const handleShareClick = (event: React.MouseEvent) => {
     event?.preventDefault();
     setUploading(true);
-    browser.runtime.sendMessage({ type: 'currentTab', info: 'ShareTheme', body: { themeID: theme.id } }).then((response) => {
+    browser.runtime.sendMessage({ type: 'currentTab', info: 'ShareTheme', body: { themeID: theme.id } }).then(() => {
       setUploading(false);
-      browser.tabs.create({ url: `https://share.betterseqta/theme?id=${response.id}&justCreated=true` });
     });
   };
 
@@ -68,7 +67,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
         </div>
       )}
       
-      { ( !isEditMode ) && !downloaded && !theme.webURL ? (
+      { ( !isEditMode ) && !downloaded && !theme.webURL || true ? (
       <>
         <div
           className="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-[1.25rem]"
