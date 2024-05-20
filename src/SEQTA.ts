@@ -483,7 +483,8 @@ function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElem
 
   const head = iframeDocument.head
   if (head && !head.innerHTML.includes('iframecss')) {
-    head.appendChild(cssLink)
+    head.innerHTML += cssLink.outerHTML
+    console.log(head)
   }
 }
 
