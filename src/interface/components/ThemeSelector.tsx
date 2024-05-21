@@ -189,7 +189,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   return (
     <div
       ref={elementRef}
-      className={`my-3 ${isDragging ? '' : ''}`}
+      className={`my-3 w-full ${isDragging ? '' : ''}`}
       onDragOver={handleDragOver} 
       onDragLeave={handleDragLeave} 
       onDrop={handleDrop}
@@ -210,7 +210,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
         </div>
       </div>
       <h2 className="pb-2 text-lg font-bold">Themes</h2>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 px-1">
 
         {themes.map((theme) => (
           <ThemeCover
