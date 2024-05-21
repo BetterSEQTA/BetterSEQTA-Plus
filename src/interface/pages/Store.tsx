@@ -221,19 +221,33 @@ const Store = () => {
                       <motion.p className="mb-4 text-gray-700 dark:text-gray-300" variants={textVariants}>
                         {displayTheme.description}
                       </motion.p>
-                      <motion.button
-                        onClick={() => downloadTheme(displayTheme.id)}
-                        className="flex px-4 py-2 mt-4 ml-auto rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2"
-                        variants={textVariants}
-                      >
-                        { installingThemes.includes(displayTheme.id) ? 
-                          <>
-                          <SpinnerIcon className="w-4 h-4 mr-2" />
-                          Installing...
-                          </> :
-                          <> Install </>
-                        }
-                      </motion.button>
+                      {
+                        currentThemes.includes(displayTheme.id) ?
+                        <motion.button
+                          variants={textVariants}
+                          onClick={() => removeTheme(displayTheme.id)}
+                          className="flex px-4 py-2 mt-4 ml-auto rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                          { installingThemes.includes(displayTheme.id) ? 
+                            <>
+                            <SpinnerIcon className="w-4 h-4 mr-2" />
+                            Removing...
+                            </> :
+                            <> Remove </>
+                          }
+                        </motion.button> :
+                        <motion.button
+                          variants={textVariants}
+                          onClick={() => downloadTheme(displayTheme.id)}
+                          className="flex px-4 py-2 mt-4 ml-auto rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
+                          { installingThemes.includes(displayTheme.id) ? 
+                            <>
+                            <SpinnerIcon className="w-4 h-4 mr-2" />
+                            Installing...
+                            </> :
+                            <> Install </>
+                          }
+                        </motion.button>
+                      }
 
                       <motion.div className="my-8 border-b border-zinc-200 dark:border-zinc-700" variants={textVariants} />
 
