@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import Header from '../components/store/header';
 import { Autoplay } from 'swiper/modules';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -11,6 +11,32 @@ import 'swiper/css/autoplay';
 import SpinnerIcon from '../components/LoadingSpinner';
 import localforage from 'localforage';
 import { StoreDownloadTheme } from '../../seqta/ui/themes/downloadTheme';
+
+const textVariants = {
+  hidden: { opacity: 0, y: 60 },
+  visible: { opacity: 1, y: 0, transition: {
+    type: 'spring',
+    bounce: 0,
+    stiffness: 80,
+    damping: 12
+  } },
+};
+
+const containerVariants = {
+  hidden: {
+    y: '100vh',
+  },
+  visible: {
+    y: 0,
+    transition: {
+      staggerChildren: 0.05,
+      type: 'spring',
+      bounce: 0,
+      stiffness: 400,
+      damping: 50
+    },
+  },
+};
 
 export type Theme = {
   name: string;
@@ -42,6 +68,7 @@ const Store = () => {
   const [coverThemes, setCoverThemes] = useState<Theme[]>([]);
   const [installingThemes, setInstallingThemes] = useState<string[]>([]);
   const [currentThemes, setCurrentThemes] = useState<string[]>([]);
+  const [displayTheme, setDisplayTheme] = useState<Theme | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchThemes = async () => {
@@ -140,7 +167,7 @@ const Store = () => {
               }}
             >
               { coverThemes.map((theme, index) => (
-                  <SwiperSlide className='relative rounded-xl overflow-clip' key={index}>
+                  <SwiperSlide className='relative rounded-xl overflow-clip' onClick={() => setDisplayTheme(theme)} key={index}>
                     <img
                       src={theme.marqueeImage}
                       alt="Theme Preview"
@@ -157,6 +184,84 @@ const Store = () => {
                 )) }
             </Swiper>
           </motion.div>
+
+          <AnimatePresence>
+            {displayTheme && (
+              <motion.div
+                className="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-70"
+                initial={{ opacity: 0, pointerEvents: 'none' }}
+                animate={{ opacity: 1, pointerEvents: 'auto' }}
+                exit={{ opacity: 0, pointerEvents: 'none' }}
+                onClick={() => setDisplayTheme(null)}
+              >
+                <motion.div
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-xl h-[95%] p-8 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll"
+                  exit={{ y: "100vh" }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.div className="relative h-auto">
+                    <motion.button
+                      className="absolute top-0 right-0 p-2 text-xl font-bold text-gray-600 dark:text-gray-200"
+                      onClick={() => setDisplayTheme(null)}
+                      variants={textVariants}
+                    >
+                      &times;
+                    </motion.button>
+                    <motion.h2 className="mb-4 text-2xl font-bold" variants={textVariants}>
+                      {displayTheme.name}
+                    </motion.h2>
+                    <motion.img src={displayTheme.coverImage} alt="Theme Cover" className="object-cover w-full h-48 mb-4 rounded-md" variants={textVariants} />
+                    <motion.p className="mb-4 text-gray-700 dark:text-gray-300" variants={textVariants}>
+                      {displayTheme.description}
+                    </motion.p>
+                    <motion.button
+                      onClick={() => downloadTheme(displayTheme.id)}
+                      className="flex px-4 py-2 mt-4 ml-auto rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2"
+                      variants={textVariants}
+                    >
+                      { installingThemes.includes(displayTheme.id) ? 
+                        <>
+                        <SpinnerIcon className="w-4 h-4 mr-2" />
+                        Installing...
+                        </> :
+                        <> Install </>
+                      }
+                    </motion.button>
+
+                    <motion.div className="my-8 border-b border-zinc-200 dark:border-zinc-700" variants={textVariants} />
+
+                    <motion.h3 className="mb-4 text-lg font-bold" variants={textVariants}>
+                      More Themes
+                    </motion.h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {gridThemes.filter(theme => theme.id !== displayTheme.id).map((theme, index) => (
+                        <motion.div key={index} onClick={() => { setDisplayTheme(null); setDisplayTheme(theme); }} className='w-full cursor-pointer' variants={textVariants}>
+                          <div
+                            className="w-full overflow-clip rounded-xl transition-all duration-300 relative group/card flex flex-col hover:shadow-xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] h-auto"
+                          >
+                            <div className='absolute bottom-0 left-0 z-10 p-2'>
+                              <h6 className="text-xl font-bold text-neutral-600 dark:text-white">
+                                {theme.name}
+                              </h6>
+                              <p className="max-w-sm text-sm text-neutral-500 dark:text-neutral-200">
+                                {theme.description}
+                              </p>
+                            </div>
+                            <div className='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t from-black/80 to-transparent' />
+                            <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48" />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* pagination */}
           <div className='absolute z-10 flex gap-2 bottom-2 right-2'>
