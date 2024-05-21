@@ -7,6 +7,11 @@ import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
 import { debounce } from 'lodash';
+import { InstallTheme } from '../../seqta/ui/themes/downloadTheme';
+import SpinnerIcon from './LoadingSpinner';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import useVisibility from './useVisibility';
 
 interface ThemeSelectorProps {
   isEditMode: boolean;
@@ -17,7 +22,14 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   const [themes, setThemes] = useState<Omit<CustomTheme, 'CustomImages'>[]>([]);
   const [downloadedThemes, setDownloadedThemes] = useState<DownloadedTheme[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [tempTheme, setTempTheme] = useState<any>(null);
   const { settingsState, setSettingsState } = useSettingsContext();
+  const [elementRef, isVisible] = useVisibility({
+    root: null, // Use the viewport as the root
+    rootMargin: '0px',
+    threshold: 0.1, // 10% of the element needs to be visible
+  });
 
   const setSelectedTheme = (themeId: string) => {
     setSettingsState((prevState: SettingsState) => ({
@@ -53,6 +65,19 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       });
     };
   }, []);
+
+  useEffect(() => {
+    let intervalId: any;
+    if (isVisible) {
+      intervalId = setInterval(fetchThemes, 10000); // Fetch themes every 10 seconds
+    } else {
+      clearInterval(intervalId);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isVisible]);
 
   const fetchThemes = async () => {
     try {
@@ -121,14 +146,72 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
     [settingsState.selectedTheme]
   );
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file: File = e.dataTransfer.files[0];
+    const reader: FileReader = new FileReader();
+
+    reader.onload = async (event: ProgressEvent<FileReader>) => {
+      try {
+        const result: any = JSON.parse(event.target!.result as string);
+        try {
+          setTempTheme(result);
+          await InstallTheme(result);
+          await fetchThemes();
+          setTempTheme(null);
+        } catch(error) {
+          toast.error('Invalid file type. Please upload a valid theme file.');
+          setTempTheme(null);
+        }
+      } catch (error) {
+        toast.error('Error parsing file. Please upload a valid JSON theme file.');
+        setTempTheme(null);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
   if (isLoading) {
     return <div className='text-center'>Loading themes...</div>;
   }
 
   return (
-    <div className="my-3">
+    <div
+      ref={elementRef}
+      className={`my-3 ${isDragging ? '' : ''}`}
+      onDragOver={handleDragOver} 
+      onDragLeave={handleDragLeave} 
+      onDrop={handleDrop}
+      >
+      <div className={`${isDragging ? 'opacity-90' : 'opacity-0'} transition absolute w-full h-full p-2 z-50`}>
+        <div className='w-full h-full shadow-xl bg-black/60 rounded-xl'>
+          <div className='flex items-center justify-center w-full h-full'>
+            <div className='flex flex-col items-center justify-center'>
+              <svg height="48" width="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#F7F7F7">
+                  <path d="M44,31a1,1,0,0,0-1,1v8a3,3,0,0,1-3,3H8a3,3,0,0,1-3-3V32a1,1,0,0,0-2,0v8a5.006,5.006,0,0,0,5,5H40a5.006,5.006,0,0,0,5-5V32A1,1,0,0,0,44,31Z" fill="#F7F7F7"/>
+                  <path d="M23.2,33.6a1,1,0,0,0,1.6,0l9-12A1,1,0,0,0,33,20H26V5a2,2,0,0,0-4,0V20H15a1,1,0,0,0-.8,1.6Z" fill="#F7F7F7"/>
+                </g>
+              </svg>
+              <span className='text-lg'>Drop theme here</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <h2 className="pb-2 text-lg font-bold">Themes</h2>
       <div className="flex flex-col gap-2">
+
         {themes.map((theme) => (
           <ThemeCover
             key={theme.id}
@@ -152,10 +235,16 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           />
         ))}
 
-        { downloadedThemes.length + themes.length > 0 && <div
+        {tempTheme && (
+          <div className="flex justify-center w-full bg-gray-200 rounded-xl dark:bg-zinc-700/50 place-items-center aspect-theme animate-pulse">
+            <SpinnerIcon className='opacity-50' />
+          </div>
+        )}
+
+        {downloadedThemes.length + themes.length > 0 && <div
           id="divider"
           className="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"
-        ></div> }
+        ></div>}
 
         <button
           onClick={() => browser.tabs.create({ url: browser.runtime.getURL('src/interface/index.html#store')})}
