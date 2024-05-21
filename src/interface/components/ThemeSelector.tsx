@@ -194,7 +194,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       onDragLeave={handleDragLeave} 
       onDrop={handleDrop}
       >
-      <div className={`${isDragging ? 'opacity-90' : 'opacity-0'} transition absolute w-full h-full p-2 z-50`}>
+      <div className={`${isDragging ? 'opacity-90' : 'opacity-0'} transition pointer-events-none absolute w-full h-full p-2 z-50`}>
         <div className='w-full h-full shadow-xl bg-black/60 rounded-xl'>
           <div className='flex items-center justify-center w-full h-full'>
             <div className='flex flex-col items-center justify-center'>
