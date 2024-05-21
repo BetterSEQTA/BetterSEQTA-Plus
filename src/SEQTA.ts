@@ -2439,8 +2439,7 @@ async function loadHomePage() {
   })
 
   const response = await GetPrefs.json()
-
-  const labelArray = response.payload[1].value.split(' ')
+  const labelArray = response.payload[3].value.split(' ')
 
   const xhr2 = new XMLHttpRequest()
   xhr2.open(
@@ -2470,6 +2469,7 @@ async function loadHomePage() {
             for (let i = 0; i < NoticesPayload.payload.length; i++) {
               if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
               // Create a div, and place information from json response
+		console.log('hello')
                 const NewNotice = document.createElement('div')
                 NewNotice.classList.add('notice')
                 const title = stringToHTML(
