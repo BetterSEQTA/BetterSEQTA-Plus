@@ -8,7 +8,7 @@ type ThemeSelectorRef = {
 
 const Themes: FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const themeSelectorRef = createRef<ThemeSelectorRef>(); // Add type annotation here
+  const themeSelectorRef = createRef<ThemeSelectorRef>();
 
   const disableTheme = async () => {
     themeSelectorRef?.current?.disableTheme();
