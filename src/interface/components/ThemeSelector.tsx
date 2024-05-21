@@ -194,17 +194,17 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       onDragLeave={handleDragLeave} 
       onDrop={handleDrop}
       >
-      <div className={`${isDragging ? 'opacity-90' : 'opacity-0'} transition pointer-events-none absolute w-full h-full p-2 z-50`}>
-        <div className='w-full h-full shadow-xl bg-black/60 rounded-xl'>
-          <div className='flex items-center justify-center w-full h-full'>
+      <div className={`${isDragging ? 'opacity-100' : 'opacity-0'} transition pointer-events-none absolute w-full h-full p-2 z-50`}>
+        <div className='sticky w-full h-64 bg-white shadow-xl dark:bg-zinc-900 top-5 dark:text-white rounded-xl outline-dashed outline-4 outline-zinc-200 dark:outline-zinc-700'>
+          <div className='flex items-center justify-center h-full'>
             <div className='flex flex-col items-center justify-center'>
               <svg height="48" width="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <g fill="#F7F7F7">
-                  <path d="M44,31a1,1,0,0,0-1,1v8a3,3,0,0,1-3,3H8a3,3,0,0,1-3-3V32a1,1,0,0,0-2,0v8a5.006,5.006,0,0,0,5,5H40a5.006,5.006,0,0,0,5-5V32A1,1,0,0,0,44,31Z" fill="#F7F7F7"/>
-                  <path d="M23.2,33.6a1,1,0,0,0,1.6,0l9-12A1,1,0,0,0,33,20H26V5a2,2,0,0,0-4,0V20H15a1,1,0,0,0-.8,1.6Z" fill="#F7F7F7"/>
+                <g fill="currentColor">
+                  <path d="M44,31a1,1,0,0,0-1,1v8a3,3,0,0,1-3,3H8a3,3,0,0,1-3-3V32a1,1,0,0,0-2,0v8a5.006,5.006,0,0,0,5,5H40a5.006,5.006,0,0,0,5-5V32A1,1,0,0,0,44,31Z" fill="currentColor"/>
+                  <path d="M23.2,33.6a1,1,0,0,0,1.6,0l9-12A1,1,0,0,0,33,20H26V5a2,2,0,0,0-4,0V20H15a1,1,0,0,0-.8,1.6Z" fill="currentColor"/>
                 </g>
               </svg>
-              <span className='text-lg'>Drop theme here</span>
+              <span className='text-lg'>Import Theme</span>
             </div>
           </div>
         </div>
