@@ -89,6 +89,8 @@ const Store = () => {
 
   useEffect(() => {
     (async () => {
+      document.title = 'BetterSEQTA+ Store';
+
       fetchThemes();
       const availableThemes = await localforage.getItem('availableThemes') as string[];
       setCurrentThemes(availableThemes)
