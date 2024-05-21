@@ -2,7 +2,7 @@ import logo from '../../../resources/icons/betterseqta-dark-full.png';
 import logoDark from '../../../resources/icons/betterseqta-light-full.png';
 
 export default function header({ searchTerm, setSearchTerm }: { searchTerm: string, setSearchTerm: (value: string) => void }) {
-  return <header className="sticky top-0 z-50 w-full bg-white border-b shadow-md border-b-white/10 dark:bg-zinc-800/90 backdrop-blur-xl">
+  return <header className="fixed top-0 z-50 w-full h-[4.25rem] bg-white border-b shadow-md border-b-white/10 dark:bg-zinc-800/90 backdrop-blur-xl">
     <div className="flex items-center justify-between px-4 py-1">
       <div className="cursor-pointer" onClick={() => setSearchTerm('')}>
         <img src={logo} className="h-14 dark:hidden" />
