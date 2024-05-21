@@ -10,7 +10,6 @@ import font from '../resources/fonts/IconFamily.woff'
 
 import ThemeCreator from './pages/ThemeCreator';
 import Store from './pages/Store';
-import Theme from './pages/Theme';
 
 browser.storage.local.get().then(({ telemetry, DarkMode }) => {
   if (DarkMode) document.documentElement.classList.add('dark');
@@ -54,7 +53,6 @@ root.render(
           <Route path="/settings/embedded" element={<SettingsPage standalone={false} />} />
           <Route path="/store" element={<Store />} />
           <Route path="/themeCreator" element={<ThemeCreator />} />
-          <Route path="/theme" element={<Theme />} />
         </Routes>
       </HashRouter>
     </ErrorBoundary>

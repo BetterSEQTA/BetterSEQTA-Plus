@@ -72,14 +72,6 @@ function reloadSeqtaPages() {
   result.then(open, onError)
 }
 
-browser.tabs.onUpdated.addListener((tabId, _, tab) => {
-  if (tab.url?.includes('share.betterseqta')) {
-    const id = new URL(tab.url).searchParams.get('id');
-    const justCreated = new URL(tab.url).searchParams.get('justCreated');
-    browser.tabs.update(tabId, { url: `${browser.runtime.getURL('src/interface/index.html')}?id=${id}&justCreated=${justCreated}#theme` });
-  }
-});
-
 // Main message listener
 browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse: any) => {
   switch (request.type) {

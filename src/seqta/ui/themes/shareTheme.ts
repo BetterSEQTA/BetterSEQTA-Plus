@@ -1,7 +1,17 @@
-import PocketBase from 'pocketbase';
 import { getTheme } from './getTheme';
 
-const pb = new PocketBase('https://betterseqta.pockethost.io');
+const saveThemeFile = (data: object, fileName: string) => {
+  const fileData = JSON.stringify(data, null, 2);
+  const blob = new Blob([fileData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${fileName}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 
 const shareTheme = async (themeID: string) => {
   try {
@@ -15,47 +25,43 @@ const shareTheme = async (themeID: string) => {
     // Extract images and coverImage from themeData, if they exist
     const { CustomImages = [], coverImage, ...themeWithoutImages } = themeData;
 
-    const finalCoverImage = await fetch(coverImage as string).then((res) => res.blob());
-    let finalImages: { id: string, data: Blob }[] = [];
-    
-    for (const image of CustomImages) {
-      const finalImage = await fetch(image.url as string).then((res) => res.blob());
+    // Helper function to convert Blob to Base64
+    const blobToBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
 
-      finalImages.push({
+    // Convert cover image to Base64
+    const coverImageBlob = await fetch(coverImage as string).then(res => res.blob());
+    const coverImageBase64 = await blobToBase64(coverImageBlob);
+
+    // Convert custom images to Base64
+    const finalImages = await Promise.all(CustomImages.map(async (image) => {
+      const imageBlob = await fetch(image.url as string).then(res => res.blob());
+      const imageBase64 = await blobToBase64(imageBlob);
+      return {
         id: image.id,
-        data: finalImage,
-      });
-    }
-
+        variableName: image.variableName,
+        data: imageBase64,
+      };
+    }));
 
     // Prepare the non-file data for uploading
     const data = {
-      name: themeData.name || 'Unnamed Theme',
-      description: themeData.description || 'No description',
-      downloads: '0', // Assuming initial value as 0
-      theme: JSON.stringify({
-        ...themeWithoutImages,
-        images: [
-          ...CustomImages.map((image) => ({
-            id: image.id,
-            variableName: image.variableName,
-          })),
-        ],
-      }), // Convert theme data (excluding images) to JSON string
-      submitted: true,
-      coverImage: new File([finalCoverImage], 'coverImage.png'),
-      images: [ ...finalImages.map((image) => new File([image.data], `${image.id}.png`)) ],
+      ...themeWithoutImages,
+      images: finalImages.map((image) => ({
+        id: image.id,
+        variableName: image.variableName,
+        data: image.data,
+      })),
+      coverImage: coverImageBase64,
     };
 
-    const record = await pb.collection('themes').create(data);
-
-    console.debug('record', record);
-
-    return record.id;
+    saveThemeFile(data, themeData.name || 'Unnamed_Theme');
   } catch (error) {
     console.error('Error sharing theme:', error);
-
-    return null;
   }
 };
 
