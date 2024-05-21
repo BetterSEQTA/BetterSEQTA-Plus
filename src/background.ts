@@ -1,8 +1,6 @@
 import browser from 'webextension-polyfill'
 import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
-import DownloadTheme from "./seqta/ui/themes/downloadTheme";
-
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {
@@ -120,10 +118,6 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
 
     GetNews(sendResponse, url);
     return true;
-  
-  case 'DownloadTheme':
-    DownloadTheme(request.body.theme);
-    break;
       
   default:
     console.log('Unknown request type');
