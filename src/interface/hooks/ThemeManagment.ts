@@ -2,18 +2,6 @@ import browser from 'webextension-polyfill'
 import { CustomTheme, DownloadedTheme, ThemeList } from '../types/CustomThemes';
 import localforage from 'localforage';
 
-export const downloadTheme = async (themeName: string, themeURL: string) => {
-  // send message to the background script
-  await browser.runtime.sendMessage({
-    type: 'currentTab',
-    info: 'DownloadTheme',
-    body: {
-      themeName: themeName,
-      themeURL: themeURL
-    }
-  });
-}
-
 export const setTheme = async (themeID: string) => {
   // send message to the background script
   await browser.runtime.sendMessage({
