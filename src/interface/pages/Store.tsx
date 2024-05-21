@@ -196,7 +196,7 @@ const Store = () => {
               >
                 <motion.div
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-xl h-[95%] p-8 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll"
+                  className="w-full max-w-xl h-[95%] p-8 pt-5 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll"
                   exit={{ y: "100vh" }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   variants={containerVariants}
@@ -205,11 +205,11 @@ const Store = () => {
                 >
                   <motion.div className="relative h-auto">
                     <motion.button
-                      className="absolute top-0 right-0 p-2 text-xl font-bold text-gray-600 dark:text-gray-200"
+                      className="absolute top-0 right-0 p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200"
                       onClick={() => setDisplayTheme(null)}
                       variants={textVariants}
                     >
-                      &times;
+                      {'\ued8a'}
                     </motion.button>
                     <motion.h2 className="mb-4 text-2xl font-bold" variants={textVariants}>
                       {displayTheme.name}
