@@ -16,7 +16,7 @@ const Themes: FC = () => {
 
 
   return (
-  <div className="px-0.5">
+  <div className="">
       <button className="absolute top-12 z-20 right-0 p-2 text-[0.8rem] text-blue-500" onClick={() => setIsEditMode(!isEditMode)}>
         {isEditMode ? 'Done' : 'Edit'}
       </button>

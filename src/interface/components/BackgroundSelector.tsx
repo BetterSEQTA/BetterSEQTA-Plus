@@ -153,7 +153,7 @@ function BackgroundSelector({ isEditMode, disableTheme }: BackgroundSelectorProp
       </div>
     )}
 
-    <div className="relative">
+    <div className="relative px-1">
       <h2 className="pb-2 text-lg font-bold">Background Images</h2>
       <div className="flex flex-wrap gap-4">
         { isEditMode ? <></> :
