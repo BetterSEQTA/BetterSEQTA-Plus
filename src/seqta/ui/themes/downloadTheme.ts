@@ -21,6 +21,10 @@ export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
   const themeContent = await fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes/${theme.themeContent.id}/theme.json`);
   const themeData = await themeContent.json() as ThemeContent;
 
+  await InstallTheme(themeData);
+};
+
+export const InstallTheme = async (themeData: ThemeContent) => {
   const coverImageBlob = base64ToBlob(themeData.coverImage);
 
   const images = themeData.images.map((image) => ({
@@ -38,7 +42,7 @@ export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
 
   await localforage.setItem(themeData.id, {
     ...themeData,
-    webURL: theme.themeContent.id,
+    webURL: themeData.id,
     coverImage: coverImageBlob,
     CustomImages: themeData.images.map((image) => {
       return {
@@ -48,5 +52,3 @@ export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
     })
   });
 };
-
-export default StoreDownloadTheme;
