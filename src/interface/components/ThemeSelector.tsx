@@ -69,7 +69,7 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   useEffect(() => {
     let intervalId: any;
     if (isVisible) {
-      intervalId = setInterval(fetchThemes, 5000);
+      intervalId = setInterval(fetchThemes, 2000);
     } else {
       clearInterval(intervalId);
     }
