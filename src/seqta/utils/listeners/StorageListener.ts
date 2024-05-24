@@ -28,10 +28,6 @@ export default class StorageListener {
         this.handleSelectedColorChange(changes.selectedColor.newValue);
         break;
 
-      case 'telemetry':
-        this.handleTelemetryChange();
-        break;
-
       case 'onoff':
         this.handleOnOffChange();
         break;
@@ -97,10 +93,6 @@ export default class StorageListener {
     } catch (err) {
       console.error(err);
     }
-  }
-
-  handleTelemetryChange() {
-    browser.runtime.sendMessage({ type: 'reloadTabs' })
   }
 
   handleOnOffChange() {

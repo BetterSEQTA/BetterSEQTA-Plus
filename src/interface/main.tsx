@@ -11,10 +11,8 @@ import font from '../resources/fonts/IconFamily.woff'
 import ThemeCreator from './pages/ThemeCreator';
 import Store from './pages/Store';
 
-browser.storage.local.get().then(({ telemetry, DarkMode }) => {
+browser.storage.local.get().then(({ DarkMode }) => {
   if (DarkMode) document.documentElement.classList.add('dark');
-
-  if (telemetry === true) {};
 })
 
 const style = document.createElement("style");

@@ -16,7 +16,6 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [settingsState, setSettingsState] = useState<SettingsState>({
     notificationCollector: false,
     lessonAlerts: false,
-    telemetry: false,
     animatedBackground: false,
     animatedBackgroundSpeed: "0",
     customThemeColor: "rgba(219, 105, 105, 1)",

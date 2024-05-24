@@ -778,9 +778,6 @@ function main(storedSetting: SettingsState) {
     browser.runtime.sendMessage({ type: 'setDefaultStorage' })
   }
 
-  if (storedSetting.telemetry && storedSetting.onoff) {
-  }
-
   const handleDisabled = () => {
     waitForElm('.code').then(AppendElementsToDisabledPage)
   }

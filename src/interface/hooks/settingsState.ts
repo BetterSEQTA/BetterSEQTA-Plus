@@ -16,7 +16,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
-        telemetry: result.telemetry,
         animatedBackground: result.animatedbk,
         animatedBackgroundSpeed: result.bksliderinput,
         customThemeColor: result.selectedColor,
@@ -32,7 +31,6 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
   const keyToStateMap = useMemo(() => ({
     "notificationcollector": "notificationCollector",
     "lessonalert": "lessonAlerts",
-    "telemetry": "telemetry",
     "animatedbk": "animatedBackground",
     "bksliderinput": "animatedBackgroundSpeed",
     "selectedColor": "customThemeColor",

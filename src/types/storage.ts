@@ -26,7 +26,6 @@ export interface SettingsState {
   };
   menuorder: any[];
   notificationcollector: boolean;
-  telemetry: boolean;
   onoff: boolean;
   selectedColor: string;
   originalSelectedColor: string;
