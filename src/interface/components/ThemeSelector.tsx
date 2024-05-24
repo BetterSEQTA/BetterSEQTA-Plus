@@ -6,12 +6,12 @@ import browser from 'webextension-polyfill';
 import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
-import { debounce } from 'lodash';
 import { InstallTheme } from '../../seqta/ui/themes/downloadTheme';
 import SpinnerIcon from './LoadingSpinner';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useVisibility from './useVisibility';
+import { debounce } from 'lodash';
 
 interface ThemeSelectorProps {
   isEditMode: boolean;
