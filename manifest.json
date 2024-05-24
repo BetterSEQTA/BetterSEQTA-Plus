@@ -33,6 +33,10 @@
     {
       "resources": ["src/interface/index.html"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["src/seqta/ui/background/background.html"],
+      "matches": ["*://*/*"]
     }
   ]
 }
