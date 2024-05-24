@@ -84,8 +84,9 @@ export const deleteTheme = async (themeID: string) => {
   });
 }
 
-export const sendThemeUpdate = async (updatedTheme: CustomTheme | DownloadedTheme, saveTheme?: boolean, updateImages?: boolean) => {
+export const sendThemeUpdate = async (updatedTheme: CustomTheme | DownloadedTheme, saveTheme?: boolean, updateImages?: boolean, enableTheme?: boolean) => {
   saveTheme = saveTheme || false;
+  enableTheme = enableTheme || false;
 
   const imageDataPromises = updatedTheme.CustomImages.map(async (image) => {
     if (saveTheme || updateImages) {
@@ -120,6 +121,7 @@ export const sendThemeUpdate = async (updatedTheme: CustomTheme | DownloadedThem
       info: 'UpdateThemePreview',
       body: themeData,
       save: saveTheme,
+      enableTheme: enableTheme
     });
 
     if (saveTheme) {

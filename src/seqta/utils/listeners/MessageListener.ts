@@ -30,7 +30,9 @@ export class MessageHandler {
         if (request?.save == true) {
           const save = async () => {
             await saveTheme(request.body)
-            await setTheme(request.body.id)
+            if (request.body.enableTheme) {
+              await setTheme(request.body.id)
+            }
             sendResponse({ status: 'success' })
             sendThemeUpdate()
           }
