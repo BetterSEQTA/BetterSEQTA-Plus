@@ -15,7 +15,6 @@ type ThemeContent = {
 };
 
 export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
-  console.log(theme.themeContent.id);
   if (!theme.themeContent.id) return;
 
   const themeContent = await fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes/${theme.themeContent.id}/theme.json`);
