@@ -2,7 +2,6 @@ import { ChangeEvent, memo, useEffect, useState } from "react";
 import { downloadPresetBackground, openDB, readAllData, writeData } from "../hooks/BackgroundDataLoader";
 import presetBackgrounds from "../assets/presetBackgrounds";
 import "./BackgroundSelector.css";
-import browser from "webextension-polyfill";
 
 export interface Background {
   id: string;
