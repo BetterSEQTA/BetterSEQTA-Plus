@@ -93,7 +93,9 @@ const Store = () => {
 
       fetchThemes();
       const availableThemes = await localforage.getItem('availableThemes') as string[];
-      setCurrentThemes(availableThemes)
+      if (availableThemes) {
+        setCurrentThemes(availableThemes)
+      }
     })();
   }, []);
 
