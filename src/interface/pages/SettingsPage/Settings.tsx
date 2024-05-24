@@ -47,11 +47,6 @@ const Settings: React.FC = () => {
       modifyElement: <PickerSwatch />
     },
     {
-      title: "Telemetry",
-      description: "Enables/disables error collecting.",
-      modifyElement: <Switch state={settingsState.telemetry} onChange={(isOn: boolean) => switchChange('telemetry', isOn)} />
-    },
-    {
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
       modifyElement: <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>Edit</button>

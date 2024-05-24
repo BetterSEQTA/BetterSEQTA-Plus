@@ -2,7 +2,6 @@ export interface SettingsState {
   notificationCollector: boolean;
   selectedTheme: string;
   lessonAlerts: boolean;
-  telemetry: boolean;
   animatedBackground: boolean;
   animatedBackgroundSpeed: string;
   customThemeColor: string;
@@ -54,7 +53,6 @@ export interface MainConfig {
   };
   menuorder: any[];
   notificationcollector: boolean;
-  telemetry: boolean;
   onoff: boolean;
   selectedColor: string;
   shortcuts: Shortcut[];
