@@ -92,7 +92,7 @@ const Store = () => {
       document.title = 'BetterSEQTA+ Store';
 
       fetchThemes();
-      const availableThemes = await localforage.getItem('availableThemes') as string[];
+      const availableThemes = await localforage.getItem('availableThemes') as string[] | null;
       if (availableThemes) {
         setCurrentThemes(availableThemes)
       }
