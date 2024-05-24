@@ -1,4 +1,4 @@
-import MillionLint from '@million/lint';
+//import MillionLint from '@million/lint';
 import { defineConfig } from 'vite';
 import { crx } from '@crxjs/vite-plugin';
 import million from "million/compiler";
@@ -8,18 +8,12 @@ import { join } from 'path';
 
 const plugins = [
   react(),
-  million.vite({
-    auto: {
-      threshold: 0.005,
-      // default: 0.1,
-      skip: [] // default []
-    }
-  }),
+  million.vite({ auto: true }),
+  //MillionLint.vite(), /* enable for testing and debugging performance */
   crx({
   manifest
   })
 ];
-plugins.unshift(MillionLint.vite())
 
 export default defineConfig({
   plugins: plugins,

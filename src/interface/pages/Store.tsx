@@ -170,7 +170,7 @@ const Store = () => {
                 pauseOnMouseEnter: true
               }}
             >
-              { coverThemes.map((theme, index) => (
+              { [...coverThemes, ...coverThemes].map((theme, index) => (
                   <SwiperSlide className='relative cursor-pointer rounded-xl overflow-clip' onClick={() => setDisplayTheme(theme)} key={index}>
                     <img
                       src={theme.marqueeImage}
