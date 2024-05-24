@@ -36,11 +36,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (downloaded) {
-      DeleteDownloadedTheme(theme.id);
-    } else {
-      onThemeDelete(theme.id);
-    }
+    onThemeDelete(theme.id);
   };
 
   const handleShareClick = (event: React.MouseEvent) => {

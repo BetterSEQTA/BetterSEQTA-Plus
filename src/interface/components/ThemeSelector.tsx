@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle, ForwardRefExoticComponent, RefAttributes } from 'react';
-import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes } from '../hooks/ThemeManagment';
+import { listThemes, deleteTheme, setTheme, disableTheme, getDownloadedThemes, sendThemeUpdate } from '../hooks/ThemeManagment';
 import { DeleteDownloadedTheme } from '../pages/Store';
 import { ThemeCover } from './ThemeCover';
 import browser from 'webextension-polyfill';
@@ -85,8 +85,16 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       const tempDownloadedThemes = await getDownloadedThemes();
       
       setThemes(themes);
-      setDownloadedThemes(tempDownloadedThemes);
+      //setDownloadedThemes(tempDownloadedThemes);
       setSelectedTheme(selectedTheme ? selectedTheme : '');
+
+      console.log(tempDownloadedThemes)
+
+      tempDownloadedThemes.forEach(async (theme) => {
+        console.log('Updating theme:', theme)
+        await sendThemeUpdate(theme as DownloadedTheme, true, false)
+        DeleteDownloadedTheme(theme.id);
+      });
             
       const matchingThemes = themes.filter(theme => 
         tempDownloadedThemes.some(downloadedTheme => downloadedTheme.id === theme.id)
@@ -133,11 +141,20 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
   const handleThemeDelete = useCallback(
     async (themeId: string) => {
+      console.log(themeId, downloadedThemes)
       try {
-        await deleteTheme(themeId);
-        setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
+        if (downloadedThemes.some((theme) => theme.id === themeId)) {
+          console.log('Deleting downloaded theme:', themeId)
+          DeleteDownloadedTheme(themeId);
+          setDownloadedThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
+        } else {
+          console.log('False')
+          await deleteTheme(themeId);
+          setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
+        }
         if (themeId === settingsState.selectedTheme) {
-          setSelectedTheme('');
+          setSelectedTheme('')
+          disableTheme();
         }
       } catch (error) {
         console.error('Error deleting theme:', error);
