@@ -20,7 +20,6 @@ interface ThemeSelectorProps {
 
 const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> & RefAttributes<any>> = forwardRef(({ isEditMode = false }, ref) => {
   const [themes, setThemes] = useState<Omit<CustomTheme, 'CustomImages'>[]>([]);
-  const [downloadedThemes, setDownloadedThemes] = useState<DownloadedTheme[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [tempTheme, setTempTheme] = useState<any>(null);
@@ -82,19 +81,10 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   const fetchThemes = async () => {
     try {
       const { themes, selectedTheme } = await listThemes();
-      const tempDownloadedThemes = await getDownloadedThemes();
+      let tempDownloadedThemes = await getDownloadedThemes();
       
       setThemes(themes);
-      //setDownloadedThemes(tempDownloadedThemes);
       setSelectedTheme(selectedTheme ? selectedTheme : '');
-
-      console.log(tempDownloadedThemes)
-
-      tempDownloadedThemes.forEach(async (theme) => {
-        console.log('Updating theme:', theme)
-        await sendThemeUpdate(theme as DownloadedTheme, true, false)
-        DeleteDownloadedTheme(theme.id);
-      });
             
       const matchingThemes = themes.filter(theme => 
         tempDownloadedThemes.some(downloadedTheme => downloadedTheme.id === theme.id)
@@ -103,13 +93,14 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
       if (matchingThemes.length > 0) {
         matchingThemes.forEach((theme) => {
           DeleteDownloadedTheme(theme.id);
-          
-          setDownloadedThemes(
-            downloadedThemes.filter(downloadedTheme => downloadedTheme.id !== theme.id)
-          )
+          tempDownloadedThemes = tempDownloadedThemes.filter(downloadedTheme => downloadedTheme.id !== theme.id);
         })
       }
 
+      tempDownloadedThemes.forEach(async (theme) => {
+        await sendThemeUpdate(theme as DownloadedTheme, true, false)
+        DeleteDownloadedTheme(theme.id);
+      });
     } catch (error) {
       console.error('Error fetching themes:', error);
     } finally {
@@ -141,17 +132,9 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
   const handleThemeDelete = useCallback(
     async (themeId: string) => {
-      console.log(themeId, downloadedThemes)
       try {
-        if (downloadedThemes.some((theme) => theme.id === themeId)) {
-          console.log('Deleting downloaded theme:', themeId)
-          DeleteDownloadedTheme(themeId);
-          setDownloadedThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
-        } else {
-          console.log('False')
-          await deleteTheme(themeId);
-          setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
-        }
+        await deleteTheme(themeId);
+        setThemes((prevThemes) => prevThemes.filter((theme) => theme.id !== themeId));
         if (themeId === settingsState.selectedTheme) {
           setSelectedTheme('')
           disableTheme();
@@ -240,25 +223,13 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
           />
         ))}
 
-        {downloadedThemes.map((theme) => (
-          <ThemeCover
-            key={theme.id}
-            downloaded={true}
-            theme={theme}
-            isSelected={theme.id === settingsState.selectedTheme}
-            isEditMode={isEditMode}
-            onThemeSelect={handleThemeSelectDebounced}
-            onThemeDelete={handleThemeDelete}
-          />
-        ))}
-
         {tempTheme && (
           <div className="flex justify-center w-full bg-gray-200 rounded-xl dark:bg-zinc-700/50 place-items-center aspect-theme animate-pulse">
             <SpinnerIcon className='opacity-50' />
           </div>
         )}
 
-        {downloadedThemes.length + themes.length > 0 && <div
+        { themes.length > 0 && <div
           id="divider"
           className="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"
         ></div>}

@@ -93,7 +93,12 @@ export class MessageHandler {
         return true;
 
       case 'CloseThemeCreator':
-        CloseThemeCreator();
+        try {
+          CloseThemeCreator();
+        } catch (error) {
+          console.error('Error closing theme creator:', error);
+          sendResponse({ status: 'error' });
+        }
         sendResponse({ status: 'success' });
         break;
   
