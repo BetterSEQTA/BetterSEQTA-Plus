@@ -1,6 +1,7 @@
 import { FC, createRef, useState } from 'react';
 import BackgroundSelector from '../../components/BackgroundSelector';
 import ThemeSelector from '../../components/ThemeSelector';
+import { memo } from 'react';
 
 type ThemeSelectorRef = {
   disableTheme: () => void;
@@ -26,4 +27,4 @@ const Themes: FC = () => {
   );
 };
 
-export default Themes;
+export default memo(Themes);

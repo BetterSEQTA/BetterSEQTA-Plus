@@ -6,6 +6,7 @@ import { SettingsList } from '../../types/SettingsProps';
 import { useSettingsContext } from '../../SettingsContext';
 
 import browser from 'webextension-polyfill'
+import { memo } from 'react';
 
 const Settings: React.FC = () => {
   const { settingsState, setSettingsState } = useSettingsContext();
@@ -89,4 +90,4 @@ const Settings: React.FC = () => {
   );
 };
 
-export default Settings;
+export default memo(Settings);

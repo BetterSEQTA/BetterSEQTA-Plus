@@ -14,7 +14,7 @@ type ThemeCoverProps = {
   onThemeDelete: (themeId: string) => void;
 };
 
-export const ThemeCover: React.FC<ThemeCoverProps> = ({
+export const ThemeCover: React.FC<ThemeCoverProps> = React.memo(({
   theme,
   downloaded,
   isSelected,
@@ -96,7 +96,7 @@ export const ThemeCover: React.FC<ThemeCoverProps> = ({
       </div>
     </button>
   );
-};
+});
 
 const LoadingSpinner = ({ size }: { size: number }) => {
   return <div style={{ width: `${size}px`, height: `${size}px` }} className={`animate-spin rounded-full border-2 border-white border-t-2 border-t-transparent`}></div>;

@@ -7,6 +7,7 @@ import Shortcuts from './SettingsPage/Shortcuts';
 import Picker from '../components/Picker';
 import Themes from './SettingsPage/Themes';
 import { ToastContainer } from 'react-toastify';
+import { memo } from 'react';
 
 import browser from 'webextension-polyfill';
 
@@ -46,4 +47,4 @@ const SettingsPage = ({ standalone }: SettingsPage) => {
   );
 };
 
-export default SettingsPage;
+export default memo(SettingsPage);
