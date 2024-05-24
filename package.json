@@ -63,7 +63,7 @@
     "react-toastify": "^10.0.5",
     "rimraf": "^5.0.5",
     "sortablejs": "^1.15.2",
-    "swiper": "^11.1.0",
+    "swiper": "latest",
     "tailwindcss": "^3.4.1",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
