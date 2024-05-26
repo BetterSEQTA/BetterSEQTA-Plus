@@ -4,12 +4,6 @@
 
 <p align="center">
   A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://seqta.com.au">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
-
-  <br>
-  <br>
-
-  <img src="https://img.shields.io/chrome-web-store/users/afdgaoaclhkhemfkkkonemoapeinchel" />
-  <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
 </p>
 
 <p align="center">
@@ -24,6 +18,11 @@
 
 ## Release Videos
 <video autoplay loop muted controls="false" width="33%" src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/3084644a-edbc-40e5-b1ad-1fdea4f0ca18"></video>
+
+<div>
+  <img src="https://img.shields.io/chrome-web-store/users/afdgaoaclhkhemfkkkonemoapeinchel" />
+  <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
+</div>
 
 ## Features
 
