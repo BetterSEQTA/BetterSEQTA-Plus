@@ -56,6 +56,10 @@ html {
   background-color: rgb(28 28 30);
 }
 
+.timetablepage .days .scrollspacer {
+  width: 0 !important;
+}
+
 .themeCloseButton {
   position: absolute !important;
   color: var(--text-primary) !important;

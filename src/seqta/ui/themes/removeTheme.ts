@@ -26,6 +26,9 @@ export const removeTheme = async (theme: CustomTheme) => {
   // Remove custom images
   const customImageVariables = theme.CustomImages.map((image) => image.variableName);
   customImageVariables.forEach((variableName) => {
+    const blobUrl = document.documentElement.style.getPropertyValue('--' + variableName);
+    URL.revokeObjectURL(blobUrl);
+
     document.documentElement.style.removeProperty('--' + variableName);
   });
 };

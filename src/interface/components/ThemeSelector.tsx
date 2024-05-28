@@ -11,7 +11,8 @@ import SpinnerIcon from './LoadingSpinner';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useVisibility from './useVisibility';
-import { debounce } from 'lodash';
+import { debounce, throttle } from 'lodash';
+import { Mutex } from '../../seqta/utils/mutex';
 
 interface ThemeSelectorProps {
   isEditMode: boolean;
@@ -29,6 +30,8 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
     rootMargin: '0px',
     threshold: 0.1, // 10% of the element needs to be visible
   });
+
+  const mutex = new Mutex();
 
   const setSelectedTheme = (themeId: string) => {
     setSettingsState((prevState: SettingsState) => ({
@@ -114,21 +117,29 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
 
   const handleThemeSelect = useCallback(
     async (themeId: string) => {
-      if (themeId === settingsState.selectedTheme) {
-        await disableTheme();
-        setSelectedTheme('');
-      } else {
-        const selectedTheme = themes.find((theme) => theme.id === themeId);
-        if (selectedTheme) {
-          await setTheme(selectedTheme.id);
-          setSelectedTheme(themeId);
+      const unlock = await mutex.lock();
+      try {
+        if (themeId === settingsState.selectedTheme) {
+          await disableTheme();
+          setSelectedTheme('');
+        } else {
+          const selectedTheme = themes.find((theme) => theme.id === themeId);
+          if (selectedTheme) {
+            await setTheme(selectedTheme.id);
+            setSelectedTheme(themeId);
+          }
         }
+      } finally {
+        unlock();
       }
     },
     [settingsState.selectedTheme, themes]
   );
 
-  const handleThemeSelectDebounced = debounce(handleThemeSelect, 50);
+  const handleThemeSelectDebounced = useCallback(
+    debounce(handleThemeSelect, 100),
+    [handleThemeSelect]
+  );
 
   const handleThemeDelete = useCallback(
     async (themeId: string) => {
