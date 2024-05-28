@@ -5,9 +5,9 @@ import { applyTheme } from './applyTheme';
 
 
 export const enableCurrentTheme = async () => {
-  const themeId = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
-  if (themeId.selectedTheme) {
-    const theme = await localforage.getItem(themeId.selectedTheme) as CustomTheme;
+  const { selectedTheme } = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
+  if (selectedTheme) {
+    const theme = await localforage.getItem(selectedTheme) as CustomTheme;
     if (theme) {
       await applyTheme(theme);
     }
