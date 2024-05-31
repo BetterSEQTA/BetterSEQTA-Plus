@@ -281,6 +281,13 @@ ul.magicDelete > li.deleting {
   width: 28px !important;
   height: 28px !important;
 }
+#menu ul {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+  }
+}
 #menu ul li {
   margin-left: auto !important;
   margin-right: auto !important;
