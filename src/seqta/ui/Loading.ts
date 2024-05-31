@@ -38,6 +38,10 @@ export default function loading() {
         top: 0;
       }
 
+      .closeLoading {
+        opacity: 0;
+      }
+
       .dark .bkloading {
         background-color: rgb(26, 26, 26);
         color: white;

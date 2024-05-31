@@ -289,7 +289,7 @@ function ThemeCreator() {
         <Accordion defaultOpened title='Custom CSS'>
           <CodeEditor
             className='mt-2'
-            height='300px'
+            height='800px'
             value={theme.CustomCSS}
             setValue={CodeUpdate} />
         </Accordion>
