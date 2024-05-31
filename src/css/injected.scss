@@ -66,7 +66,7 @@ html {
   font-size: x-large !important;
   top: 5px;
   right: 5px;
-  border-radius: 5rem !important;
+  border-radius: 80px !important;
   padding: 8px;
   cursor: pointer;
   z-index: 10000;
@@ -84,7 +84,7 @@ html {
 }
 .defaultWelcome {
   background: var(--better-main);
-  border-radius: 1rem 1rem 0rem 0 !important;
+  border-radius: 16px 16px 0px 0 !important;
   color: var(--text-color) !important;
   overflow: hidden;
 }
@@ -112,7 +112,7 @@ html {
   color: black;
 }
 .pillbox {
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow: clip;
   display: flex !important;
   align-items: center;
@@ -134,7 +134,7 @@ html {
 }
 
 .PillBox__PillBox___3GjAk {
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow: hidden;
 
   .PillBox__active___3Qpi9 {
@@ -152,7 +152,7 @@ html {
 }
 
 .ace_editor {
-  border-radius: 1rem;
+  border-radius: 16px;
   border-top: none !important;
 }
 
@@ -168,11 +168,11 @@ html {
 
   // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
   > section {
-    border-radius: 1rem !important;
+    border-radius: 16px !important;
     //opacity: 0;
 
     button {
-      border-radius: 1rem;
+      border-radius: 16px;
       transition: all 500ms;
     }
 
@@ -190,7 +190,7 @@ html {
 
   > .dashlet {
     background: var(--background-primary);
-    border-radius: 1rem;
+    border-radius: 16px;
     //opacity: 0;
 
     &[data-ident="timetable"] {
@@ -203,7 +203,7 @@ html {
       background: rgba(0, 0, 0, 0.2);
 
       .title {
-        padding: 1rem !important;
+        padding: 16px !important;
       }
     }
   }
@@ -305,8 +305,8 @@ ul.magicDelete > li.deleting {
   }
 
   &:before {
-    top: 1.1rem;
-    left: -0.5rem;
+    top: 17.6px;
+    left: -8px;
   }
 }
 #menu li.active > .sub > ul > .item {
@@ -433,15 +433,15 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 #main .timetablepage .quickbar {
   border: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .quickbar .actions {
-  border-bottom-left-radius: 1rem;
-  border-bottom-right-radius: 1rem;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 .quickbar .attendance {
   border-top-left-radius: 100%;
-  border-bottom-right-radius: 1rem !important;
+  border-bottom-right-radius: 16px !important;
 }
 .quickbar::before {
   background-color: inherit;
@@ -450,7 +450,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main > .timetablepage > .quickbar.below::before {
   border-bottom-color: transparent;
-  top: -1.75rem;
+  top: -28px;
   background-color: inherit;
   clip-path: polygon(50% 40%, 0 100%, 100% 100%);
   border-bottom-color: transparent !important;
@@ -458,7 +458,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 #main > .timetablepage > .quickbar.above::after {
   content: "";
   position: absolute;
-  bottom: -1.75rem;
+  bottom: -28px;
   z-index: 2;
   left: 50%;
   margin: 0 0 0 -12px;
@@ -469,7 +469,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main > .timetablepage > .quickbar.above::before {
   border-bottom-color: transparent;
-  bottom: -1.75rem !important;
+  bottom: -28px !important;
   background-color: inherit;
   clip-path: polygon(50% 40%, 0 0, 100% 0);
   border-top-color: transparent !important;
@@ -540,23 +540,23 @@ td.colourBar {
   background: var(--better-main);
 }
 ul.buttonChecklist {
-  border-radius: 1rem;
+  border-radius: 16px;
   margin-top: 4px;
   padding-left: 0 !important;
   box-shadow: 0 0 10px -5px black;
 
   > li {
-    border-radius: 0.5rem;
+    border-radius: 8px;
     border-bottom: unset !important;
 
     > button {
-      border-radius: 0.5rem;
+      border-radius: 8px;
       border: unset !important;
     }
   }
 
   button {
-    border-radius: 0.5rem !important;
+    border-radius: 8px !important;
   }
 
   &:has(.item.checked) button:nth-child(2) {
@@ -598,8 +598,8 @@ ol > [data-label] {
   background: transparent;
 }
 .Viewer__newMessage___3ToUb {
-  border-radius: 0.5rem !important;
-  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  font-size: 12.8px !important;
   background: var(--background-primary) !important;
 }
 .MessageList__sender___32riy :last-child {
@@ -620,7 +620,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   border-radius: 16px !important;
 }
 [aria-labelledby="lixycoxs-tab-1"] [minlength="0"] {
-  min-height: 8rem !important;
+  min-height: 128px !important;
 }
 .student #menu > ul::before {
   background-image: var(--betterseqta-logo);
@@ -690,19 +690,19 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 @media (max-width: 1145px) {
   .home-container {
-    padding: 2rem !important;
+    padding: 32px !important;
   }
 }
 
 @media (max-width: 1100px) {
   .home-container {
-    padding: 2rem 1rem !important;
+    padding: 32px 16px !important;
   }
 }
 
 @media (max-width: 1200px) {
   .LabelList__LabelList___2RJFf > li {
-    border-radius: 0.5rem !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -737,7 +737,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 .Module__wrapper___2sbOo {
   overflow: clip;
   background: var(--background-primary) !important;
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   color: var(--text-primary) !important;
   box-shadow: none;
 }
@@ -803,7 +803,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   display: flex;
   justify-content: space-between;
   padding-right: 56px !important;
-  height: 4rem;
+  height: 54px;
   min-height: 48px;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 0px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -822,7 +822,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   background-size: auto 48px;
   height: 69.5px;
   content: "";
-  width: 11.5rem;
+  width: 184px;
 }
 .rightElements {
   display: flex;
@@ -891,8 +891,8 @@ div > ol:has(.uiFileHandlerWrapper) {
   width: 1050px;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 2rem 4rem;
+  gap: 32px;
+  padding: 32px 64px;
   align-items: center;
 }
 .home-container h1 {
@@ -912,7 +912,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 .timetable-container {
   width: 100%;
   overflow: visible !important;
-  border-radius: 0 1rem 0 1rem;
+  border-radius: 0 16px 0 16px;
   z-index: 1;
   height: auto;
   background: var(--better-main);
@@ -928,13 +928,13 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 15em;
   display: flex;
   flex-direction: row;
-  border-radius: 1rem;
+  border-radius: 16px;
 
   .day:first-child {
-    border-bottom-left-radius: 1rem;
+    border-bottom-left-radius: 16px;
   }
   .day:last-child {
-    border-bottom-right-radius: 1rem;
+    border-bottom-right-radius: 16px;
   }
 }
 .notices-container {
@@ -998,7 +998,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
 }
 .border {
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow: clip;
 }
 .shortcut-container h2 {
@@ -1034,7 +1034,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
   color: var(--text-primary);
   display: flex;
-  border-radius: 5rem;
+  border-radius: 80px;
   position: relative;
   transition: 200ms;
 }
@@ -1076,7 +1076,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
   box-shadow: unset;
   -webkit-box-shadow: unset;
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .ais-description {
   color: var(--text-primary) !important;
@@ -1089,7 +1089,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .ais-input-container select,
 .ais-input-container input {
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .notice h3 {
   margin: 0;
@@ -1164,7 +1164,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-size: 30px;
   display: flex;
   width: 100%;
-  border-radius: 1rem 0;
+  border-radius: 16px 0;
   align-items: center;
 }
 .day-empty img {
@@ -1254,7 +1254,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
   top: 80px;
   right: 10px;
-  border-radius: 1rem;
+  border-radius: 16px;
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
 
@@ -1290,7 +1290,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   color: var(--text-primary);
 }
 .Overview__details___2Zlnr {
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow: hidden;
 }
 .Viewer__sidebar___1Btu4 {
@@ -1320,9 +1320,9 @@ div > ol:has(.uiFileHandlerWrapper) {
 
 .MessageList__MessageList___3DxoC ol .Button__Button___3SRFo {
   width: calc(100% - 32px);
-  border-radius: 1rem;
-  margin: 0.5rem 16px;
-  padding: 0.8rem;
+  border-radius: 16px;
+  margin: 8px 16px;
+  padding: 12.8px;
   place-content: center;
   text-align: center;
 }
@@ -1335,7 +1335,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 .MessageList__MessageList___3DxoC .Button__Button___3SRFo {
   background: rgba(0, 0, 0, 0.1);
   width: 100%;
-  min-height: 2rem;
+  min-height: 32px;
   text-align: center;
 }
 .MessageList__MessageList___3DxoC {
@@ -1359,8 +1359,8 @@ div > ol:has(.uiFileHandlerWrapper) {
     border-color 0.5s;
   background: var(--auto-background);
   position: relative;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
+  padding: 8px 12px;
+  border-radius: 8px;
 
   > input {
     outline: none !important;
@@ -1370,7 +1370,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   }
 }
 .uiShortText.search {
-  padding: 0.5rem;
+  padding: 8px;
   position: relative;
 }
 
@@ -1379,7 +1379,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
 }
 .cke_panel {
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow: hidden;
   background: unset;
 }
@@ -1393,7 +1393,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .Message__Message___3oJaU {
   background: var(--background-primary);
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
 }
 iframe.userHTML {
   color: white !important;
@@ -1412,7 +1412,7 @@ iframe.userHTML {
   color: var(--text-color);
 }
 .Spinner__Spinner___CStEb > svg {
-  margin: 1rem 0;
+  margin: 16px 0;
 }
 .Spinner__Spinner___CStEb > svg > path {
   stroke: var(--text-primary) !important;
@@ -1442,7 +1442,7 @@ iframe.userHTML {
   display: none;
 }
 .navigator {
-  border-top-right-radius: 1rem;
+  border-top-right-radius: 16px;
 }
 .programmeNavigator > .navigator,
 .programmeNavigator > .navigator > li > ul {
@@ -1475,7 +1475,7 @@ iframe.userHTML {
   width: 10px;
   height: 10px;
   transition: 1s;
-  border-radius: 1rem;
+  border-radius: 16px;
   //width: 0px !important;
   //background: none;
 }
@@ -1502,7 +1502,7 @@ ul {
 .programmeNavigator {
   width: 400px;
   background: var(--background-primary);
-  border-top-right-radius: 1rem;
+  border-top-right-radius: 16px;
   position: relative;
 }
 #userActions > .details > .code {
@@ -1542,13 +1542,13 @@ ul {
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0) !important;
   background: var(--background-primary);
   margin: 0 !important;
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .mediaWrapper,
 .mediaRecorder,
 .MediaRecorder__MediaRecorder___2c2_M {
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   overflow: hidden;
 }
 .MediaRecorder__MediaRecorder___2c2_M {
@@ -1556,7 +1556,7 @@ ul {
 }
 .legacy-root .uiFileHandler {
   background: var(--auto-background);
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .ResourceList__ResourceList___2z-c1 .legacy-root .uiFileHandler {
   background: var(--background-primary);
@@ -1607,7 +1607,7 @@ ul {
   color: #000 !important;
 }
 div.entry.class {
-  border-radius: 0.25rem;
+  border-radius: 4px;
 }
 
 div.entry.class {
@@ -1624,9 +1624,9 @@ div.entry.class[style*="width: 46.5%"] {
   width: auto !important;
 }
 .uiFileHandler .uiButton {
-  border-radius: 2rem !important;
+  border-radius: 32px !important;
   color: var(--text-primary) !important;
-  margin-top: 0.25rem !important;
+  margin-top: 4px !important;
 }
 .uiFileHandlerPanel::before {
   border: 12px solid rgba(0, 0, 0, 0);
@@ -1647,10 +1647,10 @@ div.entry.class[style*="width: 46.5%"] {
 .uiFileHandlerPanel {
   background: var(--background-primary);
   color: var(--text-primary);
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .sources .uiButton {
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .MediaRecorder__preview___1hQqY,
 .MediaRecorder__actions___3Jjvp {
@@ -1688,7 +1688,7 @@ blurred {
 }
 .content [placeholder="Subject…"] {
   padding-left: 12px !important;
-  border-radius: 1rem;
+  border-radius: 16px;
   background: var(--background-primary) !important;
   color: var(--text-primary) !important;
 }
@@ -1717,20 +1717,20 @@ div.bar.flat {
 
   .dashlet-motd {
     .message {
-      font-size: 1.5rem !important;
+      font-size: 24px !important;
     }
   }
 }
 
 .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
   background: var(--background-primary);
-  border-radius: 1rem;
+  border-radius: 16px;
   overflow-x: hidden;
 }
 .formattedText > .footer {
   background: var(--background-primary);
-  border-radius: 1rem;
-  margin-top: 0.5rem;
+  border-radius: 16px;
+  margin-top: 8px;
 }
 .uiSlidePane.shown {
   background-color: rgba(0, 0, 0, 0.7);
@@ -1754,12 +1754,12 @@ div.bar.flat {
     -webkit-transform 0.5s ease-out,
     opacity 0.2s ease-out;
   transition-delay: 0 !important;
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   opacity: 0;
 }
 .document-width-micro .RootModule__root-module___2wT52,
 .document-width-nano .RootModule__root-module___2wT52 {
-  padding: 1rem;
+  padding: 16px;
   box-sizing: border-box;
 }
 .anyoneSelect.filterBox {
@@ -1874,7 +1874,7 @@ li.MessageList__unread___3imtO {
 }
 
 .MenuButton__Menu___gXTaY > button {
-  border-radius: 100rem;
+  border-radius: 1600px;
 }
 
 .MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz.MessageList__unread___3imtO {
@@ -1980,7 +1980,7 @@ li.MessageList__unread___3imtO {
   color: var(--text-primary);
 }
 .NewsArticle {
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   overflow: hidden;
   width: 100%;
   padding: 0 !important;
@@ -2215,8 +2215,8 @@ li.MessageList__unread___3imtO {
   width: 36px;
   position: fixed;
   height: 36px;
-  top: 1.3rem !important;
-  left: 0.5rem;
+  top: 20.8px !important;
+  left: 8px;
   z-index: 21;
   display: none;
   padding: 6px;
@@ -2227,7 +2227,7 @@ li.MessageList__unread___3imtO {
 .hamburger-line {
   width: 100%;
   height: 3px;
-  border-radius: 1rem;
+  border-radius: 16px;
   background-color: var(--text-primary);
   margin: 3px 0;
   transition: all 0.3s ease;
@@ -2439,7 +2439,7 @@ li.MessageList__unread___3imtO {
 .calendar {
   background: var(--better-main) !important;
   color: var(--text-color) !important;
-  border-radius: 1rem !important;
+  border-radius: 16px !important;
   margin-top: 4px;
 
   table {
@@ -2548,7 +2548,7 @@ li.MessageList__unread___3imtO {
   flex-direction: column;
   color: var(--text-primary);
   transition: 200ms;
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 .upcoming-assessment-title {
   color: var(--text-primary);
@@ -2760,7 +2760,7 @@ li.MessageList__unread___3imtO {
   height: 70%;
   background: var(--theme-primary);
   position: absolute;
-  border-radius: 1000rem;
+  border-radius: 16000px;
   top: 15%;
   left: 15%;
 }
@@ -2899,12 +2899,12 @@ body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltipt
   width: 96%;
   display: flex;
   margin: 0 auto;
-  padding-bottom: 1rem;
+  padding-bottom: 16px;
 }
 .whatsnewImg {
-  margin: 0.5rem auto;
+  margin: 8px auto;
   width: 90%;
-  border-radius: 1rem;
+  border-radius: 16px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.3);
 }
 .whatsnewTextContainer {
@@ -2960,7 +2960,7 @@ body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltipt
 }
 #whatsnewclosebutton {
   position: absolute;
-  top: 1rem;
+  top: 16px;
   right: 20px;
   font-size: 2em;
   padding: 5px;
