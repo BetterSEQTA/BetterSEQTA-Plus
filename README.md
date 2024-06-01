@@ -42,7 +42,7 @@
   - Brave Supported
   - Opera Supported
   - Vivaldi Supported
-  - Firefox (currently not supported, plans for it in future though [manifest v3 problems])
+  - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/))
   - Safari (Experimental - only available via compilation)
 
 ## Getting started
