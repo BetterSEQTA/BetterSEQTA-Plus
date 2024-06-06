@@ -1507,12 +1507,9 @@ function CheckCurrentLesson(lesson: any, num: number) {
           if (Notification.permission === 'granted') {
             new Notification('Next Lesson in 5 Minutes:', {
               body:
-                'Subject: ' +
-                lesson.description +
-                ' \nRoom: ' +
-                lesson.room +
-                ' \nTeacher: ' +
-                lesson.staff,
+                `Subject: ${lesson.description}` +
+                (lesson.room ? `\nRoom: ${lesson.room}` : '') +
+                (lesson.staff ? `\nTeacher: ${lesson.staff}` : ''),
             })
           } else {
             // request permission from user
