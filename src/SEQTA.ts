@@ -304,21 +304,24 @@ export function OpenWhatsNewPopup() {
 
 async function finishLoad() {
   try {
-    document.querySelector('.legacy-root')!.classList.remove('hidden')
-    var loadingbk = document.getElementById('loading')
-    loadingbk!.classList.add('closeLoading')
-    await delay(501)
-    loadingbk!.remove()
-  } catch (err) {}
-
-
-  const result = browser.storage.local.get(['justupdated'])
-  function open (result: any) {
-    if (result.justupdated && !document.getElementById('whatsnewbk')) {
-      OpenWhatsNewPopup()
-    }
+    document.querySelector('.legacy-root')?.classList.remove('hidden');
+    
+    const loadingbk = document.getElementById('loading');
+    loadingbk?.classList.add('closeLoading');
+    await delay(501);
+    loadingbk?.remove();
+  } catch (err) {
+    console.error("Error during loading cleanup:", err);
   }
-  result.then(open, onError)
+
+  try {
+    const { justupdated } = await browser.storage.local.get('justupdated');
+    if (justupdated && !document.getElementById('whatsnewbk')) {
+      OpenWhatsNewPopup();
+    }
+  } catch (error) {
+    console.error("Error retrieving 'justupdated' from storage:", error);
+  }
 }
 
 async function DeleteWhatsNew() {
