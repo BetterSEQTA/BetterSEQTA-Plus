@@ -1,7 +1,6 @@
 import { animate, spring, stagger } from 'motion'
 import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
-import updateVideo from './resources/update-video.mp4'
 import IconFamily from './resources/fonts/IconFamily.woff'
 import LogoLight from './resources/icons/betterseqta-light-icon.png'
 import LogoLightOutline from './resources/icons/betterseqta-light-outline.png'
@@ -269,7 +268,7 @@ export function OpenWhatsNewPopup() {
   let popup = document.getElementsByClassName('whatsnewContainer')[0]
 
   injectYouTubeVideo(
-    '5nM6T3KCVfM', 'PLSlFV-9e6dvyRNVacLwJwQZ3sWJYZ_PFb', document.querySelector('.whatsnewImg')!, true, true, '100%', '100%'
+    'JdDA45GYEUc', 'PLSlFV-9e6dvyvZJFPCtBMb3LSp-LGbrbI', document.querySelector('.whatsnewImg')!, true, true, '100%', '100%'
   )
 
   animate(
