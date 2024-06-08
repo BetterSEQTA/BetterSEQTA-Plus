@@ -309,20 +309,35 @@ ul.magicDelete > li.deleting {
     left: -8px;
   }
 }
-#menu li.active > .sub > ul > .item {
-  box-shadow: inset 3px 0 var(--item-colour, transparent);
-  border-radius: 0px 8px 8px 0px;
-  transition: 100ms;
+
+#menu {
+  li.active > .sub > ul > .item:not(.hasChildren) {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--item-colour, transparent);
+      transition: width 100ms, transform 0.3s ease;
+      border-radius: 8px 0 0 8px;
+    }
+
+    &:hover::before,
+    &.active::before {
+      width: 6px;
+      background: var(--item-colour, transparent);
+    }
+  }
+
+  li.active > .sub > ul > .active {
+    background: rgba(0, 0, 0, 0.3) !important;
+  }
 }
-#menu li.active > .sub > ul > .item:hover {
-  box-shadow: inset 6px 0 var(--item-colour, transparent);
-  transition: 100ms;
-}
-#menu li.active > .sub > ul > .active {
-  box-shadow: inset 6px 0 var(--item-colour, transparent);
-  transition: 100ms;
-  background: rgba(0, 0, 0, 0.3) !important;
-}
+
 #menu li > label,
 #menu section > label {
   text-transform: none;
