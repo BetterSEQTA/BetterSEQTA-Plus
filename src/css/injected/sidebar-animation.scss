@@ -7,11 +7,13 @@
   overflow-y: scroll !important;
 }
 
+#menu > ul:has(li.hasChildren.active) > li::before,
+#menu > ul ul:has(li.hasChildren.active) > li::before,
 #menu > ul:has(li.hasChildren.active) > li > label,
 #menu > ul:has(li.hasChildren.active) > li > svg,
 #menu > ul ul:has(li.hasChildren.active) > li > label,
 #menu > ul ul:has(li.hasChildren.active) > li > svg {
-  transform: translateX(-20rem);
+  transform: translateX(-320px);
 }
 
 .sub .sub {
