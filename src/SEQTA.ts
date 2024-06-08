@@ -28,6 +28,7 @@ import { updateBgDurations } from './seqta/ui/Animation'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
 import injectedCSS from './css/injected.scss?inline'
+import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 
 declare global {
   interface Window {
@@ -135,17 +136,10 @@ export function OpenWhatsNewPopup() {
 
   let imagecont = document.createElement('div')
   imagecont.classList.add('whatsnewImgContainer')
-  let video = document.createElement('video')
-  let source = document.createElement('source')
-  // Perhaps we host this on a server and then grab it instead of having it locally?
-  source.setAttribute('src', browser.runtime.getURL(updateVideo))
-  source.setAttribute('type', 'video/mp4')
-  video.autoplay = true
-  video.muted = true
-  video.loop = true
-  video.appendChild(source)
-  video.classList.add('whatsnewImg')
-  imagecont.appendChild(video)
+
+  let div = document.createElement('div')
+  div.classList.add('whatsnewImg')
+  imagecont.appendChild(div)
 
   let textcontainer = document.createElement('div')
   textcontainer.classList.add('whatsnewTextContainer')
@@ -273,6 +267,10 @@ export function OpenWhatsNewPopup() {
 
   let bkelement = document.getElementById('whatsnewbk')
   let popup = document.getElementsByClassName('whatsnewContainer')[0]
+
+  injectYouTubeVideo(
+    '5nM6T3KCVfM', 'PLSlFV-9e6dvyRNVacLwJwQZ3sWJYZ_PFb', document.querySelector('.whatsnewImg')!, true, true, '100%', '100%'
+  )
 
   animate(
     [popup, bkelement as HTMLElement],
