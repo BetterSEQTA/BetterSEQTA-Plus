@@ -254,10 +254,10 @@ const Store = () => {
                       <motion.div className="my-8 border-b border-zinc-200 dark:border-zinc-700" variants={textVariants} />
 
                       <motion.h3 className="mb-4 text-lg font-bold" variants={textVariants}>
-                        More Themes
+                        Similar Themes
                       </motion.h3>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {gridThemes.filter(theme => theme.id !== displayTheme.id).map((theme, index) => (
+                        {gridThemes.filter(theme => theme.id !== displayTheme.id).sort((a, b) => a.name.localeCompare(displayTheme.name) - b.name.localeCompare(displayTheme.name)).map((theme, index) => (
                           <motion.div key={index} onClick={() => { setDisplayTheme(null); setDisplayTheme(theme); }} className='w-full cursor-pointer' variants={textVariants}>
                             <div
                               className="w-full overflow-clip rounded-xl transition-all duration-300 relative group/card flex flex-col hover:shadow-xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] h-auto"
