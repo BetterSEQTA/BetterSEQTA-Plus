@@ -7,11 +7,9 @@ import { settingsState } from "../utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 
 export async function AddBetterSEQTAElements(toggle: any) {
-  if (toggle) {
-    const result = await browser.storage.local.get();
-    
-    initializeSettings(result);
-    addDarkMode(result.DarkMode);
+  if (toggle) {    
+    initializeSettings();
+    addDarkMode(settingsState.DarkMode);
     createHomeButton();
     await handleUserInfo();
     handleStudentData();
@@ -32,9 +30,9 @@ export async function AddBetterSEQTAElements(toggle: any) {
   setupSettingsButton();
 }
 
-function initializeSettings(result: any) {
-  enableAnimatedBackground(result);
-  updateBgDurations(result);
+function initializeSettings() {
+  enableAnimatedBackground();
+  updateBgDurations();
 }
 
 function addDarkMode(DarkMode: boolean) {

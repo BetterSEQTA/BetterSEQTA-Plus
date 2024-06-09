@@ -86,8 +86,8 @@ function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`
 }
 
-export function enableAnimatedBackground(item: any) {
-  if (item.animatedbk) {
+export function enableAnimatedBackground() {
+  if (settingsState.animatedbk) {
     CreateBackground()
   } else {
     RemoveBackground()
