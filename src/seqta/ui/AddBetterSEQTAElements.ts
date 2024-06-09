@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import { GetThresholdOfColor, SendNewsPage, addExtensionSettings, enableAnimatedBackground, loadHomePage, setupSettingsButton } from "../../SEQTA";
 import { updateBgDurations } from "./Animation";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
@@ -6,10 +5,12 @@ import stringToHTML from "../utils/stringToHTML";
 import { settingsState } from "../utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 
-export async function AddBetterSEQTAElements(toggle: any) {
-  if (toggle) {    
+export async function AddBetterSEQTAElements() {
+  if (settingsState.onoff) {    
     initializeSettings();
-    addDarkMode(settingsState.DarkMode);
+    if (settingsState.DarkMode) {
+      document.documentElement.classList.add('dark');
+    }
     createHomeButton();
     await handleUserInfo();
     handleStudentData();
@@ -19,7 +20,7 @@ export async function AddBetterSEQTAElements(toggle: any) {
 
   appendBackgroundToUI();
   addExtensionSettings();
-  if (toggle) {
+  if (settingsState.onoff) {
     await createSettingsButton();
     await addDarkLightToggle();
     customizeMenuToggle();
@@ -33,12 +34,6 @@ export async function AddBetterSEQTAElements(toggle: any) {
 function initializeSettings() {
   enableAnimatedBackground();
   updateBgDurations();
-}
-
-function addDarkMode(DarkMode: boolean) {
-  if (DarkMode) {
-    document.documentElement.classList.add('dark');
-  }
 }
 
 function createHomeButton() {
