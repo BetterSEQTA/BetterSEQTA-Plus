@@ -1447,99 +1447,53 @@ function GetLightDarkModeString(darkmodetoggle: boolean) {
   return tooltipstring
 }
 
-function CheckCurrentLesson(lesson: any, num: number) {
-  var startTime = lesson.from
-  var endTime = lesson.until
-  // Gets current time
-  let currentDate = new Date()
+async function CheckCurrentLesson(lesson: any, num: number) {
+  const { from: startTime, until: endTime, code, description, room, staff } = lesson;
+  const currentDate = new Date();
 
-  // Takes start time of current lesson and makes it into a Date function for comparison
-  let startDate = new Date(currentDate.getTime())
-  startDate.setHours(startTime.split(':')[0])
-  startDate.setMinutes(startTime.split(':')[1])
-  startDate.setSeconds(parseInt('00'))
+  // Create Date objects for start and end times
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [endHour, endMinute] = endTime.split(':').map(Number);
 
-  // Takes end time of current lesson and makes it into a Date function for comparison
-  let endDate = new Date(currentDate.getTime())
-  endDate.setHours(endTime.split(':')[0])
-  endDate.setMinutes(endTime.split(':')[1])
-  endDate.setSeconds(parseInt('00'))
+  const startDate = new Date(currentDate);
+  startDate.setHours(startHour, startMinute, 0);
 
-  // Gets the difference between the start time and current time
-  var difference = startDate.getTime() - currentDate.getTime()
-  // Converts the difference into minutes
-  var minutes = Math.floor(difference / 1000 / 60)
+  const endDate = new Date(currentDate);
+  endDate.setHours(endHour, endMinute, 0);
 
-  // Checks if current time is between the start time and end time of current tested lesson
-  let valid = startDate < currentDate && endDate > currentDate
+  // Check if the current time is within the lesson time range
+  const isValidTime = startDate < currentDate && endDate > currentDate;
 
-  let id = lesson.code + num
-  const date = new Date()
+  const elementId = `${code}${num}`;
+  const element = document.getElementById(elementId);
 
-  var elementA = document.getElementById(id)
-  if (!elementA) {
-    clearInterval(LessonInterval)
-  } else {
-    if (
-      currentSelectedDate.toLocaleDateString('en-au') ==
-      date.toLocaleDateString('en-au')
-    ) {
-      if (valid) {
-        // Apply the activelesson class to increase the box-shadow of current lesson
-        elementA.classList.add('activelesson')
-      } else {
-        // Removes the activelesson class to ensure only the active lesson have the class
-        if (elementA != null) {
-          elementA.classList.remove('activelesson')
-        }
-      }
+  if (!element) {
+    clearInterval(LessonInterval);
+    return;
+  }
+
+  const isCurrentDate = currentSelectedDate.toLocaleDateString('en-au') === currentDate.toLocaleDateString('en-au');
+
+  if (isCurrentDate) {
+    if (isValidTime) {
+      element.classList.add('activelesson');
+    } else {
+      element.classList.remove('activelesson');
     }
   }
 
-  // If 5 minutes before the start of another lesson:
-  if (minutes == 5) {
-    const result = browser.storage.local.get('lessonalert')
-    function open (result: any) {
-      if (result.lessonalert) {
-        // Checks if notifications are supported
-        if (!window.Notification) {
-          console.log('Browser does not support notifications.')
-        } else {
-          // check if permission is already granted
-          if (Notification.permission === 'granted') {
-            new Notification('Next Lesson in 5 Minutes:', {
-              body:
-                `Subject: ${lesson.description}` +
-                (lesson.room ? `\nRoom: ${lesson.room}` : '') +
-                (lesson.staff ? `\nTeacher: ${lesson.staff}` : ''),
-            })
-          } else {
-            // request permission from user
-            Notification.requestPermission()
-              .then(function (p) {
-                if (p === 'granted') {
-                  // show notification here
-                  new Notification('Next Lesson in 5 Minutes:', {
-                    body:
-                      'Subject: ' +
-                      lesson.description +
-                      ' \nRoom: ' +
-                      lesson.room +
-                      ' \nTeacher: ' +
-                      lesson.staff,
-                  })
-                } else {
-                  console.log('User blocked notifications.')
-                }
-              })
-              .catch(function (err) {
-                console.error(err)
-              })
-          }
-        }
-      }
-    }
-    result.then(open, onError)
+  const minutesUntilStart = Math.floor((startDate.getTime() - currentDate.getTime()) / 60000);
+
+  if (minutesUntilStart !== 5 || settingsState.lessonalert || !window.Notification) return;
+
+  if (Notification.permission !== 'granted') await Notification.requestPermission();
+
+  try {
+    new Notification('Next Lesson in 5 Minutes:', {
+      body: `Subject: ${description}${room ? `\nRoom: ${room}` : ''}${staff ? `\nTeacher: ${staff}` : ''}`,
+    });
+  } catch (error) {
+    console.error(error);
   }
 }
 
