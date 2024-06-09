@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill'
 import { useEffect, useMemo } from "react";
 import { SettingsProps } from "../types/SettingsProps";
 import { MainConfig, SettingsState } from "../types/AppProps";
+import { SettingsState as StorageSettingsState } from '../../types/storage';
 
 let RanOnce = false;
 let previousSettingsState: SettingsState
@@ -12,7 +13,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     RanOnce = true;
 
     // @ts-expect-error - TODO: Fix this
-    browser.storage.local.get().then((result: MainConfig) => {
+    browser.storage.local.get().then((result: StorageSettingsState) => {
       setSettingsState({
         notificationCollector: result.notificationcollector,
         lessonAlerts: result.lessonalert,
@@ -23,7 +24,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         shortcuts: result.shortcuts,
         customshortcuts: result.customshortcuts,
         transparencyEffects: result.transparencyEffects,
-        selectedTheme: result.selectedTheme
+        selectedTheme: result.selectedTheme,
+        timeFormat: result.timeFormat
       });
     });
   });
@@ -38,7 +40,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "shortcuts": "shortcuts",
     "customshortcuts": "customshortcuts",
     "transparencyEffects": "transparencyEffects",
-    "selectedTheme": "selectedTheme"
+    "selectedTheme": "selectedTheme",
+    "timeFormat": "timeFormat"
   }), []);
   
   const storageChangeListener = (changes: browser.Storage.StorageChange) => {

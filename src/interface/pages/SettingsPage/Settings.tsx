@@ -11,10 +11,10 @@ import { memo } from 'react';
 const Settings: React.FC = () => {
   const { settingsState, setSettingsState } = useSettingsContext();
 
-  const switchChange = (key: string, isOn: boolean) => {
+  const switchChange = (key: string, value: boolean | string) => {
     setSettingsState({
       ...settingsState,
-      [key]: isOn,
+      [key]: value,
     });
   };
 
@@ -60,6 +60,11 @@ const Settings: React.FC = () => {
       title: "Lesson Alerts",
       description: "Sends a native browser notification ~5 minutes prior to lessons.",
       modifyElement: <Switch state={settingsState.lessonAlerts} onChange={(isOn: boolean) => switchChange('lessonAlerts', isOn)} />
+    },
+    {
+      title: "12 Hour Time",
+      description: "Prefer 12 hour time format for SEQTA",
+      modifyElement: <Switch state={settingsState.timeFormat == "12"} onChange={(isOn: boolean) => switchChange('timeFormat', isOn ? "12" : "24")} />
     },
     {
       title: "BetterSEQTA+",
