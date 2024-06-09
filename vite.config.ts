@@ -1,10 +1,12 @@
-//import MillionLint from '@million/lint';
 import { defineConfig } from 'vite';
+import { join } from 'path';
+
+import manifest from './manifest.json';
+
+import react from '@vitejs/plugin-react-swc';
+//import MillionLint from '@million/lint';
 import { crx } from '@crxjs/vite-plugin';
 import million from "million/compiler";
-import manifest from './manifest.json';
-import react from '@vitejs/plugin-react-swc';
-import { join } from 'path';
 
 const plugins = [
   react(),
