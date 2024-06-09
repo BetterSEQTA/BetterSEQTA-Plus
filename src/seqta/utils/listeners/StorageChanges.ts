@@ -3,10 +3,12 @@ import { updateAllColors } from '../../ui/colors/Manager';
 import {
   CreateBackground,
   CreateCustomShortcutDiv,
+  FilterUpcomingAssessments,
   RemoveBackground,
   RemoveShortcutDiv,
   addShortcuts,
   disableNotificationCollector,
+  documentTextColor,
   enableNotificationCollector,
 } from '../../../SEQTA';
 import { updateBgDurations } from '../../ui/Animation';
@@ -20,7 +22,7 @@ export class StorageChangeHandler {
 
   private registerHandlers() {
     settingsState.register('selectedColor', updateAllColors.bind(this));
-    settingsState.register('DarkMode', updateAllColors.bind(this));
+    settingsState.register('DarkMode', this.handleDarkModeChange.bind(this));
     settingsState.register('onoff', this.handleOnOffChange.bind(this));
     settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
     settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
@@ -28,6 +30,12 @@ export class StorageChangeHandler {
     settingsState.register('bksliderinput', updateBgDurations.bind(this));
     settingsState.register('animatedbk', this.handleAnimatedBkChange.bind(this));
     settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
+    settingsState.register('subjectfilters', FilterUpcomingAssessments.bind(this));
+  }
+
+  private handleDarkModeChange() {
+    updateAllColors();
+    documentTextColor();
   }
 
   private handleOnOffChange() {

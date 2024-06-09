@@ -9,7 +9,6 @@ import icon48 from './resources/icons/icon-48.png'
 import Color from 'color'
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
 import { MessageHandler } from './seqta/utils/listeners/MessageListener'
-import { SettingsState } from "./types/storage"
 import ShortcutLinks from './seqta/content/links.json'
 import Sortable  from 'sortablejs'
 import assessmentsicon from './seqta/icons/assessmentsIcon'
@@ -18,14 +17,13 @@ import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from "./seqta/ui/themes/enableCurrent";
 import iframeCSS from "./css/iframe.scss?raw"
-import { onError } from './seqta/utils/onError'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
 import injectedCSS from './css/injected.scss?inline'
 import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
-import { settingsState } from './seqta/utils/listeners/SettingsState'
+import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
 
@@ -60,18 +58,22 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS
     document.head.appendChild(documentLoadStyle)
 
+    
     enableCurrentTheme()
     try {
+      // wait until settingsState has been loaded from storage
+      await initializeSettingsState();
+      
       if (settingsState.onoff) {
         const injectedStyle = document.createElement('style')
         injectedStyle.textContent = injectedCSS
-
+        
         document.head.appendChild(injectedStyle)
       }
       
       main()
     } catch (error: any) {
-      onError(error)
+      console.error(error)
     }
   }
 
@@ -93,9 +95,10 @@ export function enableAnimatedBackground() {
   }
 }
 
-export async function HideMenuItems(): Promise<void> {
+async function HideMenuItems(): Promise<void> {
   try {
     let stylesheetInnerText: string = ''
+    console.log('ASssessments: ', settingsState.menuitems)
     for (const [menuItem, { toggle }] of Object.entries(settingsState.menuitems)) {
       if (!toggle) {
         stylesheetInnerText += SetDisplayNone(menuItem)
@@ -770,8 +773,7 @@ function main() {
     loading()
     InjectCustomIcons()
     HideMenuItems()
-    
-    window.addEventListener('load', tryLoad)
+    tryLoad()
   } else {
     handleDisabled()
     window.addEventListener('load', handleDisabled)
@@ -901,9 +903,7 @@ export function OpenMenuOptions() {
     for (let i = 0; i < childnodes.length; i++) {
       const element = childnodes[i]
       newdefaultmenuorder.push((element as HTMLElement).dataset.key)
-      browser.storage.local.set({
-        defaultmenuorder: newdefaultmenuorder
-      })
+      settingsState.defaultmenuorder = newdefaultmenuorder
     }
   }
   let childnodes = menu!.firstChild!.childNodes
@@ -913,9 +913,7 @@ export function OpenMenuOptions() {
       if (!settingsState.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
         let newdefaultmenuorder = settingsState.defaultmenuorder
         newdefaultmenuorder.push((element as HTMLElement).dataset.key)
-        browser.storage.local.set({
-          defaultmenuorder: newdefaultmenuorder
-        })
+        settingsState.defaultmenuorder = newdefaultmenuorder
       }
     }
   }
@@ -1083,9 +1081,8 @@ export function OpenMenuOptions() {
 
   defaultbutton?.addEventListener('click', function() {
     const options = settingsState.defaultmenuorder
-    browser.storage.local.set({
-      menuorder: options
-    })
+    settingsState.menuorder = options
+
     ChangeMenuItemPositions(options)
 
     for (let i = 0; i < menubuttons.length; i++) {
@@ -1103,7 +1100,7 @@ export function OpenMenuOptions() {
 
 function saveNewOrder(sortable: any) {
   var order = sortable.toArray()
-  browser.storage.local.set({ menuorder: order })
+  settingsState.menuorder = order
 }
 
 function cloneAttributes(target: any, source: any) {
@@ -1592,46 +1589,38 @@ function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any)
   label.append(span)
 
   input.addEventListener('change', function (change) {
-    const result = browser.storage.local.get()
-    function open (storage: any) {
-      let filters = storage.subjectfilters
-      let id = (change.target as HTMLInputElement)!.id.split('-')[1]
-      filters[id] = (change.target as HTMLInputElement)!.checked
+    let filters = settingsState.subjectfilters
+    let id = (change.target as HTMLInputElement)!.id.split('-')[1]
+    filters[id] = (change.target as HTMLInputElement)!.checked
 
-      browser.storage.local.set({ subjectfilters: filters })
-    }
-    result.then(open, onError)
+    settingsState.subjectfilters = filters
   })
 
   return label
 }
 
 function CreateFilters(subjects: any) {
-  const result = browser.storage.local.get()
-  function open (result: any) {
-    let filteroptions = result.subjectfilters
+  let filteroptions = settingsState.subjectfilters
 
-    let filterdiv = document.querySelector('#upcoming-filters')
-    for (let i = 0; i < subjects.length; i++) {
-      const element = subjects[i]
-      // eslint-disable-next-line
-      if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
-        filteroptions[element.code] = true
-        browser.storage.local.set({ subjectfilters: filteroptions })
-      }
-      let elementdiv = CreateSubjectFilter(
-        element.code,
-        element.colour,
-        filteroptions[element.code],
-      )
-
-      filterdiv!.append(elementdiv)
+  let filterdiv = document.querySelector('#upcoming-filters')
+  for (let i = 0; i < subjects.length; i++) {
+    const element = subjects[i]
+    // eslint-disable-next-line
+    if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
+      filteroptions[element.code] = true
+      settingsState.subjectfilters = filteroptions
     }
+    let elementdiv = CreateSubjectFilter(
+      element.code,
+      element.colour,
+      filteroptions[element.code],
+    )
+
+    filterdiv!.append(elementdiv)
   }
-  result.then(open, onError)
 }
 
-function CreateUpcomingSection(assessments: any, activeSubjects: any) {
+async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let upcomingitemcontainer = document.querySelector('#upcoming-items')
   let overdueDates = []
   let upcomingDates = {}
@@ -1656,99 +1645,94 @@ function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   var TomorrowDate = new Date()
   TomorrowDate.setDate(TomorrowDate.getDate() + 1)
 
-  GetLessonColours().then((colours) => {
+  const colours = await GetLessonColours()
     
-    let subjects = colours
-    for (let i = 0; i < assessments.length; i++) {
-      let subjectname = `timetable.subject.colour.${assessments[i].code}`
+  let subjects = colours
+  for (let i = 0; i < assessments.length; i++) {
+    let subjectname = `timetable.subject.colour.${assessments[i].code}`
 
-      let subject = subjects.find((element: any) => element.name === subjectname)
-      
-      if (!subject) {
-        assessments[i].colour = '--item-colour: #8e8e8e;'
-      } else {
-        assessments[i].colour = `--item-colour: ${subject.value};`
-        GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
-      }
-    }
+    let subject = subjects.find((element: any) => element.name === subjectname)
     
-    for (let i = 0; i < activeSubjects.length; i++) {
-      const element = activeSubjects[i]
-      let subjectname = `timetable.subject.colour.${element.code}`
-      let colour = colours.find((element: any) => element.name === subjectname)
-      if (!colour) {
-        element.colour = '--item-colour: #8e8e8e;'
-      } else {
-        element.colour = `--item-colour: ${colour.value};`
-        let result = GetThresholdOfColor(colour.value)
-        if (result > 300) {
-          element.invert = true
-        }
+    if (!subject) {
+      assessments[i].colour = '--item-colour: #8e8e8e;'
+    } else {
+      assessments[i].colour = `--item-colour: ${subject.value};`
+      GetThresholdOfColor(subject.value); // result (originally) result = GetThresholdOfColor
+    }
+  }
+  
+  for (let i = 0; i < activeSubjects.length; i++) {
+    const element = activeSubjects[i]
+    let subjectname = `timetable.subject.colour.${element.code}`
+    let colour = colours.find((element: any) => element.name === subjectname)
+    if (!colour) {
+      element.colour = '--item-colour: #8e8e8e;'
+    } else {
+      element.colour = `--item-colour: ${colour.value};`
+      let result = GetThresholdOfColor(colour.value)
+      if (result > 300) {
+        element.invert = true
       }
     }
+  }
 
-    CreateFilters(activeSubjects)
-    
-    // @ts-ignore
-    let type
-    // @ts-ignore
-    let class_
+  CreateFilters(activeSubjects)
+  
+  // @ts-ignore
+  let type
+  // @ts-ignore
+  let class_
 
-    for (let i = 0; i < assessments.length; i++) {
-      const element: any = assessments[i]
-      if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
-        let dateObj: any = new Object()
-        dateObj.div = CreateElement(
-          // TODO: not sure whats going on here?
-          // eslint-disable-next-line
-          type = "div",
-          // eslint-disable-next-line
-          class_ = "upcoming-date-container",
-        )
-        dateObj.assessments = [];
+  for (let i = 0; i < assessments.length; i++) {
+    const element: any = assessments[i]
+    if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
+      let dateObj: any = new Object()
+      dateObj.div = CreateElement(
+        // TODO: not sure whats going on here?
+        // eslint-disable-next-line
+        type = "div",
+        // eslint-disable-next-line
+        class_ = "upcoming-date-container",
+      )
+      dateObj.assessments = [];
 
-        (upcomingDates[element.due as keyof typeof upcomingDates] as any) = dateObj
-      }
-      let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
+      (upcomingDates[element.due as keyof typeof upcomingDates] as any) = dateObj
+    }
+    let assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
 
-      if (assessmentDateDiv) {
-        (assessmentDateDiv as any).assessments.push(element)
-      }
+    if (assessmentDateDiv) {
+      (assessmentDateDiv as any).assessments.push(element)
+    }
+  }
+
+  for (var date in upcomingDates) {
+    let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due)
+    let specialcase = CheckSpecialDay(Today, assessmentdue)
+    let assessmentDate
+
+    if (specialcase) {
+      let datecase: string = specialcase!
+      assessmentDate = createAssessmentDateDiv(
+        date,
+        upcomingDates[date as keyof typeof upcomingDates],
+        // eslint-disable-next-line
+        datecase,
+      )
+    } else {
+      assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates])
     }
 
-    for (var date in upcomingDates) {
-      let assessmentdue = new Date((upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due)
-      let specialcase = CheckSpecialDay(Today, assessmentdue)
-      let assessmentDate
-
-      if (specialcase) {
-        let datecase: string = specialcase!
-        assessmentDate = createAssessmentDateDiv(
-          date,
-          upcomingDates[date as keyof typeof upcomingDates],
-          // eslint-disable-next-line
-          datecase,
-        )
-      } else {
-        assessmentDate = createAssessmentDateDiv(date, upcomingDates[date as keyof typeof upcomingDates])
-      }
-
-      if (specialcase === 'Yesterday') {
-        upcomingitemcontainer!.insertBefore(
-          assessmentDate,
-          upcomingitemcontainer!.firstChild,
-        )
-      } else {
-        upcomingitemcontainer!.append(assessmentDate)
-      }
-
+    if (specialcase === 'Yesterday') {
+      upcomingitemcontainer!.insertBefore(
+        assessmentDate,
+        upcomingitemcontainer!.firstChild,
+      )
+    } else {
+      upcomingitemcontainer!.append(assessmentDate)
     }
-    const result = browser.storage.local.get()
-    function open (result: any) {
-      FilterUpcomingAssessments(result.subjectfilters)
-    }
-    result.then(open, onError)
-  })
+
+  }
+  FilterUpcomingAssessments(settingsState.subjectfilters)
 }
 
 function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
@@ -1765,7 +1749,7 @@ function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
   parent.append(textcontainer)
 }
 
-function FilterUpcomingAssessments(subjectoptions: any) {
+export function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {
     let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`)
 
@@ -1808,12 +1792,6 @@ function FilterUpcomingAssessments(subjectoptions: any) {
     }
   }
 }
-
-browser.storage.onChanged.addListener(function (changes) {
-  if (changes.subjectfilters) {
-    FilterUpcomingAssessments(changes.subjectfilters.newValue)
-  }
-})
 
 async function GetLessonColours() {
   let func = fetch(`${location.origin}/seqta/student/load/prefs?`, {
@@ -1889,9 +1867,7 @@ export function RemoveShortcutDiv(elements: any) {
 }
 
 async function AddCustomShortcutsToPage() {
-  const result = await browser.storage.local.get(['customshortcuts'])   
-   
-  let customshortcuts: any = Object.values(result)[0]
+  let customshortcuts: any = settingsState.customshortcuts
   if (customshortcuts.length > 0) {
     for (let i = 0; i < customshortcuts.length; i++) {
       const element = customshortcuts[i]
@@ -2014,11 +1990,7 @@ export async function loadHomePage() {
     changeTimetable(1)
   })
 
-  // Adds the shortcuts to the shortcut container
-  const result = await browser.storage.local.get(['shortcuts'])
-  
-  const shortcuts = Object.values(result)[0]
-  addShortcuts(shortcuts)
+  addShortcuts(settingsState.shortcuts)
   AddCustomShortcutsToPage()
 
   // Creates the upcoming container and appends to the home container
@@ -2106,58 +2078,53 @@ export async function loadHomePage() {
         }
       } else {
         if (!NoticeContainer!.innerText) {
-          // For each element in the response json:
-          const result = browser.storage.local.get(['DarkMode'])
-          function noticeInfoDiv (result: any) {
-            for (let i = 0; i < NoticesPayload.payload.length; i++) {
-              if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-              // Create a div, and place information from json response
-                const NewNotice = document.createElement('div')
-                NewNotice.classList.add('notice')
-                const title = stringToHTML(
-                  '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+          for (let i = 0; i < NoticesPayload.payload.length; i++) {
+            if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+            // Create a div, and place information from json response
+              const NewNotice = document.createElement('div')
+              NewNotice.classList.add('notice')
+              const title = stringToHTML(
+                '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+              )
+              NewNotice.append(title.firstChild!)
+
+              if (NoticesPayload.payload[i].label_title !== undefined) {
+                const label = stringToHTML(
+                  '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                 )
-                NewNotice.append(title.firstChild!)
-
-                if (NoticesPayload.payload[i].label_title !== undefined) {
-                  const label = stringToHTML(
-                    '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                  )
-                  NewNotice.append(label.firstChild!)
-                }
-
-                const staff = stringToHTML(
-                  '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-                )
-                NewNotice.append(staff.firstChild!)
-                // Converts the string into HTML
-                const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-                for (let i = 0; i < content.childNodes.length; i++) {
-                  NewNotice.append(content.childNodes[i])
-                }
-                // Gets the colour for the top section of each notice
-
-                let colour = NoticesPayload.payload[i].colour
-                if (typeof (colour) === 'string') {
-                  const rgb = GetThresholdOfColor(colour)
-                  const DarkModeResult = result.DarkMode
-                  if (rgb < 100 && DarkModeResult) {
-                    colour = undefined
-                  }
-                }
-
-                const colourbar = document.createElement('div')
-                colourbar.classList.add('colourbar')
-                colourbar.style.background = 'var(--colour)'
-                NewNotice.style.cssText = `--colour: ${colour}`
-                // Appends the colour bar to the new notice
-                NewNotice.append(colourbar)
-                // Appends the new notice into the notice container
-                NoticeContainer!.append(NewNotice)
+                NewNotice.append(label.firstChild!)
               }
+
+              const staff = stringToHTML(
+                '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+              )
+              NewNotice.append(staff.firstChild!)
+              // Converts the string into HTML
+              const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+              for (let i = 0; i < content.childNodes.length; i++) {
+                NewNotice.append(content.childNodes[i])
+              }
+              // Gets the colour for the top section of each notice
+
+              let colour = NoticesPayload.payload[i].colour
+              if (typeof (colour) === 'string') {
+                const rgb = GetThresholdOfColor(colour)
+                const DarkModeResult = settingsState.DarkMode
+                if (rgb < 100 && DarkModeResult) {
+                  colour = undefined
+                }
+              }
+
+              const colourbar = document.createElement('div')
+              colourbar.classList.add('colourbar')
+              colourbar.style.background = 'var(--colour)'
+              NewNotice.style.cssText = `--colour: ${colour}`
+              // Appends the colour bar to the new notice
+              NewNotice.append(colourbar)
+              // Appends the new notice into the notice container
+              NoticeContainer!.append(NewNotice)
             }
           }
-          result.then(noticeInfoDiv, onError)
         }
       }
     }
@@ -2183,73 +2150,63 @@ export async function loadHomePage() {
           }
         } else {
           document.querySelectorAll('.notice').forEach(e => e.remove())
-          // For each element in the response json:
-          const result = browser.storage.local.get(['DarkMode'])
-          function noticeInfoDiv (result: any) {
-            for (let i = 0; i < NoticesPayload.payload.length; i++) {
 
-              if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-              // Create a div, and place information from json response
-                const NewNotice = document.createElement('div')
-                NewNotice.classList.add('notice')
-                const title = stringToHTML(
-                  '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+          for (let i = 0; i < NoticesPayload.payload.length; i++) {
+            if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
+            // Create a div, and place information from json response
+              const NewNotice = document.createElement('div')
+              NewNotice.classList.add('notice')
+              const title = stringToHTML(
+                '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
+              )
+              NewNotice.append(title.firstChild!)
+
+              if (NoticesPayload.payload[i].label_title !== undefined) {
+                const label = stringToHTML(
+                  '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
                 )
-                NewNotice.append(title.firstChild!)
-
-                if (NoticesPayload.payload[i].label_title !== undefined) {
-                  const label = stringToHTML(
-                    '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                  )
-                  NewNotice.append(label.firstChild!)
-                }
-
-                const staff = stringToHTML(
-                  '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-                )
-                NewNotice.append(staff.firstChild!)
-                // Converts the string into HTML
-                const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-                for (let i = 0; i < content.childNodes.length; i++) {
-                  NewNotice.append(content.childNodes[i])
-                }
-                // Gets the colour for the top section of each notice
-
-                let colour = NoticesPayload.payload[i].colour
-                if (typeof (colour) === 'string') {
-                  const rgb = GetThresholdOfColor(colour)
-                  const DarkModeResult = result.DarkMode
-                  if (rgb < 100 && DarkModeResult) {
-                    colour = undefined
-                  }
-                }
-
-                const colourbar = document.createElement('div')
-                colourbar.classList.add('colourbar')
-                colourbar.style.background = 'var(--colour)'
-                NewNotice.style.cssText = `--colour: ${colour}`
-                // Appends the colour bar to the new notice
-                NewNotice.append(colourbar)
-                // Appends the new notice into the notice container
-                NoticeContainer!.append(NewNotice)
+                NewNotice.append(label.firstChild!)
               }
+
+              const staff = stringToHTML(
+                '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
+              )
+              NewNotice.append(staff.firstChild!)
+              // Converts the string into HTML
+              const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
+              for (let i = 0; i < content.childNodes.length; i++) {
+                NewNotice.append(content.childNodes[i])
+              }
+              // Gets the colour for the top section of each notice
+
+              let colour = NoticesPayload.payload[i].colour
+              if (typeof (colour) === 'string') {
+                const rgb = GetThresholdOfColor(colour)
+                const DarkModeResult = settingsState.DarkMode
+                if (rgb < 100 && DarkModeResult) {
+                  colour = undefined
+                }
+              }
+
+              const colourbar = document.createElement('div')
+              colourbar.classList.add('colourbar')
+              colourbar.style.background = 'var(--colour)'
+              NewNotice.style.cssText = `--colour: ${colour}`
+              // Appends the colour bar to the new notice
+              NewNotice.append(colourbar)
+              // Appends the new notice into the notice container
+              NoticeContainer!.append(NewNotice)
             }
           }
-          result.then(noticeInfoDiv, onError)
         }
       }
     }
   }
   dateControl.addEventListener('input', onInputChange)
 
-  // Sends similar HTTP Post Request for the notices
-  const result1 = browser.storage.local.get()
-  function open1 (result: any) {
-    if (result.notificationcollector) {
-      enableNotificationCollector()
-    }
+  if (settingsState.notificationcollector) {
+    enableNotificationCollector()
   }
-  result1.then(open1, onError)
   
   const assessments = await GetUpcomingAssessments()
   const classes = await GetActiveClasses()
@@ -2287,7 +2244,7 @@ export async function loadHomePage() {
 
   CurrentAssessments.sort(comparedate)
 
-  CreateUpcomingSection(CurrentAssessments, activeSubjects)
+  await CreateUpcomingSection(CurrentAssessments, activeSubjects)
 }
 
 export function addShortcuts(shortcuts: any) {
@@ -2455,49 +2412,37 @@ async function CheckForMenuList() {
   }
 }
 
-function documentTextColor () {
-  const result = browser.storage.local.get(['DarkMode'])
-  function changeDocTextCol (result: any) {
-    const Darkmode = result.DarkMode
-    if (Darkmode) {
-      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
-      const fullDocArray = document.querySelectorAll('tr.document')
-      const linkArray = document.querySelectorAll('a.uiFile')
-      for (const item of fullDocArray) {
-        item.classList.add('documentDark')
-      }
-      for (const item of linkArray) {
-        item.setAttribute('style', 'color: #06b4fc;')
-      }
-      for (const item of documentArray) {
-        item.setAttribute('style', 'color: white')
-      }
-    } else {
-      const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
-      const fullDocArray = document.querySelectorAll('tr.document')
-      const linkArray = document.querySelectorAll('a.uiFile')
-      for (const item of fullDocArray) {
-        item.classList.remove('documentDark')
-      }
-      for (const item of linkArray) {
-        item.setAttribute('style', 'color: #3465a4;')
-      }
-      for (const item of documentArray) {
-        item.setAttribute('style', 'color: black')
-      }
+export function documentTextColor() {
+  if (settingsState.DarkMode) {
+    const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+    const fullDocArray = document.querySelectorAll('tr.document')
+    const linkArray = document.querySelectorAll('a.uiFile')
+    for (const item of fullDocArray) {
+      item.classList.add('documentDark')
+    }
+    for (const item of linkArray) {
+      item.setAttribute('style', 'color: #06b4fc;')
+    }
+    for (const item of documentArray) {
+      item.setAttribute('style', 'color: white')
+    }
+  } else {
+    const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
+    const fullDocArray = document.querySelectorAll('tr.document')
+    const linkArray = document.querySelectorAll('a.uiFile')
+    for (const item of fullDocArray) {
+      item.classList.remove('documentDark')
+    }
+    for (const item of linkArray) {
+      item.setAttribute('style', 'color: #3465a4;')
+    }
+    for (const item of documentArray) {
+      item.setAttribute('style', 'color: black')
     }
   }
-  result.then(changeDocTextCol, onError)
 }
-browser.storage.onChanged.addListener(documentTextColor)
 
 function LoadInit() {
   console.log('[BetterSEQTA+] Started Init')
-  const result = browser.storage.local.get()
-  function open (result: any) {
-    if (result.onoff) {
-      loadHomePage()
-    }
-  }
-  result.then(open, onError)
+  if (settingsState.onoff) loadHomePage()
 }

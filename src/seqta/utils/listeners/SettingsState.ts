@@ -14,10 +14,11 @@ class StorageManager {
     this.loadFromStorage();
 
     const handler: ProxyHandler<StorageManager> = {
-      get: (target, prop: keyof SettingsState | 'register') => {
+      get: (target, prop: keyof SettingsState | 'register' | 'initialize') => {
         if (prop in target) {
           return (target as any)[prop];
         }
+        //console.log(this.data[prop], prop, this.data)
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
@@ -37,6 +38,12 @@ class StorageManager {
       StorageManager.instance = new StorageManager();
     }
     return StorageManager.instance as StorageManager & SettingsState;
+  }
+
+  public static async initialize(): Promise<StorageManager & SettingsState> {
+    const instance = StorageManager.getInstance();
+    await instance.loadFromStorage();
+    return instance;
   }
 
   private async loadFromStorage(): Promise<void> {
@@ -76,3 +83,4 @@ class StorageManager {
 }
 
 export const settingsState = StorageManager.getInstance();
+export const initializeSettingsState = async () => await StorageManager.initialize();
