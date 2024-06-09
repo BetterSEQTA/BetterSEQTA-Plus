@@ -18,7 +18,6 @@ class StorageManager {
         if (prop in target) {
           return (target as any)[prop];
         }
-        //console.log(this.data[prop], prop, this.data)
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {

@@ -67,7 +67,6 @@ export class StorageChangeHandler {
   }
 
   private handleShortcutsChange(newValue: { enabled: boolean, name: string }[], oldValue: { enabled: boolean, name: string }[]) {
-    console.log(oldValue, newValue);
     const addedShortcuts = newValue.filter((newItem: any) => {
       const isAdded = oldValue.some((oldItem: any) => {
         const match = oldItem.name === newItem.name;
