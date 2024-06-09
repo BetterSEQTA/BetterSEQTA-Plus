@@ -420,7 +420,6 @@ function removeThemeTagsFromNotices () {
 }
 
 async function updateIframesWithDarkMode(): Promise<void> {
-
   // Load the CSS file to overwrite iFrame default CSS
   const cssLink = document.createElement('style')
   cssLink.classList.add('iframecss')
@@ -434,6 +433,13 @@ async function updateIframesWithDarkMode(): Promise<void> {
           const iframe = node as HTMLIFrameElement
           try {
             applyDarkModeToIframe(iframe, cssLink, settingsState.DarkMode);
+
+            // check if it is a text editor frame
+            if (node instanceof HTMLElement && node.classList.contains('cke_wysiwyg_frame')) {
+              await delay(100)
+              // enable spellcheck
+              iframe.contentDocument?.body.setAttribute('spellcheck', 'true')
+            }
           } catch (error) {
             console.error('Error applying dark mode:', error)
           }
