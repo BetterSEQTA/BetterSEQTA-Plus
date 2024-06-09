@@ -31,6 +31,7 @@ html.transparencyEffects {
   .Module__wrapper___2sbOo,
   .notifications__list___rp2L2,
   .thread,
+  .calendar,
   .navigator,
   #title,
   .LabelList__selected___3Egk7,
@@ -38,7 +39,7 @@ html.transparencyEffects {
   .pane,
   .legacy-root button, .legacy-root a,
   .MessageList__MessageList___3DxoC {
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(80px);
   }
   
   .report {
@@ -61,7 +62,7 @@ html.transparencyEffects {
   .search,
   .document,
   .border {
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(80px);
   }
 
   #main > .dashboard {
