@@ -11,7 +11,7 @@ import SpinnerIcon from './LoadingSpinner';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useVisibility from './useVisibility';
-import { debounce, throttle } from 'lodash';
+import { debounce } from 'lodash';
 import { Mutex } from '../../seqta/utils/mutex';
 
 interface ThemeSelectorProps {
