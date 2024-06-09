@@ -33,7 +33,6 @@ declare global {
   }
 }
 
-export let isChrome = window.chrome
 let SettingsClicked = false
 export let MenuOptionsOpen = false
 let currentSelectedDate = new Date()
@@ -283,7 +282,7 @@ export function OpenWhatsNewPopup() {
     }
   )
 
-  browser.storage.local.remove(['justupdated'])
+  delete settingsState.justupdated
 
   bkelement!.addEventListener('click', function (event) {
     // Check if the click event originated from the element itself and not any of its children

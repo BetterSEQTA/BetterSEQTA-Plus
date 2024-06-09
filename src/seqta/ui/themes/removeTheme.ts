@@ -1,6 +1,6 @@
 import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
-import browser from 'webextension-polyfill';
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 export const removeTheme = async (theme: CustomTheme) => {
   // Remove custom CSS
@@ -9,18 +9,15 @@ export const removeTheme = async (theme: CustomTheme) => {
     styleElement.parentNode?.removeChild(styleElement);
   }
 
-  const themeSelectedColor = await browser.storage.local.get('selectedColor') as { selectedColor: string; };
-
   const selectedTheme = await localforage.getItem(theme.id) as CustomTheme;
   localforage.setItem(theme.id, {
     ...selectedTheme,
-    selectedColor: themeSelectedColor.selectedColor
+    selectedColor: settingsState.selectedColor
   })
   
   // Reset default color
-  const originalSelectedColor = await browser.storage.local.get('originalSelectedColor') as { originalSelectedColor: string; };
-  if (originalSelectedColor.originalSelectedColor !== '') {
-    await browser.storage.local.set({ selectedColor: originalSelectedColor.originalSelectedColor });
+  if (settingsState.originalSelectedColor !== '') {
+    settingsState.selectedColor = settingsState.originalSelectedColor
   }
   
   // Remove custom images

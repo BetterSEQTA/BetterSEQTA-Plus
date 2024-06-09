@@ -1,7 +1,7 @@
-import browser from 'webextension-polyfill';
 import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import { removeTheme } from './removeTheme';
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 
 export const deleteTheme = async (themeId: string) => {
@@ -16,7 +16,7 @@ export const deleteTheme = async (themeId: string) => {
       await localforage.setItem('customThemes', updatedThemeIds);
     }
 
-    await browser.storage.local.set({ selectedTheme: '' });
+    settingsState.selectedTheme = ''
   } catch (error) {
     console.error('Error deleting theme:', error);
   }
