@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill'
 import { GetThresholdOfColor } from '../../../SEQTA';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
-import { SettingsState } from '../../../types/storage';
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 import icon48 from '../../../resources/icons/icon-48.png';
 
@@ -14,7 +14,6 @@ const setCSSVar = (varName: any, value: any) => document.documentElement.style.s
 const getChromeURL = (path: any) => browser.runtime.getURL(path);
 const applyProperties = (props: any) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
-let DarkMode: any = null;
 
 export function updateAllColors(storedSetting: any, newColor = null) {
   // Determine the color to use
@@ -24,30 +23,24 @@ export function updateAllColors(storedSetting: any, newColor = null) {
     document.documentElement.classList.add('transparencyEffects');
   }
 
-  DarkMode = (typeof storedSetting?.DarkMode === 'boolean') ? storedSetting.DarkMode : DarkMode;
-
-  if (typeof storedSetting === 'boolean') {
-    DarkMode = storedSetting;
-  }
-
   // Common properties, always applied
   const commonProps = {
     '--better-sub': '#161616',
     '--better-alert-highlight': '#c61851',
-    '--better-main': selectedColor
+    '--better-main': settingsState.selectedColor
   };
 
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
-  if (DarkMode !== null) {
-    modeProps = DarkMode ? {
+  if (settingsState.DarkMode) {
+    modeProps = settingsState.DarkMode ? {
       '--betterseqta-logo': `url(${browser.runtime.getURL(darkLogo)})`
     } : {
       '--better-pale': lightenAndPaleColor(selectedColor),
       '--betterseqta-logo': `url(${browser.runtime.getURL(lightLogo)})`
     };
 
-    if (DarkMode) {
+    if (settingsState.DarkMode) {
       document.documentElement.style.removeProperty('--better-pale');
       document.documentElement.classList.add('dark');
     } else {
@@ -67,7 +60,7 @@ export function updateAllColors(storedSetting: any, newColor = null) {
   applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
 
   // Set favicon, if storedSetting is provided
-  if (DarkMode !== null) {
+  if (settingsState.DarkMode !== null) {
     (document.querySelector('link[rel*=\'icon\']')! as HTMLLinkElement).href = getChromeURL(icon48);
   }
 
@@ -80,19 +73,10 @@ export function updateAllColors(storedSetting: any, newColor = null) {
       continue;
     }
     
-    if (DarkMode) {
+    if (settingsState.DarkMode) {
       element.contentDocument?.body.classList.add('dark');
     } else {
       element.contentDocument?.body.classList.remove('dark');
     }
-  }
-}
-
-export async function getDarkMode() {
-  try {
-    const result = await browser.storage.local.get() as SettingsState;
-    return result.DarkMode;
-  } catch (error) {
-    throw error;
   }
 }

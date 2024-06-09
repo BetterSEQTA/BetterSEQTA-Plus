@@ -12,7 +12,7 @@ import { MessageHandler } from './seqta/utils/listeners/MessageListener'
 import { SettingsState } from "./types/storage"
 import ShortcutLinks from './seqta/content/links.json'
 import Sortable  from 'sortablejs'
-import StorageListener from './seqta/utils/listeners/StorageListener'
+//import StorageListener from './seqta/utils/listeners/StorageChanges'
 import { appendBackgroundToUI } from './seqta/ui/ImageBackgrounds'
 import assessmentsicon from './seqta/icons/assessmentsIcon'
 import browser from 'webextension-polyfill'
@@ -28,6 +28,8 @@ import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
 import injectedCSS from './css/injected.scss?inline'
 import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
+import { settingsState } from './seqta/utils/listeners/SettingsState'
+import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 
 declare global {
   interface Window {
@@ -788,7 +790,7 @@ function main(storedSetting: SettingsState) {
 
     document.querySelector('.legacy-root')?.classList.add('hidden')
 
-    new StorageListener()
+    new StorageChangeHandler();
     new MessageHandler()
     
     updateAllColors(storedSetting)
@@ -1378,14 +1380,14 @@ async function AddBetterSEQTAElements(toggle: any) {
             const result = browser.storage.local.get()
             result.then(resolve, onError)
           })
+
+          console.log(!settingsState.DarkMode)
+          settingsState.DarkMode = !settingsState.DarkMode;
           
-          const newDarkMode = !result!.DarkMode
-          browser.storage.local.set({ DarkMode: newDarkMode })
-          
-          updateAllColors(newDarkMode, result.selectedColor)
+          updateAllColors(!settingsState.DarkMode, result.selectedColor)
           
           const darklightText = document.getElementById('darklighttooliptext')
-          darklightText!.innerText = GetLightDarkModeString(newDarkMode)
+          darklightText!.innerText = GetLightDarkModeString(!settingsState.DarkMode)
         })
 
         // Locate the menuToggle element
