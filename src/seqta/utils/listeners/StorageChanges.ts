@@ -25,7 +25,7 @@ export class StorageChangeHandler {
     settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
     settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
     settingsState.register('notificationcollector', this.handleNotificationCollectorChange.bind(this));
-    settingsState.register('bksliderinput', this.handleBksliderInputChange.bind(this));
+    settingsState.register('bksliderinput', updateBgDurations.bind(this));
     settingsState.register('animatedbk', this.handleAnimatedBkChange.bind(this));
     settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
   }
@@ -84,10 +84,6 @@ export class StorageChangeHandler {
 
     addShortcuts(addedShortcuts);
     RemoveShortcutDiv(removedShortcuts);
-  }
-
-  private handleBksliderInputChange(newValue: string) {
-    updateBgDurations(newValue);
   }
 
   private handleAnimatedBkChange(newValue: boolean) {
