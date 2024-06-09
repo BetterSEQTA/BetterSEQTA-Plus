@@ -276,46 +276,10 @@ function UpdateCurrentValues() {
   result.then(open, console.error)
 }
 
-function migrateOldStorage() {
-  const result = browser.storage.local.get()
-  function open (items: any) {
-    let shouldUpdate = false; // Flag to check if there is anything to update
-    
-    // Check for the old "Name" field and convert it to "name"
-    if (items.shortcuts && items.shortcuts.length > 0 && 'Name' in items.shortcuts[0]) {
-      shouldUpdate = true;
-      items.shortcuts = items.shortcuts.map((shortcut: any) => {
-        return {
-          name: shortcut.Name,  // Convert "Name" to "name"
-          enabled: shortcut.enabled // Keep the "enabled" field as is
-        };
-      });
-    }
-
-    // Check for "educationperfect" and convert it to "Education Perfect"
-    if (items.shortcuts && items.shortcuts.length > 0) {
-      for (let shortcut of items.shortcuts) {
-        if (shortcut.name === 'educationperfect' || shortcut.name === 'Education Perfect') {
-          shouldUpdate = true;
-          shortcut.name = 'Education Perfect';
-        }
-      }
-    }
-
-    // If there"s something to update, set the new values in storage
-    if (shouldUpdate) {
-      const setting = browser.storage.local.set({ shortcuts: items.shortcuts })
-      setting.then(() => console.log('Migration Completed.'))
-    }
-  }
-  result.then(open, console.error)
-}
-
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
   UpdateCurrentValues();
   if ( event.reason == 'install', event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
-    migrateOldStorage();
   }
 });
