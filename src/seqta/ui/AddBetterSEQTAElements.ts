@@ -6,6 +6,7 @@ import { settingsState } from "../utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 
 export async function AddBetterSEQTAElements() {
+  console.log('AddBetterSEQTAElements');
   if (settingsState.onoff) {    
     initializeSettings();
     if (settingsState.DarkMode) {

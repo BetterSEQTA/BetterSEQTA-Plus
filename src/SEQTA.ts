@@ -62,16 +62,14 @@ async function init() {
 
     enableCurrentTheme()
     try {
-      const items = await browser.storage.local.get() as SettingsState
-      
-      if (items.onoff) {
+      if (settingsState.onoff) {
         const injectedStyle = document.createElement('style')
         injectedStyle.textContent = injectedCSS
 
         document.head.appendChild(injectedStyle)
       }
       
-      main(items)
+      main()
     } catch (error: any) {
       onError(error)
     }
@@ -97,10 +95,8 @@ export function enableAnimatedBackground() {
 
 export async function HideMenuItems(): Promise<void> {
   try {
-    const result = await browser.storage.local.get() as SettingsState
-
     let stylesheetInnerText: string = ''
-    for (const [menuItem, { toggle }] of Object.entries(result.menuitems)) {
+    for (const [menuItem, { toggle }] of Object.entries(settingsState.menuitems)) {
       if (!toggle) {
         stylesheetInnerText += SetDisplayNone(menuItem)
         console.log(`[BetterSEQTA+] Hiding ${menuItem} menu item`)
@@ -312,20 +308,15 @@ async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  try {
-    const { justupdated } = await browser.storage.local.get('justupdated');
-    if (justupdated && !document.getElementById('whatsnewbk')) {
-      OpenWhatsNewPopup();
-    }
-  } catch (error) {
-    console.error("Error retrieving 'justupdated' from storage:", error);
+  if (settingsState.justupdated && !document.getElementById('whatsnewbk')) {
+    OpenWhatsNewPopup();
   }
 }
 
 async function DeleteWhatsNew() {
   const bkelement = document.getElementById('whatsnewbk')
   const popup = document.getElementsByClassName('whatsnewContainer')[0]
-  
+
   animate(
     [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
@@ -441,8 +432,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
         if (node.nodeName === 'IFRAME') {
           const iframe = node as HTMLIFrameElement
           try {
-            const settings = await browser.storage.local.get('DarkMode') as SettingsState
-            applyDarkModeToIframe(iframe, cssLink, settings.DarkMode);
+            applyDarkModeToIframe(iframe, cssLink, settingsState.DarkMode);
           } catch (error) {
             console.error('Error applying dark mode:', error)
           }
@@ -514,7 +504,7 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements(true)
+  await AddBetterSEQTAElements()
   const sublink: string | undefined = window.location.href.split('/')[4]
 
   const observer = new MutationObserver(function (mutations_list) {
@@ -597,11 +587,9 @@ async function LoadPageElements(): Promise<void> {
 
   async function handleNewsPage(): Promise<void> {
     console.log('[BetterSEQTA+] Started Init')
-    const settings: SettingsState = await browser.storage.local.get() as SettingsState
-    if (settings.onoff) {
+    if (settingsState.onoff) {
       SendNewsPage()
-      const notificationSettings: SettingsState = await browser.storage.local.get() as SettingsState
-      if (notificationSettings.notificationcollector) {
+      if (settingsState.notificationcollector) {
         enableNotificationCollector()
       }
       finishLoad()
@@ -610,8 +598,7 @@ async function LoadPageElements(): Promise<void> {
 
   async function handleDefault(): Promise<void> {
     finishLoad()
-    const settings: SettingsState = await browser.storage.local.get() as SettingsState
-    if (settings.notificationcollector) {
+    if (settingsState.notificationcollector) {
       enableNotificationCollector()
     }
   }
@@ -718,55 +705,51 @@ function ChangeMenuItemPositions(storage: any) {
 }
 
 export async function ObserveMenuItemPosition() {
-  const result = browser.storage.local.get()
-  function open (result: any) {
-    let menuorder = result.menuorder
-    if (menuorder && result.onoff) {
-      const observer = new MutationObserver(function (mutations_list) {
-        mutations_list.forEach(function (mutation) {
-          mutation.addedNodes.forEach(function (added_node) {
-            const node = added_node as HTMLElement
-            if (!node?.dataset?.checked && !MenuOptionsOpen) {
-              const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
-              if (key) {
-                ReplaceMenuSVG(
-                  node,
-                  MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-                )
-              } else if (node?.firstChild?.nodeName === 'LABEL') {
-                // Assuming `node` is an <li> element containing a <label>
-                const label = node.firstChild as HTMLElement;
-                
-                // The magical step: We find the last child. If it's a text node, embrace it with <span>
-                let textNode = label.lastChild as HTMLElement;
-                
-                // A quick check to ensure it's a text node and not already ensconced in a <span>
-                if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
-                  // The text node is indeed bare, and not in a <span>. Time to act!
-                  const span = document.createElement('span'); // The creation of the <span>
-                  span.textContent = textNode.nodeValue; // Transferring the text
-                  
-                  // Replacing the text node with our newly minted <span> full of text
-                  label.replaceChild(span, textNode);
-                }
-              }
-              ChangeMenuItemPositions(menuorder)
-            }
-          })
-        })
-      })
+  let menuorder = settingsState.menuorder
+  if (!(menuorder && settingsState.onoff)) return;
 
-      observer.observe(document.querySelector('#menu')!.firstChild!, {
-        subtree: true,
-        childList: true,
+  const observer = new MutationObserver(function (mutations_list) {
+    mutations_list.forEach(function (mutation) {
+      mutation.addedNodes.forEach(function (added_node) {
+        const node = added_node as HTMLElement
+        if (!node?.dataset?.checked && !MenuOptionsOpen) {
+          const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
+          if (key) {
+            ReplaceMenuSVG(
+              node,
+              MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
+            )
+          } else if (node?.firstChild?.nodeName === 'LABEL') {
+            // Assuming `node` is an <li> element containing a <label>
+            const label = node.firstChild as HTMLElement;
+            
+            // The magical step: We find the last child. If it's a text node, embrace it with <span>
+            let textNode = label.lastChild as HTMLElement;
+            
+            // A quick check to ensure it's a text node and not already ensconced in a <span>
+            if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
+              // The text node is indeed bare, and not in a <span>. Time to act!
+              const span = document.createElement('span'); // The creation of the <span>
+              span.textContent = textNode.nodeValue; // Transferring the text
+              
+              // Replacing the text node with our newly minted <span> full of text
+              label.replaceChild(span, textNode);
+            }
+          }
+          ChangeMenuItemPositions(menuorder)
+        }
       })
-    }
-  }
-  result.then(open, onError)
+    })
+  })
+
+  observer.observe(document.querySelector('#menu')!.firstChild!, {
+    subtree: true,
+    childList: true,
+  })
 }
 
-function main(storedSetting: SettingsState) {
-  if (typeof storedSetting.onoff === 'undefined') {
+function main() {
+  if (typeof settingsState.onoff === 'undefined') {
     browser.runtime.sendMessage({ type: 'setDefaultStorage' })
   }
 
@@ -774,7 +757,7 @@ function main(storedSetting: SettingsState) {
     waitForElm('.code').then(AppendElementsToDisabledPage)
   }
 
-  if (storedSetting.onoff) {
+  if (settingsState.onoff) {
     console.log('[BetterSEQTA+] Enabled')
     if (settingsState.DarkMode) document.documentElement.classList.add('dark')
 
@@ -787,7 +770,6 @@ function main(storedSetting: SettingsState) {
     loading()
     InjectCustomIcons()
     HideMenuItems()
-    tryLoad()
     
     window.addEventListener('load', tryLoad)
   } else {
@@ -813,7 +795,7 @@ function InjectCustomIcons() {
 
 export function AppendElementsToDisabledPage() {
   console.log("[BetterSEQTA+] Appending elements to disabled page")
-  AddBetterSEQTAElements(false)
+  AddBetterSEQTAElements()
 
   let settingsStyle = document.createElement('style')
   settingsStyle.innerHTML = /* css */`
@@ -910,76 +892,179 @@ export function addExtensionSettings() {
 }
 
 export function OpenMenuOptions() {
-  const result = browser.storage.local.get()
-  function open (result: any) {
-    var container = document.getElementById('container')
-    var menu = document.getElementById('menu')
+  var container = document.getElementById('container')
+  var menu = document.getElementById('menu')
 
-    if (result.defaultmenuorder.length == '0') {
-      let childnodes = menu!.firstChild!.childNodes
-      let newdefaultmenuorder = []
-      for (let i = 0; i < childnodes.length; i++) {
-        const element = childnodes[i]
-        newdefaultmenuorder.push((element as HTMLElement).dataset.key)
-        browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
-      }
-    }
+  if (settingsState.defaultmenuorder.length == 0) {
     let childnodes = menu!.firstChild!.childNodes
-    if (result.defaultmenuorder.length != childnodes.length) {
-      for (let i = 0; i < childnodes.length; i++) {
-        const element = childnodes[i]
-        if (!result.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
-          let newdefaultmenuorder = result.defaultmenuorder
-          newdefaultmenuorder.push((element as HTMLElement).dataset.key)
-          browser.storage.local.set({ defaultmenuorder: newdefaultmenuorder })
-        }
+    let newdefaultmenuorder = []
+    for (let i = 0; i < childnodes.length; i++) {
+      const element = childnodes[i]
+      newdefaultmenuorder.push((element as HTMLElement).dataset.key)
+      browser.storage.local.set({
+        defaultmenuorder: newdefaultmenuorder
+      })
+    }
+  }
+  let childnodes = menu!.firstChild!.childNodes
+  if (settingsState.defaultmenuorder.length != childnodes.length) {
+    for (let i = 0; i < childnodes.length; i++) {
+      const element = childnodes[i]
+      if (!settingsState.defaultmenuorder.indexOf((element as HTMLElement).dataset.key)) {
+        let newdefaultmenuorder = settingsState.defaultmenuorder
+        newdefaultmenuorder.push((element as HTMLElement).dataset.key)
+        browser.storage.local.set({
+          defaultmenuorder: newdefaultmenuorder
+        })
       }
     }
+  }
 
-    MenuOptionsOpen = true
+  MenuOptionsOpen = true
 
-    let cover = document.createElement('div')
-    cover.classList.add('notMenuCover')
-    menu!.style.zIndex = '20'
-    menu!.style.setProperty('--menuHidden', 'flex')
-    container!.append(cover)
+  var cover = document.createElement('div')
+  cover.classList.add('notMenuCover')
+  menu!.style.zIndex = '20'
+  menu!.style.setProperty('--menuHidden', 'flex')
+  container!.append(cover)
 
-    let menusettings = document.createElement('div')
-    menusettings.classList.add('editmenuoption-container')
+  var menusettings = document.createElement('div')
+  menusettings.classList.add('editmenuoption-container')
 
-    let defaultbutton = document.createElement('div')
-    defaultbutton.classList.add('editmenuoption')
-    defaultbutton.innerText = 'Restore Default'
-    defaultbutton.id = 'restoredefaultoption'
+  var defaultbutton = document.createElement('div')
+  defaultbutton.classList.add('editmenuoption')
+  defaultbutton.innerText = 'Restore Default'
+  defaultbutton.id = 'restoredefaultoption'
 
-    let savebutton = document.createElement('div')
-    savebutton.classList.add('editmenuoption')
-    savebutton.innerText = 'Save'
-    savebutton.id = 'restoredefaultoption'
+  var savebutton = document.createElement('div')
+  savebutton.classList.add('editmenuoption')
+  savebutton.innerText = 'Save'
+  savebutton.id = 'restoredefaultoption'
 
-    menusettings.appendChild(defaultbutton)
-    menusettings.appendChild(savebutton)
+  menusettings.appendChild(defaultbutton)
+  menusettings.appendChild(savebutton)
 
-    menu!.appendChild(menusettings)
+  menu!.appendChild(menusettings)
 
-    let ListItems = menu!.firstChild!.childNodes
+  var ListItems = menu!.firstChild!.childNodes
+  for (let i = 0; i < ListItems.length; i++) {
+    const element1 = ListItems[i]
+    const element = element1 as HTMLElement
+
+    (element as HTMLElement).classList.add('draggable');
+    if ((element as HTMLElement).classList.contains('hasChildren')) {
+      (element as HTMLElement).classList.remove('active');
+      (element.firstChild as HTMLElement).classList.remove('noscroll');
+    }
+
+    let MenuItemToggle = stringToHTML(
+      `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`
+    ).firstChild;
+    (element as HTMLElement).append(MenuItemToggle!)
+
+    if (!element.dataset.betterseqta) {
+      const a = document.createElement('section')
+      a.innerHTML = element.innerHTML
+      cloneAttributes(a, element)
+      menu!.firstChild!.insertBefore(a, element)
+      element.remove()
+    }
+  }
+
+  if (Object.keys(settingsState.menuitems).length == 0) {
+    menubuttons = menu!.firstChild!.childNodes
+    let menuItems = {} as any
+    for (var i = 0; i < menubuttons.length; i++) {
+      var id = (menubuttons[i] as HTMLElement).dataset.key
+      const element: any = {}
+      element.toggle = true;
+      (menuItems[id as keyof typeof menuItems] as any) = element;
+    }
+    settingsState.menuitems = menuItems
+  }
+
+  var menubuttons: any = document.getElementsByClassName('menuitem')
+
+  let menuItems = settingsState.menuitems as any
+  let buttons = document.getElementsByClassName('menuitem')
+  for (let i = 0; i < buttons.length; i++) {
+    let id = buttons[i].id as string | undefined
+    if (menuItems[id as keyof typeof menuItems]) {
+      (buttons[i] as HTMLInputElement).checked = menuItems[id as keyof typeof menuItems].toggle
+    } else {
+      (buttons[i] as HTMLInputElement).checked = true
+    }
+    (buttons[i] as HTMLInputElement).checked = true
+  }
+
+  try {
+    var el = document.querySelector('#menu > ul')
+    var sortable = Sortable.create((el as HTMLElement), {
+      draggable: '.draggable',
+      dataIdAttr: 'data-key',
+      animation: 150,
+      easing: "cubic-bezier(.5,0,.5,1)",
+      onEnd: function() {
+        saveNewOrder(sortable)
+      },
+    });
+  } catch (err) {
+    console.log(err)
+  }
+
+  function changeDisplayProperty(element: any) {
+    if (!element.checked) {
+      element.parentNode.parentNode.style.display = 'var(--menuHidden)'
+    }
+    if (element.checked) {
+      element.parentNode.parentNode.style.setProperty(
+        'display',
+        'flex',
+        'important',
+      )
+    }
+  }
+
+  function StoreMenuSettings() {
+    let menu = document.getElementById('menu')
+    const menuItems: any = {}
+    let menubuttons = menu!.firstChild!.childNodes
+    const button = document.getElementsByClassName('menuitem')
+    for (let i = 0; i < menubuttons.length; i++) {
+      const id = (menubuttons[i] as HTMLElement).dataset.key
+      const element: any = {}
+      element.toggle = (button[i] as HTMLInputElement).checked
+
+      menuItems[id as keyof typeof menuItems] = element
+    }
+    settingsState.menuitems = menuItems
+  }
+
+  for (let i = 0; i < menubuttons.length; i++) {
+    const element = menubuttons[i]
+    element.addEventListener('change', () => {
+      element.parentElement.parentElement.getAttribute('data-key')
+      StoreMenuSettings()
+      changeDisplayProperty(element)
+    })
+  }
+
+  function closeAll() {
+    console.log("Closing!")
+    menusettings?.remove()
+    cover?.remove()
+    MenuOptionsOpen = false
+    menu!.style.setProperty('--menuHidden', 'none')
+
     for (let i = 0; i < ListItems.length; i++) {
       const element1 = ListItems[i]
       const element = element1 as HTMLElement
+      element.classList.remove('draggable')
+      element.setAttribute('draggable', 'false')
 
-      (element as HTMLElement).classList.add('draggable');
-      if ((element as HTMLElement).classList.contains('hasChildren')) {
-        (element as HTMLElement).classList.remove('active');
-        (element.firstChild as HTMLElement).classList.remove('noscroll');
-      }
-
-      let MenuItemToggle = stringToHTML(
-        `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`
-      ).firstChild;
-      (element as HTMLElement).append(MenuItemToggle!)
 
       if (!element.dataset.betterseqta) {
-        const a = document.createElement('section')
+        const a = document.createElement('li')
         a.innerHTML = element.innerHTML
         cloneAttributes(a, element)
         menu!.firstChild!.insertBefore(a, element)
@@ -987,142 +1072,33 @@ export function OpenMenuOptions() {
       }
     }
 
-    if (Object.keys(result.menuitems).length == 0) {
-      menubuttons = menu!.firstChild!.childNodes
-      var menuItems = {}
-      for (var i = 0; i < menubuttons.length; i++) {
-        var id = (menubuttons[i] as HTMLElement).dataset.key
-        const element: any = {}
-        element.toggle = true;
-        (menuItems[id as keyof typeof menuItems] as any) = element;
-      }
-      browser.storage.local.set({ menuitems: menuItems })
+    let switches = menu!.querySelectorAll('.onoffswitch')
+    for (let i = 0; i < switches.length; i++) {
+      switches[i].remove()
     }
+  }
 
-    var menubuttons: any = document.getElementsByClassName('menuitem')
-    const result1 = browser.storage.local.get(['menuitems'])
-    function open (result: any) {
-      var menuItems = result.menuitems
-      let buttons = document.getElementsByClassName('menuitem')
-      for (var i = 0; i < buttons.length; i++) {
-        var id = buttons[i].id
-        if (menuItems[id]) {
-          (buttons[i] as HTMLInputElement).checked = menuItems[id].toggle
-        }
-        if (!menuItems[id]) {
-          (buttons[i] as HTMLInputElement).checked = true
-        }
-      }
-    }
-    result1.then(open, onError)
+  cover?.addEventListener('click', closeAll)
+  savebutton?.addEventListener('click', closeAll)
 
-    try {  
-      var el = document.querySelector('#menu > ul')
-      var sortable = Sortable.create((el as HTMLElement), {
-        draggable: '.draggable',
-        dataIdAttr: 'data-key',
-        animation: 150,
-        easing: "cubic-bezier(.5,0,.5,1)",
-        onEnd: function () {
-          saveNewOrder(sortable)
-        },
-      });  
-    } catch (err) {
-      console.log(err)
-    }
-
-    function changeDisplayProperty(element: any) {
-      if (!element.checked) {
-        element.parentNode.parentNode.style.display = 'var(--menuHidden)'
-      }
-      if (element.checked) {
-        element.parentNode.parentNode.style.setProperty(
-          'display',
-          'flex',
-          'important',
-        )
-      }
-    }
-
-    function StoreMenuSettings() {
-      const menuItems: any = {}
-      const menubuttons = menu!.firstChild!.childNodes
-      const button = document.getElementsByClassName('menuitem')
-      for (let i = 0; i < menubuttons.length; i++) {
-        const id = (menubuttons[i] as HTMLElement).dataset.key
-        const element: any = {}
-        element.toggle = (button[i] as HTMLInputElement).checked
-
-        menuItems[id as keyof typeof menuItems] = element
-      }
-      browser.storage.local.set({ menuitems: menuItems })
-    }
+  defaultbutton?.addEventListener('click', function() {
+    const options = settingsState.defaultmenuorder
+    browser.storage.local.set({
+      menuorder: options
+    })
+    ChangeMenuItemPositions(options)
 
     for (let i = 0; i < menubuttons.length; i++) {
       const element = menubuttons[i]
-      element.addEventListener('change', () => {
-        element.parentElement.parentElement.getAttribute('data-key')
-        StoreMenuSettings()
-        changeDisplayProperty(element)
-      })
+      element.checked = true
+      element.parentNode.parentNode.style.setProperty(
+        'display',
+        'flex',
+        'important',
+      )
     }
-
-    function closeAll() {
-      console.log("Closing!")
-      ListItems = menu!.firstChild!.childNodes
-      menusettings.remove()
-      cover.remove()
-      MenuOptionsOpen = false
-      menu!.style.setProperty('--menuHidden', 'none')
-
-      for (let i = 0; i < ListItems.length; i++) {
-        const element1 = ListItems[i]
-        const element = element1 as HTMLElement
-        element.classList.remove('draggable')
-        element.setAttribute('draggable', 'false')
-
-
-        if (!element.dataset.betterseqta) {
-          const a = document.createElement('li')
-          a.innerHTML = element.innerHTML
-          cloneAttributes(a, element)
-          menu!.firstChild!.insertBefore(a, element)
-          element.remove()
-        }
-      }
-
-      let switches = menu!.querySelectorAll('.onoffswitch')
-      for (let i = 0; i < switches.length; i++) {
-        switches[i].remove()
-      }
-
-    }
-
-    cover.addEventListener('click', closeAll)
-    savebutton.addEventListener('click', closeAll)
-
-    defaultbutton.addEventListener('click', function () {
-      const result = browser.storage.local.get()
-      function open (response: any) {
-        const options = response.defaultmenuorder
-        browser.storage.local.set({ menuorder: options })
-        ChangeMenuItemPositions(options)
-
-        for (let i = 0; i < menubuttons.length; i++) {
-          const element = menubuttons[i]
-          element.checked = true
-          element.parentNode.parentNode.style.setProperty(
-            'display',
-            'flex',
-            'important',
-          )
-        }
-        saveNewOrder(sortable)
-      }
-      result.then(open, onError)
-    })
-  }
-  result.then(open, onError)
+    saveNewOrder(sortable)
+  })
 }
 
 function saveNewOrder(sortable: any) {
