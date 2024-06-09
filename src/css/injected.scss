@@ -1215,7 +1215,12 @@ div > ol:has(.uiFileHandlerWrapper) {
   margin: 20px auto 0px;
   cursor: pointer;
 }
-
+.dark .notifications__detailsBody___2nU2k > .notifications__subtitle___1se8e {
+  color: #c1bcbc;
+}
+.notifications__detailsBody___2nU2k > .notifications__subtitle___1se8e {
+  font-size: 12px;
+}
 .notifications__notifications___3mmLY.notifications__hasItems___gXxzx > button {
   background: white;
   z-index: 21 !important;
