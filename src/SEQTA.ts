@@ -1436,15 +1436,12 @@ async function AddBetterSEQTAElements(toggle: any) {
   }
 }
 
-function GetLightDarkModeString(darkmodetoggle: boolean) {
-  let tooltipstring
-  
-  if (darkmodetoggle) {
-    tooltipstring = 'Switch to light theme'
+function GetLightDarkModeString(darkMode: boolean) {  
+  if (darkMode) {
+    return 'Switch to light theme'
   } else {
-    tooltipstring = 'Switch to dark theme'
+    return 'Switch to dark theme'
   }
-  return tooltipstring
 }
 
 async function CheckCurrentLesson(lesson: any, num: number) {
