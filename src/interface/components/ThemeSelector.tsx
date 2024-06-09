@@ -200,9 +200,9 @@ const ThemeSelector: ForwardRefExoticComponent<Omit<ThemeSelectorProps, "ref"> &
   return (
     <div
       ref={elementRef}
-      className={`my-3 w-full ${isDragging ? '' : ''}`}
+      className={`my-3 w-full`}
       onDragOver={handleDragOver} 
-      onDragLeave={handleDragLeave} 
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       >
       <div className={`${isDragging ? 'opacity-100' : 'opacity-0'} transition pointer-events-none absolute w-full p-2 z-50`}>
