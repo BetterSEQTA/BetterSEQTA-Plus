@@ -17,7 +17,7 @@
       "64": "src/resources/icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage", "activeTab"],
+  "permissions": ["tabs", "notifications", "storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "scripts": ["src/background.ts"]
