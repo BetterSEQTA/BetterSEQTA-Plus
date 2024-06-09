@@ -18,7 +18,6 @@ export function updateBgDurations() {
     maxBase = 150, 
   ) => {
     const scaledValue = 2 + ((maxBase - baseValue) / (maxBase - minBase)) ** 4;
-    console.log(scaledValue);
     return scaledValue + offset;
   };
     

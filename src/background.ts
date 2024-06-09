@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill'
-import { onError } from './seqta/utils/onError';
 import { SettingsState } from "./types/storage";
 import { applyYoutubeStyles } from './seqta/ui/VideoLoader';
 
@@ -68,7 +67,7 @@ function reloadSeqtaPages() {
       }
     }
   }
-  result.then(open, onError)
+  result.then(open, console.error)
 }
 
 // Main message listener
@@ -105,7 +104,6 @@ browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse:
     break;
 
   case 'sendNews':
-    console.log("Sending news")
     const date = new Date();
 
     const from =
@@ -275,7 +273,7 @@ function UpdateCurrentValues() {
 
     SetStorageValue(NewValue);
   }
-  result.then(open, onError)
+  result.then(open, console.error)
 }
 
 function migrateOldStorage() {
@@ -310,7 +308,7 @@ function migrateOldStorage() {
       setting.then(() => console.log('Migration Completed.'))
     }
   }
-  result.then(open, onError)
+  result.then(open, console.error)
 }
 
 browser.runtime.onInstalled.addListener(function (event) {

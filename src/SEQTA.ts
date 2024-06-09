@@ -98,7 +98,6 @@ export function enableAnimatedBackground() {
 async function HideMenuItems(): Promise<void> {
   try {
     let stylesheetInnerText: string = ''
-    console.log('ASssessments: ', settingsState.menuitems)
     for (const [menuItem, { toggle }] of Object.entries(settingsState.menuitems)) {
       if (!toggle) {
         stylesheetInnerText += SetDisplayNone(menuItem)
@@ -1007,7 +1006,7 @@ export function OpenMenuOptions() {
       },
     });
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 
   function changeDisplayProperty(element: any) {
@@ -1048,7 +1047,6 @@ export function OpenMenuOptions() {
   }
 
   function closeAll() {
-    console.log("Closing!")
     menusettings?.remove()
     cover?.remove()
     MenuOptionsOpen = false
@@ -2357,7 +2355,6 @@ export function SendNewsPage() {
     AppendLoadingSymbol('newsloading', '#news-container')
 
     browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
-      console.log(response)
       let newsarticles = response.news.articles
       var newscontainer = document.querySelector('#news-container')
       document.getElementById('newsloading')!.remove()

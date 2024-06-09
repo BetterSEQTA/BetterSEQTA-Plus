@@ -108,10 +108,8 @@ const main = async (): Promise<void> => {
       }
     });
   } catch (error) {
-    console.log('An error occurred:', error);
+    console.error('An error occurred:', error);
   }
 };
 
 main()
-// Run the main function when the document is ready
-//document.addEventListener('DOMContentLoaded', main);
