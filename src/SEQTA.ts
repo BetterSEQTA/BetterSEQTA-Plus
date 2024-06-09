@@ -486,22 +486,6 @@ function SortMessagePageItems(messagesParentElement: any) {
   )[0].firstChild as HTMLElement
   header.append(filterbutton)
   messagesParentElement
-
-  /* const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (node.dataset.message) {
-          // Check if added_node.firstChild.title is in block list
-        }
-      })
-    })
-  })
-
-  observer.observe(messagesParentElement, {
-    subtree: true,
-    childList: true,
-  }); */
 }
 
 async function LoadPageElements(): Promise<void> {
