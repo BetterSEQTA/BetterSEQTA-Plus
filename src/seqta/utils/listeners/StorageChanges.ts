@@ -11,6 +11,7 @@ import {
 } from '../../../SEQTA';
 import { updateBgDurations } from '../../ui/Animation';
 import browser from 'webextension-polyfill';
+import { CustomShortcut } from '../../../types/storage';
 
 export class StorageChangeHandler {
   constructor() {
@@ -41,7 +42,7 @@ export class StorageChangeHandler {
     browser.runtime.sendMessage({ type: 'reloadTabs' });
   }
 
-  private handleNotificationCollectorChange(newValue: any) {
+  private handleNotificationCollectorChange(newValue: boolean) {
     if (newValue) {
       enableNotificationCollector();
     } else {
@@ -49,7 +50,7 @@ export class StorageChangeHandler {
     }
   }
 
-  private handleCustomShortcutsChange(oldValue: any, newValue: any) {
+  private handleCustomShortcutsChange(newValue: CustomShortcut[], oldValue: CustomShortcut[]) {
     if (newValue) {
       if (newValue.length > oldValue.length) {
         CreateCustomShortcutDiv(newValue[oldValue.length]);
@@ -65,7 +66,8 @@ export class StorageChangeHandler {
     }
   }
 
-  private handleShortcutsChange(oldValue: any, newValue: any) {
+  private handleShortcutsChange(newValue: { enabled: boolean, name: string }[], oldValue: { enabled: boolean, name: string }[]) {
+    console.log(oldValue, newValue);
     const addedShortcuts = newValue.filter((newItem: any) => {
       const isAdded = oldValue.some((oldItem: any) => {
         const match = oldItem.name === newItem.name;
@@ -92,7 +94,7 @@ export class StorageChangeHandler {
     RemoveShortcutDiv(removedShortcuts);
   }
 
-  private handleBksliderInputChange(newValue: any) {
+  private handleBksliderInputChange(newValue: string) {
     updateBgDurations(newValue);
   }
 
