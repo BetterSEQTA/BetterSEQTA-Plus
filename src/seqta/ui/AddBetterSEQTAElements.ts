@@ -274,10 +274,10 @@ function customizeMenuToggle() {
     menuToggle.innerHTML = '';
   }
 
-  const line = document.createElement('div');
-  line.className = 'hamburger-line';
-
+  
   for (let i = 0; i < 3; i++) {
+    const line = document.createElement('div');
+    line.className = 'hamburger-line';
     menuToggle!.appendChild(line);
   }
 }
