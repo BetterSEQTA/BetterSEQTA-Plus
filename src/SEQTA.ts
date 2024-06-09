@@ -1275,6 +1275,20 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lesson
 }
 
+function convertTo12HourFormat(time: string): string {
+  let [hours, minutes] = time.split(':').map(Number);
+  let period = 'AM';
+
+  if (hours >= 12) {
+      period = 'PM';
+      if (hours > 12) hours -= 12;
+  } else if (hours === 0) {
+      hours = 12;
+  }
+
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
 function callHomeTimetable(date: string, change?: any) {
   // Creates a HTTP Post Request to the SEQTA page for the students timetable
   var xhr = new XMLHttpRequest()
@@ -1320,6 +1334,11 @@ function callHomeTimetable(date: string, change?: any) {
               // Removes seconds from the start and end times
               lessonArray[i].from = lessonArray[i].from.substring(0, 5)
               lessonArray[i].until = lessonArray[i].until.substring(0, 5)
+
+              if (settingsState.timeFormat === '12') {
+                lessonArray[i].from = convertTo12HourFormat(lessonArray[i].from)
+                lessonArray[i].until = convertTo12HourFormat(lessonArray[i].until)
+              }
 
               // Checks if attendance is unmarked, and sets the string to " ".
               lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
@@ -1864,22 +1883,19 @@ export async function loadHomePage() {
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
 
-  await new Promise((resolve) => {
-    // Delay to prevent SEQTA from removing the UI elements
-    setTimeout(resolve, 8)
-  })
+  await delay(8)
 
   // Apply the active class to indicate clicked on home button
   element!.classList.add('active')
 
   // Remove all current elements in the main div to add new elements
   const main = document.getElementById('main')
-
-  main!.innerHTML = ''
-
+  
   if (!main) {
     console.error('Main element not found.')
     return
+  } else {
+    main!.innerHTML = ''
   }
 
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
@@ -1901,12 +1917,27 @@ export async function loadHomePage() {
   const date = new Date()
 
   // Creates the shortcut container into the home container
-  const Shortcut = stringToHTML('<div class="shortcut-container border" style="opacity: 0;"><div class="shortcuts border" id="shortcuts"></div></div>')
+  const Shortcut = stringToHTML(/* html */`
+    <div class="shortcut-container border" style="opacity: 0;">
+      <div class="shortcuts border" id="shortcuts"></div>
+    </div>`)
+
   // Appends the shortcut container into the home container
   document.getElementById('home-container')?.append(Shortcut?.firstChild!)
   
   // Creates the container div for the timetable portion of the home page
-  const Timetable = stringToHTML('<div class="timetable-container border" style="opacity: 0;"><div class="home-subtitle"><h2 id="home-lesson-subtitle">Today\'s Lessons</h2><div class="timetable-arrows"><svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg><svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg></div></div><div class="day-container" id="day-container"></div></div>')
+  const Timetable = stringToHTML(/* html */`
+    <div class="timetable-container border" style="opacity: 0;">
+      <div class="home-subtitle">
+        <h2 id="home-lesson-subtitle">Today\'s Lessons</h2>
+        <div class="timetable-arrows">
+          <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg>
+        </div>
+      </div>
+      <div class="day-container" id="day-container"></div>
+    </div>`)
+  
   // Appends the timetable container into the home container
   document.getElementById('home-container')?.append(Timetable?.firstChild!)
   

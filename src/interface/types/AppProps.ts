@@ -9,6 +9,7 @@ export interface SettingsState {
   shortcuts: Shortcut[];
   customshortcuts: CustomShortcut[];
   transparencyEffects: boolean;
+  timeFormat?: string;
 }
 
 interface ToggleItem {

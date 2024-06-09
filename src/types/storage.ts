@@ -32,7 +32,8 @@ export interface SettingsState {
   shortcuts: Shortcut[];
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
-  justupdated?: boolean | null;
+  justupdated?: boolean;
+  timeFormat?: string;
 }
 
 interface ToggleItem {
