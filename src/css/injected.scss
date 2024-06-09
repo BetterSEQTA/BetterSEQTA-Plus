@@ -14,7 +14,9 @@
 .hidden {
   display: none;
 }
+
 body,
+.legacy-root input, .legacy-root textarea, .legacy-root button, .legacy-root select, .legacy-root option, .legacy-root .input,
 html {
   font-family: Rubik, sans-serif !important;
 }
@@ -806,6 +808,20 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
   color: var(--text-primary);
   --colour: unset;
+
+  > h2 {
+    margin-bottom: 0;
+  }
+
+  .staff {
+    margin-bottom: 16px;
+    opacity: 1;
+  }
+}
+
+.dark #main > .notices > .notice > h2,
+.dark #main > .notices > .notice > div {
+  text-shadow: 0 0 15px #000000;
 }
 #title span {
   display: none;
@@ -2527,7 +2543,10 @@ li.MessageList__unread___3imtO {
   margin: 0;
   font-size: 13px !important;
   font-weight: 400;
-  color: #7a7a7a;
+  color: #b2b2b2;
+}
+.dark .day h3 {
+  color: #c1bcbc;
 }
 .day h4 {
   position: absolute;
