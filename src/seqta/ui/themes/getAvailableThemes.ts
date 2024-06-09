@@ -1,8 +1,7 @@
-import browser from 'webextension-polyfill';
 import localforage from 'localforage';
 import { CustomTheme, ThemeList } from '../../../interface/types/CustomThemes';
 import { blobToBase64 } from '../../utils/blobToBase64';
-
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
   try {
@@ -19,9 +18,7 @@ export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
         })
       );
 
-      const selectedTheme = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
-
-      return { themes, selectedTheme: selectedTheme.selectedTheme ? selectedTheme.selectedTheme : '' };
+      return { themes, selectedTheme: settingsState.selectedTheme ? settingsState.selectedTheme : '' };
     }
     return {
       themes: [],

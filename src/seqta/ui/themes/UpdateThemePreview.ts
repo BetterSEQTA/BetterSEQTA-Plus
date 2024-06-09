@@ -1,6 +1,6 @@
-import browser from 'webextension-polyfill';
 import { CustomThemeBase64 } from '../../../interface/types/CustomThemes';
 import { imageData, removeImageFromDocument, UpdateImageData, applyCustomCSS } from './Themes';
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 
 export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] } */) => {
@@ -52,6 +52,6 @@ export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit
 
   // Apply default color
   if (defaultColour !== '') {
-    browser.storage.local.set({ selectedColor: defaultColour });
+    settingsState.selectedColor = defaultColour
   }
 };

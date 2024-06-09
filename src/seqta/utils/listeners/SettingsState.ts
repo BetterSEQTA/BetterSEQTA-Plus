@@ -24,6 +24,19 @@ class StorageManager {
         Reflect.set(target.data, prop, value);
         target.saveToStorage();
         return true;
+      },
+      deleteProperty: (target, prop: keyof SettingsState) => {
+        const oldValue = target.data[prop];
+        if (oldValue !== undefined) {
+          delete target.data[prop];
+          target.removeFromStorage(prop);
+          if (target.listeners[prop]) {
+            for (const listener of target.listeners[prop]) {
+              listener(undefined, oldValue);
+            }
+          }
+        }
+        return true;
       }
     };
 
@@ -54,6 +67,10 @@ class StorageManager {
     await browser.storage.local.set(this.data);
   }
 
+  private async removeFromStorage(key: string): Promise<void> {
+    await browser.storage.local.remove(key);
+  }
+
   private initStorageListener(): void {
     browser.storage.onChanged.addListener((changes, areaName) => {
       if (areaName === 'local') {
@@ -73,6 +90,11 @@ class StorageManager {
     });
   }
 
+  /**
+   * Register a listener for a setting.
+   * @param prop The setting to listen to.
+   * @param listener The listener to call when the setting changes.
+   */
   public register(prop: keyof SettingsState, listener: ChangeListener): void {
     if (!this.listeners[prop]) {
       this.listeners[prop] = [];

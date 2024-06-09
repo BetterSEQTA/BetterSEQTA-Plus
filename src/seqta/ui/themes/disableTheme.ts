@@ -1,32 +1,33 @@
-import browser from 'webextension-polyfill';
 import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import { removeTheme } from './removeTheme';
 import { Mutex } from '../../utils/mutex';
+import { settingsState } from '../../utils/listeners/SettingsState';
 
 const mutex = new Mutex();
 let isDisabling = false;
 
 export const disableTheme = async () => {
+  console.log('Disabling theme', isDisabling)
   if (isDisabling) return;
 
-  const { selectedTheme } = await browser.storage.local.get('selectedTheme') as { selectedTheme: string; };
-  if (!selectedTheme || selectedTheme === '') {
+  if (!settingsState.selectedTheme || settingsState.selectedTheme === '') {
+    console.log('Theme is already disabled, exit early')
     // Theme is already disabled, exit early
     return;
   }
   isDisabling = true;
   const unlock = await mutex.lock();
   try {
-    await browser.storage.local.set({ selectedTheme: '' });
-
-    if (selectedTheme) {
-      const theme = await localforage.getItem(selectedTheme) as CustomTheme;
+    if (settingsState.selectedTheme) {
+      console.log('Disabling theme:', settingsState.selectedTheme);
+      const theme = await localforage.getItem(settingsState.selectedTheme) as CustomTheme;
       if (theme) {
         await removeTheme(theme);
       }
     }
-    await browser.storage.local.set({ selectedTheme: '' });
+
+    settingsState.selectedTheme = ''
   } catch (error) {
     console.error('Error disabling theme:', error);
   } finally {
