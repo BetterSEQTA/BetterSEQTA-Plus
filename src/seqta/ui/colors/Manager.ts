@@ -32,20 +32,18 @@ export function updateAllColors(storedSetting: any, newColor = null) {
 
   // Mode-based properties, applied if storedSetting is provided
   let modeProps = {};
-  if (settingsState.DarkMode) {
-    modeProps = settingsState.DarkMode ? {
-      '--betterseqta-logo': `url(${browser.runtime.getURL(darkLogo)})`
-    } : {
-      '--better-pale': lightenAndPaleColor(selectedColor),
-      '--betterseqta-logo': `url(${browser.runtime.getURL(lightLogo)})`
-    };
+  modeProps = settingsState.DarkMode ? {
+    '--betterseqta-logo': `url(${browser.runtime.getURL(darkLogo)})`
+  } : {
+    '--better-pale': lightenAndPaleColor(selectedColor),
+    '--betterseqta-logo': `url(${browser.runtime.getURL(lightLogo)})`
+  };
 
-    if (settingsState.DarkMode) {
-      document.documentElement.style.removeProperty('--better-pale');
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+  if (settingsState.DarkMode) {
+    document.documentElement.style.removeProperty('--better-pale');
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
   }
 
   // Dynamic properties, always applied

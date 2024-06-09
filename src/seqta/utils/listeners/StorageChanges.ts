@@ -21,6 +21,7 @@ export class StorageChangeHandler {
   private registerHandlers() {
     console.log(settingsState.onoff);
     settingsState.register('selectedColor', this.handleSelectedColorChange.bind(this));
+    settingsState.register('DarkMode', this.handleDarkModeChange.bind(this));
     settingsState.register('onoff', this.handleOnOffChange.bind(this));
     settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
     settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
@@ -28,6 +29,10 @@ export class StorageChangeHandler {
     settingsState.register('bksliderinput', this.handleBksliderInputChange.bind(this));
     settingsState.register('animatedbk', this.handleAnimatedBkChange.bind(this));
     settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
+  }
+
+  private handleDarkModeChange() {
+    updateAllColors(settingsState.selectedColor);
   }
 
   private handleSelectedColorChange(newColor: any) {
