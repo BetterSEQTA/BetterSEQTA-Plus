@@ -15,11 +15,11 @@ const getChromeURL = (path: any) => browser.runtime.getURL(path);
 const applyProperties = (props: any) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
 
-export function updateAllColors(storedSetting: any, newColor = null) {
+export function updateAllColors() {
   // Determine the color to use
-  const selectedColor = newColor || (storedSetting.selectedColor !== '' ? storedSetting.selectedColor : '#007bff');
+  const selectedColor = settingsState.selectedColor !== '' ? settingsState.selectedColor : '#007bff';
 
-  if (storedSetting.transparencyEffects) {
+  if (settingsState.transparencyEffects) {
     document.documentElement.classList.add('transparencyEffects');
   }
 
