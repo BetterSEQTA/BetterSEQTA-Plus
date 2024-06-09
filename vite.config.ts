@@ -28,7 +28,7 @@ export default defineConfig({
     }
   },
   build: {
-    minify: false,
+    minify: true,
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
