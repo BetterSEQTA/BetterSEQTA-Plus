@@ -84,11 +84,13 @@ html {
 .forums {
   color: var(--text-color);
 }
+.defaultWelcome > header {
+  border-radius: 16px 16px 0px 0 !important;
+}
 .defaultWelcome {
   background: var(--better-main);
-  border-radius: 16px 16px 0px 0 !important;
+  border-radius: 17px 17px 0px 0 !important;
   color: var(--text-color) !important;
-  overflow: hidden;
 }
 .LegacyModuleBody__LegacyModule___20YE2 {
   background: transparent;
@@ -1536,6 +1538,7 @@ ul {
   height: 45px;
   width: 45px;
 }
+
 .programmeNavigator {
   width: 400px;
   background: var(--background-primary);
@@ -1665,6 +1668,7 @@ div.entry.class[style*="width: 46.5%"] {
   color: var(--text-primary) !important;
   margin-top: 4px !important;
 }
+
 .uiFileHandlerPanel::before {
   border: 12px solid rgba(0, 0, 0, 0);
   border-top-color: var(--background-primary);
@@ -2107,6 +2111,7 @@ li.MessageList__unread___3imtO {
   background: none !important;
   padding: 5px 10px;
 }
+
 #logouttooltip {
   width: 50px !important;
   margin-left: -28px !important;
@@ -2579,6 +2584,7 @@ li.MessageList__unread___3imtO {
 .day-empty p {
   margin: 0;
 }
+
 .upcoming-items {
   background: var(--background-primary);
   width: 100%;
