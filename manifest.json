@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BetterSEQTA+",
-  "version": "3.2.5.1",
+  "version": "3.2.6",
   "description": "Enhance SEQTA's usability and aesthetics! A fork BetterSEQTA to continue development, add endless customization, and incorporate a plethora of new features!",
   "icons": {
     "32": "src/resources/icons/icon-32.png",
