@@ -2883,6 +2883,10 @@ li.MessageList__unread___3imtO {
 body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltiptext {
   transform: scale(0);
 }
+#ExtensionPopup {
+  will-change: opacity, transform;
+  transform: translateZ(0); // promotes GPU rendering
+}
 .assessmenttooltip svg {
   fill: var(--text-primary);
 }

@@ -142,6 +142,20 @@ export function OpenWhatsNewPopup() {
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
+    <h1>3.2.6 - Bug fixes and performance improvements</h1>
+    <li>Improved contrast for notifications</li>
+    <li>Added 12-hour time format toggle</li>
+    <li>Using external update video to ensure smaller package size</li>
+    <li>Refactored underlying code to improve performance</li>
+    <li>Removed old theme system <span style="font-style: italic;">*revamp coming soon*</span></li>
+    <li>Improved notices contrast</li>
+    <li>Remove Telemetry completely - as we weren't using it too much</li>
+    <li>Added Error handling to settings interface</li>
+    <li>Fixed HTML message editor cursor becoming misaligned</li>
+    <li>Enabled spellcheck inside of direct messages</li>
+    <li>Fixed timetable dates being misaligned</li>
+    <li>Other minor bug fixes and under the hood improvements</li>
+
     <h1>3.2.5 - More Bug Fixes</h1>
     <li>New direct message scroll animations</li>
     <li>Added error message for brave browser shields breaking backgrounds</li>
