@@ -928,10 +928,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   gap: 32px;
   padding: 32px 64px;
   align-items: center;
-
-  > div {
-    will-change: opacity, transform;
-  }
+}
+#home-container > div {
+  will-change: opacity, transform;
 }
 .home-container h1 {
   text-align: center;
