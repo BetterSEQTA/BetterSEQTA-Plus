@@ -3,7 +3,7 @@
 </a>
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://seqta.com.au">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
+  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@
 1. Clone the repository
 
 ```
-git clone https://github.com/SethBurkart123/EvenBetterSEQTA
+git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus
 ```
 
 ### Running Development
