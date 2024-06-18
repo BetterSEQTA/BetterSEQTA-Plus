@@ -2,7 +2,7 @@
   "name": "betterseqtaplus",
   "version": "3.2.6",
   "type": "module",
-  "description": "BetterSEQTA+ is a browser extension that adds features to SEQTA.",
+  "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development, and incorporate a plethora of new features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "vite dev",
