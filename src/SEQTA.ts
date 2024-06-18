@@ -26,7 +26,7 @@ import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
-import { eventManager } from './seqta/utils/listeners/EventManager'
+import { eventManager, initializeEventManager } from './seqta/utils/listeners/EventManager'
 
 declare global {
   interface Window {
@@ -312,7 +312,7 @@ export function OpenWhatsNewPopup() {
   })
 }
 
-async function finishLoad() {
+export async function finishLoad() {
   try {
     document.querySelector('.legacy-root')?.classList.remove('hidden');
     
@@ -377,35 +377,63 @@ export function RemoveBackground() {
   bk3[0].remove()
 }
 
-export async function waitForElm(selector: string) {
-  return new Promise((resolve) => {
-    const querySelector = () => document.querySelector(selector);
+export async function waitForElm(selector: string, usePolling: boolean = false, interval: number = 100): Promise<Element> {
+  console.log('[BetterSEQTA+] Waiting for element:', selector);
 
-    if (querySelector()) {
-      return resolve(querySelector());
-    }
+  if (usePolling) {
+    return new Promise((resolve) => {
+      const checkForElement = () => {
+        const element = document.querySelector(selector);
+        if (element) {
+          console.log('[BetterSEQTA+] Element found:', selector);
+          resolve(element);
+        } else {
+          setTimeout(checkForElement, interval);
+        }
+      };
 
-    const observer = new MutationObserver(() => {
-      if (querySelector()) {
-        resolve(querySelector());
-        observer.disconnect();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkForElement);
+      } else {
+        checkForElement();
       }
     });
-
-    if (document.body) {
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      document.addEventListener('DOMContentLoaded', () => {
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
+  } else {
+    return new Promise((resolve) => {
+      const registerObserver = () => {
+        const { unregister } = eventManager.register(`${selector}`, {
+          customCheck: (element) => element.matches(selector)
+        }, (element) => {
+          console.log('[BetterSEQTA+] Element found:', selector);
+          resolve(element);
+          unregister(); // Remove the listener once the element is found
         });
-      });
-    }
-  });
+        return unregister;
+      };
+
+      let unregister = null;
+
+      if (document.readyState === 'loading') {
+        // DOM is still loading, wait for it to be ready
+        document.addEventListener('DOMContentLoaded', () => {
+          unregister = registerObserver();
+        });
+      } else {
+        unregister = registerObserver();
+      }
+
+      const querySelector = () => document.querySelector(selector);
+      const element = querySelector();
+
+      if (element) {
+        console.log('[BetterSEQTA+] Element found:', selector);
+        if (unregister) unregister();
+        resolve(element);
+        return;
+      }
+
+    });
+  }
 }
 
 export function GetCSSElement(file: string) {
@@ -531,7 +559,9 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case 'home':
     case undefined:
       window.location.replace(`${location.origin}/#?page=/home`);
-      LoadInit();
+      console.log('[BetterSEQTA+] Started Init')
+      if (settingsState.onoff) loadHomePage()
+      finishLoad();
       break;
     default:
       await handleDefault();
@@ -565,6 +595,8 @@ async function handleMessages(node: Element): Promise<void> {
   document.title = 'Direct Messages ― SEQTA Learn';
   SortMessagePageItems(node);
 
+  if (!settingsState.animations) return;
+
   await waitForElm('[data-message]');
   animate(
     '[data-message]',
@@ -579,6 +611,7 @@ async function handleMessages(node: Element): Promise<void> {
 
 async function handleDashboard(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
   await waitForElm('.dashlet');
   animate(
@@ -594,6 +627,7 @@ async function handleDashboard(node: Element): Promise<void> {
 
 async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
   await waitForElm('.document');
   animate(
@@ -609,6 +643,7 @@ async function handleDocuments(node: Element): Promise<void> {
 
 async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
   await waitForElm('.report');
   animate(
@@ -652,11 +687,11 @@ export function tryLoad() {
     elm.classList.remove('active')
   })
 
-  waitForElm('.code').then((elm: any) => {
+  waitForElm('.code', true, 50).then((elm: any) => {
     if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements()
   })
 
-updateIframesWithDarkMode()
+  updateIframesWithDarkMode()
   // Waits for page to call on load, run scripts
   document.addEventListener(
     'load',
@@ -1951,7 +1986,7 @@ export async function loadHomePage() {
   
   // Appends the timetable container into the home container
   document.getElementById('home-container')?.append(Timetable?.firstChild!)
-  
+
   // Formats the current date used send a request for timetable and notices later
   const TodayFormatted =
     date.getFullYear() + '-' + ((date.getMonth() + 1) < 10 ? '0' : '') + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
@@ -2462,9 +2497,4 @@ export function documentTextColor() {
       item.setAttribute('style', 'color: black')
     }
   }
-}
-
-function LoadInit() {
-  console.log('[BetterSEQTA+] Started Init')
-  if (settingsState.onoff) loadHomePage()
 }

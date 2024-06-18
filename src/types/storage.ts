@@ -34,6 +34,7 @@ export interface SettingsState {
   transparencyEffects: boolean;
   justupdated?: boolean;
   timeFormat?: string;
+  animations: boolean;
 }
 
 interface ToggleItem {
