@@ -26,6 +26,7 @@ import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
+import { eventManager } from './seqta/utils/listeners/EventManager'
 
 declare global {
   interface Window {
@@ -376,7 +377,7 @@ export function RemoveBackground() {
   bk3[0].remove()
 }
 
-export function waitForElm(selector: string) {
+export async function waitForElm(selector: string) {
   return new Promise((resolve) => {
     const querySelector = () => document.querySelector(selector);
 
@@ -434,65 +435,47 @@ function removeThemeTagsFromNotices () {
 }
 
 async function updateIframesWithDarkMode(): Promise<void> {
-  // Load the CSS file to overwrite iFrame default CSS
-  const cssLink = document.createElement('style')
-  cssLink.classList.add('iframecss')
-  const cssContent = document.createTextNode(iframeCSS)
-  cssLink.appendChild(cssContent)
+  const cssLink = document.createElement('style');
+  cssLink.classList.add('iframecss');
+  const cssContent = document.createTextNode(iframeCSS);
+  cssLink.appendChild(cssContent);
 
-  const observer = new MutationObserver(async (mutationsList) => {
-    for (const mutation of mutationsList) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeName === 'IFRAME') {
-          const iframe = node as HTMLIFrameElement
-          try {
-            applyDarkModeToIframe(iframe, cssLink, settingsState.DarkMode);
+  eventManager.register('iframeAdded', {
+    elementType: 'iframe',
+    customCheck: (element: Element) => !element.classList.contains('iframecss'),
+  }, (element) => {
+    const iframe = element as HTMLIFrameElement;
+    try {
+      applyDarkModeToIframe(iframe, cssLink, settingsState.DarkMode);
 
-            // check if it is a text editor frame
-            if (node instanceof HTMLElement && node.classList.contains('cke_wysiwyg_frame')) {
-              await delay(100)
-              // enable spellcheck
-              iframe.contentDocument?.body.setAttribute('spellcheck', 'true')
-            }
-          } catch (error) {
-            console.error('Error applying dark mode:', error)
-          }
-        }
+      if (element.classList.contains('cke_wysiwyg_frame')) {
+        (async () => {
+          await delay(100);
+          iframe.contentDocument?.body.setAttribute('spellcheck', 'true');
+        })();
       }
+    } catch (error) {
+      console.error('Error applying dark mode:', error);
     }
   });
-
-  if (document.body) {
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-    });
-  }
 }
 
 function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement, DarkMode: boolean): void {
-  const iframeDocument = iframe.contentDocument
-  if (!iframeDocument) return
+  const iframeDocument = iframe.contentDocument;
+  if (!iframeDocument) return;
 
   if (iframeDocument.readyState !== 'complete') {
     iframe.onload = () => {
-      applyDarkModeToIframe(iframe, cssLink, DarkMode)
-    }
-    return
+      applyDarkModeToIframe(iframe, cssLink, DarkMode);
+    };
+    return;
   }
-  
-  if (DarkMode) iframeDocument.documentElement.classList.add('dark')
 
-  const head = iframeDocument.head
+  if (DarkMode) iframeDocument.documentElement.classList.add('dark');
+
+  const head = iframeDocument.head;
   if (head && !head.innerHTML.includes('iframecss')) {
-    head.innerHTML += cssLink.outerHTML
+    head.innerHTML += cssLink.outerHTML;
   }
 }
 
@@ -509,143 +492,151 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements()
-  const sublink: string | undefined = window.location.href.split('/')[4]
+  await AddBetterSEQTAElements();
+  const sublink: string | undefined = window.location.href.split('/')[4];
 
-  const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (node.classList.contains('messages')) {
-          let element = document.getElementById('title')!.firstChild as HTMLElement
-          element.innerText = 'Direct Messages'
-          document.title = 'Direct Messages ― SEQTA Learn'
-          SortMessagePageItems(added_node)
+  eventManager.register('messagesAdded', {
+    elementType: 'div',
+    className: 'messages',
+  }, handleMessages);
 
-          waitForElm('[data-message]').then(() => {
-            animate(
-              '[data-message]',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            )
-          })
-        } else if (node.classList.contains('notices')) {
-          CheckNoticeTextColour(added_node)
-        } else if (node.classList.contains('dashboard')) {
-          let ranOnce = false;
-          waitForElm('.dashlet').then(() => {
-            animate(
-              '.dashboard > *',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.1),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            )
-            if (ranOnce) return;
-            ranOnce = true;
-          })
-        } else if (node.classList.contains('documents')) {
-          let ranOnce = false;
-          waitForElm('.document').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
-            animate(
-              '.documents tbody tr.document',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            )
-          })
-        } else if (node.classList.contains('reports')) {
-          let ranOnce = false;
-          waitForElm('.report').then(() => {
-            if (ranOnce) return;
-            ranOnce = true;
-            animate(
-              '.reports .item',
-              { opacity: [0, 1], y: [10, 0] },
-              {
-                delay: stagger(0.05, { start: 0.2 }),
-                duration: 0.5,
-                easing: [.22, .03, .26, 1]  
-              }
-            )
-          })
-        }
-      })
-    })
-  })
+  eventManager.register('noticesAdded', {
+    elementType: 'div',
+    className: 'notices',
+  }, CheckNoticeTextColour);
 
-  observer.observe(document.querySelector('#main') as HTMLElement, {
-    subtree: false,
-    childList: true,
-  })
+  eventManager.register('dashboardAdded', {
+    elementType: 'div',
+    className: 'dashboard',
+  }, handleDashboard);
 
-  async function handleNewsPage(): Promise<void> {
-    console.log('[BetterSEQTA+] Started Init')
-    if (settingsState.onoff) {
-      SendNewsPage()
-      if (settingsState.notificationcollector) {
-        enableNotificationCollector()
-      }
-      finishLoad()
-    }
-  }
+  eventManager.register('documentsAdded', {
+    elementType: 'div',
+    className: 'documents',
+  }, handleDocuments);
 
-  async function handleDefault(): Promise<void> {
-    finishLoad()
-    if (settingsState.notificationcollector) {
-      enableNotificationCollector()
-    }
-  }
+  eventManager.register('reportsAdded', {
+    elementType: 'div',
+    className: 'reports',
+  }, handleReports);
 
+  await handleSublink(sublink);
+}
+
+async function handleSublink(sublink: string | undefined): Promise<void> {
   switch (sublink) {
     case 'news':
-      await handleNewsPage()
-      break
+      await handleNewsPage();
+      break;
     case 'home':
     case undefined:
-      window.location.replace(`${location.origin}/#?page=/home`)
-      LoadInit()
-      break
+      window.location.replace(`${location.origin}/#?page=/home`);
+      LoadInit();
+      break;
     default:
-      await handleDefault()
-      break
+      await handleDefault();
+      break;
   }
 }
 
-function CheckNoticeTextColour(notice: any) {
-  const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (node.classList.contains('notice')) {
-          var hex = node.style.cssText.split(' ')[1]
-          if (hex) {
-            const hex1 = hex.slice(0,-1)
-            var threshold = GetThresholdOfColor(hex1)
-            if (settingsState.DarkMode && threshold < 100) {
-              node.style.cssText = '--color: undefined;'
-            }
-          }
-        }
-      })
-    })
-  })
+async function handleNewsPage(): Promise<void> {
+  console.log('[BetterSEQTA+] Started Init');
+  if (settingsState.onoff) {
+    SendNewsPage();
+    if (settingsState.notificationcollector) {
+      enableNotificationCollector();
+    }
+    finishLoad();
+  }
+}
 
-  observer.observe(notice, {
-    subtree: true,
-    childList: true,
-  })
+async function handleDefault(): Promise<void> {
+  finishLoad();
+  if (settingsState.notificationcollector) {
+    enableNotificationCollector();
+  }
+}
+
+async function handleMessages(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+
+  const element = document.getElementById('title')!.firstChild as HTMLElement;
+  element.innerText = 'Direct Messages';
+  document.title = 'Direct Messages ― SEQTA Learn';
+  SortMessagePageItems(node);
+
+  await waitForElm('[data-message]');
+  animate(
+    '[data-message]',
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.05),
+      duration: 0.5,
+      easing: [.22, .03, .26, 1]
+    }
+  );
+}
+
+async function handleDashboard(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+
+  await waitForElm('.dashlet');
+  animate(
+    '.dashboard > *',
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.1),
+      duration: 0.5,
+      easing: [.22, .03, .26, 1]
+    }
+  );
+}
+
+async function handleDocuments(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+
+  await waitForElm('.document');
+  animate(
+    '.documents tbody tr.document',
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.05),
+      duration: 0.5,
+      easing: [.22, .03, .26, 1]
+    }
+  );
+}
+
+async function handleReports(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+
+  await waitForElm('.report');
+  animate(
+    '.reports .item',
+    { opacity: [0, 1], y: [10, 0] },
+    {
+      delay: stagger(0.05, { start: 0.2 }),
+      duration: 0.5,
+      easing: [.22, .03, .26, 1]
+    }
+  );
+}
+
+function CheckNoticeTextColour(notice: any) {
+  eventManager.register('noticeAdded', {
+    elementType: 'div',
+    className: 'notice',
+    parentElement: notice
+  }, (node) => {
+    var hex = (node as HTMLElement).style.cssText.split(' ')[1];
+    if (hex) {
+      const hex1 = hex.slice(0,-1);
+      var threshold = GetThresholdOfColor(hex1);
+      if (settingsState.DarkMode && threshold < 100) {
+        (node as HTMLElement).style.cssText = '--color: undefined;';
+      }
+    }
+  });
 }
 
 export function tryLoad() {
@@ -665,11 +656,11 @@ export function tryLoad() {
     if (!elm.innerText.includes('BetterSEQTA')) LoadPageElements()
   })
 
+updateIframesWithDarkMode()
   // Waits for page to call on load, run scripts
   document.addEventListener(
     'load',
     function () {
-      updateIframesWithDarkMode()
       removeThemeTagsFromNotices()
       documentTextColor()
     },
