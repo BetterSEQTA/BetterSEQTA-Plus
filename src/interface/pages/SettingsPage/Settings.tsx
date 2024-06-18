@@ -52,6 +52,11 @@ const Settings: React.FC = () => {
       modifyElement: <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' })} className='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>Edit</button>
     },
     {
+      title: "Animations",
+      description: "Enables animations on certain pages.",
+      modifyElement: <Switch state={settingsState.animations} onChange={(isOn: boolean) => switchChange('animations', isOn)} />
+    },
+    {
       title: "Notification Collector",
       description: "Uncaps the 9+ limit for notifications, showing the real number.",
       modifyElement: <Switch state={settingsState.notificationCollector} onChange={(isOn: boolean) => switchChange('notificationCollector', isOn)} />
