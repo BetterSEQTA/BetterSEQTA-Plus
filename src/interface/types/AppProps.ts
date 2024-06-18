@@ -10,6 +10,7 @@ export interface SettingsState {
   customshortcuts: CustomShortcut[];
   transparencyEffects: boolean;
   timeFormat?: string;
+  animations: boolean;
 }
 
 interface ToggleItem {
@@ -27,7 +28,7 @@ export interface CustomShortcut {
   icon: string;
 }
 
-export interface MainConfig {
+/* export interface MainConfig {
   DarkMode: boolean;
   animatedbk: boolean;
   bksliderinput: string;
@@ -60,4 +61,4 @@ export interface MainConfig {
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
   selectedTheme: string;
-}
+} */
