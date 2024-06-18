@@ -862,11 +862,16 @@ export function closeSettings() {
 
   if (SettingsClicked == true) {
     ExtensionSettings!.classList.add('hide')
-    animate(
-      '#ExtensionPopup',
-      { opacity: [1, 0], scale: [1, 0] },
-      { easing: spring({ stiffness: 220, damping: 18 }) }
-    )
+    if (settingsState.animations) {
+      animate(
+        '#ExtensionPopup',
+        { opacity: [1, 0], scale: [1, 0] },
+        { easing: spring({ stiffness: 220, damping: 18 }) }
+      )
+    } else {
+      ExtensionSettings.style.opacity = '0'
+      ExtensionSettings.style.transform = 'scale(0)'
+    }
     SettingsClicked = false
 
     if (ExtensionIframe.contentWindow) {
@@ -903,11 +908,16 @@ export function addExtensionSettings() {
     const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
 
     extensionPopup.classList.add('hide')
-    animate(
-      '#ExtensionPopup',
-      { opacity: [1, 0], scale: [1, 0] },
-      { easing: [.22, .03, .26, 1] }
-    )
+    if (settingsState.animations) {
+      animate(
+        '#ExtensionPopup',
+        { opacity: [1, 0], scale: [1, 0] },
+        { easing: spring({ stiffness: 220, damping: 18 }) }
+      )
+    } else {
+      extensionPopup.style.opacity = '0'
+      extensionPopup.style.transform = 'scale(0)'
+    }
     if (ExtensionIframe.contentWindow) {
       ExtensionIframe.contentWindow.postMessage('popupClosed', '*')
     }
@@ -1153,12 +1163,22 @@ export function setupSettingsButton() {
   AddedSettings!.addEventListener('click', function () {
     if (SettingsClicked) {
       extensionPopup!.classList.add('hide');
-      animate('#ExtensionPopup', { opacity: [1, 0], scale: [1, 0] }, { easing: spring({ stiffness: 220, damping: 18 }) });
+      if (settingsState.animations) {
+        animate('#ExtensionPopup', { opacity: [1, 0], scale: [1, 0] }, { easing: spring({ stiffness: 220, damping: 18 }) });
+      } else {
+        extensionPopup!.style.opacity = '0'
+        extensionPopup!.style.transform = 'scale(0)'
+      }
       (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
       SettingsClicked = false;
     } else {
       extensionPopup!.classList.remove('hide');
-      animate('#ExtensionPopup', { opacity: [0, 1], scale: [0, 1] }, { easing: spring({ stiffness: 260, damping: 24 }) });
+      if (settingsState.animations) {
+        animate('#ExtensionPopup', { opacity: [0, 1], scale: [0, 1] }, { easing: spring({ stiffness: 260, damping: 24 }) });
+      } else {
+        extensionPopup!.style.opacity = '1'
+        extensionPopup!.style.transform = 'scale(1)'
+      }
       SettingsClicked = true;
     }
   });
