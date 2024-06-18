@@ -33,6 +33,12 @@ class EventManager {
     return EventManager.instance;
   }
 
+  public static async initialize(): Promise<EventManager> {
+    const instance = EventManager.getInstance();
+    await instance.startObserving();
+    return instance;
+  }
+
   public register(event: string, options: EventListenerOptions, callback: (element: Element) => void): { unregister: () => void } {
     const id = this.generateUniqueId();
     if (!this.listeners.has(event)) {
@@ -57,7 +63,7 @@ class EventManager {
     }
   }
 
-  private startObserving(parentElement?: Element): void {
+  private async startObserving(parentElement?: Element): Promise<void> {
     const elementToObserve = parentElement || document.documentElement;
     if (!this.mutationObservers.has(elementToObserve)) {
       const observer = new MutationObserver(this.handleMutations.bind(this));
@@ -113,6 +119,7 @@ class EventManager {
   }
 
   private async checkElement(element: Element): Promise<void> {
+    if (element.classList.contains('code')) console.log('Code Detected!');
     for (const [event, listeners] of this.listeners.entries()) {
       for (const { id, options, callback } of listeners) {
         if (this.matchesOptions(element, options)) {
@@ -140,3 +147,4 @@ class EventManager {
 }
 
 export const eventManager = EventManager.getInstance();
+export const initializeEventManager = async () => await EventManager.initialize();
