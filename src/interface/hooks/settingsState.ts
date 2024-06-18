@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import { useEffect, useMemo } from "react";
 import { SettingsProps } from "../types/SettingsProps";
-import { MainConfig, SettingsState } from "../types/AppProps";
+import { SettingsState } from "../types/AppProps";
 import { SettingsState as StorageSettingsState } from '../../types/storage';
 
 let RanOnce = false;
@@ -25,7 +25,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         customshortcuts: result.customshortcuts,
         transparencyEffects: result.transparencyEffects,
         selectedTheme: result.selectedTheme,
-        timeFormat: result.timeFormat
+        timeFormat: result.timeFormat,
+        animations: result.animations
       });
     });
   });
@@ -41,7 +42,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "customshortcuts": "customshortcuts",
     "transparencyEffects": "transparencyEffects",
     "selectedTheme": "selectedTheme",
-    "timeFormat": "timeFormat"
+    "timeFormat": "timeFormat",
+    "animations": "animations"
   }), []);
   
   const storageChangeListener = (changes: browser.Storage.StorageChange) => {
@@ -55,7 +57,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
       }
 
       // @ts-expect-error - TODO: Fix this
-      const stateKey = keyToStateMap[key as keyof MainConfig];
+      const stateKey = keyToStateMap[key as keyof StorageSettingsState];
       if (stateKey) {
         setSettingsState((prevState: SettingsState) => ({
           ...prevState,
@@ -73,7 +75,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     };
   });
 
-  const setStorage = (key: keyof MainConfig, value: any) => {
+  const setStorage = (key: keyof StorageSettingsState, value: any) => {
     browser.storage.local.set({ [key]: value });
   }
 
@@ -84,7 +86,7 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         const storageKey = Object.keys(keyToStateMap).find(k => keyToStateMap[k] === key);
         // @ts-expect-error - TODO: Fix this
         if (storageKey && value !== previousSettingsState[key]) {
-          setStorage(storageKey as keyof MainConfig, value);
+          setStorage(storageKey as keyof StorageSettingsState, value);
         }
       }
     }

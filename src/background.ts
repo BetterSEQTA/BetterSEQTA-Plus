@@ -237,10 +237,10 @@ function SetStorageValue(object: any) {
   }
 }
 
-function UpdateCurrentValues() {
-  const result = browser.storage.local.get()
-  function open (items: any) {
-    var CurrentValues = items;
+async function UpdateCurrentValues() {
+  try {
+    const items = await browser.storage.local.get();
+    const CurrentValues = items;
 
     const NewValue = Object.assign({}, DefaultValues, CurrentValues);
 
@@ -248,13 +248,12 @@ function UpdateCurrentValues() {
       for (let i in element) {
         if (typeof element[i] === 'object') {
           // @ts-expect-error
-          if (typeof DefaultValues[i].length == 'undefined') {
+          if (!Array.isArray(DefaultValues[i])) {
             // @ts-expect-error
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
           } else {
-            // If the object is an array, turn it back after
             // @ts-expect-error
-            let length = DefaultValues[i].length;
+            const length = DefaultValues[i].length;
             // @ts-expect-error
             NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
             let NewArray = [];
@@ -266,6 +265,7 @@ function UpdateCurrentValues() {
         }
       }
     }
+
     CheckInnerElement(DefaultValues);
 
     if (items['customshortcuts']) {
@@ -273,8 +273,10 @@ function UpdateCurrentValues() {
     }
 
     SetStorageValue(NewValue);
+    console.log('[BetterSEQTA+] Values updated successfully');
+  } catch (error) {
+    console.error('[BetterSEQTA+] Error updating values:', error);
   }
-  result.then(open, console.error)
 }
 
 browser.runtime.onInstalled.addListener(function (event) {
