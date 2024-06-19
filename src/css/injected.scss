@@ -990,8 +990,6 @@ div > ol:has(.uiFileHandlerWrapper) {
       padding-bottom: 24px !important;
       border-radius: 0 !important;
 
-      box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 23px 50px -20px rgba(0,0,0,0.9);
-
       > h2 {
         height: auto;
         min-height: 0;
@@ -2553,7 +2551,7 @@ li.MessageList__unread___3imtO {
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(0,0,0,0.9);
+  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(179, 179, 179, 0.9);
   transition: 200ms;
   position: relative;
   height: 15em;
@@ -2561,11 +2559,14 @@ li.MessageList__unread___3imtO {
   background: var(--background-primary);
   font-family: Rubik, sans-serif;
 }
+.dark .day {
+  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(0,0,0,0.9);
+}
 .clickable {
   cursor: pointer;
 }
 .day:hover {
-  background: var(--auto-background);
+  background: var(--background-secondary);
   transition: 200ms;
 }
 .dark .day h3 {
@@ -2594,6 +2595,9 @@ li.MessageList__unread___3imtO {
   color: var(--text-primary);
   transition: 200ms;
   border-radius: 16px;
+}
+.dark .upcoming-items {
+  box-shadow: inset 0px 40px 80px -40px rgba(0,0,0,0.6);
 }
 .upcoming-assessment-title {
   color: var(--text-primary);
