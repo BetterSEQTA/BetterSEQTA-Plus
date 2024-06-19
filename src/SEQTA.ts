@@ -698,12 +698,9 @@ export function tryLoad() {
     'load',
     function () {
       removeThemeTagsFromNotices()
-      documentTextColor()
     },
     true,
   )
-  const observer = new MutationObserver(() => { documentTextColor() })
-  observer.observe(document!, { attributes: true, childList: true, subtree: true, attributeFilter: ['td'], })
 }
 
 function ChangeMenuItemPositions(storage: any) {
@@ -2488,36 +2485,6 @@ async function CheckForMenuList() {
       }
     } catch (error) {
       return
-    }
-  }
-}
-
-export function documentTextColor() {
-  if (settingsState.DarkMode) {
-    const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
-    const fullDocArray = document.querySelectorAll('tr.document')
-    const linkArray = document.querySelectorAll('a.uiFile')
-    for (const item of fullDocArray) {
-      item.classList.add('documentDark')
-    }
-    for (const item of linkArray) {
-      item.setAttribute('style', 'color: #06b4fc;')
-    }
-    for (const item of documentArray) {
-      item.setAttribute('style', 'color: white')
-    }
-  } else {
-    const documentArray = document.querySelectorAll('td:not([class^="colourBar"]):not([class^="title"])')
-    const fullDocArray = document.querySelectorAll('tr.document')
-    const linkArray = document.querySelectorAll('a.uiFile')
-    for (const item of fullDocArray) {
-      item.classList.remove('documentDark')
-    }
-    for (const item of linkArray) {
-      item.setAttribute('style', 'color: #3465a4;')
-    }
-    for (const item of documentArray) {
-      item.setAttribute('style', 'color: black')
     }
   }
 }
