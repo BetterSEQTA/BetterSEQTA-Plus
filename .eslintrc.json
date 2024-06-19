@@ -27,5 +27,6 @@
         "tsx": "never"
       }
     ]
-  }
+  },
+  "plugins": ["import"]
 }

@@ -2966,8 +2966,8 @@ body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltipt
   border-radius: 16px;
   opacity: 0;
 
-  animation-delay: 0.8s !important;
   animation: fade-in 0.5s forwards;
+  animation-delay: 0.8s !important;
 }
 @keyframes fade-in {
   0% {
