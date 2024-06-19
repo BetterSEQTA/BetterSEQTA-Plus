@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
 
