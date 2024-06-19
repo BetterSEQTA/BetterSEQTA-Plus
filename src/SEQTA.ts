@@ -21,7 +21,6 @@ import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
-import injectedCSS from './css/injected.scss?inline'
 import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
@@ -65,10 +64,7 @@ async function init() {
       await initializeSettingsState();
       
       if (settingsState.onoff) {
-        const injectedStyle = document.createElement('style')
-        injectedStyle.textContent = injectedCSS
-        
-        document.head.appendChild(injectedStyle)
+        import('./css/injected')
       }
       
       main()

@@ -1,1 +1,1 @@
-import './injected.scss';
+import './injected.scss'
