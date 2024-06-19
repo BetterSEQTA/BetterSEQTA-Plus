@@ -1,6 +1,6 @@
 import { createRef, FC, useState } from 'react';
 import BackgroundSelector from '../../components/BackgroundSelector';
-//import ThemeSelector from '../../components/ThemeSelector';
+import ThemeSelector from '../../components/ThemeSelector';
 import { memo } from 'react';
 
 type ThemeSelectorRef = {
@@ -22,7 +22,7 @@ const Themes: FC = () => {
         {isEditMode ? 'Done' : 'Edit'}
       </button>
     <BackgroundSelector disableTheme={disableTheme} isEditMode={isEditMode} />
-    {/* <ThemeSelector ref={themeSelectorRef} isEditMode={isEditMode} /> */}
+    <ThemeSelector ref={themeSelectorRef} isEditMode={isEditMode} />
   </div>
   );
 };
