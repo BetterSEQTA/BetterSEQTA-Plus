@@ -16,6 +16,10 @@
   transform: translateX(-320px);
 }
 
+#menu li.hasChildren:not(.active) li .sub {
+  display: none; // improves performance
+}
+
 .sub .sub {
   top: 0 !important;
   padding-top: 2px;

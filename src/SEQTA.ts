@@ -700,13 +700,7 @@ export function tryLoad() {
 
   updateIframesWithDarkMode()
   // Waits for page to call on load, run scripts
-  document.addEventListener(
-    'load',
-    function () {
-      removeThemeTagsFromNotices()
-    },
-    true,
-  )
+  removeThemeTagsFromNotices()
 }
 
 function ChangeMenuItemPositions(storage: any) {
@@ -795,7 +789,6 @@ function main() {
     tryLoad()
   } else {
     handleDisabled()
-    window.addEventListener('load', handleDisabled)
   }
 }
 
