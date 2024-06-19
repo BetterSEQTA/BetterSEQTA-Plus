@@ -487,11 +487,10 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-top-color: transparent;
 }
 #main > .timetablepage > .quickbar.above::before {
-  border-bottom-color: transparent;
+  border-bottom-color: transparent !important;
   bottom: -23px !important;
   background-color: inherit;
   clip-path: polygon(50% 40%, 0 0, 100% 0);
-  border-top-color: transparent !important;
 }
 #main .timetablepage .actions a,
 #main .timetablepage .actions button {
