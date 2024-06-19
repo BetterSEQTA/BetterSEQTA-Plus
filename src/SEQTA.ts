@@ -39,7 +39,6 @@ export let MenuOptionsOpen = false
 let currentSelectedDate = new Date()
 let LessonInterval: any
 
-var MenuItemMutation = false
 var NonSEQTAPage = false
 var IsSEQTAPage = false
 
@@ -77,7 +76,7 @@ async function init() {
     }
   }
 
-  if (!hasSEQTAText && !NonSEQTAPage) {
+  if (!hasSEQTAText) {
     NonSEQTAPage = true
   }
 }
@@ -1447,7 +1446,7 @@ function callHomeTimetable(date: string, change?: any) {
   )
 }
 
-function GetUpcomingAssessments() {
+async function GetUpcomingAssessments() {
   let func = fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
     method: 'POST',
     headers: {
@@ -2135,6 +2134,7 @@ export async function loadHomePage() {
   xhr2.onreadystatechange = function () {
     if (xhr2.readyState === 4) {
       const NoticesPayload = JSON.parse(xhr2.response)
+      console.log(NoticesPayload)
       const NoticeContainer = document.getElementById('notice-container')
       if (NoticesPayload.payload.length === 0) {
         if (!NoticeContainer!.innerText) {
@@ -2466,6 +2466,7 @@ export function SendNewsPage() {
   }, 8)
 }
 
+let MenuItemMutation = false
 async function CheckForMenuList() {
   if (!MenuItemMutation) {
     try {
