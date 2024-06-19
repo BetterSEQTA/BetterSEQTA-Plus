@@ -408,7 +408,6 @@ export async function waitForElm(selector: string, usePolling: boolean = false, 
         const { unregister } = eventManager.register(`${selector}`, {
           customCheck: (element) => element.matches(selector)
         }, (element) => {
-          console.log('[BetterSEQTA+] Element found:', selector);
           resolve(element);
           unregister(); // Remove the listener once the element is found
         });
@@ -430,7 +429,6 @@ export async function waitForElm(selector: string, usePolling: boolean = false, 
       const element = querySelector();
 
       if (element) {
-        console.log('[BetterSEQTA+] Element found:', selector);
         if (unregister) unregister();
         resolve(element);
         return;
@@ -2352,7 +2350,7 @@ export function SendNewsPage() {
     browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
       let newsarticles = response.news.articles
       var newscontainer = document.querySelector('#news-container')
-      document.getElementById('newsloading')!.remove()
+      document.getElementById('newsloading')?.remove()
       for (let i = 0; i < newsarticles.length; i++) {
         let newsarticle = document.createElement('a')
         newsarticle.classList.add('NewsArticle')
@@ -2385,7 +2383,7 @@ export function SendNewsPage() {
 
         newsarticle.append(articleimage)
         newsarticle.append(articletext)
-        newscontainer!.append(newsarticle)
+        newscontainer?.append(newsarticle)
       }
     })
   }, 8)
