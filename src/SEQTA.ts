@@ -336,7 +336,7 @@ async function DeleteWhatsNew() {
   if (!settingsState.animations) {
     bkelement?.remove()
     return
-  };
+  }
 
   animate(
     [popup, bkelement!],
@@ -2109,7 +2109,7 @@ export async function loadHomePage() {
         easing: [.22, .03, .26, 1]  
       }
     )
-  };
+  }
 
   callHomeTimetable(TodayFormatted)
 

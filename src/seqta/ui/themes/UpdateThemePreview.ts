@@ -1,5 +1,5 @@
 import { CustomThemeBase64 } from '../../../interface/types/CustomThemes';
-import { imageData, removeImageFromDocument, UpdateImageData, applyCustomCSS } from './Themes';
+import { applyCustomCSS, imageData, removeImageFromDocument, UpdateImageData } from './Themes';
 import { settingsState } from '../../utils/listeners/SettingsState';
 
 
