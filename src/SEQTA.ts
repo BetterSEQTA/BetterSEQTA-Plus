@@ -281,21 +281,23 @@ export function OpenWhatsNewPopup() {
     'JdDA45GYEUc', 'PLSlFV-9e6dvyvZJFPCtBMb3LSp-LGbrbI', document.querySelector('.whatsnewImg')!, true, true, '100%', '100%'
   )
 
-  animate(
-    [popup, bkelement as HTMLElement],
-    { scale: [0, 1], opacity: [0, 1] },
-    { easing: spring({ stiffness: 220, damping: 18 }) }
-  )
-
-  animate(
-    '.whatsnewTextContainer *',
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05, { start: 0.1 }),
-      duration: 0.5,
-      easing: [.22, .03, .26, 1]  
-    }
-  )
+  if (settingsState.animations) {
+    animate(
+      [popup, bkelement as HTMLElement],
+      { scale: [0, 1], opacity: [0, 1] },
+      { easing: spring({ stiffness: 220, damping: 18 }) }
+    )
+  
+    animate(
+      '.whatsnewTextContainer *',
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.05, { start: 0.1 }),
+        duration: 0.5,
+        easing: [.22, .03, .26, 1]  
+      }
+    )
+  }
 
   delete settingsState.justupdated
 
@@ -332,6 +334,8 @@ export async function finishLoad() {
 async function DeleteWhatsNew() {
   const bkelement = document.getElementById('whatsnewbk')
   const popup = document.getElementsByClassName('whatsnewContainer')[0]
+
+  if (!settingsState.animations) return;
 
   animate(
     [popup, bkelement!],
@@ -1126,7 +1130,8 @@ export function OpenMenuOptions() {
         'display',
         'flex',
         'important',
-      )
+      )import { settingsState } from '/src/seqta/utils/listeners/SettingsState.ts.js';
+
     }
     saveNewOrder(sortable)
   })
@@ -1981,7 +1986,7 @@ export async function loadHomePage() {
 
   // Creates the shortcut container into the home container
   const Shortcut = stringToHTML(/* html */`
-    <div class="shortcut-container border" style="opacity: 0;">
+    <div class="shortcut-container border">
       <div class="shortcuts border" id="shortcuts"></div>
     </div>`)
 
@@ -1990,7 +1995,7 @@ export async function loadHomePage() {
   
   // Creates the container div for the timetable portion of the home page
   const Timetable = stringToHTML(/* html */`
-    <div class="timetable-container border" style="opacity: 0;">
+    <div class="timetable-container border" ${settingsState.animations ? `style="opacity: 0;"` : ''}>
       <div class="home-subtitle">
         <h2 id="home-lesson-subtitle">Today\'s Lessons</h2>
         <div class="timetable-arrows">
@@ -2098,7 +2103,7 @@ export async function loadHomePage() {
 
   // Creates the notices container into the home container
   const NoticesStr = /* html */ `
-    <div class="notices-container border">
+    <div class="notices-container border" ${settingsState.animations ? `style="opacity: 0;"` : ''}>
       <div style="display: flex; justify-content: space-between">
         <h2 class="home-subtitle">Notices</h2>
         <input type="date" value=${TodayFormatted} />
@@ -2110,15 +2115,17 @@ export async function loadHomePage() {
   // Appends the shortcut container into the home container
   document.getElementById('home-container')!.append(Notices.firstChild!)
 
-  animate(
-    '.home-container > div',
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.2, { start: 0 }),
-      duration: 0.6,
-      easing: [.22, .03, .26, 1]  
-    }
-  )
+  if (settingsState.animations) {
+    animate(
+      '.home-container > div',
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.2, { start: 0 }),
+        duration: 0.6,
+        easing: [.22, .03, .26, 1]  
+      }
+    )
+  };
 
   callHomeTimetable(TodayFormatted)
 
