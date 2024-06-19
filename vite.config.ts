@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import { join } from 'path';
 import fs from 'fs';
 import mime from 'mime-types';
