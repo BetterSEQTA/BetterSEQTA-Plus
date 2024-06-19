@@ -2392,16 +2392,12 @@ export function SendNewsPage() {
   }, 8)
 }
 
-let MenuItemMutation = false
 async function CheckForMenuList() {
-  if (!MenuItemMutation) {
-    try {
-      if (document.getElementById('menu')?.firstChild) {
-        ObserveMenuItemPosition()
-        MenuItemMutation = true
-      }
-    } catch (error) {
-      return
+  try {
+    if (document.getElementById('menu')?.firstChild) {
+      ObserveMenuItemPosition()
     }
+  } catch (error) {
+    return;
   }
 }
