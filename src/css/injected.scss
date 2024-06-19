@@ -421,10 +421,18 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   padding-left: 12px !important;
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }
+.quickbar .actions a > svg {
+  scale: 0.95;
+  padding-top: 1px !important;
+}
+
+.quickbar .actions [title="Choose a colour"] > svg {
+  scale: 0.9;
+}
 .quickbar[data-yiq='light'] .actions {
   color: white !important;
 }
-[style="--better-sub: #161616; --better-alert-highlight: #c61851; --background-primary: #ffffff; --background-secondary: #e5e7eb; --text-primary: black; --text-color: white; --better-main: #1a1a1a; --better-light: #333333;"] .menuShown > :last-child
+.menuShown > :last-child
 {
   top: 18% !important;
 }
