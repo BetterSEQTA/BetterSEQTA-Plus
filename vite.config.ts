@@ -19,14 +19,9 @@ const base64Loader = {
     const [filePath, query] = id.split("?");
     if (query !== "base64") return null;
 
-    console.log('Converting: ', filePath);
-
     const data = fs.readFileSync(filePath, { encoding: 'base64' });
     const mimeType = mime.lookup(filePath);
     const dataURL = `data:${mimeType};base64,${data}`;
-
-    // Print out first 40 chars for debugging
-    console.log('Converted: ', dataURL.slice(0, 40));
 
     return `export default '${dataURL}';`;
   },
