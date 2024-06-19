@@ -59,12 +59,12 @@ async function init() {
     const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
     icon.href = icon48
     
-    enableCurrentTheme()
     try {
       // wait until settingsState has been loaded from storage
       await initializeSettingsState();
       
       if (settingsState.onoff) {
+        enableCurrentTheme()
 
         // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === 'development') {
