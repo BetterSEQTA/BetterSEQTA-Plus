@@ -4,14 +4,11 @@ import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { settingsState } from '../../utils/listeners/SettingsState';
 
-import icon48 from '../../../resources/icons/icon-48.png';
-
 import darkLogo from '../../../resources/icons/betterseqta-light-full.png';
 import lightLogo from '../../../resources/icons/betterseqta-dark-full.png';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);
-const getChromeURL = (path: any) => browser.runtime.getURL(path);
 const applyProperties = (props: any) => Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
 
@@ -56,11 +53,6 @@ export function updateAllColors() {
 
   // Apply all the properties
   applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
-
-  // Set favicon, if storedSetting is provided
-  if (settingsState.DarkMode !== null) {
-    (document.querySelector('link[rel*=\'icon\']')! as HTMLLinkElement).href = getChromeURL(icon48);
-  }
 
   let alliframes = document.getElementsByTagName('iframe');
 

@@ -1,5 +1,7 @@
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import { join } from 'path';
+import fs from 'fs';
+import mime from 'mime-types';
 
 import manifest from './manifest.json';
 import firefoxManifest from './manifest.firefox.json';
@@ -11,8 +13,28 @@ import million from "million/compiler";
 
 const isFirefox = process.env.VITE_TARGET === 'firefox';
 
+const base64Loader = {
+  name: "base64-loader",
+  transform(_: any, id: string) {
+    const [filePath, query] = id.split("?");
+    if (query !== "base64") return null;
+
+    console.log('Converting: ', filePath);
+
+    const data = fs.readFileSync(filePath, { encoding: 'base64' });
+    const mimeType = mime.lookup(filePath);
+    const dataURL = `data:${mimeType};base64,${data}`;
+
+    // Print out first 40 chars for debugging
+    console.log('Converted: ', dataURL.slice(0, 40));
+
+    return `export default '${dataURL}';`;
+  },
+};
+
 const plugins = [
   react(),
+  base64Loader,
   million.vite({ auto: true }),
   //MillionLint.vite(), /* enable for testing and debugging performance */
   crx({

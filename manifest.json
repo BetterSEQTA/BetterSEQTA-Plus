@@ -37,6 +37,10 @@
     {
       "resources": ["src/seqta/ui/background/background.html"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["*://*/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }

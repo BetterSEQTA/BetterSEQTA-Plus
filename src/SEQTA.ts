@@ -4,7 +4,7 @@ import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 import IconFamily from './resources/fonts/IconFamily.woff'
 import LogoLight from './resources/icons/betterseqta-light-icon.png'
 import LogoLightOutline from './resources/icons/betterseqta-light-outline.png'
-import icon48 from './resources/icons/icon-48.png'
+import icon48 from './resources/icons/icon-48.png?base64'
 
 import Color from 'color'
 import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
@@ -39,7 +39,6 @@ export let MenuOptionsOpen = false
 let currentSelectedDate = new Date()
 let LessonInterval: any
 
-var NonSEQTAPage = false
 var IsSEQTAPage = false
 
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
@@ -74,10 +73,6 @@ async function init() {
     } catch (error: any) {
       console.error(error)
     }
-  }
-
-  if (!hasSEQTAText) {
-    NonSEQTAPage = true
   }
 }
 
@@ -1952,7 +1947,7 @@ export async function loadHomePage() {
   }
 
   const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
-  icon.href = browser.runtime.getURL(icon48)
+  icon.href = icon48
 
   currentSelectedDate = new Date()
 
