@@ -2121,7 +2121,8 @@ export async function loadHomePage() {
   })
 
   const response = await GetPrefs.json()
-  const labelArray = response.payload[3].value.split(' ')
+
+  const labelArray = response.payload.filter((item: any) => item.name === 'notices.filters').map((item: any) => item.value)[0].split(' ')
 
   const xhr2 = new XMLHttpRequest()
   xhr2.open(
@@ -2147,6 +2148,7 @@ export async function loadHomePage() {
       } else {
         if (!NoticeContainer!.innerText) {
           for (let i = 0; i < NoticesPayload.payload.length; i++) {
+            console.log(NoticesPayload.payload[i].title, labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label)))
             if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
             // Create a div, and place information from json response
               const NewNotice = document.createElement('div')
