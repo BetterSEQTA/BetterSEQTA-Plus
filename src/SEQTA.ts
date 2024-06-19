@@ -17,6 +17,7 @@ import coursesicon from './seqta/icons/coursesIcon'
 import { delay } from "./seqta/utils/delay"
 import { enableCurrentTheme } from "./seqta/ui/themes/enableCurrent";
 import iframeCSS from "./css/iframe.scss?raw"
+import injectedCSS from './css/injected.scss?inline'
 import stringToHTML from './seqta/utils/stringToHTML'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { SettingsResizer } from "./seqta/ui/SettingsResizer";
@@ -64,7 +65,15 @@ async function init() {
       await initializeSettingsState();
       
       if (settingsState.onoff) {
-        import('./css/injected.scss')
+
+        // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
+        if (import.meta.env.MODE === 'development') {
+          import('./css/injected.scss')
+        } else {
+          const injectedStyle = document.createElement('style')
+          injectedStyle.textContent = injectedCSS
+          document.head.appendChild(injectedStyle)
+        } 
       }
       
       main()
