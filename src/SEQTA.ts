@@ -26,7 +26,7 @@ import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
-import { eventManager, initializeEventManager } from './seqta/utils/listeners/EventManager'
+import { eventManager } from './seqta/utils/listeners/EventManager'
 
 declare global {
   interface Window {
