@@ -56,6 +56,8 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS
     document.head.appendChild(documentLoadStyle)
 
+    const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
+    icon.href = icon48
     
     enableCurrentTheme()
     try {
@@ -1949,9 +1951,6 @@ export async function loadHomePage() {
   } else {
     main!.innerHTML = ''
   }
-
-  const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
-  icon.href = icon48
 
   currentSelectedDate = new Date()
 
