@@ -1130,8 +1130,7 @@ export function OpenMenuOptions() {
         'display',
         'flex',
         'important',
-      )import { settingsState } from '/src/seqta/utils/listeners/SettingsState.ts.js';
-
+      )
     }
     saveNewOrder(sortable)
   })
