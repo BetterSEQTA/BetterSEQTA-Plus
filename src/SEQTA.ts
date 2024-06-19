@@ -65,6 +65,9 @@ async function init() {
       
       if (settingsState.onoff) {
         enableCurrentTheme()
+        //console.log(await browser.storage.local.get())
+        //settingsState.bksliderinput = '10'
+        //console.log(await browser.storage.local.get())
 
         // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === 'development') {

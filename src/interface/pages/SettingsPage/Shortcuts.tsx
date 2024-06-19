@@ -15,7 +15,6 @@ const Shortcuts = memo(() => {
   const [newTitle, setNewTitle] = useState<string>("");
   const [isFormVisible, setFormVisible] = useState(false);
   const [newURL, setNewURL] = useState<string>("");
-
   
   const switchChange = useCallback((shortcutName: string, isOn: boolean) => {
     setSettingsState((prevState) => {
