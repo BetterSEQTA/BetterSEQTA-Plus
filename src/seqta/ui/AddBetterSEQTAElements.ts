@@ -53,20 +53,7 @@ function createHomeButton() {
 
 async function handleUserInfo() {
   try {
-    const response = await fetch(`${location.origin}/seqta/student/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      body: JSON.stringify({
-        mode: 'normal',
-        query: null,
-        redirect_url: location.origin,
-      }),
-    });
-    
-    const responseData = await response.json();
-    let info = responseData.payload;
+    const info = await getUserInfo();
     updateUserInfo(info);
   } catch (error) {
     console.error('Error fetching and processing student data:', error);
