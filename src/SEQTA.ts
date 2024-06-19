@@ -137,6 +137,10 @@ export function OpenWhatsNewPopup() {
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
+    <h1>3.2.7 - Minor Improvements</h1>
+    <li>Improved performance!</li>
+    <li>Fixed a bug where the icon wasn't showing up</li>
+
     <h1>3.2.6 - Bug fixes and performance improvements</h1>
     <li>Improved contrast for notifications</li>
     <li>Added 12-hour time format toggle</li>
