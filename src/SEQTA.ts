@@ -378,14 +378,11 @@ export function RemoveBackground() {
 }
 
 export async function waitForElm(selector: string, usePolling: boolean = false, interval: number = 100): Promise<Element> {
-  console.log('[BetterSEQTA+] Waiting for element:', selector);
-
   if (usePolling) {
     return new Promise((resolve) => {
       const checkForElement = () => {
         const element = document.querySelector(selector);
         if (element) {
-          console.log('[BetterSEQTA+] Element found:', selector);
           resolve(element);
         } else {
           setTimeout(checkForElement, interval);
