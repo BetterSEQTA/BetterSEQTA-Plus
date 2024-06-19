@@ -1,4 +1,3 @@
-import browser from 'webextension-polyfill';
 import localforage from 'localforage';
 import { CustomTheme } from '../../../interface/types/CustomThemes';
 import { applyTheme } from './applyTheme';
