@@ -928,6 +928,12 @@ div > ol:has(.uiFileHandlerWrapper) {
   gap: 32px;
   padding: 32px 64px;
   align-items: center;
+
+  @media (max-width: 650px) {
+    width: 100%;
+    margin: 0;
+    padding: 32px 0 !important;
+  }
 }
 #home-container > div {
   will-change: opacity, transform;
@@ -972,6 +978,37 @@ div > ol:has(.uiFileHandlerWrapper) {
   }
   .day:last-child {
     border-bottom-right-radius: 16px;
+  }
+
+  @media (max-width: 650px) {
+    flex-direction: column;
+    height: fit-content;
+
+    .day {
+      height: fit-content;
+      padding: 16px 0;
+      padding-bottom: 24px !important;
+      border-radius: 0 !important;
+
+      box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 23px 50px -20px rgba(0,0,0,0.9);
+
+      > h2 {
+        height: auto;
+        min-height: 0;
+      }
+
+      > h4 {
+        position: unset;
+      }
+
+      > h5 {
+        bottom: 10px;
+      }
+
+      > .day-button {
+        bottom: 30px;
+      }
+    }
   }
 }
 .notices-container {
@@ -1141,17 +1178,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   margin: 0px 0px 40px;
   font-weight: 100;
   color: #c9c9c9;
-}
-.day {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: inset 0px 6px 0 var(--item-colour, transparent);
-  transition: 200ms;
-  position: relative;
-  height: 15em;
-  color: var(--text-primary);
-  font-family: Rubik, sans-serif;
 }
 .clickable {
   cursor: pointer;
@@ -2527,7 +2553,7 @@ li.MessageList__unread___3imtO {
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: inset 0px 6px 0 var(--item-colour, transparent);
+  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(0,0,0,0.9);
   transition: 200ms;
   position: relative;
   height: 15em;
@@ -2542,49 +2568,8 @@ li.MessageList__unread___3imtO {
   background: var(--auto-background);
   transition: 200ms;
 }
-
-.day h2 {
-  margin: 0;
-  padding: 8px;
-  padding-top: 14px;
-  font-size: 20px !important;
-  font-weight: 400;
-  min-height: 46px;
-  height: 33%;
-  overflow: hidden;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-.day h3 {
-  padding: 0px 5px;
-  padding-left: 8px;
-  margin: 0;
-  font-size: 13px !important;
-  font-weight: 400;
-  color: #b2b2b2;
-}
 .dark .day h3 {
   color: #c1bcbc;
-}
-.day h4 {
-  position: absolute;
-  bottom: 45px;
-  margin: 0;
-  padding: 2px;
-  padding-left: 8px;
-  font-size: 16px !important;
-  font-weight: 500;
-}
-.day h5 {
-  margin: 0;
-  padding: 5px;
-  padding-left: 8px;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  font-size: 10px !important;
-  font-weight: 500;
 }
 .day-empty {
   font-size: 30px;
