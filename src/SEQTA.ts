@@ -700,7 +700,13 @@ export function tryLoad() {
 
   updateIframesWithDarkMode()
   // Waits for page to call on load, run scripts
-  removeThemeTagsFromNotices()
+  document.addEventListener(
+    'load',
+    function () {
+      removeThemeTagsFromNotices()
+    },
+    true,
+  )
 }
 
 function ChangeMenuItemPositions(storage: any) {
@@ -770,7 +776,7 @@ function main() {
   }
 
   const handleDisabled = () => {
-    waitForElm('.code').then(AppendElementsToDisabledPage)
+    waitForElm('.code', true, 50).then(AppendElementsToDisabledPage)
   }
 
   if (settingsState.onoff) {
@@ -789,6 +795,7 @@ function main() {
     tryLoad()
   } else {
     handleDisabled()
+    window.addEventListener('load', handleDisabled)
   }
 }
 
