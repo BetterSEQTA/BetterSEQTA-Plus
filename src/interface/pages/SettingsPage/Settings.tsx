@@ -6,10 +6,31 @@ import { SettingsList } from '../../types/SettingsProps';
 import { useSettingsContext } from '../../SettingsContext';
 
 import browser from 'webextension-polyfill'
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const Settings: React.FC = () => {
   const { settingsState, setSettingsState } = useSettingsContext();
+  const [inputSequence, setInputSequence] = useState('');
+  const [devMode, setDevMode] = useState(false);
+  
+  const handleSequenceClick = () => {
+    setInputSequence(''); // Reset sequence on logo click
+    document.addEventListener('keydown', handleKeyDown);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    setInputSequence((prevSequence) => {
+      const newSequence = prevSequence + event.key.toLowerCase();
+      if (newSequence.includes('dev')) {
+        document.removeEventListener('keydown', handleKeyDown);
+        toast.success('Dev mode enabled!');
+        setInputSequence('');
+        setDevMode(true);
+      }
+      return newSequence;
+    });
+  };
 
   const switchChange = (key: string, value: boolean | string) => {
     setSettingsState({
@@ -83,7 +104,7 @@ const Settings: React.FC = () => {
       {settings.map((setting, index) => (
         <div className="flex items-center justify-between px-4 py-3" key={index}>
           <div className="pr-4">
-            <h2 className="text-sm font-bold">{setting.title}</h2>
+            <h2 {...(setting.title.includes('BetterSEQTA+') ? { onClick: handleSequenceClick } : {})} className="text-sm font-bold">{setting.title}</h2>
             <p className="text-xs">{setting.description}</p>
           </div>
           <div>
