@@ -469,7 +469,6 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-bottom-color: transparent !important;
 }
 #main > .timetablepage > .quickbar.below::before {
-  border-bottom-color: transparent;
   top: -23px;
   background-color: inherit;
   clip-path: polygon(50% 40%, 0 100%, 100% 100%);
@@ -488,11 +487,10 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   border-top-color: transparent;
 }
 #main > .timetablepage > .quickbar.above::before {
-  border-bottom-color: transparent;
+  border-bottom-color: transparent !important;
   bottom: -23px !important;
   background-color: inherit;
   clip-path: polygon(50% 40%, 0 0, 100% 0);
-  border-top-color: transparent !important;
 }
 #main .timetablepage .actions a,
 #main .timetablepage .actions button {
@@ -955,7 +953,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 .timetable-container {
   width: 100%;
   overflow: visible !important;
-  border-radius: 0 16px 0 16px;
+  border-radius: 0 16px;
   z-index: 1;
   height: auto;
   background: var(--better-main);
@@ -2814,7 +2812,6 @@ li.MessageList__unread___3imtO {
 }
 .tooltip {
   display: inline-block;
-  background: transparent;
   z-index: 5 !important;
   width: 28px;
   background: none;

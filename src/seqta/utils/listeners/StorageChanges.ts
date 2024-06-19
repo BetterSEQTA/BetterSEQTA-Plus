@@ -1,14 +1,14 @@
 import { settingsState } from './SettingsState';
 import { updateAllColors } from '../../ui/colors/Manager';
 import {
+  addShortcuts,
   CreateBackground,
   CreateCustomShortcutDiv,
+  disableNotificationCollector,
+  enableNotificationCollector,
   FilterUpcomingAssessments,
   RemoveBackground,
   RemoveShortcutDiv,
-  addShortcuts,
-  disableNotificationCollector,
-  enableNotificationCollector,
 } from '../../../SEQTA';
 import { updateBgDurations } from '../../ui/Animation';
 import browser from 'webextension-polyfill';

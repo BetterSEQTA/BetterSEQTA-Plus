@@ -1,7 +1,7 @@
-import { useState, memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import Switch from "../../components/Switch";
 import { useSettingsContext } from "../../SettingsContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CustomShortcut } from "../../types/AppProps";
 
 function formatUrl(inputUrl: string) {
