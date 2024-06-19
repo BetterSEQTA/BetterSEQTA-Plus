@@ -64,7 +64,7 @@ async function init() {
       await initializeSettingsState();
       
       if (settingsState.onoff) {
-        import('./css/injected')
+        import('./css/injected.scss')
       }
       
       main()
