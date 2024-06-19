@@ -8,7 +8,6 @@ import {
   RemoveShortcutDiv,
   addShortcuts,
   disableNotificationCollector,
-  documentTextColor,
   enableNotificationCollector,
 } from '../../../SEQTA';
 import { updateBgDurations } from '../../ui/Animation';
@@ -35,7 +34,6 @@ export class StorageChangeHandler {
 
   private handleDarkModeChange() {
     updateAllColors();
-    documentTextColor();
   }
 
   private handleOnOffChange() {
