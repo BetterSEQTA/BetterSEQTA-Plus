@@ -749,27 +749,19 @@ export async function ObserveMenuItemPosition() {
     const node = element as HTMLElement;
     if (!node?.dataset?.checked && !MenuOptionsOpen) {
       const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
-      console.log("Key: ", key)
       if (key) {
-        console.log('replacing!')
         ReplaceMenuSVG(
           node,
           MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
         );
       } else if (node?.firstChild?.nodeName === 'LABEL') {
-        // Assuming `node` is an <li> element containing a <label>
         const label = node.firstChild as HTMLElement;
-
-        // The magical step: We find the last child. If it's a text node, embrace it with <span>
         let textNode = label.lastChild as HTMLElement;
 
-        // A quick check to ensure it's a text node and not already ensconced in a <span>
         if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
-          // The text node is indeed bare, and not in a <span>. Time to act!
-          const span = document.createElement('span'); // The creation of the <span>
-          span.textContent = textNode.nodeValue; // Transferring the text
+          const span = document.createElement('span');
+          span.textContent = textNode.nodeValue;
 
-          // Replacing the text node with our newly minted <span> full of text
           label.replaceChild(span, textNode);
         }
       }
