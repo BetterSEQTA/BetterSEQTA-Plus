@@ -2134,146 +2134,27 @@ export async function loadHomePage() {
   
   xhr2.onreadystatechange = function () {
     if (xhr2.readyState === 4) {
-      const NoticesPayload = JSON.parse(xhr2.response)
-      console.log(NoticesPayload)
-      const NoticeContainer = document.getElementById('notice-container')
-      if (NoticesPayload.payload.length === 0) {
-        if (!NoticeContainer!.innerText) {
-          // If no notices: display no notices
-          const dummyNotice = document.createElement('div')
-          dummyNotice.textContent = 'No notices for today.'
-          dummyNotice.classList.add('dummynotice')
-          NoticeContainer!.append(dummyNotice)
-        }
-      } else {
-        if (!NoticeContainer!.innerText) {
-          for (let i = 0; i < NoticesPayload.payload.length; i++) {
-            console.log(NoticesPayload.payload[i].title, labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label)))
-            if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-            // Create a div, and place information from json response
-              const NewNotice = document.createElement('div')
-              NewNotice.classList.add('notice')
-              const title = stringToHTML(
-                '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
-              )
-              NewNotice.append(title.firstChild!)
-
-              if (NoticesPayload.payload[i].label_title !== undefined) {
-                const label = stringToHTML(
-                  '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                )
-                NewNotice.append(label.firstChild!)
-              }
-
-              const staff = stringToHTML(
-                '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-              )
-              NewNotice.append(staff.firstChild!)
-              // Converts the string into HTML
-              const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-              for (let i = 0; i < content.childNodes.length; i++) {
-                NewNotice.append(content.childNodes[i])
-              }
-              // Gets the colour for the top section of each notice
-
-              let colour = NoticesPayload.payload[i].colour
-              if (typeof (colour) === 'string') {
-                const rgb = GetThresholdOfColor(colour)
-                const DarkModeResult = settingsState.DarkMode
-                if (rgb < 100 && DarkModeResult) {
-                  colour = undefined
-                }
-              }
-
-              const colourbar = document.createElement('div')
-              colourbar.classList.add('colourbar')
-              colourbar.style.background = 'var(--colour)'
-              NewNotice.style.cssText = `--colour: ${colour}`
-              // Appends the colour bar to the new notice
-              NewNotice.append(colourbar)
-              // Appends the new notice into the notice container
-              NoticeContainer!.append(NewNotice)
-            }
-          }
-        }
-      }
+      processNotices(xhr2.response, labelArray);
     }
-  }
-  // Data sent as the POST request
-  const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
-  xhr2.send(JSON.stringify({ date: dateControl.value }))
-  function onInputChange (e: any) {
-    xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true)
-    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
-    xhr2.send(JSON.stringify({ date: e.target.value }))
+  };
+  
+  const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement;
+  xhr2.send(JSON.stringify({ date: dateControl.value }));
+  
+  function onInputChange(e: any) {
+    xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true);
+    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    xhr2.send(JSON.stringify({ date: e.target.value }));
+  
     xhr2.onreadystatechange = function () {
       if (xhr2.readyState === 4) {
-        const NoticesPayload = JSON.parse(xhr2.response)
-        const NoticeContainer = document.getElementById('notice-container')
-        if (NoticesPayload.payload.length === 0) {
-          if (!NoticeContainer!.innerText) {
-            // If no notices: display no notices
-            const dummyNotice = document.createElement('div')
-            dummyNotice.textContent = 'No notices for today.'
-            dummyNotice.classList.add('dummynotice')
-            NoticeContainer!.append(dummyNotice)
-          }
-        } else {
-          document.querySelectorAll('.notice').forEach(e => e.remove())
-
-          for (let i = 0; i < NoticesPayload.payload.length; i++) {
-            if (labelArray.includes(JSON.stringify(NoticesPayload.payload[i].label))) {
-            // Create a div, and place information from json response
-              const NewNotice = document.createElement('div')
-              NewNotice.classList.add('notice')
-              const title = stringToHTML(
-                '<h3 style="color:var(--colour)">' + NoticesPayload.payload[i].title + '</h3>'
-              )
-              NewNotice.append(title.firstChild!)
-
-              if (NoticesPayload.payload[i].label_title !== undefined) {
-                const label = stringToHTML(
-                  '<h5 style="color:var(--colour)">' + NoticesPayload.payload[i].label_title + '</h5>'
-                )
-                NewNotice.append(label.firstChild!)
-              }
-
-              const staff = stringToHTML(
-                '<h6 style="color:var(--colour)">' + NoticesPayload.payload[i].staff + '</h6>'
-              )
-              NewNotice.append(staff.firstChild!)
-              // Converts the string into HTML
-              const content = stringToHTML(NoticesPayload.payload[i].contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' '), true)
-              for (let i = 0; i < content.childNodes.length; i++) {
-                NewNotice.append(content.childNodes[i])
-              }
-              // Gets the colour for the top section of each notice
-
-              let colour = NoticesPayload.payload[i].colour
-              if (typeof (colour) === 'string') {
-                const rgb = GetThresholdOfColor(colour)
-                const DarkModeResult = settingsState.DarkMode
-                if (rgb < 100 && DarkModeResult) {
-                  colour = undefined
-                }
-              }
-
-              const colourbar = document.createElement('div')
-              colourbar.classList.add('colourbar')
-              colourbar.style.background = 'var(--colour)'
-              NewNotice.style.cssText = `--colour: ${colour}`
-              // Appends the colour bar to the new notice
-              NewNotice.append(colourbar)
-              // Appends the new notice into the notice container
-              NoticeContainer!.append(NewNotice)
-            }
-          }
-        }
+        processNotices(xhr2.response, labelArray);
       }
-    }
+    };
   }
-  dateControl.addEventListener('input', onInputChange)
-
+  
+  dateControl.addEventListener('input', onInputChange);
+  
   if (settingsState.notificationcollector) {
     enableNotificationCollector()
   }
@@ -2315,6 +2196,50 @@ export async function loadHomePage() {
   CurrentAssessments.sort(comparedate)
 
   await CreateUpcomingSection(CurrentAssessments, activeSubjects)
+}
+
+function processNotices(responseText: any, labelArray: any) {
+  const NoticesPayload = JSON.parse(responseText);
+  const NoticeContainer = document.getElementById('notice-container');
+  if (NoticesPayload.payload.length === 0) {
+    if (!NoticeContainer?.innerText) {
+      const dummyNotice = document.createElement('div');
+      dummyNotice.textContent = 'No notices for today.';
+      dummyNotice.classList.add('dummynotice');
+      NoticeContainer?.append(dummyNotice);
+    }
+  } else {
+    if (!NoticeContainer?.innerText) {
+      document.querySelectorAll('.notice').forEach(e => e.remove());
+
+      NoticesPayload.payload.forEach((notice: any) => {
+        if (labelArray.includes(JSON.stringify(notice.label))) {
+          let htmlContent = `
+            <div class="notice" style="--colour: ${notice.colour}">
+              <h3 style="color:var(--colour)">${notice.title}</h3>
+              ${notice.label_title !== undefined ? `<h5 style="color:var(--colour)">${notice.label_title}</h5>` : ''}
+              <h6 style="color:var(--colour)">${notice.staff}</h6>
+              ${notice.contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')}
+              <div class="colourbar" style="background: var(--colour)"></div>
+            </div>
+          `;
+          const NewNotice = stringToHTML(htmlContent).firstChild;
+
+          let colour = notice.colour;
+          if (typeof colour === 'string') {
+            const rgb = GetThresholdOfColor(colour);
+            const DarkModeResult = settingsState.DarkMode;
+            if (rgb < 100 && DarkModeResult) {
+              colour = undefined;
+            }
+          }
+          (NewNotice as HTMLElement).style.cssText = `--colour: ${colour}`;
+
+          NoticeContainer!.append(NewNotice!);
+        }
+      });
+    }
+  }
 }
 
 export function addShortcuts(shortcuts: any) {
