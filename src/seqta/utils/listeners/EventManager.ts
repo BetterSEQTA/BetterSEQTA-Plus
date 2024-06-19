@@ -20,7 +20,7 @@ class EventManager {
   private listeners: Map<string, EventListener[]> = new Map();
   private mutationObservers: Map<Element, MutationObserver> = new Map();
   private pendingElements: Set<Element> = new Set();
-  private throttleTimeout: number = 5; // 5ms throttle
+  private throttleTimeout: number = 0; // 5ms throttle
   private throttleTimer: number | undefined;
   private chunkSize: number = 50; // Process 50 elements per chunk
 
