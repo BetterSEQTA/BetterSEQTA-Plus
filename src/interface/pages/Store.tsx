@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import Header from '../components/store/header';
 import { Autoplay } from 'swiper/modules';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -110,7 +110,7 @@ const Store = () => {
     if (!themeContent) {
       alert('There was an error, The theme was not found!')
       return
-    };
+    }
 
     setInstallingThemes([...installingThemes, id]);
 
@@ -125,7 +125,7 @@ const Store = () => {
     if (!themeContent) {
       alert('There was an error, The theme was not found!')
       return
-    };
+    }
 
     setInstallingThemes([...installingThemes, id]);
 
