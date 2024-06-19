@@ -2389,21 +2389,10 @@ li.MessageList__unread___3imtO {
   padding: 12px;
   font-size: 20px;
 }
-.upcoming-details {
-  width: 60%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0px 12px;
-}
 .upcoming-details h5 {
   text-transform: uppercase;
   color: #aaaaaa;
   padding: 0px 4px;
-}
-.upcoming-details p {
-  font-size: 15px;
-  padding: 4px;
 }
 .upcoming-details p:hover {
   cursor: pointer;
@@ -2622,10 +2611,6 @@ li.MessageList__unread___3imtO {
   margin: 0;
   font-weight: 500;
 }
-.upcoming-date-title {
-  padding: 12px;
-  font-size: 20px;
-}
 .upcoming-details {
   width: 60%;
   display: flex;
@@ -2642,10 +2627,6 @@ li.MessageList__unread___3imtO {
 .upcoming-details p {
   font-size: 15px;
   padding: 4px;
-}
-.upcoming-details p:hover {
-  cursor: pointer;
-  text-decoration: underline;
 }
 .upcoming-special-day {
   font-size: 20px;
