@@ -737,9 +737,6 @@ function ChangeMenuItemPositions(storage: any) {
 }
 
 export async function ObserveMenuItemPosition() {
-  //if (!(menuorder && settingsState.onoff)) return;
-  console.log(document.querySelector('#menu')!.firstChild)
-
   await waitForElm('#menu > ul > li')
   await delay(100)
 
