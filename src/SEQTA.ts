@@ -335,14 +335,17 @@ async function DeleteWhatsNew() {
   const bkelement = document.getElementById('whatsnewbk')
   const popup = document.getElementsByClassName('whatsnewContainer')[0]
 
-  if (!settingsState.animations) return;
+  if (!settingsState.animations) {
+    bkelement?.remove()
+    return
+  };
 
   animate(
     [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
     { easing: [.22, .03, .26, 1] }
   ).finished.then(() => {
-    bkelement!.remove()
+    bkelement?.remove()
   }); 
 }
 
@@ -734,47 +737,45 @@ function ChangeMenuItemPositions(storage: any) {
 }
 
 export async function ObserveMenuItemPosition() {
-  let menuorder = settingsState.menuorder
-  if (!(menuorder && settingsState.onoff)) return;
+  //if (!(menuorder && settingsState.onoff)) return;
+  console.log(document.querySelector('#menu')!.firstChild)
 
-  const observer = new MutationObserver(function (mutations_list) {
-    mutations_list.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (added_node) {
-        const node = added_node as HTMLElement
-        if (!node?.dataset?.checked && !MenuOptionsOpen) {
-          const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
-          if (key) {
-            ReplaceMenuSVG(
-              node,
-              MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-            )
-          } else if (node?.firstChild?.nodeName === 'LABEL') {
-            // Assuming `node` is an <li> element containing a <label>
-            const label = node.firstChild as HTMLElement;
-            
-            // The magical step: We find the last child. If it's a text node, embrace it with <span>
-            let textNode = label.lastChild as HTMLElement;
-            
-            // A quick check to ensure it's a text node and not already ensconced in a <span>
-            if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
-              // The text node is indeed bare, and not in a <span>. Time to act!
-              const span = document.createElement('span'); // The creation of the <span>
-              span.textContent = textNode.nodeValue; // Transferring the text
-              
-              // Replacing the text node with our newly minted <span> full of text
-              label.replaceChild(span, textNode);
-            }
-          }
-          ChangeMenuItemPositions(menuorder)
+  await waitForElm('#menu > ul > li')
+  await delay(100)
+
+  eventManager.register('menuList', {
+    parentElement: document.querySelector('#menu')!.firstChild as Element,
+  }, (element: Element) => {
+    const node = element as HTMLElement;
+    if (!node?.dataset?.checked && !MenuOptionsOpen) {
+      const key = MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
+      console.log("Key: ", key)
+      if (key) {
+        console.log('replacing!')
+        ReplaceMenuSVG(
+          node,
+          MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
+        );
+      } else if (node?.firstChild?.nodeName === 'LABEL') {
+        // Assuming `node` is an <li> element containing a <label>
+        const label = node.firstChild as HTMLElement;
+
+        // The magical step: We find the last child. If it's a text node, embrace it with <span>
+        let textNode = label.lastChild as HTMLElement;
+
+        // A quick check to ensure it's a text node and not already ensconced in a <span>
+        if (textNode.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== 'SPAN') {
+          // The text node is indeed bare, and not in a <span>. Time to act!
+          const span = document.createElement('span'); // The creation of the <span>
+          span.textContent = textNode.nodeValue; // Transferring the text
+
+          // Replacing the text node with our newly minted <span> full of text
+          label.replaceChild(span, textNode);
         }
-      })
-    })
-  })
-
-  observer.observe(document.querySelector('#menu')!.firstChild!, {
-    subtree: true,
-    childList: true,
-  })
+      }
+      ChangeMenuItemPositions(settingsState.menuorder);
+    }
+  });
 }
 
 function main() {
