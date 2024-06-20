@@ -558,6 +558,11 @@ async function LoadPageElements(): Promise<void> {
     className: 'reports',
   }, handleReports);
 
+  eventManager.register('timetableAdded', {
+    elementType: 'div',
+    className: 'timetablepage',
+  }, handleTimetable);
+
   await handleSublink(sublink);
 }
 
@@ -576,6 +581,18 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     default:
       await handleDefault();
       break;
+  }
+}
+
+async function handleTimetable(): Promise<void> {
+  await waitForElm('.time', true, 20)
+
+  if (settingsState.timeFormat == '12') {
+    const times = document.querySelectorAll('.timetablepage .times .time')
+    for (const time of times) {
+      if (!time.textContent) continue
+      time.textContent = convertTo12HourFormat(time.textContent, true)
+    }
   }
 }
 
@@ -1335,7 +1352,7 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lesson
 }
 
-function convertTo12HourFormat(time: string): string {
+function convertTo12HourFormat(time: string, noMinutes: boolean = false): string {
   let [hours, minutes] = time.split(':').map(Number);
   let period = 'AM';
 
@@ -1346,7 +1363,12 @@ function convertTo12HourFormat(time: string): string {
       hours = 12;
   }
 
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+  let hoursStr = hours.toString();
+  if (hoursStr.length === 2 && hoursStr.startsWith('0')) {
+    hoursStr = hoursStr.substring(1);
+  }
+
+  return `${hoursStr}${noMinutes ? '' : `:${minutes.toString().padStart(2, '0')}`} ${period}`;
 }
 
 function callHomeTimetable(date: string, change?: any) {
