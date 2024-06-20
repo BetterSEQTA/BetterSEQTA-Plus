@@ -641,8 +641,9 @@ async function handleMessages(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm('[data-message]');
+  const messages = Array.from(document.querySelectorAll('[data-message]')).slice(0, 35);
   animate(
-    '[data-message]',
+    messages,
     { opacity: [0, 1], y: [10, 0] },
     {
       delay: stagger(0.05),
