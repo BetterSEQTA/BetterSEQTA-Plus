@@ -281,6 +281,7 @@ async function UpdateCurrentValues() {
 
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
+  browser.storage.local.remove(['data']);
   UpdateCurrentValues();
   if ( event.reason == 'install', event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
