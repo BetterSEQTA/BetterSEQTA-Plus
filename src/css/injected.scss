@@ -1509,6 +1509,9 @@ iframe.userHTML {
 .dailycal > .zoom {
   display: none;
 }
+.dailycal > .times > .time {
+  padding: 0 !important;
+}
 .navigator {
   border-top-right-radius: 16px;
 }
