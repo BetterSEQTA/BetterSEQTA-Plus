@@ -578,6 +578,22 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       if (settingsState.onoff) loadHomePage()
       finishLoad();
       break;
+    case 'timetable':
+      handleTimetable()
+      await handleDefault()
+      break;
+    case 'documents':
+      handleDocuments(document.querySelector('.documents')!)
+      await handleDefault()
+      break;
+    case 'reports':
+      handleReports(document.querySelector('.reports')!)
+      await handleDefault()
+      break;
+    case 'messages':
+      handleMessages(document.querySelector('.messages')!)
+      await handleDefault()
+      break;
     default:
       await handleDefault();
       break;
