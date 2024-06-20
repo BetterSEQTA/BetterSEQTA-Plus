@@ -1,4 +1,4 @@
-name: NodeJS Testing
+name: NodeJS Build
 
 on:
   push:
@@ -26,3 +26,13 @@ jobs:
       run: |
         npm install
         npm run build
+
+    - name: Zip dist folder
+      run: |
+        zip -r dist.zip dist
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-zip
+        path: dist.zip
