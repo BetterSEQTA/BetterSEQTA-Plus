@@ -31,6 +31,14 @@ html {
     background-color 200ms ease-in-out,
     backdrop-filter 200ms ease-in-out;
 }
+.extension-editor {
+  background: var(--background-primary);
+  border-radius: 16px;
+  border: none !important;
+  width: 100%;
+  height: 100%;
+  visibility: visible !important;
+}
 #themeCreatorIframe {
   position: fixed;
   right: 0;
