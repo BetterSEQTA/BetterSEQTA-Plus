@@ -26,7 +26,8 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         transparencyEffects: result.transparencyEffects,
         selectedTheme: result.selectedTheme,
         timeFormat: result.timeFormat,
-        animations: result.animations
+        animations: result.animations,
+        defaultPage: result.defaultPage
       });
     });
   });
@@ -43,11 +44,13 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "transparencyEffects": "transparencyEffects",
     "selectedTheme": "selectedTheme",
     "timeFormat": "timeFormat",
-    "animations": "animations"
+    "animations": "animations",
+    "defaultPage": "defaultPage"
   }), []);
   
   const storageChangeListener = (changes: browser.Storage.StorageChange) => {
     for (const [key, { newValue }] of Object.entries(changes)) {
+      console.log(key, newValue)
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {
           document.body.classList.add('dark');
