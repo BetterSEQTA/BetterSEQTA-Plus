@@ -1,0 +1,11 @@
+body {
+  background: transparent !important;
+}
+
+.bn-container[data-color-scheme=dark] {
+  --bn-colors-editor-background: #18181B00 !important;
+}
+
+.bn-container > [contenteditable="true"] {
+  height: 100vh !important;
+}

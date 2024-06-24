@@ -27,6 +27,7 @@ import { initializeSettingsState, settingsState } from './seqta/utils/listeners/
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
 import { eventManager } from './seqta/utils/listeners/EventManager'
+import handleComposeMessage from './seqta/ui/customMessageEditor'
 
 declare global {
   interface Window {
@@ -65,9 +66,6 @@ async function init() {
       
       if (settingsState.onoff) {
         enableCurrentTheme()
-        //console.log(await browser.storage.local.get())
-        //settingsState.bksliderinput = '10'
-        //console.log(await browser.storage.local.get())
 
         // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === 'development') {
@@ -562,6 +560,11 @@ async function LoadPageElements(): Promise<void> {
     elementType: 'div',
     className: 'timetablepage',
   }, handleTimetable);
+
+  eventManager.register('composeMessage', {
+    elementType: 'div',
+    customCheck: (element: Element) => element.querySelector('.coneqtMessage') !== null
+  }, handleComposeMessage);
 
   await handleSublink(sublink);
 }
