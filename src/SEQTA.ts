@@ -610,7 +610,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 }
 
 async function handleTimetable(): Promise<void> {
-  await waitForElm('.time', true, 20)
+  await waitForElm('.time', true, 10)
 
   if (settingsState.timeFormat == '12') {
     const times = document.querySelectorAll('.timetablepage .times .time')
@@ -649,7 +649,7 @@ async function handleMessages(node: Element): Promise<void> {
 
   if (!settingsState.animations) return;
 
-  await waitForElm('[data-message]', true, 20);
+  await waitForElm('[data-message]', true, 10);
   const messages = Array.from(document.querySelectorAll('[data-message]')).slice(0, 35);
   animate(
     messages,
@@ -666,7 +666,7 @@ async function handleDashboard(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.dashlet', true, 20);
+  await waitForElm('.dashlet', true, 10);
   animate(
     '.dashboard > *',
     { opacity: [0, 1], y: [10, 0] },
@@ -682,7 +682,7 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.document', true, 20);
+  await waitForElm('.document', true, 10);
   animate(
     '.documents tbody tr.document',
     { opacity: [0, 1], y: [10, 0] },
@@ -698,7 +698,7 @@ async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.report', true, 20);
+  await waitForElm('.report', true, 10);
   animate(
     '.reports .item',
     { opacity: [0, 1], y: [10, 0] },
