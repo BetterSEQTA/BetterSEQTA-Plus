@@ -178,6 +178,7 @@ const DefaultValues: SettingsState = {
   originalSelectedColor: '',
   DarkMode: true,
   animations: true,
+  defaultPage: 'home',
   shortcuts: [
     {
       name: 'YouTube',

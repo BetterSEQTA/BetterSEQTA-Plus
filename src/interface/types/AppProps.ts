@@ -11,10 +11,7 @@ export interface SettingsState {
   transparencyEffects: boolean;
   timeFormat?: string;
   animations: boolean;
-}
-
-interface ToggleItem {
-  toggle: boolean;
+  defaultPage: string;
 }
 
 interface Shortcut {
@@ -27,38 +24,3 @@ export interface CustomShortcut {
   url: string;
   icon: string;
 }
-
-/* export interface MainConfig {
-  DarkMode: boolean;
-  animatedbk: boolean;
-  bksliderinput: string;
-  customshortcuts: CustomShortcut[];
-  defaultmenuorder: any[];
-  lessonalert: boolean;
-  menuitems: {
-    assessments: ToggleItem;
-    courses: ToggleItem;
-    dashboard: ToggleItem;
-    documents: ToggleItem;
-    forums: ToggleItem;
-    goals: ToggleItem;
-    home: ToggleItem;
-    messages: ToggleItem;
-    myed: ToggleItem;
-    news: ToggleItem;
-    notices: ToggleItem;
-    portals: ToggleItem;
-    reports: ToggleItem;
-    settings: ToggleItem;
-    timetable: ToggleItem;
-    welcome: ToggleItem;
-  };
-  menuorder: any[];
-  notificationcollector: boolean;
-  onoff: boolean;
-  selectedColor: string;
-  shortcuts: Shortcut[];
-  subjectfilters: Record<string, any>;
-  transparencyEffects: boolean;
-  selectedTheme: string;
-} */

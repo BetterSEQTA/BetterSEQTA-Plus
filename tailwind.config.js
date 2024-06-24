@@ -39,7 +39,10 @@ export default {
       }
     }
   },
-  plugins: [addVariablesForColors],
+  plugins: [
+    require('@tailwindcss/forms'),
+    addVariablesForColors,
+  ],
 };
 
 function addVariablesForColors({ addBase, theme }) {

@@ -571,8 +571,17 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case 'news':
       await handleNewsPage();
       break;
-    case 'home':
     case undefined:
+      window.location.replace(`${location.origin}/#?page=/${settingsState.defaultPage}`);
+      if (settingsState.defaultPage === 'home') loadHomePage()
+      if (settingsState.defaultPage === 'timetable') handleTimetable()
+      if (settingsState.defaultPage === 'documents') handleDocuments(document.querySelector('.documents')!)
+      if (settingsState.defaultPage === 'reports') handleReports(document.querySelector('.reports')!)
+      if (settingsState.defaultPage === 'messages') handleMessages(document.querySelector('.messages')!)
+
+      finishLoad();
+      break;
+    case 'home':
       window.location.replace(`${location.origin}/#?page=/home`);
       console.log('[BetterSEQTA+] Started Init')
       if (settingsState.onoff) loadHomePage()
@@ -640,7 +649,7 @@ async function handleMessages(node: Element): Promise<void> {
 
   if (!settingsState.animations) return;
 
-  await waitForElm('[data-message]');
+  await waitForElm('[data-message]', true, 20);
   const messages = Array.from(document.querySelectorAll('[data-message]')).slice(0, 35);
   animate(
     messages,
@@ -657,7 +666,7 @@ async function handleDashboard(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.dashlet');
+  await waitForElm('.dashlet', true, 20);
   animate(
     '.dashboard > *',
     { opacity: [0, 1], y: [10, 0] },
@@ -673,7 +682,7 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.document');
+  await waitForElm('.document', true, 20);
   animate(
     '.documents tbody tr.document',
     { opacity: [0, 1], y: [10, 0] },
@@ -689,7 +698,7 @@ async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
 
-  await waitForElm('.report');
+  await waitForElm('.report', true, 20);
   animate(
     '.reports .item',
     { opacity: [0, 1], y: [10, 0] },

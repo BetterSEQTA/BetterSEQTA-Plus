@@ -8,6 +8,7 @@ import { useSettingsContext } from '../../SettingsContext';
 import browser from 'webextension-polyfill'
 import { memo, useState } from 'react';
 import { toast } from 'react-toastify';
+import Select from '../../components/Select';
 
 const Settings: React.FC = () => {
   const { settingsState, setSettingsState } = useSettingsContext();
@@ -91,6 +92,19 @@ const Settings: React.FC = () => {
       title: "12 Hour Time",
       description: "Prefer 12 hour time format for SEQTA",
       modifyElement: <Switch state={settingsState.timeFormat == "12"} onChange={(isOn: boolean) => switchChange('timeFormat', isOn ? "12" : "24")} />
+    },
+    {
+      title: "Default Page",
+      description: "The page to load when SEQTA Learn is opened.",
+      modifyElement: <Select state={settingsState.defaultPage} onChange={(value: string) => switchChange('defaultPage', value)} options={[
+        { value: 'home', label: 'Home' },
+        { value: 'dashboard', label: 'Dashboard' },
+        { value: 'timetable', label: 'Timetable' },
+        { value: 'welcome', label: 'Welcome' },
+        { value: 'messages', label: 'Messages' },
+        { value: 'documents', label: 'Documents' },
+        { value: 'reports', label: 'Reports' },
+      ]} />
     },
     {
       title: "BetterSEQTA+",
