@@ -6,41 +6,66 @@ export default async function handleComposeMessage(): Promise<void> {
   console.log('COMPOSE MESSAGE!');
 
   const container: HTMLElement | null = document.querySelector('.pane .footer .pillbox');
-  const firstButton: HTMLButtonElement | null = document.querySelector('.pane .footer .pillbox button.first') as HTMLButtonElement;
+  const simpleEditorButton: HTMLButtonElement | null = document.querySelector('.pane .footer .pillbox button.first') as HTMLButtonElement;
 
-  if (container && firstButton) {
+  if (container && simpleEditorButton) {
     const buttonHTML = /* html */ `
-      <button class="button">
+      <button class="button" id="betterEditorButton">
         Better Editor
       </button>
     `;
     const button: HTMLElement = stringToHTML(buttonHTML);
 
-    // Append the new button as the second child of options
-    firstButton.parentNode?.insertBefore(button.firstChild as Node, firstButton.nextSibling);
+    // Check if the button already exists
+    if (!container.querySelector('#betterEditorButton')) {
+      // Insert the new button after the Simple editor button
+      simpleEditorButton.insertAdjacentElement('afterend', button.firstElementChild as HTMLElement);
+    }
 
-    // Add click event listeners to both buttons
-    container.addEventListener('click', (event: Event) => handleButtonClick(event, container, firstButton));
+    // Add click event listeners to the container (event delegation)
+    container.addEventListener('click', handleButtonClick);
   }
 }
 
-function handleButtonClick(event: Event, container: HTMLElement, firstButton: HTMLButtonElement): void {
+function handleButtonClick(event: MouseEvent): void {
+  console.log('handleButtonClick', event);
   const target = event.target as HTMLElement;
 
-  if (target && target.classList.contains('button')) {
-    const isBetterEditorButton = target.textContent?.trim() === 'Better Editor';
+  if (target.tagName !== 'BUTTON') return;
 
-    if (isBetterEditorButton) {
-      activateBetterEditor(container, firstButton);
-    } else {
-      deactivateBetterEditor(container, firstButton);
-    }
+  const container = target.closest('.pillbox') as HTMLElement;
+  if (!container) return;
+
+  const simpleEditorButton = container.querySelector('button.first') as HTMLButtonElement;
+  const betterEditorButton = container.querySelector('#betterEditorButton') as HTMLButtonElement;
+
+  if (!simpleEditorButton || !betterEditorButton) {
+    console.error('Could not find Simple Editor or Better Editor buttons');
+    return;
   }
+
+  const isBetterEditorButton = target === betterEditorButton;
+  const isSimpleEditorButton = target === simpleEditorButton;
+
+  if (isBetterEditorButton) {
+    activateBetterEditor(simpleEditorButton, betterEditorButton);
+  } else if (isSimpleEditorButton) {
+    activateSimpleEditor(simpleEditorButton, betterEditorButton);
+  } else {
+    deactivateBetterEditor(simpleEditorButton, betterEditorButton);
+  }
+
+  container.querySelectorAll('button').forEach(btn => btn.classList.remove('depressed'));
+  target.classList.add('depressed');
 }
 
-function activateBetterEditor(container: HTMLElement, firstButton: HTMLButtonElement): void {
-  firstButton.classList.remove('depressed');
-  container.children[1]?.classList.add('depressed');
+function activateBetterEditor(simpleEditorButton: HTMLButtonElement, betterEditorButton: HTMLButtonElement): void {
+  // Programmatically click the Simple Editor button first
+  simpleEditorButton.click();
+
+  // Then proceed with Better Editor activation
+  simpleEditorButton.classList.remove('depressed');
+  betterEditorButton.classList.add('depressed');
 
   const ckeInner = document.querySelector('.pane .cke_inner') as HTMLElement;
   if (ckeInner) ckeInner.style.display = 'none';
@@ -63,22 +88,32 @@ function activateBetterEditor(container: HTMLElement, firstButton: HTMLButtonEle
   window.addEventListener('message', (event) => handleEditorMessage(event, ckeEditor), { once: true });
 }
 
-function deactivateBetterEditor(container: HTMLElement, firstButton: HTMLButtonElement): void {
+function activateSimpleEditor(simpleEditorButton: HTMLButtonElement, betterEditorButton: HTMLButtonElement): void {
+  simpleEditorButton.classList.add('depressed');
+  betterEditorButton.classList.remove('depressed');
+
   const ckeInner = document.querySelector('.pane .cke_inner') as HTMLElement;
   const extensionEditor = document.querySelector('.extension-editor') as HTMLIFrameElement;
 
-  if (ckeInner && extensionEditor) {
-    ckeInner.style.display = 'block';
-    firstButton.classList.add('depressed');
-    container.children[1]?.classList.remove('depressed');
-    extensionEditor.style.display = 'none';
-  }
+  if (ckeInner) ckeInner.style.removeProperty('display')
+  if (extensionEditor) extensionEditor.style.display = 'none'
+}
+
+function deactivateBetterEditor(simpleEditorButton: HTMLButtonElement, betterEditorButton: HTMLButtonElement): void {
+  const ckeInner = document.querySelector('.pane .cke_inner') as HTMLElement;
+  const ckeContents = document.querySelector('.pane .cke_contents') as HTMLElement;
+  const extensionEditor = document.querySelector('.extension-editor') as HTMLIFrameElement;
+
+  if (ckeInner) ckeInner.style.removeProperty('display');
+  if (ckeContents) ckeContents.style.removeProperty('display');
+  if (extensionEditor) extensionEditor.style.removeProperty('display');
+
+  simpleEditorButton.classList.remove('depressed');
+  betterEditorButton.classList.remove('depressed');
 }
 
 function handleEditorMessage(event: MessageEvent, ckeEditor: HTMLIFrameElement): void {
   if (!event.origin.includes(browser.runtime.id) || event.data.type !== "message-html") return;
-
-  console.log('Message from extension editor', event.data.data);
 
   if (ckeEditor.contentDocument) {
     ckeEditor.contentDocument.body.innerHTML = event.data.data + `<style>${styles}</style>`;
