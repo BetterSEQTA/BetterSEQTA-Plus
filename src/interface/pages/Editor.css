@@ -9,3 +9,7 @@ body {
 .bn-container > [contenteditable="true"] {
   height: 100vh !important;
 }
+
+.ProseMirror {
+  background: transparent !important;
+}

@@ -18,6 +18,7 @@ browser.storage.local.get().then(({ DarkMode }) => {
 
 const style = document.createElement("style");
 style.setAttribute("type", "text/css");
+style.classList.add('iconFamily')
 style.innerHTML = `
 @font-face {
   font-family: 'IconFamily';
