@@ -27,7 +27,6 @@ import { initializeSettingsState, settingsState } from './seqta/utils/listeners/
 import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
 import { eventManager } from './seqta/utils/listeners/EventManager'
-import handleComposeMessage from './seqta/ui/customMessageEditor'
 
 declare global {
   interface Window {
@@ -560,11 +559,6 @@ async function LoadPageElements(): Promise<void> {
     elementType: 'div',
     className: 'timetablepage',
   }, handleTimetable);
-
-  eventManager.register('composeMessage', {
-    elementType: 'div',
-    customCheck: (element: Element) => element.querySelector('.coneqtMessage') !== null
-  }, handleComposeMessage);
 
   await handleSublink(sublink);
 }
