@@ -85,7 +85,7 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
         className='flex'
       >
         {tabs.map((tab, index) => (
-        <div key={index} className={`absolute h-[100vh] overflow-y-scroll w-full pb-40 transition-opacity duration-300 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
+        <div key={index} className={`absolute h-[100vh] focus-visible:outline-none overflow-y-scroll w-full pb-40 transition-opacity duration-300 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
           style={{left: `${index * 100}%`}}>
             {tab.content}
           </div>

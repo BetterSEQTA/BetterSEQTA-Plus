@@ -36,6 +36,7 @@ export interface SettingsState {
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
+  devMode?: boolean;
 }
 
 interface ToggleItem {
