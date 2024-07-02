@@ -27,11 +27,11 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
         selectedTheme: result.selectedTheme,
         timeFormat: result.timeFormat,
         animations: result.animations,
-        defaultPage: result.defaultPage
+        defaultPage: result.defaultPage,
+        devMode: result.devMode || false
       });
     });
   });
-  
   const keyToStateMap = useMemo(() => ({
     "notificationcollector": "notificationCollector",
     "lessonalert": "lessonAlerts",
@@ -45,12 +45,12 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     "selectedTheme": "selectedTheme",
     "timeFormat": "timeFormat",
     "animations": "animations",
-    "defaultPage": "defaultPage"
+    "defaultPage": "defaultPage",
+    "devMode": "devMode"
   }), []);
   
   const storageChangeListener = (changes: browser.Storage.StorageChange) => {
     for (const [key, { newValue }] of Object.entries(changes)) {
-      console.log(key, newValue)
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {
           document.body.classList.add('dark');
