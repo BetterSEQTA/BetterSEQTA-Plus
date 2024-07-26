@@ -144,6 +144,9 @@ export function OpenWhatsNewPopup() {
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
+    <h1>3.3.0 - Overhauled Theming System</h1>
+    <li>Find and create awesome themes! <span style="background: var(--background-secondary); color: var(--text-primary); padding: 2px 4px; border-radius: 4px; font-size: 12px; font-weight: 600;">Beta</span></li>
+
     <h1>3.2.7 - Minor Improvements</h1>
     <li>Improved performance!</li>
     <li>Fixed a bug where the icon wasn't showing up</li>
