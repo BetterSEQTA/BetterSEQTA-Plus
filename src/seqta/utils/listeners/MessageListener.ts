@@ -11,6 +11,7 @@ import { disableTheme } from '../../ui/themes/disableTheme';
 import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
 import ShareTheme from '../../ui/themes/shareTheme';
 import sendThemeUpdate from '../sendThemeUpdate';
+import hideSensitiveContent from '../../ui/dev/hideSensitiveContent';
 
 export class MessageHandler {
   constructor() {
@@ -99,6 +100,11 @@ export class MessageHandler {
           console.error('Error closing theme creator:', error);
           sendResponse({ status: 'error' });
         }
+        sendResponse({ status: 'success' });
+        break;
+
+      case 'HideSensitive':
+        hideSensitiveContent();
         sendResponse({ status: 'success' });
         break;
   
