@@ -219,7 +219,7 @@ const Store = () => {
                       <motion.h2 className="mb-4 text-2xl font-bold" variants={textVariants}>
                         {displayTheme.name}
                       </motion.h2>
-                      <motion.img src={displayTheme.coverImage} alt="Theme Cover" className="object-cover w-full h-48 mb-4 rounded-md" variants={textVariants} />
+                      <motion.img src={displayTheme.coverImage} alt="Theme Cover" className="object-cover w-full mb-4 rounded-md" variants={textVariants} />
                       <motion.p className="mb-4 text-gray-700 dark:text-gray-300" variants={textVariants}>
                         {displayTheme.description}
                       </motion.p>
