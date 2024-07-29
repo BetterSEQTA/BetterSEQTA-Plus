@@ -27,7 +27,7 @@
 ## Features
 
 - Dark mode
-  - Custom Background
+  - Custom Background/Themes
 - Improved Styling/CSS
   - Improved look for SEQTA Learn
 - Custom Home Page including:
@@ -35,6 +35,7 @@
   - Shortcuts
   - Easier Access Notices
 - Options to remove certain items from the side menu
+- Fully customisable themes and an offical theme store
 - Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
   - Chrome Supported
