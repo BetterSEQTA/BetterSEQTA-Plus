@@ -252,7 +252,7 @@ async function addDarkLightToggle() {
     updateAllColors();
     
     const darklightText = document.getElementById('darklighttooliptext');
-    darklightText!.innerText = GetLightDarkModeString(!settingsState.DarkMode);
+    darklightText!.innerText = GetLightDarkModeString();
   });
 }
 
