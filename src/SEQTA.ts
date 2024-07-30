@@ -484,7 +484,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
   }, (element) => {
     const iframe = element as HTMLIFrameElement;
     try {
-      applyDarkModeToIframe(iframe, cssLink, settingsState.DarkMode);
+      applyDarkModeToIframe(iframe, cssLink);
 
       if (element.classList.contains('cke_wysiwyg_frame')) {
         (async () => {
@@ -498,18 +498,20 @@ async function updateIframesWithDarkMode(): Promise<void> {
   });
 }
 
-function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement, DarkMode: boolean): void {
+function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElement): void {
   const iframeDocument = iframe.contentDocument;
   if (!iframeDocument) return;
 
   if (iframeDocument.readyState !== 'complete') {
     iframe.onload = () => {
-      applyDarkModeToIframe(iframe, cssLink, DarkMode);
+      applyDarkModeToIframe(iframe, cssLink);
     };
     return;
   }
 
-  if (DarkMode) iframeDocument.documentElement.classList.add('dark');
+  if (settingsState.DarkMode) {
+    iframeDocument.documentElement.classList.add('dark')
+  }
 
   const head = iframeDocument.head;
   if (head && !head.innerHTML.includes('iframecss')) {
@@ -2280,8 +2282,7 @@ function processNotices(responseText: any, labelArray: any) {
           let colour = notice.colour;
           if (typeof colour === 'string') {
             const rgb = GetThresholdOfColor(colour);
-            const DarkModeResult = settingsState.DarkMode;
-            if (rgb < 100 && DarkModeResult) {
+            if (rgb < 100 && settingsState.DarkMode) {
               colour = undefined;
             }
           }

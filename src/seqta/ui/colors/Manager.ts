@@ -58,15 +58,16 @@ export function updateAllColors() {
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
-
+    
     if (element.getAttribute('excludeDarkCheck') == 'true') {
       continue;
     }
     
     if (settingsState.DarkMode) {
-      element.contentDocument?.body.classList.add('dark');
+      console.log('dark')
+      element.contentDocument?.documentElement.classList.add('dark');
     } else {
-      element.contentDocument?.body.classList.remove('dark');
+      element.contentDocument?.documentElement.classList.remove('dark');
     }
   }
 }
