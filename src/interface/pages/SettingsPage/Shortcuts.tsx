@@ -28,7 +28,7 @@ const Shortcuts = memo(() => {
   const isValidTitle = useCallback((title: string) => title.trim() !== "", []);
   
   const isValidURL = useCallback((url: string) => {
-    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+[\\w.-]+(/[\\w.-]*)*$", "i");
+    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+(?:\\.[\\w.-]+)*(?::\\d+)?(/[\\w.-]*)*$", "i");
     return pattern.test(url);
   }, []);
 
