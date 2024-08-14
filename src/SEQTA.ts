@@ -1,32 +1,41 @@
+// Third-party libraries
+import Color from 'color'
+import Sortable from 'sortablejs'
+import browser from 'webextension-polyfill'
 import { animate, spring, stagger } from 'motion'
-import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 
+// Internal utilities and functions
+import { delay } from './seqta/utils/delay'
+import stringToHTML from './seqta/utils/stringToHTML'
+import { MessageHandler } from './seqta/utils/listeners/MessageListener'
+import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
+import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
+import { eventManager } from './seqta/utils/listeners/EventManager'
+
+// UI and theme management
+import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
+import { enableCurrentTheme } from './seqta/ui/themes/enableCurrent'
+import { updateAllColors } from './seqta/ui/colors/Manager'
+import { SettingsResizer } from './seqta/ui/SettingsResizer'
+import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
+import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
+
+// JSON content
+import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
+import ShortcutLinks from './seqta/content/links.json'
+
+// Icons and fonts
 import IconFamily from './resources/fonts/IconFamily.woff'
 import LogoLight from './resources/icons/betterseqta-light-icon.png'
 import LogoLightOutline from './resources/icons/betterseqta-light-outline.png'
 import icon48 from './resources/icons/icon-48.png?base64'
-
-import Color from 'color'
-import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
-import { MessageHandler } from './seqta/utils/listeners/MessageListener'
-import ShortcutLinks from './seqta/content/links.json'
-import Sortable  from 'sortablejs'
 import assessmentsicon from './seqta/icons/assessmentsIcon'
-import browser from 'webextension-polyfill'
 import coursesicon from './seqta/icons/coursesIcon'
-import { delay } from "./seqta/utils/delay"
-import { enableCurrentTheme } from "./seqta/ui/themes/enableCurrent";
-import iframeCSS from "./css/iframe.scss?raw"
+
+// Stylesheets
+import iframeCSS from './css/iframe.scss?raw'
 import injectedCSS from './css/injected.scss?inline'
-import stringToHTML from './seqta/utils/stringToHTML'
-import { updateAllColors } from './seqta/ui/colors/Manager'
-import { SettingsResizer } from "./seqta/ui/SettingsResizer";
 import documentLoadCSS from './css/documentload.scss?inline'
-import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
-import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
-import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
-import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
-import { eventManager } from './seqta/utils/listeners/EventManager'
 
 declare global {
   interface Window {
