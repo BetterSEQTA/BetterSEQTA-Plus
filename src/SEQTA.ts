@@ -614,10 +614,15 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       handleMessages(document.querySelector('.messages')!)
       await handleDefault()
       break;
-    default:
-      await handleDefault();
+    case 'dashboard':
+      handleDashboard(document.querySelector('.dashboard')!)
+      await handleDefault()
       break;
-  }
+
+    default:
+      await handleDefault()
+      break;
+    }
 }
 
 async function handleTimetable(): Promise<void> {
@@ -660,6 +665,12 @@ async function handleMessages(node: Element): Promise<void> {
 
   if (!settingsState.animations) return;
 
+  // Hides messages on page load
+  const style = document.createElement('style')
+  style.classList.add('messageHider')
+  style.innerHTML = '[data-message]{opacity: 0 !important;}'
+  document.head.append(style)  
+
   await waitForElm('[data-message]', true, 10);
   const messages = Array.from(document.querySelectorAll('[data-message]')).slice(0, 35);
   animate(
@@ -671,11 +682,18 @@ async function handleMessages(node: Element): Promise<void> {
       easing: [.22, .03, .26, 1]
     }
   );
+
+  document.head.querySelector('style.messageHider')?.remove()
 }
 
 async function handleDashboard(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!settingsState.animations) return;
+
+  const style = document.createElement('style')
+  style.classList.add('dashboardHider')
+  style.innerHTML = '.dashboard{opacity: 0 !important;}'
+  document.head.append(style)
 
   await waitForElm('.dashlet', true, 10);
   animate(
@@ -687,6 +705,8 @@ async function handleDashboard(node: Element): Promise<void> {
       easing: [.22, .03, .26, 1]
     }
   );
+
+  document.head.querySelector('style.dashboardHider')?.remove()
 }
 
 async function handleDocuments(node: Element): Promise<void> {
