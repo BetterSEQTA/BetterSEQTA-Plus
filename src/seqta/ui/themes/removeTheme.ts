@@ -19,6 +19,11 @@ export const removeTheme = async (theme: CustomTheme) => {
   if (settingsState.originalSelectedColor !== '') {
     settingsState.selectedColor = settingsState.originalSelectedColor
   }
+
+  if (settingsState.originalDarkMode !== undefined) {
+    settingsState.DarkMode = settingsState.originalDarkMode
+    settingsState.originalDarkMode = undefined
+  }
   
   // Remove custom images
   const customImageVariables = theme.CustomImages.map((image) => image.variableName);

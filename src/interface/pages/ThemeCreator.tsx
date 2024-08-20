@@ -4,7 +4,7 @@ import ColorPicker from 'react-best-gradient-color-picker';
 import Accordion from '../components/Accordian';
 import Switch from '../components/Switch';
 import { sendThemeUpdate } from '../hooks/ThemeManagment';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MoonIcon, PlusIcon, SunIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomTheme, CustomThemeBase64 } from '../types/CustomThemes';
 import browser from 'webextension-polyfill';
@@ -23,6 +23,7 @@ function ThemeCreator() {
     coverImage: null,
     isEditable: true,
     hideThemeName: false,
+    forceDark: undefined,
   });
 
   useEffect(() => {
@@ -243,6 +244,29 @@ function ThemeCreator() {
         </div>
 
         <Divider /> */}
+
+        <div className='flex items-center justify-between'>
+          <div>
+            <div className='pr-2 text-sm font-semibold'>Force Theme</div>
+            <div className='pr-2 text-[11px]'>Force users to use either dark or light mode</div>
+          </div>
+
+          <Switch state={theme.forceDark == undefined ? false : true} onChange={value => setTheme({ ...theme, forceDark: value ? false : undefined })} />
+        </div>
+
+        { theme.forceDark != undefined &&
+        <div className='flex items-center justify-between pt-4'>
+          <div>
+            <div className='pr-2 text-sm font-semibold'>Force {theme.forceDark ? 'Dark' : 'Light'} Mode</div>
+            <div className='pr-2 text-[11px]'>Force users to use {theme.forceDark ? 'dark' : 'light'} mode</div>
+          </div>
+          <button className='flex items-center justify-center p-2 transition rounded-lg bg-zinc-100 dark:bg-zinc-700' onClick={() => setTheme({ ...theme, forceDark: !theme.forceDark })}>
+            {theme.forceDark ? <MoonIcon className='w-6 h-6' /> : <SunIcon className='w-6 h-6' />}
+          </button>
+        </div>
+        }
+
+        <Divider />
         
         <Accordion defaultOpened title='Default Theme Colour'>
           <div className='p-2 mt-2 bg-white rounded-lg w-fit dark:bg-zinc-900'>

@@ -37,6 +37,7 @@ export interface SettingsState {
   animations: boolean;
   defaultPage: string;
   devMode?: boolean;
+  originalDarkMode?: boolean;
 }
 
 interface ToggleItem {

@@ -12,6 +12,7 @@ export type CustomTheme = {
   hideThemeName: boolean;
   webURL?: string;
   selectedColor?: string;
+  forceDark?: boolean;
 }
 
 export type DownloadedTheme = CustomTheme & {
