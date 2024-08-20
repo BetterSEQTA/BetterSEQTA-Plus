@@ -1,4 +1,5 @@
 import { CustomImage, CustomTheme } from '../../../interface/types/CustomThemes';
+import { settingsState } from '../../utils/listeners/SettingsState';
 import { applyCustomCSS } from './Themes';
 
 
@@ -8,6 +9,10 @@ export const applyTheme = async (theme: CustomTheme) => {
 
   if (theme?.CustomCSS) CustomCSS = theme.CustomCSS;
   if (theme?.CustomImages) CustomImages = theme.CustomImages;
+  if (theme?.forceDark) {
+    settingsState.originalDarkMode = settingsState.DarkMode
+    settingsState.DarkMode = theme.forceDark
+  }
 
   // Apply custom CSS
   applyCustomCSS(CustomCSS);
