@@ -34,6 +34,7 @@
   - Daily Lessons
   - Shortcuts
   - Easier Access Notices
+  - Assessments
 - Options to remove certain items from the side menu
 - Fully customisable themes and an offical theme store
 - Notification for next lesson (sent 5 minutes before end of the lesson)
@@ -94,7 +95,7 @@ npm run build
 3. Package it up (optional)
 
 ```
-npm run package # this requires 7zip to be installed in order to work
+npm run package # This requires 7-Zip to be installed in order to work
 ```
 
 ## Folder Structure
