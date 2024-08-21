@@ -6,6 +6,14 @@ import { settingsState } from '../../utils/listeners/SettingsState';
 export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] } */) => {
   const { CustomCSS, CustomImages, defaultColour } = updatedTheme;
 
+  if (updatedTheme.forceDark != undefined) {
+    if (updatedTheme.forceDark) {
+      settingsState.DarkMode = true;
+    } else {
+      settingsState.DarkMode = false;
+    }
+  }
+
   // Update image data
   const currentImageIds = Object.keys(imageData);
   const updatedImageIds = CustomImages.map((image) => image.id);
