@@ -4,6 +4,7 @@ import { appendBackgroundToUI } from "./ImageBackgrounds";
 import stringToHTML from "../utils/stringToHTML";
 import { settingsState } from "../utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
+import { delay } from "../utils/delay";
 
 export async function AddBetterSEQTAElements() {
   if (settingsState.onoff) {    
@@ -247,11 +248,22 @@ async function addDarkLightToggle() {
   updateAllColors();
   
   document.getElementById('LightDarkModeButton')!.addEventListener('click', async () => {
+    const darklightText = document.getElementById('darklighttooliptext');
+
+    if (settingsState.originalDarkMode) {
+      darklightText!.innerText = 'Locked by current theme';
+
+      await delay(1000)
+
+      darklightText!.innerText = GetLightDarkModeString();
+
+      return
+    }
+    
     settingsState.DarkMode = !settingsState.DarkMode;
     
     updateAllColors();
     
-    const darklightText = document.getElementById('darklighttooliptext');
     darklightText!.innerText = GetLightDarkModeString();
   });
 }
