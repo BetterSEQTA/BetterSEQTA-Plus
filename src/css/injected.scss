@@ -1657,6 +1657,22 @@ ul {
 .MenuButton__MenuPanel___2q42B {
   background: var(--background-primary);
   color: var(--text-primary);
+  border-radius: 16px;
+  overflow: clip;
+
+  > div {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    > div {
+      > h2 {
+        padding-bottom: 1px;
+        padding-left: 12px;
+      }
+    }
+  }
 }
 .dailycal > .header {
   color: var(--text-primary);
