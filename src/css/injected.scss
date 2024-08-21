@@ -1880,7 +1880,7 @@ div.bar.flat {
 .cke_toolbox > .cke_toolbar > .cke_toolgroup {
   margin: 0;
 }
-#cke_1_top a:hover {
+#cke_1_top a:hover:not(.cke_combo_button) {
   background: #5a5a5a;
 }
 .legacy-root button.depressed,
