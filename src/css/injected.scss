@@ -162,6 +162,7 @@ html {
 .cke_panel {
   border-radius: 16px !important;
   margin-top: 8px !important;
+  background: unset;
 }
 
 .legacy-root button:active, .legacy-root a:active:not(.cke_combo_button) {
@@ -548,13 +549,13 @@ td.colourBar {
 }
 #toolbar .search {
   padding-left: 30px;
-  /* Provides space for the icon */
 }
 #toolbar span:has(.search)::before {
   content: "\eca5";
   /* Unicode for the search icon */
   position: absolute;
   left: 8px;
+  z-index: 10;
   top: 50%;
   transform: translateY(-50%);
   color: currentColor;
@@ -1459,11 +1460,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 180px;
   background: var(--background-primary);
 }
-.cke_panel {
-  border-radius: 16px;
-  overflow: hidden;
-  background: unset;
-}
 .Avatar__Avatar___gE5kx.Avatar__staff___4gVLs {
   --person-colour: var(--better-light);
   background: var(--person-colour, var(--navy));
@@ -1576,7 +1572,7 @@ div,
 ol,
 ul {
   scrollbar-width: thin !important;
-  scrollbar-color: var(--better-light) var(--better-sub) !important;
+  scrollbar-color: var(--better-light) var(--better-sub);
 }
 .connectedNotificationsWrapper > div > button {
   color: var(--text-primary) !important;
@@ -1879,11 +1875,13 @@ div.bar.flat {
   padding: 0;
 }
 .cke_toolbox {
+  padding: 0 !important;
+  padding-left: 8px !important;
   background: unset !important;
-  gap: 4px;
+  gap: 0 8px;
 }
 .cke_toolbox > .cke_toolbar > .cke_toolgroup {
-  margin: 0;
+  margin: 0 !important;
 }
 #cke_1_top a:hover:not(.cke_combo_button) {
   background: #5a5a5a;
