@@ -41,7 +41,7 @@ const SettingsPage = ({ standalone }: SettingsPage) => {
           <button onClick={() => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenChangelog' })} className="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-1 bg-zinc-100 dark:bg-zinc-700"></button>
         </div>
         <Picker />
-        <TabbedContainer tabs={tabs} />
+        <TabbedContainer tabs={tabs} animations={false} />
       </div>
     </SettingsContextProvider>
   );

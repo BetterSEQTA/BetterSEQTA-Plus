@@ -1,32 +1,32 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { TabbedContainerProps } from '../types/TabbedContainerProps';
+import { useSettingsContext } from '../SettingsContext';
 
 const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
+  const { settingsState } = useSettingsContext();
   const [activeTab, setActiveTab] = useState(0);
   const [hoveredTab, setHoveredTab] = useState<number | null>(null);
   const [tabWidth, setTabWidth] = useState(0);
   const [position, setPosition] = useState(0);
   const positionRef = useRef(position);
 
-
-    // Function to handle message
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data === "popupClosed") {  
-        setActiveTab(0);
-      }
+  // Function to handle message
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data === "popupClosed") {  
+      setActiveTab(0);
+    }
+  };
+  
+  useEffect(() => {
+    // Add event listener for 'message' event
+    window.addEventListener("message", handleMessage);
+  
+    // Cleanup
+    return () => {
+      window.removeEventListener("message", handleMessage);
     };
-  
-    useEffect(() => {
-      // Add event listener for 'message' event
-      window.addEventListener("message", handleMessage);
-  
-      // Cleanup
-      return () => {
-        window.removeEventListener("message", handleMessage);
-      };
-    }, []);
-
+  }, []);
 
   useEffect(() => {
     const newPosition = -activeTab * 100;
@@ -36,7 +36,7 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
 
   const containerRef = useRef(null);
 
-  const springTransition = { type: 'spring', stiffness: 250, damping: 25 };
+  const springTransition = settingsState.animations ? { type: 'spring', stiffness: 250, damping: 25 } : { duration: 0 };
 
   useEffect(() => {
     if (containerRef.current) {
@@ -85,8 +85,8 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
         className='flex'
       >
         {tabs.map((tab, index) => (
-        <div key={index} className={`absolute h-[100vh] focus-visible:outline-none overflow-y-scroll w-full pb-40 transition-opacity duration-300 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
-          style={{left: `${index * 100}%`}}>
+          <div key={index} className={`absolute h-[100vh] focus-visible:outline-none overflow-y-scroll w-full pb-40 ${ settingsState.animations ? 'transition-opacity duration-300' : ''} ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
+            style={{left: `${index * 100}%`}}>
             {tab.content}
           </div>
         ))}
