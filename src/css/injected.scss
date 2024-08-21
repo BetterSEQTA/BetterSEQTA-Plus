@@ -159,7 +159,12 @@ html {
   color: white;
 }
 
-.legacy-root button:active, .legacy-root a:active {
+.cke_panel {
+  border-radius: 16px !important;
+  margin-top: 8px !important;
+}
+
+.legacy-root button:active, .legacy-root a:active:not(.cke_combo_button) {
   background-image: unset !important;
 }
 
