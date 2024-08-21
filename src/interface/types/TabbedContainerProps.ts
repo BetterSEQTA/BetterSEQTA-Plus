@@ -5,6 +5,7 @@ export interface Tab {
 }
 export interface TabbedContainerProps {
     tabs: Tab[];
+    animations?: boolean;
 }
 declare const TabbedContainer: React.FC<TabbedContainerProps>;
 export default TabbedContainer;
