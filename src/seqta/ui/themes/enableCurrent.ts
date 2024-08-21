@@ -8,7 +8,7 @@ export const enableCurrentTheme = async () => {
   if (settingsState.selectedTheme) {
     const theme = await localforage.getItem(settingsState.selectedTheme) as CustomTheme;
     if (theme) {
-      await applyTheme(theme);
+      await applyTheme(theme, true);
     }
   }
 };
