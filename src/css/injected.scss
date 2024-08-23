@@ -1041,6 +1041,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  border-radius: 16px;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
 }
@@ -1056,11 +1057,9 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 .notice {
   position: relative;
-  width: 95%;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  margin: 0px auto 7px;
   background: var(--background-primary);
   transition: 200ms;
   box-shadow: inset 0px 5px 20px 1px rgba(0, 0, 0, 0.3);
