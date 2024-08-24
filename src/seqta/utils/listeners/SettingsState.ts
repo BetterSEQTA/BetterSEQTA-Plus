@@ -21,7 +21,6 @@ class StorageManager {
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
-        console.log(target)
         Reflect.set(target.data, prop, value);
         target.saveToStorage();
         return true;
