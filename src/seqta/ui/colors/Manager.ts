@@ -64,7 +64,6 @@ export function updateAllColors() {
     }
     
     if (settingsState.DarkMode) {
-      console.log('dark')
       element.contentDocument?.documentElement.classList.add('dark');
     } else {
       element.contentDocument?.documentElement.classList.remove('dark');
