@@ -25,7 +25,8 @@ export const SettingsContextProvider: React.FC<{ children: ReactNode }> = ({ chi
     transparencyEffects: false,
     selectedTheme: '',
     animations: true,
-    defaultPage: 'home'
+    defaultPage: 'home',
+    devMode: false
   });
 
   const [showPicker, setShowPicker] = useState<boolean>(false);

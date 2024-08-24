@@ -53,9 +53,9 @@ const useSettingsState = ({ settingsState, setSettingsState }: SettingsProps) =>
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (key === "DarkMode") {
         if (key === "DarkMode" && newValue) {
-          document.body.classList.add('dark');
+          document.documentElement.classList.add('dark');
         } else {
-          document.body.classList.remove('dark');
+          document.documentElement.classList.remove('dark');
         }
       }
 
