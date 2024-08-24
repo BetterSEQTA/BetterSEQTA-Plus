@@ -201,7 +201,7 @@ const Store = () => {
                 >
                   <motion.div
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-xl h-[95%] p-8 pt-5 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll"
+                    className="w-full max-w-xl h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll"
                     exit={{ y: "100vh" }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     variants={containerVariants}
@@ -260,8 +260,8 @@ const Store = () => {
                         {gridThemes.filter(theme => theme.id !== displayTheme.id).sort((a, b) => a.name.localeCompare(displayTheme.name) - b.name.localeCompare(displayTheme.name)).map((theme, index) => (
                           <motion.div key={index} onClick={() => { setDisplayTheme(null); setDisplayTheme(theme); }} className='w-full cursor-pointer' variants={textVariants}>
                             <div className="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
-                              <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-1 bottom-1 left-2">
-                                  {theme.name}
+                              <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-0.5 bottom-1 left-3">
+                                {theme.name}
                               </div>
                               <div className='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t from-black/80 to-transparent' />
                               <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48" />
@@ -298,7 +298,7 @@ const Store = () => {
           {filteredThemes.map((theme, index) => (
             <div onClick={() => setDisplayTheme(theme)} key={index} className='w-full cursor-pointer'>
               <div className="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
-                <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-1 bottom-1 left-2">
+                <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-0.5 bottom-1 left-3">
                   {theme.name}
                 </div>
                 <div className='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t from-black/80 to-transparent' />
