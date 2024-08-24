@@ -219,7 +219,7 @@ const Store = () => {
                       <motion.h2 className="mb-4 text-2xl font-bold" variants={textVariants}>
                         {displayTheme.name}
                       </motion.h2>
-                      <motion.img src={displayTheme.coverImage} alt="Theme Cover" className="object-cover w-full mb-4 rounded-md" variants={textVariants} />
+                      <motion.img src={displayTheme.marqueeImage} alt="Theme Cover" className="object-cover w-full mb-4 rounded-md" variants={textVariants} />
                       <motion.p className="mb-4 text-gray-700 dark:text-gray-300" variants={textVariants}>
                         {displayTheme.description}
                       </motion.p>
@@ -259,16 +259,9 @@ const Store = () => {
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {gridThemes.filter(theme => theme.id !== displayTheme.id).sort((a, b) => a.name.localeCompare(displayTheme.name) - b.name.localeCompare(displayTheme.name)).map((theme, index) => (
                           <motion.div key={index} onClick={() => { setDisplayTheme(null); setDisplayTheme(theme); }} className='w-full cursor-pointer' variants={textVariants}>
-                            <div
-                              className="w-full overflow-clip rounded-xl transition-all duration-300 relative group/card flex flex-col hover:shadow-xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] h-auto"
-                            >
-                              <div className='absolute bottom-0 left-0 z-10 p-2'>
-                                <h6 className="text-xl font-bold text-neutral-600 dark:text-white">
+                            <div className="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
+                              <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-1 bottom-1 left-2">
                                   {theme.name}
-                                </h6>
-                                <p className="max-w-sm text-sm text-neutral-500 dark:text-neutral-200">
-                                  {theme.description}
-                                </p>
                               </div>
                               <div className='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t from-black/80 to-transparent' />
                               <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48" />
@@ -304,47 +297,14 @@ const Store = () => {
         <div className="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
           {filteredThemes.map((theme, index) => (
             <div onClick={() => setDisplayTheme(theme)} key={index} className='w-full cursor-pointer'>
-              <div className="bg-gray-50 w-full transition-all duration-300 relative group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl p-6 border">
-                <div>
-
-                  <div className="mb-1 text-xl font-bold text-neutral-600 dark:text-white">
-                    {theme.name}
-                  </div>
-                  <p className="max-w-sm mb-4 text-sm text-neutral-500 dark:text-neutral-300">
-                    {theme.description}
-                  </p>
-
+              <div className="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
+                <div className="absolute z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-1 bottom-1 left-2">
+                  {theme.name}
                 </div>
+                <div className='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t from-black/80 to-transparent' />
                 <div
                     className='w-full'>
                   <img src={theme.coverImage} alt="Theme Preview" className="object-cover w-full h-48 rounded-md" />
-                </div>
-                <div>
-                  {
-                    currentThemes.includes(theme.id) ?
-                    <button
-                      onClick={() => removeTheme(theme.id)}
-                      className="flex px-4 py-2 mt-4 ml-auto transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
-                      { installingThemes.includes(theme.id) ? 
-                        <>
-                        <SpinnerIcon className="w-4 h-4 mr-2" />
-                        Removing...
-                        </> :
-                        <> Remove </>
-                      }
-                    </button> :
-                    <button
-                      onClick={() => downloadTheme(theme.id)}
-                      className="flex px-4 py-2 mt-4 ml-auto transition rounded-full dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-800 focus:ring-offset-2">
-                      { installingThemes.includes(theme.id) ? 
-                        <>
-                        <SpinnerIcon className="w-4 h-4 mr-2" />
-                        Installing...
-                        </> :
-                        <> Install </>
-                      }
-                    </button>
-                  }
                 </div>
               </div>
             </div>
