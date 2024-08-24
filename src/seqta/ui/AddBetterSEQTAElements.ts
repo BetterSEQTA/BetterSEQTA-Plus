@@ -5,7 +5,6 @@ import stringToHTML from "../utils/stringToHTML";
 import { settingsState } from "../utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "../utils/delay";
-import { settings } from '../../../dist/src/seqta/content/MenuItemSVGKey.json__import';
 
 export async function AddBetterSEQTAElements() {
   if (settingsState.onoff) {    
