@@ -154,7 +154,17 @@ export function OpenWhatsNewPopup() {
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
 
     <h1>3.3.0 - Overhauled Theming System</h1>
-    <li>Find and create awesome themes! <span style="background: var(--background-secondary); color: var(--text-primary); padding: 2px 4px; border-radius: 4px; font-size: 12px; font-weight: 600;">Beta</span></li>
+    <li>Added a theme store!</li>
+    <li>Added the new theme creator</li>
+    <li>Fixed Notices not working on home page</li>
+    <li>Fixed dark/light button labels inverted</li>
+    <li>Fixed an issue where the settings menu wouldn't change theme</li>
+    <li>Fixed custom shortcuts not allowing ports to be used</li>
+    <li>Fixed occasional flashing when using animations</li>
+    <li>Made animations toggle apply to settings</li>
+    <li>Small styling improvements</li>
+    <li>Other minor bug fixes</li>
+
 
     <h1>3.2.7 - Minor Improvements</h1>
     <li>Improved performance!</li>
