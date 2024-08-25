@@ -160,6 +160,12 @@ function ThemeCreator() {
     <div className='w-full min-h-[100vh] bg-zinc-100 dark:bg-zinc-800 dark:text-white transition duration-30'>
       <div className='flex flex-col p-2'>
         <h1 className='text-xl font-semibold'>Theme Creator</h1>
+        <a href="https://betterseqta.gitbook.io/betterseqta-docs" target="_blank" className='text-sm font-light text-zinc-500 dark:text-zinc-400'>
+          <span className="no-underline font-IconFamily pr-0.5">{'\ueb44'}</span>
+          <span className="underline">
+            Need help? Check out the docs!
+          </span>
+        </a>
 
         <Divider />
 
