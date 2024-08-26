@@ -3,53 +3,59 @@
 </a>
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for       &lt;a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn.&lt;/a> <strong>Currently looking for contributors      </strong> 🔥 
+  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
 </p>
 
 <p align="center">
- &lt;a target=&quot;_blank" href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"      >&lt;img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png"       alt="ChromeDownload" width="250"></a> 
-  &lt;a target=&quot;_blank" href="https://discord.gg/YzmbnCDkat"      >&lt;img src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/23055730-b16e-44c0-9bef-221d8545af92"       width=&quot;240" style="border-radius:10%;" />&lt;/a> 
+ <a target="_blank" href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png" alt="ChromeDownload" width="250"></a>
+  <a target="_blank" href="https://discord.gg/YzmbnCDkat"><img src="https://github.com/SethBurkart123/EvenBetterSEQTA/assets/108050083/23055730-b16e-44c0-9bef-221d8545af92" width="240" style="border-radius:10%;" /></a>
 </p>
 
 <div>
-  <;img src="https://img.shields.io/chrome-web-store/users/afdgaoaclhkhemfkkkonemoapeinchel"       /&gt; 
-  <;img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel"       /&gt; 
+  <img src="https://img.shields.io/chrome-web-store/users/afdgaoaclhkhemfkkkonemoapeinchel" />
+  <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
 </div>
 
 ## Table of contents
 
 - [Features](#features)
 - [Creating Custom Themes](#creating-custom-themes)
-- [Getting Started](#getting-started) 
-  - [Running Development](#running-development) 
-  - [Building for production      ](#building-for-production      ) 
-  - [Folder Structure](#folder-structure) 
-- [Contributors](#contributors) 
-- [Credits](#credits) 
-- [Star History](#star-history) 
+- [Getting Started](#getting-started)
+  - [Running Development](#running-development)
+  - [Building for production](#building-for-production)
+  - [Folder Structure](#folder-structure)
+- [Contributors](#contributors)
+- [Credits](#credits)
+- [Star History](#star-history)
 
 ## Features
 
 - Dark mode
-  - Custom Background/Themes       
-- Improved Styling/CSS       
-  - Improved look for SEQTA Learn       
-- Custom Home Page including:      
+  - Custom Background/Themes
+- Improved Styling/CSS
+  - Improved look for SEQTA Learn
+- Custom Home Page including:
   - Daily Lessons
   - Shortcuts
-  - Easier Access Notices      
+  - Easier Access Notices
   - Assessments
-- Options to remove certain items from the side menu      
-- Fully customisable themes and an offical theme store      
-- Notification for next lesson (sent 5 minutes before end of the lesson)      
+- Options to remove certain items from the side menu
+- Fully customisable themes and an offical theme store
+- Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
   - Chrome Supported
   - Edge Supported
   - Brave Supported
   - Opera Supported
   - Vivaldi Supported
-  - Firefox (Experimental - available       [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/      ))
-  - Safari (Experimental - only available via compilation)      
+  - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)
+  - Safari (Experimental - only available via compilation)
+
+## Creating Custom Themes
+
+If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://betterseqta.gitbook.io/betterseqta-docs). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/SethBurkart123/BetterSEQTA-theme-generator). 
+
+Don't worry- if you get stuck feel free to ask around in the discord. We're open and happy to help out! Happy creating :)
 
 ## Creating Custom Themes
 
@@ -59,18 +65,18 @@ Don't worry- if you get stuck feel free to ask around in the discord. We're open
 
 ## Getting started
 
-1. Clone the repository      
+1. Clone the repository
 
 ```
-git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus      
+git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus
 ```
 
 ### Running Development
 
-1. Install dependencies      
+1. Install dependencies
 
 ```
-npm install # or your preferred package manager like pnpm or yarn      
+npm install # or your preferred package manager like pnpm or yarn
 ```
 
 2. Run the dev script (it updates as you save files)
