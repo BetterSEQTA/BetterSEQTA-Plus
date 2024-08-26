@@ -250,7 +250,7 @@ async function addDarkLightToggle() {
   document.getElementById('LightDarkModeButton')!.addEventListener('click', async () => {
     const darklightText = document.getElementById('darklighttooliptext');
 
-    if (settingsState.originalDarkMode != undefined) {
+    if (settingsState.originalDarkMode != undefined && settingsState.selectedTheme) {
       darklightText!.innerText = 'Locked by current theme';
 
       await delay(1000)
