@@ -17,7 +17,6 @@ import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
 import { enableCurrentTheme } from './seqta/ui/themes/enableCurrent'
 import { updateAllColors } from './seqta/ui/colors/Manager'
 import { SettingsResizer } from './seqta/ui/SettingsResizer'
-import { injectYouTubeVideo } from './seqta/ui/VideoLoader'
 import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
 
 // JSON content
@@ -142,9 +141,16 @@ export function OpenWhatsNewPopup() {
   let imagecont = document.createElement('div')
   imagecont.classList.add('whatsnewImgContainer')
 
-  let div = document.createElement('div')
-  div.classList.add('whatsnewImg')
-  imagecont.appendChild(div)
+  let video = document.createElement('video')
+  let source = document.createElement('source')
+  // Perhaps we host this on a server and then grab it instead of having it locally? 
+  source.setAttribute('src', 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4')
+  video.autoplay = true
+  video.muted = true
+  video.loop = true
+  video.appendChild(source)
+  video.classList.add('whatsnewImg')
+  imagecont.appendChild(video)
 
   let textcontainer = document.createElement('div')
   textcontainer.classList.add('whatsnewTextContainer')
@@ -303,10 +309,6 @@ export function OpenWhatsNewPopup() {
 
   let bkelement = document.getElementById('whatsnewbk')
   let popup = document.getElementsByClassName('whatsnewContainer')[0]
-
-  injectYouTubeVideo(
-    'JdDA45GYEUc', 'PLSlFV-9e6dvyvZJFPCtBMb3LSp-LGbrbI', document.querySelector('.whatsnewImg')!, true, true, '100%', '100%'
-  )
 
   if (settingsState.animations) {
     animate(
