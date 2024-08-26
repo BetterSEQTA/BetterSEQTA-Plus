@@ -161,9 +161,10 @@ export function OpenWhatsNewPopup() {
 
     <h1>3.3.0 - Overhauled Theming System</h1>
     <li>Added a theme store!</li>
-    <li>Added the new theme creator</li>
+    <li>Added the new theme creator!</li>
     <li>Fixed Notices not working on home page</li>
     <li>Fixed dark/light button labels inverted</li>
+    <li>Switched to GitHub for hosting the update video</li>
     <li>Fixed an issue where the settings menu wouldn't change theme</li>
     <li>Fixed custom shortcuts not allowing ports to be used</li>
     <li>Fixed occasional flashing when using animations</li>
