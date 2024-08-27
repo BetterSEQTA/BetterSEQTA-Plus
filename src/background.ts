@@ -273,10 +273,6 @@ browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
   browser.storage.local.remove(['data']);
 
-  if (event.reason == 'install' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    browser.storage.local.set({ animations: false });
-  }
-
   UpdateCurrentValues();
   if ( event.reason == 'install', event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
