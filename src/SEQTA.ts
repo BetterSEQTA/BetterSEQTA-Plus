@@ -168,6 +168,7 @@ export function OpenWhatsNewPopup() {
     <li>Fixed an issue where the settings menu wouldn't change theme</li>
     <li>Fixed custom shortcuts not allowing ports to be used</li>
     <li>Fixed occasional flashing when using animations</li>
+    <li>Fixed loading of the tab icon</li>
     <li>Made animations toggle apply to settings</li>
     <li>Small styling improvements</li>
     <li>Other minor bug fixes</li>
