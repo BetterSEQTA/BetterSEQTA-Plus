@@ -158,6 +158,8 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
+    <h1>3.3.1 - Hot Fix</h1>
+    <li>Fixed assessments not loading when no notices are available</li>
 
     <h1>3.3.0 - Overhauled Theming System</h1>
     <li>Added a theme store!</li>
