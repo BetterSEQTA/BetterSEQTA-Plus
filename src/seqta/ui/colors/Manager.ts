@@ -1,11 +1,11 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor } from '../../../SEQTA';
+import { GetThresholdOfColor } from '@/SEQTA';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
-import darkLogo from '../../../resources/icons/betterseqta-light-full.png';
-import lightLogo from '../../../resources/icons/betterseqta-dark-full.png';
+import darkLogo from '@/resources/icons/betterseqta-light-full.png';
+import lightLogo from '@/resources/icons/betterseqta-dark-full.png';
 
 // Helper functions
 const setCSSVar = (varName: any, value: any) => document.documentElement.style.setProperty(varName, value);

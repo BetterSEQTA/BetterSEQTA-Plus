@@ -1,5 +1,5 @@
 import { settingsState } from './SettingsState';
-import { updateAllColors } from '../../ui/colors/Manager';
+import { updateAllColors } from '@/seqta/ui/colors/Manager';
 import {
   addShortcuts,
   CreateBackground,
@@ -9,10 +9,10 @@ import {
   FilterUpcomingAssessments,
   RemoveBackground,
   RemoveShortcutDiv,
-} from '../../../SEQTA';
-import { updateBgDurations } from '../../ui/Animation';
+} from '@/SEQTA';
+import { updateBgDurations } from '@/seqta/ui/Animation';
 import browser from 'webextension-polyfill';
-import { CustomShortcut } from '../../../types/storage';
+import { CustomShortcut } from '@/types/storage';
 
 export class StorageChangeHandler {
   constructor() {

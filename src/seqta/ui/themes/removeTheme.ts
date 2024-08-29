@@ -1,6 +1,6 @@
 import localforage from 'localforage';
-import { CustomTheme } from '../../../interface/types/CustomThemes';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { CustomTheme } from '@/interface/types/CustomThemes';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
 export const removeTheme = async (theme: CustomTheme) => {
   // Remove custom CSS

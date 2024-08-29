@@ -1,10 +1,10 @@
-import { addExtensionSettings, enableAnimatedBackground, GetThresholdOfColor, loadHomePage, SendNewsPage, setupSettingsButton } from "../../SEQTA";
+import { addExtensionSettings, enableAnimatedBackground, GetThresholdOfColor, loadHomePage, SendNewsPage, setupSettingsButton } from "@/SEQTA";
 import { updateBgDurations } from "./Animation";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
-import stringToHTML from "../utils/stringToHTML";
-import { settingsState } from "../utils/listeners/SettingsState";
+import stringToHTML from "@/seqta/utils/stringToHTML";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
-import { delay } from "../utils/delay";
+import { delay } from "@/seqta/utils/delay";
 
 export async function AddBetterSEQTAElements() {
   if (settingsState.onoff) {    

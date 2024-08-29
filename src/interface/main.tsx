@@ -6,7 +6,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import './index.css';
 import SettingsPage from './pages/SettingsPage.js';
 import browser from 'webextension-polyfill';
-import font from '../resources/fonts/IconFamily.woff'
+import font from '@/resources/fonts/IconFamily.woff'
 
 import ThemeCreator from './pages/ThemeCreator';
 import Store from './pages/Store';

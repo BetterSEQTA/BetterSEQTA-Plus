@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import { SettingsState } from "./types/storage";
+import { SettingsState } from "@/types/storage";
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {
