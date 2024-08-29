@@ -1,17 +1,17 @@
 import browser from 'webextension-polyfill'
 
 import { closeSettings, MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup } from '../../../SEQTA';
-import { deleteTheme } from '../../ui/themes/deleteTheme';
-import { getAvailableThemes } from '../../ui/themes/getAvailableThemes';
-import { saveTheme } from '../../ui/themes/saveTheme';
-import { UpdateThemePreview } from '../../ui/themes/UpdateThemePreview';
-import { getTheme } from '../../ui/themes/getTheme';
-import { setTheme } from '../../ui/themes/setTheme';
-import { disableTheme } from '../../ui/themes/disableTheme';
-import { CloseThemeCreator, OpenThemeCreator } from '../../ui/ThemeCreator';
-import ShareTheme from '../../ui/themes/shareTheme';
-import sendThemeUpdate from '../sendThemeUpdate';
-import hideSensitiveContent from '../../ui/dev/hideSensitiveContent';
+import { deleteTheme } from '@/seqta/ui/themes/deleteTheme';
+import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes';
+import { saveTheme } from '@/seqta/ui/themes/saveTheme';
+import { UpdateThemePreview } from '@/seqta/ui/themes/UpdateThemePreview';
+import { getTheme } from '@/seqta/ui/themes/getTheme';
+import { setTheme } from '@/seqta/ui/themes/setTheme';
+import { disableTheme } from '@/seqta/ui/themes/disableTheme';
+import { CloseThemeCreator, OpenThemeCreator } from '@/seqta/ui/ThemeCreator';
+import ShareTheme from '@/seqta/ui/themes/shareTheme';
+import sendThemeUpdate from '@/seqta/utils/sendThemeUpdate';
+import hideSensitiveContent from '@/seqta/ui/dev/hideSensitiveContent';
 
 export class MessageHandler {
   constructor() {

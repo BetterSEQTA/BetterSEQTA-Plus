@@ -1,6 +1,5 @@
 import Color from 'color';
 
-
 export function lightenAndPaleColor(inputColor: any, lightenFactor = 0.75, paleFactor = 0.55) {
   if (!inputColor) return;
 

@@ -1,8 +1,8 @@
 import localforage from 'localforage';
-import { CustomTheme } from '../../../interface/types/CustomThemes';
+import { CustomTheme } from '@/interface/types/CustomThemes';
 import { removeTheme } from './removeTheme';
-import { Mutex } from '../../utils/mutex';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { Mutex } from '@/seqta/utils/mutex';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
 const mutex = new Mutex();
 let isDisabling = false;

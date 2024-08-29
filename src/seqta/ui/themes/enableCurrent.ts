@@ -1,7 +1,7 @@
 import localforage from 'localforage';
-import { CustomTheme } from '../../../interface/types/CustomThemes';
+import { CustomTheme } from '@/interface/types/CustomThemes';
 import { applyTheme } from './applyTheme';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
 
 export const enableCurrentTheme = async () => {

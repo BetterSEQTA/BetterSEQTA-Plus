@@ -1,5 +1,5 @@
-import { CustomImage, CustomTheme } from '../../../interface/types/CustomThemes';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { CustomImage, CustomTheme } from '@/interface/types/CustomThemes';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import { applyCustomCSS } from './Themes';
 
 

@@ -1,7 +1,7 @@
 import TabbedContainer from '../components/TabbedContainer';
 import Settings from './SettingsPage/Settings';
-import logo from '../../resources/icons/betterseqta-dark-full.png';
-import logoDark from '../../resources/icons/betterseqta-light-full.png';
+import logo from '@/resources/icons/betterseqta-dark-full.png';
+import logoDark from '@/resources/icons/betterseqta-light-full.png';
 import { SettingsContextProvider } from '../SettingsContext';
 import Shortcuts from './SettingsPage/Shortcuts';
 import Picker from '../components/Picker';

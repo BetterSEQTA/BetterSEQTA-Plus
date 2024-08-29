@@ -1,7 +1,7 @@
 import localforage from 'localforage';
-import { CustomTheme, ThemeList } from '../../../interface/types/CustomThemes';
-import { blobToBase64 } from '../../utils/blobToBase64';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { CustomTheme, ThemeList } from '@/interface/types/CustomThemes';
+import { blobToBase64 } from '@/seqta/utils/blobToBase64';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
 export const getAvailableThemes = async (): Promise<ThemeList | {}> => {
   try {

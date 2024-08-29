@@ -1,6 +1,6 @@
-import { CustomThemeBase64 } from '../../../interface/types/CustomThemes';
+import { CustomThemeBase64 } from '@/interface/types/CustomThemes';
 import { applyCustomCSS, imageData, removeImageFromDocument, UpdateImageData } from './Themes';
-import { settingsState } from '../../utils/listeners/SettingsState';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
 
 export const UpdateThemePreview = async (updatedTheme: CustomThemeBase64 /* Omit<CustomTheme, 'CustomImages'> & { CustomImages: Omit<CustomImage, 'blob'>[] } */) => {

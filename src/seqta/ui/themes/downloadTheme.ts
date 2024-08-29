@@ -1,6 +1,6 @@
 import localforage from 'localforage';
-import { Theme } from '../../../interface/pages/Store';
-import base64ToBlob from '../../utils/base64ToBlob';
+import { Theme } from '@/interface/pages/Store';
+import base64ToBlob from '@/seqta/utils/base64ToBlob';
 
 type ThemeContent = {
   id: string;

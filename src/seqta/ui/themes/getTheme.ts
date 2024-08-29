@@ -1,6 +1,6 @@
 import localforage from 'localforage';
-import { CustomImageBase64, CustomTheme, CustomThemeBase64 } from '../../../interface/types/CustomThemes';
-import { blobToBase64 } from '../../utils/blobToBase64'; 
+import { CustomImageBase64, CustomTheme, CustomThemeBase64 } from '@/interface/types/CustomThemes';
+import { blobToBase64 } from '@/seqta/utils/blobToBase64'; 
 
 
 export const getTheme = async (themeId: string): Promise<CustomThemeBase64 | null> => {

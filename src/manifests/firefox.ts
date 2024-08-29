@@ -1,4 +1,4 @@
-import { createManifest } from '../../lib/createManifest'
+import { createManifest } from '$lib/createManifest'
 import baseManifest from './manifest.json'
 import pkg from '../../package.json'
 

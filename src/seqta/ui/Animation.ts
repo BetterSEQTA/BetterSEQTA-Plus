@@ -1,4 +1,4 @@
-import { settingsState } from "../utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 /**
  * Update the background animation durations based on the slider input.

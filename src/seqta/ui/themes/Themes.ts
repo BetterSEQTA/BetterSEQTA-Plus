@@ -1,4 +1,4 @@
-import { base64toblobURL } from '../../utils/imageConversions';
+import { base64toblobURL } from '@/seqta/utils/imageConversions';
 
 export const imageData: Record<string, { url: string; variableName: string }> = {};
 
