@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite';
 import { join, resolve } from 'path';
 
+import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
-
-//import MillionLint from '@million/lint';
 
 import react from '@vitejs/plugin-react-swc';
 import million from "million/compiler";
-import { base64Loader } from './lib/base64loader';
+//import MillionLint from '@million/lint';
 
 import { chrome } from './src/manifests/chrome';
 import { brave } from './src/manifests/brave';
@@ -37,8 +36,7 @@ export default defineConfig({
   root: resolve(__dirname, './src'),
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '@lib': resolve(__dirname, './lib'),
+      '@': resolve(__dirname, './src')
     },
   },
   server: {
