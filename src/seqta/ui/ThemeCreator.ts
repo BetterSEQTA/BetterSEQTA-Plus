@@ -11,7 +11,7 @@ export function OpenThemeCreator( themeID: string = '' ) {
   const width = '310px';
 
   const themeCreatorIframe: HTMLIFrameElement = document.createElement('iframe');
-  themeCreatorIframe.src = `${browser.runtime.getURL('src/interface/index.html')}${ themeID != '' ? `?themeID=${themeID}` : '' }#themeCreator`;
+  themeCreatorIframe.src = `${browser.runtime.getURL('interface/index.html')}${ themeID != '' ? `?themeID=${themeID}` : '' }#themeCreator`;
   themeCreatorIframe.id = 'themeCreatorIframe';
   themeCreatorIframe.setAttribute('allowTransparency', 'true');
   themeCreatorIframe.setAttribute('excludeDarkCheck', 'true');

@@ -15,3 +15,7 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+button, a {
+  @apply text-[0.875rem];
+}

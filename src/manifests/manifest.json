@@ -4,38 +4,38 @@
   "version": "3.3.1",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "icons": {
-    "32": "src/resources/icons/icon-32.png",
-    "48": "src/resources/icons/icon-48.png",
-    "64": "src/resources/icons/icon-64.png"
+    "32": "resources/icons/icon-32.png",
+    "48": "resources/icons/icon-48.png",
+    "64": "resources/icons/icon-64.png"
   },
   "action": {
     "browser_style": true,
-    "default_popup": "src/interface/index.html#settings",
+    "default_popup": "interface/index.html#settings",
     "default_icon": {
-      "32": "src/resources/icons/icon-32.png",
-      "48": "src/resources/icons/icon-48.png",
-      "64": "src/resources/icons/icon-64.png"
+      "32": "resources/icons/icon-32.png",
+      "48": "resources/icons/icon-48.png",
+      "64": "resources/icons/icon-64.png"
     }
   },
   "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
-    "service_worker": "src/background.ts"
+    "service_worker": "background.ts"
   },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["src/SEQTA.ts"],
+      "js": ["SEQTA.ts"],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/interface/index.html"],
+      "resources": ["interface/index.html"],
       "matches": ["*://*/*"]
     },
     {
-      "resources": ["src/seqta/ui/background/background.html"],
+      "resources": ["seqta/ui/background/background.html"],
       "matches": ["*://*/*"]
     },
     {

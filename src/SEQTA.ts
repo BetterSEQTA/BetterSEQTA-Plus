@@ -5,42 +5,36 @@ import browser from 'webextension-polyfill'
 import { animate, spring, stagger } from 'motion'
 
 // Internal utilities and functions
-import { delay } from './seqta/utils/delay'
-import stringToHTML from './seqta/utils/stringToHTML'
-import { MessageHandler } from './seqta/utils/listeners/MessageListener'
-import { initializeSettingsState, settingsState } from './seqta/utils/listeners/SettingsState'
-import { StorageChangeHandler } from './seqta/utils/listeners/StorageChanges'
-import { eventManager } from './seqta/utils/listeners/EventManager'
+import { delay } from '@/seqta/utils/delay'
+import stringToHTML from '@/seqta/utils/stringToHTML'
+import { MessageHandler } from '@/seqta/utils/listeners/MessageListener'
+import { initializeSettingsState, settingsState } from '@/seqta/utils/listeners/SettingsState'
+import { StorageChangeHandler } from '@/seqta/utils/listeners/StorageChanges'
+import { eventManager } from '@/seqta/utils/listeners/EventManager'
 
 // UI and theme management
-import loading, { AppendLoadingSymbol } from './seqta/ui/Loading'
-import { enableCurrentTheme } from './seqta/ui/themes/enableCurrent'
-import { updateAllColors } from './seqta/ui/colors/Manager'
-import { SettingsResizer } from './seqta/ui/SettingsResizer'
-import { AddBetterSEQTAElements } from './seqta/ui/AddBetterSEQTAElements'
+import loading, { AppendLoadingSymbol } from '@/seqta/ui/Loading'
+import { enableCurrentTheme } from '@/seqta/ui/themes/enableCurrent'
+import { updateAllColors } from '@/seqta/ui/colors/Manager'
+import { SettingsResizer } from '@/seqta/ui/SettingsResizer'
+import { AddBetterSEQTAElements } from '@/seqta/ui/AddBetterSEQTAElements'
 
 // JSON content
-import MenuitemSVGKey from './seqta/content/MenuItemSVGKey.json'
-import ShortcutLinks from './seqta/content/links.json'
+import MenuitemSVGKey from '@/seqta/content/MenuItemSVGKey.json'
+import ShortcutLinks from '@/seqta/content/links.json'
 
 // Icons and fonts
-import IconFamily from './resources/fonts/IconFamily.woff'
-import LogoLight from './resources/icons/betterseqta-light-icon.png'
-import LogoLightOutline from './resources/icons/betterseqta-light-outline.png'
-import icon48 from './resources/icons/icon-48.png?base64'
-import assessmentsicon from './seqta/icons/assessmentsIcon'
-import coursesicon from './seqta/icons/coursesIcon'
+import IconFamily from '@/resources/fonts/IconFamily.woff'
+import LogoLight from '@/resources/icons/betterseqta-light-icon.png'
+import LogoLightOutline from '@/resources/icons/betterseqta-light-outline.png'
+import icon48 from '@/resources/icons/icon-48.png?base64'
+import assessmentsicon from '@/seqta/icons/assessmentsIcon'
+import coursesicon from '@/seqta/icons/coursesIcon'
 
 // Stylesheets
-import iframeCSS from './css/iframe.scss?raw'
-import injectedCSS from './css/injected.scss?inline'
-import documentLoadCSS from './css/documentload.scss?inline'
-
-declare global {
-  interface Window {
-    chrome?: any
-  }
-}
+import iframeCSS from '@/css/iframe.scss?raw'
+import injectedCSS from '@/css/injected.scss?inline'
+import documentLoadCSS from '@/css/documentload.scss?inline'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -66,7 +60,7 @@ async function init() {
 
     const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
     icon.href = icon48
-    
+
     try {
       // wait until settingsState has been loaded from storage
       await initializeSettingsState();
@@ -975,7 +969,7 @@ export function addExtensionSettings() {
   if (extensionContainer) extensionContainer.appendChild(extensionPopup)
 
   const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL('src/interface/index.html')}#settings/embedded`
+  extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')

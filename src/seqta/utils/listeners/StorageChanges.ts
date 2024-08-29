@@ -36,7 +36,8 @@ export class StorageChangeHandler {
     updateAllColors();
   }
 
-  private handleOnOffChange() {
+  private handleOnOffChange(newValue: boolean) {
+    if (newValue) return;
     browser.runtime.sendMessage({ type: 'reloadTabs' });
   }
 

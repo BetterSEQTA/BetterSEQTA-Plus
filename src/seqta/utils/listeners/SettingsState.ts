@@ -93,7 +93,7 @@ class StorageManager {
   /**
    * Register a listener for a setting.
    * @param prop The setting to listen to.
-   * @param listener The listener to call when the setting changes.
+   * @param listener The listener to call when the setting changes -> takes two arguments, (newValue, oldValue)
    */
   public register(prop: keyof SettingsState, listener: ChangeListener): void {
     if (!this.listeners[prop]) {
