@@ -8,6 +8,6 @@ export async function appendBackgroundToUI() {
   background.id = 'background';
   background.classList.add('imageBackground');
   background.setAttribute('excludeDarkCheck', 'true');
-  background.src = browser.runtime.getURL('src/seqta/ui/background/background.html');
+  background.src = browser.runtime.getURL('seqta/ui/background/background.html');
   parent!.appendChild(background);
 }

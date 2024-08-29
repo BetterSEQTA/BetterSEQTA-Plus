@@ -1,0 +1,73 @@
+name: MVP - make, version & publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # This line adds manual triggering from the GitHub UI
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  make_version_publish:
+    name: Make, Version & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install bun & Deps
+        run: |
+          npm install bun -g
+          bun install
+
+      - name: 'Build - all browsers'
+        id: buildProject
+        run: MODE=chrome vite build && MODE=firefox vite build
+
+      - name: '[ V E R S I O N ] : Create or Update Release Pull Request - Version Changes'
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Get current version info from package.json'
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        id: package
+        run: |
+          echo "::set-output name=PACKAGE_NAME::$(jq -r .name package.json)"
+          echo "::set-output name=PACKAGE_VERSION::$(jq -r .version package.json)"
+        working-directory: ${{ github.workspace }}
+
+      - name: 'Check if a git release already exists for current version'
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        id: checkRelease
+        run: |
+          TAG_NAME=${{ steps.package.outputs.PACKAGE_NAME }}@${{ steps.package.outputs.PACKAGE_VERSION }}
+          if gh release view $TAG_NAME &>/dev/null; then
+            echo "Release $TAG_NAME already exists."
+            echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: 'Create Release Archive(s) - zip 🫰 it 🫰 up 🫰 !'
+        id: zip
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: bun run zip
+
+      - name: 'Create a git release w/ notes & release archive(s)'
+        id: gitRelease
+        if: steps.changesets.outputs.hasChangesets == 'false' && env.RELEASE_EXISTS != 'true'
+        run: bun run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_NAME: ${{ steps.package.outputs.PACKAGE_NAME }}
+          PACKAGE_VERSION: ${{ steps.package.outputs.PACKAGE_VERSION }}

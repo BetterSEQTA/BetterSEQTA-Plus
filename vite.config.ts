@@ -1,45 +1,46 @@
 import { defineConfig } from 'vite';
-import { join } from 'path';
-import fs from 'fs';
-import mime from 'mime-types';
+import { join, resolve } from 'path';
 
-import manifest from './manifest.json';
-import firefoxManifest from './manifest.firefox.json';
+import type { BuildTarget } from './lib/types';
+
+//import MillionLint from '@million/lint';
 
 import react from '@vitejs/plugin-react-swc';
-//import MillionLint from '@million/lint';
-import { crx } from '@crxjs/vite-plugin';
 import million from "million/compiler";
+import { base64Loader } from './lib/base64loader';
 
-const isFirefox = process.env.VITE_TARGET === 'firefox';
+import { chrome } from './src/manifests/chrome';
+import { brave } from './src/manifests/brave';
+import { edge } from './src/manifests/edge';
+import { firefox } from './src/manifests/firefox';
+import { opera } from './src/manifests/opera';
+import { safari } from './src/manifests/safari';
+import { crx } from '@crxjs/vite-plugin';
 
-const base64Loader = {
-  name: "base64-loader",
-  transform(_: any, id: string) {
-    const [filePath, query] = id.split("?");
-    if (query !== "base64") return null;
+const targets: BuildTarget[] = [
+  chrome, brave, edge, firefox, opera, safari
+]
 
-    const data = fs.readFileSync(filePath, { encoding: 'base64' });
-    const mimeType = mime.lookup(filePath);
-    const dataURL = `data:${mimeType};base64,${data}`;
-
-    return `export default '${dataURL}';`;
-  },
-};
-
-const plugins = [
-  react(),
-  base64Loader,
-  million.vite({ auto: true }),
-  //MillionLint.vite(), /* enable for testing and debugging performance */
-  crx({
-    manifest: isFirefox ? firefoxManifest : manifest,
-    browser: isFirefox ? 'firefox' : 'chrome'
-  })
-];
+const mode = process.env.MODE || 'chrome';
 
 export default defineConfig({
-  plugins: plugins,
+  plugins: [
+    base64Loader,
+    react(),
+    million.vite({ auto: true }),
+    //MillionLint.vite(), /* enable for testing and debugging performance */
+    crx({
+      manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
+      browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
+    })
+  ],
+  root: resolve(__dirname, './src'),
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '$lib': resolve(__dirname, './lib'),
+    },
+  },
   server: {
     port: 5173,
     hmr: {
@@ -49,7 +50,9 @@ export default defineConfig({
     }
   },
   build: {
-    minify: true,
+    outDir: resolve(__dirname, 'dist', mode),
+    emptyOutDir: true,
+    minify: false,
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),

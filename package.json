@@ -1,15 +1,20 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development, and incorporate a plethora of new features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "dev": "vite dev",
-    "dev:firefox": "VITE_TARGET=firefox vite build --watch",
-    "build": "vite build",
-    "build:firefox": "VITE_TARGET=firefox vite build",
-    "package": "rimraf ./dist/*.map && 7z a -tzip extension.zip ./dist/*"
+    "dev": "MODE=chrome vite dev",
+    "dev:firefox": "MODE=firefox vite build --watch",
+    "build": "MODE=chrome vite build && MODE=firefox vite build",
+    "build:chrome": "MODE=chrome vite build",
+    "build:firefox": "MODE=firefox vite build",
+    "build:safari": "MODE=safari vite build",
+    "convert:safari": "xcrun safari-web-extension-converter dist/safari --project-location . --app-name $npm_package_name-safari",
+    "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
+    "publish": "bun lib/publish.js --b",
+    "zip": "bedframe zip"
   },
   "targets": {
     "prod": {
@@ -19,22 +24,29 @@
     }
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "SethBurkart123",
+    "email": "betterseqta@betterseqta.com",
+    "url": "https://github.com/BetterSEQTA/BetterSEQTA-plus"
+  },
   "license": "MIT",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.23",
     "@types/mime-types": "^2.1.4",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "eslint": "^8.56.0",
+    "glob": "^11.0.0",
     "mime-types": "^2.1.35",
     "parcel": "^2.11.0",
     "prettier": "^3.2.5",
     "process": "^0.11.10",
     "sass": "^1.70.0",
     "sass-loader": "^13.3.3",
+    "semver": "^7.6.3",
     "url": "^0.11.3"
   },
   "dependencies": {
+    "@bedframe/cli": "^0.0.85",
     "@blocknote/core": "^0.14.1",
     "@blocknote/mantine": "^0.14.1",
     "@blocknote/react": "^0.14.1",
@@ -59,10 +71,12 @@
     "color": "^4.2.3",
     "dompurify": "^3.0.8",
     "framer-motion": "^11.0.25",
+    "kolorist": "^1.8.0",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "million": "latest",
     "motion": "^10.17.0",
+    "publish-browser-extension": "^2.2.1",
     "react": "^18.2.0",
     "react-best-gradient-color-picker": "3.0.5",
     "react-dom": "^18.2.0",
@@ -76,7 +90,7 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
     "uuid": "^9.0.1",
-    "vite": "^5.2.2",
+    "vite": "^5.4.2",
     "webextension-polyfill": "^0.10.0"
   }
 }

@@ -7,24 +7,15 @@ yarn.lock
 
 .parcel-cache
 .env
+.env.submit
 
 # Build
 extension.zip
 build/
 dist/
+betterseqtaplus-safari/
 
 .million/
 .vscode/
 
 **/.DS_Store
-# Sentry Config File
-.env.sentry-build-plugin
-
-# Sentry Config File
-.env.sentry-build-plugin
-
-# Sentry Config File
-.env.sentry-build-plugin
-
-# Sentry Config File
-.sentryclirc
