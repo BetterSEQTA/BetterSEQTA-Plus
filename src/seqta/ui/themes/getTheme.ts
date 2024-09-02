@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { CustomImageBase64, CustomTheme, CustomThemeBase64 } from '@/interface/types/CustomThemes';
+import type { CustomImageBase64, CustomTheme, CustomThemeBase64 } from '@/old-interface/types/CustomThemes';
 import { blobToBase64 } from '@/seqta/utils/blobToBase64'; 
 
 

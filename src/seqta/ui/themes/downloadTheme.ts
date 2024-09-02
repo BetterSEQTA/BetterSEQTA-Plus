@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { Theme } from '@/interface/pages/Store';
+import type { Theme } from '@/old-interface/pages/Store';
 import base64ToBlob from '@/seqta/utils/base64ToBlob';
 
 type ThemeContent = {

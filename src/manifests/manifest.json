@@ -10,7 +10,7 @@
   },
   "action": {
     "browser_style": true,
-    "default_popup": "interface/index.html#settings",
+    "default_popup": "svelte-interface/index.html#settings",
     "default_icon": {
       "32": "resources/icons/icon-32.png",
       "48": "resources/icons/icon-48.png",
@@ -30,10 +30,6 @@
     }
   ],
   "web_accessible_resources": [
-    {
-      "resources": ["interface/index.html"],
-      "matches": ["*://*/*"]
-    },
     {
       "resources": ["seqta/ui/background/background.html"],
       "matches": ["*://*/*"]

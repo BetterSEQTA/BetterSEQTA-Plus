@@ -8,6 +8,8 @@ import react from '@vitejs/plugin-react-swc';
 import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+
 import { chrome } from './src/manifests/chrome';
 import { brave } from './src/manifests/brave';
 import { edge } from './src/manifests/edge';
@@ -25,8 +27,11 @@ const mode = process.env.MODE || 'chrome';
 export default defineConfig({
   plugins: [
     base64Loader,
-    react(),
-    million.vite({ auto: true }),
+    //react(),
+    svelte({
+      emitCss: false,
+    }),
+    //million.vite({ auto: true }),
     //MillionLint.vite(), /* enable for testing and debugging performance */
     crx({
       manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
@@ -53,7 +58,7 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
-        settings: join(__dirname, 'src', 'interface', 'index.html'),
+        settings: join(__dirname, 'src', 'svelte-interface', 'index.html'),
         backgrounds: join(__dirname, 'src', 'seqta', 'ui', 'background', 'background.html')
       }
     }
