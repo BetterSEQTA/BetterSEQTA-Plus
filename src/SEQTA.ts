@@ -35,6 +35,7 @@ import coursesicon from '@/seqta/icons/coursesIcon'
 import iframeCSS from '@/css/iframe.scss?raw'
 import injectedCSS from '@/css/injected.scss?inline'
 import documentLoadCSS from '@/css/documentload.scss?inline'
+import initSvelteInterface from './svelte-interface/main'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -936,7 +937,7 @@ export function AppendElementsToDisabledPage() {
 
 export function closeSettings() {
   const ExtensionSettings = document.getElementById('ExtensionPopup')!
-  const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
+  // = document.getElementById('ExtensionIframe') as HTMLIFrameElement
 
   if (SettingsClicked == true) {
     ExtensionSettings!.classList.add('hide')
@@ -952,9 +953,7 @@ export function closeSettings() {
     }
     SettingsClicked = false
 
-    if (ExtensionIframe.contentWindow) {
-      ExtensionIframe.contentWindow.postMessage('popupClosed', '*')
-    }
+    // hide extension frame
   }
 
   ExtensionSettings!.classList.add('hide')
@@ -968,23 +967,26 @@ export function addExtensionSettings() {
   const extensionContainer = document.querySelector('#container') as HTMLDivElement
   if (extensionContainer) extensionContainer.appendChild(extensionPopup)
 
-  const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL('interface/index.html')}#settings/embedded`
+  /* const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
+  extensionIframe.src = `${browser.runtime.getURL('svelte-interface/index.html')}#settings/embedded`
   extensionIframe.id = 'ExtensionIframe'
   extensionIframe.setAttribute('allowTransparency', 'true')
   extensionIframe.setAttribute('excludeDarkCheck', 'true')
   extensionIframe.style.width = '384px'
   extensionIframe.style.height = '100%'
   extensionIframe.style.border = 'none'
-  extensionPopup.appendChild(extensionIframe)
+  extensionPopup.appendChild(extensionIframe) */
+
+  // create shadow dom and render svelte app
+  const shadow = extensionPopup.attachShadow({ mode: 'open' });
+  const svelteApp = initSvelteInterface(shadow);
+  console.log(svelteApp)
 
   const container = document.getElementById('container')
 
   new SettingsResizer();
   
   const closeExtensionPopup = () => {
-    const ExtensionIframe = document.getElementById('ExtensionIframe') as HTMLIFrameElement
-
     extensionPopup.classList.add('hide')
     if (settingsState.animations) {
       animate(
@@ -996,14 +998,13 @@ export function addExtensionSettings() {
       extensionPopup.style.opacity = '0'
       extensionPopup.style.transform = 'scale(0)'
     }
-    if (ExtensionIframe.contentWindow) {
-      ExtensionIframe.contentWindow.postMessage('popupClosed', '*')
-    }
+    // tell it popup closed
     SettingsClicked = false
   }
 
   container!.onclick = (event) => {
     if ((event.target as HTMLElement).closest('#AddedSettings') == null && SettingsClicked) {
+      if (event.target == extensionPopup) return;
       closeExtensionPopup()
     }
   }
@@ -1247,7 +1248,7 @@ export function setupSettingsButton() {
         extensionPopup!.style.opacity = '0'
         extensionPopup!.style.transform = 'scale(0)'
       }
-      (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*');
+      /* (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*'); */
       SettingsClicked = false;
     } else {
       extensionPopup!.classList.remove('hide');

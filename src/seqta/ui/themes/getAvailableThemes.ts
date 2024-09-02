@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { CustomTheme, ThemeList } from '@/interface/types/CustomThemes';
+import type { CustomTheme, ThemeList } from '@/old-interface/types/CustomThemes';
 import { blobToBase64 } from '@/seqta/utils/blobToBase64';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
