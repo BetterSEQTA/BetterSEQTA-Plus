@@ -1,11 +1,11 @@
 import type { SettingsState } from './AppProps';
-import { ComponentType } from 'svelte';
+import type { Component } from 'svelte';
 
 export interface SettingsList {
   title: string;
   id: number;
   description: string;
-  component: ComponentType;
+  Component: Component;
   props?: any;
 }
 export interface SettingsProps {
