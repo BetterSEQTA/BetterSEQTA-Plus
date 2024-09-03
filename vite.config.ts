@@ -29,7 +29,7 @@ export default defineConfig({
     base64Loader,
     //react(),
     svelte({
-      emitCss: false,
+      emitCss: false
     }),
     //million.vite({ auto: true }),
     //MillionLint.vite(), /* enable for testing and debugging performance */
@@ -54,7 +54,7 @@ export default defineConfig({
   },
   build: {
     outDir: resolve(__dirname, 'dist', mode),
-    emptyOutDir: true,
+    emptyOutDir: false,
     minify: false,
     rollupOptions: {
       input: {

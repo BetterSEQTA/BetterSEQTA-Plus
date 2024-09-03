@@ -1,64 +1,63 @@
-<script>
-	import { settingsState } from '../state/SettingsState.ts';
+<script lang="ts">
   import { animate, spring } from 'motion';
-  import './Switch.css'
-  import { onMount } from "svelte"
-  import { delay } from "../../seqta/utils/delay"
+  import { onMount } from "svelte";
 
-  export let setting;
-  export let onChange = () => {}
+  let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
+
+  let handle: HTMLElement | null = null;
 
   const toggleSwitch = () => {
-    const newIsOn = !$settingsState[setting]
-    onChange(newIsOn)
-  }
+    onChange(!state);
+  };
+
+  $effect(() => {
+    console.log('state', state);
+  });
 
   const springParams = {
-    type: 'spring',
     stiffness: 700,
     damping: 30,
-  }
+  };
 
-  let handle;
-
-  const animation = (enabled) => {
+  const animateSwitch = (enabled: boolean) => {
     if (handle) {
       animate(
         handle,
+        { x: enabled ? 20 : 0 },
         {
-          x: enabled ? 24 : 0,
-        },
-        {
-          easing: spring({ stiffness: 500, damping: 30 })
+          easing: spring(springParams),
         }
-      )
+      );
     }
-  }
+  };
 
-  $: ((enabled) => {
-      if (handle) {
-        animate(
-          handle,
-          { x: enabled ? 24 : 0 },
-          { easing: spring({ stiffness: 500, damping: 30 }) }
-        )
-      }
-    })($settingsState[setting])
+  // Trigger animation whenever state changes
+  $effect(() => animateSwitch(state));
 
+  onMount(() => {
+    // Initialize the position of the switch
+    animateSwitch(state);
+  });
 </script>
 
 <div
-  id={setting}
   class="flex w-14 p-1 cursor-pointer transition rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
-  data-ison={$settingsState[setting]}
-  on:click={toggleSwitch}
-  on:keydown={(e) => e.key === "Enter" && toggleSwitch()}
+  data-ison={state}
+  onclick={toggleSwitch}
+  onkeydown={(e) => e.key === "Enter" && toggleSwitch()}
   role="switch"
-  aria-checked={$settingsState[setting]}
+  aria-checked={state}
   tabindex="0"
 >
   <div
     bind:this={handle}
     class="w-6 h-6 bg-white dark:bg-[#FEFEFE] rounded-full drop-shadow-md"
-  />
+  ></div>
 </div>
+
+<style>
+  .dark .switch[data-ison="true"],
+  .switch[data-ison="true"] {
+    background-color: #30D259;
+  }
+</style>

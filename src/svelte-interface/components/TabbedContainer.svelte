@@ -1,33 +1,41 @@
-<script>
+<script lang="ts">
+  // @ts-expect-error umm idk
   import { MotionDiv } from 'svelte-motion';
-  import { onMount, onDestroy } from 'svelte';
-  import { writable, derived } from 'svelte/store';
   import './TabbedContainer.css';
+  import type { Component } from 'svelte'
+  import { onMount } from 'svelte';
 
-  export let tabs = [];
-
-  let activeTab = writable(0);
-  const hoveredTab = writable(null);
-  const position = writable(0);
-  let tabWidth = 0;
-  let containerRef;
+  let { tabs } = $props<{ tabs: { title: string, Content: Component }[] }>();
+  let activeTab = $state(0);
+  let hoveredTab = $state<number | null>(null);
+  let containerRef: HTMLElement | null = null;
+  let tabWidth = $state(0);
 
   const springTransition = { type: 'spring', stiffness: 250, damping: 25 };
 
-  // Calculate tabWidth dynamically based on tabs length
-  onMount(() => {
+  const updateTabWidth = () => {
+    tabWidth = tabs.length > 0 ? 100 / tabs.length : 0;
+    if (!containerRef) return;
+    containerRef.style.setProperty('--tab-width', `${tabWidth}%`);
+  };
+
+  const calcXPos = (index: number | null) => {
     if (containerRef) {
-
-      tabWidth = 100 / tabs.length;
-      document.documentElement.style.setProperty('--tab-width', `${tabWidth}%`);
-
-      calcXPos = (index) => tabWidth * (index !== null ? index : $activeTab) * (containerRef !== null ? containerRef.getBoundingClientRect().width : 0) / 100;
+      return tabWidth * (index !== null ? index : activeTab) * containerRef.getBoundingClientRect().width / 100;
     }
+    return 0;
+  };
 
-    // Listen for messages
-    const handleMessage = (event) => {
+  $effect(() => {
+    calcXPos(hoveredTab);
+  });
+
+  onMount(() => {
+    updateTabWidth();
+
+    const handleMessage = (event: MessageEvent) => {
       if (event.data === "popupClosed") {
-        activeTab.set(0);
+        activeTab = 0;
       }
     };
     window.addEventListener("message", handleMessage);
@@ -37,23 +45,28 @@
     };
   });
 
-  let calcXPos = (index) => tabWidth * (index !== null ? index : $activeTab);
+  /* $effect(() => {
+    if (tabs.length > 0) {
+      updateTabWidth();
+    }
+  }); */
 </script>
 
-<div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4">
+<div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 tab-width-container">
   <div class="hidden tab-width"></div>
   <div class="relative flex">
     <MotionDiv
-      class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] tab-width rounded-full opacity-40"
-      animate={{ x: calcXPos($hoveredTab) }}
+      class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40"
+      animate={{ x: calcXPos(hoveredTab) }}
+      style="width: var(--tab-width)"
       transition={springTransition}
     />
     {#each tabs as { title }, index}
       <button
         class="relative z-10 flex-1 px-4 py-2"
-        on:click={() => activeTab.set(index)}
-        on:mouseenter={() => hoveredTab.set(index)}
-        on:mouseleave={() => hoveredTab.set(null)}
+        onclick={() => activeTab = index}
+        onmouseenter={() => hoveredTab = index}
+        onmouseleave={() => hoveredTab = null}
       >
         {title}
       </button>
@@ -62,22 +75,22 @@
 </div>
 <div class="h-full px-4 overflow-y-scroll overflow-x-clip">
   <MotionDiv
-    animate={{ x: `${-$activeTab * 100}%` }}
+    animate={{ x: `${-activeTab * 100}%` }}
     transition={springTransition}
   >
     <div class="flex">
-      {#each tabs as { content }, index}
-      <div class="absolute w-full transition-opacity duration-300 pb-4 {$activeTab === index ? 'opacity-100' : 'opacity-0'}"
-        style="left: {index * 100}%;">
-        <svelte:component this={content} />
-      </div>
+      {#each tabs as { Content }, index}
+        <div class="absolute w-full transition-opacity duration-300 pb-4 {activeTab === index ? 'opacity-100' : 'opacity-0'}"
+          style="left: {index * 100}%;">
+          <Content />
+        </div>
       {/each}
     </div>
   </MotionDiv>
 </div>
 
 <style>
-  :root {
-    --tab-width: 0px;
+  .tab-width {
+    width: var(--tab-width);
   }
 </style>

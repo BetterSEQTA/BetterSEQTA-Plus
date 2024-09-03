@@ -48,6 +48,7 @@ var IsSEQTAPage = false
 const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
 init()
 
+
 async function init() {
   CheckForMenuList()
   const hasSEQTATitle = document.title.includes('SEQTA Learn')

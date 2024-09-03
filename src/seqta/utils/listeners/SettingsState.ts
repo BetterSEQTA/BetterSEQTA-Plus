@@ -2,15 +2,18 @@ import browser from 'webextension-polyfill';
 import type { SettingsState } from '@/types/storage';
 
 type ChangeListener = (newValue: any, oldValue: any) => void;
+type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 
 class StorageManager {
   private static instance: StorageManager;
   private data: SettingsState;
   private listeners: { [key: string]: ChangeListener[] };
+  private globalListeners: GlobalChangeListener[];
 
   private constructor() {
     this.data = {} as SettingsState;
     this.listeners = {};
+    this.globalListeners = [];
     this.loadFromStorage();
 
     const handler: ProxyHandler<StorageManager> = {
@@ -57,6 +60,11 @@ class StorageManager {
     await instance.loadFromStorage();
     return instance;
   }
+  
+  public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
+    this.data[key] = value;
+    this.saveToStorage();
+  }
 
   private async loadFromStorage(): Promise<void> {
     const result = await browser.storage.local.get();
@@ -85,6 +93,9 @@ class StorageManager {
               listener(newValue, oldValue);
             }
           }
+          for (const listener of this.globalListeners) {
+            listener(newValue, oldValue, key);
+          }
         }
       }
     });
@@ -100,6 +111,22 @@ class StorageManager {
       this.listeners[prop] = [];
     }
     this.listeners[prop].push(listener);
+  }
+
+  /**
+   * Register a listener for any setting.
+   * @param listener The listener to call when any setting changes -> takes two arguments, (newValue, oldValue)
+   */
+  public registerGlobal(listener: GlobalChangeListener): void {
+    this.globalListeners.push(listener);
+  }
+
+  /**
+   * Get all settings.
+   * @returns All settings.
+   */
+  public getAll(): SettingsState {
+    return this.data;
   }
 }
 

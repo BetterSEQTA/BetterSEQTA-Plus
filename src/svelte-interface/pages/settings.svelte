@@ -11,13 +11,6 @@
   };
     
   let standalone = false;
-
-  // Define the tabs array
-  const tabs = [
-    { title: 'Settings', content: Settings },
-    { title: 'Shortcuts', content: Shortcuts },
-    { title: 'Themes', content: Theme },
-  ];
 </script>
 
 <div class="relative flex flex-col w-[384px] shadow-2xl gap-2 bg-white {standalone ? '' : 'rounded-xl'} h-[100vh] overflow-clip dark:bg-zinc-800 dark:text-white">
@@ -27,5 +20,9 @@
     <button on:click={openChangelog} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-1 bg-zinc-100 dark:bg-zinc-700"></button>
   </div>
   <!-- <Picker /> -->
-  <TabbedContainer {tabs} />
+  <TabbedContainer tabs={[
+    { title: 'Settings', Content: Settings },
+    { title: 'Shortcuts', Content: Shortcuts },
+    { title: 'Themes', Content: Theme },
+  ]} />
 </div>
