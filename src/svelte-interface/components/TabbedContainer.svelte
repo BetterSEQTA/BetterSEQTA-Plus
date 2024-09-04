@@ -53,12 +53,11 @@
 </script>
 
 <div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 tab-width-container">
-  <div class="hidden tab-width"></div>
+  <div class="hidden"></div>
   <div class="relative flex">
     <MotionDiv
-      class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40"
+      class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
       animate={{ x: calcXPos(hoveredTab) }}
-      style="width: var(--tab-width)"
       transition={springTransition}
     />
     {#each tabs as { title }, index}
@@ -88,9 +87,3 @@
     </div>
   </MotionDiv>
 </div>
-
-<style>
-  .tab-width {
-    width: var(--tab-width);
-  }
-</style>
