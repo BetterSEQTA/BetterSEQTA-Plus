@@ -78,7 +78,7 @@
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "million": "latest",
-    "motion": "^10.17.0",
+    "motion": "^10.18.0",
     "publish-browser-extension": "^2.2.1",
     "react": "^18.2.0",
     "react-best-gradient-color-picker": "3.0.5",

@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
 
   let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
-
   let handle: HTMLElement | null = null;
 
   const toggleSwitch = () => {
@@ -11,20 +10,22 @@
   };
 
   const springParams = {
-    stiffness: 700,
+    stiffness: 600,
     damping: 30,
   };
 
   const animateSwitch = (enabled: boolean) => {
-    if (handle) {
-      animate(
-        handle,
-        { x: enabled ? 20 : 0 },
-        {
-          easing: spring(springParams),
-        }
-      );
-    }
+    if (!handle) return;
+    animate(
+      handle,
+      {
+        x: enabled ? 20 : 0,
+        scaleX: [1, 2, 1]
+      },
+      {
+        easing: spring(springParams),
+      }
+    );
   };
 
   // Trigger animation whenever state changes
