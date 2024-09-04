@@ -1,8 +1,7 @@
 <script lang="ts">
-  export let onClick: () => void;
-  export let text: string;
+  let { onClick, text, ...props } = $props<{ onClick: () => void, text: string, [key: string]: any }>();
 </script>
 
-<button on:click={onClick} class='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md'>
+<button onclick={onClick} class='px-4 py-1 text-[0.75rem] dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white rounded-md' {...props}>
   {text}
 </button>
