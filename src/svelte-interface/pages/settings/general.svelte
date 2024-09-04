@@ -6,24 +6,32 @@
 
   import browser from "webextension-polyfill"
   
-  import type { SettingsList } from "../../types/SettingsProps"
-  import { createSettingsState } from "../../state/SettingsStore.svelte.ts"
+  import type { SettingsList } from "@/svelte-interface/types/SettingsProps"
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
+</script>
 
-  const settingsStore = createSettingsState();
+{#snippet Setting({ title, description, Component, props }: SettingsList) }
+<div class="flex items-center justify-between px-4 py-3">
+  <div class="pr-4">
+    <h2 class="text-sm font-bold">{title}</h2>
+    <p class="text-xs">{description}</p>
+  </div>
+  <div>
+    <Component {...props} />
+  </div>
+</div>
+{/snippet}
 
-  let test = $state(false);
-
-  const settings: SettingsList[] = [
+<div class="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100 dark:divide-zinc-700">
+  {#each [
     {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
       id: 1,
       Component: Switch,
       props: {
-        /* state: $settingsStore.transparencyEffects,
-        onChange: (isOn: boolean) => settingsStore.setKey('transparencyEffects', isOn) */
-        state: test,
-        onChange: (isOn: boolean) => test = isOn
+        state: $settingsState.transparencyEffects,
+        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
       }
     },
     {
@@ -32,8 +40,8 @@
       id: 2,
       Component: Switch as any,
       props: {
-        state: $settingsStore.animatedbk,
-        onChange: (isOn: boolean) => settingsStore.setKey('animatedbk', isOn)
+        state: $settingsState.animatedbk,
+        onChange: (isOn: boolean) => settingsState.animatedbk = isOn
       }
     },
     {
@@ -42,8 +50,8 @@
       id: 3,
       Component: Slider,
       props: {
-        state: $settingsStore.bksliderinput,
-        onChange: (value: number) => settingsStore.setKey('bksliderinput', `${value}`)
+        state: $settingsState.bksliderinput,
+        onChange: (value: number) => settingsState.bksliderinput = `${value}`
       }
     },
     /* {
@@ -68,8 +76,8 @@
       id: 7,
       Component: Switch,
       props: {
-        state: $settingsStore.notificationcollector,
-        onChange: (isOn: boolean) => settingsStore.setKey('notificationcollector', isOn)
+        state: $settingsState.notificationcollector,
+        onChange: (isOn: boolean) => settingsState.notificationcollector = isOn
       }
     },
     {
@@ -78,8 +86,8 @@
       id: 8,
       Component: Switch,
       props: {
-        state: $settingsStore.lessonalert,
-        onChange: (isOn: boolean) => settingsStore.setKey('lessonalert', isOn)
+        state: $settingsState.lessonalert,
+        onChange: (isOn: boolean) => settingsState.lessonalert = isOn
       }
     },
     {
@@ -88,26 +96,11 @@
       id: 9,
       Component: Switch,
       props: {
-        state: $settingsStore.onoff,
-        onChange: (isOn: boolean) => settingsStore.setKey('onoff', isOn)
+        state: $settingsState.onoff,
+        onChange: (isOn: boolean) => settingsState.onoff = isOn
       }
     }
-  ];
-</script>
-
-<div class="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100 dark:divide-zinc-700">
-  <Switch state={$settingsStore.DarkMode} onChange={(isOn: boolean) => settingsStore.setKey('DarkMode', isOn)} />
-  {#if settings}
-    {#each settings as { title, description, Component, props, id } (id)}
-      <div  class="flex items-center justify-between px-4 py-3">
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">{title}</h2>
-          <p class="text-xs">{description}</p>
-        </div>
-        <div>
-          <Component {...props} />
-        </div>
-      </div>
-    {/each}
-  {/if}
+  ] as setting}
+    {@render Setting(setting)}
+  {/each}
 </div>

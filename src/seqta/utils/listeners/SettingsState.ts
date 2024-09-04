@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import type { SettingsState } from '@/types/storage';
+import type { Subscriber, Unsubscriber } from 'svelte/store';
 
 type ChangeListener = (newValue: any, oldValue: any) => void;
 type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
@@ -9,6 +10,7 @@ class StorageManager {
   private data: SettingsState;
   private listeners: { [key: string]: ChangeListener[] };
   private globalListeners: GlobalChangeListener[];
+  private subscribers: Set<Subscriber<SettingsState>> = new Set();
 
   private constructor() {
     this.data = {} as SettingsState;
@@ -60,7 +62,7 @@ class StorageManager {
     await instance.loadFromStorage();
     return instance;
   }
-  
+
   public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
     this.data[key] = value;
     this.saveToStorage();
@@ -73,6 +75,7 @@ class StorageManager {
 
   private async saveToStorage(): Promise<void> {
     await browser.storage.local.set(this.data);
+    this.notifySubscribers();
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -127,6 +130,20 @@ class StorageManager {
    */
   public getAll(): SettingsState {
     return this.data;
+  }
+
+  public subscribe(run: Subscriber<SettingsState>): Unsubscriber {
+    this.subscribers.add(run);
+    run(this.data);
+    return () => {
+      this.subscribers.delete(run);
+    };
+  }
+
+  private notifySubscribers(): void {
+    for (const subscriber of this.subscribers) {
+      subscriber(this.data);
+    }
   }
 }
 

@@ -10,10 +10,6 @@
     onChange(!state);
   };
 
-  $effect(() => {
-    console.log('state', state);
-  });
-
   const springParams = {
     stiffness: 700,
     damping: 30,
