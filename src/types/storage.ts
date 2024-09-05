@@ -44,7 +44,7 @@ interface ToggleItem {
   toggle: boolean;
 }
 
-interface Shortcut {
+export interface Shortcut {
   enabled: boolean;
   name: string;
 }
