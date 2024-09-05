@@ -5,14 +5,23 @@
   import Theme from './settings/theme.svelte';
   import browser from 'webextension-polyfill';
 
+  import { createStandalone } from '../utils/standalone.svelte';
+  import { onMount } from 'svelte'
+
   const openChangelog = () => {
     browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenChangelog' });
   };
     
-  let standalone = $state(false);
+  let { standalone } = $props<{ standalone: boolean }>();
+
+  onMount(() => {
+    if (!standalone) return;
+    let globalStandalone = createStandalone();
+    globalStandalone = standalone;
+  });
 </script>
 
-<div class="relative flex flex-col w-[384px] shadow-2xl gap-2 bg-white {standalone ? '' : 'rounded-xl'} h-[100vh] overflow-clip dark:bg-zinc-800 dark:text-white">
+<div class="relative flex flex-col w-[384px] shadow-2xl gap-2 bg-white { standalone ? 'h-[600px]' : 'h-[100vh] rounded-xl' } overflow-clip dark:bg-zinc-800 dark:text-white">
   <div class="grid border-b border-b-zinc-200/40 place-items-center">
     <img src={browser.runtime.getURL('resources/icons/betterseqta-dark-full.png')} class="w-4/5 dark:hidden" alt="Light logo" />
     <img src={browser.runtime.getURL('resources/icons/betterseqta-light-full.png')} class="hidden w-4/5 dark:block" alt="Dark logo" />

@@ -1,13 +1,10 @@
 <script lang="ts">
   import { animate, spring } from 'motion';
-  import { onMount } from "svelte";
+  import { createStandalone } from '../utils/standalone.svelte'
 
   let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
   let handle: HTMLElement | null = null;
-
-  const toggleSwitch = () => {
-    onChange(!state);
-  };
+  let standalone = createStandalone();
 
   const springParams = {
     stiffness: 600,
@@ -19,8 +16,7 @@
     animate(
       handle,
       {
-        x: enabled ? 20 : 0,
-        scaleX: [1, 2, 1]
+        x: enabled ? (standalone.standalone ? 24 : 20) : 0,
       },
       {
         easing: spring(springParams),
@@ -30,18 +26,13 @@
 
   // Trigger animation whenever state changes
   $effect(() => animateSwitch(state));
-
-  onMount(() => {
-    // Initialize the position of the switch
-    animateSwitch(state);
-  });
 </script>
 
 <div
-  class="flex w-14 p-1 cursor-pointer transition rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
+  class="flex w-14 p-1 cursor-pointer transition-all duration-500 rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
   data-ison={state}
-  onclick={toggleSwitch}
-  onkeydown={(e) => e.key === "Enter" && toggleSwitch()}
+  onclick={() => onChange(!state)}
+  onkeydown={(e) => e.key === "Enter" && onChange(!state)}
   role="switch"
   aria-checked={state}
   tabindex="0"
