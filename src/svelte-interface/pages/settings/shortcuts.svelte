@@ -3,11 +3,6 @@
     import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
 
 
-    function formatUrl(inputUrl: string) {
-        const protocolRegex = /^(http:\/\/|https:\/\/|ftp:\/\/)/;
-        return protocolRegex.test(inputUrl) ? inputUrl : `https://${inputUrl}`;
-    }
-
 </script>
 
 {#snippet Shortcuts([string, Shortcut]) }
@@ -24,6 +19,7 @@
 
 <div class="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100 dark:divide-zinc-700">
     {#each Object.entries(settingsState.shortcuts) as shortcut}
+    <!-- do processing stuff here -->
         {@render Shortcuts(shortcut)}
     {/each}
 </div>
