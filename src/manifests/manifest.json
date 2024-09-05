@@ -37,6 +37,10 @@
     {
       "resources": ["*://*/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["resources/icons/*"],
+      "matches": ["*://*/*"]
     }
   ]
 }
