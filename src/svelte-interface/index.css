@@ -19,3 +19,9 @@
 .tab-width {
   width: var(--tab-width);
 }
+
+input {
+  &:focus {
+    box-shadow: unset !important;
+  }
+}
