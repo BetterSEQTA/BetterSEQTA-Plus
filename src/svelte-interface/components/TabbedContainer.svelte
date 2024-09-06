@@ -46,37 +46,40 @@
   });
 </script>
 
-<div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 tab-width-container">
-  <div class="relative flex">
-    <MotionDiv
-      class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
-      animate={{ x: calcXPos(hoveredTab) }}
-      transition={springTransition}
-    />
-    {#each tabs as { title }, index}
-      <button
-        class="relative z-10 flex-1 px-4 py-2"
-        onclick={() => activeTab = index}
-        onmouseenter={() => hoveredTab = index}
-        onmouseleave={() => hoveredTab = null}
-      >
-        {title}
-      </button>
-    {/each}
-  </div>
-</div>
-<div class="h-full px-4 overflow-y-scroll overflow-x-clip">
-  <MotionDiv
-    animate={{ x: `${-activeTab * 100}%` }}
-    transition={springTransition}
-  >
-    <div class="flex">
-      {#each tabs as { Content }, index}
-        <div class="absolute w-full transition-opacity duration-300 pb-4 {activeTab === index ? 'opacity-100' : 'opacity-0'}"
-          style="left: {index * 100}%;">
-          <Content />
-        </div>
+<div class="flex flex-col h-full">
+  <div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 tab-width-container">
+    <div class="relative flex">
+      <MotionDiv
+        class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
+        animate={{ x: calcXPos(hoveredTab) }}
+        transition={springTransition}
+      />
+      {#each tabs as { title }, index}
+        <button
+          class="relative z-10 flex-1 px-4 py-2"
+          onclick={() => activeTab = index}
+          onmouseenter={() => hoveredTab = index}
+          onmouseleave={() => hoveredTab = null}
+        >
+          {title}
+        </button>
       {/each}
     </div>
-  </MotionDiv>
+  </div>
+  <div class="h-full px-4 overflow-y-scroll overflow-x-clip">
+    <MotionDiv
+      class="h-full"
+      animate={{ x: `${-activeTab * 100}%` }}
+      transition={springTransition}
+    >
+      <div class="flex">
+        {#each tabs as { Content }, index}
+          <div class="absolute w-full transition-opacity duration-300 overflow-y-scroll {activeTab === index ? 'opacity-100' : 'opacity-0'}"
+            style="left: {index * 100}%;">
+            <Content />
+          </div>
+        {/each}
+      </div>
+    </MotionDiv>
+  </div>
 </div>

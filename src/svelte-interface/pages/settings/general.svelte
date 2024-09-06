@@ -22,7 +22,7 @@
 </div>
 {/snippet}
 
-<div class="flex flex-col -mt-4 overflow-y-scroll divide-y divide-zinc-100 dark:divide-zinc-700">
+<div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
     {
       title: "Transparency Effects",

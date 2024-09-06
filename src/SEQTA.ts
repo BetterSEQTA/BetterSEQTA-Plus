@@ -48,7 +48,6 @@ var IsSEQTAPage = false
 const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
 init()
 
-
 async function init() {
   CheckForMenuList()
   const hasSEQTATitle = document.title.includes('SEQTA Learn')
@@ -66,6 +65,8 @@ async function init() {
     try {
       // wait until settingsState has been loaded from storage
       await initializeSettingsState();
+
+      console.log(settingsState.onoff)
       
       if (settingsState.onoff) {
         enableCurrentTheme()
@@ -979,9 +980,12 @@ export function addExtensionSettings() {
   extensionPopup.appendChild(extensionIframe) */
 
   // create shadow dom and render svelte app
-  const shadow = extensionPopup.attachShadow({ mode: 'open' });
-  const svelteApp = initSvelteInterface(shadow);
-  console.log(svelteApp)
+  try {
+    const shadow = extensionPopup.attachShadow({ mode: 'open' });
+    initSvelteInterface(shadow);
+  } catch (err) {
+    console.error(err)
+  }
 
   const container = document.getElementById('container')
 

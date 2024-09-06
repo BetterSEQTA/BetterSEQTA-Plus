@@ -5,7 +5,12 @@ const {
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./src/**/*.{js,ts,jsx,tsx,html}",
+    "./src/**/*.{js,ts,jsx,tsx,html,svelte}",
+  ],
+  safelist: [
+    {
+      pattern: / */,
+    }
   ],
   darkMode: "class",
   theme: {
