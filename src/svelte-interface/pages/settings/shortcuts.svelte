@@ -104,10 +104,28 @@
       transition={springTransition}
     >
       <button
-        class="w-full px-4 py-2 mb-4 text-white transition rounded-xl bg-zinc-700/50"
+        class="w-full px-4 py-2 mb-4 text-[13px] text-white transition rounded-xl bg-zinc-700/50"
         onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
       >
-        {isFormVisible ? 'Add' : 'Add Custom Shortcut'}
+        {#if isFormVisible}
+          <MotionDiv
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7 }}
+          >
+            Add
+          </MotionDiv>
+        {:else}
+          <MotionDiv
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            Add Custom Shortcut
+          </MotionDiv>
+        {/if}
       </button>
     </MotionDiv>
   </div>
