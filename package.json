@@ -29,6 +29,11 @@
     "email": "betterseqta@betterseqta.com",
     "url": "https://github.com/BetterSEQTA/BetterSEQTA-plus"
   },
+  "overrides": {
+    "svelte-hash-router": {
+      "svelte": "$svelte"
+    }
+  },
   "license": "MIT",
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.23",
@@ -38,7 +43,6 @@
     "eslint": "^8.56.0",
     "glob": "^11.0.0",
     "mime-types": "^2.1.35",
-    "parcel": "^2.11.0",
     "prettier": "^3.2.5",
     "process": "^0.11.10",
     "sass": "^1.70.0",
@@ -49,9 +53,6 @@
   },
   "dependencies": {
     "@bedframe/cli": "^0.0.85",
-    "@blocknote/core": "^0.14.1",
-    "@blocknote/mantine": "^0.14.1",
-    "@blocknote/react": "^0.14.1",
     "@codemirror/lang-less": "^6.0.2",
     "@heroicons/react": "^2.1.3",
     "@million/lint": "latest",
