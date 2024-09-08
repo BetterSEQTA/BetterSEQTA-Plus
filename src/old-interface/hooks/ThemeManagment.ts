@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import { CustomTheme, DownloadedTheme, ThemeList } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme, ThemeList } from '../../types/CustomThemes';
 import localforage from 'localforage';
 
 export const setTheme = async (themeID: string) => {

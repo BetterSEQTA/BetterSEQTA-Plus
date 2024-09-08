@@ -7,7 +7,7 @@ export type CustomTheme = {
   allowBackgrounds: boolean;
   CustomCSS: string;
   CustomImages: CustomImage[];
-  coverImage: Blob | string | null;
+  coverImage: Blob | null;
   isEditable: boolean;
   hideThemeName: boolean;
   webURL?: string;
@@ -37,6 +37,6 @@ export type CustomThemeBase64 = Omit<CustomTheme, 'CustomImages'> & {
 }
 
 export type ThemeList = {
-  themes: Omit<CustomTheme, 'CustomImages'>[];
+  themes: CustomTheme[];
   selectedTheme: string;
 }

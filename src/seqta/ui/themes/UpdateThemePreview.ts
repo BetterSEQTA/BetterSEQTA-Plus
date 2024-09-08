@@ -1,4 +1,4 @@
-import type { CustomThemeBase64 } from '@/old-interface/types/CustomThemes';
+import type { CustomThemeBase64 } from '@/types/CustomThemes';
 import { applyCustomCSS, imageData, removeImageFromDocument, UpdateImageData } from './Themes';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
