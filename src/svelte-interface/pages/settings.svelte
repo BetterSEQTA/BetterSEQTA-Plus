@@ -17,6 +17,7 @@
 
   onMount(() => {
     if (!standalone) return;
+    // @ts-ignore
     let globalStandalone = createStandalone();
     globalStandalone = standalone;
   });
