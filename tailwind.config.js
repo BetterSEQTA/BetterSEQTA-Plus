@@ -7,11 +7,11 @@ export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,html,svelte}",
   ],
-  safelist: [
-    {
-      pattern: / */,
-    }
-  ],
+  //safelist: [
+    //{
+    //  pattern: / */,
+    //}
+  //],
   darkMode: "class",
   theme: {
     fontSize: {

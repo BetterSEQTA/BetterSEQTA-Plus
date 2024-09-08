@@ -58,8 +58,7 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
-        settings: join(__dirname, 'src', 'svelte-interface', 'index.html'),
-        backgrounds: join(__dirname, 'src', 'seqta', 'ui', 'background', 'background.html')
+        settings: join(__dirname, 'src', 'svelte-interface', 'index.html')
       }
     }
   }

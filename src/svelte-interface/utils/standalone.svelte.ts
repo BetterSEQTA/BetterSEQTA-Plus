@@ -12,3 +12,5 @@ export function createStandalone() {
 		setStandalone
 	};
 }
+
+export const standalone = createStandalone();
