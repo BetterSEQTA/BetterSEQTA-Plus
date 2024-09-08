@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import type { CustomTheme, CustomThemeBase64 } from '@/old-interface/types/CustomThemes';
+import type { CustomTheme, CustomThemeBase64 } from '@/types/CustomThemes';
 import { disableTheme } from './disableTheme';
 
 

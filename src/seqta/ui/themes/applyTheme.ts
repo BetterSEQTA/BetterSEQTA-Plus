@@ -1,4 +1,4 @@
-import type { CustomImage, CustomTheme } from '@/old-interface/types/CustomThemes';
+import type { CustomImage, CustomTheme } from '@/types/CustomThemes';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import { applyCustomCSS } from './Themes';
 

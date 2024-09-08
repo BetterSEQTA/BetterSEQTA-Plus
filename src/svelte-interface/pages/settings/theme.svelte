@@ -1,5 +1,6 @@
 <script lang="ts">
   import BackgroundSelector from "@/svelte-interface/components/themes/BackgroundSelector.svelte"
+  import ThemeSelector from "@/svelte-interface/components/themes/ThemeSelector.svelte"
   
   // backgrounds
   let selectedBackground = $state<string | null>(null);
@@ -16,4 +17,5 @@
     { clearTheme ? 'Clear Theme' : 'Select Theme' }
   </button>
   <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
+  <ThemeSelector isEditMode={editMode} />
 </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme } from '../../types/CustomThemes';
 import browser from 'webextension-polyfill';
 import { ArrowUpOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { sendThemeUpdate, setTheme } from '../hooks/ThemeManagment';

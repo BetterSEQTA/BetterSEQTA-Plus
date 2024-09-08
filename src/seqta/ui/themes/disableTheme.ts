@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import type { CustomTheme } from '@/old-interface/types/CustomThemes';
+import type { CustomTheme } from '@/types/CustomThemes';
 import { removeTheme } from './removeTheme';
 import { Mutex } from '@/seqta/utils/mutex';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
