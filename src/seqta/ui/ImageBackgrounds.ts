@@ -56,7 +56,7 @@ export async function loadBackground() {
         backgroundContainer.remove();
       }
       return;
-    };
+    }
 
     const background = await getDataById(selectedBackgroundId);
     if (!background) return;
@@ -77,7 +77,7 @@ export async function loadBackground() {
       mediaContainer = document.createElement('div');
       mediaContainer.id = 'media-container';
       backgroundContainer.appendChild(mediaContainer);
-    };
+    }
 
     mediaContainer = document.getElementById('media-container');
     if (!mediaContainer) return;

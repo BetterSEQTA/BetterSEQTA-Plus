@@ -1,4 +1,4 @@
-import { openDB, type IDBPDatabase, type DBSchema } from 'idb';
+import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 interface BackgroundDB extends DBSchema {
   backgrounds: {
