@@ -31,10 +31,6 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["seqta/ui/background/background.html"],
-      "matches": ["*://*/*"]
-    },
-    {
       "resources": ["*://*/*"],
       "matches": ["*://*/*"]
     },

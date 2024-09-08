@@ -76,6 +76,7 @@
     "color": "^4.2.3",
     "dompurify": "^3.0.8",
     "framer-motion": "^11.0.25",
+    "idb": "^8.0.0",
     "kolorist": "^1.8.0",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
