@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
 
-import { closeSettings, MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup } from '../../../SEQTA';
+import { closeSettings, MenuOptionsOpen, OpenMenuOptions, OpenWhatsNewPopup, OpenAboutPage } from '../../../SEQTA';
 import { deleteTheme } from '@/seqta/ui/themes/deleteTheme';
 import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes';
 import { saveTheme } from '@/seqta/ui/themes/saveTheme';
@@ -76,6 +76,12 @@ export class MessageHandler {
   
       case 'OpenChangelog':
         OpenWhatsNewPopup();
+        closeSettings();
+        sendResponse({ status: 'success' });
+        break;
+
+      case 'OpenAboutPage':
+        OpenAboutPage();
         closeSettings();
         sendResponse({ status: 'success' });
         break;
