@@ -15,7 +15,7 @@
   onkeydown={onClick}
   tabindex="-1"
   role="button"
-  class="relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-white ring-zinc-300 {isEditMode ? 'animate-shake' : ''} {isSelected ? 'dark:ring-2 ring-4' : 'ring-0'}"
+  class="relative w-16 h-16 cursor-pointer rounded-xl transition ring dark:ring-zinc-500/50 ring-zinc-300 {isEditMode ? 'animate-shake' : ''} {isSelected ? 'dark:ring-4 ring-4' : 'ring-0'}"
 >
   {#if isEditMode}
     <div
