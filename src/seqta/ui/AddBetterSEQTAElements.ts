@@ -17,7 +17,7 @@ export async function AddBetterSEQTAElements() {
     handleStudentData();
     createNewsButton();
     setupEventListeners();
-    appendBackgroundToUI();
+    await appendBackgroundToUI();
     await addDarkLightToggle();
     customizeMenuToggle();
   }
