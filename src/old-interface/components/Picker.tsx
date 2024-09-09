@@ -41,7 +41,6 @@ function Picker() {
   };
 
   useEffect(() => {
-    // Add event listener for 'message' event
     window.addEventListener("message", handleMessage);
 
     // Cleanup
@@ -51,7 +50,6 @@ function Picker() {
   }, []);
 
   useEffect(() => {
-    // Watch for changes in showPicker and update the presets
     if (!showPicker) {
       // Check if the selected color is already in the presets
       const existingIndex = presets.indexOf(settingsState.customThemeColor);

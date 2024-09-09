@@ -19,7 +19,6 @@ const TabbedContainer: React.FC<TabbedContainerProps> = ({ tabs }) => {
   };
   
   useEffect(() => {
-    // Add event listener for 'message' event
     window.addEventListener("message", handleMessage);
   
     // Cleanup

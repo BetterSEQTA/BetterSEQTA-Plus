@@ -2518,15 +2518,15 @@ li.MessageList__unread___3imtO {
   border-radius: 5px;
   color: var(--text-color);
 }
-/* On mouse-over, add a grey background color */
+
 .upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
   filter: brightness(0.8);
 }
-/* When the checkbox is checked, add a blue background */
+
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
   background: var(--item-colour);
 }
-/* Create the checkmark/indicator (hidden when not checked) */
+
 .upcoming-checkmark:after {
   content: "";
   position: absolute;
