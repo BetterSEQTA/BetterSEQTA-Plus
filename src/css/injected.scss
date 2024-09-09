@@ -257,7 +257,16 @@ ul.magicDelete > li.deleting {
   background: transparent !important;
   color: var(--text-color) !important;
 }
+#media-container {
+  width: 100%;
+  height: 100%;
+}
 
+#media-container video, #media-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 #menu li,
 #menu section {
   margin: 8px auto !important;

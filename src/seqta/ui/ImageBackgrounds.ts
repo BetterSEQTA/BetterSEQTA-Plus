@@ -2,14 +2,6 @@ import { getDataById, isIndexedDBSupported } from '@/svelte-interface/hooks/Back
 
 export async function appendBackgroundToUI() {
   const parent = document.getElementById('container');
-
-  // embed background.html - old method
-  /* const background = document.createElement('iframe');
-  background.id = 'background';
-  background.classList.add('imageBackground');
-  background.setAttribute('excludeDarkCheck', 'true');
-  background.src = browser.runtime.getURL('seqta/ui/background/background.html');
-  parent!.appendChild(background); */
   if (!parent) return;
 
   const backgroundContainer = document.createElement('div');
@@ -21,25 +13,8 @@ export async function appendBackgroundToUI() {
   backgroundContainer.appendChild(mediaContainer);
 
   parent.appendChild(backgroundContainer);
-
-  // Add styles
-  const style = document.createElement('style');
-  style.textContent = `
-    #media-container {
-      width: 100%;
-      height: 100%;
-    }
-
-    #media-container video, #media-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Load and display the background
   await loadBackground();
+  return;
 }
 
 export async function loadBackground() {

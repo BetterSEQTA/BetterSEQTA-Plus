@@ -104,7 +104,7 @@
       transition={springTransition}
     >
       <button
-        class="w-full px-4 py-2 mb-4 text-[13px] text-white transition rounded-xl bg-zinc-700/50"
+        class="w-full px-4 py-2 mb-4 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50"
         onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
       >
         {#if isFormVisible}
