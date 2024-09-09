@@ -66,8 +66,6 @@ async function init() {
     try {
       // wait until settingsState has been loaded from storage
       await initializeSettingsState();
-
-      console.log(settingsState.onoff)
       
       if (settingsState.onoff) {
         enableCurrentTheme()
