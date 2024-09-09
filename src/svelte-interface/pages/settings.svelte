@@ -13,7 +13,7 @@
     browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenChangelog' });
   };
     
-  let { standalone } = $props<{ standalone: boolean }>();
+  let { standalone = false } = $props<{ standalone?: boolean }>();
 
   onMount(() => {
     if (!standalone) return;
