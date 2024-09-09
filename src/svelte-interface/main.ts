@@ -1,27 +1,24 @@
-// @ts-expect-error - Svelte Hash Router is not typed (yet)
-import { routes } from 'svelte-hash-router'
-//import App from './+layout.svelte';
-import Settings from './pages/settings.svelte';
 import styles from './index.css?inline';
 import { mount } from 'svelte';
+import type { ComponentType } from 'svelte';
 
-export default function initSvelteInterface(mountPoint: ShadowRoot | HTMLElement) {
-  /* routes.set({
-    'settings': Settings,
-    '*': Settings
-  }) */
-  
-  const app = mount(Settings, {
+export default function renderSvelte(
+  Component: ComponentType,
+  mountPoint: ShadowRoot | HTMLElement,
+  props: Record<string, any> = {}
+) {  
+  const app = mount(Component, {
     target: mountPoint,
     props: {
-      standalone: false
+      standalone: false,
+      ...props
     }
   });
 
-  const style2 = document.createElement("style");
-  style2.setAttribute("type", "text/css");
-  style2.innerHTML = styles;
-  mountPoint.appendChild(style2);
+  const style = document.createElement("style");
+  style.setAttribute("type", "text/css");
+  style.innerHTML = styles;
+  mountPoint.appendChild(style);
   
   return app;
 }

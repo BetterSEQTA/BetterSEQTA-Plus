@@ -35,7 +35,8 @@ import coursesicon from '@/seqta/icons/coursesIcon'
 import iframeCSS from '@/css/iframe.scss?raw'
 import injectedCSS from '@/css/injected.scss?inline'
 import documentLoadCSS from '@/css/documentload.scss?inline'
-import initSvelteInterface from './svelte-interface/main'
+import renderSvelte from '@/svelte-interface/main'
+import Settings from '@/svelte-interface/pages/settings.svelte'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -969,20 +970,10 @@ export function addExtensionSettings() {
   const extensionContainer = document.querySelector('#container') as HTMLDivElement
   if (extensionContainer) extensionContainer.appendChild(extensionPopup)
 
-  /* const extensionIframe: HTMLIFrameElement = document.createElement('iframe')
-  extensionIframe.src = `${browser.runtime.getURL('svelte-interface/index.html')}#settings/embedded`
-  extensionIframe.id = 'ExtensionIframe'
-  extensionIframe.setAttribute('allowTransparency', 'true')
-  extensionIframe.setAttribute('excludeDarkCheck', 'true')
-  extensionIframe.style.width = '384px'
-  extensionIframe.style.height = '100%'
-  extensionIframe.style.border = 'none'
-  extensionPopup.appendChild(extensionIframe) */
-
   // create shadow dom and render svelte app
   try {
     const shadow = extensionPopup.attachShadow({ mode: 'open' });
-    initSvelteInterface(shadow);
+    renderSvelte(Settings, shadow);
   } catch (err) {
     console.error(err)
   }

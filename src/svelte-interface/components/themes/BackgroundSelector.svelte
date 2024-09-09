@@ -126,6 +126,10 @@
     selectedBackground
   });
 
+  $effect(() => {
+    console.error(error);
+  });
+
   onMount(() => {
     loadBackgrounds();
     
