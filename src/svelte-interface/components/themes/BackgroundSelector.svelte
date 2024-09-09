@@ -65,6 +65,7 @@
 
       await openDatabase();
       const data = await readAllData();
+      selectedBackground = await getTheme();
       
       if (!isVisible) {
         backgrounds = data;
@@ -127,7 +128,9 @@
   });
 
   $effect(() => {
-    console.error(error);
+    if (error) {
+      console.error(error);
+    }
   });
 
   onMount(() => {
@@ -139,7 +142,6 @@
           isVisible = true;
           loadBackgrounds();
         }, 100);
-        selectedBackground = getTheme();
         observer.disconnect();
       }
     });
