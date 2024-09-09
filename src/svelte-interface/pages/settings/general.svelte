@@ -91,9 +91,19 @@
       }
     },
     {
+      title: "About BetterSEQTA+",
+      description: "Opens About page.",
+      id: 9,
+      Component: Button,
+      props: {
+        onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'OpenAboutPage' }),
+        text: "Open"
+      }
+    },
+    {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
-      id: 9,
+      id: 10,
       Component: Switch,
       props: {
         state: $settingsState.onoff,
