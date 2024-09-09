@@ -1,10 +1,10 @@
-
 <script lang="ts">
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader'
   import BackgroundUploader from './BackgroundUploader.svelte';
   import BackgroundItem from './BackgroundItem.svelte'
   import { onMount } from 'svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
+  import { delay } from 'lodash'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob; url?: string }[]>([]);
@@ -13,6 +13,10 @@
 
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
+
+  let isVisible = $state(false);
+  let observer: IntersectionObserver;
+  let element: HTMLElement;
 
   async function getTheme() {
     return localStorage.getItem('selectedBackground');
@@ -61,8 +65,12 @@
 
       await openDatabase();
       const data = await readAllData();
-      const dataWithUrls = data.map(bg => ({ ...bg, url: URL.createObjectURL(bg.blob) }));
-      backgrounds = dataWithUrls;
+      
+      if (!isVisible) {
+        backgrounds = data;
+        return;
+      };
+      backgrounds = await preloadBackgrounds(data);
     } catch (e) {
       if (e instanceof Error) {
         error = e.message;
@@ -72,6 +80,13 @@
     } finally {
       isLoading = false;
     }
+  }
+
+  async function preloadBackgrounds(data: { id: string; type: string; blob: Blob }[]): Promise<{ id: string; type: string; blob: Blob; url: string }[]> {
+    return data.map(bg => ({
+      ...bg,
+      url: URL.createObjectURL(bg.blob)
+    }));
   }
 
   function selectBackground(fileId: string): void {
@@ -111,27 +126,48 @@
     selectedBackground
   });
 
-  onMount(async () => {
-    await loadBackgrounds();
-    selectedBackground = await getTheme();
+  onMount(() => {
+    loadBackgrounds();
+    
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        delay(() => {
+          isVisible = true;
+          loadBackgrounds();
+        }, 100);
+        selectedBackground = getTheme();
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
   });
 </script>
 
-<div class="relative px-1 py-2">
+<div bind:this={element} class="relative px-1 py-2">
   <h2 class="pb-2 text-lg font-bold">Background Images</h2>
   <div class="flex flex-wrap gap-4 mb-4">
     {#if !isEditMode}
       <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
     {/if}
-    {#each imageBackgrounds as bg (bg.id)}
-      <BackgroundItem
-        {bg}
-        isSelected={selectedBackground === bg.id}
-        isEditMode={isEditMode}
-        onClick={() => selectBackground(bg.id)}
-        onDelete={() => deleteBackground(bg.id)}
-      />
-    {/each}
+    {#if isVisible}
+      {#each imageBackgrounds as bg (bg.id)}
+        <BackgroundItem
+          bg={bg}
+          isSelected={selectedBackground === bg.id}
+          isEditMode={isEditMode}
+          onClick={() => selectBackground(bg.id)}
+          onDelete={() => deleteBackground(bg.id)}/>
+      {/each}
+    {:else}
+      {#each imageBackgrounds as bg (bg.id)}
+        <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+      {/each}
+    {/if}
   </div>
 
   <h2 class="py-2 text-lg font-bold">Background Videos</h2>
@@ -139,14 +175,20 @@
     {#if !isEditMode}
       <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
     {/if}
-    {#each videoBackgrounds as bg (bg.id)}
-      <BackgroundItem
-        {bg}
-        isSelected={selectedBackground === bg.id}
-        isEditMode={isEditMode}
-        onClick={() => selectBackground(bg.id)}
-        onDelete={() => deleteBackground(bg.id)}
-      />
-    {/each}
+    {#if isVisible}
+      {#each videoBackgrounds as bg (bg.id)}
+        <BackgroundItem
+          bg={bg}
+          isSelected={selectedBackground === bg.id}
+          isEditMode={isEditMode}
+          onClick={() => selectBackground(bg.id)}
+          onDelete={() => deleteBackground(bg.id)}
+        />
+      {/each}
+    {:else}
+      {#each videoBackgrounds as bg (bg.id)}
+        <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+      {/each}
+    {/if}
   </div>
 </div>
