@@ -8,7 +8,6 @@
   
   import type { SettingsList } from "@/svelte-interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
-  import { closeSettings, OpenAboutPage } from "@/SEQTA"
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -89,16 +88,6 @@
       props: {
         state: $settingsState.lessonalert,
         onChange: (isOn: boolean) => settingsState.lessonalert = isOn
-      }
-    },
-    {
-      title: "About BetterSEQTA+",
-      description: "Opens About page.",
-      id: 9,
-      Component: Button,
-      props: {
-        onClick: () => { OpenAboutPage(); closeSettings() },
-        text: "Open"
       }
     },
     {
