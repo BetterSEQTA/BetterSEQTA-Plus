@@ -44,7 +44,7 @@
 </div>
 
 <style>
-  .dark .switch[data-ison="true"],
+  <!--.dark .switch[data-ison="true"], -->
   .switch[data-ison="true"] {
     background-color: #30D259;
   }
