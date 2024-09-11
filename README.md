@@ -1,5 +1,5 @@
-# SVELTE BUILD ONLY - NOT STABLE
-Please don't use this in a production environment - it has many glitches. <br>
+# SVELTE BUILD - NOT STABLE
+Please don't use this in a production environment - it quite buggy and is not fully completed as of yet. <br>
 
 # 
 
