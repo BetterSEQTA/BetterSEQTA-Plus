@@ -154,6 +154,9 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
+    <h1>3.3.2 - Svelte Change
+    <li>Moved the settings page to svelte for better performance!</li>
+    <li>Added the about button back!</li>
     <h1>3.3.1 - Hot Fix</h1>
     <li>Fixed assessments not loading when no notices are available</li>
 
