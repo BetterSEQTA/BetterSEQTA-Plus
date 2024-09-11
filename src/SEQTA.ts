@@ -368,7 +368,12 @@ export function OpenAboutPage() {
   let text = stringToHTML(
     /* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-      <p>Yo</p>
+      <h1>About</h1>
+      <p>BetterSEQTA+ is a fork of BetterSEQTA which was originally developed by Nulkem, which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
+      <br>
+      <p>We are currently working on fixing bugs and adding good features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below).</p>
+      <h1>Credits</h1>
+      <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph and SethBurkart123.</p>
     </div>
   `,
   ).firstChild
