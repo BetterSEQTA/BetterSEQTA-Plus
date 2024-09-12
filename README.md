@@ -53,7 +53,7 @@ Please don't use this in a production environment - it is quite buggy and is not
   - Brave Supported
   - Opera Supported
   - Vivaldi Supported
-  - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)
+  - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/))
   - Safari (Experimental - only available via compilation)
 
 ## Creating Custom Themes
