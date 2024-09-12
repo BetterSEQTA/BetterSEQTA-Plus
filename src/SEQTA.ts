@@ -622,12 +622,9 @@ function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElem
   const iframeDocument = iframe.contentDocument;
   if (!iframeDocument) return;
 
-  if (iframeDocument.readyState !== 'complete') {
-    iframe.onload = () => {
-      applyDarkModeToIframe(iframe, cssLink);
-    };
-    return;
-  }
+  iframe.onload = () => {
+    applyDarkModeToIframe(iframe, cssLink);
+  };
 
   if (settingsState.DarkMode) {
     iframeDocument.documentElement.classList.add('dark')
