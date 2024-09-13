@@ -3,7 +3,7 @@ import { mount } from 'svelte';
 import type { ComponentType } from 'svelte';
 
 export default function renderSvelte(
-  Component: ComponentType,
+  Component: ComponentType | any,
   mountPoint: ShadowRoot | HTMLElement,
   props: Record<string, any> = {}
 ) {  
@@ -19,6 +19,5 @@ export default function renderSvelte(
   style.setAttribute("type", "text/css");
   style.innerHTML = styles;
   mountPoint.appendChild(style);
-  
   return app;
 }
