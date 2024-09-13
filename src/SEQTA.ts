@@ -53,7 +53,7 @@ async function init() {
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     IsSEQTAPage = true
-    console.log('[BetterSEQTA+] Verified SEQTA Page')
+    console.info('[BetterSEQTA+] Verified SEQTA Page')
     
     const documentLoadStyle = document.createElement('style')
     documentLoadStyle.textContent = documentLoadCSS
@@ -78,7 +78,7 @@ async function init() {
           document.head.appendChild(injectedStyle)
         } 
       }
-      console.log('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
+      console.info('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
       main()
     } catch (error: any) {
       console.error(error)
@@ -105,7 +105,7 @@ async function HideMenuItems(): Promise<void> {
     for (const [menuItem, { toggle }] of Object.entries(settingsState.menuitems)) {
       if (!toggle) {
         stylesheetInnerText += SetDisplayNone(menuItem)
-        console.log(`[BetterSEQTA+] Hiding ${menuItem} menu item`)
+        console.info(`[BetterSEQTA+] Hiding ${menuItem} menu item`)
       }
     }
 
@@ -113,7 +113,7 @@ async function HideMenuItems(): Promise<void> {
     menuItemStyle.innerText = stylesheetInnerText
     document.head.appendChild(menuItemStyle)
   } catch (error) {
-    console.error("An error occurred:", error)
+    console.error("[BetterSEQTA+] An error occurred:", error)
   }
 }
 
@@ -605,7 +605,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       break;
     case 'home':
       window.location.replace(`${location.origin}/#?page=/home`);
-      console.log('[BetterSEQTA+] Started Init')
+      console.info('[BetterSEQTA+] Started Init')
       if (settingsState.onoff) loadHomePage()
       finishLoad();
       break;
@@ -649,7 +649,7 @@ async function handleTimetable(): Promise<void> {
 }
 
 async function handleNewsPage(): Promise<void> {
-  console.log('[BetterSEQTA+] Started Init');
+  console.info('[BetterSEQTA+] Started Init');
   if (settingsState.onoff) {
     SendNewsPage();
     if (settingsState.notificationcollector) {
@@ -868,7 +868,7 @@ function main() {
   }
 
   if (settingsState.onoff) {
-    console.log('[BetterSEQTA+] Enabled')
+    console.info('[BetterSEQTA+] Enabled')
     if (settingsState.DarkMode) document.documentElement.classList.add('dark')
 
     document.querySelector('.legacy-root')?.classList.add('hidden')
@@ -888,7 +888,7 @@ function main() {
 }
 
 function InjectCustomIcons() {
-  console.log('[BetterSEQTA+] Injecting Icons')
+  console.info('[BetterSEQTA+] Injecting Icons')
 
   const style = document.createElement('style')
   style.setAttribute('type', 'text/css')
@@ -903,7 +903,7 @@ function InjectCustomIcons() {
 }
 
 export function AppendElementsToDisabledPage() {
-  console.log("[BetterSEQTA+] Appending elements to disabled page")
+  console.info("[BetterSEQTA+] Appending elements to disabled page")
   AddBetterSEQTAElements()
 
   let settingsStyle = document.createElement('style')
@@ -2028,7 +2028,7 @@ async function AddCustomShortcutsToPage() {
 
 export async function loadHomePage() {
   // Sends the html data for the home page
-  console.log('[BetterSEQTA+] Started Loading Home Page')
+  console.info('[BetterSEQTA+] Started Loading Home Page')
 
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
@@ -2374,7 +2374,7 @@ export function enableNotificationCollector() {
         'notifications__bubble___1EkSQ'
       )[0]
       if (typeof alertdiv == 'undefined') {
-        console.log('[BetterSEQTA+] No notifications currently')
+        console.info('[BetterSEQTA+] No notifications currently')
       } else {
         alertdiv.textContent = Notifications.payload.notifications.length
       }
@@ -2424,7 +2424,7 @@ function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
 export function SendNewsPage() {
   setTimeout(function () {
     // Sends the html data for the home page
-    console.log('[BetterSEQTA+] Started Loading News Page')
+    console.info('[BetterSEQTA+] Started Loading News Page')
     document.title = 'News ― SEQTA Learn'
     var element = document.querySelector('[data-key=news]')
 
