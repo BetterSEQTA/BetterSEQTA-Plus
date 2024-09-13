@@ -1,7 +1,7 @@
 <script lang="ts">
   import Switch from "../../components/Switch.svelte"
   import Button from "../../components/Button.svelte"
-  //import PickerSwatch from "../../components/PickerSwatch.svelte"
+  import PickerSwatch from "../../components/PickerSwatch.svelte"
   import Slider from "../../components/Slider.svelte"
 
   import browser from "webextension-polyfill"
@@ -17,7 +17,7 @@
     <p class="text-xs">{description}</p>
   </div>
   <div>
-    <Component {...props} />
+     <Component {...props} />
   </div>
 </div>
 {/snippet}
@@ -100,7 +100,7 @@
         onChange: (isOn: boolean) => settingsState.onoff = isOn
       }
     }
-  ] as setting}
-    {@render Setting(setting)}
+  ] as option}
+    {@render Setting(option)}
   {/each}
 </div>
