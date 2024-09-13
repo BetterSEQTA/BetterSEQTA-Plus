@@ -2,6 +2,7 @@
   import type { Theme } from '@/svelte-interface/types/Theme'
   import ThemeCard from './ThemeCard.svelte';
   import ThemeModal from './ThemeModal.svelte';
+  import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
 
   let { themes, searchTerm } = $props<{ themes: Theme[]; searchTerm: string }>();
   let displayTheme = $state<Theme | null>();
@@ -36,5 +37,7 @@
 </div>
 
 {#if displayTheme}
-  <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {}} onRemove={() => {}} />
+  <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
+    StoreDownloadTheme({themeContent: displayTheme as Theme});
+  }} onRemove={() => {}} />
 {/if}
