@@ -95,7 +95,6 @@
     "sortablejs": "^1.15.3",
     "svelte": "5.0.0-next.244",
     "svelte-hash-router": "^1.0.1",
-    "svelte-motion": "^0.12.2",
     "swiper": "latest",
     "tailwindcss": "^3.4.11",
     "ts-loader": "^9.5.1",
