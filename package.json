@@ -2,7 +2,7 @@
   "name": "betterseqtaplus",
   "version": "3.3.1",
   "type": "module",
-  "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA by Nulkem to continue development, while incorporating a plethora of new and improved features!",
+  "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development, while incorporating a plethora of new and improved features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "MODE=chrome vite dev",
