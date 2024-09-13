@@ -1,11 +1,9 @@
 <script lang="ts">
-  // @ts-expect-error umm idk
-  import { MotionDiv } from 'svelte-motion';
+  import MotionDiv from './MotionDiv.svelte';
   import './TabbedContainer.css';
-  import type { Component } from 'svelte'
   import { onMount } from 'svelte';
 
-  let { tabs } = $props<{ tabs: { title: string, Content: Component }[] }>();
+  let { tabs } = $props<{ tabs: { title: string, Content: any }[] }>();
   let activeTab = $state(0);
   let hoveredTab = $state<number | null>(null);
   let containerRef: HTMLElement | null = null;
@@ -72,11 +70,11 @@
       animate={{ x: `${-activeTab * 100}%` }}
       transition={springTransition}
     >
-      <div class="flex">
+      <div class="flex h-screen">
         {#each tabs as { Content }, index}
           <div class="absolute w-full transition-opacity duration-300 overflow-y-scroll {activeTab === index ? 'opacity-100' : 'opacity-0'}"
             style="left: {index * 100}%;">
-            <Content />
+            {@render Content()}
           </div>
         {/each}
       </div>

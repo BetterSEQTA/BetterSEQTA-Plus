@@ -1,6 +1,5 @@
 <script lang="ts">
-  // @ts-expect-error umm idk
-  import { MotionDiv } from 'svelte-motion';
+  import MotionDiv from '@/svelte-interface/components/MotionDiv.svelte';
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import Switch from "@/svelte-interface/components/Switch.svelte"
 
