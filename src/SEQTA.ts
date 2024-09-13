@@ -54,6 +54,7 @@ async function init() {
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     IsSEQTAPage = true
     console.log('[BetterSEQTA+] Verified SEQTA Page')
+    
     const documentLoadStyle = document.createElement('style')
     documentLoadStyle.textContent = documentLoadCSS
     document.head.appendChild(documentLoadStyle)
@@ -77,7 +78,7 @@ async function init() {
           document.head.appendChild(injectedStyle)
         } 
       }
-      
+      console.log('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
       main()
     } catch (error: any) {
       console.error(error)
