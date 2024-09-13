@@ -37,6 +37,7 @@ import injectedCSS from '@/css/injected.scss?inline'
 import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/svelte-interface/main'
 import Settings from '@/svelte-interface/pages/settings.svelte'
+import { renderStore } from './seqta/ui/renderStore'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -340,6 +341,44 @@ export function OpenWhatsNewPopup() {
   var closeelement = document.getElementById('whatsnewclosebutton')
   closeelement!.addEventListener('click', function () {
     DeleteWhatsNew()
+  })
+}
+
+export function OpenStorePage() {
+  const remove = renderStore()
+  /* export function renderStore() {
+  const container = document.querySelector('#container');
+  if (!container) {
+    throw new Error('Container not found');
+  }
+  
+  const child = document.createElement('div');
+  child.id = 'store';
+  container!.appendChild(child);
+
+  const shadow = child.attachShadow({ mode: 'open' });
+  const app = renderSvelte(Store, shadow);
+
+  return () => unmount(app)
+}
+ */
+
+  // add a close button to the page
+  const closeButton = document.createElement('button')
+  closeButton.id = 'storeclosebutton'
+  closeButton.classList.add('closeButton')
+  closeButton.innerHTML = 'Close'
+  document.body.appendChild(closeButton)
+
+  closeButton.addEventListener('click', () => {
+    closeButton.classList.add('hide')
+    document.getElementById('store')!.classList.add('hide')
+
+    setTimeout(() => {
+      remove()
+      document.body.removeChild(closeButton)
+      document.getElementById('store')!.remove()
+    }, 500)
   })
 }
 

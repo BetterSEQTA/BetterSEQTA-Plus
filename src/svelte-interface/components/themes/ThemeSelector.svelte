@@ -8,6 +8,7 @@
   import { disableTheme } from '@/seqta/ui/themes/disableTheme'
   import { setTheme } from '@/seqta/ui/themes/setTheme'
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
+  import { OpenStorePage } from '@/SEQTA'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();
@@ -183,17 +184,16 @@
       <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
     {/if}
 
-    <a
-      href={''}
-      target="_blank"
+    <button
+      onclick={() => OpenStorePage()}
       class="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xecc5;</span>
       <span class="ml-2">Theme Store</span>
-    </a>
+    </button>
 
     <button
-      onclick={() => OpenThemeCreator}
+      onclick={() => OpenThemeCreator()}
       class="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xec60;</span>
