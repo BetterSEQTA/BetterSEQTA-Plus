@@ -4,7 +4,7 @@
   import type { Theme } from '@/svelte-interface/types/Theme';
   import { register, type SwiperContainer } from 'swiper/element/bundle';
 
-  let { coverThemes } = $props<{ coverThemes: Theme[] }>();
+  let { coverThemes, setDisplayTheme } = $props<{ coverThemes: Theme[], setDisplayTheme: (theme: Theme) => void  }>();
   let swiperEl = $state<SwiperContainer | undefined>();
   
 
@@ -20,7 +20,13 @@
   <div class="relative w-full transition-opacity rounded-xl overflow-clip" transition:fade>
     <swiper-container bind:this={swiperEl} slides-per-view="1" space-between="20" loop="true" autoplay="true" disable-on-interaction="false" pause-on-mouse-enter="true" class="w-full aspect-[8/3]">
       {#each coverThemes as theme, index (index)}
-        <swiper-slide class="relative cursor-pointer rounded-xl overflow-clip">
+        <swiper-slide
+          onkeydown={(e: any) => { if (e.key === 'Enter') setDisplayTheme(theme) }}
+          onclick={() => setDisplayTheme(theme)}
+          role="button"
+          tabindex="0"
+          class="relative cursor-pointer rounded-xl overflow-clip"
+        >
           <img src={theme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-full" />
           <div class='absolute bottom-0 left-0 p-8 z-[1]'>
             <h2 class='text-4xl font-bold text-white'>{theme.name}</h2>
