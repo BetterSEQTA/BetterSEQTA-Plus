@@ -8,6 +8,9 @@
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import type { Theme } from '../types/Theme'
   import browser from 'webextension-polyfill'
+  import ThemeModal from '../components/store/ThemeModal.svelte'
+  import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
+  import { setTheme } from '@/seqta/ui/themes/setTheme'
 
   // State variables
   let searchTerm = $state<string>('');
@@ -15,6 +18,11 @@
   let coverThemes = $state<Theme[]>([]);
   let loading = $state<boolean>(true);
   let darkMode = $state<boolean>(false);
+  let displayTheme = $state<Theme | null>(null);
+
+  const setDisplayTheme = (theme: Theme) => {
+    displayTheme = theme;
+  };
 
   // Fetch themes and initialize app
   const fetchThemes = async () => {
@@ -50,8 +58,8 @@
   ));
 </script>
 
-<div class="w-screen h-screen overflow-y-scroll bg-white {darkMode ? 'dark' : ''}">
-  <div class="bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem] h-full px-12">
+<div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
+  <div class="bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem] h-full px-12 overflow-y-scroll">
 
     <!-- Search Input (optional) -->
     <div class="px-8 py-4">
@@ -71,19 +79,21 @@
     {:else}
 
       {#if searchTerm === ''}
-        <CoverSwiper coverThemes={coverThemes} />
+        <CoverSwiper coverThemes={coverThemes} setDisplayTheme={setDisplayTheme} />
       {/if}
 
       <!-- ThemeGrid to display filtered themes -->
-      <ThemeGrid themes={filteredThemes} searchTerm={searchTerm} />
+      <ThemeGrid themes={filteredThemes} searchTerm={searchTerm} setDisplayTheme={setDisplayTheme} />
 
-      {#if filteredThemes.length === 0 && !loading}
-        <div class="flex flex-col items-center justify-center w-full text-center h-96">
-          <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">No results! 😭</h1>
-          <p class="mt-6 text-lg leading-7 text-zinc-600 dark:text-zinc-300">Sorry, no themes match your search. Maybe create one?</p>
-        </div>
+      {#if displayTheme}
+        <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
+          StoreDownloadTheme({themeContent: displayTheme as Theme}).then(() => {
+            setTheme((displayTheme as Theme).id);
+            displayTheme = null;
+          });
+        }} onRemove={() => {}} />
       {/if}
-
+        
     {/if}
   </div>
 </div>
