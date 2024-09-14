@@ -3,6 +3,7 @@
   import ThemeCard from './ThemeCard.svelte';
   import ThemeModal from './ThemeModal.svelte';
   import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
+  import { setTheme } from '@/seqta/ui/themes/setTheme';
 
   let { themes, searchTerm } = $props<{ themes: Theme[]; searchTerm: string }>();
   let displayTheme = $state<Theme | null>();
@@ -38,6 +39,9 @@
 
 {#if displayTheme}
   <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
-    StoreDownloadTheme({themeContent: displayTheme as Theme});
+    StoreDownloadTheme({themeContent: displayTheme as Theme}).then(() => {
+      setTheme((displayTheme as Theme).id);
+      displayTheme = null;
+    });
   }} onRemove={() => {}} />
 {/if}
