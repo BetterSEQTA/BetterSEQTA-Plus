@@ -63,35 +63,35 @@
   ));
 </script>
 
-<div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
-  <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} darkMode={darkMode} />
+<div class="w-screen h-screen bg-white pt-[4.25rem] {darkMode ? 'dark' : ''}">
+  <div class="h-full overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900 dark:text-white">
+    <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} darkMode={darkMode} />
+    
+    <div class="px-12 pt-12">
+      <!-- Loading State -->
+      {#if loading}
+        <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
+          <SkeletonLoader width="100%" height="200px" />
+        </div>
+      {:else}
   
-  <div class="bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem] h-full px-12 overflow-y-scroll">
-
-
-    <!-- Loading State -->
-    {#if loading}
-      <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
-        <SkeletonLoader width="100%" height="200px" />
-      </div>
-    {:else}
-
-      {#if searchTerm === ''}
-        <CoverSwiper coverThemes={coverThemes} setDisplayTheme={setDisplayTheme} />
+        {#if searchTerm === ''}
+          <CoverSwiper coverThemes={coverThemes} setDisplayTheme={setDisplayTheme} />
+        {/if}
+  
+        <!-- ThemeGrid to display filtered themes -->
+        <ThemeGrid themes={filteredThemes} searchTerm={searchTerm} setDisplayTheme={setDisplayTheme} />
+  
+        {#if displayTheme}
+          <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
+            StoreDownloadTheme({themeContent: displayTheme as Theme}).then(() => {
+              setTheme((displayTheme as Theme).id);
+              displayTheme = null;
+            });
+          }} onRemove={() => {}} />
+        {/if}
+          
       {/if}
-
-      <!-- ThemeGrid to display filtered themes -->
-      <ThemeGrid themes={filteredThemes} searchTerm={searchTerm} setDisplayTheme={setDisplayTheme} />
-
-      {#if displayTheme}
-        <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
-          StoreDownloadTheme({themeContent: displayTheme as Theme}).then(() => {
-            setTheme((displayTheme as Theme).id);
-            displayTheme = null;
-          });
-        }} onRemove={() => {}} />
-      {/if}
-        
-    {/if}
+    </div>
   </div>
 </div>
