@@ -11,6 +11,7 @@
   import ThemeModal from '../components/store/ThemeModal.svelte'
   import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
   import { setTheme } from '@/seqta/ui/themes/setTheme'
+  import Header from '../components/store/Header.svelte'
 
   // State variables
   let searchTerm = $state<string>('');
@@ -22,6 +23,10 @@
 
   const setDisplayTheme = (theme: Theme) => {
     displayTheme = theme;
+  };
+  
+  const setSearchTerm = (term: string) => {
+    searchTerm = term;
   };
 
   // Fetch themes and initialize app
@@ -59,17 +64,10 @@
 </script>
 
 <div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
+  <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} darkMode={darkMode} />
+  
   <div class="bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem] h-full px-12 overflow-y-scroll">
 
-    <!-- Search Input (optional) -->
-    <div class="px-8 py-4">
-      <input
-        type="text"
-        placeholder="Search Themes"
-        bind:value={searchTerm}
-        class="w-full p-2 bg-white border rounded-lg dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-white"
-      />
-    </div>
 
     <!-- Loading State -->
     {#if loading}
