@@ -110,7 +110,7 @@ npm run build
 3. Package it up (optional)
 
 ```
-npm run package # This requires 7-Zip to be installed in order to work
+npm run zip # This requires 7-Zip to be installed in order to work
 ```
 
 ## Folder Structure
