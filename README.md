@@ -53,7 +53,7 @@
 
 ## Creating Custom Themes
 
-If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://betterseqta.gitbook.io/betterseqta-docs). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/SethBurkart123/BetterSEQTA-theme-generator). 
+If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://betterseqta.gitbook.io/betterseqta-docs). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator). 
 
 Don't worry- if you get stuck feel free to ask around in the discord. We're open and happy to help out! Happy creating :)
 
