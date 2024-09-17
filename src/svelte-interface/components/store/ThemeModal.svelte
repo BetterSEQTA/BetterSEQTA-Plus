@@ -1,8 +1,7 @@
 <script lang="ts">
   import type { Theme } from '@/svelte-interface/types/Theme'
   import { fade } from 'svelte/transition';
-  import { animate, spring } from 'motion'
-  import { delay } from '@/seqta/utils/delay'
+  import { animate, spring } from 'motion';
 
   let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme } = $props<{
     theme: Theme | null;
