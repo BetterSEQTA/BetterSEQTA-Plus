@@ -12,6 +12,8 @@
   import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
   import { setTheme } from '@/seqta/ui/themes/setTheme'
   import Header from '../components/store/Header.svelte'
+  import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
+  import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
 
   // State variables
   let searchTerm = $state<string>('');
@@ -20,8 +22,14 @@
   let loading = $state<boolean>(true);
   let darkMode = $state<boolean>(false);
   let displayTheme = $state<Theme | null>(null);
+  let currentThemes = $state<string[]>([]);
 
-  const setDisplayTheme = (theme: Theme) => {
+  const fetchCurrentThemes = async () => {
+    const themes = await getAvailableThemes();
+    currentThemes = themes.themes.filter(theme => theme !== null).map(theme => theme.id);
+  };
+
+  const setDisplayTheme = (theme: Theme | null) => {
     displayTheme = theme;
   };
   
@@ -50,7 +58,8 @@
   // On mount
   onMount(async () => {
     await fetchThemes();
-
+    await fetchCurrentThemes();
+    
     darkMode = (await browser.storage.local.get('DarkMode')).DarkMode === 'true';
 
     darkMode = $settingsState.DarkMode;
@@ -83,14 +92,21 @@
         <ThemeGrid themes={filteredThemes} searchTerm={searchTerm} setDisplayTheme={setDisplayTheme} />
   
         {#if displayTheme}
-          <ThemeModal theme={displayTheme} onClose={() => displayTheme = null} onInstall={() => {
-            StoreDownloadTheme({themeContent: displayTheme as Theme}).then(() => {
-              setTheme((displayTheme as Theme).id);
-              displayTheme = null;
-            });
-          }} onRemove={() => {}} />
+          <ThemeModal currentThemes={currentThemes} allThemes={themes} theme={displayTheme} displayTheme={displayTheme} setDisplayTheme={setDisplayTheme} onInstall={async () => {
+            if (displayTheme) {
+              await StoreDownloadTheme({themeContent: displayTheme})
+              // @ts-ignore
+              setTheme(displayTheme.id);
+              await fetchCurrentThemes();
+            }
+          }} onRemove={async () => {
+            if (displayTheme?.id) {
+              console.log('deleting theme', displayTheme.id);
+              deleteTheme(displayTheme.id)
+              await fetchCurrentThemes();
+            }
+          }} />
         {/if}
-          
       {/if}
     </div>
   </div>

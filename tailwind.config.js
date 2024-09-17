@@ -39,6 +39,9 @@ export default {
       fontFamily: {
         "IconFamily": "IconFamily"
       },
+      animation: {
+        'spin-fast': 'spin 0.4s linear infinite',
+      },
       aspectRatio: {
         "theme": "5 / 1"
       }
