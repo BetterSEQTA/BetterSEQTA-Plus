@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { OpenThemeCreator } from '@/seqta/ui/ThemeCreator'
   import shareTheme from '@/seqta/ui/themes/shareTheme'
   import { InstallTheme } from '@/seqta/ui/themes/downloadTheme'
@@ -9,6 +9,7 @@
   import { setTheme } from '@/seqta/ui/themes/setTheme'
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
+  import { themeUpdates } from '@/svelte-interface/hooks/ThemeUpdates'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();
@@ -72,11 +73,10 @@
         tempTheme = result;
         await InstallTheme(result);
         await fetchThemes();
-        tempTheme = null;
       } catch (error) {
         alert('Error parsing file. Please upload a valid JSON theme file.');
-        tempTheme = null;
       }
+      tempTheme = null;
     };
     reader.readAsText(file);
   }
@@ -87,6 +87,12 @@
 
   onMount(async () => {
     await fetchThemes();
+
+    themeUpdates.addListener(fetchThemes);
+  })
+
+  onDestroy(() => {
+    themeUpdates.removeListener(fetchThemes);
   })
 </script>
 
