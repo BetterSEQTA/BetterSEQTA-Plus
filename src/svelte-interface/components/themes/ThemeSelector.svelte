@@ -8,7 +8,7 @@
   import { disableTheme } from '@/seqta/ui/themes/disableTheme'
   import { setTheme } from '@/seqta/ui/themes/setTheme'
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
-  import { OpenStorePage } from '@/SEQTA'
+  import { OpenStorePage } from '@/seqta/ui/renderStore'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();

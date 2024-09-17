@@ -345,44 +345,6 @@ export function OpenWhatsNewPopup() {
   })
 }
 
-export function OpenStorePage() {
-  const remove = renderStore()
-  /* export function renderStore() {
-  const container = document.querySelector('#container');
-  if (!container) {
-    throw new Error('Container not found');
-  }
-  
-  const child = document.createElement('div');
-  child.id = 'store';
-  container!.appendChild(child);
-
-  const shadow = child.attachShadow({ mode: 'open' });
-  const app = renderSvelte(Store, shadow);
-
-  return () => unmount(app)
-}
- */
-
-  // add a close button to the page
-  const closeButton = document.createElement('button')
-  closeButton.id = 'storeclosebutton'
-  closeButton.classList.add('closeButton')
-  closeButton.innerHTML = 'Close'
-  document.body.appendChild(closeButton)
-
-  closeButton.addEventListener('click', () => {
-    closeButton.classList.add('hide')
-    document.getElementById('store')!.classList.add('hide')
-
-    setTimeout(() => {
-      remove()
-      document.body.removeChild(closeButton)
-      document.getElementById('store')!.remove()
-    }, 500)
-  })
-}
-
 export function OpenAboutPage() {
   const background = document.createElement('div')
   background.id = 'whatsnewbk'

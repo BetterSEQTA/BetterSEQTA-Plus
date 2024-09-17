@@ -3,6 +3,12 @@ import Store from '@/svelte-interface/pages/store.svelte'
 
 import { unmount } from 'svelte'
 
+let remove: () => void
+
+export function OpenStorePage() {
+  remove = renderStore()
+}
+
 export function renderStore() {
   const container = document.querySelector('#container');
   if (!container) {
@@ -17,4 +23,13 @@ export function renderStore() {
   const app = renderSvelte(Store, shadow);
 
   return () => unmount(app)
+}
+
+export function closeStore() {
+  document.getElementById('store')!.classList.add('hide')
+
+    setTimeout(() => {
+      remove()
+      document.getElementById('store')!.remove()
+    }, 500)
 }
