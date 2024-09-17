@@ -64,15 +64,15 @@
       {/each}
     </div>
   </div>
-  <div class="h-full px-4 overflow-y-scroll overflow-x-clip">
+  <div class="h-full px-4 overflow-hidden">
     <MotionDiv
       class="h-full"
       animate={{ x: `${-activeTab * 100}%` }}
       transition={springTransition}
     >
-      <div class="flex h-screen">
+      <div class="flex">
         {#each tabs as { Content }, index}
-          <div class="absolute w-full transition-opacity duration-300 overflow-y-scroll {activeTab === index ? 'opacity-100' : 'opacity-0'}"
+          <div class="absolute w-full h-full transition-opacity duration-300 overflow-y-scroll {activeTab === index ? 'opacity-100' : 'opacity-0'}"
             style="left: {index * 100}%;">
             {@render Content()}
           </div>
