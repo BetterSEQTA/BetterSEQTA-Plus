@@ -31,13 +31,13 @@ export const InstallTheme = async (themeData: ThemeContent) => {
     blob: base64ToBlob(image.data)
   }));
 
-  let availableThemes = await localforage.getItem('availableThemes') as string[];
+  let availableThemes = await localforage.getItem('customThemes') as string[];
   if (availableThemes && !availableThemes.includes(themeData.id)) {
     availableThemes.push(themeData.id);
   } else if (!availableThemes) {
     availableThemes = [themeData.id];
   }
-  await localforage.setItem('availableThemes', availableThemes);
+  await localforage.setItem('customThemes', availableThemes);
 
   await localforage.setItem(themeData.id, {
     ...themeData,
