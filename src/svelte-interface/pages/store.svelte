@@ -14,6 +14,7 @@
   import Header from '../components/store/Header.svelte'
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
+  import { themeUpdates } from '../hooks/ThemeUpdates'
 
   // State variables
   let searchTerm = $state<string>('');
@@ -97,12 +98,14 @@
               await StoreDownloadTheme({themeContent: displayTheme})
               // @ts-ignore
               setTheme(displayTheme.id);
+              themeUpdates.triggerUpdate();
               await fetchCurrentThemes();
             }
           }} onRemove={async () => {
             if (displayTheme?.id) {
-              console.log('deleting theme', displayTheme.id);
+              console.debug('deleting theme', displayTheme.id);
               deleteTheme(displayTheme.id)
+              themeUpdates.triggerUpdate();
               await fetchCurrentThemes();
             }
           }} />
