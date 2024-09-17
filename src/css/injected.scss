@@ -26,10 +26,6 @@ html {
 }
 * {
   --theme-fg-parts: white;
-
-  transition:
-    background-color 200ms ease-in-out,
-    backdrop-filter 200ms ease-in-out;
 }
 .extension-editor {
   background: var(--background-primary);
@@ -331,7 +327,6 @@ ul.magicDelete > li.deleting {
 #menu {
   width: 270px;
   z-index: 19;
-  transition-duration: 0.4s;
   background: var(--better-main) !important;
   color: var(--text-color);
   border-right: none;
