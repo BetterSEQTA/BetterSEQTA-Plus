@@ -2,21 +2,21 @@
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader'
   import BackgroundUploader from './BackgroundUploader.svelte';
   import BackgroundItem from './BackgroundItem.svelte'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import { delay } from 'lodash'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
-  let backgrounds = $state<{ id: string; type: string; blob: Blob; url?: string }[]>([]);
-  let isLoading = $state<boolean>(false);
+  let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
   let error = $state<string | null>(null);
 
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
 
   let isVisible = $state(false);
-  let observer: IntersectionObserver;
   let element: HTMLElement;
+  let observer: MutationObserver;
+  let parentElement: HTMLElement | null = null;
 
   async function getTheme() {
     return localStorage.getItem('selectedBackground');
@@ -56,7 +56,6 @@
 
   async function loadBackgroundMetadata(): Promise<void> {
     try {
-      isLoading = true;
       error = null;
 
       if (!isIndexedDBSupported()) {
@@ -75,14 +74,11 @@
       } else {
         error = 'An unknown error occurred';
       }
-    } finally {
-      isLoading = false;
     }
   }
 
   async function loadFullBackgrounds(): Promise<void> {
     try {
-      isLoading = true;
       error = null;
 
       if (!isIndexedDBSupported()) {
@@ -97,8 +93,6 @@
       } else {
         error = 'An unknown error occurred';
       }
-    } finally {
-      isLoading = false;
     }
   }
 
@@ -152,24 +146,33 @@
     }
   });
 
+  function checkActiveClass() {
+    if (parentElement?.classList.contains('active')) {
+      delay(() => {
+        isVisible = true;
+        loadFullBackgrounds();
+      }, 600);
+    }
+  }
+
   onMount(() => {
     loadBackgroundMetadata();
     
-    observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        delay(() => {
-          isVisible = true;
-          loadFullBackgrounds();
-        }, 450);
+    parentElement = element.closest('.tab');
+    if (parentElement) {
+      observer = new MutationObserver(checkActiveClass);
+      observer.observe(parentElement, { attributes: true, attributeFilter: ['class'] });
+
+      return () => {
         observer.disconnect();
-      }
-    });
+      };
+    }
+  });
 
-    observer.observe(element);
-
-    return () => {
+  onDestroy(() => {
+    if (observer) {
       observer.disconnect();
-    };
+    }
   });
 </script>
 
