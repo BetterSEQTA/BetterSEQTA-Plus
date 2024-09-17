@@ -77,24 +77,6 @@ html {
     animation: fadeOut 500ms forwards;
   }
 }
-#storeclosebutton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 9999;
-  animation: fadeIn 500ms forwards;
-  animation-delay: 200ms;
-  opacity: 0;
-
-  &.hide {
-    animation: fadeOut 500ms forwards;
-    pointer-events: none;
-  }
-}
-
-.dark #storeclosebutton {
-  color: white;
-}
 
 @keyframes fadeIn {
   from {

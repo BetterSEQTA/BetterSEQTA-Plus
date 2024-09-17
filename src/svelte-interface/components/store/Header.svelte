@@ -1,6 +1,7 @@
 <script lang="ts">
   import logo from '@/resources/icons/betterseqta-dark-full.png';
   import logoDark from '@/resources/icons/betterseqta-light-full.png';
+  import { closeStore } from '@/seqta/ui/renderStore'
   import browser from 'webextension-polyfill';
 
   // Props
@@ -40,6 +41,14 @@
         stroke="currentColor">
         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
       </svg>
+
+      <!-- Close Button -->
+      <button
+        onclick={closeStore}
+        class="p-1 px-3"
+      >
+        <span class="text-2xl font-IconFamily">&#xed8a;</span>
+      </button>
     </div>
   </div>
 </header>
