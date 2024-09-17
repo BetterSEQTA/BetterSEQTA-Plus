@@ -2,8 +2,8 @@
   interface Background {
     id: string;
     type: string;
-    blob: Blob;
-    url?: string;
+    blob: Blob | null;
+    url?: string | undefined;
   }
 
   let { bg, isSelected, isEditMode, onClick, onDelete } = $props<{ bg: Background, isSelected: boolean, isEditMode: boolean, onClick: () => void, onDelete: () => void }>();
@@ -28,9 +28,11 @@
       <div class="w-4 h-0.5 bg-white"></div>
     </div>
   {/if}
-  {#if bg.type === 'image'}
-    <img class="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
-  {:else if bg.type === 'video'}
-    <video muted loop autoplay src={bg.url} class="object-cover w-full h-full rounded-xl"></video>
+  {#if bg.url}
+    {#if bg.type === 'image'}
+      <img class="object-cover w-full h-full rounded-xl" src={bg.url} alt="swatch" />
+    {:else if bg.type === 'video'}
+      <video muted loop autoplay src={bg.url} class="object-cover w-full h-full rounded-xl"></video>
+    {/if}
   {/if}
 </div>
