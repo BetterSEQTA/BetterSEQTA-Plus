@@ -54,7 +54,7 @@
     }
   }
 
-  async function loadBackgrounds(): Promise<void> {
+  async function loadBackgroundMetadata(): Promise<void> {
     try {
       isLoading = true;
       error = null;
@@ -67,10 +67,29 @@
       const data = await readAllData();
       selectedBackground = await getTheme();
       
-      if (!isVisible) {
-        backgrounds = data;
-        return;
-      };
+      // Only load metadata (id and type) for placeholders
+      backgrounds = data.map(({ id, type }) => ({ id, type, blob: null }));
+    } catch (e) {
+      if (e instanceof Error) {
+        error = e.message;
+      } else {
+        error = 'An unknown error occurred';
+      }
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  async function loadFullBackgrounds(): Promise<void> {
+    try {
+      isLoading = true;
+      error = null;
+
+      if (!isIndexedDBSupported()) {
+        throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
+      }
+
+      const data = await readAllData();
       backgrounds = await preloadBackgrounds(data);
     } catch (e) {
       if (e instanceof Error) {
@@ -134,14 +153,14 @@
   });
 
   onMount(() => {
-    loadBackgrounds();
+    loadBackgroundMetadata();
     
     observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         delay(() => {
           isVisible = true;
-          loadBackgrounds();
-        }, 100);
+          loadFullBackgrounds();
+        }, 450);
         observer.disconnect();
       }
     });
@@ -160,20 +179,18 @@
     {#if !isEditMode}
       <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
     {/if}
-    {#if isVisible}
-      {#each imageBackgrounds as bg (bg.id)}
+    {#each imageBackgrounds as bg (bg.id)}
+      {#if isVisible && bg.blob}
         <BackgroundItem
           bg={bg}
           isSelected={selectedBackground === bg.id}
           isEditMode={isEditMode}
           onClick={() => selectBackground(bg.id)}
           onDelete={() => deleteBackground(bg.id)}/>
-      {/each}
-    {:else}
-      {#each imageBackgrounds as bg (bg.id)}
+      {:else}
         <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
-      {/each}
-    {/if}
+      {/if}
+    {/each}
   </div>
 
   <h2 class="py-2 text-lg font-bold">Background Videos</h2>
@@ -181,8 +198,8 @@
     {#if !isEditMode}
       <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
     {/if}
-    {#if isVisible}
-      {#each videoBackgrounds as bg (bg.id)}
+    {#each videoBackgrounds as bg (bg.id)}
+      {#if isVisible && bg.blob}
         <BackgroundItem
           bg={bg}
           isSelected={selectedBackground === bg.id}
@@ -190,11 +207,9 @@
           onClick={() => selectBackground(bg.id)}
           onDelete={() => deleteBackground(bg.id)}
         />
-      {/each}
-    {:else}
-      {#each videoBackgrounds as bg (bg.id)}
+      {:else}
         <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
-      {/each}
-    {/if}
+      {/if}
+    {/each}
   </div>
 </div>
