@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
-  import { closeSettings, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
+  import { closeExtensionPopup, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
   import ColourPicker from '../components/ColourPicker.svelte'
   import { settingsPopup } from '../hooks/SettingsPopup'
 
@@ -20,12 +20,12 @@
 
   const openChangelog = () => {
     OpenWhatsNewPopup();
-    closeSettings();
+    closeExtensionPopup();
   };
 
   const openAbout = () => {
     OpenAboutPage();
-    closeSettings();
+    closeExtensionPopup();
   };
     
   let { standalone = false } = $props<{ standalone?: boolean }>();
@@ -51,7 +51,6 @@
       <img src={browser.runtime.getURL('resources/icons/betterseqta-light-full.png')} class="hidden w-4/5 dark:block" alt="Dark logo" />
       <button onclick={openChangelog} class="absolute right-0 w-8 h-8 text-lg rounded-xl font-IconFamily top-1 bg-zinc-100 dark:bg-zinc-700"></button>
       <button onclick={openAbout} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">ⓘ</button>
-      <!-- <button onclick={() => showColourPicker = true} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">ⓘ</button> -->
     </div>
 
     <TabbedContainer tabs={[

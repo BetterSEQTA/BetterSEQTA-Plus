@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill'
 
-import { closeSettings, MenuOptionsOpen, OpenMenuOptions } from '../../../SEQTA';
+import { closeExtensionPopup, MenuOptionsOpen, OpenMenuOptions } from '../../../SEQTA';
 import { deleteTheme } from '@/seqta/ui/themes/deleteTheme';
 import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes';
 import { saveTheme } from '@/seqta/ui/themes/saveTheme';
@@ -23,7 +23,7 @@ export class MessageHandler {
     switch (request.info) {
       case 'EditSidebar':
         this.editSidebar();
-        closeSettings();
+        closeExtensionPopup();
         sendResponse({ status: 'success' });
         break;
   
@@ -77,7 +77,7 @@ export class MessageHandler {
       case 'OpenThemeCreator':
         const themeID = request?.body?.themeID;
         OpenThemeCreator( themeID ? themeID : '' );
-        closeSettings();
+        closeExtensionPopup();
         sendResponse({ status: 'success' });
         break;
       
@@ -110,7 +110,7 @@ export class MessageHandler {
   editSidebar() {
     if (!MenuOptionsOpen) {
       OpenMenuOptions();
-      closeSettings();
+      closeExtensionPopup();
     }
   }
 }
