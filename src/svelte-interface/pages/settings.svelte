@@ -11,6 +11,7 @@
 
   import { closeSettings, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
   import ColourPicker from '../components/ColourPicker.svelte'
+  import { settingsPopup } from '../hooks/SettingsPopup'
 
 
   const openColourPicker = () => {
@@ -31,10 +32,15 @@
   let showColourPicker = $state<boolean>(false);
 
   onMount(() => {
+    settingsPopup.addListener(() => {
+      showColourPicker = false;
+    });
+    
     if (!standalone) return;
     // @ts-ignore
     let globalStandalone = createStandalone();
     globalStandalone = standalone;
+
   });
 </script>
 
