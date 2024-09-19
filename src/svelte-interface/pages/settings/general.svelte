@@ -9,6 +9,7 @@
   import type { SettingsList } from "@/svelte-interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/svelte-interface/components/PickerSwatch.svelte"
+  import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   const { showColourPicker } = $props<{ showColourPicker: () => void }>();
 </script>
@@ -150,13 +151,25 @@
   {/each}
 
   {#if $settingsState.devMode}
-    <div class="flex items-center justify-between px-4 py-3">
+    <div class="flex items-center justify-between px-4 py-3 mt-4 pt-[1.75rem]">
       <div class="pr-4">
         <h2 class="text-sm font-bold">Developer Mode</h2>
         <p class="text-xs">Enables developer mode, allowing you to test new features and changes.</p>
       </div>
       <div>
         <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
+      </div>
+    </div>
+    <div class="flex items-center justify-between px-4 py-3">
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Sensitive Hider</h2>
+        <p class="text-xs">Replace sensitive content with mock data</p>
+      </div>
+      <div>
+        <Button 
+          onClick={() => hideSensitiveContent()}
+          text="Hide"
+        />
       </div>
     </div>
   {/if}
