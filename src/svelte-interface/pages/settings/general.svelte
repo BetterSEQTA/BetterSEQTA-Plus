@@ -2,6 +2,7 @@
   import Switch from "../../components/Switch.svelte"
   import Button from "../../components/Button.svelte"
   import Slider from "../../components/Slider.svelte"
+  import Select from "@/svelte-interface/components/Select.svelte"
 
   import browser from "webextension-polyfill"
   
@@ -40,7 +41,7 @@
       title: "Animated Background",
       description: "Adds an animated background to BetterSEQTA. (May impact battery life)",
       id: 2,
-      Component: Switch as any,
+      Component: Switch,
       props: {
         state: $settingsState.animatedbk,
         onChange: (isOn: boolean) => settingsState.animatedbk = isOn
@@ -68,11 +69,21 @@
     {
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
-      id: 6,
+      id: 5,
       Component: Button,
       props: {
         onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
         text: "Edit"
+      }
+    },
+    {
+      title: "Animations",
+      description: "Enables animations on certain pages.",
+      id: 6,
+      Component: Switch,
+      props: {
+        state: $settingsState.animations,
+        onChange: (isOn: boolean) => settingsState.animations = isOn
       }
     },
     {
@@ -96,9 +107,38 @@
       }
     },
     {
+      title: "12 Hour Time",
+      description: "Prefer 12 hour time format for SEQTA",
+      id: 9,
+      Component: Switch,
+      props: {
+        state: $settingsState.timeFormat === "12",
+        onChange: (isOn: boolean) => settingsState.timeFormat = isOn ? "12" : "24"
+      }
+    },
+    {
+      title: "Default Page",
+      description: "The page to load when SEQTA Learn is opened.",
+      id: 10,
+      Component: Select,
+      props: {
+        state: $settingsState.defaultPage,
+        onChange: (value: string) => settingsState.defaultPage = value,
+        options: [
+          { value: 'home', label: 'Home' },
+          { value: 'dashboard', label: 'Dashboard' },
+          { value: 'timetable', label: 'Timetable' },
+          { value: 'welcome', label: 'Welcome' },
+          { value: 'messages', label: 'Messages' },
+          { value: 'documents', label: 'Documents' },
+          { value: 'reports', label: 'Reports' },
+        ]
+      }
+    },
+    {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
-      id: 10,
+      id: 11,
       Component: Switch,
       props: {
         state: $settingsState.onoff,
