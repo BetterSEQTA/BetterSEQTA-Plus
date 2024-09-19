@@ -1040,28 +1040,22 @@ export function AppendElementsToDisabledPage() {
   document.head.append(settingsStyle)
 }
 
-export function closeSettings() {
-  const ExtensionSettings = document.getElementById('ExtensionPopup')!
-  // = document.getElementById('ExtensionIframe') as HTMLIFrameElement
+export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
+  if (!extensionPopup) extensionPopup = document.getElementById('ExtensionPopup')!
 
-  if (SettingsClicked == true) {
-    ExtensionSettings!.classList.add('hide')
-    if (settingsState.animations) {
-      animate(
-        '#ExtensionPopup',
-        { opacity: [1, 0], scale: [1, 0] },
-        { easing: spring({ stiffness: 220, damping: 18 }) }
-      )
-    } else {
-      ExtensionSettings.style.opacity = '0'
-      ExtensionSettings.style.transform = 'scale(0)'
-    }
-    SettingsClicked = false
-
-    // hide extension frame
+  extensionPopup.classList.add('hide')
+  if (settingsState.animations) {
+    animate((progress) => {
+      extensionPopup.style.opacity = Math.max(0, 1 - progress).toString()
+      extensionPopup.style.transform = `scale(${Math.max(0, 1 - progress)})`
+    }, { easing: spring({ stiffness: 520, damping: 20 }) })
+  } else {
+    extensionPopup.style.opacity = '0'
+    extensionPopup.style.transform = 'scale(0)'
   }
-
-  ExtensionSettings!.classList.add('hide')
+  
+  settingsPopup.triggerClose()
+  SettingsClicked = false
 }
 
 export function addExtensionSettings() {
@@ -1083,26 +1077,11 @@ export function addExtensionSettings() {
   const container = document.getElementById('container')
 
   new SettingsResizer();
-  
-  const closeExtensionPopup = () => {
-    extensionPopup.classList.add('hide')
-    if (settingsState.animations) {
-      animate(
-        '#ExtensionPopup',
-        { opacity: [1, 0], scale: [1, 0] },
-        { easing: spring({ stiffness: 220, damping: 18 }) }
-      )
-    } else {
-      extensionPopup.style.opacity = '0'
-      extensionPopup.style.transform = 'scale(0)'
-    }
-    
-    settingsPopup.triggerClose()
-    SettingsClicked = false
-  }
 
   container!.onclick = (event) => {
-    if ((event.target as HTMLElement).closest('#AddedSettings') == null && SettingsClicked) {
+    if (!SettingsClicked) return;
+
+    if (!(event.target as HTMLElement).closest('#AddedSettings')) {
       if (event.target == extensionPopup) return;
       closeExtensionPopup()
     }
@@ -1338,31 +1317,17 @@ export function setupSettingsButton() {
   var AddedSettings = document.getElementById('AddedSettings');
   var extensionPopup = document.getElementById('ExtensionPopup');
 
-  AddedSettings!.addEventListener('click', async function () {
+  AddedSettings!.addEventListener('click', async () => {
     if (SettingsClicked) {
-      extensionPopup!.classList.add('hide');
-      if (settingsState.animations) {
-        animate('#ExtensionPopup', { opacity: [1, 0], scale: [1, 0] }, { easing: spring({ stiffness: 220, damping: 18 }) });
-      } else {
-        extensionPopup!.style.opacity = '0'
-        extensionPopup!.style.transform = 'scale(0)'
-      }
-      settingsPopup.triggerClose()
-      SettingsClicked = false;
+      closeExtensionPopup(extensionPopup as HTMLElement);
     } else {
       if (settingsState.animations) {
-        //animate('#ExtensionPopup', { opacity: [0, 1], scale: [0, 1] }, { easing: spring({ stiffness: 260, damping: 24 }) });
         animate((progress) => {
-          console.log(progress)
           extensionPopup!.style.opacity = progress.toString()
           extensionPopup!.style.transform = `scale(${progress})`
-        }, { easing: spring({ stiffness: 260, damping: 24 }) });
-
-        await delay(10)
+        }, { easing: spring({ stiffness: 280, damping: 20 }) });
 
         extensionPopup!.classList.remove('hide');
-        //extensionPopup!.style.opacity = '1'
-        //extensionPopup!.style.transform = 'scale(1)'
       } else {
         extensionPopup!.style.opacity = '1'
         extensionPopup!.style.transform = 'scale(1)'
