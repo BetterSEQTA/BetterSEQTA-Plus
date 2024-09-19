@@ -60,13 +60,13 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={background}
-  class="absolute top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black/20"
+  class="absolute top-0 left-0 z-50 flex items-center justify-center w-full h-full cursor-pointer bg-black/20"
   onclick={handleBackgroundClick}
   onkeydown={(e) => { e.key === 'Enter' && handleBackgroundClick }}
 >
   <div
     bind:this={content}
-    class="h-auto p-4 bg-white border shadow-lg rounded-xl dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
+    class="h-auto p-4 bg-white border shadow-lg cursor-auto rounded-xl dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
   >
     <ReactAdapter el={ColourPicker} />
   </div>

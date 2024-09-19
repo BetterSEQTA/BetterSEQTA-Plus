@@ -38,6 +38,7 @@ import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/svelte-interface/main'
 import Settings from '@/svelte-interface/pages/settings.svelte'
 import { renderStore } from './seqta/ui/renderStore'
+import { settingsPopup } from './svelte-interface/hooks/SettingsPopup'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -1095,7 +1096,8 @@ export function addExtensionSettings() {
       extensionPopup.style.opacity = '0'
       extensionPopup.style.transform = 'scale(0)'
     }
-    // tell it popup closed
+    
+    settingsPopup.triggerClose()
     SettingsClicked = false
   }
 
@@ -1336,7 +1338,7 @@ export function setupSettingsButton() {
   var AddedSettings = document.getElementById('AddedSettings');
   var extensionPopup = document.getElementById('ExtensionPopup');
 
-  AddedSettings!.addEventListener('click', function () {
+  AddedSettings!.addEventListener('click', async function () {
     if (SettingsClicked) {
       extensionPopup!.classList.add('hide');
       if (settingsState.animations) {
@@ -1345,12 +1347,22 @@ export function setupSettingsButton() {
         extensionPopup!.style.opacity = '0'
         extensionPopup!.style.transform = 'scale(0)'
       }
-      /* (document.getElementById('ExtensionIframe')! as HTMLIFrameElement).contentWindow!.postMessage('popupClosed', '*'); */
+      settingsPopup.triggerClose()
       SettingsClicked = false;
     } else {
-      extensionPopup!.classList.remove('hide');
       if (settingsState.animations) {
-        animate('#ExtensionPopup', { opacity: [0, 1], scale: [0, 1] }, { easing: spring({ stiffness: 260, damping: 24 }) });
+        //animate('#ExtensionPopup', { opacity: [0, 1], scale: [0, 1] }, { easing: spring({ stiffness: 260, damping: 24 }) });
+        animate((progress) => {
+          console.log(progress)
+          extensionPopup!.style.opacity = progress.toString()
+          extensionPopup!.style.transform = `scale(${progress})`
+        }, { easing: spring({ stiffness: 260, damping: 24 }) });
+
+        await delay(10)
+
+        extensionPopup!.classList.remove('hide');
+        //extensionPopup!.style.opacity = '1'
+        //extensionPopup!.style.transform = 'scale(1)'
       } else {
         extensionPopup!.style.opacity = '1'
         extensionPopup!.style.transform = 'scale(1)'
