@@ -4,7 +4,7 @@ import { join, resolve } from 'path';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 
-//import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react-swc';
 //import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
@@ -27,7 +27,7 @@ const mode = process.env.MODE || 'chrome';
 export default defineConfig({
   plugins: [
     base64Loader,
-    //react(),
+    react(),
     svelte({
       emitCss: false
     }),

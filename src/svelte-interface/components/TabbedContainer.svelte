@@ -3,7 +3,7 @@
   import './TabbedContainer.css';
   import { onMount } from 'svelte';
 
-  let { tabs } = $props<{ tabs: { title: string, Content: any }[] }>();
+  let { tabs } = $props<{ tabs: { title: string, Content: any, props?: any }[] }>();
   let activeTab = $state(0);
   let hoveredTab = $state<number | null>(null);
   let containerRef: HTMLElement | null = null;
@@ -71,10 +71,10 @@
       transition={springTransition}
     >
       <div class="flex">
-        {#each tabs as { Content }, index}
+        {#each tabs as { Content, props }, index}
           <div class="absolute w-full h-full transition-opacity duration-300 overflow-y-scroll tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
             style="left: {index * 100}%;">
-            {@render Content()}
+             <Content {...props} />
           </div>
         {/each}
       </div>
