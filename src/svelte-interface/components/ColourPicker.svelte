@@ -13,7 +13,6 @@
   let content: HTMLDivElement;
 
   const closePicker = async () => {
-    // reverse animation
     animate(
       content,
       { scale: [1, 0.4], opacity: [1, 0] },
@@ -25,6 +24,7 @@
       { opacity: [1, 0] },
       { easing: [0.4, 0, 0.2, 1] }
     );
+
 
     await delay(400);
     hidePicker();
