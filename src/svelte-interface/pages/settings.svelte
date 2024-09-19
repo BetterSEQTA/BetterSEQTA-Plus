@@ -10,6 +10,12 @@
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
   import { closeSettings, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
+  import ColourPicker from '../components/ColourPicker.svelte'
+
+
+  const openColourPicker = () => {
+    showColourPicker = true;
+  }
 
   const openChangelog = () => {
     OpenWhatsNewPopup();
@@ -22,6 +28,7 @@
   };
     
   let { standalone = false } = $props<{ standalone?: boolean }>();
+  let showColourPicker = $state<boolean>(false);
 
   onMount(() => {
     if (!standalone) return;
@@ -38,12 +45,17 @@
       <img src={browser.runtime.getURL('resources/icons/betterseqta-light-full.png')} class="hidden w-4/5 dark:block" alt="Dark logo" />
       <button onclick={openChangelog} class="absolute right-0 w-8 h-8 text-lg rounded-xl font-IconFamily top-1 bg-zinc-100 dark:bg-zinc-700"></button>
       <button onclick={openAbout} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">ⓘ</button>
+      <!-- <button onclick={() => showColourPicker = true} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">ⓘ</button> -->
     </div>
 
     <TabbedContainer tabs={[
-      { title: 'Settings', Content: Settings },
+      { title: 'Settings', Content: Settings, props: { showColourPicker: openColourPicker } },
       { title: 'Shortcuts', Content: Shortcuts },
       { title: 'Themes', Content: Theme },
     ]} />
   </div>
+
+  {#if showColourPicker}
+    <ColourPicker hidePicker={() => { showColourPicker = false }} />
+  {/if}
 </div>

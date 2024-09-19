@@ -1,13 +1,15 @@
 <script lang="ts">
   import Switch from "../../components/Switch.svelte"
   import Button from "../../components/Button.svelte"
-  import PickerSwatch from "../../components/PickerSwatch.svelte"
   import Slider from "../../components/Slider.svelte"
 
   import browser from "webextension-polyfill"
   
   import type { SettingsList } from "@/svelte-interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
+  import PickerSwatch from "@/svelte-interface/components/PickerSwatch.svelte"
+
+  const { showColourPicker } = $props<{ showColourPicker: () => void }>();
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -54,12 +56,15 @@
         onChange: (value: number) => settingsState.bksliderinput = `${value}`
       }
     },
-    /* {
+    {
       title: "Custom Theme Colour",
       description: "Customise the overall theme colour of SEQTA Learn.",
       id: 4,
-      Component: PickerSwatch
-    }, */
+      Component: PickerSwatch,
+      props: {
+        onClick: showColourPicker
+      }
+    },
     {
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
