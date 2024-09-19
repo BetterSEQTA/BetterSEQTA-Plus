@@ -148,4 +148,16 @@
   ] as option}
     {@render Setting(option)}
   {/each}
+
+  {#if $settingsState.devMode}
+    <div class="flex items-center justify-between px-4 py-3">
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Developer Mode</h2>
+        <p class="text-xs">Enables developer mode, allowing you to test new features and changes.</p>
+      </div>
+      <div>
+        <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
+      </div>
+    </div>
+  {/if}
 </div>
