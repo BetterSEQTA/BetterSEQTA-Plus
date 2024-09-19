@@ -1,15 +1,17 @@
 <script lang="ts">
   import React from "react";
-  import ReactDOM from "react-dom";
+  import { createRoot } from "react-dom/client";
   import { onDestroy, onMount } from "svelte";
 
   const e = React.createElement;
   let container: HTMLDivElement;
+  let root: ReturnType<typeof createRoot>;
 
   onMount(() => {
     const { el, children, class: _, ...props } = $$props;
     try {
-      ReactDOM.render(e(el, props, children), container);
+      root = createRoot(container);
+      root.render(e(el, props, children));
     } catch (err) {
       console.warn(`react-adapter failed to mount.`, { err });
     }
@@ -17,7 +19,9 @@
 
   onDestroy(() => {
     try {
-      ReactDOM.unmountComponentAtNode(container);
+      if (root) {
+        root.unmount();
+      }
     } catch (err) {
       console.warn(`react-adapter failed to unmount.`, { err });
     }

@@ -25,45 +25,52 @@ const defaultPresets = [
 ];
 
 function Picker() {
-  const [customThemeColor, setCustomThemeColor] = useState(() => {
-    return settingsState.selectedColor
-  });
-  const [presets, setPresets] = useState(() => {
-    const savedPresets = localStorage.getItem('colorPickerPresets');
-    return savedPresets ? JSON.parse(savedPresets) : defaultPresets;
-  });
+  const [customThemeColor, setCustomThemeColor] = useState<string | null>(null);
+  const [presets, setPresets] = useState<string[]>(defaultPresets);
+
+  useEffect(() => {
+    setCustomThemeColor(settingsState.selectedColor);
+    setPresets(() => {
+      const savedPresets = localStorage.getItem('colorPickerPresets');
+      return savedPresets ? JSON.parse(savedPresets) : defaultPresets;
+    });
+  }, []);
 
 
   useEffect(() => {
     // on component dismount, save the presets to local storage
     return () => {
-      // Check if the selected color is already in the presets
-      const existingIndex = presets.indexOf(customThemeColor);
+      if (customThemeColor) {
+        // Check if the selected color is already in the presets
+        const existingIndex = presets.indexOf(customThemeColor);
 
-      let updatedPresets;
-      if (existingIndex > -1) {
-        // If the color exists, move it to the front
-        updatedPresets = [
-          customThemeColor,
-          ...presets.slice(0, existingIndex),
-          ...presets.slice(existingIndex + 1)
-        ];
-      } else {
-        // If the color is new, add it to the front and slice the array
-        updatedPresets = [customThemeColor, ...presets].slice(0, 18);
+        let updatedPresets;
+        if (existingIndex > -1) {
+          // If the color exists, move it to the front
+          updatedPresets = [
+            customThemeColor,
+            ...presets.slice(0, existingIndex),
+            ...presets.slice(existingIndex + 1)
+          ];
+        } else {
+          // If the color is new, add it to the front and slice the array
+          updatedPresets = [customThemeColor, ...presets].slice(0, 18);
+        }
+
+        setPresets(updatedPresets);
+        localStorage.setItem('colorPickerPresets', JSON.stringify(updatedPresets));
       }
-
-      setPresets(updatedPresets);
-      localStorage.setItem('colorPickerPresets', JSON.stringify(updatedPresets));
     }
   }, []);
 
   useEffect(() => {
-    settingsState.selectedColor = customThemeColor;
+    if (customThemeColor) {
+      settingsState.selectedColor = customThemeColor;
+    }
   }, [customThemeColor]);
 
   return (
-    <ColorPicker disableDarkMode={true} presets={presets} hideInputs={true} value={customThemeColor} onChange={setCustomThemeColor} />
+    <ColorPicker disableDarkMode={true} presets={presets} hideInputs={true} value={customThemeColor ?? ''} onChange={setCustomThemeColor} />
   );
 }
 
