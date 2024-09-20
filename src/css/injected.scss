@@ -1,9 +1,9 @@
 @charset "UTF-8";
-@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500,600');
+@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 
-@import './injected/sidebar-animation.scss';
-@import './injected/theme.scss';
-@import './injected/transparency.scss';
+@import "./injected/sidebar-animation.scss";
+@import "./injected/theme.scss";
+@import "./injected/transparency.scss";
 
 :root {
   background: var(--better-main) !important;
@@ -16,7 +16,12 @@
 }
 
 body,
-.legacy-root input, .legacy-root textarea, .legacy-root button, .legacy-root select, .legacy-root option, .legacy-root .input,
+.legacy-root input,
+.legacy-root textarea,
+.legacy-root button,
+.legacy-root select,
+.legacy-root option,
+.legacy-root .input,
 html {
   font-family: Rubik, sans-serif !important;
 }
@@ -35,7 +40,8 @@ html {
   height: 100%;
   visibility: visible !important;
 }
-#themeCreatorIframe {
+
+#themeCreator {
   position: fixed;
   right: 0;
   height: 100%;
@@ -195,7 +201,8 @@ html {
   background: unset;
 }
 
-.legacy-root button:active, .legacy-root a:active:not(.cke_combo_button) {
+.legacy-root button:active,
+.legacy-root a:active:not(.cke_combo_button) {
   background-image: unset !important;
 }
 
@@ -205,7 +212,8 @@ html {
 }
 
 .dark .dashboard section {
-  input, select {
+  input,
+  select {
     background: rgba(255, 255, 255, 0.1);
   }
 }
@@ -227,7 +235,7 @@ html {
     input,
     select {
       border: transparent;
-      background: rgba(0, 0, 0, .1);
+      background: rgba(0, 0, 0, 0.1);
       color: var(--text-primary);
     }
 
@@ -269,7 +277,7 @@ html {
   color: var(--text-primary);
 }
 ul.magicDelete > li:hover {
-  background: rgba(0, 0, 0, .1);
+  background: rgba(0, 0, 0, 0.1);
 }
 .dashlet-notes > .editor {
   background: unset;
@@ -292,7 +300,8 @@ ul.magicDelete > li.deleting {
   height: 100%;
 }
 
-#media-container video, #media-container img {
+#media-container video,
+#media-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -372,14 +381,16 @@ ul.magicDelete > li.deleting {
     position: relative;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
       bottom: 0;
       width: 3px;
       background: var(--item-colour, transparent);
-      transition: width 100ms, transform 0.3s ease;
+      transition:
+        width 100ms,
+        transform 0.3s ease;
       border-radius: 8px 0 0 8px;
     }
 
@@ -481,7 +492,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 .quickbar .actions [title="Choose a colour"] > svg {
   scale: 0.9;
 }
-.quickbar[data-yiq='light'] .actions {
+.quickbar[data-yiq="light"] .actions {
   color: white !important;
 }
 .singleSelect > li {
@@ -508,7 +519,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 #main .timetablepage .quickbar {
   border: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   border-radius: 16px;
 }
 .quickbar .actions {
@@ -539,7 +550,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   margin: 0 0 0 -12px;
   background-color: rgba(255, 255, 255, 0.2);
   clip-path: polygon(50% 40%, 0 0, 100% 0);
-  border: 12px solid rgba(255,255,255,0);
+  border: 12px solid rgba(255, 255, 255, 0);
   border-top-color: transparent;
 }
 #main > .timetablepage > .quickbar.above::before {
@@ -1328,7 +1339,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 25px;
   width: 24px;
 }
-.notifications__notifications___3mmLY > button > .notifications__bubble___1EkSQ {
+.notifications__notifications___3mmLY
+  > button
+  > .notifications__bubble___1EkSQ {
   background: var(--better-alert-highlight);
   width: 25px;
   height: 25px;
@@ -1430,7 +1443,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-size: 12px;
   margin-right: 4px;
   font-family: "IconFamily";
-  pointer-events: none;  
+  pointer-events: none;
 }
 
 .MessageList__MessageList___3DxoC ol .Button__Button___3SRFo {
@@ -1534,7 +1547,9 @@ iframe.userHTML {
 .Collapsible__Collapsible___3O8P3 > .Collapsible__header___-Afvq {
   background: none;
 }
-.AssessmentList__AssessmentList___1GdCl > .AssessmentList__searchFilter___3N70o + .AssessmentList__items___3LcmQ {
+.AssessmentList__AssessmentList___1GdCl
+  > .AssessmentList__searchFilter___3N70o
+  + .AssessmentList__items___3LcmQ {
   color: var(--text-primary);
 }
 .Thermoscore__Thermoscore___2tWMi {
@@ -1630,10 +1645,13 @@ ul {
   > .SelectedAssessment__clearBtn___21D85 {
   background: var(--better-main);
 }
-.SelectedAssessment__SelectedAssessment___3Bu5D > .SelectedAssessment__meta___1gq_y {
+.SelectedAssessment__SelectedAssessment___3Bu5D
+  > .SelectedAssessment__meta___1gq_y {
   border-bottom: 1px solid var(--better-main);
 }
-.TabSet__TabSet___Vo-SZ > ol.TabSet__tabs___1RRZk > li.TabSet__selected___1psfF {
+.TabSet__TabSet___Vo-SZ
+  > ol.TabSet__tabs___1RRZk
+  > li.TabSet__selected___1psfF {
   border-bottom-color: var(--better-main);
 }
 .TabSet__TabSet___Vo-SZ > ol.TabSet__tabs___1RRZk {
@@ -1758,7 +1776,15 @@ div.entry.class[style*="left: 46.5%"] {
 div.entry.class[style*="width: 46.5%"] {
   width: 50% !important;
 }
-.timetablepage .dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper {
+.timetablepage
+  .dailycal
+  > .content
+  > .wrapper
+  > .days
+  > tbody
+  > tr
+  > td
+  > .entriesWrapper {
   min-width: 0;
   width: auto !important;
 }
@@ -1952,7 +1978,6 @@ div.bar.flat {
   .cke_toolbox > .cke_toolbar .cke_button_on {
     background-color: #3d3d3e !important;
   }
-
 }
 .legacy-root input.singleSelect:focus {
   background: var(--auto-background);
@@ -1996,7 +2021,15 @@ body {
 .forumView .assessment {
   background: var(--better-main);
 }
-.dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper > .entry {
+.dailycal
+  > .content
+  > .wrapper
+  > .days
+  > tbody
+  > tr
+  > td
+  > .entriesWrapper
+  > .entry {
   padding: 3px;
 }
 .Viewer__Viewer___32BH- {
@@ -2035,7 +2068,9 @@ li.MessageList__unread___3imtO {
   border-radius: 1600px;
 }
 
-.MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz.MessageList__unread___3imtO {
+.MessageList__MessageList___3DxoC
+  > ol
+  > li.MessageList__selected___1SJNz.MessageList__unread___3imtO {
   box-shadow: none;
 }
 
@@ -2055,7 +2090,9 @@ li.MessageList__unread___3imtO {
   transition: width 0.1s;
 }
 
-.MessageList__MessageList___3DxoC > ol > li.MessageList__unread___3imtO::before {
+.MessageList__MessageList___3DxoC
+  > ol
+  > li.MessageList__unread___3imtO::before {
   width: 3px;
 }
 .connectedNotificationsWrapper > div > button {
@@ -2129,7 +2166,10 @@ li.MessageList__unread___3imtO {
   cursor: pointer;
 }
 
-.dark .MessageList__MessageList___3DxoC > ol > li.MessageList__selected___1SJNz {
+.dark
+  .MessageList__MessageList___3DxoC
+  > ol
+  > li.MessageList__selected___1SJNz {
   background: var(--background-secondary);
 }
 
@@ -2620,7 +2660,9 @@ li.MessageList__unread___3imtO {
   width: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(179, 179, 179, 0.9);
+  box-shadow:
+    inset 0px 6px 0 var(--item-colour, transparent),
+    inset 0px 40px 50px -40px rgba(179, 179, 179, 0.9);
   transition: 200ms;
   position: relative;
   height: 15em;
@@ -2629,7 +2671,9 @@ li.MessageList__unread___3imtO {
   font-family: Rubik, sans-serif;
 }
 .dark .day {
-  box-shadow: inset 0px 6px 0 var(--item-colour, transparent), inset 0px 40px 50px -40px rgba(0,0,0,0.9);
+  box-shadow:
+    inset 0px 6px 0 var(--item-colour, transparent),
+    inset 0px 40px 50px -40px rgba(0, 0, 0, 0.9);
 }
 .clickable {
   cursor: pointer;
@@ -2666,7 +2710,7 @@ li.MessageList__unread___3imtO {
   border-radius: 16px;
 }
 .dark .upcoming-items {
-  box-shadow: inset 0px 40px 80px -40px rgba(0,0,0,0.6);
+  box-shadow: inset 0px 40px 80px -40px rgba(0, 0, 0, 0.6);
 }
 .upcoming-assessment-title {
   color: var(--text-primary);
@@ -2946,7 +2990,6 @@ li.MessageList__unread___3imtO {
   width: 90%;
   border-radius: 16px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.3);
-  
 }
 .whatsnewTextContainer {
   display: flex;

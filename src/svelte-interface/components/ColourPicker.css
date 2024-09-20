@@ -1,8 +1,8 @@
-.dark {
-  div:has(> #rbgcp-wrapper) {
-    background: transparent !important;
-  }
+div:has(> #rbgcp-wrapper) {
+  background: transparent !important;
+}
 
+.dark {
   #rbgcp-wrapper {
     div[style="padding-top: 11px; position: relative;"] div {
       color: white !important;
@@ -31,11 +31,14 @@
       #rbgcp-radial-btn,
       #rbgcp-linear-btn {
         &[style*="background: white;"] {
-          background-color: #28282B !important;
+          background-color: #28282b !important;
         }
 
         svg {
-          path, g, polyline, circle {
+          path,
+          g,
+          polyline,
+          circle {
             stroke: white !important;
             fill: transparent !important;
           }
