@@ -10,6 +10,7 @@
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/svelte-interface/hooks/ThemeUpdates'
+  import { closeExtensionPopup } from '@/SEQTA'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();
@@ -32,7 +33,7 @@
     try {
       await deleteTheme(themeId);
       if (!themes) return;
-      
+
       themes.themes = themes.themes.filter(theme => theme.id !== themeId);
       if (themeId === themes.selectedTheme) {
         themes.selectedTheme = '';
@@ -138,7 +139,7 @@
               <div class="w-4 h-0.5 bg-white"></div>
             </div>
           {/if}
-          
+
           {#if !isEditMode}
             <div
               class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
@@ -199,7 +200,7 @@
     </button>
 
     <button
-      onclick={() => OpenThemeCreator()}
+      onclick={() => { OpenThemeCreator(); closeExtensionPopup() }}
       class="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xec60;</span>
