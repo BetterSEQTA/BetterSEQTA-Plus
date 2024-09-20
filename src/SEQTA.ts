@@ -37,7 +37,6 @@ import injectedCSS from '@/css/injected.scss?inline'
 import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/svelte-interface/main'
 import Settings from '@/svelte-interface/pages/settings.svelte'
-import { renderStore } from './seqta/ui/renderStore'
 import { settingsPopup } from './svelte-interface/hooks/SettingsPopup'
 
 let SettingsClicked = false

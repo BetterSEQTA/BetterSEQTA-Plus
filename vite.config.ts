@@ -4,8 +4,8 @@ import { join, resolve } from 'path';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 
-import react from '@vitejs/plugin-react-swc';
-//import million from "million/compiler";
+import react from '@vitejs/plugin-react';
+import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
 import { svelte } from '@sveltejs/vite-plugin-svelte'
@@ -31,7 +31,7 @@ export default defineConfig({
     svelte({
       emitCss: false
     }),
-    //million.vite({ auto: true }),
+    million.vite({ auto: true }),
     //MillionLint.vite(), /* enable for testing and debugging performance */
     crx({
       manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
