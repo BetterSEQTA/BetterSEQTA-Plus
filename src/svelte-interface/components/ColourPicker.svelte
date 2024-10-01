@@ -5,16 +5,18 @@
   import { animate, spring } from 'motion';
   import { delay } from '@/seqta/utils/delay.ts'
 
-  const { hidePicker, standalone = false } = $props<{
+  const { hidePicker, standalone = false, savePresets = true } = $props<{
     hidePicker?: () => void,
-    standalone?: boolean
+    standalone?: boolean,
+    savePresets?: boolean
   }>();
 
-  let background: HTMLDivElement;
-  let content: HTMLDivElement;
+  let background = $state<HTMLDivElement | null>(null);
+  let content = $state<HTMLDivElement | null>(null);
 
   const closePicker = async () => {
     if (standalone) return;
+    if (!background || !content) return;
 
     animate(
       content,
@@ -34,6 +36,7 @@
 
   onMount(() => {
     if (standalone) return;
+    if (!background || !content) return;
 
     animate(
       background,
@@ -69,7 +72,7 @@
 
 {#if standalone}
   <div class="h-auto rounded-xl overflow-clip">
-    <ReactAdapter el={ColourPicker} />
+    <ReactAdapter savePresets={savePresets} el={ColourPicker} />
   </div>
 {:else}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -83,7 +86,7 @@
       bind:this={content}
       class="h-auto p-4 bg-white border shadow-lg cursor-auto rounded-xl dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
     >
-      <ReactAdapter el={ColourPicker} />
+      <ReactAdapter savePresets={savePresets} el={ColourPicker} />
     </div>
   </div>
 {/if}

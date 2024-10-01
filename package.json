@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@bedframe/cli": "^0.0.85",
+    "@codemirror/lang-css": "^6.3.0",
     "@codemirror/lang-less": "^6.0.2",
     "@million/lint": "latest",
     "@sveltejs/vite-plugin-svelte": "4.0.0-next.7",
@@ -70,6 +71,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "classnames": "^2.5.1",
+    "codemirror": "^6.0.1",
     "color": "^4.2.3",
     "dompurify": "^3.1.6",
     "idb": "^8.0.0",
