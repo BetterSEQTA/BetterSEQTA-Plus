@@ -32,12 +32,15 @@
   })
 
   onMount(async () => {
-
     if (themeID) {
       const tempTheme = await getTheme(themeID)
       if (tempTheme) theme = tempTheme
     }
   });
+
+  $effect(() => {
+    console.log(theme)
+  })
 
   type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor';
 
@@ -119,7 +122,7 @@
         description: 'Useful when your cover image contains text',
         props: {
           state: theme.hideThemeName,
-          onChange: (value) => theme.hideThemeName = value
+          onChange: (value: boolean) => theme = { ...theme, hideThemeName: value }
         }
       },
       {
@@ -128,7 +131,7 @@
         description: 'Force users to use either dark or light mode',
         props: {
           state: theme.forceDark !== undefined,
-          onChange: (value) => theme.forceDark = value ? false : undefined
+          onChange: (value: boolean) => theme = { ...theme, forceDark: value ? false : undefined }
         }
       },
       {
@@ -137,8 +140,8 @@
         description: 'Set the default color for your theme',
         direction: 'vertical',
         props: {
-          color: theme.defaultColour,
-          onChange: (color) => theme.defaultColour = color
+          customState: theme.defaultColour,
+          customOnChange: (color: string) => theme = { ...theme, defaultColour: color }
         }
       },
       {
@@ -148,7 +151,7 @@
         direction: 'vertical',
         props: {
           value: theme.CustomCSS,
-          onChange: (value) => { theme.CustomCSS = value; console.log(theme.CustomCSS) }
+          onChange: (value: string) => { theme = { ...theme, CustomCSS: value } }
         }
       }
     ] as SettingItem[] as setting}
