@@ -1,5 +1,5 @@
 import ColorPicker from "react-best-gradient-color-picker"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
 
 const defaultPresets = [
@@ -35,13 +35,23 @@ export default function Picker({
   customState,
   savePresets = true,
 }: PickerProps) {
-  const [customThemeColor, setCustomThemeColor] = useState<string | null>(
-    () => customState ?? settingsState.selectedColor ?? null
-  )
-  const [presets, setPresets] = useState<string[]>(() => {
-    const savedPresets = localStorage.getItem("colorPickerPresets")
-    return savedPresets ? JSON.parse(savedPresets) : defaultPresets
-  })
+  const [customThemeColor, setCustomThemeColor] = useState<string | null>()
+  const [presets, setPresets] = useState<string[]>()
+
+  const latestValuesRef = useRef({ customThemeColor, customOnChange, savePresets, presets });
+
+  useEffect(() => {
+    if (customState !== undefined) {
+      setCustomThemeColor(customState)
+    } else {
+      setCustomThemeColor(settingsState.selectedColor ?? null)
+    }
+
+    if (presets === undefined) {
+      const savedPresets = localStorage.getItem("colorPickerPresets")
+      setPresets(savedPresets ? JSON.parse(savedPresets) : defaultPresets)
+    }
+  }, [])
 
   useEffect(() => {
     if (customState !== undefined) {
@@ -50,32 +60,34 @@ export default function Picker({
   }, [customState])
 
   useEffect(() => {
-    if (customThemeColor && !customOnChange && savePresets) {
-      return () => {
-        // Check if the selected color is already in the presets
-        const existingIndex = presets.indexOf(customThemeColor)
+    latestValuesRef.current = { customThemeColor, customOnChange, savePresets, presets };
+  }, [customThemeColor, customOnChange, savePresets, presets]);
 
-        let updatedPresets
-        if (existingIndex > -1) {
-          // If the color exists, move it to the front
-          updatedPresets = [
-            customThemeColor,
-            ...presets.slice(0, existingIndex),
-            ...presets.slice(existingIndex + 1),
-          ]
-        } else {
-          // If the color is new, add it to the front and slice the array
-          updatedPresets = [customThemeColor, ...presets].slice(0, 18)
-        }
-
-        setPresets(updatedPresets)
-        localStorage.setItem(
-          "colorPickerPresets",
-          JSON.stringify(updatedPresets),
-        )
+  useEffect(() => {
+    return () => {
+      const { customThemeColor, customOnChange, savePresets, presets } = latestValuesRef.current;
+      if (!(customThemeColor && !customOnChange && savePresets)) return;
+        
+      // Only proceed if presets are different (avoid unnecessary updates)
+      const existingIndex = presets.indexOf(customThemeColor);
+      let updatedPresets;
+      
+      if (existingIndex === 0) {
+        // No need to update if the selected color is already the first element
+        return;
+      } else if (existingIndex > -1) {
+        updatedPresets = [
+          customThemeColor,
+          ...presets.slice(0, existingIndex),
+          ...presets.slice(existingIndex + 1),
+        ];
+      } else {
+        updatedPresets = [customThemeColor, ...presets].slice(0, 18);
       }
+    
+      localStorage.setItem("colorPickerPresets", JSON.stringify(updatedPresets));
     }
-  }, [customThemeColor, customOnChange, savePresets, presets])
+  }, [])
 
   useEffect(() => {
     if (customThemeColor && !customOnChange) {
