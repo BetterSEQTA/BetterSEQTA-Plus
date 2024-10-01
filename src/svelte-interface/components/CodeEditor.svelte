@@ -2,26 +2,27 @@
   import { EditorState } from '@codemirror/state';
   import { highlightSelectionMatches } from '@codemirror/search';
   import { indentWithTab, history, defaultKeymap, historyKeymap } from '@codemirror/commands';
-  import { foldGutter, indentOnInput, indentUnit, bracketMatching, foldKeymap, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+  import { indentOnInput, indentUnit, bracketMatching, foldKeymap, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
   import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
-  import { lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, EditorView } from '@codemirror/view'; // dropCursor
+  import { highlightSpecialChars, drawSelection, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, EditorView } from '@codemirror/view'; // dropCursor
 
   // Theme
   import { oneDark } from "@codemirror/theme-one-dark";
 
   // Language
   import { css } from "@codemirror/lang-css";
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
-  function createEditorState(initialContents: string, options = {}) {
+  let editor = $state<HTMLDivElement | null>(null)
+  let view: EditorView | null = null;
+  let { value, onChange } = $props<{value: string, onChange: (value: string) => void}>()
+
+  function createEditorState(initialContents: string, options = {oneDark: false}) {
       let extensions = [
-          /* lineNumbers(),
-          highlightActiveLineGutter(),
           highlightSpecialChars(),
           history(),
-          foldGutter(),
           drawSelection(),
-          indentUnit.of("    "),
+          indentUnit.of("  "),
           EditorState.allowMultipleSelections.of(true),
           indentOnInput(),
           bracketMatching(),
@@ -38,13 +39,18 @@
               ...historyKeymap,
               ...foldKeymap,
               ...completionKeymap,
-          ]), */
+          ]),
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+              onChange(update.state.doc.toString())
+            }
+          }),
           css(),
           syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       ];
 
-      /* if (options.oneDark)
-          extensions.push(oneDark); */
+      if (options.oneDark)
+          extensions.push(oneDark);
 
       return EditorState.create({
           doc: initialContents,
@@ -52,19 +58,22 @@
       });
   }
 
-  function createEditorView(state: any, parent: HTMLElement) {
+  function createEditorView(state: EditorState, parent: HTMLElement) {
       return new EditorView({ state, parent });
   }
 
   onMount(() => {
-    const editor = document.querySelector('#cm-target');
     if (editor) {
-      const state = createEditorState('body {\n  color: red;\n}');
-      const view = createEditorView(state, editor as HTMLElement);
-
-      console.log(view)
+      const state = createEditorState(value);
+      view = createEditorView(state, editor as HTMLElement);
     }
   });
+
+  onDestroy(() => {
+    if (view) {
+      view.destroy();
+    }
+  })
 </script>
 
-<div id="cm-target"></div>
+<div class="rounded-lg text-[13px] overflow-clip w-full bg-white dark:bg-zinc-900" bind:this={editor}></div>

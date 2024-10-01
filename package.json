@@ -54,6 +54,7 @@
     "@bedframe/cli": "^0.0.85",
     "@codemirror/lang-css": "^6.3.0",
     "@codemirror/lang-less": "^6.0.2",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "@million/lint": "latest",
     "@sveltejs/vite-plugin-svelte": "4.0.0-next.7",
     "@tailwindcss/forms": "^0.5.9",
