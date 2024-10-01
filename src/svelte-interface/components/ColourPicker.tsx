@@ -1,5 +1,5 @@
 import ColorPicker from "react-best-gradient-color-picker"
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
 
 const defaultPresets = [
