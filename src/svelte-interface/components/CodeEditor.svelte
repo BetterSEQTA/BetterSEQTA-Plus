@@ -5,19 +5,23 @@
   import { indentOnInput, indentUnit, bracketMatching, foldKeymap, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
   import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
   import { highlightSpecialChars, drawSelection, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, EditorView } from '@codemirror/view'; // dropCursor
+  import { color } from '@uiw/codemirror-extensions-color'
+  import { Compartment } from '@codemirror/state';
 
   // Theme
-  import { oneDark } from "@codemirror/theme-one-dark";
+  import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 
   // Language
   import { css } from "@codemirror/lang-css";
   import { onDestroy, onMount } from 'svelte'
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
   let editor = $state<HTMLDivElement | null>(null)
   let view: EditorView | null = null;
+  let editorTheme = new Compartment();
   let { value, onChange } = $props<{value: string, onChange: (value: string) => void}>()
 
-  function createEditorState(initialContents: string, options = {oneDark: false}) {
+  function createEditorState(initialContents: string) {
       let extensions = [
           highlightSpecialChars(),
           history(),
@@ -32,6 +36,7 @@
           crosshairCursor(),
           highlightActiveLine(),
           highlightSelectionMatches(),
+          editorTheme.of(githubLight),
           keymap.of([
               indentWithTab,
               ...closeBracketsKeymap,
@@ -46,11 +51,9 @@
             }
           }),
           css(),
+          color,
           syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       ];
-
-      if (options.oneDark)
-          extensions.push(oneDark);
 
       return EditorState.create({
           doc: initialContents,
@@ -67,6 +70,16 @@
       const state = createEditorState(value);
       view = createEditorView(state, editor as HTMLElement);
     }
+
+    settingsState.subscribe((settings) => {
+      if (view) {
+        view.dispatch({
+          effects: editorTheme.reconfigure(
+            settings.DarkMode ? githubDark : githubLight
+          )
+        })
+      }
+    });
   });
 
   onDestroy(() => {
