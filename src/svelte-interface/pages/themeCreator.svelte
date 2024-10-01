@@ -32,7 +32,6 @@
   })
 
   onMount(async () => {
-    console.log(themeID)
 
     if (themeID) {
       const tempTheme = await getTheme(themeID)
@@ -66,19 +65,17 @@
       <h2 class="text-sm font-bold">{item.title}</h2>
       <p class="text-xs">{item.description}</p>
     </div>
-    <div>
-      {#if item.type === 'switch'}
-        <Switch {...(item.props as SwitchProps)} />
-      {:else if item.type === 'button'}
-        <Button {...(item.props as ButtonProps)} />
-      {:else if item.type === 'slider'}
-        <Slider {...(item.props as SliderProps)} />
-      {:else if item.type === 'colourPicker'}
-        <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
-      {:else if item.type === 'codeEditor'}
-        <CodeEditor /> <!-- {/*...(item.props as CodeEditorProps)*/} -->
-      {/if}
-    </div>
+    {#if item.type === 'switch'}
+      <Switch {...(item.props as SwitchProps)} />
+    {:else if item.type === 'button'}
+      <Button {...(item.props as ButtonProps)} />
+    {:else if item.type === 'slider'}
+      <Slider {...(item.props as SliderProps)} />
+    {:else if item.type === 'colourPicker'}
+      <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
+    {:else if item.type === 'codeEditor'}
+      <CodeEditor {...(item.props as CodeEditorProps)} />
+    {/if}
   </div>
 {/snippet}
 
@@ -148,9 +145,10 @@
         type: 'codeEditor',
         title: 'Custom CSS',
         description: 'Add custom CSS to your theme',
+        direction: 'vertical',
         props: {
           value: theme.CustomCSS,
-          onChange: (value) => theme.CustomCSS = value
+          onChange: (value) => { theme.CustomCSS = value; console.log(theme.CustomCSS) }
         }
       }
     ] as SettingItem[] as setting}

@@ -40,3 +40,8 @@ input {
     opacity: 1;
   }
 }
+
+.cm-editor {
+  width: 100%;
+  min-height: 100px;
+}
