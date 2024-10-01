@@ -41,6 +41,7 @@ export default function Picker({
   const latestValuesRef = useRef({ customThemeColor, customOnChange, savePresets, presets });
 
   useEffect(() => {
+    console.log(customState)
     if (customState !== undefined) {
       setCustomThemeColor(customState)
     } else {
