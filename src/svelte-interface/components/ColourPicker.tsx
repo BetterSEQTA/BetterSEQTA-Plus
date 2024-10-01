@@ -66,7 +66,7 @@ export default function Picker({
   useEffect(() => {
     return () => {
       const { customThemeColor, customOnChange, savePresets, presets } = latestValuesRef.current;
-      if (!(customThemeColor && !customOnChange && savePresets)) return;
+      if (!(customThemeColor && !customOnChange && savePresets && presets)) return;
         
       // Only proceed if presets are different (avoid unnecessary updates)
       const existingIndex = presets.indexOf(customThemeColor);
