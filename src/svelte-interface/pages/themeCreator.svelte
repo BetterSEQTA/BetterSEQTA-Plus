@@ -154,8 +154,8 @@
             <CodeEditor {...(item.props as CodeEditorProps)} />
           {:else if item.type === 'imageUpload'}
             {#each theme.CustomImages as image (image.id)}
-              <div class="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
-                <div class="flex-1 h-full ">
+              <div class="flex items-center h-16 gap-2 px-2 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
+                <div class="h-full ">
                   <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
                 </div>
                 <input
@@ -163,15 +163,15 @@
                   bind:value={image.variableName}
                   oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
                   placeholder="CSS Variable Name"
-                  class="flex-grow flex-[3] w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-800/50 dark:text-white"
+                  class="flex-grow flex-[3] w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-600/50 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
                 />
-                <button onclick={() => onRemoveImage(image.id)} class="p-2 ml-1 transition dark:text-white">
-                  <span class='font-IconFamily'>{'\ued8c'}</span>
+                <button onclick={() => onRemoveImage(image.id)} class="p-2 transition dark:text-white">
+                  <span class='text-xl font-IconFamily'>{'\ued8c'}</span>
                 </button>
               </div>
             {/each}
       
-            <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-700">
+            <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-200 dark:bg-zinc-700">
               <span class='font-IconFamily'>{'\uec60'}</span>
               <span class='dark:text-white'>Add image</span>
               <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
@@ -218,7 +218,7 @@
         type='text'
         placeholder='What is your theme called?'
         bind:value={theme.name}
-        class='w-full p-2 mb-4 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600' />
+        class='w-full p-2 mb-4 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600' />
     </div>
 
     <div>
@@ -227,12 +227,12 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='w-full p-2 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600'></textarea>
+        class='w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
 
-    <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-100 dark:bg-zinc-700">
+    <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-200 dark:bg-zinc-700">
       <div class={`transition pointer-events-none z-30 font-IconFamily ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>
         {'\uec60'}
       </div>
