@@ -181,8 +181,8 @@
     {/each}
 
     <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-100 dark:bg-zinc-900">
-      <div class={`transition pointer-events-none z-30 ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>
-        \ueb44
+      <div class={`transition pointer-events-none z-30 font-IconFamily ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>
+        {'\ueb44'}
       </div>
       <span class={`dark:text-white pointer-events-none z-30 transition ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>{theme.coverImage ? 'Change' : 'Add'} cover image</span>
       <input type="file" accept='image/*' onchange={onCoverImageUpload} class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" />
