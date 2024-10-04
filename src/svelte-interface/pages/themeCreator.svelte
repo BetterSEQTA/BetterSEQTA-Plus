@@ -2,6 +2,7 @@
   import { v4 as uuidv4 } from 'uuid';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
 
   import { type LoadedCustomTheme } from '@/types/CustomThemes'
 
@@ -86,7 +87,7 @@
     
   });
 
-  type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload';
+  type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
 
   type SwitchProps = { state: boolean; onChange: (value: boolean) => void };
   type ButtonProps = { onClick: () => void; text: string };
@@ -94,8 +95,14 @@
   type ColourPickerProps = { color: string; onChange: (color: string) => void };
   type SelectProps = { options: Array<{ value: string; label: string }>; value: string; onChange: (value: string) => void };
   type CodeEditorProps = { value: string; onChange: (value: string) => void };
+  type LightDarkToggleProps = { state: boolean; onChange: (value: boolean) => void };
 
-  type ComponentProps = SwitchProps | ButtonProps | SliderProps | ColourPickerProps | SelectProps | CodeEditorProps;
+  type ConditionalProps = {
+    condition: boolean;
+    children: SettingItem;
+  };
+
+  type ComponentProps = SwitchProps | ButtonProps | SliderProps | ColourPickerProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
 
   type SettingItem = {
     type: SettingType;
@@ -107,64 +114,89 @@
 </script>
 
 {#snippet settingItem(item: SettingItem)}
-  <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start' : 'items-center'} py-3">
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-      onclick={() => { item.direction === 'vertical' && toggleAccordion(item.title) }}
-      onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title) }}
-      class="flex justify-between pr-4 {item.direction === 'vertical' ? 'cursor-pointer w-full select-none' : ''}">
-      <div>
-        <h2 class="text-sm font-bold">{item.title}</h2>
-        <p class="text-xs">{item.description}</p>
+  {#if item.type === 'conditional'}
+    {#if (item.props as ConditionalProps).condition }
+      <div transition:slide={{ duration: 300 }}>
+        {@render settingItem((item.props as ConditionalProps).children)}
       </div>
+    {/if}
+  {:else}
+    <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start' : 'items-center'} py-3">
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        onclick={() => { item.direction === 'vertical' && toggleAccordion(item.title) }}
+        onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title) }}
+        class="flex justify-between pr-4 {item.direction === 'vertical' ? 'cursor-pointer w-full select-none' : ''}">
 
-      {#if item.direction === 'vertical'}
-        <div class="flex items-center justify-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
-          <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
+        <div>
+          <h2 class="text-sm font-bold">{item.title}</h2>
+          <p class="text-xs">{item.description}</p>
         </div>
-      {/if}
-    </div>
 
-    {#if !closedAccordions.includes(item.title)}
-      <div class="{item.direction === 'vertical' ? 'w-full mt-2' : ''}" transition:slide={{ duration: 300 }}>
-        {#if item.type === 'switch'}
-          <Switch {...(item.props as SwitchProps)} />
-        {:else if item.type === 'button'}
-          <Button {...(item.props as ButtonProps)} />
-        {:else if item.type === 'slider'}
-          <Slider {...(item.props as SliderProps)} />
-        {:else if item.type === 'colourPicker'}
-          <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
-        {:else if item.type === 'codeEditor'}
-          <CodeEditor {...(item.props as CodeEditorProps)} />
-        {:else if item.type === 'imageUpload'}
-          {#each theme.CustomImages as image (image.id)}
-            <div class="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
-              <div class="flex-1 h-full ">
-                <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
-              </div>
-              <input
-                type="text"
-                bind:value={image.variableName}
-                oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
-                placeholder="CSS Variable Name"
-                class="flex-grow flex-[3] w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-800/50 dark:text-white"
-              />
-              <button onclick={() => onRemoveImage(image.id)} class="p-2 ml-1 transition dark:text-white">
-                <span class='font-IconFamily'>{'\ued8c'}</span>
-              </button>
-            </div>
-          {/each}
-    
-          <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-700">
-            <span class='font-IconFamily'>{'\uec60'}</span>
-            <span class='dark:text-white'>Add image</span>
-            <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        {#if item.direction === 'vertical'}
+          <div class="flex items-center justify-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
+            <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
           </div>
         {/if}
       </div>
-    {/if}
-  </div>
+
+      {#if !closedAccordions.includes(item.title)}
+        <div class="{item.direction === 'vertical' ? 'w-full mt-2' : ''}" transition:slide={{ duration: 300 }}>
+          {#if item.type === 'switch'}
+            <Switch {...(item.props as SwitchProps)} />
+          {:else if item.type === 'button'}
+            <Button {...(item.props as ButtonProps)} />
+          {:else if item.type === 'slider'}
+            <Slider {...(item.props as SliderProps)} />
+          {:else if item.type === 'colourPicker'}
+            <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
+          {:else if item.type === 'codeEditor'}
+            <CodeEditor {...(item.props as CodeEditorProps)} />
+          {:else if item.type === 'imageUpload'}
+            {#each theme.CustomImages as image (image.id)}
+              <div class="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
+                <div class="flex-1 h-full ">
+                  <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
+                </div>
+                <input
+                  type="text"
+                  bind:value={image.variableName}
+                  oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
+                  placeholder="CSS Variable Name"
+                  class="flex-grow flex-[3] w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-800/50 dark:text-white"
+                />
+                <button onclick={() => onRemoveImage(image.id)} class="p-2 ml-1 transition dark:text-white">
+                  <span class='font-IconFamily'>{'\ued8c'}</span>
+                </button>
+              </div>
+            {/each}
+      
+            <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-700">
+              <span class='font-IconFamily'>{'\uec60'}</span>
+              <span class='dark:text-white'>Add image</span>
+              <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            </div>
+          {:else if item.type === 'lightDarkToggle'}
+            <button
+              class="relative px-4 py-1 overflow-hidden text-xl font-medium transition rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 font-IconFamily"
+              onclick={() => (item.props as LightDarkToggleProps).onChange(!(item.props as LightDarkToggleProps).state)}
+            >
+              {#key (item.props as LightDarkToggleProps).state}
+                <span
+                  class="absolute"
+                  in:fade={{ duration: 150 }}
+                  out:fade={{ duration: 150 }}
+                >
+                  {(item.props as LightDarkToggleProps).state ? '\uec12' : '\uecfe'}
+                </span>
+              {/key}
+              <span class='opacity-0'>{'\uec12'}</span>
+            </button>
+          {/if}
+        </div>
+      {/if}
+    </div>
+  {/if}
 {/snippet}
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} '>
@@ -234,6 +266,21 @@
         props: {
           state: theme.forceDark !== undefined,
           onChange: (value: boolean) => theme = { ...theme, forceDark: value ? false : undefined }
+        }
+      },
+      {
+        type: 'conditional',
+        props: {
+          condition: theme.forceDark !== undefined,
+          children: {
+            type: 'lightDarkToggle',
+            title: 'Mode',
+            description: 'Choose whether to force light or dark mode',
+            props: {
+              state: theme.forceDark === true,
+              onChange: (value: boolean) => theme = { ...theme, forceDark: value }
+            }
+          }
         }
       },
       {
