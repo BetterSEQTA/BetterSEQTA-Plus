@@ -29,7 +29,7 @@
 </script>
 
 <div
-  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch"
+  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full dark:bg-[#38373D] bg-[#DDDDDD] switch select-none"
   data-ison={state}
   onclick={() => onChange(!state)}
   onkeydown={(e) => e.key === "Enter" && onChange(!state)}
