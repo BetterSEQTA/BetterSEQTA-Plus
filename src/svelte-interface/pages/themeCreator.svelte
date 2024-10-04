@@ -1,8 +1,9 @@
 <script lang="ts">
   import { v4 as uuidv4 } from 'uuid';
   import { onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
 
-  import type { CustomTheme } from '@/types/CustomThemes'
+  import { type LoadedCustomTheme } from '@/types/CustomThemes'
 
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { getTheme } from '@/seqta/ui/themes/getTheme'
@@ -22,7 +23,7 @@
   } from '../utils/themeImageHandlers';
 
   const { themeID } = $props<{ themeID: string }>()
-  let theme = $state<CustomTheme>({
+  let theme = $state<LoadedCustomTheme>({
     id: uuidv4(),
     name: '',
     description: '',
@@ -36,11 +37,32 @@
     hideThemeName: false,
     forceDark: false
   })
+  let closedAccordions = $state<string[]>([])
+
+  function toggleAccordion(title: string) {
+    if (closedAccordions.includes(title)) {
+      closedAccordions = closedAccordions.filter(t => t !== title);
+    } else {
+      closedAccordions = [...closedAccordions, title];
+    }
+  }
 
   onMount(async () => {
     if (themeID) {
       const tempTheme = await getTheme(themeID)
-      if (tempTheme) theme = tempTheme
+
+      if (!tempTheme) return
+
+      // convert temptheme to LoadedCustomTheme
+      const loadedTheme = {
+        ...tempTheme,
+        CustomImages: tempTheme.CustomImages.map(image => ({
+          ...image,
+          url: image.blob ? URL.createObjectURL(image.blob) : null
+        }))
+      }
+
+      if (tempTheme) theme = loadedTheme
     }
   });
 
@@ -61,8 +83,8 @@
   }
 
   $effect(() => {
-
-  })
+    
+  });
 
   type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload';
 
@@ -85,44 +107,61 @@
 </script>
 
 {#snippet settingItem(item: SettingItem)}
-  <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start gap-2' : 'items-center'} py-3">
-    <div class="pr-4">
-      <h2 class="text-sm font-bold">{item.title}</h2>
-      <p class="text-xs">{item.description}</p>
-    </div>
-    {#if item.type === 'switch'}
-      <Switch {...(item.props as SwitchProps)} />
-    {:else if item.type === 'button'}
-      <Button {...(item.props as ButtonProps)} />
-    {:else if item.type === 'slider'}
-      <Slider {...(item.props as SliderProps)} />
-    {:else if item.type === 'colourPicker'}
-      <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
-    {:else if item.type === 'codeEditor'}
-      <CodeEditor {...(item.props as CodeEditorProps)} />
-    {:else if item.type === 'imageUpload'}
-      {#each theme.CustomImages as image (image.id)}
-        <div class="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-900">
-          <div class="flex-1 h-full ">
-            <img src={URL.createObjectURL(image.blob)} alt={image.variableName} class="object-contain h-full rounded" />
-          </div>
-          <input
-            type="text"
-            bind:value={image.variableName}
-            oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
-            placeholder="CSS Variable Name"
-            class="flex-grow flex-[3] w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-800/50 dark:text-white"
-          />
-          <button onclick={() => onRemoveImage(image.id)} class="p-2 ml-1 transition dark:text-white">
-            <span class='font-IconFamily'>{'\ued8c'}</span>
-          </button>
-        </div>
-      {/each}
+  <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start' : 'items-center'} py-3">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      onclick={() => { item.direction === 'vertical' && toggleAccordion(item.title) }}
+      onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title) }}
+      class="flex justify-between pr-4 {item.direction === 'vertical' ? 'cursor-pointer w-full select-none' : ''}">
+      <div>
+        <h2 class="text-sm font-bold">{item.title}</h2>
+        <p class="text-xs">{item.description}</p>
+      </div>
 
-      <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-900">
-        <span class='font-IconFamily'>{'\uec60'}</span>
-        <span class='dark:text-white'>Add image</span>
-        <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      {#if item.direction === 'vertical'}
+        <div class="flex items-center justify-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
+          <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
+        </div>
+      {/if}
+    </div>
+
+    {#if !closedAccordions.includes(item.title)}
+      <div class="{item.direction === 'vertical' ? 'w-full mt-2' : ''}" transition:slide={{ duration: 300 }}>
+        {#if item.type === 'switch'}
+          <Switch {...(item.props as SwitchProps)} />
+        {:else if item.type === 'button'}
+          <Button {...(item.props as ButtonProps)} />
+        {:else if item.type === 'slider'}
+          <Slider {...(item.props as SliderProps)} />
+        {:else if item.type === 'colourPicker'}
+          <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
+        {:else if item.type === 'codeEditor'}
+          <CodeEditor {...(item.props as CodeEditorProps)} />
+        {:else if item.type === 'imageUpload'}
+          {#each theme.CustomImages as image (image.id)}
+            <div class="flex items-center h-16 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
+              <div class="flex-1 h-full ">
+                <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
+              </div>
+              <input
+                type="text"
+                bind:value={image.variableName}
+                oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
+                placeholder="CSS Variable Name"
+                class="flex-grow flex-[3] w-full p-2 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-800/50 dark:text-white"
+              />
+              <button onclick={() => onRemoveImage(image.id)} class="p-2 ml-1 transition dark:text-white">
+                <span class='font-IconFamily'>{'\ued8c'}</span>
+              </button>
+            </div>
+          {/each}
+    
+          <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-100 dark:bg-zinc-700">
+            <span class='font-IconFamily'>{'\uec60'}</span>
+            <span class='dark:text-white'>Add image</span>
+            <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+          </div>
+        {/if}
       </div>
     {/if}
   </div>
@@ -147,7 +186,7 @@
         type='text'
         placeholder='What is your theme called?'
         bind:value={theme.name}
-        class='w-full p-2 mb-4 transition-all duration-300 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white' />
+        class='w-full p-2 mb-4 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600' />
     </div>
 
     <div>
@@ -156,12 +195,12 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='w-full p-2 rounded-lg focus:outline-none ring-0 focus:ring-1 ring-zinc-100 dark:ring-zinc-700 dark:bg-zinc-900 dark:text-white'></textarea>
+        class='w-full p-2 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
 
-    <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-100 dark:bg-zinc-900">
+    <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-100 dark:bg-zinc-700">
       <div class={`transition pointer-events-none z-30 font-IconFamily ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>
         {'\uec60'}
       </div>
@@ -172,7 +211,7 @@
       {/if}
       {#if theme.coverImage}
         <div class="absolute z-20 w-full h-full transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-        <img src={URL.createObjectURL(theme.coverImage)} alt='Cover' class="absolute z-0 object-cover w-full h-full rounded" />
+        <img src={theme.coverImageUrl} alt='Cover' class="absolute z-0 object-cover w-full h-full rounded" />
       {/if}
     </div>
 

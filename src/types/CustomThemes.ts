@@ -15,6 +15,16 @@ export type CustomTheme = {
   forceDark?: boolean;
 }
 
+export type LoadedCustomTheme = CustomTheme & {
+  CustomImages: Array<{
+    id: string;
+    blob: Blob;
+    variableName: string;
+    url: string | null;
+  }>;
+  coverImageUrl?: string;
+};
+
 export type DownloadedTheme = CustomTheme & {
   webURL: string;
 }
