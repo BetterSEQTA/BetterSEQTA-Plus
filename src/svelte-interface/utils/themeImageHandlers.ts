@@ -1,10 +1,10 @@
-import type { CustomTheme } from '@/types/CustomThemes';
+import type { LoadedCustomTheme } from '@/types/CustomThemes';
 
 export function generateImageId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
-export function handleImageUpload(event: Event, theme: CustomTheme): Promise<CustomTheme> | CustomTheme {
+export function handleImageUpload(event: Event, theme: LoadedCustomTheme): Promise<LoadedCustomTheme> | LoadedCustomTheme {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   input.value = '';
@@ -17,7 +17,7 @@ export function handleImageUpload(event: Event, theme: CustomTheme): Promise<Cus
         const variableName = `custom-image-${theme.CustomImages.length}`;
         resolve({
           ...theme,
-          CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName }],
+          CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName, url: URL.createObjectURL(imageBlob) }],
         });
       };
       reader.readAsDataURL(file);
@@ -26,23 +26,23 @@ export function handleImageUpload(event: Event, theme: CustomTheme): Promise<Cus
   return theme;
 }
 
-export function handleRemoveImage(imageId: string, theme: CustomTheme): CustomTheme {
+export function handleRemoveImage(imageId: string, theme: LoadedCustomTheme): LoadedCustomTheme {
   return {
     ...theme,
     CustomImages: theme.CustomImages.filter((image) => image.id !== imageId),
-  };
+  } as LoadedCustomTheme;
 }
 
-export function handleImageVariableChange(imageId: string, variableName: string, theme: CustomTheme): CustomTheme {
+export function handleImageVariableChange(imageId: string, variableName: string, theme: LoadedCustomTheme): LoadedCustomTheme {
   return {
     ...theme,
     CustomImages: theme.CustomImages.map((image) =>
       image.id === imageId ? { ...image, variableName } : image
     ),
-  };
+  } as LoadedCustomTheme;
 }
 
-export function handleCoverImageUpload(event: Event, theme: CustomTheme): Promise<CustomTheme> {
+export function handleCoverImageUpload(event: Event, theme: LoadedCustomTheme): Promise<LoadedCustomTheme> {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   input.value = '';
@@ -51,7 +51,7 @@ export function handleCoverImageUpload(event: Event, theme: CustomTheme): Promis
       const reader = new FileReader();
       reader.onload = async () => {
         const imageBlob = await fetch(reader.result as string).then(res => res.blob());
-        resolve({ ...theme, coverImage: imageBlob });
+        resolve({ ...theme, coverImage: imageBlob, coverImageUrl: URL.createObjectURL(imageBlob) });
       };
       reader.readAsDataURL(file);
     });
