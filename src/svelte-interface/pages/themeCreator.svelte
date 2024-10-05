@@ -39,7 +39,7 @@
     coverImage: null,
     isEditable: true,
     hideThemeName: false,
-    forceDark: false
+    forceDark: undefined
   })
   let closedAccordions = $state<string[]>([])
 
