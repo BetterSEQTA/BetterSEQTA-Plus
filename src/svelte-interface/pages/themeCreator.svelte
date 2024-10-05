@@ -43,6 +43,7 @@
     forceDark: undefined
   })
   let closedAccordions = $state<string[]>([])
+  let themeLoaded = $state(false);
 
   function toggleAccordion(title: string) {
     if (closedAccordions.includes(title)) {
@@ -67,7 +68,12 @@
         }))
       }
 
-      if (tempTheme) theme = loadedTheme
+      if (tempTheme) {
+        theme = loadedTheme
+        themeLoaded = true  // Set this to true after theme is loaded
+      }
+    } else {
+      themeLoaded = true  // Set to true if no theme to load
     }
   });
 
@@ -172,7 +178,9 @@
           {:else if item.type === 'colourPicker'}
             <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
           {:else if item.type === 'codeEditor'}
-            <CodeEditor {...(item.props as CodeEditorProps)} />
+            {#key themeLoaded}
+              <CodeEditor {...(item.props as CodeEditorProps)} />
+            {/key}
           {:else if item.type === 'imageUpload'}
             {#each theme.CustomImages as image (image.id)}
               <div class="flex items-center h-16 gap-2 px-2 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
