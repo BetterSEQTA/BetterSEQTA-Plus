@@ -98,7 +98,7 @@
 </script>
 
 <div
-  class="w-full my-3"
+  class="w-full mt-3 mb-1"
   role="list"
   tabindex="-1"
   ondragover={handleDragOver}

@@ -62,7 +62,7 @@
   });
 </script>
 
-<div class="w-[384px] shadow-2xl {$settingsState.DarkMode ? 'dark' : ''} { standalone ? 'h-[600px]' : 'h-full rounded-xl' } overflow-clip">
+<div class="w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode ? 'dark' : ''} { standalone ? 'h-[600px]' : 'h-full rounded-xl' } overflow-clip">
   <div class="relative flex flex-col h-full gap-2 bg-white overflow-clip dark:bg-zinc-800 dark:text-white">
     <div class="grid border-b border-b-zinc-200/40 place-items-center">
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

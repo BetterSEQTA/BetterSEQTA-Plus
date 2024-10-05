@@ -41,6 +41,10 @@ input {
   }
 }
 
+.no-scrollbar {
+  scrollbar-width: none !important;
+}
+
 .cm-editor {
   width: 100%;
   min-height: 100px;
