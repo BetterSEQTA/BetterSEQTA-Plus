@@ -70,10 +70,10 @@
 
       if (tempTheme) {
         theme = loadedTheme
-        themeLoaded = true  // Set this to true after theme is loaded
+        themeLoaded = true
       }
     } else {
-      themeLoaded = true  // Set to true if no theme to load
+      themeLoaded = true
     }
   });
 
@@ -176,7 +176,9 @@
           {:else if item.type === 'slider'}
             <Slider {...(item.props as SliderProps)} />
           {:else if item.type === 'colourPicker'}
-            <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
+            {#key themeLoaded}
+              <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
+            {/key}
           {:else if item.type === 'codeEditor'}
             {#key themeLoaded}
               <CodeEditor {...(item.props as CodeEditorProps)} />
