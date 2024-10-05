@@ -46,10 +46,13 @@ let currentSelectedDate = new Date()
 let LessonInterval: any
 
 var IsSEQTAPage = false
+let hasSEQTAText = false
 
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
-const hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software')
-init()
+if (document.childNodes[1]) {
+  hasSEQTAText = document.childNodes[1].textContent?.includes('Copyright (c) SEQTA Software') ?? false
+  init()
+}
 
 async function init() {
   CheckForMenuList()
