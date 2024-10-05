@@ -22,6 +22,9 @@
     handleImageVariableChange,
     handleCoverImageUpload
   } from '../utils/themeImageHandlers';
+  import { ClearThemePreview, UpdateThemePreview } from '@/seqta/ui/themes/UpdateThemePreview'
+  import { saveTheme } from '@/seqta/ui/themes/saveTheme'
+  import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
 
   const { themeID } = $props<{ themeID: string }>()
   let theme = $state<LoadedCustomTheme>({
@@ -83,8 +86,16 @@
     theme = await handleCoverImageUpload(event, theme);
   }
 
+  function submitTheme() {
+    console.log('saving theme', theme)
+
+    ClearThemePreview();
+    saveTheme(theme);
+    CloseThemeCreator();
+  }
+
   $effect(() => {
-    
+    UpdateThemePreview(theme);
   });
 
   type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
@@ -314,9 +325,7 @@
     {/each}
     
     <button
-      onclick={() => {
-        console.log(theme)
-      }}
+      onclick={submitTheme}
       class="w-full px-4 py-2 mt-3 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
       Save Theme
     </button>

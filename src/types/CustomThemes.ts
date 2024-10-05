@@ -16,12 +16,12 @@ export type CustomTheme = {
 }
 
 export type LoadedCustomTheme = CustomTheme & {
-  CustomImages: Array<{
+  CustomImages: {
     id: string;
     blob: Blob;
     variableName: string;
     url: string | null;
-  }>;
+  }[];
   coverImageUrl?: string;
 };
 
@@ -33,17 +33,6 @@ export type CustomImage = {
   id: string;
   blob: Blob;
   variableName: string;
-}
-
-export type CustomImageBase64 = {
-  id: string;
-  url: string;
-  variableName: string;
-}
-
-export type CustomThemeBase64 = Omit<CustomTheme, 'CustomImages'> & {
-  CustomImages: CustomImageBase64[];
-  coverImage: string | null;
 }
 
 export type ThemeList = {
