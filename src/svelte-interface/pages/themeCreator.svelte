@@ -25,6 +25,7 @@
   import { ClearThemePreview, UpdateThemePreview } from '@/seqta/ui/themes/UpdateThemePreview'
   import { saveTheme } from '@/seqta/ui/themes/saveTheme'
   import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
+  import { themeUpdates } from '../hooks/ThemeUpdates'
 
   const { themeID } = $props<{ themeID: string }>()
   let theme = $state<LoadedCustomTheme>({
@@ -88,9 +89,18 @@
 
   function submitTheme() {
     console.log('saving theme', theme)
+    const themeClone = JSON.parse(JSON.stringify(theme));
+
+    // re-insert blobs into themeClone
+    themeClone.CustomImages = theme.CustomImages.map((image) => ({
+      ...image,
+      blob: image.blob
+    }))
+    themeClone.coverImage = theme.coverImage
 
     ClearThemePreview();
-    saveTheme(theme);
+    saveTheme(themeClone);
+    themeUpdates.triggerUpdate();
     CloseThemeCreator();
   }
 

@@ -8,20 +8,19 @@ export const saveTheme = async (theme: LoadedCustomTheme) => {
     disableTheme();
 
     console.debug('Theme to save:', theme);
-
-    /* remove blob urls from theme */
-    const updatedTheme = { ...theme, CustomImages: theme.CustomImages.map((image) => ({ ...image, blob: null })) }
    
-    await localforage.setItem(theme.id, updatedTheme);
+    console.log('stage 1')
+    await localforage.setItem(theme.id, theme);
+    console.log('stage 2')
     await localforage.getItem('customThemes').then((themes: unknown) => {
       const themeList = themes as string[] | null;
       if (themeList) {
-        if (!themeList.includes(updatedTheme.id)) {
-          themeList.push(updatedTheme.id);
+        if (!themeList.includes(theme.id)) {
+          themeList.push(theme.id);
           localforage.setItem('customThemes', themeList);
         }
       } else {
-        localforage.setItem('customThemes', [updatedTheme.id]);
+        localforage.setItem('customThemes', [theme.id]);
       }
     });
     console.debug('Theme saved successfully!');
