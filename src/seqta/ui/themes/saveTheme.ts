@@ -1,27 +1,18 @@
 import localforage from 'localforage';
-import type { CustomTheme, CustomThemeBase64 } from '@/types/CustomThemes';
+import type { LoadedCustomTheme } from '@/types/CustomThemes';
 import { disableTheme } from './disableTheme';
 
 
-export const saveTheme = async (theme: CustomThemeBase64) => {
+export const saveTheme = async (theme: LoadedCustomTheme) => {
   try {
-    const updatedTheme: CustomTheme = {
-      ...theme,
-      coverImage: theme.coverImage ? await fetch(theme.coverImage).then((res) => res.blob()) : null,
-      CustomImages: await Promise.all(
-        theme.CustomImages.map(async (image) => ({
-          id: image.id,
-          blob: await fetch(image.url).then((res) => res.blob()),
-          variableName: image.variableName,
-        }))
-      ),
-    };
-
     disableTheme();
 
-    console.debug('Theme to save:', updatedTheme);
+    console.debug('Theme to save:', theme);
 
-    await localforage.setItem(updatedTheme.id, updatedTheme);
+    /* remove blob urls from theme */
+    const updatedTheme = { ...theme, CustomImages: theme.CustomImages.map((image) => ({ ...image, blob: null })) }
+   
+    await localforage.setItem(theme.id, updatedTheme);
     await localforage.getItem('customThemes').then((themes: unknown) => {
       const themeList = themes as string[] | null;
       if (themeList) {

@@ -38,6 +38,7 @@ import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/svelte-interface/main'
 import Settings from '@/svelte-interface/pages/settings.svelte'
 import { settingsPopup } from './svelte-interface/hooks/SettingsPopup'
+import { OpenThemeCreator } from './seqta/ui/ThemeCreator'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -460,6 +461,8 @@ export async function finishLoad() {
   } catch (err) {
     console.error("Error during loading cleanup:", err);
   }
+
+  OpenThemeCreator()
 
   if (settingsState.justupdated && !document.getElementById('whatsnewbk')) {
     OpenWhatsNewPopup();

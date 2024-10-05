@@ -1,6 +1,7 @@
 import renderSvelte from "@/svelte-interface/main"
 import themeCreator from "@/svelte-interface/pages/themeCreator.svelte"
 import { unmount } from "svelte"
+import { ClearThemePreview } from "./themes/UpdateThemePreview"
 
 let themeCreatorSvelteApp: any = null
 
@@ -30,7 +31,11 @@ export function OpenThemeCreator(themeID: string = "") {
   const closeButton = document.createElement("button")
   closeButton.classList.add("themeCloseButton")
   closeButton.textContent = "×"
-  closeButton.addEventListener("click", CloseThemeCreator)
+  closeButton.addEventListener("click", () => {
+    CloseThemeCreator()
+    ClearThemePreview()
+  })
+
   document.body.appendChild(closeButton)
 
   const resizeBar = document.createElement("div")
