@@ -45,12 +45,23 @@
   }
 </script>
 
-<div class="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-70" onclick={() => hideModal()} onkeydown={() => hideModal()} role="button" tabindex="-1" transition:fade>
+<div 
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-70" 
+  onclick={(e) => {
+    if (e.target === e.currentTarget) hideModal();
+  }} 
+  onkeydown={(e) => {
+    if (e.target === e.currentTarget) hideModal();
+  }} 
+  role="button" 
+  tabindex="-1" 
+  transition:fade
+>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div 
     bind:this={modalElement}
-    class="w-full max-w-xl h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll" 
-    onclick={(e) => e.stopPropagation()} 
+    class="w-full max-w-[50%] h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll no-scrollbar cursor-auto" 
+    onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
     <div class="relative h-auto">

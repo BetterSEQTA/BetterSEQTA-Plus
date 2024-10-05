@@ -230,7 +230,7 @@
   {/if}
 {/snippet}
 
-<div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} '>
+<div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
   <div class='flex flex-col w-full min-h-screen p-2 bg-zinc-100 dark:bg-zinc-800 dark:text-white'>
     <h1 class='text-xl font-semibold'>Theme Creator</h1>
     <a href='https://betterseqta.gitbook.io/betterseqta-docs' target='_blank' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
