@@ -54,7 +54,7 @@
       />
       {#each tabs as { title }, index}
         <button
-          class="relative z-10 flex-1 px-4 py-2"
+          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-none"
           onclick={() => activeTab = index}
           onmouseenter={() => hoveredTab = index}
           onmouseleave={() => hoveredTab = null}
