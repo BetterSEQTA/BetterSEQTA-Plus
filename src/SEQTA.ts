@@ -364,16 +364,10 @@ export function OpenAboutPage() {
     </div>`
   ).firstChild
 
-  let imagecont = document.createElement('div')
-  imagecont.classList.add('whatsnewImgContainer')
-
-  let textcontainer = document.createElement('div')
-  textcontainer.classList.add('whatsnewTextContainer')
-
   let text = stringToHTML(
     /* html */ `
-    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-      <img src="${settingsState.DarkMode ? 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg' : 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg'}" class="whatsnewImgContainer" />
+    <div class="whatsnewTextContainer" style="overflow-y: scroll;">
+      <img src="${settingsState.DarkMode ? 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/svelte/src/resources/branding/dark.jpg' : 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/svelte/src/resources/branding/light.jpg'}" class="aboutImg" />
 
       <p>BetterSEQTA+ is a fork of BetterSEQTA which was originally developed by Nulkem, which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
       <p>We are currently working on fixing bugs and adding good features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below).</p>
@@ -406,8 +400,6 @@ export function OpenAboutPage() {
   exitbutton.id = 'whatsnewclosebutton'
 
   container.append(header)
-  container.append(imagecont)
-  container.append(textcontainer)
   container.append(text as ChildNode)
   container.append(footer as ChildNode)
   container.append(exitbutton)
