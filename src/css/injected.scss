@@ -3061,9 +3061,12 @@ li.MessageList__unread___3imtO {
 }
 .whatsnewTextContainer h1:not(.whatsnewTextHeader) {
   position: sticky;
+  font-size: 1.2em;
   width: 100%;
   top: 0;
   background: var(--background-primary) !important;
   z-index: 1;
-  padding: 10px;
+  padding: 12px;
+  padding-left: 0px;
+  padding-bottom: 8px;
 }
