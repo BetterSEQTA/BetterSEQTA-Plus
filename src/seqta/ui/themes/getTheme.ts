@@ -1,10 +1,10 @@
 import localforage from 'localforage';
-import type { CustomTheme } from '@/types/CustomThemes';
+import type { LoadedCustomTheme } from '@/types/CustomThemes';
 
 
-export const getTheme = async (themeId: string): Promise<CustomTheme | null> => {
+export const getTheme = async (themeId: string): Promise<LoadedCustomTheme | null> => {
   try {
-    const theme = await localforage.getItem(themeId) as CustomTheme;
+    const theme = await localforage.getItem(themeId) as LoadedCustomTheme;
 
     return theme;
   } catch (error) {

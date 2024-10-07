@@ -1,6 +1,7 @@
 import localforage from 'localforage';
 import type { LoadedCustomTheme } from '@/types/CustomThemes';
 import { disableTheme } from './disableTheme';
+import { themeUpdates } from '@/svelte-interface/hooks/ThemeUpdates';
 
 
 export const saveTheme = async (theme: LoadedCustomTheme) => {
@@ -9,9 +10,7 @@ export const saveTheme = async (theme: LoadedCustomTheme) => {
 
     console.debug('Theme to save:', theme);
    
-    console.log('stage 1')
     await localforage.setItem(theme.id, theme);
-    console.log('stage 2')
     await localforage.getItem('customThemes').then((themes: unknown) => {
       const themeList = themes as string[] | null;
       if (themeList) {
@@ -24,6 +23,7 @@ export const saveTheme = async (theme: LoadedCustomTheme) => {
       }
     });
     console.debug('Theme saved successfully!');
+    themeUpdates.triggerUpdate();
   } catch (error) {
     console.error('Error saving theme:', error);
   }

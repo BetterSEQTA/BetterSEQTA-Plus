@@ -143,8 +143,8 @@
           {#if !isEditMode}
             <div
               class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
-              onclick={(event) => { event.stopPropagation(); OpenThemeCreator(theme.id) }}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') OpenThemeCreator(theme.id) }}
+              onclick={(event) => { event.stopPropagation(); OpenThemeCreator(theme.id); closeExtensionPopup() }}
+              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') OpenThemeCreator(theme.id); closeExtensionPopup() }}
               role="button"
               tabindex="-1"
             >

@@ -26,6 +26,7 @@
   import { saveTheme } from '@/seqta/ui/themes/saveTheme'
   import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
   import { themeUpdates } from '../hooks/ThemeUpdates'
+  import { disableTheme } from '@/seqta/ui/themes/disableTheme'
 
   const { themeID } = $props<{ themeID: string }>()
   let theme = $state<LoadedCustomTheme>({
@@ -54,6 +55,8 @@
   }
 
   onMount(async () => {
+    disableTheme();
+
     if (themeID) {
       const tempTheme = await getTheme(themeID)
 
@@ -65,7 +68,8 @@
         CustomImages: tempTheme.CustomImages.map(image => ({
           ...image,
           url: image.blob ? URL.createObjectURL(image.blob) : null
-        }))
+        })),
+        coverImageUrl: tempTheme.coverImage ? URL.createObjectURL(tempTheme.coverImage) : undefined
       }
 
       if (tempTheme) {
@@ -75,6 +79,8 @@
     } else {
       themeLoaded = true
     }
+
+    themeUpdates.triggerUpdate();
   });
 
   async function onImageUpload(event: Event) {
@@ -94,7 +100,6 @@
   }
 
   function submitTheme() {
-    console.log('saving theme', theme)
     const themeClone = JSON.parse(JSON.stringify(theme));
 
     // re-insert blobs into themeClone
