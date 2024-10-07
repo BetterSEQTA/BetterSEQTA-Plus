@@ -72,8 +72,8 @@
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <img src={browser.runtime.getURL('resources/icons/betterseqta-light-full.png')} class="hidden w-4/5 dark:block" alt="Dark logo" onclick={handleDevModeToggle} />
       
-      <button onclick={openChangelog} class="absolute right-0 w-8 h-8 text-lg rounded-xl font-IconFamily top-1 bg-zinc-100 dark:bg-zinc-700"></button>
-      <button onclick={openAbout} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">ⓘ</button>
+      <button onclick={openChangelog} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-1 bg-zinc-100 dark:bg-zinc-700">{'\ue929'}</button>
+      <button onclick={openAbout} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">{'\ueb73'}</button>
     </div>
 
     <TabbedContainer tabs={[
