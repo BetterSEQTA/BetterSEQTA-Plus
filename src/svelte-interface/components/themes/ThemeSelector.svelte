@@ -98,7 +98,7 @@
 </script>
 
 <div
-  class="w-full mt-3 mb-1"
+  class="w-full pt-5 mb-1"
   role="list"
   tabindex="-1"
   ondragover={handleDragOver}
@@ -121,7 +121,7 @@
     </div>
   </div>
   <h2 class="pb-2 text-lg font-bold">Themes</h2>
-  <div class="flex flex-col gap-2 px-1">
+  <div class="flex flex-col gap-2 px-2">
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
@@ -130,7 +130,7 @@
         >
           {#if isEditMode}
             <div
-              class="absolute z-20 flex w-6 h-6 p-2 text-white transition-all rounded-full opacity-0 top-1 right-2 dark:bg-red-600 place-items-center group-hover:opacity-100 group-hover:top-2"
+              class="absolute z-20 flex w-6 h-6 p-2 text-white bg-red-600 rounded-full opacity-100 right-2 place-items-center top-2"
               onclick={(event) => { event.stopPropagation(); handleThemeDelete(theme.id) }}
               onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleThemeDelete(theme.id) }}
               role="button"
@@ -162,7 +162,7 @@
             </div>
           {/if}
 
-          <div class="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900">
+          <div class="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900 { isEditMode ? 'animate-shake brightness-90' : ''}">
             {#if theme.coverImage}
               <img
                 src={typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}
