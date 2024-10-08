@@ -176,43 +176,47 @@
   });
 </script>
 
-<div bind:this={element} class="relative px-1 py-2">
-  <h2 class="pb-2 text-lg font-bold">Background Images</h2>
-  <div class="flex flex-wrap gap-4 mb-4">
-    {#if !isEditMode}
-      <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
-    {/if}
-    {#each imageBackgrounds as bg (bg.id)}
-      {#if isVisible && bg.blob}
-        <BackgroundItem
-          bg={bg}
-          isSelected={selectedBackground === bg.id}
-          isEditMode={isEditMode}
-          onClick={() => selectBackground(bg.id)}
-          onDelete={() => deleteBackground(bg.id)}/>
-      {:else}
-        <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+<div bind:this={element} class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
+  {#if !(imageBackgrounds.length === 0 && isEditMode)}
+    <h2 class="pb-2 text-lg font-bold">Background Images</h2>
+    <div class="flex flex-wrap gap-4 mb-4">
+      {#if !isEditMode}
+        <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
       {/if}
-    {/each}
-  </div>
+      {#each imageBackgrounds as bg (bg.id)}
+        {#if isVisible && bg.blob}
+          <BackgroundItem
+            bg={bg}
+            isSelected={selectedBackground === bg.id}
+            isEditMode={isEditMode}
+            onClick={() => selectBackground(bg.id)}
+            onDelete={() => deleteBackground(bg.id)}/>
+        {:else}
+          <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+        {/if}
+      {/each}
+    </div>
+  {/if}
 
-  <h2 class="py-2 text-lg font-bold">Background Videos</h2>
-  <div class="flex flex-wrap gap-4">
-    {#if !isEditMode}
-      <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
-    {/if}
-    {#each videoBackgrounds as bg (bg.id)}
-      {#if isVisible && bg.blob}
-        <BackgroundItem
-          bg={bg}
-          isSelected={selectedBackground === bg.id}
-          isEditMode={isEditMode}
-          onClick={() => selectBackground(bg.id)}
-          onDelete={() => deleteBackground(bg.id)}
-        />
-      {:else}
-        <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+  {#if !(videoBackgrounds.length === 0 && isEditMode)}
+    <h2 class="py-2 text-lg font-bold">Background Videos</h2>
+    <div class="flex flex-wrap gap-4">
+      {#if !isEditMode}
+        <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
       {/if}
-    {/each}
-  </div>
+      {#each videoBackgrounds as bg (bg.id)}
+        {#if isVisible && bg.blob}
+          <BackgroundItem
+            bg={bg}
+            isSelected={selectedBackground === bg.id}
+            isEditMode={isEditMode}
+            onClick={() => selectBackground(bg.id)}
+            onDelete={() => deleteBackground(bg.id)}
+          />
+        {:else}
+          <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
+        {/if}
+      {/each}
+    </div>
+  {/if}
 </div>

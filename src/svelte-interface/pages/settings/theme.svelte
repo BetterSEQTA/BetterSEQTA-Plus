@@ -17,12 +17,10 @@
     { clearTheme ? 'Clear Theme' : 'Select a Theme' }
   </button>
   <div class="relative w-full">
-    <!-- edit button -->
-
     <button
       onclick={() => editMode = !editMode}
       class="absolute top-0 right-0 z-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700">{editMode ? '\ue9e4' : '\uec38'}</button>
-    <!-- edit button -->
+
     <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
     <ThemeSelector isEditMode={editMode} />
   </div>
