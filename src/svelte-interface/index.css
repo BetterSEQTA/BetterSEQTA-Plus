@@ -1,0 +1,52 @@
+@import './components/ColourPicker.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-width {
+  width: var(--tab-width);
+}
+
+input {
+  &:focus {
+    box-shadow: unset !important;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none !important;
+}
+
+.cm-editor {
+  width: 100%;
+  min-height: 100px;
+  max-height: 400px;
+}

@@ -7,13 +7,23 @@ export type CustomTheme = {
   allowBackgrounds: boolean;
   CustomCSS: string;
   CustomImages: CustomImage[];
-  coverImage: Blob | string | null;
+  coverImage: Blob | null;
   isEditable: boolean;
   hideThemeName: boolean;
   webURL?: string;
   selectedColor?: string;
   forceDark?: boolean;
 }
+
+export type LoadedCustomTheme = CustomTheme & {
+  CustomImages: {
+    id: string;
+    blob: Blob;
+    variableName: string;
+    url: string | null;
+  }[];
+  coverImageUrl?: string;
+};
 
 export type DownloadedTheme = CustomTheme & {
   webURL: string;
@@ -25,18 +35,7 @@ export type CustomImage = {
   variableName: string;
 }
 
-export type CustomImageBase64 = {
-  id: string;
-  url: string;
-  variableName: string;
-}
-
-export type CustomThemeBase64 = Omit<CustomTheme, 'CustomImages'> & {
-  CustomImages: CustomImageBase64[];
-  coverImage: string | null;
-}
-
 export type ThemeList = {
-  themes: Omit<CustomTheme, 'CustomImages'>[];
+  themes: CustomTheme[];
   selectedTheme: string;
 }

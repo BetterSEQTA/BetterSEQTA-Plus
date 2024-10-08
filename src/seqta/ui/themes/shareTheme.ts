@@ -6,7 +6,7 @@ const saveThemeFile = (data: object, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${fileName}.json`;
+  a.download = `${fileName}.json.theme`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -34,13 +34,14 @@ const shareTheme = async (themeID: string) => {
     });
 
     // Convert cover image to Base64
-    const coverImageBlob = await fetch(coverImage as string).then(res => res.blob());
-    const coverImageBase64 = await blobToBase64(coverImageBlob);
+    let coverImageBase64 = null;
+    if (coverImage) {
+      coverImageBase64 = await blobToBase64(coverImage);
+    }
 
     // Convert custom images to Base64
     const finalImages = await Promise.all(CustomImages.map(async (image) => {
-      const imageBlob = await fetch(image.url as string).then(res => res.blob());
-      const imageBase64 = await blobToBase64(imageBlob);
+      const imageBase64 = await blobToBase64(image.blob);
       return {
         id: image.id,
         variableName: image.variableName,

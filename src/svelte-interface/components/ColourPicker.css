@@ -1,0 +1,86 @@
+div:has(> #rbgcp-wrapper) {
+  background: transparent !important;
+}
+
+.dark {
+  #rbgcp-wrapper {
+    div[style="padding-top: 11px; position: relative;"] div {
+      color: white !important;
+    }
+
+    div:has(> #rbgcp-solid-btn),
+    div:has(> #rbgcp-advanced-btn),
+    #rbgcp-color-model-btn > div,
+    #rbgcp-gradient-controls-wrap {
+      background-color: #37373b !important;
+      color: white !important;
+
+      svg {
+        circle {
+          fill: white !important;
+        }
+
+        polyline,
+        line,
+        g,
+        path {
+          stroke: white !important;
+        }
+      }
+
+      #rbgcp-radial-btn,
+      #rbgcp-linear-btn {
+        &[style*="background: white;"] {
+          background-color: #28282b !important;
+        }
+
+        svg {
+          path,
+          g,
+          polyline,
+          circle {
+            stroke: white !important;
+            fill: transparent !important;
+          }
+        }
+      }
+
+      div:has(> #rbgcp-stop-input) svg {
+        path {
+          stroke: unset !important;
+          fill: white !important;
+        }
+      }
+
+      #rbgcp-comparibles-btn svg path {
+        fill: white !important;
+      }
+
+      > div {
+        color: white !important;
+
+        &[style*="background: white;"] {
+          background: #28282b !important;
+        }
+      }
+    }
+
+    div:has(> #rbgcp-degree-input) {
+      width: 70px !important;
+    }
+
+    #rbgcp-degree-input {
+      width: 50px !important;
+    }
+
+    #rbgcp-degree-input,
+    #rbgcp-stop-input {
+      color: white !important;
+    }
+
+    #rbgcp-gradient-controls-wrap > div,
+    #rbgcp-gradient-controls-wrap > div > div:not([role="button"]) {
+      background-color: #37373b !important;
+    }
+  }
+}

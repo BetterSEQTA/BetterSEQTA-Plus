@@ -3,7 +3,7 @@ import { deleteTheme, disableTheme, getDownloadedThemes, listThemes, sendThemeUp
 import { DeleteDownloadedTheme } from '../pages/Store';
 import { ThemeCover } from './ThemeCover';
 import browser from 'webextension-polyfill';
-import { CustomTheme, DownloadedTheme } from '../types/CustomThemes';
+import { CustomTheme, DownloadedTheme } from '../../types/CustomThemes';
 import { useSettingsContext } from '../SettingsContext';
 import { SettingsState } from '../types/AppProps';
 import { InstallTheme } from '../../seqta/ui/themes/downloadTheme';
