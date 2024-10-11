@@ -48,6 +48,7 @@
   - Brave Supported
   - Opera Supported
   - Vivaldi Supported
+  - Chromium-based browsers are supported
   - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)
   - Safari (Experimental - only available via compilation)
 
