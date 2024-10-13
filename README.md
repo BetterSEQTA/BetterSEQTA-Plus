@@ -43,12 +43,11 @@
 - Fully customisable themes and an offical theme store
 - Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
-  - Chrome Supported
+  - Chrome and Chromium-based browsers Supported
   - Edge Supported
   - Brave Supported
   - Opera Supported
   - Vivaldi Supported
-  - Chromium-based browsers are supported
   - Firefox (Experimental - available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)
   - Safari (Experimental - only available via compilation)
 
@@ -115,7 +114,7 @@ The folder structure is as follows:
 
 - The `src` folder contains source files that are compiled to the build directory.
 
-- The `src/interface` folder contains source React files that are required for the Settings page.
+- The `src/interface` folder contains source React/Svelte files that are required for the Settings page.
 
 - The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
 
