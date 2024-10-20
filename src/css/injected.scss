@@ -82,6 +82,10 @@ html {
   z-index: 10000;
 }
 
+.modaliser-container {
+  backdrop-filter: none !important;
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
