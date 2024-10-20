@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { join, resolve } from 'path';
 
+import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 
@@ -31,7 +32,8 @@ export default defineConfig({
     crx({
       manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
-    })
+    }),
+    updateManifestPlugin()
   ],
   root: resolve(__dirname, './src'),
   resolve: {
