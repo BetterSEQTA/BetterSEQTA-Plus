@@ -58,9 +58,9 @@
   transition:fade
 >
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div 
+  <div
     bind:this={modalElement}
-    class="w-full max-w-[50%] h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll no-scrollbar cursor-auto" 
+    class="w-full max-w-[600px] h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-scroll no-scrollbar cursor-auto" 
     onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
