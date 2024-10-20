@@ -72,7 +72,7 @@
     >
       <div class="flex">
         {#each tabs as { Content, props }, index}
-          <div class="absolute focus:outline-none w-full h-full transition-opacity duration-300 overflow-y-scroll no-scrollbar tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
+          <div class="absolute focus:outline-none w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
             style="left: {index * 100}%;">
              <Content {...props} />
           </div>

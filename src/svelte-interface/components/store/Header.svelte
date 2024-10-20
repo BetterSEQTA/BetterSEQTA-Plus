@@ -5,7 +5,13 @@
   import browser from 'webextension-polyfill';
 
   // Props
-  let { searchTerm, setSearchTerm, darkMode } = $props<{ searchTerm: string, setSearchTerm: (term: string) => void, darkMode: boolean }>();
+  let { searchTerm, setSearchTerm, darkMode, activeTab, setActiveTab } = $props<{
+    searchTerm: string,
+    setSearchTerm: (term: string) => void,
+    darkMode: boolean,
+    activeTab: string,
+    setActiveTab: (tab: string) => void
+  }>();
 
   // Clear search input function
   const clearSearch = () => {
@@ -21,7 +27,18 @@
 
       <div class="w-[1px] h-10 my-auto bg-zinc-400 dark:bg-zinc-600"></div>
 
-      <h1 class="text-xl font-semibold">Theme Store</h1>
+      <button
+        class="px-4 py-2 font-semibold text-lg transition-colors duration-200 {activeTab === 'themes' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'}"
+        onclick={() => setActiveTab('themes')}
+      >
+        Themes
+      </button>
+      <button
+        class="px-4 py-2 font-semibold text-lg transition-colors duration-200 {activeTab === 'backgrounds' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'}"
+        onclick={() => setActiveTab('backgrounds')}
+      >
+        Backgrounds
+      </button>
     </div>
 
     <div class="relative flex gap-2">
