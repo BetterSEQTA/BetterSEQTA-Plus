@@ -7,9 +7,42 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    name: Check Syntax and code before trying to build
+    steps:
+    - uses: actions/checkout@v4
 
+    - name: Use Node.js "20.x"
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20.x"
+
+    - name: Build
+      run: |
+        npm install
+        npm run build
+
+    - name: Zip Chrome and firefox folders
+      run: |
+        zip -r dist/chrome-${{ github.sha }}.zip dist/chrome
+        zip -r dist/firefox-${{ github.sha }}.zip dist/firefox
+
+    - name: Upload Firefox
+      uses: actions/upload-artifact@v4
+      with:
+        name: firefox-zip
+        path: dist/firefox-${{ github.sha }}.zip
+    - name: Upload Chrome
+      uses: actions/upload-artifact@v4
+      with:
+        name: chrome-zip
+        path: dist/chrome-${{ github.sha }}.zip
+
+  compile:
+    runs-on: ubuntu-latest
+    needs: check
+    name: Build for production
     strategy:
       matrix:
         node-version: [20.x]
