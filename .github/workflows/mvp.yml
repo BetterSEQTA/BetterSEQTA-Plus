@@ -28,7 +28,7 @@ jobs:
 
       - name: 'Build - all browsers'
         id: buildProject
-        run: MODE=chrome vite build && MODE=firefox vite build
+        run: npm run dev
 
       - name: '[ V E R S I O N ] : Create or Update Release Pull Request - Version Changes'
         id: changesets
