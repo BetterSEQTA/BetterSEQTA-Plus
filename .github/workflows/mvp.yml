@@ -24,7 +24,7 @@ jobs:
       - name: Install bun & Deps
         run: |
           npm install bun -g
-          bun install
+          npm install
 
       - name: 'Build - all browsers'
         id: buildProject
@@ -36,7 +36,7 @@ jobs:
         with:
           version: bun run version
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: 'Get current version info from package.json'
         if: steps.changesets.outputs.hasChangesets == 'false'
@@ -61,7 +61,7 @@ jobs:
       - name: 'Create Release Archive(s) - zip 🫰 it 🫰 up 🫰 !'
         id: zip
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: bun run zip
+        run: npm run zip
 
       - name: 'Create a git release w/ notes & release archive(s)'
         id: gitRelease
