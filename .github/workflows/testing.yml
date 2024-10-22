@@ -27,12 +27,26 @@ jobs:
         npm install
         npm run build
 
-    - name: Zip dist folder
+    - name: Zip Chrome and firefox folders
       run: |
-        zip -r dist.zip dist
+        zip -r chrome-${{ github.sha }}.zip dist/betterseqta+@*-chrome
+        zip -r firefox-${{ github.sha }}.zip dist/betterseqta+@*-firefox
 
-    - name: Upload artifact
+    - name: Upload Firefox
       uses: actions/upload-artifact@v4
       with:
-        name: dist-zip
-        path: dist.zip
+        name: firefox-zip
+        path: firefox.zip
+    - name: Upload Chrome
+      uses: actions/upload-artifact@v4
+      with:
+        name: chrome-zip
+        path: chrome.zip
+    - name: Release
+      uses: xresloader/upload-to-github-release@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        file: "firefox-${{ github.sha }}.zip;chrome-${{ github.sha }}.zip"
+        tags: false
+        draft: false
