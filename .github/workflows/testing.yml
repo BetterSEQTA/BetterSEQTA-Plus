@@ -29,19 +29,19 @@ jobs:
 
     - name: Zip Chrome and firefox folders
       run: |
-        zip -r chrome-${{ github.sha }}.zip dist/betterseqta+@*-chrome
-        zip -r firefox-${{ github.sha }}.zip dist/betterseqta+@*-firefox
+        zip -r chrome-${{ github.sha }}.zip dist/chrome
+        zip -r firefox-${{ github.sha }}.zip dist/firefox
 
     - name: Upload Firefox
       uses: actions/upload-artifact@v4
       with:
         name: firefox-zip
-        path: firefox.zip
+        path: firefox-${{ github.sha }}.zip
     - name: Upload Chrome
       uses: actions/upload-artifact@v4
       with:
         name: chrome-zip
-        path: chrome.zip
+        path: chrome-${{ github.sha }}.zip
     - name: Release
       uses: xresloader/upload-to-github-release@v1
       env:
