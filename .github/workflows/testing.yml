@@ -62,19 +62,9 @@ jobs:
 
     - name: Zip Chrome and firefox folders
       run: |
-        zip -r dist/chrome-${{ github.sha }}.zip dist/chrome
-        zip -r dist/firefox-${{ github.sha }}.zip dist/firefox
-
-    - name: Upload Firefox
-      uses: actions/upload-artifact@v4
-      with:
-        name: firefox-zip
-        path: dist/firefox-${{ github.sha }}.zip
-    - name: Upload Chrome
-      uses: actions/upload-artifact@v4
-      with:
-        name: chrome-zip
-        path: dist/chrome-${{ github.sha }}.zip
+        apt install p7zip-full
+        npm run zip
+        
     - name: Release
       run: npm run release
       env:
