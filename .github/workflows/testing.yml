@@ -62,7 +62,7 @@ jobs:
 
     - name: Zip Chrome and firefox folders
       run: |
-        apt install p7zip-full
+        sudo apt install p7zip-full
         npm run zip
         
     - name: Release
