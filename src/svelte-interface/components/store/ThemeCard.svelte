@@ -1,6 +1,4 @@
 <script lang="ts">
-  import Theme from '@/svelte-interface/pages/settings/theme.svelte'
-
   let { theme, onClick } = $props<{ theme: Theme; onClick: () => void }>();
 
   import { fade } from 'svelte/transition';

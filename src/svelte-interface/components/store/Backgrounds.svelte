@@ -1,0 +1,389 @@
+<script lang="ts">
+  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader';
+  import { setTheme } from '@/seqta/ui/themes/setTheme';
+  import Spinner from '../Spinner.svelte';
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+
+  type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
+  let { searchTerm } = $props<{ searchTerm: string }>();
+
+  // Existing states
+  let backgrounds = $state<Background[]>([]);
+  let selectedCategory = $state<string>('All');
+  let error = $state<string | null>(null);
+  let selectedBackground = $state<string | null>(null);
+  let isLoading = $state<boolean>(true);
+  let savedBackgrounds = $state<string[]>([]);
+  let installingBackgrounds = $state<Set<string>>(new Set());
+  let debugInfo = $state<string>('');
+  let displayBackground = $state<Background | null>(null);
+
+  // New state variables
+  let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
+  let showPreview = $state<boolean>(false);
+  let favorites = $state<string[]>([]);
+  let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
+
+  // Existing functions
+  const loadStore = async () => {
+    try {
+      debugInfo = 'Fetching backgrounds...';
+      const response = await fetch('https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/backgrounds.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      backgrounds = data.backgrounds;
+      console.log(data.backgrounds);
+      debugInfo = `Loaded ${backgrounds.length} backgrounds`;
+      await loadSavedBackgrounds();
+    } catch (e) {
+      error = 'Failed to load background store';
+      debugInfo = `Error: ${e instanceof Error ? e.message : 'Unknown error'}`;
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  async function loadSavedBackgrounds(): Promise<void> {
+    try {
+      if (!isIndexedDBSupported()) {
+        throw new Error("Your browser doesn't support IndexedDB.");
+      }
+      await openDatabase();
+      const data = await readAllData();
+      savedBackgrounds = data.map(item => item.id);
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Unknown error occurred';
+    }
+  }
+
+  // Load data on mount
+  loadStore();
+
+  // Derived states
+  let filteredBackgrounds = $derived((() => {
+    let filtered = backgrounds.filter((bg: Background) => {
+      const matchesCategory = selectedCategory === 'All' 
+        ? true 
+        : selectedCategory === 'Featured' 
+          ? bg.featured 
+          : bg.category === selectedCategory;
+      const matchesSearch = bg.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           bg.description.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+
+    // Apply sorting
+    filtered.sort((a: Background, b: Background) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'newest':
+          return -1;
+        case 'popular':
+          return -1;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  })());
+
+  let categories = $derived([...new Set(backgrounds.map(bg => bg.category))]);
+
+  // Background management functions
+  async function saveBackgroundFromUrl(url: string, id: string, fileType: string): Promise<void> {
+    try {
+      if (!isIndexedDBSupported()) {
+        throw new Error("Your browser doesn't support IndexedDB.");
+      }
+
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const hasSpace = await hasEnoughStorageSpace(blob.size);
+
+      if (!hasSpace) {
+        throw new Error("Not enough storage space.");
+      }
+
+      await writeData(id, fileType, blob);
+      savedBackgrounds = [...savedBackgrounds, id];
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Unknown error occurred';
+    }
+  }
+
+  async function deleteBackground(fileId: string): Promise<void> {
+    installingBackgrounds = new Set(installingBackgrounds).add(fileId);
+    try {
+      await deleteData(fileId);
+      savedBackgrounds = savedBackgrounds.filter(id => id !== fileId);
+
+      if (selectedBackground === fileId) {
+        selectNoBackground();
+      }
+    } catch (e) {
+      error = e instanceof Error ? `Failed to delete background: ${e.message}` : 'Unknown error occurred';
+    } finally {
+      installingBackgrounds = new Set(installingBackgrounds);
+      installingBackgrounds.delete(fileId);
+    }
+  }
+
+  async function installBackground(background: Background) {
+    installingBackgrounds = new Set(installingBackgrounds).add(background.id);
+    try {
+      await saveBackgroundFromUrl(background.highResUrl, background.id, background.type);
+    } finally {
+      installingBackgrounds = new Set(installingBackgrounds);
+      installingBackgrounds.delete(background.id);
+    }
+  }
+
+  async function toggleBackgroundInstallation(background: Background) {
+    if (savedBackgrounds.includes(background.id)) {
+      await deleteBackground(background.id);
+    } else {
+      await installBackground(background);
+    }
+  }
+
+  function selectBackground(fileId: string): void {
+    if (selectedBackground === fileId) {
+      selectNoBackground();
+      return;
+    }
+    selectedBackground = fileId;
+    setTheme(fileId);
+  }
+
+  function selectNoBackground() {
+    selectedBackground = null;
+    setTheme('');
+  }
+
+  function openPreview(background: Background) {
+    displayBackground = background;
+    showPreview = true;
+  }
+
+  function closePreview() {
+    showPreview = false;
+    displayBackground = null;
+  }
+</script>
+
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <div class="w-64 h-full p-4 border-r border-zinc-200 dark:border-zinc-700">
+    <div class="mb-8">
+      <h2 class="mb-4 text-lg font-semibold">Categories</h2>
+      <nav class="space-y-2">
+        <button
+          class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === 'All' ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
+          onclick={() => selectedCategory = 'All'}
+        >
+          All
+        </button>
+        <button
+          class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === 'Featured' ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
+          onclick={() => selectedCategory = 'Featured'}
+        >
+          Featured
+        </button>
+        
+        <div class="my-2 border-b border-zinc-200 dark:border-zinc-700"></div>
+        
+        {#each categories as category}
+          <button
+            class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === category ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
+            onclick={() => selectedCategory = category}
+          >
+            {category}
+          </button>
+        {/each}
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 overflow-auto">
+    <!-- Header -->
+    <div class="sticky top-0 z-10 p-4 bg-white border-b dark:bg-zinc-900 dark:border-zinc-700">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">Explore Backgrounds</h1>
+        <div class="flex items-center gap-4">
+          <select 
+            bind:value={sortBy} 
+            class="p-2 border rounded-lg border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800"
+          >
+            <option value="newest">Newest</option>
+            <option value="popular">Most Popular</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-2">
+        {#each ['All', 'Installed', 'Photos', 'Videos'] as tab}
+          <button
+            class={`px-4 py-2 text-sm font-medium transition-colors rounded-full
+              ${activeTab === tab.toLowerCase() ? 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700' : 
+                'bg-zinc-100 dark:bg-transparent dark:outline dark:outline-1 dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
+            onclick={() => activeTab = tab.toLowerCase() as typeof activeTab}
+          >
+            {tab}
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Background Grid -->
+    <div class="p-4">
+      {#if isLoading}
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {#each Array(9) as _, i}
+            <div class="relative overflow-hidden rounded-lg animate-pulse">
+              <!-- Image placeholder -->
+              <div class="w-full h-48 bg-zinc-200 dark:bg-zinc-800"></div>
+              <!-- Gradient overlay -->
+              <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-zinc-300 dark:from-zinc-700 to-transparent">
+                <!-- Title placeholder -->
+                <div class="absolute bottom-2 left-2 right-2">
+                  <div class="w-2/3 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
+                  <div class="w-1/2 h-3 mt-2 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
+                </div>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {:else if error}
+        <div class="p-4 text-red-500 bg-red-100 rounded-lg">
+          Error: {error}
+        </div>
+      {:else}
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {#each filteredBackgrounds.filter((bg: Background) => {
+            if (activeTab === 'installed') return savedBackgrounds.includes(bg.id);
+            if (activeTab === 'photos') return bg.type === 'image';
+            if (activeTab === 'videos') return bg.type !== 'image';
+            return true;
+          }) as background (background.id)}
+            <div
+              class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group"
+              onclick={() => toggleBackgroundInstallation(background)}
+              onkeydown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  toggleBackgroundInstallation(background);
+                }
+              }}
+              role="button"
+              tabindex="0"
+            >
+              {#if background.type === 'image'}
+                <img src={background.lowResUrl} alt={background.name} class="object-cover w-full h-48 transition-all duration-300 group-hover:scale-105" />
+              {:else}
+                <video src={background.lowResUrl} class="object-cover w-full h-48" muted loop autoplay></video>
+              {/if}
+              <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100">
+                {#if installingBackgrounds.has(background.id)}
+                  <Spinner />
+                {:else if savedBackgrounds.includes(background.id)}
+                  <span class="flex items-center text-white">
+                    <span class="mr-2 text-2xl not-italic font-IconFamily" aria-hidden="true">&#xed2c;</span>
+                    <span class="text-sm font-semibold">Remove</span>
+                  </span>
+                {:else}
+                  <span class="flex items-center text-white">
+                    <span class="mr-2 text-2xl not-italic font-IconFamily" aria-hidden="true">&#xea9a;</span>
+                    <span class="text-sm font-semibold">Install</span>
+                  </span>
+                {/if}
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black to-transparent">
+                <h3 class="text-sm font-semibold text-white">{background.name}</h3>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  {#if showPreview && displayBackground}
+    <div 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+      onclick={closePreview}
+      onkeydown={(e) => e.key === 'Escape' && closePreview()}
+    >
+      <div 
+        class="w-full max-w-4xl p-4 bg-white rounded-lg dark:bg-zinc-800"
+        onclick={(e) => e.stopPropagation()}
+      >
+        <div class="flex justify-between mb-4">
+          <h2 class="text-2xl font-bold">{displayBackground.name}</h2>
+          <button 
+            class="text-zinc-500 hover:text-zinc-700"
+            onclick={closePreview}
+          >
+            <span class="text-2xl font-IconFamily">&#xe5cd;</span>
+          </button>
+        </div>
+
+        <div class="relative mb-4 aspect-video">
+          {#if displayBackground.type === 'image'}
+            <img 
+              src={displayBackground.highResUrl} 
+              alt={displayBackground.name} 
+              class="object-cover w-full h-full rounded-lg" 
+            />
+          {:else}
+            <video 
+              src={displayBackground.highResUrl} 
+              class="object-cover w-full h-full rounded-lg" 
+              controls 
+              muted 
+              loop 
+              autoplay
+            ></video>
+          {/if}
+        </div>
+
+        <p class="mb-4 text-zinc-600 dark:text-zinc-300">{displayBackground.description}</p>
+
+        <div class="flex space-x-4">
+          <button
+            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            onclick={() => toggleBackgroundInstallation(displayBackground)}
+          >
+            {savedBackgrounds.includes(displayBackground.id) ? 'Remove' : 'Install'}
+          </button>
+          {#if savedBackgrounds.includes(displayBackground.id)}
+            <button
+              class="px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600"
+              onclick={() => selectBackground(displayBackground.id)}
+            >
+              Apply
+            </button>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>
+
+{#if settingsState.devMode}
+  <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
+    <h3 class="mb-2 font-bold">Debug Info:</h3>
+    <p>{debugInfo}</p>
+    <p>Total backgrounds: {backgrounds.length}</p>
+    <p>Categories: {categories.join(', ') || '<empty>'}</p>
+    <p>Active Tab: {activeTab}</p>
+    <p>Selected Category: {selectedCategory}</p>
+  </div>
+{/if}
+

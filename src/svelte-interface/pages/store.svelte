@@ -16,11 +16,8 @@
   import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
   import { themeUpdates } from '../hooks/ThemeUpdates'
 
-  // Import background-related functions and components
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader'
-  import BackgroundUploader from '../components/themes/BackgroundUploader.svelte';
-  import BackgroundItem from '../components/themes/BackgroundItem.svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
+  import Backgrounds from '../components/store/Backgrounds.svelte'
 
   // State variables
   let searchTerm = $state('');
@@ -32,8 +29,6 @@
   let currentThemes = $state<string[]>([]);
   let activeTab = $state('themes');
   
-  // Background-related state
-  let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
 
@@ -54,10 +49,6 @@
     activeTab = tab;
   };
 
-  async function getTheme() {
-    return localStorage.getItem('selectedBackground');
-  }
-
   // Fetch themes and initialize app
   const fetchThemes = async () => {
     try {
@@ -76,121 +67,10 @@
     }
   };
 
-  // Background-related functions
-  async function handleFileChange(file: File): Promise<void> {
-    if (!file) return;
-
-    try {
-      if (!isIndexedDBSupported()) {
-        throw new Error("Your browser doesn't support IndexedDB. Unable to save backgrounds.");
-      }
-
-      const hasSpace = await hasEnoughStorageSpace(file.size);
-      if (!hasSpace) {
-        throw new Error("Not enough storage space to save this background.");
-      }
-
-      const fileId = `${Date.now()}-${file.name}`;
-      const fileType = file.type.split('/')[0];
-      const blob = new Blob([file], { type: file.type });
-
-      await writeData(fileId, fileType, blob);
-      backgrounds = [...backgrounds, { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) }];
-    } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
-    }
-  }
-
-  async function loadBackgroundMetadata(): Promise<void> {
-    try {
-      error = null;
-
-      if (!isIndexedDBSupported()) {
-        throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
-      }
-
-      await openDatabase();
-      const data = await readAllData();
-      selectedBackground = await getTheme();
-      
-      // Only load metadata (id and type) for placeholders
-      backgrounds = data.map(({ id, type }) => ({ id, type, blob: null }));
-    } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
-    }
-  }
-
-  async function loadFullBackgrounds(): Promise<void> {
-    try {
-      error = null;
-
-      if (!isIndexedDBSupported()) {
-        throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
-      }
-
-      const data = await readAllData();
-      backgrounds = await preloadBackgrounds(data);
-    } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
-    }
-  }
-
-  async function preloadBackgrounds(data: { id: string; type: string; blob: Blob }[]): Promise<{ id: string; type: string; blob: Blob; url: string }[]> {
-    return data.map(bg => ({
-      ...bg,
-      url: URL.createObjectURL(bg.blob)
-    }));
-  }
-
-  function selectBackground(fileId: string): void {
-    if (selectedBackground === fileId) {
-      selectNoBackground();
-      return;
-    }
-    
-    selectedBackground = fileId;
-    setTheme(fileId);
-  }
-
-  async function deleteBackground(fileId: string): Promise<void> {
-    try {
-      await deleteData(fileId);
-      backgrounds = backgrounds.filter(bg => bg.id !== fileId);
-
-      if (selectedBackground === fileId) {
-        selectNoBackground();
-      }
-    } catch (e) {
-      if (e instanceof Error) {
-        error = `Failed to delete background: ${e.message}`;
-      } else {
-        error = 'An unknown error occurred';
-      }
-    }
-  }
-
-  function selectNoBackground() {
-    selectedBackground = null;
-    setTheme('');
-  }
-
   // On mount
   onMount(async () => {
     await fetchThemes();
     await fetchCurrentThemes();
-    await loadBackgroundMetadata();
     
     darkMode = (await browser.storage.local.get('DarkMode')).DarkMode === 'true';
     darkMode = $settingsState.DarkMode;
@@ -201,9 +81,6 @@
     theme.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     theme.description.toLowerCase().includes(searchTerm.toLowerCase())
   ));
-
-  let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
-  let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
 
   $effect(() => {
     loadBackground();
@@ -221,7 +98,7 @@
   <div class="h-full overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem]">
     <Header {searchTerm} {setSearchTerm} {darkMode} {activeTab} {setActiveTab} />
     
-    <div class="px-12 pt-6">
+    <div class={`px-12 ${activeTab === 'backgrounds' ? 'pt-0' : 'pt-6'}`}>
       <!-- Loading State -->
       {#if loading}
         <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
@@ -263,40 +140,7 @@
             />
           {/if}
         {:else if activeTab === 'backgrounds'}
-          <!-- Backgrounds Tab Content -->
-          <div class="space-y-6">
-            <div>
-              <h2 class="mb-4 text-lg font-bold">Background Images</h2>
-              <div class="flex flex-wrap gap-4 mb-4">
-                <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
-                {#each imageBackgrounds as bg (bg.id)}
-                  <BackgroundItem
-                    {bg}
-                    isSelected={selectedBackground === bg.id}
-                    isEditMode={false}
-                    onClick={() => selectBackground(bg.id)}
-                    onDelete={() => deleteBackground(bg.id)}
-                  />
-                {/each}
-              </div>
-            </div>
-            
-            <div>
-              <h2 class="mb-4 text-lg font-bold">Background Videos</h2>
-              <div class="flex flex-wrap gap-4">
-                <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
-                {#each videoBackgrounds as bg (bg.id)}
-                  <BackgroundItem
-                    {bg}
-                    isSelected={selectedBackground === bg.id}
-                    isEditMode={false}
-                    onClick={() => selectBackground(bg.id)}
-                    onDelete={() => deleteBackground(bg.id)}
-                  />
-                {/each}
-              </div>
-            </div>
-          </div>
+          <Backgrounds {searchTerm} />
         {/if}
       {/if}
     </div>
