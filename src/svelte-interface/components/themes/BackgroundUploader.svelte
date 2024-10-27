@@ -19,7 +19,7 @@
   </div>
   <input
     type="file"
-    accept="image/*, video/*"
+    accept="image/*, video/mp4"
     on:change={handleFileChange}
     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
   />
