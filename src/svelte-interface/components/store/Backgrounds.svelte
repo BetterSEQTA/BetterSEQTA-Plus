@@ -16,12 +16,9 @@
   let savedBackgrounds = $state<string[]>([]);
   let installingBackgrounds = $state<Set<string>>(new Set());
   let debugInfo = $state<string>('');
-  let displayBackground = $state<Background | null>(null);
 
   // New state variables
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
-  let showPreview = $state<boolean>(false);
-  let favorites = $state<string[]>([]);
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
 
   // Existing functions
@@ -149,33 +146,14 @@
       await installBackground(background);
     }
   }
-
-  function selectBackground(fileId: string): void {
-    if (selectedBackground === fileId) {
-      selectNoBackground();
-      return;
-    }
-    selectedBackground = fileId;
-    setTheme(fileId);
-  }
-
+  
   function selectNoBackground() {
     selectedBackground = null;
     setTheme('');
   }
-
-  function openPreview(background: Background) {
-    displayBackground = background;
-    showPreview = true;
-  }
-
-  function closePreview() {
-    showPreview = false;
-    displayBackground = null;
-  }
 </script>
 
-<div class="flex h-screen">
+<div class="flex h-full">
   <!-- Sidebar -->
   <div class="w-64 h-full p-4 border-r border-zinc-200 dark:border-zinc-700">
     <div class="mb-8">
@@ -245,7 +223,7 @@
     <div class="p-4">
       {#if isLoading}
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {#each Array(9) as _, i}
+          {#each Array(9) as _}
             <div class="relative overflow-hidden rounded-lg animate-pulse">
               <!-- Image placeholder -->
               <div class="w-full h-48 bg-zinc-200 dark:bg-zinc-800"></div>
@@ -312,68 +290,6 @@
       {/if}
     </div>
   </div>
-
-  <!-- Preview Modal -->
-  {#if showPreview && displayBackground}
-    <div 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
-      onclick={closePreview}
-      onkeydown={(e) => e.key === 'Escape' && closePreview()}
-    >
-      <div 
-        class="w-full max-w-4xl p-4 bg-white rounded-lg dark:bg-zinc-800"
-        onclick={(e) => e.stopPropagation()}
-      >
-        <div class="flex justify-between mb-4">
-          <h2 class="text-2xl font-bold">{displayBackground.name}</h2>
-          <button 
-            class="text-zinc-500 hover:text-zinc-700"
-            onclick={closePreview}
-          >
-            <span class="text-2xl font-IconFamily">&#xe5cd;</span>
-          </button>
-        </div>
-
-        <div class="relative mb-4 aspect-video">
-          {#if displayBackground.type === 'image'}
-            <img 
-              src={displayBackground.highResUrl} 
-              alt={displayBackground.name} 
-              class="object-cover w-full h-full rounded-lg" 
-            />
-          {:else}
-            <video 
-              src={displayBackground.highResUrl} 
-              class="object-cover w-full h-full rounded-lg" 
-              controls 
-              muted 
-              loop 
-              autoplay
-            ></video>
-          {/if}
-        </div>
-
-        <p class="mb-4 text-zinc-600 dark:text-zinc-300">{displayBackground.description}</p>
-
-        <div class="flex space-x-4">
-          <button
-            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-            onclick={() => toggleBackgroundInstallation(displayBackground)}
-          >
-            {savedBackgrounds.includes(displayBackground.id) ? 'Remove' : 'Install'}
-          </button>
-          {#if savedBackgrounds.includes(displayBackground.id)}
-            <button
-              class="px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600"
-              onclick={() => selectBackground(displayBackground.id)}
-            >
-              Apply
-            </button>
-          {/if}
-        </div>
-      </div>
-    </div>
-  {/if}
 </div>
 
 {#if settingsState.devMode}

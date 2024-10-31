@@ -98,7 +98,7 @@
   <div class="h-full overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem]">
     <Header {searchTerm} {setSearchTerm} {darkMode} {activeTab} {setActiveTab} />
     
-    <div class={`px-12 ${activeTab === 'backgrounds' ? 'pt-0' : 'pt-6'}`}>
+    <div class={`px-12 h-full ${activeTab === 'backgrounds' ? 'pt-0' : 'pt-6'}`}>
       <!-- Loading State -->
       {#if loading}
         <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
