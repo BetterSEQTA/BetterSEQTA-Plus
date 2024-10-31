@@ -74,7 +74,12 @@
     
     // Use Fuse.js search if there's a search term
     if (searchTerm.trim()) {
-      filtered = fuse?.search(searchTerm).map((result: any) => result.item) ?? [];
+      // @ts-ignore
+      if (fuse) {
+        filtered = fuse.search(searchTerm).map((result: any) => result.item) ?? [];
+      } else {
+        filtered = backgrounds.filter(bg => bg.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      }
     }
 
     // Apply category filtering
