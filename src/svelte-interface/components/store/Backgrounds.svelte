@@ -3,6 +3,8 @@
   import { setTheme } from '@/seqta/ui/themes/setTheme';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import Fuse from 'fuse.js';
+  import { backgroundUpdates } from '@/svelte-interface/hooks/BackgroundUpdates'
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
   let { searchTerm } = $props<{ searchTerm: string }>();
@@ -21,6 +23,14 @@
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
 
+  // Add Fuse.js options
+  const fuseOptions = {
+    keys: ['name', 'description'],
+    threshold: 0.4,
+    ignoreLocation: true
+  };
+  let fuse: Fuse<Background>;
+
   // Existing functions
   const loadStore = async () => {
     try {
@@ -31,7 +41,7 @@
       }
       const data = await response.json();
       backgrounds = data.backgrounds;
-      console.log(data.backgrounds);
+      fuse = new Fuse(backgrounds, fuseOptions);
       debugInfo = `Loaded ${backgrounds.length} backgrounds`;
       await loadSavedBackgrounds();
     } catch (e) {
@@ -60,15 +70,20 @@
 
   // Derived states
   let filteredBackgrounds = $derived((() => {
-    let filtered = backgrounds.filter((bg: Background) => {
-      const matchesCategory = selectedCategory === 'All' 
+    let filtered = backgrounds;
+    
+    // Use Fuse.js search if there's a search term
+    if (searchTerm.trim()) {
+      filtered = fuse?.search(searchTerm).map((result: any) => result.item) ?? [];
+    }
+
+    // Apply category filtering
+    filtered = filtered.filter((bg: Background) => {
+      return selectedCategory === 'All' 
         ? true 
         : selectedCategory === 'Featured' 
           ? bg.featured 
           : bg.category === selectedCategory;
-      const matchesSearch = bg.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           bg.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
     });
 
     // Apply sorting
@@ -133,6 +148,7 @@
     installingBackgrounds = new Set(installingBackgrounds).add(background.id);
     try {
       await saveBackgroundFromUrl(background.highResUrl, background.id, background.type);
+      backgroundUpdates.triggerUpdate();
     } finally {
       installingBackgrounds = new Set(installingBackgrounds);
       installingBackgrounds.delete(background.id);
@@ -191,7 +207,7 @@
     <!-- Header -->
     <div class="sticky top-0 z-10 p-4 bg-white border-b dark:bg-zinc-900 dark:border-zinc-700">
       <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold">Explore Backgrounds</h1>
+        <h1 class="text-2xl font-bold">Explore Backgrounds {searchTerm ? `- "${searchTerm}"` : ''}</h1>
         <div class="flex items-center gap-4">
           <select 
             bind:value={sortBy} 
@@ -280,9 +296,6 @@
                     <span class="text-sm font-semibold">Install</span>
                   </span>
                 {/if}
-              </div>
-              <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black to-transparent">
-                <h3 class="text-sm font-semibold text-white">{background.name}</h3>
               </div>
             </div>
           {/each}
