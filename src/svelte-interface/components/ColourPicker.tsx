@@ -1,5 +1,5 @@
 import ColorPicker from "react-best-gradient-color-picker"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
 
 const defaultPresets = [
@@ -41,7 +41,7 @@ export default function Picker({
   const latestValuesRef = useRef({ customThemeColor, customOnChange, savePresets, presets });
 
   useEffect(() => {
-    if (customState !== undefined) {
+    if (customState !== undefined && customState !== null) {
       setCustomThemeColor(customState)
     } else {
       setCustomThemeColor(settingsState.selectedColor ?? null)
@@ -52,12 +52,6 @@ export default function Picker({
       setPresets(savedPresets ? JSON.parse(savedPresets) : defaultPresets)
     }
   }, [])
-
-  useEffect(() => {
-    if (customState !== undefined) {
-      setCustomThemeColor(customState)
-    }
-  }, [customState])
 
   useEffect(() => {
     latestValuesRef.current = { customThemeColor, customOnChange, savePresets, presets };
