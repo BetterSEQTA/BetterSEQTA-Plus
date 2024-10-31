@@ -5,6 +5,7 @@
   import { onMount, onDestroy } from 'svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import { delay } from 'lodash'
+  import { backgroundUpdates } from '@/svelte-interface/hooks/BackgroundUpdates'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
@@ -77,7 +78,7 @@
     }
   }
 
-  async function loadFullBackgrounds(): Promise<void> {
+  async function syncBackgrounds(): Promise<void> {
     try {
       error = null;
 
@@ -85,8 +86,25 @@
         throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
       }
 
-      const data = await readAllData();
-      backgrounds = await preloadBackgrounds(data);
+      const dbData = await readAllData();
+      
+      // Release existing object URLs to prevent memory leaks
+      backgrounds.forEach(bg => {
+        if (bg.url) URL.revokeObjectURL(bg.url);
+      });
+
+      // Create fresh background objects with new object URLs
+      backgrounds = dbData.map(bg => ({
+        id: bg.id,
+        type: bg.type,
+        blob: bg.blob,
+        url: URL.createObjectURL(bg.blob)
+      }));
+
+      // Check if selected background still exists
+      if (selectedBackground && !backgrounds.some(bg => bg.id === selectedBackground)) {
+        selectNoBackground();
+      }
     } catch (e) {
       if (e instanceof Error) {
         error = e.message;
@@ -94,13 +112,6 @@
         error = 'An unknown error occurred';
       }
     }
-  }
-
-  async function preloadBackgrounds(data: { id: string; type: string; blob: Blob }[]): Promise<{ id: string; type: string; blob: Blob; url: string }[]> {
-    return data.map(bg => ({
-      ...bg,
-      url: URL.createObjectURL(bg.blob)
-    }));
   }
 
   function selectBackground(fileId: string): void {
@@ -150,13 +161,14 @@
     if (parentElement?.classList.contains('active')) {
       delay(() => {
         isVisible = true;
-        loadFullBackgrounds();
+        syncBackgrounds();
       }, 600);
     }
   }
 
   onMount(() => {
     loadBackgroundMetadata();
+    backgroundUpdates.addListener(syncBackgrounds);
     
     parentElement = element.closest('.tab');
     if (parentElement) {
@@ -165,6 +177,7 @@
 
       return () => {
         observer.disconnect();
+        backgroundUpdates.removeListener(syncBackgrounds);
       };
     }
   });
