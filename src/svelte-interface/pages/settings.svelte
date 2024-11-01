@@ -5,7 +5,7 @@
   import Theme from './settings/theme.svelte';
   import browser from 'webextension-polyfill';
 
-  import { createStandalone } from '../utils/standalone.svelte';
+  import { standalone as StandaloneStore } from '../utils/standalone.svelte';
   import { onMount } from 'svelte'
   import { initializeSettingsState, settingsState } from '@/seqta/utils/listeners/SettingsState'
 
@@ -46,7 +46,7 @@
     closeExtensionPopup();
   };
     
-  let { standalone = false } = $props<{ standalone?: boolean }>();
+  let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
 
   onMount(() => {
@@ -56,10 +56,7 @@
     
     if (!standalone) return;
     initializeSettingsState();
-    // @ts-ignore
-    let globalStandalone = createStandalone();
-    globalStandalone = standalone;
-
+    StandaloneStore.setStandalone(true);
   });
 </script>
 

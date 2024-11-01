@@ -1,10 +1,9 @@
 <script lang="ts">
   import { animate, spring } from 'motion';
-  import { createStandalone } from '../utils/standalone.svelte'
+  import { standalone } from '../utils/standalone.svelte'
 
   let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
   let handle: HTMLElement | null = null;
-  let standalone = createStandalone();
 
   const springParams = {
     stiffness: 600,
