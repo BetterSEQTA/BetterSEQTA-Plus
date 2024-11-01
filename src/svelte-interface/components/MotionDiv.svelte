@@ -17,31 +17,38 @@
   const playAnimation = (keyframe: any) => {
     if (divElement && keyframe) {
       let animationOptions = transition;
+      let finalKeyframe = { ...keyframe };
 
-      // If transition is not defined or is of type 'spring', use spring animations
+      if (finalKeyframe.height === 'auto') {
+        divElement.style.visibility = 'hidden';
+        divElement.style.height = 'auto';
+        const height = divElement.offsetHeight;
+        divElement.style.height = divElement.style.height || '0px';
+        divElement.style.visibility = '';
+        
+        finalKeyframe.height = `${height}px`;
+      }
+
       if (!transition || transition.type === 'spring') {
         animationOptions = {
           easing: spring(transition || { stiffness: 250, damping: 25 }),
         };
       }
 
-      const animation = motionAnimate(divElement, keyframe, animationOptions);
+      const animation = motionAnimate(divElement, finalKeyframe, animationOptions);
       return animation.finished;
     }
     return Promise.resolve();
   };
 
   onMount(async () => {
-    // Apply initial state if provided
     if (initial) {
-      await playAnimation(initial);
-    }
-    // Then animate to the `animate` state
-    if (animate) {
+      Object.assign(divElement.style, initial);
+      await playAnimation(animate || {});
+    } else if (animate) {
       await playAnimation(animate);
     }
 
-    // Dispatch animation end event
     dispatch('animationend');
   });
   
@@ -53,7 +60,6 @@
     dispatch('animationend');
   });
 
-  // Handle unmounting with the `exit` animation
   onDestroy(async () => {
     if (exit) {
       await playAnimation(exit);

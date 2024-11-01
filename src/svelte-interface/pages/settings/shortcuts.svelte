@@ -63,8 +63,6 @@
   const deleteCustomShortcut = (index: number) => {
     settingsState.customshortcuts = settingsState.customshortcuts.filter((_, i) => i !== index);
   };
-
-  const springTransition = { type: 'spring', damping: 20 };
 </script>
 
 {#snippet Shortcuts([index, Shortcut]: [string, { name: string, enabled: boolean }]) }
@@ -81,16 +79,16 @@
     <div>
       <MotionDiv
         initial={{ opacity: 0, height: 0 }}
-        animate={isFormVisible ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
+        animate={isFormVisible ? { opacity: 1, height: 'auto' } : { opacity: 0, height: 0 }}
         exit={{ opacity: 0, height: 0 }}
-        transition={springTransition}
+        transition={{ duration: 0.3 }}
       >
         {#if isFormVisible}
           <div class="flex flex-col items-center">
             <MotionDiv
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
               class="w-full"
             >
               <input
@@ -103,7 +101,7 @@
             <MotionDiv
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
               class="w-full"
             >
               <input
@@ -118,31 +116,18 @@
       </MotionDiv>
 
       <MotionDiv
-        animate={isFormVisible ? { y: 0 } : { y: 0 }}
-        transition={springTransition}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <button
           class="w-full px-4 py-2 mb-4 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50"
           onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
         >
           {#if isFormVisible}
-            <MotionDiv
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.7 }}
-            >
-              Add
-            </MotionDiv>
+            Add
           {:else}
-            <MotionDiv
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              Add Custom Shortcut
-            </MotionDiv>
+            Add Custom Shortcut
           {/if}
         </button>
       </MotionDiv>
