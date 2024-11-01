@@ -44,8 +44,6 @@
         };
       }
 
-      console.log(keyframe)
-
       const animation = motionAnimate(divElement, finalKeyframe, animationOptions);
       return animation.finished;
     }
