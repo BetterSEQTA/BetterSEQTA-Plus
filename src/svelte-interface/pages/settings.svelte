@@ -7,7 +7,7 @@
 
   import { createStandalone } from '../utils/standalone.svelte';
   import { onMount } from 'svelte'
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import { initializeSettingsState, settingsState } from '@/seqta/utils/listeners/SettingsState'
 
   import { closeExtensionPopup, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
   import ColourPicker from '../components/ColourPicker.svelte'
@@ -55,6 +55,7 @@
     });
     
     if (!standalone) return;
+    initializeSettingsState();
     // @ts-ignore
     let globalStandalone = createStandalone();
     globalStandalone = standalone;
