@@ -1,5 +1,5 @@
-import renderSvelte from "@/svelte-interface/main"
-import themeCreator from "@/svelte-interface/pages/themeCreator.svelte"
+import renderSvelte from "@/interface/main"
+import themeCreator from "@/interface/pages/themeCreator.svelte"
 import { unmount } from "svelte"
 import { ClearThemePreview } from "./themes/UpdateThemePreview"
 

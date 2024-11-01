@@ -9,7 +9,7 @@
   import { setTheme } from '@/seqta/ui/themes/setTheme'
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
-  import { themeUpdates } from '@/svelte-interface/hooks/ThemeUpdates'
+  import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/SEQTA'
 
   let themes = $state<ThemeList | null>(null);

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import type { Theme } from '@/svelte-interface/types/Theme';
+  import type { Theme } from '@/interface/types/Theme';
   import { register, type SwiperContainer } from 'swiper/element/bundle';
 
   let { coverThemes, setDisplayTheme } = $props<{ coverThemes: Theme[], setDisplayTheme: (theme: Theme) => void  }>();

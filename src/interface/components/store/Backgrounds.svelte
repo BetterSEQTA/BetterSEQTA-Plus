@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader';
+  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
   import { setTheme } from '@/seqta/ui/themes/setTheme';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import Fuse from 'fuse.js';
-  import { backgroundUpdates } from '@/svelte-interface/hooks/BackgroundUpdates'
+  import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
   let { searchTerm } = $props<{ searchTerm: string }>();

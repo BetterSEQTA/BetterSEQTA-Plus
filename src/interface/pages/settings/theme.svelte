@@ -1,7 +1,7 @@
 <script lang="ts">
-  import BackgroundSelector from "@/svelte-interface/components/themes/BackgroundSelector.svelte"
-  import ThemeSelector from "@/svelte-interface/components/themes/ThemeSelector.svelte"
-  import { standalone } from "@/svelte-interface/utils/standalone.svelte"
+  import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
+  import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
+  import { standalone } from "@/interface/utils/standalone.svelte"
   
   // backgrounds
   let selectedBackground = $state<string | null>(null);
