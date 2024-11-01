@@ -1,16 +1,28 @@
-import { mount } from 'svelte';
-import Settings from './pages/settings.svelte';
-import { initializeSettingsState } from '@/seqta/utils/listeners/SettingsState';
-import './index.css';
+import "./index.css"
+import { mount } from "svelte"
+import type { ComponentType } from "svelte"
+import Settings from "./pages/settings.svelte"
 
+export default function renderSvelte(
+  Component: ComponentType | any,
+  mountPoint: ShadowRoot | HTMLElement,
+  props: Record<string, any> = {},
+) {
+  const app = mount(Component, {
+    target: mountPoint,
+    props: {
+      standalone: true,
+      ...props,
+    },
+  })
 
-initializeSettingsState();
+  return app
+}
 
-const app = mount(Settings, {
-  target: document.body,
-  props: {
-    standalone: true
-  }
-});
+const mountPoint = document.getElementById('app')
+if (!mountPoint) {
+  console.error('Mount point #app not found')
+  throw new Error('Mount point #app not found')
+}
 
-console.log(app);
+renderSvelte(Settings, mountPoint)
