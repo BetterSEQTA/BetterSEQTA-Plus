@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Theme } from '@/svelte-interface/types/Theme'
+  import type { Theme } from '@/interface/types/Theme'
   import ThemeCard from './ThemeCard.svelte';
 
   let { themes, searchTerm, setDisplayTheme } = $props<{ themes: Theme[]; searchTerm: string, setDisplayTheme: (theme: Theme) => void }>();

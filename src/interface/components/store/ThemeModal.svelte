@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Theme } from '@/svelte-interface/types/Theme'
+  import type { Theme } from '@/interface/types/Theme'
   import { fade } from 'svelte/transition';
   import { animate, spring } from 'motion';
 

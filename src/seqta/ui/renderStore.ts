@@ -1,5 +1,5 @@
-import renderSvelte from '@/svelte-interface/main';
-import Store from '@/svelte-interface/pages/store.svelte'
+import renderSvelte from '@/interface/main';
+import Store from '@/interface/pages/store.svelte'
 
 import { unmount } from 'svelte'
 

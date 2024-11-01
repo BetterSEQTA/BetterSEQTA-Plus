@@ -2,13 +2,13 @@
   import Switch from "../../components/Switch.svelte"
   import Button from "../../components/Button.svelte"
   import Slider from "../../components/Slider.svelte"
-  import Select from "@/svelte-interface/components/Select.svelte"
+  import Select from "@/interface/components/Select.svelte"
 
   import browser from "webextension-polyfill"
   
-  import type { SettingsList } from "@/svelte-interface/types/SettingsProps"
+  import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
-  import PickerSwatch from "@/svelte-interface/components/PickerSwatch.svelte"
+  import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   const { showColourPicker } = $props<{ showColourPicker: () => void }>();

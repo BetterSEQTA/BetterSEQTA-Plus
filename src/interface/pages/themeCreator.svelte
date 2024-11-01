@@ -9,10 +9,10 @@
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { getTheme } from '@/seqta/ui/themes/getTheme'
 
-  import Divider from '@/svelte-interface/components/themeCreator/divider.svelte'
-  import Switch from '@/svelte-interface/components/Switch.svelte'
-  import Button from '@/svelte-interface/components/Button.svelte'
-  import Slider from '@/svelte-interface/components/Slider.svelte'
+  import Divider from '@/interface/components/themeCreator/divider.svelte'
+  import Switch from '@/interface/components/Switch.svelte'
+  import Button from '@/interface/components/Button.svelte'
+  import Slider from '@/interface/components/Slider.svelte'
   import ColourPicker from '../components/ColourPicker.svelte'
   import CodeEditor from '../components/CodeEditor.svelte'
 

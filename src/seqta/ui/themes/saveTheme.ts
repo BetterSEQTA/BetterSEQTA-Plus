@@ -1,7 +1,7 @@
 import localforage from 'localforage';
 import type { LoadedCustomTheme } from '@/types/CustomThemes';
 import { disableTheme } from './disableTheme';
-import { themeUpdates } from '@/svelte-interface/hooks/ThemeUpdates';
+import { themeUpdates } from '@/interface/hooks/ThemeUpdates';
 
 
 export const saveTheme = async (theme: LoadedCustomTheme) => {

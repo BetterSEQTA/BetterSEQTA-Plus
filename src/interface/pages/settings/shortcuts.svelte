@@ -1,7 +1,7 @@
 <script lang="ts">
-  import MotionDiv from '@/svelte-interface/components/MotionDiv.svelte';
+  import MotionDiv from '@/interface/components/MotionDiv.svelte';
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
-  import Switch from "@/svelte-interface/components/Switch.svelte"
+  import Switch from "@/interface/components/Switch.svelte"
   import { onMount } from 'svelte';
 
   let isLoaded = $state(false);

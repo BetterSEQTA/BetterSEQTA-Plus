@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/svelte-interface/hooks/BackgroundDataLoader'
+  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader'
   import BackgroundUploader from './BackgroundUploader.svelte';
   import BackgroundItem from './BackgroundItem.svelte'
   import { onMount, onDestroy } from 'svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import { delay } from 'lodash'
-  import { backgroundUpdates } from '@/svelte-interface/hooks/BackgroundUpdates'
+  import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);

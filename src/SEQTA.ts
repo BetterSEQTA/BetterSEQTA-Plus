@@ -35,9 +35,9 @@ import coursesicon from '@/seqta/icons/coursesIcon'
 import iframeCSS from '@/css/iframe.scss?raw'
 import injectedCSS from '@/css/injected.scss?inline'
 import documentLoadCSS from '@/css/documentload.scss?inline'
-import renderSvelte from '@/svelte-interface/main'
-import Settings from '@/svelte-interface/pages/settings.svelte'
-import { settingsPopup } from './svelte-interface/hooks/SettingsPopup'
+import renderSvelte from '@/interface/main'
+import Settings from '@/interface/pages/settings.svelte'
+import { settingsPopup } from './interface/hooks/SettingsPopup'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false

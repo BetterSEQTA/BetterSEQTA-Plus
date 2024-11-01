@@ -8,7 +8,7 @@ const updatedFirefoxManifest = {
     scripts: [baseManifest.background.service_worker],
   },
   action: {
-    "default_popup": "svelte-interface/index.html#settings",
+    "default_popup": "interface/index.html#settings",
   },
   browser_specific_settings: {
     gecko: {
