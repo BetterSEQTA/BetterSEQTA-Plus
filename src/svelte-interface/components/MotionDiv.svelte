@@ -20,20 +20,31 @@
       let finalKeyframe = { ...keyframe };
 
       if (finalKeyframe.height === 'auto') {
-        divElement.style.visibility = 'hidden';
-        divElement.style.height = 'auto';
-        const height = divElement.offsetHeight;
-        divElement.style.height = divElement.style.height || '0px';
-        divElement.style.visibility = '';
+        const prevHeight = divElement.style.height;
+        const prevVisibility = divElement.style.visibility;
         
-        finalKeyframe.height = `${height}px`;
+        divElement.style.height = 'auto';
+        divElement.style.visibility = 'hidden';
+        divElement.style.position = 'absolute';
+        
+        const autoHeight = divElement.offsetHeight;
+        
+        divElement.style.height = prevHeight;
+        divElement.style.visibility = prevVisibility;
+        divElement.style.position = '';
+        
+        finalKeyframe.height = `${autoHeight}px`;
       }
 
       if (!transition || transition.type === 'spring') {
+        const springConfig = transition?.config || { stiffness: 250, damping: 25 };
         animationOptions = {
-          easing: spring(transition || { stiffness: 250, damping: 25 }),
+          ...transition,
+          easing: spring(springConfig)
         };
       }
+
+      console.log(keyframe)
 
       const animation = motionAnimate(divElement, finalKeyframe, animationOptions);
       return animation.finished;
