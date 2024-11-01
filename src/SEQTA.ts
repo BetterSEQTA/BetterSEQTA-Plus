@@ -1063,7 +1063,7 @@ export function addExtensionSettings() {
   // create shadow dom and render svelte app
   try {
     const shadow = extensionPopup.attachShadow({ mode: 'open' });
-    renderSvelte(Settings, shadow);
+    requestIdleCallback(() => renderSvelte(Settings, shadow));
   } catch (err) {
     console.error(err)
   }
