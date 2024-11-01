@@ -12,7 +12,7 @@
 </script>
 
 <div class="py-4">
-  {#if !standalone}
+  {#if !standalone.standalone}
     <button
       onclick={() => selectNoBackground()}
       class="w-full px-4 py-2 mb-4 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
