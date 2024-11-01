@@ -210,7 +210,7 @@
   <!-- Main Content -->
   <div class="flex-1 overflow-auto">
     <!-- Header -->
-    <div class="sticky top-0 z-10 p-4 bg-white border-b dark:bg-zinc-900 dark:border-zinc-700">
+    <div class="sticky top-0 z-10 p-4 border-b bg-[#F1F1F3] dark:bg-zinc-900 dark:border-zinc-700">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-2xl font-bold">Explore Backgrounds {searchTerm ? `- "${searchTerm}"` : ''}</h1>
         <div class="flex items-center gap-4">
@@ -219,7 +219,6 @@
             class="p-2 border rounded-lg border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800"
           >
             <option value="newest">Newest</option>
-            <option value="popular">Most Popular</option>
             <option value="name">Name</option>
           </select>
         </div>
