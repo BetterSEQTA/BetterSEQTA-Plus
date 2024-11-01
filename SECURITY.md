@@ -6,9 +6,12 @@ Below here is the supported versions of BetterSEQTA+. Anything older than this i
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.3.x   | :white_check_mark: |
+| 3.3.2   | :white_check_mark: |
+| 3.3.x   |:white_check_mark: *|
 | 3.0.x   | :x:                |
 | < 3.0   | :x:                |
+
+`*` May not work on other devices.
 
 ## Reporting a Vulnerability
 
