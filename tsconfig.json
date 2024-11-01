@@ -23,7 +23,11 @@
 
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": [
+      "vite/client",
+      "node"
+    ]
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/interface/+layout.sveltes"]
 }
