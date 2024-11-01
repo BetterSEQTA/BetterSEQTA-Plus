@@ -43,11 +43,9 @@ export function OpenThemeCreator(themeID: string = "") {
   resizeBar.style.right = "307.5px"
 
   let isDragging = false
-  let currentX: number
 
-  const mouseDownHandler = (e: MouseEvent) => {
+  const mouseDownHandler = (_: MouseEvent) => {
     isDragging = true
-    currentX = e.clientX
     document.addEventListener("mousemove", mouseMoveHandler)
     document.addEventListener("mouseup", mouseUpHandler)
     document.body.style.userSelect = "none"
@@ -61,8 +59,6 @@ export function OpenThemeCreator(themeID: string = "") {
     themeCreatorDiv.style.width = `${newWidth}px`
     mainContent.style.width = `calc(100% - ${newWidth}px)`
     resizeBar.style.right = `${newWidth - 2.5}px`
-
-    currentX = e.clientX
   }
 
   const mouseUpHandler = () => {
