@@ -1,5 +1,20 @@
 import browser from 'webextension-polyfill'
 import type { SettingsState } from "@/types/storage";
+import { blobToBase64 } from './seqta/utils/blobToBase64';
+
+interface Data {
+  id: string;
+  blob: Blob;
+  type: 'image' | 'video';
+}
+
+interface DatabaseEventTarget extends EventTarget {
+  result: IDBDatabase;
+}
+
+interface DatabaseEvent extends Event {
+  target: DatabaseEventTarget;
+}
 
 export const openDB = () => {
   return new Promise((resolve, reject) => {
@@ -269,11 +284,63 @@ async function UpdateCurrentValues() {
   }
 }
 
+const getAllBackgrounds = async (): Promise<Data[]> => {
+  const db = await openDB() as IDBDatabase;
+  const tx = db.transaction('backgrounds', 'readonly');
+  const store = tx.objectStore('backgrounds');
+  const request = store.getAll();
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const sendBackgroundToTab = async (background: Data): Promise<void> => {
+  const base64Data = await blobToBase64(background.blob);
+  
+  // Get the current active tab
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+
+  // Send message to the tab
+  await browser.tabs.sendMessage(tab.id, {
+    type: 'MIGRATE_BACKGROUND',
+    payload: {
+      id: background.id,
+      data: base64Data,
+      mediaType: background.type
+    }
+  });
+};
+
+const migrateBackgrounds = async (): Promise<void> => {
+  try {
+    console.log('Starting background migration...');
+    const backgrounds = await getAllBackgrounds();
+    console.log(`Found ${backgrounds.length} backgrounds to migrate`);
+
+    // Process backgrounds sequentially
+    for (const background of backgrounds) {
+      console.log(`Migrating background: ${background.id}`);
+      await sendBackgroundToTab(background);
+      console.log(`Successfully migrated background: ${background.id}`);
+    }
+
+    console.log('Migration completed successfully');
+  } catch (error) {
+    console.error('Migration failed:', error);
+    throw error;
+  }
+};
+
+
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
   browser.storage.local.remove(['data']);
 
   UpdateCurrentValues();
+  migrateBackgrounds();
   if ( event.reason == 'install', event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
   }
