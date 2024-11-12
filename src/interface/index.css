@@ -1,3 +1,5 @@
+@import './components/ColourPicker.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,6 +18,35 @@
   display: none;
 }
 
-button, a {
-  @apply text-[0.875rem];
+.tab-width {
+  width: var(--tab-width);
+}
+
+input {
+  &:focus {
+    box-shadow: unset !important;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none !important;
+}
+
+.cm-editor {
+  width: 100%;
+  min-height: 100px;
+  max-height: 400px;
 }

@@ -12,7 +12,7 @@ import {
 } from '@/SEQTA';
 import { updateBgDurations } from '@/seqta/ui/Animation';
 import browser from 'webextension-polyfill';
-import { CustomShortcut } from '@/types/storage';
+import type { CustomShortcut } from '@/types/storage';
 
 export class StorageChangeHandler {
   constructor() {

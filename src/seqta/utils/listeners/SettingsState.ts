@@ -1,16 +1,21 @@
 import browser from 'webextension-polyfill';
-import { SettingsState } from '@/types/storage';
+import type { SettingsState } from '@/types/storage';
+import type { Subscriber, Unsubscriber } from 'svelte/store';
 
 type ChangeListener = (newValue: any, oldValue: any) => void;
+type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 
 class StorageManager {
   private static instance: StorageManager;
   private data: SettingsState;
   private listeners: { [key: string]: ChangeListener[] };
+  private globalListeners: GlobalChangeListener[];
+  private subscribers: Set<Subscriber<SettingsState>> = new Set();
 
   private constructor() {
     this.data = {} as SettingsState;
     this.listeners = {};
+    this.globalListeners = [];
     this.loadFromStorage();
 
     const handler: ProxyHandler<StorageManager> = {
@@ -58,6 +63,11 @@ class StorageManager {
     return instance;
   }
 
+  public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
+    this.data[key] = value;
+    this.saveToStorage();
+  }
+
   private async loadFromStorage(): Promise<void> {
     const result = await browser.storage.local.get();
     this.data = { ...this.data, ...result };
@@ -65,6 +75,7 @@ class StorageManager {
 
   private async saveToStorage(): Promise<void> {
     await browser.storage.local.set(this.data);
+    this.notifySubscribers();
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -85,6 +96,9 @@ class StorageManager {
               listener(newValue, oldValue);
             }
           }
+          for (const listener of this.globalListeners) {
+            listener(newValue, oldValue, key);
+          }
         }
       }
     });
@@ -100,6 +114,36 @@ class StorageManager {
       this.listeners[prop] = [];
     }
     this.listeners[prop].push(listener);
+  }
+
+  /**
+   * Register a listener for any setting.
+   * @param listener The listener to call when any setting changes -> takes two arguments, (newValue, oldValue)
+   */
+  public registerGlobal(listener: GlobalChangeListener): void {
+    this.globalListeners.push(listener);
+  }
+
+  /**
+   * Get all settings.
+   * @returns All settings.
+   */
+  public getAll(): SettingsState {
+    return this.data;
+  }
+
+  public subscribe(run: Subscriber<SettingsState>): Unsubscriber {
+    this.subscribers.add(run);
+    run(this.data);
+    return () => {
+      this.subscribers.delete(run);
+    };
+  }
+
+  private notifySubscribers(): void {
+    for (const subscriber of this.subscribers) {
+      subscriber(this.data);
+    }
   }
 }
 

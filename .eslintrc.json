@@ -3,12 +3,12 @@
     "browser": true,
     "commonjs": true,
     "es2021": true,
-    "node": true // add this line to allow Node.js-specific globals
+    "node": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": "latest",
-    "sourceType": "module" // add this line to allow 'import' and 'export' statements
+    "sourceType": "module"
   },
   "rules": {
     // allow importing ts extensions

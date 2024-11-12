@@ -1,39 +1,29 @@
 import localforage from 'localforage';
-import { CustomTheme, CustomThemeBase64 } from '@/interface/types/CustomThemes';
+import type { LoadedCustomTheme } from '@/types/CustomThemes';
 import { disableTheme } from './disableTheme';
+import { themeUpdates } from '@/interface/hooks/ThemeUpdates';
 
 
-export const saveTheme = async (theme: CustomThemeBase64) => {
+export const saveTheme = async (theme: LoadedCustomTheme) => {
   try {
-    const updatedTheme: CustomTheme = {
-      ...theme,
-      coverImage: theme.coverImage ? await fetch(theme.coverImage).then((res) => res.blob()) : null,
-      CustomImages: await Promise.all(
-        theme.CustomImages.map(async (image) => ({
-          id: image.id,
-          blob: await fetch(image.url).then((res) => res.blob()),
-          variableName: image.variableName,
-        }))
-      ),
-    };
-
     disableTheme();
 
-    console.debug('Theme to save:', updatedTheme);
-
-    await localforage.setItem(updatedTheme.id, updatedTheme);
+    console.debug('Theme to save:', theme);
+   
+    await localforage.setItem(theme.id, theme);
     await localforage.getItem('customThemes').then((themes: unknown) => {
       const themeList = themes as string[] | null;
       if (themeList) {
-        if (!themeList.includes(updatedTheme.id)) {
-          themeList.push(updatedTheme.id);
+        if (!themeList.includes(theme.id)) {
+          themeList.push(theme.id);
           localforage.setItem('customThemes', themeList);
         }
       } else {
-        localforage.setItem('customThemes', [updatedTheme.id]);
+        localforage.setItem('customThemes', [theme.id]);
       }
     });
     console.debug('Theme saved successfully!');
+    themeUpdates.triggerUpdate();
   } catch (error) {
     console.error('Error saving theme:', error);
   }

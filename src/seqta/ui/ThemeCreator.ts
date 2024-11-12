@@ -1,73 +1,80 @@
-import browser from "webextension-polyfill";
+import renderSvelte from "@/interface/main"
+import themeCreator from "@/interface/pages/themeCreator.svelte"
+import { unmount } from "svelte"
+import { ClearThemePreview } from "./themes/UpdateThemePreview"
+
+let themeCreatorSvelteApp: any = null
 
 /**
  * Open the Theme Creator sidebar, it is an embedded page loaded similar to the extension popup
  * @param themeID - The ID of the theme to load in the Theme Creator
  * @returns void
  */
-export function OpenThemeCreator( themeID: string = '' ) {
-  CloseThemeCreator();
-  
-  const width = '310px';
+export function OpenThemeCreator(themeID: string = "") {
+  CloseThemeCreator()
 
-  const themeCreatorIframe: HTMLIFrameElement = document.createElement('iframe');
-  themeCreatorIframe.src = `${browser.runtime.getURL('interface/index.html')}${ themeID != '' ? `?themeID=${themeID}` : '' }#themeCreator`;
-  themeCreatorIframe.id = 'themeCreatorIframe';
-  themeCreatorIframe.setAttribute('allowTransparency', 'true');
-  themeCreatorIframe.setAttribute('excludeDarkCheck', 'true');
-  themeCreatorIframe.style.border = 'none';
-  themeCreatorIframe.style.width = width;
+  const width = "310px"
 
-  const mainContent = document.querySelector('#container') as HTMLDivElement;
-  if (mainContent) mainContent.style.width = `calc(100% - ${width})`;
+  const themeCreatorDiv: HTMLDivElement = document.createElement("div")
+  themeCreatorDiv.id = "themeCreator"
+  themeCreatorDiv.style.width = width
+
+  const shadow = themeCreatorDiv.attachShadow({ mode: "open" })
+  themeCreatorSvelteApp = renderSvelte(themeCreator, shadow, {
+    themeID: themeID,
+  })
+
+  const mainContent = document.querySelector("#container") as HTMLDivElement
+  if (mainContent) mainContent.style.width = `calc(100% - ${width})`
 
   // close button
-  const closeButton = document.createElement('button');
-  closeButton.classList.add('themeCloseButton');
-  closeButton.textContent = '×';
-  closeButton.addEventListener('click', CloseThemeCreator);
-  document.body.appendChild(closeButton);
+  const closeButton = document.createElement("button")
+  closeButton.classList.add("themeCloseButton")
+  closeButton.textContent = "×"
+  closeButton.addEventListener("click", () => {
+    CloseThemeCreator()
+    ClearThemePreview()
+  })
 
-  const resizeBar = document.createElement('div');
-  resizeBar.classList.add('resizeBar');
-  resizeBar.style.right = '307.5px';
+  document.body.appendChild(closeButton)
 
-  let isDragging = false;
-  let currentX: number;
+  const resizeBar = document.createElement("div")
+  resizeBar.classList.add("resizeBar")
+  resizeBar.style.right = "307.5px"
 
-  const mouseDownHandler = (e: MouseEvent) => {
-    isDragging = true;
-    currentX = e.clientX;
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', mouseUpHandler);
-    document.body.style.userSelect = 'none';
-    themeCreatorIframe.style.pointerEvents = 'none'; // Disable pointer events on iframe during resize
-  };
+  let isDragging = false
+
+  const mouseDownHandler = (_: MouseEvent) => {
+    isDragging = true
+    document.addEventListener("mousemove", mouseMoveHandler)
+    document.addEventListener("mouseup", mouseUpHandler)
+    document.body.style.userSelect = "none"
+    themeCreatorDiv.style.pointerEvents = "none"
+  }
 
   const mouseMoveHandler = (e: MouseEvent) => {
-    if (!isDragging) return;
-    const dx = e.clientX - currentX;
-    currentX = e.clientX;
-    const newWidth = Math.min(Math.max(310, themeCreatorIframe.offsetWidth - dx), 600);
-    themeCreatorIframe.style.width = `${newWidth}px`;
-    mainContent.style.width = `calc(100% - ${newWidth}px)`;
-    resizeBar.style.right = `${newWidth - 2.5}px`;
-  };
+    if (!isDragging) return
+    const windowWidth = window.innerWidth
+    const newWidth = Math.min(Math.max(310, windowWidth - e.clientX), 600)
+    themeCreatorDiv.style.width = `${newWidth}px`
+    mainContent.style.width = `calc(100% - ${newWidth}px)`
+    resizeBar.style.right = `${newWidth - 2.5}px`
+  }
 
   const mouseUpHandler = () => {
-    isDragging = false;
-    document.removeEventListener('mousemove', mouseMoveHandler);
-    document.removeEventListener('mouseup', mouseUpHandler);
-    document.body.style.userSelect = '';
-    themeCreatorIframe.style.pointerEvents = 'auto';
-  };
+    isDragging = false
+    document.removeEventListener("mousemove", mouseMoveHandler)
+    document.removeEventListener("mouseup", mouseUpHandler)
+    document.body.style.userSelect = ""
+    themeCreatorDiv.style.pointerEvents = "auto"
+  }
 
-  resizeBar.addEventListener('mousedown', mouseDownHandler);
-  resizeBar.addEventListener('mouseover', () => resizeBar.style.opacity = '1');
-  resizeBar.addEventListener('mouseout', () => resizeBar.style.opacity = '0');
+  resizeBar.addEventListener("mousedown", mouseDownHandler)
+  resizeBar.addEventListener("mouseover", () => (resizeBar.style.opacity = "1"))
+  resizeBar.addEventListener("mouseout", () => (resizeBar.style.opacity = "0"))
 
-  document.body.appendChild(themeCreatorIframe);
-  document.body.appendChild(resizeBar);
+  document.body.appendChild(themeCreatorDiv)
+  document.body.appendChild(resizeBar)
 }
 
 /**
@@ -75,14 +82,17 @@ export function OpenThemeCreator( themeID: string = '' ) {
  * @returns void
  */
 export function CloseThemeCreator() {
-  const themeCreatorIframe = document.getElementById('themeCreatorIframe');
-  const closeButton = document.querySelector('.themeCloseButton') as HTMLButtonElement;
-  const resizeBar = document.querySelector('.resizeBar') as HTMLDivElement;
-  
-  if (themeCreatorIframe) themeCreatorIframe.remove();
-  if (closeButton) closeButton.remove();
-  if (resizeBar) resizeBar.remove();
+  const themeCreator = document.getElementById("themeCreator")
+  const closeButton = document.querySelector(
+    ".themeCloseButton",
+  ) as HTMLButtonElement
+  const resizeBar = document.querySelector(".resizeBar") as HTMLDivElement
 
-  const mainContent = document.querySelector('#container') as HTMLDivElement;
-  if (mainContent) mainContent.style.width = '100%';
+  if (themeCreatorSvelteApp) unmount(themeCreatorSvelteApp)
+  if (themeCreator) themeCreator.remove()
+  if (closeButton) closeButton.remove()
+  if (resizeBar) resizeBar.remove()
+
+  const mainContent = document.querySelector("#container") as HTMLDivElement
+  if (mainContent) mainContent.style.width = "100%"
 }
