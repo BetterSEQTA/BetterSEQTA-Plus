@@ -60,7 +60,8 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
-        settings: join(__dirname, 'src', 'interface', 'index.html')
+        settings: join(__dirname, 'src', 'interface', 'index.html'),
+        migration: join(__dirname, 'src', 'seqta', 'utils', 'migration', 'migrate.html')
       }
     }
   }

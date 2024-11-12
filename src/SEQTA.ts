@@ -38,6 +38,7 @@ import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/interface/main'
 import Settings from '@/interface/pages/settings.svelte'
 import { settingsPopup } from './interface/hooks/SettingsPopup'
+import { migrateBackgrounds } from './seqta/utils/migrateBackgrounds'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -458,7 +459,10 @@ export async function finishLoad() {
 
   if (settingsState.justupdated && !document.getElementById('whatsnewbk')) {
     OpenWhatsNewPopup();
+
+    /* Background Migration script */
   }
+  migrateBackgrounds();
 }
 
 async function DeleteWhatsNew() {
