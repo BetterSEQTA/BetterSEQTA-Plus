@@ -75,6 +75,7 @@ export const migrateBackgrounds = async (): Promise<void> => {
           localStorage.setItem(MIGRATION_STATE_KEY, JSON.stringify(migrationState));
           window.removeEventListener('message', handleMessage);
           iframe.remove();
+          backgroundUpdates.triggerUpdate();
           resolve();
           break;
 
@@ -119,7 +120,6 @@ const storeBackground = async (data: {
   try {
     await openDatabase();
     await writeData(data.id, data.type, data.blob);
-    backgroundUpdates.triggerUpdate();
   } catch (error) {
     console.error('Error storing background:', error);
     throw error;
