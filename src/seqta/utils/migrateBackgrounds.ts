@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill';
 import base64ToBlob from './base64ToBlob';
 import { openDatabase, writeData } from '@/interface/hooks/BackgroundDataLoader';
 import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates';
+import { loadBackground } from '@/seqta/ui/ImageBackgrounds';
 
 const MIGRATION_STATE_KEY = 'background_migration_state';
 
@@ -54,6 +55,7 @@ export const migrateBackgrounds = async (): Promise<void> => {
 
             if (isSelected) {
               localStorage.setItem('selectedBackground', id);
+              await loadBackground();
             }
 
             migrationState.lastProcessedId = id;
