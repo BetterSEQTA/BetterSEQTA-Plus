@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BetterSEQTA+",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "icons": {
     "32": "resources/icons/icon-32.png",
@@ -23,7 +23,7 @@
     "service_worker": "background.ts"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "content_scripts": [
     {
@@ -34,15 +34,11 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["interface/index.html"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["seqta/ui/background/background.html"],
-      "matches": ["*://*/*"]
-    },
-    {
       "resources": ["*://*/*"],
+      "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["resources/icons/*"],
       "matches": ["*://*/*"]
     }
   ]

@@ -13,11 +13,11 @@ export async function AddBetterSEQTAElements() {
       document.documentElement.classList.add('dark');
     }
     createHomeButton();
+    await appendBackgroundToUI();
     await handleUserInfo();
     handleStudentData();
     createNewsButton();
     setupEventListeners();
-    appendBackgroundToUI();
     await addDarkLightToggle();
     customizeMenuToggle();
   }

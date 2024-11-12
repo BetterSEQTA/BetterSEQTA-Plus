@@ -5,9 +5,11 @@ import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import million from "million/compiler";
 //import MillionLint from '@million/lint';
+
+import { svelte } from '@sveltejs/vite-plugin-svelte'
 
 import { chrome } from './src/manifests/chrome';
 import { brave } from './src/manifests/brave';
@@ -27,6 +29,9 @@ export default defineConfig({
   plugins: [
     base64Loader,
     react(),
+    svelte({
+      emitCss: false
+    }),
     million.vite({ auto: true }),
     //MillionLint.vite(), /* enable for testing and debugging performance */
     crx({
@@ -51,12 +56,12 @@ export default defineConfig({
   },
   build: {
     outDir: resolve(__dirname, 'dist', mode),
-    emptyOutDir: true,
+    emptyOutDir: false,
     minify: false,
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
-        backgrounds: join(__dirname, 'src', 'seqta', 'ui', 'background', 'background.html')
+        migration: join(__dirname, 'src', 'seqta', 'utils', 'migration', 'migrate.html')
       }
     }
   }

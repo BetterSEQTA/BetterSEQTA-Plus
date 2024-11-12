@@ -5,8 +5,13 @@ const {
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./src/**/*.{js,ts,jsx,tsx,html}",
+    "./src/**/*.{js,ts,jsx,tsx,html,svelte}",
   ],
+  //safelist: [
+    //{
+    //  pattern: / */,
+    //}
+  //],
   darkMode: "class",
   theme: {
     fontSize: {
@@ -33,6 +38,9 @@ export default {
     extend: {
       fontFamily: {
         "IconFamily": "IconFamily"
+      },
+      animation: {
+        'spin-fast': 'spin 0.4s linear infinite',
       },
       aspectRatio: {
         "theme": "5 / 1"

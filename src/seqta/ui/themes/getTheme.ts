@@ -1,28 +1,12 @@
 import localforage from 'localforage';
-import { CustomImageBase64, CustomTheme, CustomThemeBase64 } from '@/interface/types/CustomThemes';
-import { blobToBase64 } from '@/seqta/utils/blobToBase64'; 
+import type { LoadedCustomTheme } from '@/types/CustomThemes';
 
 
-export const getTheme = async (themeId: string): Promise<CustomThemeBase64 | null> => {
+export const getTheme = async (themeId: string): Promise<LoadedCustomTheme | null> => {
   try {
-    const theme = await localforage.getItem(themeId) as CustomTheme;
+    const theme = await localforage.getItem(themeId) as LoadedCustomTheme;
 
-    const CustomImages: CustomImageBase64[] = await Promise.all(
-      theme.CustomImages.map(async (image) => {
-        const base64 = await blobToBase64(image.blob);
-        return {
-          id: image.id,
-          variableName: image.variableName,
-          url: base64,
-        };
-      })
-    );
-
-    return {
-      ...theme,
-      coverImage: theme.coverImage ? await blobToBase64(theme.coverImage as Blob) : null,
-      CustomImages,
-    };
+    return theme;
   } catch (error) {
     console.error('Error getting theme:', error);
     return null;

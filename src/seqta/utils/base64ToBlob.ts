@@ -1,5 +1,5 @@
 const base64ToBlob = (base64: string, contentType: string = ''): Blob => {
-  const byteCharacters = atob(base64.split(',')[1]);
+  const byteCharacters = atob(base64);
   const byteArrays: Uint8Array[] = [];
 
   for (let offset = 0; offset < byteCharacters.length; offset += 512) {
