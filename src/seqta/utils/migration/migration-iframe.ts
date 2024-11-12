@@ -37,10 +37,15 @@ const getAllBackgrounds = async (): Promise<Data[]> => {
   });
 };
 
+const getSelectedBackground = (): string | null => {
+  return localStorage.getItem('selectedBackground');
+};
+
 const startMigration = async () => {
   try {
     console.info('Starting background extraction...');
     const backgrounds = await getAllBackgrounds();
+    const selectedBackground = getSelectedBackground();
     console.info(`Found ${backgrounds.length} backgrounds`);
 
     window.parent.postMessage({ type: 'GET_LAST_PROCESSED_ID' }, '*');
@@ -72,7 +77,8 @@ const startMigration = async () => {
           data: base64Data,
           mediaType: background.type,
           total: backgrounds.length,
-          processed: i + 1
+          processed: i + 1,
+          isSelected: background.id === selectedBackground
         }
       }, '*');
 

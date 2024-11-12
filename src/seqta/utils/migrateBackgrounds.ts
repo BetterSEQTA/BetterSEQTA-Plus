@@ -1,6 +1,5 @@
 import browser from 'webextension-polyfill';
 import base64ToBlob from './base64ToBlob';
-import { delay } from './delay';
 import { openDatabase, writeData } from '@/interface/hooks/BackgroundDataLoader';
 import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates';
 
@@ -43,7 +42,7 @@ export const migrateBackgrounds = async (): Promise<void> => {
 
         case 'BACKGROUND_DATA':
           try {
-            const { id, data, mediaType, total, processed } = event.data.payload;
+            const { id, data, mediaType, total, processed, isSelected } = event.data.payload;
             const mimeType = mediaType === 'image' ? 'image/png' : 'video/mp4';
             const blob = base64ToBlob(data, mimeType);
 
@@ -52,6 +51,10 @@ export const migrateBackgrounds = async (): Promise<void> => {
               blob,
               type: mediaType
             });
+
+            if (isSelected) {
+              localStorage.setItem('selectedBackground', id);
+            }
 
             migrationState.lastProcessedId = id;
             migrationState.total = total;
