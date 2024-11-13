@@ -1,5 +1,3 @@
-# SVELTE BUILD - NOT STABLE
-Please don't use this in a production environment - it is quite buggy and is not fully completed as of yet. <br>
 
 # 
 
@@ -120,7 +118,7 @@ The folder structure is as follows:
 
 - The `src` folder contains source files that are compiled to the build directory.
 
-- The `src/interface` folder contains source React files that are required for the Settings page.
+- The `src/interface` folder contains source React & Svelte files that are required for the Settings page.
 
 - The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
 
