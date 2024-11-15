@@ -28,8 +28,7 @@ jobs:
         id: buildProject
         run: |
           bun install
-          MODE=chrome bun run build
-          MODE=firefox bun run build
+          bun run build
 
       - name: '[ V E R S I O N ] : Create or Update Release Pull Request - Version Changes'
         id: changesets
