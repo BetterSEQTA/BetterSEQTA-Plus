@@ -22,13 +22,14 @@ jobs:
           node-version: 20.x
 
       - name: Install bun & Deps
-        run: |
-          npm install bun -g
-          bun install
+        run: npm install bun -g
 
       - name: 'Build - all browsers'
         id: buildProject
-        run: MODE=chrome vite build && MODE=firefox vite build
+        run: |
+          bun install
+          MODE=chrome bun run build
+          MODE=firefox bun run build
 
       - name: '[ V E R S I O N ] : Create or Update Release Pull Request - Version Changes'
         id: changesets
