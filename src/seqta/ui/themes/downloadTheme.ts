@@ -1,6 +1,13 @@
 import localforage from 'localforage';
-import type { Theme } from '@/old-interface/pages/Store';
 import base64ToBlob from '@/seqta/utils/base64ToBlob';
+
+type Theme = {
+  name: string;
+  description: string;
+  coverImage: string;
+  marqueeImage: string;
+  id: string;
+}
 
 type ThemeContent = {
   id: string;
@@ -14,6 +21,11 @@ type ThemeContent = {
   images: { id: string, variableName: string, data: string }[]; // data: base64
 };
 
+function stripBase64Prefix(base64String: string): string {
+  const prefixRegex = /^data:image\/\w+;base64,/;
+  return base64String.replace(prefixRegex, '');
+}
+
 export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
   if (!theme.themeContent.id) return;
 
@@ -24,7 +36,8 @@ export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
 };
 
 export const InstallTheme = async (themeData: ThemeContent) => {
-  const coverImageBlob = base64ToBlob(themeData.coverImage);
+  const strippedCoverImage = stripBase64Prefix(themeData.coverImage);
+  const coverImageBlob = base64ToBlob(strippedCoverImage);
 
   const images = themeData.images.map((image) => ({
     ...image,
