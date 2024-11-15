@@ -1334,11 +1334,12 @@ export function setupSettingsButton() {
           extensionPopup!.style.transform = `scale(${progress})`
         }, { easing: spring({ stiffness: 280, damping: 20 }) });
 
-        extensionPopup!.classList.remove('hide');
       } else {
         extensionPopup!.style.opacity = '1'
         extensionPopup!.style.transform = 'scale(1)'
+        extensionPopup!.style.transition = 'opacity 0s linear, transform 0s linear'
       }
+      extensionPopup!.classList.remove('hide');
       SettingsClicked = true;
     }
   });
