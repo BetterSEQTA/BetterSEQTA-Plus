@@ -40,6 +40,10 @@
     {
       "resources": ["resources/icons/*"],
       "matches": ["*://*/*"]
+    },
+    {
+      "resources": ["seqta/utils/migration/migrate.html"],
+      "matches": ["*://*/*"]
     }
   ]
 }

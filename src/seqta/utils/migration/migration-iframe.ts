@@ -44,7 +44,23 @@ const getSelectedBackground = (): string | null => {
 const startMigration = async () => {
   try {
     console.info('Starting background extraction...');
-    const backgrounds = await getAllBackgrounds();
+    let backgrounds: Data[];
+    try {
+      backgrounds = await getAllBackgrounds();
+      if (!backgrounds || backgrounds.length === 0) {
+        console.info('No backgrounds to migrate');
+        window.parent.postMessage({ type: 'MIGRATION_COMPLETE' }, '*');
+        return;
+      }
+    } catch (error: any) {
+      if (error.name === 'NotFoundError' && error.message.includes('object stores was not found')) {
+        console.info('No backgrounds to migrate: object store not found');
+        window.parent.postMessage({ type: 'MIGRATION_COMPLETE' }, '*');
+        return;
+      }
+      console.error('Error fetching backgrounds:', error);
+      throw new Error('Failed to fetch backgrounds');
+    }
     const selectedBackground = getSelectedBackground();
     console.info(`Found ${backgrounds.length} backgrounds`);
 

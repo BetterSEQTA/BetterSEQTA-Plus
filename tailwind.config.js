@@ -1,17 +1,10 @@
-const {
-  default: flattenColorPalette,
-} = require("tailwindcss/lib/util/flattenColorPalette");
+import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,html,svelte}",
   ],
-  //safelist: [
-    //{
-    //  pattern: / */,
-    //}
-  //],
   darkMode: "class",
   theme: {
     fontSize: {
