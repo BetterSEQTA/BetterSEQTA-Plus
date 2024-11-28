@@ -13,7 +13,11 @@ export async function AddBetterSEQTAElements() {
       document.documentElement.classList.add('dark');
     }
     createHomeButton();
-    await appendBackgroundToUI();
+    try {
+      await appendBackgroundToUI();
+    } catch (error) {
+      console.error('Error appending background to UI:', error);
+    }
     await handleUserInfo();
     handleStudentData();
     createNewsButton();
@@ -144,7 +148,7 @@ async function getUserInfo() {
 }
 
 async function updateStudentInfo(students: any) {
-  const info = await getUserInfo(); // You would need to implement this to fetch or pass the user info
+  const info = await getUserInfo();
   var index = students.findIndex(function (person: any) {
     return (
       person.firstname == info.userDesc.split(' ')[0] &&
@@ -167,7 +171,11 @@ async function updateStudentInfo(students: any) {
       }
     }
   } else {
-    houseelement.innerText = students[index].year;
+    try {
+      houseelement.innerText = students[index].year;
+    } catch(err) {
+      houseelement.innerText = 'N/A';
+    }
   }
 }
 
