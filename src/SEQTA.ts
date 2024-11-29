@@ -2528,72 +2528,76 @@ function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   document.getElementById('shortcuts')!.appendChild(shortcut)
 }
 
-export function SendNewsPage() {
-  setTimeout(function () {
-    // Sends the html data for the home page
-    console.info('[BetterSEQTA+] Started Loading News Page')
-    document.title = 'News ― SEQTA Learn'
-    var element = document.querySelector('[data-key=news]')
+export async function SendNewsPage() {
+  console.info('[BetterSEQTA+] Started Loading News Page')
+  document.title = 'News ― SEQTA Learn'
+  await delay(100)
 
-    // Apply the active class to indicate clicked on home button
-    element!.classList.add('active')
+  const element = document.querySelector('[data-key=news]')
+  element!.classList.add('active')
 
-    // Remove all current elements in the main div to add new elements
-    var main = document.getElementById('main')
-    main!.innerHTML = ''
+  // Remove all current elements in the main div to add new elements
+  const main = document.getElementById('main')
+  main!.innerHTML = ''
 
-    // Creates the root of the home page added to the main div
-    var htmlStr = '<div class="home-root"><div class="home-container" id="news-container"><h1 class="border">Latest Headlines - ABC News</h1></div></div>'
+  const html = stringToHTML(/* html */`
+    <div class="home-root">
+      <div class="home-container" id="news-container">
+        <h1 class="border">Latest Headlines - ABC News</h1>
+      </div>
+    </div>`)
 
-    var html = stringToHTML(htmlStr)
-    // Appends the html file to main div
-    // Note : firstChild of html is done due to needing to grab the body from the stringToHTML function
-    main!.append(html.firstChild!)
+  main!.append(html.firstChild!)
 
-    const titlediv = document.getElementById('title')!.firstChild;
-    (titlediv! as HTMLElement).innerText = 'News'
-    AppendLoadingSymbol('newsloading', '#news-container')
+  const titlediv = document.getElementById('title')!.firstChild;
+  (titlediv! as HTMLElement).innerText = 'News'
+  AppendLoadingSymbol('newsloading', '#news-container')
 
-    browser.runtime.sendMessage({ type: 'sendNews' }).then(function (response) {
-      let newsarticles = response.news.articles
-      var newscontainer = document.querySelector('#news-container')
-      document.getElementById('newsloading')?.remove()
-      for (let i = 0; i < newsarticles.length; i++) {
-        let newsarticle = document.createElement('a')
-        newsarticle.classList.add('NewsArticle')
-        newsarticle.href = newsarticles[i].url
-        newsarticle.target = '_blank'
+  const response = await browser.runtime.sendMessage({ type: 'sendNews' })
+  const newscontainer = document.querySelector('#news-container')
+  document.getElementById('newsloading')?.remove()
 
-        let articleimage = document.createElement('div')
-        articleimage.classList.add('articleimage')
+  // Create a document fragment to batch DOM operations
+  const fragment = document.createDocumentFragment()
 
-        if (newsarticles[i].urlToImage == 'null') {
-          articleimage.style.backgroundImage = `url(${browser.runtime.getURL(LogoLightOutline)})`
-          articleimage.style.width = '20%'
-          articleimage.style.margin = '0 7.5%'
-        } else {
-          articleimage.style.backgroundImage = `url(${newsarticles[i].urlToImage})`
-        }
+  // Map over articles to create elements
+  response.news.articles.forEach((article: any) => {
+    const newsarticle = document.createElement('a')
+    newsarticle.classList.add('NewsArticle')
+    newsarticle.href = article.url
+    newsarticle.target = '_blank'
 
-        let articletext = document.createElement('div')
-        articletext.classList.add('ArticleText')
-        let title = document.createElement('a')
-        title.innerText = newsarticles[i].title
-        title.href = newsarticles[i].url
-        title.target = '_blank'
+    const articleimage = document.createElement('div')
+    articleimage.classList.add('articleimage')
 
-        let description = document.createElement('p')
-        description.innerHTML = newsarticles[i].description
+    if (article.urlToImage == 'null') {
+      articleimage.style.cssText = `
+        background-image: url(${browser.runtime.getURL(LogoLightOutline)});
+        width: 20%;
+        margin: 0 7.5%;
+      `
+    } else {
+      articleimage.style.backgroundImage = `url(${article.urlToImage})`
+    }
 
-        articletext.append(title)
-        articletext.append(description)
+    const articletext = document.createElement('div')
+    articletext.classList.add('ArticleText')
+    
+    const title = document.createElement('a')
+    title.innerText = article.title
+    title.href = article.url
+    title.target = '_blank'
 
-        newsarticle.append(articleimage)
-        newsarticle.append(articletext)
-        newscontainer?.append(newsarticle)
-      }
-    })
-  }, 8)
+    const description = document.createElement('p')
+    description.innerHTML = article.description
+
+    articletext.append(title, description)
+    newsarticle.append(articleimage, articletext)
+    fragment.append(newsarticle)
+  })
+
+  // Single DOM update to append all articles
+  newscontainer?.append(fragment)
 }
 
 async function CheckForMenuList() {
