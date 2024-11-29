@@ -334,7 +334,7 @@ export function OpenWhatsNewPopup() {
   if (settingsState.animations) {
     animate(
       [popup, bkelement as HTMLElement],
-      { scale: [0, 1], opacity: [0, 1] },
+      { scale: [0, 1] },
       {
         type: 'spring',
         stiffness: 220,
@@ -434,7 +434,7 @@ export function OpenAboutPage() {
   if (settingsState.animations) {
     animate(
       [popup, bkelement as HTMLElement],
-      { scale: [0, 1], opacity: [0, 1] },
+      { scale: [0, 1] },
       {
         type: 'spring',
         stiffness: 220,
