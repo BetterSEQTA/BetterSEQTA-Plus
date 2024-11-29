@@ -54,6 +54,13 @@ export default defineConfig({
       port: 5173
     }
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern'
+      }
+    }
+  },
   build: {
     outDir: resolve(__dirname, 'dist', mode),
     emptyOutDir: false,
