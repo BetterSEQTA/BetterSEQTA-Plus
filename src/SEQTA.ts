@@ -360,7 +360,7 @@ export function OpenWhatsNewPopup() {
     if (event.target === bkelement) {
       DeleteWhatsNew()
     }
-  });  
+  });
 
   var closeelement = document.getElementById('whatsnewclosebutton')
   closeelement!.addEventListener('click', function () {
