@@ -145,7 +145,7 @@ export function OpenWhatsNewPopup() {
 
   let video = document.createElement('video')
   let source = document.createElement('source')
-  // Perhaps we host this on a server and then grab it instead of having it locally? 
+
   source.setAttribute('src', 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4')
   video.autoplay = true
   video.muted = true
