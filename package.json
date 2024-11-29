@@ -31,6 +31,8 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.25.9",
+    "@babel/runtime": "^7.26.0",
     "@crxjs/vite-plugin": "2.0.0-beta.25",
     "@types/mime-types": "^2.1.4",
     "@vitejs/plugin-react-swc": "^3.7.0",
