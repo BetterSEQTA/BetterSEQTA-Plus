@@ -2297,8 +2297,14 @@ export async function loadHomePage() {
   if (settingsState.animations) {
     animate(
       '.home-container > div',
-      { opacity: [0, 1], y: [10, 0] },
-      { delay: stagger(0.2), startTime: 0 }
+      { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
+      {
+        delay: stagger(0.15, { startDelay: 0.1 }),
+        type: 'spring',
+        stiffness: 341,
+        damping: 20,
+        mass: 1
+      }
     )
   }
 
