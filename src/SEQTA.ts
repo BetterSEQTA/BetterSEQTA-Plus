@@ -163,6 +163,7 @@ export function OpenWhatsNewPopup() {
     <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
     <li>Fixed a bug where animations wouldn't play correctly</li>
     <li>Improved animation performance</li>
+    <li>Added animations to the news feed</li>
     <li>Better Animations!</li>
   
     <h1>3.4.0 - Major Performance Update</h1>
