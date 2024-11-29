@@ -159,7 +159,12 @@ export function OpenWhatsNewPopup() {
 
   let text = stringToHTML(
     /* html */ `
-  <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">    
+  <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
+    <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
+    <li>Fixed a bug where animations wouldn't play correctly</li>
+    <li>Improved animation performance</li>
+    <li>Better Animations!</li>
+  
     <h1>3.4.0 - Major Performance Update</h1>
     <li>Completely rebuilt the extension popup using Svelte for dramatically improved performance</li>
     <li>Added a brand new background store with search functionality and downloadable backgrounds</li>
