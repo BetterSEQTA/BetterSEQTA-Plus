@@ -2,7 +2,7 @@
 import Color from 'color'
 import Sortable from 'sortablejs'
 import browser from 'webextension-polyfill'
-import { animate, spring, stagger } from 'motion'
+import { animate, stagger } from 'motion'
 
 // Internal utilities and functions
 import { delay } from '@/seqta/utils/delay'
@@ -329,16 +329,20 @@ export function OpenWhatsNewPopup() {
     animate(
       [popup, bkelement as HTMLElement],
       { scale: [0, 1], opacity: [0, 1] },
-      { easing: spring({ stiffness: 220, damping: 18 }) }
+      {
+        type: 'spring',
+        stiffness: 220,
+        damping: 18
+      }
     )
   
     animate(
       '.whatsnewTextContainer *',
       { opacity: [0, 1], y: [10, 0] },
       {
-        delay: stagger(0.05, { start: 0.1 }),
+        delay: stagger(0.05, { startDelay: 0.1 }),
         duration: 0.5,
-        easing: [.22, .03, .26, 1]  
+        ease: [.22, .03, .26, 1]  
       }
     )
   }
@@ -425,16 +429,20 @@ export function OpenAboutPage() {
     animate(
       [popup, bkelement as HTMLElement],
       { scale: [0, 1], opacity: [0, 1] },
-      { easing: spring({ stiffness: 220, damping: 18 }) }
+      {
+        type: 'spring',
+        stiffness: 220,
+        damping: 18
+      }
     )
   
     animate(
       '.whatsnewTextContainer *',
       { opacity: [0, 1], y: [10, 0] },
       {
-        delay: stagger(0.05, { start: 0.1 }),
+        delay: stagger(0.05, { startDelay: 0.1 }),
         duration: 0.5,
-        easing: [.22, .03, .26, 1]  
+        ease: [.22, .03, .26, 1]  
       }
     )
   }
@@ -486,8 +494,8 @@ async function DeleteWhatsNew() {
   animate(
     [popup, bkelement!],
     { opacity: [1, 0], scale: [1, 0] },
-    { easing: [.22, .03, .26, 1] }
-  ).finished.then(() => {
+    { ease: [.22, .03, .26, 1] }
+  ).then(() => {
     bkelement?.remove()
   }); 
 }
@@ -802,7 +810,7 @@ async function handleMessages(node: Element): Promise<void> {
     {
       delay: stagger(0.05),
       duration: 0.5,
-      easing: [.22, .03, .26, 1]
+      ease: [.22, .03, .26, 1]
     }
   );
 
@@ -825,7 +833,7 @@ async function handleDashboard(node: Element): Promise<void> {
     {
       delay: stagger(0.1),
       duration: 0.5,
-      easing: [.22, .03, .26, 1]
+      ease: [.22, .03, .26, 1]
     }
   );
 
@@ -843,7 +851,7 @@ async function handleDocuments(node: Element): Promise<void> {
     {
       delay: stagger(0.05),
       duration: 0.5,
-      easing: [.22, .03, .26, 1]
+      ease: [.22, .03, .26, 1]
     }
   );
 }
@@ -857,9 +865,9 @@ async function handleReports(node: Element): Promise<void> {
     '.reports .item',
     { opacity: [0, 1], y: [10, 0] },
     {
-      delay: stagger(0.05, { start: 0.2 }),
+      delay: stagger(0.05, { startDelay: 0.2 }),
       duration: 0.5,
-      easing: [.22, .03, .26, 1]
+      ease: [.22, .03, .26, 1]
     }
   );
 }
@@ -1052,10 +1060,15 @@ export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
 
   extensionPopup.classList.add('hide')
   if (settingsState.animations) {
-    animate((progress) => {
-      extensionPopup.style.opacity = Math.max(0, 1 - progress).toString()
-      extensionPopup.style.transform = `scale(${Math.max(0, 1 - progress)})`
-    }, { easing: spring({ stiffness: 520, damping: 20 }) })
+    animate(1, 0, {
+      onUpdate: (progress) => {
+        extensionPopup.style.opacity = Math.max(0, progress).toString()
+        extensionPopup.style.transform = `scale(${Math.max(0, progress)})`
+      },
+      type: 'spring',
+      stiffness: 520,
+      damping: 20
+    });
   } else {
     extensionPopup.style.opacity = '0'
     extensionPopup.style.transform = 'scale(0)'
@@ -1329,10 +1342,15 @@ export function setupSettingsButton() {
       closeExtensionPopup(extensionPopup as HTMLElement);
     } else {
       if (settingsState.animations) {
-        animate((progress) => {
-          extensionPopup!.style.opacity = progress.toString()
-          extensionPopup!.style.transform = `scale(${progress})`
-        }, { easing: spring({ stiffness: 280, damping: 20 }) });
+        animate(0, 1, {
+          onUpdate: (progress) => {
+            extensionPopup!.style.opacity = progress.toString()
+            extensionPopup!.style.transform = `scale(${progress})`
+          },
+          type: 'spring',
+          stiffness: 280,
+          damping: 20
+        });
 
       } else {
         extensionPopup!.style.opacity = '1'
@@ -2280,11 +2298,7 @@ export async function loadHomePage() {
     animate(
       '.home-container > div',
       { opacity: [0, 1], y: [10, 0] },
-      {
-        delay: stagger(0.2, { start: 0 }),
-        duration: 0.6,
-        easing: [.22, .03, .26, 1]  
-      }
+      { delay: stagger(0.2), startTime: 0 }
     )
   }
 
