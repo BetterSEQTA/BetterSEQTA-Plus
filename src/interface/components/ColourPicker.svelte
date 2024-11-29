@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import ColourPicker from './ColourPicker.tsx';
   import ReactAdapter from './utils/ReactAdapter.svelte';
-  import { animate, spring } from 'motion';
+  import { animate } from 'motion';
   import { delay } from '@/seqta/utils/delay.ts'
 
   const { hidePicker, standalone = false, savePresets = true, customOnChange = null, customState = null } = $props<{
@@ -23,13 +23,17 @@
     animate(
       content,
       { scale: [1, 0.4], opacity: [1, 0] },
-      { easing: spring({ stiffness: 400, damping: 30 }) }
+      {
+        type: 'spring',
+        stiffness: 400,
+        damping: 30
+      }
     );
 
     animate(
       background,
       { opacity: [1, 0] },
-      { easing: [0.4, 0, 0.2, 1] }
+      { ease: [0.4, 0, 0.2, 1] }
     );
 
     await delay(400);
@@ -43,13 +47,17 @@
     animate(
       background,
       { opacity: [0, 1] },
-      { duration: 0.3, easing: [0.4, 0, 0.2, 1] }
+      { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
     );
 
     animate(
       content,
       { scale: [0.4, 1], opacity: [0, 1] },
-      { easing: spring({ stiffness: 400, damping: 30 }) }
+      {
+        type: 'spring',
+        stiffness: 400,
+        damping: 30
+      }
     );
 
     const handleEscapeKey = (e: KeyboardEvent) => {

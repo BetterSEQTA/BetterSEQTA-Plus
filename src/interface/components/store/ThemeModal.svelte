@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Theme } from '@/interface/types/Theme'
   import { fade } from 'svelte/transition';
-  import { animate, spring } from 'motion';
+  import { animate } from 'motion';
 
   let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme } = $props<{
     theme: Theme | null;
@@ -28,7 +28,11 @@
       animate(
         modalElement,
         { y: [500, 0], opacity: [0, 1] },
-        { easing: spring({ stiffness: 150, damping: 20 }) }
+        {
+          type: 'spring',
+          stiffness: 150,
+          damping: 20
+        }
       );
     }
   });
@@ -37,7 +41,11 @@
     animate(
       modalElement,
       { y: [10, 500], opacity: [1, 0] },
-      { easing: spring({ stiffness: 150, damping: 20 }) }
+      {
+        type: 'spring',
+        stiffness: 150,
+        damping: 20
+      }
     );
     setTimeout(() => {
       setDisplayTheme(relatedTheme ?? null);

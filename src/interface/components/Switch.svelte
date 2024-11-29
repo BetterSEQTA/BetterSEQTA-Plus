@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { animate, spring } from 'motion';
+  import { animate } from 'motion';
   import { standalone } from '../utils/standalone.svelte'
 
   let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
@@ -18,7 +18,9 @@
         x: enabled ? (standalone.standalone ? 24 : 20) : 0,
       },
       {
-        easing: spring(springParams),
+        type: 'spring',
+        stiffness: springParams.stiffness,
+        damping: springParams.damping,
       }
     );
   };

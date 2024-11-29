@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { animate as motionAnimate, spring } from 'motion';
+  import { onMount, onDestroy } from 'svelte';
+  import { animate as motionAnimate } from 'motion';
 
   let { initial, animate, exit, transition, children, class: className } = $props<{ 
     initial?: any, 
@@ -12,11 +12,9 @@
   }>();
 
   let divElement: HTMLElement;
-  const dispatch = createEventDispatcher();
 
   const playAnimation = (keyframe: any) => {
     if (divElement && keyframe) {
-      let animationOptions = transition;
       let finalKeyframe = { ...keyframe };
 
       if (finalKeyframe.height === 'auto') {
@@ -36,16 +34,18 @@
         finalKeyframe.height = `${autoHeight}px`;
       }
 
-      if (!transition || transition.type === 'spring') {
-        const springConfig = transition?.config || { stiffness: 250, damping: 25 };
-        animationOptions = {
-          ...transition,
-          easing: spring(springConfig)
-        };
-      }
+      const defaultSpringConfig = { stiffness: 250, damping: 25 };
 
-      const animation = motionAnimate(divElement, finalKeyframe, animationOptions);
-      return animation.finished;
+      const animation = motionAnimate(
+        [divElement],
+        finalKeyframe,
+        {
+          type: 'spring',
+          stiffness: transition?.stiffness || defaultSpringConfig.stiffness,
+          damping: transition?.damping || defaultSpringConfig.damping
+        }
+      );
+      return animation;
     }
     return Promise.resolve();
   };
@@ -57,16 +57,12 @@
     } else if (animate) {
       await playAnimation(animate);
     }
-
-    dispatch('animationend');
   });
   
   $effect(() => {
     if (animate) {
       playAnimation(animate);
     }
-
-    dispatch('animationend');
   });
 
   onDestroy(async () => {
