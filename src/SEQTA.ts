@@ -2598,6 +2598,16 @@ export async function SendNewsPage() {
 
   // Single DOM update to append all articles
   newscontainer?.append(fragment)
+  
+  if (!settingsState.animations) return;
+
+  const articles = Array.from(document.querySelectorAll('.NewsArticle'))
+
+  animate(
+    articles.slice(0, 20),
+    { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
+    { delay: stagger(0.1), type: 'spring', stiffness: 341, damping: 20, mass: 1 }
+  )
 }
 
 async function CheckForMenuList() {
