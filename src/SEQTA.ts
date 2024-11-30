@@ -1763,8 +1763,8 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
 
     let titlesvg =
       stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
-    <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
-    </svg>`).firstChild
+  <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
+  </svg>`).firstChild
     titlediv.append(titlesvg!)
 
     let detailsdiv = document.createElement('div')
@@ -2143,174 +2143,159 @@ async function AddCustomShortcutsToPage() {
 }
 
 export async function loadHomePage() {
-  // Sends the html data for the home page
   console.info('[BetterSEQTA+] Started Loading Home Page')
 
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
+  element?.classList.add('active')
 
-  await delay(8)
-
-  // Apply the active class to indicate clicked on home button
-  element!.classList.add('active')
-
-  // Remove all current elements in the main div to add new elements
+  // Cache DOM queries
   const main = document.getElementById('main')
-  
   if (!main) {
     console.error('Main element not found.')
     return
-  } else {
-    main!.innerHTML = ''
   }
 
-  currentSelectedDate = new Date()
-
-  // Creates the root of the home page added to the main div
-  let homeContainer = stringToHTML(/* html */`
+  // Create root container first
+  const homeRoot = stringToHTML(`
     <div class="home-root">
       <div class="home-container" id="home-container"></div>
     </div>`)
   
-  // Appends the html file to main div
-  // Note: firstChild of html is done due to needing to grab the body from the stringToHTML function
-  main.append(homeContainer?.firstChild!)
+  // Clear main and add home root
+  main.innerHTML = ''
+  main.appendChild(homeRoot?.firstChild!)
 
-  // Gets the current date
+  // Get reference to home container for all subsequent additions
+  const homeContainer = document.getElementById('home-container')
+  if (!homeContainer) return
+
+  // Add initial style to prevent flash
+  if (settingsState.animations) {
+    const style = document.createElement('style')
+    style.textContent = `
+      .home-container > div {
+        opacity: 0;
+        transform: translateY(10px) scale(0.99);
+      }
+    `
+    document.head.appendChild(style)
+  }
+
+  // Use DocumentFragment for batch DOM updates inside home-container
+  const fragment = document.createDocumentFragment()
+  
+  // Batch state updates
   const date = new Date()
+  currentSelectedDate = new Date()
+  const TodayFormatted = formatDate(date)
 
-  // Creates the shortcut container into the home container
-  const Shortcut = stringToHTML(/* html */`
+  // Create shortcuts section
+  const shortcutContainer = stringToHTML(`
     <div class="shortcut-container border">
       <div class="shortcuts border" id="shortcuts"></div>
     </div>`)
+  fragment.appendChild(shortcutContainer?.firstChild!)
 
-  // Appends the shortcut container into the home container
-  document.getElementById('home-container')?.append(Shortcut?.firstChild!)
-  
-  // Creates the container div for the timetable portion of the home page
-  const Timetable = stringToHTML(/* html */`
-    <div class="timetable-container border" ${settingsState.animations ? `style="opacity: 0;"` : ''}>
+  // Create timetable section with optimized structure
+  const timetable = stringToHTML(`
+    <div class="timetable-container border">
       <div class="home-subtitle">
-        <h2 id="home-lesson-subtitle">Today\'s Lessons</h2>
+        <h2 id="home-lesson-subtitle">Today's Lessons</h2>
         <div class="timetable-arrows">
-          <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg>
-          <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back">
+            <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward">
+            <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+          </svg>
         </div>
       </div>
       <div class="day-container" id="day-container"></div>
     </div>`)
+  fragment.appendChild(timetable?.firstChild!)
+
+  // Create upcoming assessments section
+  const upcomingContainer = document.createElement('div')
+  upcomingContainer.classList.add('upcoming-container', 'border')
   
-  // Appends the timetable container into the home container
-  document.getElementById('home-container')?.append(Timetable?.firstChild!)
+  const upcomingTitleDiv = CreateElement('div', 'upcoming-title')
+  const upcomingTitle = document.createElement('h2')
+  upcomingTitle.classList.add('home-subtitle')
+  upcomingTitle.innerText = 'Upcoming Assessments'
+  upcomingTitleDiv.append(upcomingTitle)
 
-  // Formats the current date used send a request for timetable and notices later
-  const TodayFormatted =
-    date.getFullYear() + '-' + ((date.getMonth() + 1) < 10 ? '0' : '') + (date.getMonth() + 1) + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate()
+  const upcomingFilterDiv = CreateElement('div', 'upcoming-filters', 'upcoming-filters')
+  upcomingTitleDiv.append(upcomingFilterDiv)
+  upcomingContainer.append(upcomingTitleDiv)
 
-  callHomeTimetable(TodayFormatted, true)
+  const upcomingItems = document.createElement('div')
+  upcomingItems.id = 'upcoming-items'
+  upcomingItems.classList.add('upcoming-items')
+  upcomingContainer.append(upcomingItems)
+  fragment.appendChild(upcomingContainer)
 
-
-  const timetablearrowback = document.getElementById('home-timetable-back')
-  const timetablearrowforward = document.getElementById('home-timetable-forward')
-
-  function SetTimetableSubtitle() {
-    var homelessonsubtitle = document.getElementById('home-lesson-subtitle')
-    const date = new Date()
-    if (
-      date.getFullYear() == currentSelectedDate.getFullYear() &&
-      date.getMonth() == currentSelectedDate.getMonth()
-    ) {
-      if (date.getDate() == currentSelectedDate.getDate()) {
-        // Change text to Today's Lessons
-        homelessonsubtitle!.innerText = 'Today\'s Lessons'
-      } else if (date.getDate() - 1 == currentSelectedDate.getDate()) {
-        // Change text to Yesterday's Lessons
-        homelessonsubtitle!.innerText = 'Yesterday\'s Lessons'
-      } else if (date.getDate() + 1 == currentSelectedDate.getDate()) {
-        // Change text to Tomorrow's Lessons
-        homelessonsubtitle!.innerText = 'Tomorrow\'s Lessons'
-      } else {
-        // Change text to date of the day
-        homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
-          'en-us',
-          { weekday: 'short' },
-        )} ${currentSelectedDate.toLocaleDateString('en-au')}`
-      }
-    } else {
-      // Change text to date of the day
-      homelessonsubtitle!.innerText = `${currentSelectedDate.toLocaleString(
-        'en-us',
-        { weekday: 'short' },
-      )} ${currentSelectedDate.toLocaleDateString('en-au')}`
-    }
-  }
-
-  function changeTimetable(value: any) {
-    currentSelectedDate.setDate(currentSelectedDate.getDate() + value)
-    let FormattedDate =
-      currentSelectedDate.getFullYear() +
-      '-' +
-      (currentSelectedDate.getMonth() + 1) +
-      '-' +
-      currentSelectedDate.getDate()
-    callHomeTimetable(FormattedDate, true)
-    SetTimetableSubtitle()
-  }
-
-  timetablearrowback!.addEventListener('click', function () {
-    changeTimetable(-1)
-  })
-  timetablearrowforward!.addEventListener('click', function () {
-    changeTimetable(1)
-  })
-
-  addShortcuts(settingsState.shortcuts)
-  AddCustomShortcutsToPage()
-
-  // Creates the upcoming container and appends to the home container
-  const upcomingcontainer = document.createElement('div')
-  upcomingcontainer.classList.add('upcoming-container')
-  upcomingcontainer.classList.add('border')
-
-  const upcomingtitlediv = CreateElement('div', 'upcoming-title')
-  const upcomingtitle = document.createElement('h2')
-  upcomingtitle.classList.add('home-subtitle')
-  upcomingtitle.innerText = 'Upcoming Assessments'
-  upcomingtitlediv.append(upcomingtitle)
-
-  let upcomingfilterdiv = CreateElement(
-    'div',
-    'upcoming-filters',
-    'upcoming-filters',
-  )
-  upcomingtitlediv.append(upcomingfilterdiv)
-
-  upcomingcontainer.append(upcomingtitlediv)
-
-  const upcomingitems = document.createElement('div')
-  upcomingitems.id = 'upcoming-items'
-  upcomingitems.classList.add('upcoming-items')
-
-  upcomingcontainer.append(upcomingitems)
-
-  document.getElementById('home-container')!.append(upcomingcontainer)
-
-  // Creates the notices container into the home container
-  const NoticesStr = /* html */ `
-    <div class="notices-container border" ${settingsState.animations ? `style="opacity: 0;"` : ''}>
+  // Create notices section
+  const notices = stringToHTML(`
+    <div class="notices-container border">
       <div style="display: flex; justify-content: space-between">
         <h2 class="home-subtitle">Notices</h2>
-        <input type="date" value=${TodayFormatted} />
+        <input type="date" value="${TodayFormatted}" />
       </div>
       <div class="notice-container" id="notice-container"></div>
-    </div>`
-    
-  var Notices = stringToHTML(NoticesStr)
-  // Appends the shortcut container into the home container
-  document.getElementById('home-container')!.append(Notices.firstChild!) // HERE!!!
+    </div>`)
+  fragment.appendChild(notices?.firstChild!)
 
+  // Single DOM update to home-container
+  homeContainer.appendChild(fragment)
+
+  // Setup event listeners with cleanup
+  const cleanup = setupTimetableListeners()
+
+  // Parallel data fetching
+  const [assessments, classes, prefs] = await Promise.all([
+    GetUpcomingAssessments(),
+    GetActiveClasses(),
+    fetch(`${location.origin}/seqta/student/load/prefs?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ asArray: true, request: 'userPrefs' })
+    }).then(res => res.json())
+  ])
+
+  // Process data
+  const activeClass = classes.find((c: any) => c.hasOwnProperty("active"))
+  const activeSubjects = activeClass?.subjects || []
+  const activeSubjectCodes = activeSubjects.map((s: any) => s.code)
+  const currentAssessments = assessments
+    .filter((a: any) => activeSubjectCodes.includes(a.code))
+    .sort(comparedate)
+
+  // Initialize components
+  addShortcuts(settingsState.shortcuts)
+  AddCustomShortcutsToPage()
+  await callHomeTimetable(TodayFormatted, true)
+  await CreateUpcomingSection(currentAssessments, activeSubjects)
+
+  // Setup notices
+  const labelArray = prefs.payload
+    .filter((item: any) => item.name === 'notices.filters')
+    .map((item: any) => item.value)
+
+  if (labelArray.length > 0) {
+    setupNotices(labelArray[0].split(' '), TodayFormatted)
+  }
+
+  if (settingsState.notificationcollector) {
+    enableNotificationCollector()
+  }
+
+  // Setup animations
   if (settingsState.animations) {
+    // Remove the initial style
+    document.head.querySelector('style:last-child')?.remove()
+
+    // Animate with motion
     animate(
       '.home-container > div',
       { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
@@ -2324,135 +2309,76 @@ export async function loadHomePage() {
     )
   }
 
-  callHomeTimetable(TodayFormatted)
-
-  const GetPrefs = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ asArray: true, request: 'userPrefs' })
-  })
-
-  const response = await GetPrefs.json()
-
-  const labelArray = response.payload.filter((item: any) => item.name === 'notices.filters').map((item: any) => item.value)
-
-  if (labelArray.length !== 0) {
-    const labelArray = response.payload.filter((item: any) => item.name === 'notices.filters').map((item: any) => item.value)[0].split(' ')
-    const xhr2 = new XMLHttpRequest()
-    xhr2.open(
-      'POST',
-      `${location.origin}/seqta/student/load/notices?`,
-      true
-    )
-    xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
-    
-    xhr2.onreadystatechange = function () {
-      if (xhr2.readyState === 4) {
-        processNotices(xhr2.response, labelArray);
-      }
-    };
-    
-    const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement;
-    xhr2.send(JSON.stringify({ date: dateControl.value }));
-  
-    function onInputChange(e: any) {
-      xhr2.open('POST', `${location.origin}/seqta/student/load/notices?`, true);
-      xhr2.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-      xhr2.send(JSON.stringify({ date: e.target.value }));
-    
-      xhr2.onreadystatechange = function () {
-        if (xhr2.readyState === 4) {
-          processNotices(xhr2.response, labelArray);
-        }
-      };
-    }
-    
-    dateControl.addEventListener('input', onInputChange);
-  }
-    
-  if (settingsState.notificationcollector) {
-    enableNotificationCollector()
-  }
-  
-  const assessments = await GetUpcomingAssessments()
-  const classes = await GetActiveClasses()
-
-  let activeClass;
-  
-  // Gets all subjects for the student
-  for (let i = 0; i < classes.length; i++) {
-    const element = classes[i];
-    
-    if (element.hasOwnProperty("active")) {
-      // Finds the active class list with the current subjects
-      activeClass = classes[i]
-    }
-  }
-  
-  let activeSubjects = []
-  if (activeClass?.subjects) {
-    activeSubjects = activeClass.subjects
-  }
-
-  let activeSubjectCodes = []
-  
-  // Gets the code for each of the subjects and puts them in an array
-  for (let i = 0; i < activeSubjects.length; i++) {
-    activeSubjectCodes.push(activeSubjects[i].code)
-  }
-
-  let CurrentAssessments = []
-  for (let i = 0; i < assessments.length; i++) {
-    if (activeSubjectCodes.includes(assessments[i].code)) {
-      CurrentAssessments.push(assessments[i])
-    }
-  }
-
-  CurrentAssessments.sort(comparedate)
-
-  await CreateUpcomingSection(CurrentAssessments, activeSubjects)
+  return cleanup
 }
 
-function processNotices(responseText: any, labelArray: any) {
-  const NoticesPayload = JSON.parse(responseText);
-  const NoticeContainer = document.getElementById('notice-container');
-  if (NoticesPayload.payload.length === 0) {
-    if (!NoticeContainer?.innerText) {
-      const dummyNotice = document.createElement('div');
-      dummyNotice.textContent = 'No notices for today.';
-      dummyNotice.classList.add('dummynotice');
-      NoticeContainer?.append(dummyNotice);
-    }
-  } else {
-    if (!NoticeContainer?.innerText) {
-      document.querySelectorAll('.notice').forEach(e => e.remove());
+// Helper functions
+function formatDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
-      NoticesPayload.payload.forEach((notice: any) => {
-        if (labelArray.includes(JSON.stringify(notice.label))) {
-          let htmlContent = `
-            <div class="notice" style="--colour: ${notice.colour}">
-              <h3 style="color:var(--colour)">${notice.title}</h3>
-              ${notice.label_title !== undefined ? `<h5 style="color:var(--colour)">${notice.label_title}</h5>` : ''}
-              <h6 style="color:var(--colour)">${notice.staff}</h6>
-              ${notice.contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')}
-              <div class="colourbar" style="background: var(--colour)"></div>
-            </div>
-          `;
-          const NewNotice = stringToHTML(htmlContent).firstChild;
+function setupTimetableListeners() {
+  const listeners: Array<() => void> = []
+  const timetableBack = document.getElementById('home-timetable-back')
+  const timetableForward = document.getElementById('home-timetable-forward')
 
-          let colour = notice.colour;
-          if (typeof colour === 'string') {
-            const rgb = GetThresholdOfColor(colour);
-            if (rgb < 100 && settingsState.DarkMode) {
-              colour = undefined;
-            }
-          }
-          (NewNotice as HTMLElement).style.cssText = `--colour: ${colour}`;
+  function changeTimetable(value: number) {
+    currentSelectedDate.setDate(currentSelectedDate.getDate() + value)
+    const formattedDate = formatDate(currentSelectedDate)
+    callHomeTimetable(formattedDate, true)
+    SetTimetableSubtitle()
+  }
 
-          NoticeContainer!.append(NewNotice!);
-        }
-      });
-    }
+  const backHandler = () => changeTimetable(-1)
+  const forwardHandler = () => changeTimetable(1)
+
+  timetableBack?.addEventListener('click', backHandler)
+  timetableForward?.addEventListener('click', forwardHandler)
+
+  listeners.push(
+    () => timetableBack?.removeEventListener('click', backHandler),
+    () => timetableForward?.removeEventListener('click', forwardHandler)
+  )
+
+  return () => listeners.forEach(cleanup => cleanup())
+}
+
+function setupNotices(labelArray: string[], date: string) {
+  const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
+  
+  const fetchNotices = async (date: string) => {
+    const response = await fetch(`${location.origin}/seqta/student/load/notices?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ date })
+    })
+    const data = await response.json()
+    processNotices(data, labelArray)
+  }
+
+  // Debounce the input handler
+  const debouncedInputChange = debounce((e: Event) => {
+    const target = e.target as HTMLInputElement
+    fetchNotices(target.value)
+  }, 250)
+
+  dateControl?.addEventListener('input', debouncedInputChange)
+  fetchNotices(date)
+
+  return () => dateControl?.removeEventListener('input', debouncedInputChange)
+}
+
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
   }
 }
 
@@ -2629,4 +2555,95 @@ async function CheckForMenuList() {
   } catch (error) {
     return;
   }
+}
+
+function SetTimetableSubtitle() {
+  const homelessonsubtitle = document.getElementById('home-lesson-subtitle')
+  if (!homelessonsubtitle) return
+
+  const date = new Date()
+  const isSameMonth = date.getFullYear() === currentSelectedDate.getFullYear() && 
+                      date.getMonth() === currentSelectedDate.getMonth()
+  
+  if (isSameMonth) {
+    const dayDiff = date.getDate() - currentSelectedDate.getDate()
+    switch(dayDiff) {
+      case 0:
+        homelessonsubtitle.innerText = 'Today\'s Lessons'
+        break
+      case 1:
+        homelessonsubtitle.innerText = 'Yesterday\'s Lessons'
+        break
+      case -1:
+        homelessonsubtitle.innerText = 'Tomorrow\'s Lessons'
+        break
+      default:
+        homelessonsubtitle.innerText = formatDateString(currentSelectedDate)
+    }
+  } else {
+    homelessonsubtitle.innerText = formatDateString(currentSelectedDate)
+  }
+}
+
+function formatDateString(date: Date): string {
+  return `${date.toLocaleString('en-us', { weekday: 'short' })} ${date.toLocaleDateString('en-au')}`
+}
+
+function processNotices(response: any, labelArray: string[]) {
+  const NoticeContainer = document.getElementById('notice-container')
+  if (!NoticeContainer) return
+
+  // Clear existing notices
+  NoticeContainer.innerHTML = ''
+
+  const notices = response.payload
+  if (!notices.length) {
+    const dummyNotice = document.createElement('div')
+    dummyNotice.textContent = 'No notices for today.'
+    dummyNotice.classList.add('dummynotice')
+    NoticeContainer.append(dummyNotice)
+    return
+  }
+
+  // Create document fragment for batch DOM updates
+  const fragment = document.createDocumentFragment()
+
+  // Process notices in batch
+  notices.forEach((notice: any) => {
+    if (labelArray.includes(JSON.stringify(notice.label))) {
+      const colour = processNoticeColor(notice.colour)
+      const noticeElement = createNoticeElement(notice, colour)
+      fragment.appendChild(noticeElement)
+    }
+  })
+
+  // Single DOM update
+  NoticeContainer.appendChild(fragment)
+}
+
+function processNoticeColor(colour: string): string | undefined {
+  if (typeof colour === 'string') {
+    const rgb = GetThresholdOfColor(colour)
+    if (rgb < 100 && settingsState.DarkMode) {
+      return undefined
+    }
+  }
+  return colour
+}
+
+function createNoticeElement(notice: any, colour: string | undefined): Node {
+  const htmlContent = `
+    <div class="notice" style="--colour: ${colour}">
+      <h3 style="color:var(--colour)">${notice.title}</h3>
+      ${notice.label_title !== undefined ? `<h5 style="color:var(--colour)">${notice.label_title}</h5>` : ''}
+      <h6 style="color:var(--colour)">${notice.staff}</h6>
+      ${notice.contents.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, '').replace(/ +/, ' ')}
+      <div class="colourbar" style="background: var(--colour)"></div>
+    </div>`
+  
+  const element = stringToHTML(htmlContent).firstChild
+  if (element instanceof HTMLElement) {
+    element.style.setProperty('--colour', colour ?? '')
+  }
+  return element!
 }
