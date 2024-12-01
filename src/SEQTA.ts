@@ -2144,10 +2144,13 @@ async function AddCustomShortcutsToPage() {
 
 export async function loadHomePage() {
   console.info('[BetterSEQTA+] Started Loading Home Page')
-
+  
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
   element?.classList.add('active')
+  
+  // Wait for the DOM to finish clearing
+  await delay(10)
 
   // Cache DOM queries
   const main = document.getElementById('main')
@@ -2157,9 +2160,7 @@ export async function loadHomePage() {
   }
 
   // Create root container first
-  const homeRoot = stringToHTML(`
-    <div id="home-root" class="home-root">
-    </div>`)
+  const homeRoot = stringToHTML(/* html */`<div id="home-root" class="home-root"></div>`)
   
   // Clear main and add home root
   main.innerHTML = ''
@@ -2169,7 +2170,7 @@ export async function loadHomePage() {
   const homeContainer = document.getElementById('home-root')
   if (!homeContainer) return
 
-  const skeletonStructure = stringToHTML(`
+  const skeletonStructure = stringToHTML(/* html */`
     <div class="home-container" id="home-container">
       <div class="shortcut-container border">
         <div class="shortcuts border" id="shortcuts"></div>
@@ -2232,18 +2233,110 @@ export async function loadHomePage() {
   addShortcuts(settingsState.shortcuts)
   AddCustomShortcutsToPage()
 
-  // Parallel data fetching
-  const [assessments, classes, prefs] = await Promise.all([
+  // Get current date
+  const date = new Date()
+  const TodayFormatted = formatDate(date)
+
+  // Start all data fetching in parallel
+  const [
+    timetablePromise,
+    assessmentsPromise,
+    classesPromise,
+    prefsPromise,
+    noticesPromise
+  ] = [
+    // Timetable data
+    fetch(`${location.origin}/seqta/student/load/timetable?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: TodayFormatted,
+        until: TodayFormatted,
+        student: 69,
+      })
+    }).then(res => res.json()),
+
+    // Assessments data
     GetUpcomingAssessments(),
+
+    // Classes data  
     GetActiveClasses(),
+
+    // Preferences data
     fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asArray: true, request: 'userPrefs' })
+    }).then(res => res.json()),
+
+    // Notices data
+    fetch(`${location.origin}/seqta/student/load/notices?`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: TodayFormatted })
     }).then(res => res.json())
+  ]
+
+  // Process all data in parallel
+  const [timetableData, assessments, classes, prefs, notices] = await Promise.all([
+    timetablePromise,
+    assessmentsPromise, 
+    classesPromise,
+    prefsPromise,
+    noticesPromise
   ])
 
-  // Process data
+  // Process timetable data
+  const dayContainer = document.getElementById('day-container')
+  if (dayContainer && timetableData.payload.items.length > 0) {
+    const lessonArray = timetableData.payload.items.sort((a: any, b: any) => a.from.localeCompare(b.from))
+    const colours = await GetLessonColours()
+    
+    // Process and display lessons
+    dayContainer.innerHTML = ''
+    for (let i = 0; i < lessonArray.length; i++) {
+      const lesson = lessonArray[i]
+      const subjectname = `timetable.subject.colour.${lesson.code}`
+      const subject = colours.find((element: any) => element.name === subjectname)
+      
+      lesson.colour = subject ? `--item-colour: ${subject.value};` : '--item-colour: #8e8e8e;'
+      lesson.from = lesson.from.substring(0, 5)
+      lesson.until = lesson.until.substring(0, 5)
+
+      if (settingsState.timeFormat === '12') {
+        lesson.from = convertTo12HourFormat(lesson.from)
+        lesson.until = convertTo12HourFormat(lesson.until)
+      }
+
+      lesson.attendanceTitle = CheckUnmarkedAttendance(lesson.attendance)
+      
+      const div = makeLessonDiv(lesson, i + 1)
+      if (GetThresholdOfColor(subject?.value) > 300) {
+        const firstChild = div.firstChild as HTMLElement
+        if (firstChild) {
+          firstChild.classList.add('day-inverted')
+        }
+      }
+      dayContainer.appendChild(div.firstChild!)
+    }
+
+    // Check current lessons
+    if (currentSelectedDate.getDate() === date.getDate()) {
+      for (let i = 0; i < lessonArray.length; i++) {
+        CheckCurrentLesson(lessonArray[i], i + 1)
+      }
+      CheckCurrentLessonAll(lessonArray)
+    }
+  } else if (dayContainer) {
+    dayContainer.innerHTML = /* html */`
+      <div class="day-empty">
+        <img src="${browser.runtime.getURL(LogoLight)}" />
+        <p>No lessons available.</p>
+      </div>`
+  }
+  dayContainer?.classList.remove('loading')
+
+  // Process assessments data
   const activeClass = classes.find((c: any) => c.hasOwnProperty("active"))
   const activeSubjects = activeClass?.subjects || []
   const activeSubjectCodes = activeSubjects.map((s: any) => s.code)
@@ -2251,22 +2344,13 @@ export async function loadHomePage() {
     .filter((a: any) => activeSubjectCodes.includes(a.code))
     .sort(comparedate)
 
-  // Initialize components
-  const date = new Date()
-  const TodayFormatted = formatDate(date)
-
-  // Load timetable
-  callHomeTimetable(TodayFormatted, true)
-
-  // Load upcoming assessments
   const upcomingItems = document.getElementById('upcoming-items')
   if (upcomingItems) {
     await CreateUpcomingSection(currentAssessments, activeSubjects)
-    delay(100)
     upcomingItems.classList.remove('loading')
   }
 
-  // Setup notices
+  // Process notices data
   const labelArray = prefs.payload
     .filter((item: any) => item.name === 'notices.filters')
     .map((item: any) => item.value)
@@ -2274,8 +2358,8 @@ export async function loadHomePage() {
   if (labelArray.length > 0) {
     const noticeContainer = document.getElementById('notice-container')
     if (noticeContainer) {
+      processNotices(notices, labelArray[0].split(' '))
       noticeContainer.classList.remove('loading')
-      setupNotices(labelArray[0].split(' '), TodayFormatted)
     }
   }
 
