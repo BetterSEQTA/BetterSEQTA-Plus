@@ -2158,8 +2158,7 @@ export async function loadHomePage() {
 
   // Create root container first
   const homeRoot = stringToHTML(`
-    <div class="home-root">
-      <div class="home-container" id="home-container"></div>
+    <div id="home-root" class="home-root">
     </div>`)
   
   // Clear main and add home root
@@ -2167,90 +2166,71 @@ export async function loadHomePage() {
   main.appendChild(homeRoot?.firstChild!)
 
   // Get reference to home container for all subsequent additions
-  const homeContainer = document.getElementById('home-container')
+  const homeContainer = document.getElementById('home-root')
   if (!homeContainer) return
 
-  // Add initial style to prevent flash
-  if (settingsState.animations) {
-    const style = document.createElement('style')
-    style.textContent = `
-      .home-container > div {
-        opacity: 0;
-        transform: translateY(10px) scale(0.99);
-      }
-    `
-    document.head.appendChild(style)
-  }
-
-  // Use DocumentFragment for batch DOM updates inside home-container
-  const fragment = document.createDocumentFragment()
-  
-  // Batch state updates
-  const date = new Date()
-  currentSelectedDate = new Date()
-  const TodayFormatted = formatDate(date)
-
-  // Create shortcuts section
-  const shortcutContainer = stringToHTML(`
-    <div class="shortcut-container border">
-      <div class="shortcuts border" id="shortcuts"></div>
-    </div>`)
-  fragment.appendChild(shortcutContainer?.firstChild!)
-
-  // Create timetable section with optimized structure
-  const timetable = stringToHTML(`
-    <div class="timetable-container border">
-      <div class="home-subtitle">
-        <h2 id="home-lesson-subtitle">Today's Lessons</h2>
-        <div class="timetable-arrows">
-          <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back">
-            <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-          </svg>
-          <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward">
-            <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-          </svg>
+  const skeletonStructure = stringToHTML(`
+    <div class="home-container" id="home-container">
+      <div class="shortcut-container border">
+        <div class="shortcuts border" id="shortcuts"></div>
+      </div>
+      <div class="timetable-container border">
+        <div class="home-subtitle">
+          <h2 id="home-lesson-subtitle">Today's Lessons</h2>
+          <div class="timetable-arrows">
+            <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back">
+              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward">
+              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+            </svg>
+          </div>
+        </div>
+        <div class="day-container loading" id="day-container">
         </div>
       </div>
-      <div class="day-container" id="day-container"></div>
-    </div>`)
-  fragment.appendChild(timetable?.firstChild!)
-
-  // Create upcoming assessments section
-  const upcomingContainer = document.createElement('div')
-  upcomingContainer.classList.add('upcoming-container', 'border')
-  
-  const upcomingTitleDiv = CreateElement('div', 'upcoming-title')
-  const upcomingTitle = document.createElement('h2')
-  upcomingTitle.classList.add('home-subtitle')
-  upcomingTitle.innerText = 'Upcoming Assessments'
-  upcomingTitleDiv.append(upcomingTitle)
-
-  const upcomingFilterDiv = CreateElement('div', 'upcoming-filters', 'upcoming-filters')
-  upcomingTitleDiv.append(upcomingFilterDiv)
-  upcomingContainer.append(upcomingTitleDiv)
-
-  const upcomingItems = document.createElement('div')
-  upcomingItems.id = 'upcoming-items'
-  upcomingItems.classList.add('upcoming-items')
-  upcomingContainer.append(upcomingItems)
-  fragment.appendChild(upcomingContainer)
-
-  // Create notices section
-  const notices = stringToHTML(`
-    <div class="notices-container border">
-      <div style="display: flex; justify-content: space-between">
-        <h2 class="home-subtitle">Notices</h2>
-        <input type="date" value="${TodayFormatted}" />
+      <div class="upcoming-container border">
+        <div class="upcoming-title">
+          <h2 class="home-subtitle">Upcoming Assessments</h2>
+          <div class="upcoming-filters" id="upcoming-filters"></div>
+        </div>
+        <div class="upcoming-items loading" id="upcoming-items">
+        </div>
       </div>
-      <div class="notice-container" id="notice-container"></div>
+      <div class="notices-container border">
+        <div style="display: flex; justify-content: space-between">
+          <h2 class="home-subtitle">Notices</h2>
+          <input type="date" />
+        </div>
+        <div class="notice-container upcoming-items loading" id="notice-container">
+        </div>
+      </div>
     </div>`)
-  fragment.appendChild(notices?.firstChild!)
 
-  // Single DOM update to home-container
-  homeContainer.appendChild(fragment)
+  // Add skeleton structure
+  homeContainer.appendChild(skeletonStructure.firstChild!)
+
+  // Run animations if enabled
+  if (settingsState.animations) {
+    animate(
+      '.home-container > div',
+      { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
+      {
+        delay: stagger(0.15, { startDelay: 0.1 }),
+        type: 'spring',
+        stiffness: 341,
+        damping: 20,
+        mass: 1
+      }
+    )
+  }
 
   // Setup event listeners with cleanup
   const cleanup = setupTimetableListeners()
+
+  // Initialize shortcuts immediately
+  addShortcuts(settingsState.shortcuts)
+  AddCustomShortcutsToPage()
 
   // Parallel data fetching
   const [assessments, classes, prefs] = await Promise.all([
@@ -2272,10 +2252,20 @@ export async function loadHomePage() {
     .sort(comparedate)
 
   // Initialize components
-  addShortcuts(settingsState.shortcuts)
-  AddCustomShortcutsToPage()
+  const date = new Date()
+  const TodayFormatted = formatDate(date)
+
+  // Load timetable
   await callHomeTimetable(TodayFormatted, true)
-  await CreateUpcomingSection(currentAssessments, activeSubjects)
+
+  // Load upcoming assessments
+  const upcomingItems = document.getElementById('upcoming-items')
+  if (upcomingItems) {
+    await CreateUpcomingSection(currentAssessments, activeSubjects)
+    delay(100)
+    upcomingItems.classList.remove('loading')
+    console.log('Upcoming assessments created')
+  }
 
   // Setup notices
   const labelArray = prefs.payload
@@ -2283,30 +2273,15 @@ export async function loadHomePage() {
     .map((item: any) => item.value)
 
   if (labelArray.length > 0) {
-    setupNotices(labelArray[0].split(' '), TodayFormatted)
+    const noticeContainer = document.getElementById('notice-container')
+    if (noticeContainer) {
+      noticeContainer.classList.remove('loading')
+      setupNotices(labelArray[0].split(' '), TodayFormatted)
+    }
   }
 
   if (settingsState.notificationcollector) {
     enableNotificationCollector()
-  }
-
-  // Setup animations
-  if (settingsState.animations) {
-    // Remove the initial style
-    document.head.querySelector('style:last-child')?.remove()
-
-    // Animate with motion
-    animate(
-      '.home-container > div',
-      { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
-      {
-        delay: stagger(0.15, { startDelay: 0.1 }),
-        type: 'spring',
-        stiffness: 341,
-        damping: 20,
-        mass: 1
-      }
-    )
   }
 
   return cleanup
