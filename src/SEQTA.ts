@@ -2152,7 +2152,7 @@ export async function loadHomePage() {
   // Cache DOM queries
   const main = document.getElementById('main')
   if (!main) {
-    console.error('Main element not found.')
+    console.error('[BetterSEQTA+] Main element not found.')
     return
   }
 
@@ -2256,7 +2256,7 @@ export async function loadHomePage() {
   const TodayFormatted = formatDate(date)
 
   // Load timetable
-  await callHomeTimetable(TodayFormatted, true)
+  callHomeTimetable(TodayFormatted, true)
 
   // Load upcoming assessments
   const upcomingItems = document.getElementById('upcoming-items')
@@ -2264,7 +2264,6 @@ export async function loadHomePage() {
     await CreateUpcomingSection(currentAssessments, activeSubjects)
     delay(100)
     upcomingItems.classList.remove('loading')
-    console.log('Upcoming assessments created')
   }
 
   // Setup notices
