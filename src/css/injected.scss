@@ -2724,7 +2724,7 @@ li.MessageList__unread___3imtO {
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
-  transition: 200ms;
+  transition: 200ms, background-color 0s;
   border-radius: 16px;
 }
 .dark .upcoming-items {
@@ -3093,4 +3093,30 @@ li.MessageList__unread___3imtO {
   aspect-ratio: 16/9;
   object-fit: cover;
   margin-bottom: 12px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading {
+  &.upcoming-items,
+  &.day-container {
+    background: linear-gradient(90deg, 
+      var(--background-primary) 0%, 
+      var(--background-secondary) 50%, 
+      var(--background-primary) 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  &.upcoming-items {
+    height: 35em;
+  }
 }
