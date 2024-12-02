@@ -6,21 +6,59 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 
+let cachedUserInfo: any = null;
+
+async function getUserInfo() {
+  if (cachedUserInfo) return cachedUserInfo;
+  
+  try {
+    const response = await fetch(`${location.origin}/seqta/student/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify({
+        mode: 'normal',
+        query: null,
+        redirect_url: location.origin,
+      }),
+    });
+
+    const responseData = await response.json();
+    cachedUserInfo = responseData.payload;
+    return cachedUserInfo;
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    throw error;
+  }
+}
+
 export async function AddBetterSEQTAElements() {
   if (settingsState.onoff) {    
     initializeSettings();
     if (settingsState.DarkMode) {
       document.documentElement.classList.add('dark');
     }
-    createHomeButton();
+    
+    const fragment = document.createDocumentFragment();
+    const menu = document.getElementById('menu')!;
+    const menuList = menu.firstChild as HTMLElement;
+    
+    createHomeButton(fragment, menuList);
+    createNewsButton(fragment, menu);
+    
+    menuList.insertBefore(fragment, menuList.firstChild);
+    
     try {
-      await appendBackgroundToUI();
+      await Promise.all([
+        appendBackgroundToUI(),
+        handleUserInfo(),
+        handleStudentData()
+      ]);
     } catch (error) {
-      console.error('Error appending background to UI:', error);
+      console.error('Error initializing UI elements:', error);
     }
-    await handleUserInfo();
-    handleStudentData();
-    createNewsButton();
+    
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
@@ -28,7 +66,6 @@ export async function AddBetterSEQTAElements() {
 
   addExtensionSettings();
   await createSettingsButton();
-
   setupSettingsButton();
 }
 
@@ -37,18 +74,15 @@ function initializeSettings() {
   updateBgDurations();
 }
 
-function createHomeButton() {
+function createHomeButton(fragment: DocumentFragment, menuList: HTMLElement) {
   const container = document.getElementById('content')!;
   const div = document.createElement('div');
   div.classList.add('titlebar');
   container.append(div);
   
   const NewButton = stringToHTML('<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>');
-  const menu = document.getElementById('menu')!;
-  const List = menu.firstChild! as HTMLElement;
-  
   if (NewButton.firstChild) {
-    List.insertBefore(NewButton.firstChild, List.firstChild);
+    fragment.appendChild(NewButton.firstChild);
   }
 }
 
@@ -125,28 +159,6 @@ async function handleStudentData() {
   }
 }
 
-async function getUserInfo() {
-  try {
-    const response = await fetch(`${location.origin}/seqta/student/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      body: JSON.stringify({
-        mode: 'normal',
-        query: null,
-        redirect_url: location.origin,
-      }),
-    });
-
-    const responseData = await response.json();
-    return responseData.payload;
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-    throw error; // Rethrow the error after logging it
-  }
-}
-
 async function updateStudentInfo(students: any) {
   const info = await getUserInfo();
   var index = students.findIndex(function (person: any) {
@@ -179,40 +191,41 @@ async function updateStudentInfo(students: any) {
   }
 }
 
-function createNewsButton() {
+function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
   const NewsButtonStr = '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg><span>News</span></label></li>';
   const NewsButton = stringToHTML(NewsButtonStr);
-  const menu = document.getElementById('menu')!;
-  const List = menu.firstChild! as HTMLElement;
   
-  List!.appendChild(NewsButton.firstChild!);
+  if (NewsButton.firstChild) {
+    fragment.appendChild(NewsButton.firstChild);
+  }
   
-  let a = document.createElement('div');
-  a.classList.add('icon-cover');
-  a.id = 'icon-cover';
-  menu!.appendChild(a);
+  let iconCover = document.createElement('div');
+  iconCover.classList.add('icon-cover');
+  iconCover.id = 'icon-cover';
+  menu.appendChild(iconCover);
 }
 
 function setupEventListeners() {
   const menuCover = document.querySelector('#icon-cover');
-  menuCover!.addEventListener('click', function () {
-    location.href = '../#?page=/home';
-    loadHomePage();
-    (document!.getElementById('menu')!.firstChild! as HTMLElement).classList.remove('noscroll');
-  });
-
   const homebutton = document.getElementById('homebutton');
-  homebutton!.addEventListener('click', function () {
-    if (!homebutton?.classList.contains('draggable') && !homebutton?.classList.contains('active')) {
+  const newsbutton = document.getElementById('newsbutton');
+  
+  homebutton?.addEventListener('click', function() {
+    if (!homebutton.classList.contains('draggable') && !homebutton.classList.contains('active')) {
       loadHomePage();
     }
   });
 
-  const newsbutton = document.getElementById('newsbutton');
-  newsbutton!.addEventListener('click', function () {
-    if (!newsbutton?.classList.contains('draggable') && !newsbutton?.classList.contains('active')) {
+  newsbutton?.addEventListener('click', function() {
+    if (!newsbutton.classList.contains('draggable') && !newsbutton.classList.contains('active')) {
       SendNewsPage();
     }
+  });
+
+  menuCover?.addEventListener('click', function() {
+    location.href = '../#?page=/home';
+    loadHomePage();
+    (document.getElementById('menu')!.firstChild! as HTMLElement).classList.remove('noscroll');
   });
 }
 
