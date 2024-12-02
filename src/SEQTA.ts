@@ -160,18 +160,15 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
-    <h1>3.4.2 - Bug Fixes and Tweaks</h1>
+  
+    <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
     <li>Added a new "Subject Average" section to the assessments page</li>
+    <li>Fixed a bug where animations wouldn't play correctly</li>
     <li>Added loading animations to the home page</li>
     <li>Under the hood performance improvements</li>
-    <li>Improved animations overall</li>
-    <li>Minor style tweaks</li>
-
-    <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
-    <li>Fixed a bug where animations wouldn't play correctly</li>
     <li>Improved animation performance</li>
-    <li>Added animations to the news feed</li>
     <li>Better Animations!</li>
+    <li>Minor style tweaks</li>
   
     <h1>3.4.0 - Major Performance Update</h1>
     <li>Completely rebuilt the extension popup using Svelte for dramatically improved performance</li>
@@ -2765,7 +2762,7 @@ async function handleAssessments(node: Element): Promise<void> {
       existingAverage.remove();
     }
 
-    const averageElement = stringToHTML(`
+    const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
         <div class="AssessmentItem__metaContainer___dMKma">
           <div class="AssessmentItem__meta___WNSiK">
