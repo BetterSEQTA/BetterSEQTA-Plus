@@ -757,7 +757,6 @@ async function handleNotices(node: Element): Promise<void> {
   );
 }
 
-
 async function handleSublink(sublink: string | undefined): Promise<void> {
   switch (sublink) {
     case 'news':
@@ -2754,8 +2753,8 @@ async function handleAssessments(node: Element): Promise<void> {
     if (average === 0) return;
 
     // Remove existing average section if it exists
-    const existingAverage = document.querySelector('.average-section');
-    if (existingAverage) {
+    const existingAverage = document.querySelector('.AssessmentItem__AssessmentItem___2EZ95:first-child');
+    if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
 
@@ -2780,15 +2779,6 @@ async function handleAssessments(node: Element): Promise<void> {
     const assessmentsList = document.querySelector('.assessments .AssessmentList__items___3LcmQ');
     if (assessmentsList && averageElement.firstChild) {
       assessmentsList.insertBefore(averageElement.firstChild, assessmentsList.firstChild);
-      
-      // Add click handler for the collapse/expand button
-      const button = averageElement.firstChild as Element;
-      const buttonElement = button.querySelector('.Collapsible__expandBtn___25X1p');
-      const collapsible = button;
-      
-      buttonElement?.addEventListener('click', () => {
-        collapsible.classList.toggle('Collapsible__expanded___1wlf0');
-      });
     }
   }
 
