@@ -98,6 +98,16 @@
       }
     },
     {
+      title: "Assessment Average",
+      description: "Shows your subject average for assessments.",
+      id: 8,
+      Component: Switch,
+      props: {
+        state: $settingsState.assessmentsAverage,
+        onChange: (isOn: boolean) => settingsState.assessmentsAverage = isOn
+      }
+    },
+    {
       title: "Lesson Alerts",
       description: "Sends a native browser notification ~5 minutes prior to lessons.",
       id: 8,

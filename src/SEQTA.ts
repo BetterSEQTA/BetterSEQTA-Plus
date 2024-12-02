@@ -721,11 +721,13 @@ async function LoadPageElements(): Promise<void> {
     className: 'timetablepage',
   }, handleTimetable);
 
-  eventManager.register('assessmentsAdded', {
-    elementType: 'div',
-    className: 'assessmentsWrapper',
-  }, handleAssessments);
-
+  if (settingsState.assessmentsAverage) {
+    eventManager.register('assessmentsAdded', {
+      elementType: 'div',
+      className: 'assessmentsWrapper',
+    }, handleAssessments);
+  }
+  
   await handleSublink(sublink);
 }
 
