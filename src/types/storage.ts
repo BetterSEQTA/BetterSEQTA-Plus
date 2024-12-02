@@ -38,6 +38,7 @@ export interface SettingsState {
   defaultPage: string;
   devMode?: boolean;
   originalDarkMode?: boolean;
+  assessmentsAverage?: boolean;
 }
 
 interface ToggleItem {
