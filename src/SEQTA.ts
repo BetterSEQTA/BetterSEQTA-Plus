@@ -688,9 +688,6 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements();
-  const sublink: string | undefined = window.location.href.split('/')[4];
-
   eventManager.register('messagesAdded', {
     elementType: 'div',
     className: 'messages',
@@ -727,7 +724,11 @@ async function LoadPageElements(): Promise<void> {
       className: 'assessmentsWrapper',
     }, handleAssessments);
   }
-  
+
+  await AddBetterSEQTAElements();
+  const sublink: string | undefined = window.location.href.split('/')[4];
+
+
   await handleSublink(sublink);
 }
 
