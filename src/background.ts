@@ -167,6 +167,7 @@ const DefaultValues: SettingsState = {
   originalSelectedColor: '',
   DarkMode: true,
   animations: true,
+  assessmentsAverage: true,
   defaultPage: 'home',
   shortcuts: [
     {
