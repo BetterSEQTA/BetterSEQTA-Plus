@@ -160,6 +160,13 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
+    <h1>3.4.2 - Bug Fixes and Tweaks</h1>
+    <li>Added a new "Subject Average" section to the assessments page</li>
+    <li>Added loading animations to the home page</li>
+    <li>Under the hood performance improvements</li>
+    <li>Improved animations overall</li>
+    <li>Minor style tweaks</li>
+
     <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
     <li>Fixed a bug where animations wouldn't play correctly</li>
     <li>Improved animation performance</li>
