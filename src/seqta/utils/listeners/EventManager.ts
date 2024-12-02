@@ -46,8 +46,25 @@ class EventManager {
     }
     const unregister = () => this.unregisterById(event, id);
     this.listeners.get(event)!.push({ id, options, callback, unregister });
+    
+    this.scanExistingElements(options, callback);
+    
     this.startObserving(options.parentElement);
     return { unregister };
+  }
+
+  private async scanExistingElements(options: EventListenerOptions, callback: (element: Element) => void): Promise<void> {
+    const root = options.parentElement || document.documentElement;
+    const elements = Array.from(root.getElementsByTagName('*'));
+    elements.unshift(root);
+    
+    for (let i = 0; i < elements.length; i += this.chunkSize) {
+      const chunk = elements.slice(i, i + this.chunkSize);
+      const filteredChunk = chunk.filter(element => this.matchesOptions(element, options));
+      for (const element of filteredChunk) {
+        callback(element);
+      }
+    }
   }
 
   public unregister(event: string): void {
