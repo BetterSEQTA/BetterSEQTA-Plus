@@ -688,6 +688,9 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
+  await AddBetterSEQTAElements();
+  const sublink: string | undefined = window.location.href.split('/')[4];
+  
   eventManager.register('messagesAdded', {
     elementType: 'div',
     className: 'messages',
@@ -718,6 +721,11 @@ async function LoadPageElements(): Promise<void> {
     className: 'timetablepage',
   }, handleTimetable);
 
+  eventManager.register('noticesAdded', {
+    elementType: 'div',
+    className: 'notice',
+  }, handleNotices);
+
   if (settingsState.assessmentsAverage) {
     eventManager.register('assessmentsAdded', {
       elementType: 'div',
@@ -725,12 +733,30 @@ async function LoadPageElements(): Promise<void> {
     }, handleAssessments);
   }
 
-  await AddBetterSEQTAElements();
-  const sublink: string | undefined = window.location.href.split('/')[4];
-
-
   await handleSublink(sublink);
 }
+
+async function handleNotices(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
+
+  node.style.opacity = '0';
+
+  // get index of node in relation to parent
+  const index = Array.from(node.parentElement!.children).indexOf(node);
+
+  animate(
+    node,
+    { opacity: [0, 1], y: [50, 0], scale: [0.99, 1] },
+    {
+      delay: 0.1 * index,
+      type: 'spring',
+      stiffness: 250,
+      damping: 20
+    }
+  );
+}
+
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
   switch (sublink) {
@@ -753,27 +779,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       if (settingsState.onoff) loadHomePage()
       finishLoad();
       break;
-    case 'timetable':
-      handleTimetable()
-      await handleDefault()
-      break;
-    case 'documents':
-      handleDocuments(document.querySelector('.documents')!)
-      await handleDefault()
-      break;
-    case 'reports':
-      handleReports(document.querySelector('.reports')!)
-      await handleDefault()
-      break;
-    case 'messages':
-      handleMessages(document.querySelector('.messages')!)
-      await handleDefault()
-      break;
-    case 'dashboard':
-      handleDashboard(document.querySelector('.dashboard')!)
-      await handleDefault()
-      break;
-
+    
     default:
       await handleDefault()
       break;
