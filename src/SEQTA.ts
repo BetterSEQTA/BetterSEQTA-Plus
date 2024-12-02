@@ -2158,13 +2158,13 @@ async function AddCustomShortcutsToPage() {
 export async function loadHomePage() {
   console.info('[BetterSEQTA+] Started Loading Home Page')
   
+  // Wait for the DOM to finish clearing
+  await delay(10)
+
   document.title = 'Home ― SEQTA Learn'
   const element = document.querySelector('[data-key=home]')
   element?.classList.add('active')
   
-  // Wait for the DOM to finish clearing
-  await delay(10)
-
   // Cache DOM queries
   const main = document.getElementById('main')
   if (!main) {
