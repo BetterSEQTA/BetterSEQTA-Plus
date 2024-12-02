@@ -824,7 +824,7 @@ async function handleMessages(node: Element): Promise<void> {
     messages,
     { opacity: [0, 1], y: [10, 0] },
     {
-      delay: stagger(0.05),
+      delay: stagger(0.03),
       duration: 0.5,
       ease: [.22, .03, .26, 1]
     }
