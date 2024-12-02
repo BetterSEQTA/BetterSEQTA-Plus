@@ -721,6 +721,11 @@ async function LoadPageElements(): Promise<void> {
     className: 'timetablepage',
   }, handleTimetable);
 
+  eventManager.register('assessmentsAdded', {
+    elementType: 'div',
+    className: 'assessmentsWrapper',
+  }, handleAssessments);
+
   await handleSublink(sublink);
 }
 
@@ -2708,4 +2713,76 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
     element.style.setProperty('--colour', colour ?? '')
   }
   return element!
+}
+
+async function handleAssessments(node: Element): Promise<void> {
+  if (!(node instanceof HTMLElement)) return;
+
+  // Wait for the assessments wrapper to be mounted
+  const assessmentsWrapper = await waitForElm('#main > .assessmentsWrapper .assessments .AssessmentItem__AssessmentItem___2EZ95', true, 50);
+  if (!assessmentsWrapper) return;
+
+  // Function to calculate average of grades
+  function calculateAverageGrade(): number {
+    const gradeElements = document.querySelectorAll('.Thermoscore__text___1NdvB');
+    let total = 0;
+    let count = 0;
+
+    gradeElements.forEach(element => {
+      const grade = parseFloat(element.textContent?.replace('%', '') || '0');
+      if (!isNaN(grade)) {
+        total += grade;
+        count++;
+      }
+    });
+
+    return count > 0 ? total / count : 0;
+  }
+
+  // Function to add the average assessment item
+  function addAverageAssessment() {
+    const average = calculateAverageGrade();
+    if (average === 0) return;
+
+    // Remove existing average section if it exists
+    const existingAverage = document.querySelector('.average-section');
+    if (existingAverage) {
+      existingAverage.remove();
+    }
+
+    const averageElement = stringToHTML(`
+      <div class="AssessmentItem__AssessmentItem___2EZ95">
+        <div class="AssessmentItem__metaContainer___dMKma">
+          <div class="AssessmentItem__meta___WNSiK">
+            <div class="AssessmentItem__simpleResult___iBCeC">
+              <div class="AssessmentItem__title___2bELn">Subject Average</div>
+            </div>
+          </div>
+        </div>
+        <div class="Thermoscore__Thermoscore___2tWMi">
+          <div class="Thermoscore__fill___35WjF" style="width: ${average.toFixed(2)}%;">
+            <div class="Thermoscore__text___1NdvB" title="${average.toFixed(2)}%">${average.toFixed(2)}%</div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    // Insert at the beginning of the assessments list
+    const assessmentsList = document.querySelector('.assessments .AssessmentList__items___3LcmQ');
+    if (assessmentsList && averageElement.firstChild) {
+      assessmentsList.insertBefore(averageElement.firstChild, assessmentsList.firstChild);
+      
+      // Add click handler for the collapse/expand button
+      const button = averageElement.firstChild as Element;
+      const buttonElement = button.querySelector('.Collapsible__expandBtn___25X1p');
+      const collapsible = button;
+      
+      buttonElement?.addEventListener('click', () => {
+        collapsible.classList.toggle('Collapsible__expanded___1wlf0');
+      });
+    }
+  }
+
+  // Add the average assessment item
+  addAverageAssessment();
 }
