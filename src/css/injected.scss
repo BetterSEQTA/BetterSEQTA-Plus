@@ -1552,6 +1552,10 @@ iframe.userHTML {
 .Collapsible__Collapsible___3O8P3 > .Collapsible__header___-Afvq {
   background: none;
 }
+.Collapsible__Collapsible___3O8P3 > .Collapsible__content___2c6of.Collapsible__enterActive___3b2ow,
+.Collapsible__Collapsible___3O8P3 > .Collapsible__content___2c6of.Collapsible__exitActive___3rFL1 {
+  animation-timing-function: ease-out !important;
+}
 .AssessmentList__AssessmentList___1GdCl
   > .AssessmentList__searchFilter___3N70o
   + .AssessmentList__items___3LcmQ {
