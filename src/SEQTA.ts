@@ -2358,7 +2358,11 @@ export async function loadHomePage() {
   if (labelArray.length > 0) {
     const noticeContainer = document.getElementById('notice-container')
     if (noticeContainer) {
-      processNotices(notices, labelArray[0].split(' '))
+      const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement
+      if (dateControl) {
+        dateControl.value = TodayFormatted
+        setupNotices(labelArray[0].split(' '), TodayFormatted)
+      }
       noticeContainer.classList.remove('loading')
     }
   }
