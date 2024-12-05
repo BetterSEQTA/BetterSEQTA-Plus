@@ -1933,6 +1933,7 @@ div.bar.flat {
   transition: background-color 0.5s ease-in-out;
   background-color: rgba(0, 0, 0, 0);
   transition-duration: 500ms !important;
+  z-index: 22 !important;
 }
 .uiSlidePane.shown > .pane {
   transform: translatey(0%) !important;
