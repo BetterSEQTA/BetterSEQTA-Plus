@@ -76,6 +76,10 @@ async function init() {
       if (settingsState.onoff) {
         enableCurrentTheme()
 
+        if (typeof settingsState.assessmentsAverage == 'undefined') {
+          settingsState.assessmentsAverage = true
+        }
+
         // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === 'development') {
           import('./css/injected.scss')

@@ -1,0 +1,402 @@
+https://sethburkart123.github.io/sf-pro-https://sethburkart123.github.io/sf-pro-fonts/fonts/
+
+/* -------------------------------------------------------------------------
+ * SF Pro Display
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 100;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralight.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralight.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralight.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 200;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thin.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thin.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thin.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-light.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-light.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regular.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regular.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-medium.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-medium.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibold.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bold.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavy.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavy.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavy.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 900;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-black.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-black.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-black.ttf') format('truetype');
+}
+
+
+
+/* -------------------------------------------------------------------------
+ * SF Pro Display Italic
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 100;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralightitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralightitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-ultralightitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 200;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thinitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thinitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-thinitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-lightitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-lightitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-lightitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regularitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regularitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-regularitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-mediumitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-mediumitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-mediumitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibolditalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-semibolditalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bolditalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-bolditalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavyitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavyitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-heavyitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    font-style: italic;
+    font-weight: 900;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-blackitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-blackitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-display-blackitalic.ttf') format('truetype');
+}
+
+
+
+/* -------------------------------------------------------------------------
+ * SF Pro Text
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-light.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-light.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regular.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regular.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-medium.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-medium.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibold.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bold.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: regular;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavy.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavy.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavy.ttf') format('truetype');
+}
+
+
+
+/* -------------------------------------------------------------------------
+ * SF Pro Text Italic
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-lightitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-lightitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-lightitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regularitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regularitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-regularitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-mediumitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-mediumitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-mediumitalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibolditalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-semibolditalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bolditalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-bolditalic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'SF Pro Text';
+    font-style: italic;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavyitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavyitalic.woff') format('woff'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sf-pro-text-heavyitalic.ttf') format('truetype');
+}
+
+
+
+
+/* -------------------------------------------------------------------------
+ * SF Mono
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-light.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-light.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-regular.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-medium.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-medium.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-semibold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-semibold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-bold.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: regular;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-heavy.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-heavy.woff') format('woff');
+}
+
+
+
+/* -------------------------------------------------------------------------
+ * SF Pro Text Italic
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 300;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-lightitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-lightitalic.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 400;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-regularitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-regularitalic.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 500;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-mediumitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-mediumitalic.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 600;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-semibolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-semibolditalic.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 700;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-bolditalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-bolditalic.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    font-style: italic;
+    font-weight: 800;
+    src: url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-heavyitalic.woff2') format('woff2'),
+         url('https://sethburkart123.github.io/sf-pro-fonts/fonts/sfmono-heavyitalic.woff') format('woff');
+}
