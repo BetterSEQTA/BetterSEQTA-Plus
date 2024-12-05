@@ -165,6 +165,10 @@ export function OpenWhatsNewPopup() {
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
   
+    <h1>3.4.2 - Minor Bug Fixes</h1>
+    <li>Fixed a bug where Assessment Average wasn't enabled by default</li>
+    <li>Fixed floating menus would sometimes be placed behind other elements</li>
+
     <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
     <li>Added a new "Subject Average" section to the assessments page</li>
     <li>Fixed a bug where animations wouldn't play correctly</li>
