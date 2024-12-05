@@ -3,6 +3,7 @@
   "version": "3.4.2",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development, while incorporating a plethora of new and improved features!",
+  "main": "electron/main.js",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "dev": "cross-env MODE=chrome vite dev",
@@ -14,7 +15,11 @@
     "convert:safari": "xcrun safari-web-extension-converter dist/safari --project-location . --app-name $npm_package_name-safari",
     "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
     "publish": "bun lib/publish.js --b",
-    "zip": "bedframe zip"
+    "zip": "bedframe zip",
+    "electron-dev": "npm run build:chrome && electron .",
+    "electron-build": "electron-builder",
+    "electron-pack": "npm run build:chrome && electron-builder --dir",
+    "electron-dist": "npm run build:chrome && electron-builder"
   },
   "targets": {
     "prod": {
@@ -37,6 +42,8 @@
     "@types/mime-types": "^2.1.4",
     "@vitejs/plugin-react-swc": "^3.7.0",
     "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
     "eslint": "^8.57.0",
     "glob": "^11.0.0",
     "mime-types": "^2.1.35",
@@ -74,6 +81,7 @@
     "codemirror": "^6.0.1",
     "color": "^4.2.3",
     "dompurify": "^3.1.6",
+    "electron-store": "^10.0.0",
     "embla-carousel-autoplay": "^8.3.1",
     "embla-carousel-svelte": "^8.3.1",
     "fuse.js": "^7.0.0",
@@ -95,5 +103,48 @@
     "uuid": "^9.0.1",
     "vite": "^5.4.4",
     "webextension-polyfill": "^0.10.0"
+  },
+  "build": {
+    "appId": "com.betterseqta.app",
+    "productName": "BetterSEQTA",
+    "directories": {
+      "output": "electron-dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/chrome",
+        "to": "chrome-extension",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": ["dmg", "zip"],
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
+    }
   }
 }

@@ -1019,9 +1019,11 @@ export async function ObserveMenuItemPosition() {
   });
 }
 
-function main() {
+async function main() {
   if (typeof settingsState.onoff === 'undefined') {
     browser.runtime.sendMessage({ type: 'setDefaultStorage' })
+
+    await delay(10)
   }
 
   const handleDisabled = () => {

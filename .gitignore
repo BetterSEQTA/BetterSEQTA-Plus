@@ -19,3 +19,6 @@ betterseqtaplus-safari/
 .vscode/
 
 **/.DS_Store
+
+# Electron
+electron-dist/
