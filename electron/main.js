@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron';
+import { app, BrowserWindow, ipcMain, session, Menu } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Store from 'electron-store';
@@ -16,7 +16,73 @@ const customCSS = `
 #alertBar {
     display: none !important;
 }
+
+/* Match SEQTA's styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+}
 `;
+
+// Create the application menu
+function createAppMenu() {
+    const isMac = process.platform === 'darwin';
+    const template = [
+        ...(isMac ? [{
+            label: app.name,
+            submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+            ]
+        }] : []),
+        {
+            label: 'Settings',
+            submenu: [
+                {
+                    label: 'Configure SEQTA URL',
+                    accelerator: isMac ? 'Cmd+,' : 'Ctrl+,',
+                    click: () => {
+                        createSettingsWindow();
+                    }
+                }
+            ]
+        },
+        {
+            label: 'View',
+            submenu: [
+                { role: 'reload' },
+                { role: 'forceReload' },
+                { role: 'toggleDevTools' },
+                { type: 'separator' },
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen' }
+            ]
+        }
+    ];
+
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
+}
+
+// Validate SEQTA URL
+function isValidSeqtaUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        // Only ensure it's a valid HTTPS URL
+        return urlObj.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
 
 // Get the correct path for the extension based on whether we're in development or production
 function getExtensionPath() {
@@ -45,37 +111,45 @@ async function loadExtension() {
 }
 
 function createMainWindow() {
+    console.log('🚀 Creating main window...');
+    if (mainWindow) {
+        if (!mainWindow.isDestroyed()) {
+            console.log('✨ Existing window found, focusing it');
+            mainWindow.focus();
+            return mainWindow;
+        }
+        console.log('🔄 Old window was destroyed, creating new one');
+    }
+
+    console.log('📦 Initializing new BrowserWindow');
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            // Performance optimizations
             backgroundThrottling: false,
             enableWebSQL: false,
             webgl: false,
             offscreen: false
         },
-        // Performance optimizations
-        show: false, // Don't show until ready
+        show: false,
         backgroundColor: '#ffffff'
     });
 
     const seqtaUrl = store.get('seqtaUrl');
-    
-    // Optimize page loading
-    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        // Open external links in browser instead of new electron window
-        if (url.startsWith('http')) {
-            require('electron').shell.openExternal(url);
-            return { action: 'deny' };
+    console.log('📍 Stored SEQTA URL:', seqtaUrl);
+
+    // Register keyboard shortcut for settings
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if ((input.meta || input.control) && input.key === ',') {
+            createSettingsWindow();
         }
-        return { action: 'allow' };
     });
 
     // Inject CSS when the page loads
     mainWindow.webContents.on('did-finish-load', () => {
+        console.log('🎨 Page loaded, injecting CSS');
         mainWindow.webContents.insertCSS(customCSS).catch(err => {
             console.error('Failed to inject CSS:', err);
         });
@@ -83,40 +157,35 @@ function createMainWindow() {
 
     // Only show window when it's ready
     mainWindow.once('ready-to-show', () => {
+        console.log('🎉 Window ready to show!');
         mainWindow.show();
         mainWindow.focus();
     });
 
     if (seqtaUrl) {
-        mainWindow.loadURL(seqtaUrl, {
-            // Performance optimizations for page loading
-            httpReferrer: seqtaUrl,
-            userAgent: 'Chrome',
-            cache: 'force-cache'
-        }).then(() => {
-            // Re-inject CSS after URL change
-            mainWindow.webContents.insertCSS(customCSS).catch(err => {
-                console.error('Failed to inject CSS after URL change:', err);
+        if (!isValidSeqtaUrl(seqtaUrl)) {
+            console.error('❌ Invalid SEQTA URL stored:', seqtaUrl);
+            createSettingsWindow();
+            return;
+        }
+
+        console.log('🌐 Loading SEQTA URL:', seqtaUrl);
+        mainWindow.loadURL(seqtaUrl)
+            .then(() => {
+                console.log('✅ Successfully loaded SEQTA URL');
+                mainWindow.show();
+                mainWindow.focus();
+            })
+            .catch(err => {
+                console.error('❌ Failed to load SEQTA URL:', err);
+                createSettingsWindow();
             });
-        });
     } else {
+        console.log('⚙️ No SEQTA URL found, opening settings');
         createSettingsWindow();
     }
 
-    // Optimize memory usage
-    mainWindow.on('minimize', () => {
-        if (process.platform === 'darwin') return; // Skip for macOS
-        mainWindow.webContents.setBackgroundThrottling(true);
-    });
-
-    mainWindow.on('restore', () => {
-        mainWindow.webContents.setBackgroundThrottling(false);
-    });
-
-    // Only enable DevTools in development
-    if (process.env.NODE_ENV === 'development') {
-        mainWindow.webContents.openDevTools();
-    }
+    return mainWindow;
 }
 
 function createSettingsWindow() {
@@ -131,10 +200,6 @@ function createSettingsWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            // Performance optimizations
-            backgroundThrottling: false,
-            enableWebSQL: false,
-            webgl: false
         },
         show: false,
         backgroundColor: '#ffffff'
@@ -168,6 +233,7 @@ app.commandLine.appendSwitch('disable-smooth-scrolling');
 
 // Wait for app to be ready before creating windows
 app.whenReady().then(async () => {
+    createAppMenu();
     await loadExtension();
     createMainWindow();
 });
@@ -183,25 +249,85 @@ app.on('activate', () => {
     }
 });
 
+// Format and validate SEQTA URL
+function formatAndValidateUrl(url) {
+    // Remove any whitespace
+    url = url.trim();
+
+    // If no protocol specified, add https://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
+
+    // If it's http://, upgrade to https://
+    if (url.startsWith('http://')) {
+        url = 'https://' + url.slice(7);
+    }
+
+    try {
+        const urlObj = new URL(url);
+        // Ensure it's https
+        if (urlObj.protocol !== 'https:') {
+            throw new Error('URL must use HTTPS');
+        }
+        return { isValid: true, url: url };
+    } catch (error) {
+        return { isValid: false, url: url, error: error.message };
+    }
+}
+
 // Handle setting the SEQTA URL
 ipcMain.on('set-seqta-url', (event, url) => {
-    console.log('Setting SEQTA URL:', url);
-    store.set('seqtaUrl', url);
-    if (mainWindow) {
-        mainWindow.loadURL(url, {
-            httpReferrer: url,
-            userAgent: 'Chrome',
-            cache: 'force-cache'
-        }).then(() => {
-            // Re-inject CSS after URL change
-            mainWindow.webContents.insertCSS(customCSS).catch(err => {
-                console.error('Failed to inject CSS after URL change:', err);
-            });
-        });
-    } else {
-        createMainWindow();
+    console.log('🔧 Received new SEQTA URL:', url);
+    
+    const { isValid, url: formattedUrl, error } = formatAndValidateUrl(url);
+    
+    if (!isValid) {
+        console.error('❌ Invalid URL format:', error);
+        event.reply('seqta-url-error', 'Please enter a valid URL');
+        return;
     }
-    if (settingsWindow) {
+
+    console.log('💾 Saving URL to store:', formattedUrl);
+    store.set('seqtaUrl', formattedUrl);
+
+    // Create main window if it doesn't exist
+    if (!mainWindow || mainWindow.isDestroyed()) {
+        console.log('🆕 Creating new main window');
+        createMainWindow();
+    } else {
+        console.log('🔄 Loading new URL in existing window:', formattedUrl);
+        mainWindow.loadURL(formattedUrl).then(() => {
+            console.log('✅ URL loaded successfully');
+            
+            console.log('🎨 Injecting CSS and settings button');
+            mainWindow.webContents.insertCSS(customCSS).catch(err => {
+                console.error('Failed to inject CSS:', err);
+            });
+            
+            mainWindow.webContents.executeJavaScript(`
+                if (!document.getElementById('bsp-settings-button')) {
+                    document.body.insertAdjacentHTML('beforeend', ${JSON.stringify(settingsButtonHTML)});
+                    document.getElementById('bsp-settings-button').addEventListener('click', () => {
+                        window.postMessage('open-settings', '*');
+                    });
+                }
+            `).catch(err => {
+                console.error('Failed to inject settings button:', err);
+            });
+
+            console.log('👀 Showing and focusing window');
+            mainWindow.show();
+            mainWindow.focus();
+        }).catch(err => {
+            console.error('❌ Failed to load SEQTA URL:', err);
+            event.reply('seqta-url-error', 'Failed to load SEQTA. Please check your connection and URL.');
+        });
+    }
+
+    // Close settings window if it exists
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+        console.log('🚪 Closing settings window');
         settingsWindow.close();
     }
 }); 

@@ -16,7 +16,7 @@
     "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
     "publish": "bun lib/publish.js --b",
     "zip": "bedframe zip",
-    "electron-dev": "npm run build:chrome && electron .",
+    "electron-dev": "electron .",
     "electron-build": "electron-builder",
     "electron-pack": "npm run build:chrome && electron-builder --dir",
     "electron-dist": "npm run build:chrome && electron-builder"

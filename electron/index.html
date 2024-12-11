@@ -3,65 +3,122 @@
 <head>
     <title>BetterSEQTA Settings</title>
     <style>
-        body {
+        :root {
+            --background-primary: #ffffff;
+            --background-secondary: #e5e7eb;
+            --text-primary: black;
+            --theme-primary: #4F46E5;
+            --theme-hover: #4338CA;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-primary: #232323;
+                --background-secondary: #1a1a1a;
+                --text-primary: white;
+                --theme-primary: #6366F1;
+                --theme-hover: #818CF8;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            background: #f5f5f5;
         }
+
+        body {
+            background: var(--background-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
         .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
+
         h1 {
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
         }
-        .form-group {
-            margin-bottom: 20px;
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
         }
+
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #555;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
         }
+
         input[type="url"] {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-bottom: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--background-secondary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            transition: all 0.2s;
         }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
         button {
-            background: #4F46E5;
-            color: white;
+            margin-top: 1rem;
+            width: 100%;
+            padding: 0.75rem;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            border-radius: 8px;
+            background: var(--theme-primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 16px;
+            transition: all 0.2s;
         }
+
         button:hover {
-            background: #4338CA;
+            background: var(--theme-hover);
+        }
+
+        #error-message {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>BetterSEQTA Settings</h1>
-        <div class="form-group">
-            <label for="seqtaUrl">SEQTA Website URL</label>
-            <input type="url" id="seqtaUrl" placeholder="https://your-school.seqta.com.au" required>
-            <button onclick="saveSettings()">Save Settings</button>
-        </div>
+        <div class="subtitle">It's time to get started! To begin type in your school's SEQTA URL below.</div>
+        <label for="seqtaUrl">SEQTA Website URL</label>
+        <input type="url" id="seqtaUrl" placeholder="Enter your school's SEQTA URL (e.g https://seqta.school.edu.au)" required>
+        <div id="error-message"></div>
+        <button onclick="saveSettings()">Save Settings</button>
     </div>
 
     <script>
-        // Access electron APIs through the contextBridge
         const electron = window.require('electron');
         const { ipcRenderer } = electron;
         const Store = window.require('electron-store');
@@ -69,20 +126,37 @@
 
         // Load saved URL on page load
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('Loading saved URL...');
             const savedUrl = store.get('seqtaUrl') || '';
-            console.log('Saved URL:', savedUrl);
             document.getElementById('seqtaUrl').value = savedUrl;
+        });
+
+        // Handle error messages from main process
+        ipcRenderer.on('seqta-url-error', (event, message) => {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
         });
 
         // Save settings
         function saveSettings() {
             const url = document.getElementById('seqtaUrl').value;
-            console.log('Saving URL:', url);
+            const errorElement = document.getElementById('error-message');
+            errorElement.style.display = 'none';
+            
             if (url) {
                 ipcRenderer.send('set-seqta-url', url);
+            } else {
+                errorElement.textContent = 'Please enter a URL';
+                errorElement.style.display = 'block';
             }
         }
+
+        // Handle enter key
+        document.getElementById('seqtaUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveSettings();
+            }
+        });
     </script>
 </body>
 </html> 
