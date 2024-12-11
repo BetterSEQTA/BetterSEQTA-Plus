@@ -1,4 +1,4 @@
-
+# THIS BRANCH IS NOT STABLE AND IS NOT A WEB EXTENSION. PLEASE DO NOT USE UNLESS IF YOU KNOW WHAT YOU ARE DOING.
 # 
 
 <a href="https://chromewebstore.google.com/detail/betterseqta+/afdgaoaclhkhemfkkkonemoapeinchel">
@@ -84,14 +84,6 @@ npm install # or your preferred package manager like pnpm or yarn
 npm run dev
 ```
 
-3. Load the extension into chrome
-
-- Go to `chrome://extensions`
-- Enable developer mode
-- Click `Load unpacked`
-- Select the `dist` folder
-
-Just remember, in order to update changes to the extension, you need to click the refresh button on the extension in `chrome://extensions` whenever anything's changed.
 
 ### Building for production
 
