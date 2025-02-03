@@ -120,6 +120,7 @@ html {
 
 .modaliser-container {
   backdrop-filter: none !important;
+  pointer-events: none !important;
 }
 
 .connectedNotificationsWrapper > div > button > svg > g {
@@ -1877,9 +1878,6 @@ blurred {
 }
 .uiSlidePane > .pane > .header {
   background: var(--better-main);
-}
-.modaliser-container {
-  pointer-events: none;
 }
 .content [placeholder="Subject…"] {
   padding-left: 12px !important;
