@@ -1,6 +1,6 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development, while incorporating a plethora of new and improved features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -69,7 +69,7 @@
     "@uiw/codemirror-theme-github": "^4.23.3",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
-    "caniuse-lite": "^1.0.30001684",
+    "caniuse-lite": "^1.0.30001696",
     "classnames": "^2.5.1",
     "codemirror": "^6.0.1",
     "color": "^4.2.3",

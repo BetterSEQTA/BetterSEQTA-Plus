@@ -165,6 +165,10 @@ export function OpenWhatsNewPopup() {
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
   
+    <h1>3.4.3 - Minor Bug Fixes</h1>
+    <li>Fixed a bug where timetable colours couldn't be changed</li>
+    <li>Other minor bug fixes</li>
+
     <h1>3.4.2 - Minor Bug Fixes</h1>
     <li>Fixed a bug where Assessment Average wasn't enabled by default</li>
     <li>Fixed floating menus would sometimes be placed behind other elements</li>
@@ -2197,10 +2201,10 @@ export async function loadHomePage() {
 
   const skeletonStructure = stringToHTML(/* html */`
     <div class="home-container" id="home-container">
-      <div class="shortcut-container border">
-        <div class="shortcuts border" id="shortcuts"></div>
+      <div class="border shortcut-container">
+        <div class="border shortcuts" id="shortcuts"></div>
       </div>
-      <div class="timetable-container border">
+      <div class="border timetable-container">
         <div class="home-subtitle">
           <h2 id="home-lesson-subtitle">Today's Lessons</h2>
           <div class="timetable-arrows">
@@ -2215,7 +2219,7 @@ export async function loadHomePage() {
         <div class="day-container loading" id="day-container">
         </div>
       </div>
-      <div class="upcoming-container border">
+      <div class="border upcoming-container">
         <div class="upcoming-title">
           <h2 class="home-subtitle">Upcoming Assessments</h2>
           <div class="upcoming-filters" id="upcoming-filters"></div>
@@ -2223,7 +2227,7 @@ export async function loadHomePage() {
         <div class="upcoming-items loading" id="upcoming-items">
         </div>
       </div>
-      <div class="notices-container border">
+      <div class="border notices-container">
         <div style="display: flex; justify-content: space-between">
           <h2 class="home-subtitle">Notices</h2>
           <input type="date" />
