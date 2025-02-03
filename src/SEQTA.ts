@@ -2272,7 +2272,6 @@ export async function loadHomePage() {
     assessmentsPromise,
     classesPromise,
     prefsPromise,
-    noticesPromise
   ] = [
     // Timetable data
     fetch(`${location.origin}/seqta/student/load/timetable?`, {
@@ -2296,23 +2295,15 @@ export async function loadHomePage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asArray: true, request: 'userPrefs' })
-    }).then(res => res.json()),
-
-    // Notices data
-    fetch(`${location.origin}/seqta/student/load/notices?`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: TodayFormatted })
     }).then(res => res.json())
   ]
 
   // Process all data in parallel
-  const [timetableData, assessments, classes, prefs, notices] = await Promise.all([
+  const [timetableData, assessments, classes, prefs] = await Promise.all([
     timetablePromise,
     assessmentsPromise, 
     classesPromise,
-    prefsPromise,
-    noticesPromise
+    prefsPromise
   ])
 
   // Process timetable data

@@ -3,6 +3,7 @@ declare module '*.woff';
 declare module '*.scss';
 declare module '*.png';
 declare module '*.html';
+declare module '*.svelte';
 
 declare module "*.png?base64" {
   const value: string;
