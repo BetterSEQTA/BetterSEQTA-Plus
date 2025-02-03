@@ -203,7 +203,13 @@ html {
 .cke_panel {
   border-radius: 16px !important;
   margin-top: 8px !important;
-  background: unset;
+  background: var(--background-primary) !important;
+  border: var(--background-secondary) !important;
+  overflow: clip;
+  
+  iframe {
+    background: transparent !important;
+  }
 }
 
 .legacy-root button:active,
@@ -1997,6 +2003,11 @@ div.bar.flat {
   background: unset !important;
   gap: 0 8px;
 }
+.cke_toolbar:has(.cke_toolgroup) {
+  .cke_combo {
+    margin-right: 8px !important;
+  }
+}
 .cke_toolbox > .cke_toolbar > .cke_toolgroup {
   margin: 0 !important;
 }
@@ -2013,7 +2024,13 @@ div.bar.flat {
 }
 .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
 .cke_toolbox > .cke_toolbar .cke_button_on {
-  background-color: #797979 !important;
+  background-color: #d5d5d6 !important;
+  &::after {
+    background: black !important;
+  }
+}
+.quicktable {
+  border-radius: 12px;
 }
 .dark {
   .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
