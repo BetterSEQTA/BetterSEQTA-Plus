@@ -244,8 +244,23 @@ html {
       color: var(--text-primary);
     }
 
-    .ais-btnSearch .material-icons {
-      font-size: 18px !important;
+    .ais-btnSearch {
+      transition: background 200ms, color 200ms, box-shadow 200ms;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.2) !important;
+        color: var(--text-primary) !important;
+        box-shadow: unset !important;
+      }
+
+      .material-icons {
+        font-size: 0px !important;
+        font-family: Rubik, sans-serif !important;
+        &::before {
+          font-size: 18px !important;
+          content: 'Search' !important;
+        }
+      }
     }
   }
 
@@ -485,9 +500,24 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 }
 .singleSelect {
   border-radius: 16px !important;
-  padding: 4px !important;
-  padding-left: 12px !important;
-  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+
+  &[style*="absolute"] {
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+    padding: 0 2px !important;
+    outline: 2px solid rgba(0, 0, 0, 0.01) !important;
+  }
+
+  > li {
+    border-radius: 12px !important;
+    transition: background 150ms;
+    margin-bottom: 2px !important;
+    margin-top: 2px !important;
+    border-bottom: unset !important;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.1) !important;
+    }
+  }
 }
 .quickbar .actions a > svg {
   scale: 0.95;
