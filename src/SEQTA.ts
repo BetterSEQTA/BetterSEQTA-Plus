@@ -2737,6 +2737,44 @@ async function handleAssessments(node: Element): Promise<void> {
   const assessmentsWrapper = await waitForElm('#main > .assessmentsWrapper .assessments .AssessmentItem__AssessmentItem___2EZ95', true, 50);
   if (!assessmentsWrapper) return;
 
+  // Grade conversion map for letter grades
+  const letterGradeMap: Record<string, number> = {
+    'A+': 100,
+    'A': 95,
+    'A-': 90,
+    'B+': 85, 
+    'B': 80,
+    'B-': 75,
+    'C+': 70,
+    'C': 65,
+    'C-': 60,
+    'D+': 55,
+    'D': 50,
+    'D-': 45,
+    'E+': 40,
+    'E': 35,
+    'E-': 30,
+    'F': 0
+  };
+
+  // Function to parse grade text into a number
+  function parseGrade(gradeText: string): number {
+    // Remove any whitespace
+    const trimmedGrade = gradeText.trim().toUpperCase();
+    
+    // Check if it's a percentage
+    if (trimmedGrade.includes('%')) {
+      return parseFloat(trimmedGrade.replace('%', '')) || 0;
+    }
+    
+    // Check if it's a letter grade
+    if (letterGradeMap.hasOwnProperty(trimmedGrade)) {
+      return letterGradeMap[trimmedGrade];
+    }
+
+    return 0;
+  }
+
   // Function to calculate average of grades
   function calculateAverageGrade(): number {
     const gradeElements = document.querySelectorAll('.Thermoscore__text___1NdvB');
@@ -2744,8 +2782,9 @@ async function handleAssessments(node: Element): Promise<void> {
     let count = 0;
 
     gradeElements.forEach(element => {
-      const grade = parseFloat(element.textContent?.replace('%', '') || '0');
-      if (!isNaN(grade)) {
+      const gradeText = element.textContent || '';
+      const grade = parseGrade(gradeText);
+      if (grade > 0) {
         total += grade;
         count++;
       }
