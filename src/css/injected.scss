@@ -661,9 +661,16 @@ td.colourBar {
 #container #content .uiButton {
   border-radius: 16px;
 }
+.dark {
+  #toolbar button.toggled,
+  #toolbar button.depressed {
+    background: #333333;
+  }
+}
 #toolbar button.toggled,
 #toolbar button.depressed {
-  background: var(--better-main);
+  background: #f3f3f3;
+  color: black;
 }
 ul.buttonChecklist {
   border-radius: 16px;
@@ -2696,10 +2703,14 @@ li.MessageList__unread___3imtO {
 }
 
 .calendar {
-  background: var(--better-main) !important;
-  color: var(--text-color) !important;
+  background: var(--background-primary) !important;
+  color: var(--text-primary) !important;
   border-radius: 16px !important;
   margin-top: 4px;
+
+  &.container {
+    box-shadow: -2px 2px 30px 0px rgba(0,0,0,0.3) !important;
+  }
 
   table {
     background: transparent !important;
