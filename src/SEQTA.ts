@@ -2754,7 +2754,7 @@ async function handleAssessments(node: Element): Promise<void> {
     'E+': 40,
     'E': 35,
     'E-': 30,
-    'F': 0
+    'F': 0,
   };
 
   // Function to parse grade text into a number
@@ -2770,6 +2770,10 @@ async function handleAssessments(node: Element): Promise<void> {
     // Check if it's a letter grade
     if (letterGradeMap.hasOwnProperty(trimmedGrade)) {
       return letterGradeMap[trimmedGrade];
+    }
+    // Default other letter grades to 0 
+    if (letterGradeMap.hasOwnProperty(trimmedGrade)) == false) and (trimmedGrade.includes('%') == false) {
+      return letterGradeMap["F"]
     }
 
     return 0;
