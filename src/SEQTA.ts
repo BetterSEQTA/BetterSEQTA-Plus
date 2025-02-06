@@ -2772,7 +2772,7 @@ async function handleAssessments(node: Element): Promise<void> {
       return letterGradeMap[trimmedGrade];
     }
     // Default other letter grades to 0 
-    if (letterGradeMap.hasOwnProperty(trimmedGrade)) == false) and (trimmedGrade.includes('%') == false) {
+    if (!(letterGradeMap.hasOwnProperty(trimmedGrade)))) and (!(trimmedGrade.includes('%'))) {
       return letterGradeMap["F"]
     }
 
