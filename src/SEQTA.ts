@@ -742,6 +742,7 @@ async function LoadPageElements(): Promise<void> {
     className: 'notice',
   }, handleNotices);
 
+
   if (settingsState.assessmentsAverage) {
     eventManager.register('assessmentsAdded', {
       elementType: 'div',
@@ -751,6 +752,7 @@ async function LoadPageElements(): Promise<void> {
 
   await handleSublink(sublink);
 }
+
 
 async function handleNotices(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
