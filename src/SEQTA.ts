@@ -809,8 +809,8 @@ function handleTimetableZoom(): void {
   zoomOut.innerHTML = '&#xed94;'; // Using unicode for zoom out icon
   
 
-  zoomControls.appendChild(zoomIn);
   zoomControls.appendChild(zoomOut);
+  zoomControls.appendChild(zoomIn);
 
   const toolbar = document.getElementById('toolbar');
   toolbar?.appendChild(zoomControls);
