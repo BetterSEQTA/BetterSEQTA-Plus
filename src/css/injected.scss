@@ -688,6 +688,7 @@ td.colourBar {
   #toolbar button.toggled,
   #toolbar button.depressed {
     background: #333333;
+    color: white;
   }
 }
 #toolbar button.toggled,
@@ -715,12 +716,17 @@ ul.buttonChecklist {
     border-radius: 8px !important;
   }
 
-  &:has(.item.checked) button:nth-child(2) {
+  &:has(.item.checked) button:nth-child(1) {
     background: var(--background-secondary) !important;
   }
 
-  &:has(.item.unchecked) button:nth-child(1) {
+  &:has(.item.unchecked) button:nth-child(2) {
     background: var(--background-secondary) !important;
+  }
+}
+.dark ul.buttonChecklist {
+  li.item.checked {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M9 16.172l10.594-10.594 1.406 1.406-12 12-5.578-5.578 1.406-1.406z"/></svg>');
   }
 }
 #toolbar > span:has(input) {
