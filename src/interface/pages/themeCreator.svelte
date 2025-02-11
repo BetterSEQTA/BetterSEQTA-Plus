@@ -27,6 +27,7 @@
   import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { disableTheme } from '@/seqta/ui/themes/disableTheme'
+  import { setTheme } from '@/seqta/ui/themes/setTheme'
 
   const { themeID } = $props<{ themeID: string }>()
   let theme = $state<LoadedCustomTheme>({
@@ -111,6 +112,7 @@
 
     ClearThemePreview();
     saveTheme(themeClone);
+    setTheme(themeClone.id);
     themeUpdates.triggerUpdate();
     CloseThemeCreator();
   }
