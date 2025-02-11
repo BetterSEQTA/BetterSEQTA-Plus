@@ -576,29 +576,42 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   clip-path: polygon(50% 40%, 0 100%, 100% 100%);
   border-bottom-color: transparent !important;
 }
-#main > .timetablepage > .quickbar.below::before {
-  top: -23px;
-  background-color: inherit;
-  clip-path: polygon(50% 40%, 0 100%, 100% 100%);
-  border-bottom-color: transparent !important;
-}
-#main > .timetablepage > .quickbar.above::after {
-  content: "";
-  position: absolute;
-  bottom: -23px;
-  z-index: 2;
-  left: 50%;
-  margin: 0 0 0 -12px;
-  background-color: rgba(255, 255, 255, 0.2);
-  clip-path: polygon(50% 40%, 0 0, 100% 0);
-  border: 12px solid rgba(255, 255, 255, 0);
-  border-top-color: transparent;
-}
-#main > .timetablepage > .quickbar.above::before {
-  border-bottom-color: transparent !important;
-  bottom: -23px !important;
-  background-color: inherit;
-  clip-path: polygon(50% 40%, 0 0, 100% 0);
+#main > .timetablepage > .quickbar {
+  &.below::before {
+    top: -23px;
+    background-color: inherit;
+    clip-path: polygon(50% 40%, 0 100%, 100% 100%);
+    border-bottom-color: transparent !important;
+  }
+
+  &.above[data-yiq="light"]::after {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  &.above[data-yiq="dark"]::after {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  &.above::after {
+    content: "";
+    position: absolute;
+    bottom: -24px;
+    z-index: 0;
+    left: 50%;
+    margin: 0 0 0 -12px;
+    clip-path: polygon(50% 40%, 0 0, 100% 0);
+    border: 12px solid rgba(255, 255, 255, 0);
+    border-top-color: transparent;
+  }
+
+  &.above::before {
+    border-bottom-color: transparent !important;
+    border-top-color: transparent !important;
+    bottom: -24px !important;
+    z-index: -1 !important;
+    background-color: inherit;
+    clip-path: polygon(50% 40%, 0 0, 100% 0);
+  }
 }
 #main .timetablepage .actions a,
 #main .timetablepage .actions button {
