@@ -11,8 +11,14 @@
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
   font-family: Rubik, sans-serif !important;
 }
+
 .hidden {
   display: none;
+}
+
+button.uiButton.timetable-zoom.iconFamily,
+.iconFamily {
+  font-family: "IconFamily" !important;
 }
 
 body,
@@ -227,6 +233,10 @@ html {
   select {
     background: rgba(255, 255, 255, 0.1);
   }
+}
+
+.timetable-zoom {
+  font-size: 14px !important;
 }
 
 #main > .dashboard {
