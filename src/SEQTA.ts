@@ -164,6 +164,17 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
+
+    <h1>3.4.4 - Bug Fixes and Improvements</h1>
+    <li>Removed broken gradients on the backgrounds of certain buttons</li>
+    <li>Fixed timetable quickbar arrow receiving the wrong colour</li>
+    <li>Auto-applied selected theme after saving in theme creator</li>
+    <li>Fixed a bug where timetable was clipped at certain times</li>
+    <li>Improved spacing of the message editor buttons</li>
+    <li>Added HEX colour input to the theme creator</li>
+    <li>Fixed theme application in the creator</li>
+    <li>Performance improvements</li>
+    <li>Other minor bug fixes</li>
   
     <h1>3.4.3 - Minor Bug Fixes</h1>
     <li>Fixed a bug where timetable colours couldn't be changed</li>

@@ -4,6 +4,7 @@ import { join, resolve } from 'path';
 import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
+import ClosePlugin from './lib/closePlugin';
 
 import react from '@vitejs/plugin-react';
 import million from "million/compiler";
@@ -25,7 +26,7 @@ const targets: BuildTarget[] = [
 
 const mode = process.env.MODE || 'chrome';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
     react(),
@@ -38,7 +39,8 @@ export default defineConfig({
       manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
     }),
-    updateManifestPlugin()
+    updateManifestPlugin(),
+    ...(command === 'build' ? [ClosePlugin()] : [])
   ],
   root: resolve(__dirname, './src'),
   resolve: {
@@ -78,4 +80,4 @@ export default defineConfig({
       }
     }
   }
-});
+}));
