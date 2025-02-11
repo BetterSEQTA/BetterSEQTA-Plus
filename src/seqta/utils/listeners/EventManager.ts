@@ -136,11 +136,10 @@ class EventManager {
   }
 
   private async checkElement(element: Element): Promise<void> {
-    if (element.classList.contains('code')) console.log('Code Detected!');
     for (const [event, listeners] of this.listeners.entries()) {
       for (const { id, options, callback } of listeners) {
         if (this.matchesOptions(element, options)) {
-          await callback(element);
+          callback(element);
           if (options.once) {
             this.unregisterById(event, id);
           }
