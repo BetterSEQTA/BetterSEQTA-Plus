@@ -400,6 +400,30 @@ export function OpenWhatsNewPopup() {
   })
 }
 
+export function hideSideBar() {
+
+  
+
+  const sidebar = document.getElementById('menu') // The sidebar element to be closed
+  const main = document.getElementById('main') // The main content element that must be resized to fill the page
+
+  const currentMenuWidth = window.getComputedStyle(sidebar!).width // Get the styles of the different elements
+  const currentContentPosition = window.getComputedStyle(main!).position
+
+  if (currentMenuWidth != "0") { // Actually modify it to collapse the sidebar
+    sidebar!.style.width = "0";
+  } else {
+    sidebar!.style.width = "100%";
+  }
+
+  if (currentContentPosition != "relative") {
+    main!.style.position = 'relative';
+  } else {
+    main!.style.position = 'absolute';
+  }
+
+}
+
 export function OpenAboutPage() {
   const background = document.createElement('div')
   background.id = 'whatsnewbk'
