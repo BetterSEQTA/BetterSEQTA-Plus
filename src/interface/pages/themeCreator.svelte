@@ -55,7 +55,7 @@
   }
 
   onMount(async () => {
-    disableTheme();
+    await disableTheme();
 
     if (themeID) {
       const tempTheme = await getTheme(themeID)
