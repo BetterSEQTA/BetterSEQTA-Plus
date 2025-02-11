@@ -848,6 +848,8 @@ function handleTimetableZoom(): void {
         (time as HTMLElement).style.height = `${timeHeight}px`;
       });
     }
+
+    entries[Math.round((entries.length - 1) / 2)].scrollIntoView({ behavior: 'instant', block: 'center' });
   };
 
   zoomIn.addEventListener('click', () => {
