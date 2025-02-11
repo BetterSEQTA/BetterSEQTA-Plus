@@ -25,17 +25,32 @@ export function updateManifestPlugin(): PluginOption {
           console.log('** updated **');
         }
 
-        fs.watchFile(manifestPath, () => {
-          console.log('** watchFile ** ');
-          const manifestContents = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-          if (manifestContents.web_accessible_resources.some((resource: any) => resource.use_dynamic_url)) {
-            const updated = forceDisableUseDynamicUrl();
-            if (updated) {
-              server.ws.send({ type: 'full-reload' });
-              console.log('** updated **');
-            }
+        // Implement retry mechanism for file watching
+        const watchWithRetry = () => {
+          if (!fs.existsSync(manifestPath)) {
+            console.log('Manifest not found, retrying in 1 second...');
+            setTimeout(watchWithRetry, 1000);
+            return;
           }
-        });
+
+          fs.watchFile(manifestPath, () => {
+            console.log('** watchFile **');
+            try {
+              const manifestContents = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+              if (manifestContents.web_accessible_resources?.some((resource: any) => resource.use_dynamic_url)) {
+                const updated = forceDisableUseDynamicUrl();
+                if (updated) {
+                  server.ws.send({ type: 'full-reload' });
+                  console.log('** updated **');
+                }
+              }
+            } catch (error) {
+              console.log('Error reading manifest, will retry on next change:', error.message);
+            }
+          });
+        };
+
+        watchWithRetry();
       });
     },
 

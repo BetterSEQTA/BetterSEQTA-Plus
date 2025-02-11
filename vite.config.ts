@@ -64,6 +64,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@babel/runtime/helpers/extends', '@babel/runtime/helpers/interopRequireDefault'],
   },
+  legacy: {
+    skipWebSocketTokenCheck: true,
+  },
   build: {
     outDir: resolve(__dirname, 'dist', mode),
     emptyOutDir: false,
