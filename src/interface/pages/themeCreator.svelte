@@ -166,7 +166,7 @@
         </div>
 
         {#if item.direction === 'vertical'}
-          <div class="flex items-center justify-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
+          <div class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
             <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
           </div>
         {/if}
@@ -190,8 +190,8 @@
             {/key}
           {:else if item.type === 'imageUpload'}
             {#each theme.CustomImages as image (image.id)}
-              <div class="flex items-center h-16 gap-2 px-2 py-2 mb-4 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
-                <div class="h-full ">
+              <div class="flex gap-2 items-center px-2 py-2 mb-4 h-16 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
+                <div class="h-full">
                   <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
                 </div>
                 <input
@@ -207,14 +207,14 @@
               </div>
             {/each}
       
-            <div class="relative flex justify-center w-full h-8 gap-1 overflow-hidden transition rounded-lg place-items-center bg-zinc-200 dark:bg-zinc-700">
+            <div class="flex overflow-hidden relative gap-1 justify-center place-items-center w-full h-8 rounded-lg transition bg-zinc-200 dark:bg-zinc-700">
               <span class='font-IconFamily'>{'\uec60'}</span>
               <span class='dark:text-white'>Add image</span>
               <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
           {:else if item.type === 'lightDarkToggle'}
             <button
-              class="relative px-4 py-1 overflow-hidden text-xl font-medium transition rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 font-IconFamily"
+              class="overflow-hidden relative px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 font-IconFamily"
               onclick={() => (item.props as LightDarkToggleProps).onChange(!(item.props as LightDarkToggleProps).state)}
             >
               {#key (item.props as LightDarkToggleProps).state}
@@ -236,10 +236,10 @@
 {/snippet}
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
-  <div class='flex flex-col w-full min-h-screen p-2 bg-zinc-100 dark:bg-zinc-800 dark:text-white'>
+  <div class='flex flex-col p-2 w-full min-h-screen bg-zinc-100 dark:bg-zinc-800 dark:text-white'>
     <h1 class='text-xl font-semibold'>Theme Creator</h1>
     <a href='https://betterseqta.gitbook.io/betterseqta-docs' target='_blank' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
-      <span class='no-underline font-IconFamily pr-0.5'>{'\ueb44'}</span>
+      <span class='pr-0.5 no-underline font-IconFamily'>{'\ueb44'}</span>
       <span class='underline'>
         Need help? Check out the docs!
       </span>
@@ -254,7 +254,7 @@
         type='text'
         placeholder='What is your theme called?'
         bind:value={theme.name}
-        class='w-full p-2 mb-4 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600' />
+        class='p-2 mb-4 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600' />
     </div>
 
     <div>
@@ -263,23 +263,23 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
 
-    <div class="relative flex justify-center w-full gap-1 overflow-hidden transition rounded-lg aspect-theme group place-items-center bg-zinc-200 dark:bg-zinc-700">
+    <div class="flex overflow-hidden relative gap-1 justify-center place-items-center w-full rounded-lg transition aspect-theme group bg-zinc-200 dark:bg-zinc-700">
       <div class={`transition pointer-events-none z-30 font-IconFamily ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>
         {'\uec60'}
       </div>
       <span class={`dark:text-white pointer-events-none z-30 transition ${ theme.coverImage ? 'opacity-0 group-hover:opacity-100' : ''}`}>{theme.coverImage ? 'Change' : 'Add'} cover image</span>
       <input type="file" accept='image/*' onchange={onCoverImageUpload} class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer" />
       {#if !theme.hideThemeName && theme.coverImage}
-        <div class="absolute z-30 transition-opacity opacity-100 pointer-events-none group-hover:opacity-0">{theme.name}</div>
+        <div class="absolute z-30 opacity-100 transition-opacity pointer-events-none group-hover:opacity-0">{theme.name}</div>
       {/if}
       {#if theme.coverImage}
-        <div class="absolute z-20 w-full h-full transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-        <img src={theme.coverImageUrl} alt='Cover' class="absolute z-0 object-cover w-full h-full rounded" />
+        <div class="absolute z-20 w-full h-full opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 bg-black/20"></div>
+        <img src={theme.coverImageUrl} alt='Cover' class="object-cover absolute z-0 w-full h-full rounded" />
       {/if}
     </div>
 
