@@ -93,7 +93,7 @@ export default function Picker({
     <ColorPicker
       disableDarkMode={true}
       presets={presets}
-      hideInputs={false}
+      hideInputs={customOnChange ? false : true}
       value={customThemeColor ?? ""}
       onChange={(color: string) => {
         if (customOnChange) {
