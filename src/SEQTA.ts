@@ -171,6 +171,7 @@ export function OpenWhatsNewPopup() {
     <li>Fixed timetable quickbar arrow receiving the wrong colour</li>
     <li>Auto-applied selected theme after saving in theme creator</li>
     <li>Fixed a bug where timetable was clipped at certain times</li>
+    <li>Fixed custom sidebar layouts not applying on page load</li>
     <li>Improved spacing of the message editor buttons</li>
     <li>Added HEX colour input to the theme creator</li>
     <li>Fixed theme application in the creator</li>
@@ -2792,9 +2793,8 @@ export async function SendNewsPage() {
 
 async function CheckForMenuList() {
   try {
-    if (document.getElementById('menu')?.firstChild) {
-      ObserveMenuItemPosition()
-    }
+    await waitForElm('#menu > ul');
+    ObserveMenuItemPosition();
   } catch (error) {
     return;
   }
