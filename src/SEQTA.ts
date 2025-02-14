@@ -166,6 +166,7 @@ export function OpenWhatsNewPopup() {
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
 
     <h1>3.4.4 - Bug Fixes and Improvements</h1>
+    <li>Added vertical zoom to the timetable</li>
     <li>Removed broken gradients on the backgrounds of certain buttons</li>
     <li>Fixed timetable quickbar arrow receiving the wrong colour</li>
     <li>Auto-applied selected theme after saving in theme creator</li>
