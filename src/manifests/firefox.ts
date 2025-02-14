@@ -4,6 +4,8 @@ import pkg from '../../package.json'
 
 const updatedFirefoxManifest = {
   ...baseManifest,
+  version: pkg.version,
+  description: pkg.description,
   background: {
     scripts: [baseManifest.background.service_worker],
   },

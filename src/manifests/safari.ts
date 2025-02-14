@@ -1,8 +1,11 @@
 import { createManifest } from '../../lib/createManifest'
 import baseManifest from './manifest.json'
+import pkg from '../../package.json'
 
 const updatedSafariManifest = {
   ...baseManifest,
+  version: pkg.version,
+  description: pkg.description,
   browser_specific_settings: {
     safari: {
       strict_min_version: '15.4',
