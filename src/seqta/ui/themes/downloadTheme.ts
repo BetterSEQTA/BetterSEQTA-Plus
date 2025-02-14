@@ -49,14 +49,14 @@ export const StoreDownloadTheme = async (theme: { themeContent: Theme }) => {
 
 export const InstallTheme = async (themeData: ThemeContent) => {
   const strippedCoverImage = stripBase64Prefix(themeData.coverImage);
-  console.log('1!')
+
   const coverImageBlob = base64ToBlob(strippedCoverImage);
-  console.log('2!')
+
   const images = themeData.images.map((image) => ({
     ...image,
     blob: base64ToBlob(stripBase64Prefix(image.data))
   }));
-  console.log('3!')
+
   let availableThemes = await localforage.getItem('customThemes') as string[];
   if (availableThemes && !availableThemes.includes(themeData.id)) {
     availableThemes.push(themeData.id);
