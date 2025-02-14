@@ -28,7 +28,12 @@ const shareTheme = async (themeID: string) => {
     // Helper function to convert Blob to Base64
     const blobToBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        // Extract just the base64 data without the data URL prefix
+        const base64Data = base64String.split(',')[1];
+        resolve(base64Data);
+      };
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
