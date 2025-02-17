@@ -2973,7 +2973,7 @@ async function handleAssessments(node: Element): Promise<void> {
       60: "C-",
       55: "D+",
       50: "D",
-      45: "D-,
+      45: "D-",
       40: "E+",
       35: "E",
       30: "E-",
