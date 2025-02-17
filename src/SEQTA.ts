@@ -2961,6 +2961,8 @@ async function handleAssessments(node: Element): Promise<void> {
     if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
+    const prepaverage = Math.ceil(average.toFixed(0) / 5) * 5; 
+    console.info(prepaverage)
     const NumberGradeMap: Record<string, number> = {
       100: "A+",
       95: "A",
@@ -2980,9 +2982,9 @@ async function handleAssessments(node: Element): Promise<void> {
       0: "F"
     };
     var letteraverage = "N/A"
-    if (NumberGradeMap.hasOwnProperty(average.toFixed(0))) {
+    if (NumberGradeMap.hasOwnProperty(prepaverage)) {
       console.debug("[BetterSEQTA+ Debugger] Match found")
-      letteraverage = NumberGradeMap[average.toFixed(0)];
+      letteraverage = NumberGradeMap[prepaverage];
     } else {
       console.debug("[BetterSEQTA+ Debugger] No match found")
       letteraverage = "N/A"
