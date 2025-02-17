@@ -2961,7 +2961,29 @@ async function handleAssessments(node: Element): Promise<void> {
     if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
-
+    const NumberGradeMap: Record<string, number> = {
+      100: "A+",
+      95: "A",
+      90: "A-",
+      85: "B+", 
+      80: "B",
+      75: "B-",
+      70: "C+",
+      65: "C",
+      60: "C-",
+      55: "D+",
+      50: "D",
+      45: "D-,
+      40: "E+",
+      35: "E",
+      30: "E-",
+      0: "F"
+    };
+    if NumberGradeMap.hasOwnProperty(average.toFixed(0)) {
+      letteraverage = NumberGradeMap[average.toFixed(0)];
+    } else {
+      letteraverage = "N/A"
+    }
     const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
         <div class="AssessmentItem__metaContainer___dMKma">
@@ -2972,8 +2994,8 @@ async function handleAssessments(node: Element): Promise<void> {
           </div>
         </div>
         <div class="Thermoscore__Thermoscore___2tWMi">
-          <div class="Thermoscore__fill___35WjF" style="width: ${average.toFixed(2)}%;">
-            <div class="Thermoscore__text___1NdvB" title="${average.toFixed(2)}%">${average.toFixed(2)}%</div>
+          <div class="Thermoscore__fill___35WjF" style="width: ${average.toFixed(2)}%">
+            <div class="Thermoscore__text___1NdvB" title="${average.toFixed(2)}% (${letteraverage});">${average.toFixed(2)}% (${letteraverage})</div>
           </div>
         </div>
       </div>
