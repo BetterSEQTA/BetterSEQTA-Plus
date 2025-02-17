@@ -2982,10 +2982,10 @@ async function handleAssessments(node: Element): Promise<void> {
     var letteraverage = "N/A"
     if (NumberGradeMap.hasOwnProperty(average.toFixed(0))) {
       console.debug("[BetterSEQTA+ Debugger] Match found")
-      var letteraverage = NumberGradeMap[average.toFixed(0)];
+      letteraverage = NumberGradeMap[average.toFixed(0)];
     } else {
       console.debug("[BetterSEQTA+ Debugger] No match found")
-      var letteraverage = "N/A"
+      letteraverage = "N/A"
     }
     const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
