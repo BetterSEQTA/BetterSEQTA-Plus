@@ -2979,7 +2979,7 @@ async function handleAssessments(node: Element): Promise<void> {
       30: "E-",
       0: "F"
     };
-    if NumberGradeMap.hasOwnProperty(average.toFixed(0)) {
+    if (NumberGradeMap.hasOwnProperty(average.toFixed(0))) {
       letteraverage = NumberGradeMap[average.toFixed(0)];
     } else {
       letteraverage = "N/A"
