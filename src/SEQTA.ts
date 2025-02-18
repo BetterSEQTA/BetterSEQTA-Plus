@@ -2997,7 +2997,7 @@ async function handleAssessments(node: Element): Promise<void> {
       console.debug("[BetterSEQTA+ Debugger] No match found")
       letteraverage = "N/A"
     }
-    if (settingsState.letteraverage) {
+    if (settingsState.lettergrade) {
       const average = letteraverage
     } else {
       const average = numaverage.toFixed(2)
