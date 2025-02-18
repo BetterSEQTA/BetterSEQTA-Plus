@@ -2922,7 +2922,7 @@ async function handleAssessments(node: Element): Promise<void> {
     // Check if it is a non-percent grade
     if (trimmedGrade.includes('/')) {
       grade = trimmedGrade.split("/");
-      return grade[0] / grade[1];
+      return (grade[0] / grade[1]);
     // Check if it's a percentage
     if (trimmedGrade.includes('%')) {
       return parseFloat(trimmedGrade.replace('%', '')) || 0;
