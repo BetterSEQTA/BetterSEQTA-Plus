@@ -3001,7 +3001,7 @@ async function handleAssessments(node: Element): Promise<void> {
     if (settingsState.lettergrade) {
       average = letteraverage
     } else {
-      average = numaverage.toFixed(2)
+      average = `${numaverage.toFixed(2)}%`
     }
     const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
