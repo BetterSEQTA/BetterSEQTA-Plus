@@ -2921,8 +2921,11 @@ async function handleAssessments(node: Element): Promise<void> {
     const trimmedGrade = gradeText.trim().toUpperCase();
     // Check if it is a non-percent grade
     if (trimmedGrade.includes('/')) {
-      grade = trimmedGrade.split("/");
-      return (grade[0] / grade[1]);
+      const grade = trimmedGrade.split("/");
+      var a = grade[1] as unknown as number
+      var b = grade[0] as unknown as number
+      return (b/a);
+    }
     // Check if it's a percentage
     if (trimmedGrade.includes('%')) {
       return parseFloat(trimmedGrade.replace('%', '')) || 0;
@@ -2964,9 +2967,10 @@ async function handleAssessments(node: Element): Promise<void> {
     if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
-    const prepaverage = Math.ceil(average.toFixed(0) / 5) * 5; 
+    const preaverage = average.toFixed(0) as unknown as number
+    const prepaverage = Math.ceil(preaverage / 5) * 5; 
     console.info(prepaverage)
-    const NumberGradeMap: Record<string, number> = {
+    const NumberGradeMap: Record<number, string> = {
       100: "A+",
       95: "A",
       90: "A-",
