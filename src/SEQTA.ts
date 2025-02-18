@@ -2959,15 +2959,15 @@ async function handleAssessments(node: Element): Promise<void> {
 
   // Function to add the average assessment item
   function addAverageAssessment() {
-    const average = calculateAverageGrade();
-    if (average === 0) return;
+    const numaverage = calculateAverageGrade();
+    if (numaverage === 0) return;
 
     // Remove existing average section if it exists
     const existingAverage = document.querySelector('.AssessmentItem__AssessmentItem___2EZ95:first-child');
     if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
-    const preaverage = average.toFixed(0) as unknown as number
+    const preaverage = numaverage.toFixed(0) as unknown as number
     const prepaverage = Math.ceil(preaverage / 5) * 5; 
     console.info(prepaverage)
     const NumberGradeMap: Record<number, string> = {
@@ -2997,6 +2997,11 @@ async function handleAssessments(node: Element): Promise<void> {
       console.debug("[BetterSEQTA+ Debugger] No match found")
       letteraverage = "N/A"
     }
+    if (settingsState.letteraverage) {
+      const average = letteraverage
+    } else {
+      const average = numaverage.toFixed(2)
+    }
     const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
         <div class="AssessmentItem__metaContainer___dMKma">
@@ -3007,8 +3012,8 @@ async function handleAssessments(node: Element): Promise<void> {
           </div>
         </div>
         <div class="Thermoscore__Thermoscore___2tWMi">
-          <div class="Thermoscore__fill___35WjF" style="width: ${average.toFixed(2)}%">
-            <div class="Thermoscore__text___1NdvB" title="${average.toFixed(2)}% (${letteraverage});">${average.toFixed(2)}% (${letteraverage})</div>
+          <div class="Thermoscore__fill___35WjF" style="width: ${numaverage.toFixed(2)}%">
+            <div class="Thermoscore__text___1NdvB" title="${average};">${average}</div>
           </div>
         </div>
       </div>
