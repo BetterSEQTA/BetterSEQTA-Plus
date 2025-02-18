@@ -2924,7 +2924,7 @@ async function handleAssessments(node: Element): Promise<void> {
       const grade = trimmedGrade.split("/");
       var a = grade[1] as unknown as number
       var b = grade[0] as unknown as number
-      return (b/a);
+      return ((b/a) * 100);
     }
     // Check if it's a percentage
     if (trimmedGrade.includes('%')) {
@@ -2933,7 +2933,7 @@ async function handleAssessments(node: Element): Promise<void> {
     
     // Check if it's a letter grade
     if (letterGradeMap.hasOwnProperty(trimmedGrade)) {
-      return letterGradeMap[trimmedGrade];
+      return letterGradeMap[trimmedGrade]; 
     }
 
     return 0;
