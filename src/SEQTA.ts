@@ -2921,8 +2921,8 @@ async function handleAssessments(node: Element): Promise<void> {
     const trimmedGrade = gradeText.trim().toUpperCase();
     // Check if it is a non-percent grade
     if (trimmedGrade.includes('/')) {
-      grade = trimmedGrade.split("/")
-      return parseFloat(grade[0] / grade[1]) || 0;
+      grade = trimmedGrade.split("/");
+      return grade[0] / grade[1];
     // Check if it's a percentage
     if (trimmedGrade.includes('%')) {
       return parseFloat(trimmedGrade.replace('%', '')) || 0;
