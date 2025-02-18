@@ -19,9 +19,5 @@ Please add a clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - If using Windows, the build number. Find this by using ```winver``` and copying down the build id.
-
 **Additional context**
 Add any other context about the problem here.
