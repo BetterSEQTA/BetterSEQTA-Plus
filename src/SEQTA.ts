@@ -2989,7 +2989,8 @@ async function handleAssessments(node: Element): Promise<void> {
       0: "F"
     };
     var letteraverage = "N/A"
-    if (NumberGradeMap.hasOwnProperty(prepaverage)) {
+    const check = Object.prototype.hasOwnProperty.call(NumberGradeMap, prepaverage);
+    if (check) {
       console.debug("[BetterSEQTA+ Debugger] Match found")
       letteraverage = NumberGradeMap[prepaverage];
     } else {
