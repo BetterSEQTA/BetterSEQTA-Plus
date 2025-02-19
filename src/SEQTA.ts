@@ -163,7 +163,7 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
-    <h1>3.4.4.1 - Everything Subject averages related</h1>
+    <h1>3.4.5 - Everything Subject averages related</h1>
     <li>Fixed subject averages not showing up with non-percent grades</li>
     <li>Added Toggle for Letter/Percent Grades</li>
     <h1>3.4.4 - Bug Fixes and Improvements</h1>
