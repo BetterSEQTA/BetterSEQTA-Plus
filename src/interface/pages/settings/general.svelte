@@ -109,7 +109,7 @@
       }
     },
     {
-      title: "Show Letter Grade Instead of Percentage Grade",
+      title: "Letter Grade Averages",
       description: "Shows the letter grade instead of the percentage in subject averages.",
       id: 8,
       Component: Switch,
