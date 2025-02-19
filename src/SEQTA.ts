@@ -163,7 +163,9 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
-
+    <h1>3.4.5 - Everything Subject averages related</h1>
+    <li>Fixed subject averages not showing up with non-percent grades</li>
+    <li>Added Toggle for Letter/Percent Grades</li>
     <h1>3.4.4 - Bug Fixes and Improvements</h1>
     <li>Added vertical zoom to the timetable</li>
     <li>Fixed theme importing failing when images were included</li>
@@ -2919,7 +2921,13 @@ async function handleAssessments(node: Element): Promise<void> {
   function parseGrade(gradeText: string): number {
     // Remove any whitespace
     const trimmedGrade = gradeText.trim().toUpperCase();
-    
+    // Check if it is a non-percent grade
+    if (trimmedGrade.includes('/')) {
+      const grade = trimmedGrade.split("/");
+      var a = grade[1] as unknown as number
+      var b = grade[0] as unknown as number
+      return ((b/a) * 100);
+    }
     // Check if it's a percentage
     if (trimmedGrade.includes('%')) {
       return parseFloat(trimmedGrade.replace('%', '')) || 0;
@@ -2927,7 +2935,7 @@ async function handleAssessments(node: Element): Promise<void> {
     
     // Check if it's a letter grade
     if (letterGradeMap.hasOwnProperty(trimmedGrade)) {
-      return letterGradeMap[trimmedGrade];
+      return letterGradeMap[trimmedGrade]; 
     }
 
     return 0;
@@ -2953,15 +2961,50 @@ async function handleAssessments(node: Element): Promise<void> {
 
   // Function to add the average assessment item
   function addAverageAssessment() {
-    const average = calculateAverageGrade();
-    if (average === 0) return;
+    const numaverage = calculateAverageGrade();
+    if (numaverage === 0) return;
 
     // Remove existing average section if it exists
     const existingAverage = document.querySelector('.AssessmentItem__AssessmentItem___2EZ95:first-child');
     if (existingAverage?.querySelector('.AssessmentItem__title___2bELn')?.textContent === 'Subject Average') {
       existingAverage.remove();
     }
-
+    const preaverage = numaverage.toFixed(0) as unknown as number
+    const prepaverage = Math.ceil(preaverage / 5) * 5; 
+    console.info(prepaverage)
+    const NumberGradeMap: Record<number, string> = {
+      100: "A+",
+      95: "A",
+      90: "A-",
+      85: "B+", 
+      80: "B",
+      75: "B-",
+      70: "C+",
+      65: "C",
+      60: "C-",
+      55: "D+",
+      50: "D",
+      45: "D-",
+      40: "E+",
+      35: "E",
+      30: "E-",
+      0: "F"
+    };
+    var letteraverage = "N/A"
+    const check = Object.prototype.hasOwnProperty.call(NumberGradeMap, prepaverage);
+    if (check) {
+      console.debug("[BetterSEQTA+ Debugger] Match found")
+      letteraverage = NumberGradeMap[prepaverage];
+    } else {
+      console.debug("[BetterSEQTA+ Debugger] No match found")
+      letteraverage = "N/A"
+    }
+    var average = "N/A"
+    if (settingsState.lettergrade) {
+      average = letteraverage
+    } else {
+      average = `${numaverage.toFixed(2)}%`
+    }
     const averageElement = stringToHTML(/* html */`
       <div class="AssessmentItem__AssessmentItem___2EZ95">
         <div class="AssessmentItem__metaContainer___dMKma">
@@ -2972,8 +3015,8 @@ async function handleAssessments(node: Element): Promise<void> {
           </div>
         </div>
         <div class="Thermoscore__Thermoscore___2tWMi">
-          <div class="Thermoscore__fill___35WjF" style="width: ${average.toFixed(2)}%;">
-            <div class="Thermoscore__text___1NdvB" title="${average.toFixed(2)}%">${average.toFixed(2)}%</div>
+          <div class="Thermoscore__fill___35WjF" style="width: ${numaverage.toFixed(2)}%">
+            <div class="Thermoscore__text___1NdvB" title="${average};">${average}</div>
           </div>
         </div>
       </div>

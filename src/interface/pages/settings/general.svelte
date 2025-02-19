@@ -28,6 +28,7 @@
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
+
     {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
@@ -105,6 +106,16 @@
       props: {
         state: $settingsState.assessmentsAverage,
         onChange: (isOn: boolean) => settingsState.assessmentsAverage = isOn
+      }
+    },
+    {
+      title: "Letter Grade Averages",
+      description: "Shows the letter grade instead of the percentage in subject averages.",
+      id: 8,
+      Component: Switch,
+      props: {
+        state: $settingsState.lettergrade,
+        onChange: (isOn: boolean) => settingsState.lettergrade = isOn
       }
     },
     {
