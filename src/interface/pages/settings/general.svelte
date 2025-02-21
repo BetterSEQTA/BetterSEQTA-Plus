@@ -124,7 +124,6 @@
       id: 8,
       Component: Button,
       props: {
-        state: $settingsState.NewsURL,
         onClick: () => settingsState.NewsURL = prompt("Enter news URL"),
         text: "Edit"
       }
