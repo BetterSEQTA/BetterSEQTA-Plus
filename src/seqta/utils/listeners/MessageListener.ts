@@ -12,6 +12,7 @@ import { CloseThemeCreator, OpenThemeCreator } from '@/seqta/ui/ThemeCreator';
 import ShareTheme from '@/seqta/ui/themes/shareTheme';
 import sendThemeUpdate from '@/seqta/utils/sendThemeUpdate';
 import hideSensitiveContent from '@/seqta/ui/dev/hideSensitiveContent';
+import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts" // Required for news 
 
 export class MessageHandler {
   constructor() {
