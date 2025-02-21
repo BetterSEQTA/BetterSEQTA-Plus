@@ -28,8 +28,7 @@ export class MessageHandler {
         sendResponse({ status: 'success' });
         break;
       case 'EditNewsURL':
-        const newsBaseURL = prompt('Please enter the news URL...')
-        const settingsState.newsURL = newsBaseURL
+        const newsBaseURL = prompt('Please enter the news URL...') => settingsState.newsURL = newsBaseURL
         sendResponse({status: 'success'}) // Send the response
         break
       case 'UpdateThemePreview':
