@@ -74,7 +74,7 @@
       id: 5,
       Component: Button,
       props: {
-        onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' },
+        onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
         text: "Edit"
       }
     },
@@ -124,6 +124,7 @@
       id: 8,
       Component: Button,
       props: {
+        state: $settingsState.NewsURL,
         onClick: () => settingsState.NewsURL = prompt("Enter news URL"),
         text: "Edit"
       }
