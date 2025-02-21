@@ -2420,7 +2420,12 @@ export async function loadHomePage() {
   const cleanup = setupTimetableListeners()
 
   // Initialize shortcuts immediately
-  addShortcuts(settingsState.shortcuts)
+  try {
+    addShortcuts(settingsState.shortcuts)
+  } catch(err: any) {
+    console.error('[BetterSEQTA+] Error adding shortcuts:',
+      err.message || err)
+  }
   AddCustomShortcutsToPage()
 
   // Get current date
