@@ -39,6 +39,7 @@ export interface SettingsState {
   devMode?: boolean;
   originalDarkMode?: boolean;
   assessmentsAverage?: boolean;
+  lettergrade: boolean;
 }
 
 interface ToggleItem {
