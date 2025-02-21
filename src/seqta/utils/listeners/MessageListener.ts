@@ -27,10 +27,7 @@ export class MessageHandler {
         closeExtensionPopup();
         sendResponse({ status: 'success' });
         break;
-      case 'EditNewsURL':
-        const newsBaseURL = prompt('Please enter the news URL...') => settingsState.newsURL = newsBaseURL
-        sendResponse({status: 'success'}) // Send the response
-        break
+
       case 'UpdateThemePreview':
         if (request?.save == true) {
           const save = async () => {
