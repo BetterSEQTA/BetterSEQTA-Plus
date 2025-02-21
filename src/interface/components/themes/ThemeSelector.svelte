@@ -98,7 +98,7 @@
 </script>
 
 <div
-  class="w-full pt-5 mb-1"
+  class="pt-5 mb-1 w-full"
   role="list"
   tabindex="-1"
   ondragover={handleDragOver}
@@ -106,9 +106,9 @@
   ondrop={handleDrop}
 >
   <div class="{isDragging ? 'opacity-100' : 'opacity-0'} transition pointer-events-none absolute w-full p-2 z-50">
-    <div class="sticky w-full h-64 bg-white shadow-xl dark:bg-zinc-900 top-5 dark:text-white rounded-xl outline-dashed outline-4 outline-zinc-200 dark:outline-zinc-700">
-      <div class="flex items-center justify-center h-full">
-        <div class="flex flex-col items-center justify-center">
+    <div class="sticky top-5 w-full h-64 bg-white rounded-xl shadow-xl dark:bg-zinc-900 dark:text-white outline-dashed outline-4 outline-zinc-200 dark:outline-zinc-700">
+      <div class="flex justify-center items-center h-full">
+        <div class="flex flex-col justify-center items-center">
           <svg height="48" width="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <g fill="currentColor">
               <path d="M44,31a1,1,0,0,0-1,1v8a3,3,0,0,1-3,3H8a3,3,0,0,1-3-3V32a1,1,0,0,0-2,0v8a5.006,5.006,0,0,0,5,5H40a5.006,5.006,0,0,0,5-5V32A1,1,0,0,0,44,31Z" fill="currentColor"/>
@@ -130,7 +130,7 @@
         >
           {#if isEditMode}
             <div
-              class="absolute z-20 flex w-6 h-6 p-2 text-white bg-red-600 rounded-full opacity-100 right-2 place-items-center top-2"
+              class="flex absolute top-2 right-2 z-20 place-items-center p-2 w-6 h-6 text-white bg-red-600 rounded-full opacity-100"
               onclick={(event) => { event.stopPropagation(); handleThemeDelete(theme.id) }}
               onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleThemeDelete(theme.id) }}
               role="button"
@@ -152,7 +152,7 @@
             </div>
 
             <div
-              class="absolute z-20 flex w-8 h-8 p-2 text-center transition-all -translate-y-1/2 rounded-full opacity-0 text-white/80 top-1/4 right-12 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2"
+              class="flex absolute right-12 top-1/4 z-20 place-items-center p-2 w-8 h-8 text-center rounded-full opacity-0 transition-all -translate-y-1/2 text-white/80 bg-black/50 group-hover:opacity-100 group-hover:top-1/2"
               onclick={(event) => { event.stopPropagation(); handleShareTheme(theme) }}
               onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleShareTheme(theme) }}
               role="button"
@@ -167,7 +167,7 @@
               <img
                 src={typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}
                 alt={theme.name}
-                class="absolute inset-0 z-0 object-cover w-full h-full pointer-events-none"
+                class="object-cover absolute inset-0 z-0 w-full h-full pointer-events-none"
               />
             {/if}
             {#if !theme.hideThemeName}
@@ -179,7 +179,7 @@
     {/if}
 
     {#if tempTheme}
-      <div class="flex justify-center w-full bg-gray-200 rounded-xl dark:bg-zinc-700/50 place-items-center aspect-theme animate-pulse">
+      <div class="flex justify-center place-items-center w-full bg-gray-200 rounded-xl animate-pulse dark:bg-zinc-700/50 aspect-theme">
         <svg class="w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -193,7 +193,7 @@
 
     <button
       onclick={() => OpenStorePage()}
-      class="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xecc5;</span>
       <span class="ml-2">Theme Store</span>
@@ -201,7 +201,7 @@
 
     <button
       onclick={() => { OpenThemeCreator(); closeExtensionPopup() }}
-      class="flex items-center justify-center w-full transition aspect-theme rounded-xl bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xec60;</span>
       <span class="ml-2">Create your own</span>

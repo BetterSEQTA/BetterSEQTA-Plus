@@ -12,6 +12,7 @@
     "build:firefox": "cross-env MODE=firefox vite build",
     "build:safari": "cross-env MODE=safari vite build",
     "convert:safari": "xcrun safari-web-extension-converter dist/safari --project-location . --app-name $npm_package_name-safari",
+    "dependency-graph": "depcruise src --include-only \"^src\" --output-type dot | dot -T svg > dependency-graph.svg",
     "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
     "publish": "bun lib/publish.js --b",
     "zip": "bedframe zip"
@@ -38,6 +39,7 @@
     "@types/mime-types": "^2.1.4",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "cross-env": "^7.0.3",
+    "dependency-cruiser": "^16.10.0",
     "eslint": "^8.57.1",
     "glob": "^11.0.1",
     "mime-types": "^2.1.35",
