@@ -1679,7 +1679,7 @@ function makeLessonDiv(lesson: any, num: number) {
   const { code, colour, description, staff, room, from, until, attendanceTitle, programmeID, metaID, assessments } = lesson
 
   // Construct the base lesson string with default values using ternary operators
-  let lessonString = `
+  let lessonString = /* html */`
     <div class="day" id="${code + num}" style="${colour}">
       <h2>${description || 'Unknown'}</h2>
       <h3>${staff || 'Unknown'}</h3>
@@ -1690,7 +1690,7 @@ function makeLessonDiv(lesson: any, num: number) {
 
   // Add buttons for assessments and courses if applicable
   if (programmeID !== 0) {
-    lessonString += `
+    lessonString += /* html */`
       <div class="day-button clickable" style="right: 5px;" onclick="location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
       <div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
     `
@@ -1702,7 +1702,7 @@ function makeLessonDiv(lesson: any, num: number) {
       `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`
     ).join('')
 
-    lessonString += `
+    lessonString += /* html */`
       <div class="tooltip assessmenttooltip">
         <svg style="width:28px;height:28px;border-radius:0;" viewBox="0 0 24 24">
           <path fill="#ed3939" d="M16 2H4C2.9 2 2 2.9 2 4V20C2 21.11 2.9 22 4 22H16C17.11 22 18 21.11 18 20V4C18 2.9 17.11 2 16 2M16 20H4V4H6V12L8.5 9.75L11 12V4H16V20M20 15H22V17H20V15M22 7V13H20V7H22Z" />
