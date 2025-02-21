@@ -119,6 +119,16 @@
       }
     },
     {
+      title: "Edit News URL",
+      description: "Edit the news URL. Quite bad and will be fixed later.",
+      id: 8,
+      Component: Button,
+      props: {
+        onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditNewsURL' }),
+        text: "Edit"
+      }
+    },
+    {
       title: "Lesson Alerts",
       description: "Sends a native browser notification ~5 minutes prior to lessons.",
       id: 8,
