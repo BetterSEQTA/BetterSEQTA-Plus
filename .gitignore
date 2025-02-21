@@ -9,6 +9,8 @@ yarn.lock
 .env
 .env.submit
 
+dependency-graph.svg
+
 # Build
 extension.zip
 build/
