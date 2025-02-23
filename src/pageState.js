@@ -1,3 +1,4 @@
+// pageState.ts
 class ReactFiber {
     constructor(selector, options = {}) {
         this.selector = selector;
@@ -36,37 +37,62 @@ class ReactFiber {
         return null;
     }
 
-    getState(key = null) {
-        if (!this.components.length) return null;
-        const state = this.components[0]?.state || null;
-        return key ? state?.[key] : state;
+    getState(key) {
+      if (!this.components.length) return null;
+      const state = this.components[0]?.state || null;
+
+      if (key === undefined) {
+        return state; // Return entire state
+      } else if (typeof key === 'string') {
+        return state?.[key]; // Return single key
+      } else if (Array.isArray(key)) {
+        // Return object with only specified keys
+        const filteredState = {};
+        for (const k of key) {
+          if (state && Object.hasOwn(state, k)) { // Use Object.hasOwn for safety
+            filteredState[k] = state[k];
+          }
+        }
+        return filteredState;
+      }
+      return null; // Invalid key type
     }
 
-    setState(updateFn) {
-        this.components.forEach(component => {
-            if (component?.setState) {
-                component.setState(prevState => {
-                    const newState = updateFn(prevState);
-                    if (this.debug) console.log("✅ Updated State:", newState);
-                    return newState;
-                });
-            }
-        });
-        return this; // Enable chaining
+    setState(update) {
+      this.components.forEach(component => {
+        if (component?.setState) {
+          if (typeof update === 'function') {
+            // Functional update
+            component.setState(prevState => {
+              const newState = update(prevState);
+              if (this.debug) console.log("✅ Updated State (Functional):", newState);
+              return newState;
+            });
+          } else {
+            // Object update (merge with existing state)
+            component.setState(prevState => {
+              const newState = { ...prevState, ...update }; // Merge here!
+              if (this.debug) console.log("✅ Updated State (Object Merge):", newState);
+              return newState;
+            });
+          }
+        }
+      });
+      return this;
     }
 
     getProp(propName) {
-        if (!this.fibers.length) return null;
-        return this.fibers[0]?.memoizedProps?.[propName] || null;
+      if (!this.fibers.length) return null;
+      return this.fibers[0]?.memoizedProps?.[propName];
     }
 
-    setProp(propName, value) {
-        this.fibers.forEach(fiber => {
-            if (fiber?.memoizedProps) {
-                fiber.memoizedProps[propName] = value;
-            }
-        });
-        return this.forceUpdate(); // Apply the change and return this for chaining
+    setProp(propName) {
+      this.fibers.forEach(fiber => {
+        if (fiber?.memoizedProps) {
+          fiber.memoizedProps[propName] = value;
+        }
+      });
+      return this; // Enable chaining
     }
 
     forceUpdate() {
@@ -80,37 +106,53 @@ class ReactFiber {
     }
 }
 
-// Message listener for communication with the background script
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === "reactFiberAction") {
-    const { selector, action, payload, debug } = request;
-    const fiberInstance = ReactFiber.find(selector, {debug}); // Use the class
+console.log("Window cat: ", window.cat);
 
+// Listen for messages from the background script (via window.postMessage)
+window.addEventListener('message', (event) => {
+  console.log(event)
+  
+  if (event.data.type === "reactFiberRequest") {
+    const { selector, action, payload, debug, messageId } = event.data;
+    const fiberInstance = ReactFiber.find(selector, { debug });
+
+    let response;
     switch (action) {
       case "getState":
-        sendResponse(fiberInstance.getState(payload.key));
+        response = fiberInstance.getState(payload.key);
         break;
       case "setState":
-        // Very important:  Eval the function string in the context of the page
-        const updateFn = eval(`(${payload.updateFn})`);
-        fiberInstance.setState(updateFn);
-        sendResponse({}); // Send acknowledgement
+        // Handle both function and object updates
+        if (payload.updateFn) {
+            const updateFn = eval(`(${payload.updateFn})`);
+            fiberInstance.setState(updateFn);
+        } else {
+            fiberInstance.setState(payload.updateObject);
+        }
+        response = {}; // Acknowledge
         break;
+
       case "getProp":
-        sendResponse(fiberInstance.getProp(payload.propName));
+        response = fiberInstance.getProp(payload.propName);
         break;
       case "setProp":
         fiberInstance.setProp(payload.propName, payload.value);
-        sendResponse({}); // Send acknowledgement
+        response = {}; // Acknowledge
         break;
       case "forceUpdate":
         fiberInstance.forceUpdate();
-        sendResponse({});  // Send acknowledgement
+        response = {}; // Acknowledge
         break;
       default:
         console.warn(`[pageState] Unknown action: ${action}`);
-        sendResponse(null);
+        response = null;
     }
-    return true; // Keep message channel open (for consistency, even if not always needed)
+
+    // Send the response back to the background script using window.postMessage
+    window.postMessage({
+      type: "reactFiberResponse",
+      response,
+      messageId,
+    }, "*");
   }
 });
