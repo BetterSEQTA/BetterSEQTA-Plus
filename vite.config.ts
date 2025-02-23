@@ -76,7 +76,8 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
-        migration: join(__dirname, 'src', 'seqta', 'utils', 'migration', 'migrate.html')
+        migration: join(__dirname, 'src', 'seqta', 'utils', 'migration', 'migrate.html'),
+        pageState: join(__dirname, 'src', 'pageState.js'),
       }
     }
   }

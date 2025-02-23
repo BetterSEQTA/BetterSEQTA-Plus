@@ -38,6 +38,7 @@ import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/interface/main'
 import Settings from '@/interface/pages/settings.svelte'
 import { settingsPopup } from './interface/hooks/SettingsPopup'
+import ReactFiber from './seqta/utils/ReactFiber'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -90,6 +91,26 @@ async function init() {
       }
       console.info('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
       main()
+
+      waitForElm('.Viewer__Viewer___32BH-', true).then(() => {
+        console.log('Element exists')
+
+        const button = document.createElement('button')
+        button.innerHTML = 'Click me'
+        button.onclick = () => {
+          // function call to run onclick
+          ReactFiber.find(".Viewer__Viewer___32BH-", { debug: true })
+            .setState(prev => ({ ...prev, selected: new Set([999999]) }))
+        }
+        button.style.position = 'fixed'
+        button.style.top = '0'
+        button.style.right = '0'
+        button.style.padding = '10px'
+        button.style.zIndex = '9999'
+        button.style.backgroundColor = 'red'
+        button.style.color = 'white'
+        document.body.appendChild(button)
+      })
     } catch (error: any) {
       console.error(error)
     }
@@ -624,10 +645,11 @@ export async function waitForElm(selector: string, usePolling: boolean = false, 
   } else {
     return new Promise((resolve) => {
       const registerObserver = () => {
-        const { unregister } = eventManager.register(`${selector}`, {
+        const { unregister } =  eventManager.register(`${selector}`, {
           customCheck: (element) => element.matches(selector)
-        }, (element) => {
+        }, async (element) => {
           resolve(element);
+          await delay(1);
           unregister(); // Remove the listener once the element is found
         });
         return unregister;
@@ -2976,7 +2998,6 @@ async function handleAssessments(node: Element): Promise<void> {
     }
     const preaverage = numaverage.toFixed(0) as unknown as number
     const prepaverage = Math.ceil(preaverage / 5) * 5; 
-    console.info(prepaverage)
     const NumberGradeMap: Record<number, string> = {
       100: "A+",
       95: "A",

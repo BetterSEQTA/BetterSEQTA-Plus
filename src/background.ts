@@ -1,62 +1,6 @@
 import browser from 'webextension-polyfill'
 import type { SettingsState } from "@/types/storage";
 
-export const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('MyDatabase', 1);
-
-    request.onupgradeneeded = (event: any) => {
-      const db = event.target.result;
-      db.createObjectStore('backgrounds', { keyPath: 'id' });
-    };
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = (event: any) => {
-      reject('Error opening database: ' + event.target.errorCode);
-    };
-  });
-};
-
-export const writeData = async (type: any, data: any) => {
-  const db: any = await openDB();
-
-  const tx = db.transaction('backgrounds', 'readwrite');
-  const store = tx.objectStore('backgrounds');
-  const request = await store.put({ id: 'customBackground', type, data });
-
-  return request.result;
-};
-
-export const readData = () => {
-  return new Promise((resolve, reject) => {
-    openDB()
-      .then((db: any) => {
-        const tx = db.transaction('backgrounds', 'readonly');
-        const store = tx.objectStore('backgrounds');
-
-        // Retrieve the custom background
-        const getRequest = store.get('customBackground');
-
-        // Attach success and error event handlers
-        getRequest.onsuccess = function(event: any) {
-          resolve(event.target.result);
-        };
-
-        getRequest.onerror = function(event: any) {
-          console.error('An error occurred:', event);
-          reject(event);
-        };
-      })
-      .catch(error => {
-        console.error('An error occurred:', error);
-        reject(error);
-      });
-  });
-};
-
 function reloadSeqtaPages() {
   const result = browser.tabs.query({})
     function open (tabs: any) {
@@ -69,56 +13,104 @@ function reloadSeqtaPages() {
   result.then(open, console.error)
 }
 
+const injectedTabs = new Set<number>(); // Keep track of injected tabs
+
+async function injectPageState(tabId: number) {
+  if (injectedTabs.has(tabId)) {
+    return; // Already injected
+  }
+
+  try {
+    await browser.scripting.executeScript({
+      target: { tabId },
+      files: ["pageState.js"],
+      // @ts-ignore
+      world: "MAIN",
+    });
+    injectedTabs.add(tabId);
+    console.log(`[background] Injected pageState.js into tab ${tabId}`);
+  } catch (err) {
+    console.error(`[background] Failed to inject pageState.js into tab ${tabId}:`, err);
+  }
+}
+
+// Remove the script when a tab is closed
+browser.tabs.onRemoved.addListener((tabId) => {
+  injectedTabs.delete(tabId);
+});
+
 // Main message listener
-browser.runtime.onMessage.addListener((request: any, _sender: any, sendResponse: any) => {
+browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: (response?: any) => void) => {
+
   switch (request.type) {
-  case 'reloadTabs':
-    reloadSeqtaPages();
-    break;
-  
-  case 'extensionPages':
-    browser.tabs.query({}).then(function (tabs) {
-      for (let tab of tabs) {
-        if (tab.url?.includes('chrome-extension://')) {
-          browser.tabs.sendMessage(tab.id!, request);
-        }
-      }
-    });
-    break;
-  
-  case 'currentTab':
-    browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      browser.tabs.sendMessage(tabs[0].id!, request).then(function (response) {
-        sendResponse(response);
-      });
-    });
-    return true;
-  
-  case 'githubTab':
-    browser.tabs.create({ url: 'github.com/BetterSEQTA/BetterSEQTA-Plus' });
-    break;
+    case 'reloadTabs':
+      reloadSeqtaPages();
+      break;
     
-  case 'setDefaultStorage':
-    SetStorageValue(DefaultValues);
-    break;
+    case 'extensionPages':
+      browser.tabs.query({}).then(function (tabs) {
+        for (let tab of tabs) {
+          if (tab.url?.includes('chrome-extension://')) {
+            browser.tabs.sendMessage(tab.id!, request);
+          }
+        }
+      });
+      break;
+    
+    case 'currentTab':
+      browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+        browser.tabs.sendMessage(tabs[0].id!, request).then(function (response) {
+          sendResponse(response);
+        });
+      });
+      return true; // Keep message channel open for async response
 
-  case 'sendNews':
-    const date = new Date();
-
-    const from =
-      date.getFullYear() +
-      '-' +
-      (date.getMonth() + 1) +
-      '-' +
-      (date.getDate() - 5);
-
-    const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
-
-    GetNews(sendResponse, url);
-    return true;
+    case 'githubTab':
+      browser.tabs.create({ url: 'github.com/BetterSEQTA/BetterSEQTA-Plus' });
+      break;
       
-  default:
-    console.log('Unknown request type');
+    case 'setDefaultStorage':
+      SetStorageValue(DefaultValues);
+      break;
+
+    case 'sendNews':
+      const date = new Date();
+
+      const from =
+        date.getFullYear() +
+        '-' +
+        (date.getMonth() + 1) +
+        '-' +
+        (date.getDate() - 5);
+
+      const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
+
+      GetNews(sendResponse, url);
+      return true;
+    
+    case 'reactFiberRequest': {
+      //const { tabId, /* selector, action, payload, debug */ } = request;
+      const tabId = sender.tab.id;
+
+      // Ensure pageState.js is injected
+      injectPageState(tabId).then(() => {
+        // Forward the request to the injected script
+        browser.tabs.sendMessage(tabId, { ...request, type: "reactFiberAction" }, { frameId: 0 }) // Target the main world
+        .then(response => {
+          sendResponse(response);  // Send the response back to the content script
+        })
+          .catch(err => {
+            console.error(`[background] Error communicating with injected script in tab ${tabId}:`, err);
+          });
+      }).catch(err => {
+        console.error("[background] Failed to inject", err);
+      });
+      return true; // Keep the message channel open for the async response
+    }
+
+  
+    default:
+      console.log('Unknown request type');
   }
 });
 
@@ -220,6 +212,7 @@ const DefaultValues: SettingsState = {
     },
   ],
   customshortcuts: [],
+  lettergrade: false,
 };
 
 function SetStorageValue(object: any) {

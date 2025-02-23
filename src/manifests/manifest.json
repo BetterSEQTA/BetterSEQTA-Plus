@@ -15,7 +15,7 @@
       "64": "resources/icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage"],
+  "permissions": ["tabs", "notifications", "storage", "scripting", "activeTab"],
   "host_permissions": ["https://newsapi.org/", "*://*/*"],
   "background": {
     "service_worker": "background.ts"
