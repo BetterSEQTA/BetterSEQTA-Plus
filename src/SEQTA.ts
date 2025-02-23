@@ -92,25 +92,21 @@ async function init() {
       console.info('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
       main()
 
-      waitForElm('.Viewer__Viewer___32BH-', true).then(() => {
+      /* waitForElm('.Viewer__Viewer___32BH-', true).then(async () => {
         console.log('Element exists')
 
-        const button = document.createElement('button')
-        button.innerHTML = 'Click me'
-        button.onclick = () => {
-          // function call to run onclick
-          ReactFiber.find(".Viewer__Viewer___32BH-", { debug: true })
-            .setState(prev => ({ ...prev, selected: new Set([999999]) }))
-        }
-        button.style.position = 'fixed'
-        button.style.top = '0'
-        button.style.right = '0'
-        button.style.padding = '10px'
-        button.style.zIndex = '9999'
-        button.style.backgroundColor = 'red'
-        button.style.color = 'white'
-        document.body.appendChild(button)
-      })
+        await browser.runtime.sendMessage({ type: 'injectMainScript' })
+
+        const nice = ReactFiber.find(".Viewer__Viewer___32BH-", { debug: true })
+
+        
+
+        console.log(nice.getState())
+        nice.setState({ selected: new Set([999431]) })
+        
+
+        //console.log(nice)
+      }) */
     } catch (error: any) {
       console.error(error)
     }

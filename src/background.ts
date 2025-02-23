@@ -13,13 +13,7 @@ function reloadSeqtaPages() {
   result.then(open, console.error)
 }
 
-const injectedTabs = new Set<number>(); // Keep track of injected tabs
-
 async function injectPageState(tabId: number) {
-  if (injectedTabs.has(tabId)) {
-    return; // Already injected
-  }
-
   try {
     await browser.scripting.executeScript({
       target: { tabId },
@@ -27,17 +21,11 @@ async function injectPageState(tabId: number) {
       // @ts-ignore
       world: "MAIN",
     });
-    injectedTabs.add(tabId);
-    console.log(`[background] Injected pageState.js into tab ${tabId}`);
+    console.info(`[background] Injected pageState.js into tab ${tabId}`);
   } catch (err) {
     console.error(`[background] Failed to inject pageState.js into tab ${tabId}:`, err);
   }
 }
-
-// Remove the script when a tab is closed
-browser.tabs.onRemoved.addListener((tabId) => {
-  injectedTabs.delete(tabId);
-});
 
 // Main message listener
 browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: (response?: any) => void) => {
@@ -88,26 +76,13 @@ browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: 
       GetNews(sendResponse, url);
       return true;
     
-    case 'reactFiberRequest': {
-      //const { tabId, /* selector, action, payload, debug */ } = request;
-      const tabId = sender.tab.id;
 
-      // Ensure pageState.js is injected
-      injectPageState(tabId).then(() => {
-        // Forward the request to the injected script
-        browser.tabs.sendMessage(tabId, { ...request, type: "reactFiberAction" }, { frameId: 0 }) // Target the main world
-        .then(response => {
-          sendResponse(response);  // Send the response back to the content script
-        })
-          .catch(err => {
-            console.error(`[background] Error communicating with injected script in tab ${tabId}:`, err);
-          });
-      }).catch(err => {
-        console.error("[background] Failed to inject", err);
-      });
-      return true; // Keep the message channel open for the async response
+      case 'injectMainScript': {
+        const senderTab = sender.tab ? sender.tab.id : undefined;
+
+        injectPageState(senderTab!)
+        return;
     }
-
   
     default:
       console.log('Unknown request type');
