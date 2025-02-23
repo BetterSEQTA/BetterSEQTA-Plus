@@ -13,11 +13,12 @@ import { StorageChangeHandler } from '@/seqta/utils/listeners/StorageChanges'
 import { eventManager } from '@/seqta/utils/listeners/EventManager'
 
 // UI and theme management
-import loading, { AppendLoadingSymbol } from '@/seqta/ui/Loading'
-import { enableCurrentTheme } from '@/seqta/ui/themes/enableCurrent'
-import { updateAllColors } from '@/seqta/ui/colors/Manager'
-import { SettingsResizer } from '@/seqta/ui/SettingsResizer'
+import RegisterClickListeners from './seqta/utils/listeners/ClickListeners'
 import { AddBetterSEQTAElements } from '@/seqta/ui/AddBetterSEQTAElements'
+import { enableCurrentTheme } from '@/seqta/ui/themes/enableCurrent'
+import loading, { AppendLoadingSymbol } from '@/seqta/ui/Loading'
+import { SettingsResizer } from '@/seqta/ui/SettingsResizer'
+import { updateAllColors } from '@/seqta/ui/colors/Manager'
 
 // JSON content
 import MenuitemSVGKey from '@/seqta/content/MenuItemSVGKey.json'
@@ -38,7 +39,6 @@ import documentLoadCSS from '@/css/documentload.scss?inline'
 import renderSvelte from '@/interface/main'
 import Settings from '@/interface/pages/settings.svelte'
 import { settingsPopup } from './interface/hooks/SettingsPopup'
-import ReactFiber from './seqta/utils/ReactFiber'
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -74,6 +74,7 @@ async function init() {
       await initializeSettingsState();
       
       if (settingsState.onoff) {
+        browser.runtime.sendMessage({ type: 'injectMainScript' })
         enableCurrentTheme()
 
         if (typeof settingsState.assessmentsAverage == 'undefined') {
@@ -91,22 +92,6 @@ async function init() {
       }
       console.info('[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.')
       main()
-
-      /* waitForElm('.Viewer__Viewer___32BH-', true).then(async () => {
-        console.log('Element exists')
-
-        await browser.runtime.sendMessage({ type: 'injectMainScript' })
-
-        const nice = ReactFiber.find(".Viewer__Viewer___32BH-", { debug: true })
-
-        
-
-        console.log(nice.getState())
-        nice.setState({ selected: new Set([999431]) })
-        
-
-        //console.log(nice)
-      }) */
     } catch (error: any) {
       console.error(error)
     }
@@ -803,6 +788,8 @@ async function LoadPageElements(): Promise<void> {
       className: 'assessmentsWrapper',
     }, handleAssessments);
   }
+
+  RegisterClickListeners();
 
   await handleSublink(sublink);
 }
