@@ -1162,6 +1162,16 @@ function ChangeMenuItemPositions(storage: any) {
   }
 }
 
+function ReplaceMenuSVG(element: HTMLElement, svg: string) {
+  let item = element.firstChild as HTMLElement
+  item!.firstChild!.remove()
+
+  item.innerHTML = `<span>${item.innerHTML}</span>`
+
+  let newsvg = stringToHTML(svg).firstChild
+  item.insertBefore((newsvg as Node), item.firstChild)
+}
+
 export async function ObserveMenuItemPosition() {
   await waitForElm('#menu > ul > li')
   await delay(100)
@@ -1193,6 +1203,69 @@ export async function ObserveMenuItemPosition() {
   });
 }
 
+export function showConflictPopup() {
+  if (document.getElementById('conflict-popup')) return;
+  document.body.classList.remove('hidden');
+
+  const background = document.createElement('div');
+  background.id = 'conflict-popup';
+  background.classList.add('whatsnewBackground');
+  background.style.zIndex = '10000000';
+
+  const container = document.createElement('div');
+  container.classList.add('whatsnewContainer');
+  container.style.height = 'auto';
+
+  const headerHTML = /* html */`
+    <div class="whatsnewHeader">
+      <h1>Extension Conflict Detected</h1>
+      <p>Legacy BetterSEQTA Installed</p>
+    </div>
+  `;
+  const header = stringToHTML(headerHTML).firstChild;
+
+  const textHTML = /* html */`
+    <div class="whatsnewTextContainer" style="overflow-y: auto; font-size: 1.3rem;">
+      <p>
+        It appears that you have the legacy BetterSEQTA extension installed alongside BetterSEQTA+.
+        This conflict may cause unexpected behavior. (and breaks the extension)
+      </p>
+      <p>
+        Please remove the older BetterSEQTA extension to ensure that BetterSEQTA+ works correctly.
+      </p>
+    </div>
+  `;
+  const text = stringToHTML(textHTML).firstChild;
+
+  const exitButton = document.createElement('div');
+  exitButton.id = 'whatsnewclosebutton';
+
+  if (header) container.append(header);
+  if (text) container.append(text);
+  container.append(exitButton);
+
+  background.append(container);
+
+  document.getElementById('container')?.append(background);
+
+  if (settingsState.animations) {    
+    animate(
+      [background as HTMLElement],
+      { opacity: [0, 1] }
+    );
+  }
+
+  background.addEventListener('click', (event) => {
+    if (event.target === background) {
+      background.remove();
+    }
+  });
+
+  exitButton.addEventListener('click', () => {
+    background.remove();
+  });
+}
+
 function main() {
   if (typeof settingsState.onoff === 'undefined') {
     browser.runtime.sendMessage({ type: 'setDefaultStorage' })
@@ -1216,6 +1289,14 @@ function main() {
     InjectCustomIcons()
     HideMenuItems()
     tryLoad()
+
+    setTimeout(() => {
+      const legacyElement = document.querySelector('.outside-container .bottom-container');
+      if (legacyElement) {
+        console.log('Legacy extension detected');
+        showConflictPopup();
+      }
+    }, 1000);
   } else {
     handleDisabled()
     window.addEventListener('load', handleDisabled)
@@ -1536,16 +1617,6 @@ function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue)
   })
-}
-
-function ReplaceMenuSVG(element: HTMLElement, svg: string) {
-  let item = element.firstChild as HTMLElement
-  item!.firstChild!.remove()
-
-  item.innerHTML = `<span>${item.innerHTML}</span>`
-
-  let newsvg = stringToHTML(svg).firstChild
-  item.insertBefore((newsvg as Node), item.firstChild)
 }
 
 export function setupSettingsButton() {
