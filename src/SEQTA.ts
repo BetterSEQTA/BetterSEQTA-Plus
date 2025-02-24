@@ -19,6 +19,7 @@ import { enableCurrentTheme } from '@/seqta/ui/themes/enableCurrent'
 import loading, { AppendLoadingSymbol } from '@/seqta/ui/Loading'
 import { SettingsResizer } from '@/seqta/ui/SettingsResizer'
 import { updateAllColors } from '@/seqta/ui/colors/Manager'
+import pageState from '@/pageState.js?url'
 
 // JSON content
 import MenuitemSVGKey from '@/seqta/content/MenuItemSVGKey.json'
@@ -74,7 +75,7 @@ async function init() {
       await initializeSettingsState();
       
       if (settingsState.onoff) {
-        browser.runtime.sendMessage({ type: 'injectMainScript' })
+        injectMainScript();
         enableCurrentTheme()
 
         if (typeof settingsState.assessmentsAverage == 'undefined') {
@@ -406,10 +407,13 @@ export function OpenWhatsNewPopup() {
   })
 }
 
+function injectMainScript() {
+  const mainScript = document.createElement('script')
+  mainScript.src = browser.runtime.getURL(pageState)
+  document.head.appendChild(mainScript)
+}
+
 export function hideSideBar() {
-
-  
-
   const sidebar = document.getElementById('menu') // The sidebar element to be closed
   const main = document.getElementById('main') // The main content element that must be resized to fill the page
 

@@ -20,6 +20,10 @@ const handleNotificationClick = async (target: HTMLElement) => {
 
   // Select the specific direct message
   ReactFiber.find('.Viewer__Viewer___32BH-').setState({ selected: new Set([matchingNotification.message.messageID]) });
+
+  // Close the notifications panel
+  const notificationButton = document.querySelector('.notifications__notifications___3mmLY > button') as HTMLButtonElement | null;
+  notificationButton?.click();
 };
 
 const clickListeners = [
@@ -29,9 +33,7 @@ const clickListeners = [
   },
 ];
 
-const registerClickListeners = () => {
-  console.log("Registering click listeners...");
-  
+const registerClickListeners = () => {  
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     
