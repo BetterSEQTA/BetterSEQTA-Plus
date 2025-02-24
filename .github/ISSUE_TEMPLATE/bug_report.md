@@ -7,17 +7,17 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Bug Description**  
+Please provide a clear and concise description of the bug.
 
-**To Reproduce**
-Please indicate how did you make this happen.
+**Steps to Reproduce**  
+Please list the steps taken to reproduce the issue.
 
-**Expected behaviuor**
-Please add a clear and concise description of what you expected to happen.
+**Expected Behavior**  
+Please describe the expected behaviour clearly and concisely.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Screenshots**  
+If applicable, please include any screenshots that may help clarify the issue.
 
-**Additional context**
-Add any other context about the problem here.
+**Additional Context**  
+Feel free to provide any additional context or information relevant to the problem.
