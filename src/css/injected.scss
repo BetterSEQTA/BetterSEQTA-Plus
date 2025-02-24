@@ -490,6 +490,10 @@ ol:has(.MessageList__avatar___2wxyb svg) {
 .content [autocomplete="off"] {
   background: var(--background-primary) !important;
 }
+.coneqtMessage .body .wrapper .iframeWrapper {
+  background: var(--background-primary) !important;
+  border-radius: 16px;
+}
 .MessageList__MessageList___3DxoC .footer {
   background: var(--background-secondary) !important;
 }
@@ -2071,17 +2075,38 @@ div.bar.flat {
   .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
   .cke_toolbox > .cke_toolbar .cke_button_on {
     background-color: #3d3d3e !important;
+
+    &::after {
+      background: rgb(207, 207, 207) !important;
+    }
   }
 }
-.legacy-root input.singleSelect:focus {
-  background: var(--auto-background);
-  color: var(--text-primary) !important;
+.legacy-root input.singleSelect {
+  padding-left: 8px;
+
+  &:focus {
+    background: var(--auto-background);
+    color: var(--text-primary) !important;
+  }
 }
+
+button.buttonMenu.depressed:hover {
+  border-radius: 100px;
+  border-bottom-left-radius: 100px !important;
+  border-bottom-right-radius: 100px !important;
+}
+
+ul.buttonMenu {
+  border-radius: 16px;
+  padding: 0 !important;
+}
+
 ul.singleSelect,
 ul.buttonChecklist,
 ul.buttonMenu,
 ul.colourButtonOptions,
 ul.uiSplitButtonList,
+ul.buttonMenu,
 .contactFormPanel {
   background: var(--background-primary) !important;
   border: solid 4px var(--background-primary);
