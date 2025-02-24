@@ -8,6 +8,13 @@ div:has(> #rbgcp-wrapper) {
       color: white !important;
     }
 
+    #rbgcp-inputs-wrap #rbgcp-hex-input,
+    #rbgcp-inputs-wrap #rbgcp-input {
+      color: white !important;
+      background-color: #37373b !important;
+      border: none !important;
+    }
+
     div:has(> #rbgcp-solid-btn),
     div:has(> #rbgcp-advanced-btn),
     #rbgcp-color-model-btn > div,
