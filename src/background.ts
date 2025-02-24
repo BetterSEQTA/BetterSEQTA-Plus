@@ -13,22 +13,8 @@ function reloadSeqtaPages() {
   result.then(open, console.error)
 }
 
-async function injectPageState(tabId: number) {
-  try {
-    await browser.scripting.executeScript({
-      target: { tabId },
-      files: ["pageState.js"],
-      // @ts-ignore
-      world: "MAIN",
-    });
-    console.info(`[background] Injected pageState.js into tab ${tabId}`);
-  } catch (err) {
-    console.error(`[background] Failed to inject pageState.js into tab ${tabId}:`, err);
-  }
-}
-
 // Main message listener
-browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: (response?: any) => void) => {
+browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (response?: any) => void) => {
 
   switch (request.type) {
     case 'reloadTabs':
@@ -75,14 +61,6 @@ browser.runtime.onMessage.addListener((request: any, sender: any, sendResponse: 
 
       GetNews(sendResponse, url);
       return true;
-    
-
-      case 'injectMainScript': {
-        const senderTab = sender.tab ? sender.tab.id : undefined;
-
-        injectPageState(senderTab!)
-        return;
-    }
   
     default:
       console.log('Unknown request type');
