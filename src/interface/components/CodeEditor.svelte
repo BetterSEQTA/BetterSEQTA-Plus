@@ -20,7 +20,7 @@
   let editor = $state<HTMLDivElement | null>(null)
   let view: EditorView | null = null;
   let editorTheme = new Compartment();
-  let { value, onChange } = $props<{value: string, onChange: (value: string) => void}>()
+  let { value, onChange, className } = $props<{value: string, onChange: (value: string) => void, className?: string}>()
 
   function createEditorState(initialContents: string) {
       let extensions = [
@@ -91,4 +91,4 @@
   })
 </script>
 
-<div class="rounded-lg text-[13px] overflow-clip w-full bg-white dark:bg-zinc-900" bind:this={editor}></div>
+<div class={`rounded-lg text-[13px] overflow-clip w-full bg-white dark:bg-zinc-900 ${className}`} bind:this={editor}></div>

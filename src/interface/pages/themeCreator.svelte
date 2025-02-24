@@ -46,6 +46,12 @@
   })
   let closedAccordions = $state<string[]>([])
   let themeLoaded = $state(false);
+  let codeEditorFullscreen = $state(false);
+  
+  function toggleCodeEditorFullscreen(e: MouseEvent) {
+    e.preventDefault();
+    codeEditorFullscreen = !codeEditorFullscreen;
+  }
 
   function toggleAccordion(title: string) {
     if (closedAccordions.includes(title)) {
@@ -169,6 +175,13 @@
 
         {#if item.direction === 'vertical'}
           <div class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
+            {#if item.type === 'codeEditor'}
+              <!-- Fullscreen toggle button -->
+              <button onclick={toggleCodeEditorFullscreen} class="mr-2 text-lg font-IconFamily">
+                {'\uebdb'}
+              </button>
+            {/if}
+            
             <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
           </div>
         {/if}
@@ -187,9 +200,12 @@
               <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
             {/key}
           {:else if item.type === 'codeEditor'}
-            {#key themeLoaded}
-              <CodeEditor {...(item.props as CodeEditorProps)} />
-            {/key}
+            {#if !codeEditorFullscreen}
+              {#key themeLoaded}
+                <!-- Only render inline if not fullscreen -->
+                <CodeEditor className="h-[400px]" {...(item.props as CodeEditorProps)} />
+              {/key}
+            {/if}
           {:else if item.type === 'imageUpload'}
             {#each theme.CustomImages as image (image.id)}
               <div class="flex gap-2 items-center px-2 py-2 mb-4 h-16 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
@@ -238,7 +254,20 @@
 {/snippet}
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
-  <div class='flex flex-col p-2 w-full min-h-screen bg-zinc-100 dark:bg-zinc-800 dark:text-white'>
+  {#if codeEditorFullscreen}
+    <div class="absolute inset-0 z-[10000] bg-white dark:bg-zinc-900 dark:text-white">
+      <div class="sticky top-0 px-2 h-screen">
+        <div class="flex justify-between items-center my-4">
+          <h2 class="text-xl font-bold">Custom CSS</h2>
+          <button onclick={toggleCodeEditorFullscreen} class="pr-14 text-xl font-IconFamily">{'\uec06'}</button>
+        </div>
+        <CodeEditor className="editorHeight" value={theme.CustomCSS} onChange={(value: string) => { theme = { ...theme, CustomCSS: value } }} />
+      </div>
+    </div>
+  {/if}
+  <div class='flex relative flex-col p-2 w-full min-h-screen bg-zinc-100 dark:bg-zinc-800 dark:text-white'>
+
+
     <h1 class='text-xl font-semibold'>Theme Creator</h1>
     <a href='https://betterseqta.gitbook.io/betterseqta-docs' target='_blank' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
       <span class='pr-0.5 no-underline font-IconFamily'>{'\ueb44'}</span>

@@ -48,5 +48,9 @@ input {
 .cm-editor {
   width: 100%;
   min-height: 100px;
-  max-height: 400px;
+  height: inherit;
+}
+
+.editorHeight {
+  height: calc(100vh - 58px);
 }
