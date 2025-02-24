@@ -15,7 +15,7 @@
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
-<div class="flex items-center justify-between px-4 py-3">
+<div class="flex justify-between items-center px-4 py-3">
   <div class="pr-4">
     <h2 class="text-sm font-bold">{title}</h2>
     <p class="text-xs">{description}</p>
@@ -158,9 +158,31 @@
       }
     },
     {
+      title: "News Feed Source",
+      description: "Choose sources of your news feed.",
+      id: 11,
+      Component: Select,
+      props: {
+        state: $settingsState.newsSource,
+        onChange: (value: string) => settingsState.newsSource = value,
+        options: [
+          { value: "australia", label: "Australia" },
+          { value: "usa", label: "USA" },
+          { value: "taiwan", label: "Taiwan" },
+          { value: "hong_kong", label: "Hong Kong" },
+          { value: "panama", label: "Panama" },
+          { value: "canada", label: "Canada" },
+          { value: "singapore", label: "Singapore" },
+          { value: "uk", label: "UK" },
+          { value: "japan", label: "Japan" },
+          { value: "netherlands", label: "Netherlands" }
+        ]
+      }
+    },
+    {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
-      id: 11,
+      id: 12,
       Component: Switch,
       props: {
         state: $settingsState.onoff,
@@ -181,7 +203,7 @@
         <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
       </div>
     </div>
-    <div class="flex items-center justify-between px-4 py-3">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
         <h2 class="text-sm font-bold">Sensitive Hider</h2>
         <p class="text-xs">Replace sensitive content with mock data</p>

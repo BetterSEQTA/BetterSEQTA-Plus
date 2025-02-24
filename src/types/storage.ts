@@ -40,6 +40,7 @@ export interface SettingsState {
   originalDarkMode?: boolean;
   assessmentsAverage?: boolean;
   lettergrade: boolean;
+  newsSource?: string;
 }
 
 interface ToggleItem {

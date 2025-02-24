@@ -61,8 +61,8 @@
 </script>
 
 <div class="w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode ? 'dark' : ''} { standalone ? 'h-[600px]' : 'h-full rounded-xl' } overflow-clip">
-  <div class="relative flex flex-col h-full gap-2 bg-white overflow-clip dark:bg-zinc-800 dark:text-white">
-    <div class="grid border-b border-b-zinc-200/40 place-items-center">
+  <div class="flex relative flex-col gap-2 h-full overflow-clip bg-white dark:bg-zinc-800 dark:text-white">
+    <div class="grid place-items-center border-b border-b-zinc-200/40">
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <img src={browser.runtime.getURL('resources/icons/betterseqta-dark-full.png')} class="w-4/5 dark:hidden" alt="Light logo" onclick={handleDevModeToggle} />
@@ -71,8 +71,8 @@
       <img src={browser.runtime.getURL('resources/icons/betterseqta-light-full.png')} class="hidden w-4/5 dark:block" alt="Dark logo" onclick={handleDevModeToggle} />
       
       {#if !standalone}
-        <button onclick={openChangelog} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-1 bg-zinc-100 dark:bg-zinc-700">{'\ue929'}</button>
-        <button onclick={openAbout} class="absolute w-8 h-8 text-lg rounded-xl font-IconFamily top-1 right-10 bg-zinc-100 dark:bg-zinc-700">{'\ueb73'}</button>
+        <button onclick={openChangelog} class="absolute top-1 right-1 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700">{'\ue929'}</button>
+        <button onclick={openAbout} class="absolute top-1 right-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700">{'\ueb73'}</button>
       {/if}
     </div>
 

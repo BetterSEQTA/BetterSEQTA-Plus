@@ -85,6 +85,7 @@
     "react": "17",
     "react-best-gradient-color-picker": "^3.0.10",
     "react-dom": "17",
+    "rss-parser": "^3.13.0",
     "sortablejs": "^1.15.3",
     "svelte": "^5.1.9",
     "tailwindcss": "^3.4.11",
