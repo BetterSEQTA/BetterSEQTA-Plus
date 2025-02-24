@@ -55,7 +55,7 @@ export function OpenThemeCreator(themeID: string = "") {
   const mouseMoveHandler = (e: MouseEvent) => {
     if (!isDragging) return
     const windowWidth = window.innerWidth
-    const newWidth = Math.min(Math.max(310, windowWidth - e.clientX), 600)
+    const newWidth = Math.max(310, windowWidth - e.clientX)
     themeCreatorDiv.style.width = `${newWidth}px`
     mainContent.style.width = `calc(100% - ${newWidth}px)`
     resizeBar.style.right = `${newWidth - 2.5}px`
