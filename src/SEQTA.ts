@@ -166,9 +166,17 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(
     /* html */ `
   <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">  
-    <h1>3.4.5 - Everything Subject averages related</h1>
-    <li>Fixed subject averages not showing up with non-percent grades</li>
+    <h1>3.4.5 - News, Bug Fixes, and improvements!</h1>
+    <li>Added alternative news sources</li>
+    <li>Notifications now open direct messages</li>
     <li>Added Toggle for Letter/Percent Grades</li>
+    <li>Added fullscreen to the theme creator CSS editor</li>
+    <li>Added warning if BetterSEQTA is installed</li>
+    <li>Removed max width from theme creator</li>
+    <li>Fixed discord icon colour in light mode</li>
+    <li>Fixed subject averages not showing up with letter grades</li>
+    <li>Tweaked compose UI</li>
+
     <h1>3.4.4 - Bug Fixes and Improvements</h1>
     <li>Added vertical zoom to the timetable</li>
     <li>Fixed theme importing failing when images were included</li>
