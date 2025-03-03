@@ -2827,7 +2827,7 @@ export async function SendNewsPage() {
   const html = stringToHTML(/* html */`
     <div class="home-root">
       <div class="home-container" id="news-container">
-        <h1 class="border">Latest Headlines - ABC News</h1>
+        <h1 class="border">Latest Headlines in ${settingsState.newsSource}</h1>
       </div>
     </div>`)
 
