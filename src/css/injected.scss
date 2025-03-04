@@ -212,7 +212,7 @@ html {
   background: var(--background-primary) !important;
   border: var(--background-secondary) !important;
   overflow: clip;
-  
+
   iframe {
     background: transparent !important;
   }
@@ -261,7 +261,10 @@ html {
     }
 
     .ais-btnSearch {
-      transition: background 200ms, color 200ms, box-shadow 200ms;
+      transition:
+        background 200ms,
+        color 200ms,
+        box-shadow 200ms;
 
       &:hover {
         background: rgba(0, 0, 0, 0.2) !important;
@@ -274,7 +277,7 @@ html {
         font-family: Rubik, sans-serif !important;
         &::before {
           font-size: 18px !important;
-          content: 'Search' !important;
+          content: "Search" !important;
         }
       }
     }
@@ -605,7 +608,7 @@ ol:has(.MessageList__avatar___2wxyb svg) {
   &.above[data-yiq="dark"]::after {
     background-color: rgba(255, 255, 255, 0.2);
   }
-  
+
   &.above::after {
     content: "";
     position: absolute;
@@ -1628,8 +1631,10 @@ iframe.userHTML {
 .Collapsible__Collapsible___3O8P3 > .Collapsible__header___-Afvq {
   background: none;
 }
-.Collapsible__Collapsible___3O8P3 > .Collapsible__content___2c6of.Collapsible__enterActive___3b2ow,
-.Collapsible__Collapsible___3O8P3 > .Collapsible__content___2c6of.Collapsible__exitActive___3rFL1 {
+.Collapsible__Collapsible___3O8P3
+  > .Collapsible__content___2c6of.Collapsible__enterActive___3b2ow,
+.Collapsible__Collapsible___3O8P3
+  > .Collapsible__content___2c6of.Collapsible__exitActive___3rFL1 {
   animation-timing-function: ease-out !important;
 }
 .AssessmentList__AssessmentList___1GdCl
@@ -1990,6 +1995,22 @@ div.bar.flat {
   }
 }
 
+.cke_toolbox > .cke_toolbar > .cke_combo > .cke_combo_button {
+  border-radius: 8px !important;
+}
+
+.cke_toolbox > .cke_toolbar > .cke_toolgroup > .cke_button {
+  &:last-child {
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+  }
+
+  &:first-child {
+    border-top-left-radius: 8px !important;
+    border-bottom-left-radius: 8px !important;
+  }
+}
+
 .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
   background: var(--background-primary);
   border-radius: 16px;
@@ -2068,9 +2089,11 @@ div.bar.flat {
     background: black !important;
   }
 }
+
 .quicktable {
   border-radius: 12px;
 }
+
 .dark {
   .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
   .cke_toolbox > .cke_toolbar .cke_button_on {
@@ -2081,6 +2104,7 @@ div.bar.flat {
     }
   }
 }
+
 .legacy-root input.singleSelect {
   padding-left: 8px;
 
@@ -2313,7 +2337,7 @@ li.MessageList__unread___3imtO {
       text-decoration: underline;
     }
   }
-  
+
   .ArticleText a {
     padding: 10px 20px;
     margin: 0;
@@ -2762,7 +2786,7 @@ li.MessageList__unread___3imtO {
   margin-top: 4px;
 
   &.container {
-    box-shadow: -2px 2px 30px 0px rgba(0,0,0,0.3) !important;
+    box-shadow: -2px 2px 30px 0px rgba(0, 0, 0, 0.3) !important;
   }
 
   table {
@@ -2840,7 +2864,9 @@ li.MessageList__unread___3imtO {
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
-  transition: 200ms, background-color 0s;
+  transition:
+    200ms,
+    background-color 0s;
   border-radius: 16px;
 }
 .dark .upcoming-items {
@@ -3221,9 +3247,10 @@ li.MessageList__unread___3imtO {
 .loading {
   &.upcoming-items,
   &.day-container {
-    background: linear-gradient(90deg, 
-      var(--background-primary) 0%, 
-      var(--background-secondary) 50%, 
+    background: linear-gradient(
+      90deg,
+      var(--background-primary) 0%,
+      var(--background-secondary) 50%,
       var(--background-primary) 100%
     );
     background-size: 1000px 100%;
@@ -3232,5 +3259,127 @@ li.MessageList__unread___3imtO {
 
   &.upcoming-items {
     height: 35em;
+  }
+}
+
+.pane .formattedText > .wrapper {
+  overflow: visible;
+}
+
+// Auto collapsing alignment toolbar
+.cke_toolbar:has(.cke_button__seqta-align-left) {
+  overflow: visible !important;
+
+  .cke_toolgroup {
+    position: relative;
+    display: inline-block;
+    min-width: 32px;
+
+    .cke_button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      visibility: hidden;
+      z-index: 100;
+      width: 32px;
+      margin: 0;
+      border: none !important;
+      border-radius: 8px !important;
+      transition:
+        transform 0.2s ease-out,
+        visibility 0s linear,
+        background 0.3s ease,
+        border-radius 0.3s ease !important;
+
+      &:first-child {
+        visibility: visible !important;
+        z-index: 101;
+      }
+
+      &.cke_button_on {
+        visibility: visible;
+        position: absolute;
+        transition: transform 0.3s ease;
+        z-index: 101;
+
+        & + .cke_button:first-child {
+          z-index: 100;
+        }
+      }
+
+      // Button icons
+      .cke_button_icon {
+        margin: 0 !important;
+      }
+    }
+
+    // menu background
+    &:before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: calc(-300% - 10px);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      background: var(--background-primary) !important;
+      z-index: 100;
+      transform: scale(0.65, 0.2);
+      transform-origin: 50% 6px;
+      visibility: hidden;
+      transition: all 0.2s ease-out;
+    }
+
+    // Dropdown behavior on hover
+    &:hover {
+      &:hover:before {
+        transform: scale(1);
+        border-radius: 16px;
+        visibility: visible;
+      }
+      .cke_button {
+        visibility: visible;
+        transition-delay: 0s;
+
+        // Stack buttons in dropdown with spacing
+        &:first-child {
+          transform: translateY(0);
+          border-top-left-radius: 12px !important;
+          border-top-right-radius: 12px !important;
+        }
+        &:nth-child(2) {
+          transform: translateY(calc(100% + 2px));
+        }
+        &:nth-child(3) {
+          transform: translateY(calc(200% + 4px));
+        }
+        &:nth-child(4) {
+          transform: translateY(calc(300% + 6px));
+        }
+        &:nth-child(5) {
+          transform: translateY(calc(400% + 6px));
+        }
+        &:nth-child(6) {
+          transform: translateY(calc(500% + 6px));
+        }
+        &:last-child {
+          border-bottom-left-radius: 12px !important;
+          border-bottom-right-radius: 12px !important;
+        }
+      }
+    }
+
+    // Add subtle animation when closing dropdown
+    &:not(:hover)
+      .cke_button:not(.cke_button_on):not(
+        .cke_button__seqta-align-left:first-child
+      ) {
+      transform: translateY(0);
+      visibility: hidden;
+      transition:
+        transform 0.3s ease,
+        visibility 0s linear 0.3s;
+    }
   }
 }
