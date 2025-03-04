@@ -5,7 +5,6 @@
 
   let { tabs } = $props<{ tabs: { title: string, Content: any, props?: any }[] }>();
   let activeTab = $state(0);
-  let hoveredTab = $state<number | null>(null);
   let containerRef: HTMLElement | null = null;
   let tabWidth = $state(0);
 
@@ -24,10 +23,6 @@
     return 0;
   };
 
-  $effect(() => {
-    calcXPos(hoveredTab);
-  });
-
   onMount(() => {
     updateTabWidth();
 
@@ -45,19 +40,17 @@
 </script>
 
 <div class="flex flex-col h-full">
-  <div bind:this={containerRef} class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 tab-width-container">
-    <div class="relative flex">
+  <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container">
+    <div bind:this={containerRef} class="relative flex">
       <MotionDiv
         class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
-        animate={{ x: calcXPos(hoveredTab) }}
+        animate={{ x: calcXPos(activeTab) }}
         transition={springTransition}
       />
       {#each tabs as { title }, index}
         <button
           class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-none"
           onclick={() => activeTab = index}
-          onmouseenter={() => hoveredTab = index}
-          onmouseleave={() => hoveredTab = null}
         >
           {title}
         </button>
