@@ -3722,23 +3722,26 @@ async function handleDirectMessages(node: Element): Promise<void> {
   
   var header = document.createElement("div");
   header.className = "messageheader";
-  header.style.width = "650px"
+  header.style.width = "550px"
   document.querySelector(".blind").after(header)
   var wc = document.createElement("div");
   wc.className = "wordcount";
   document.querySelector(".content").appendChild(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
-  (document.querySelector(".body") as HTMLElement).style["width"] = '650px';
+  (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
   ClassicEditor.create(div, editorConfig as any).then(editor => {
     const wordCount = editor.plugins.get('WordCount');
-    editor.ui.element.style.width = '550px';
+    editor.ui.element.style.width = '600px';
     editor.ui.element.style.height = 'auto'
     (document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
   
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
   
   });
-  let power = document.querySelector(".ck.ck-powered-by") as HTMLElement
-  power.innerHTML = ""
+  var win = window.open('Compose Message')
+  // win.document.close();
+  var el = win.document.createElement("div");
+  el.innerHTML = document.querySelector('.content').html();
+  win.document.body.appendChild(el);
   return
 }
