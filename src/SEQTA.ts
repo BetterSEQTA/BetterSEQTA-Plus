@@ -3715,18 +3715,18 @@ async function handleAssessments(node: Element): Promise<void> {
   addAverageAssessment()
 }
 async function handleDirectMessages(node: Element): Promise<void> {
-  console.info("[BetterSEQTA+] Loading Message Editor")
+  console.info("[BetterSEQTA+] Loading Message Editor");
   if (!(node instanceof HTMLElement)) return
-  const div = document.querySelector(".body") as HTMLElement
-  div.innerHTML = ""
+  const div = document.querySelector(".body") as HTMLElement;
+  div.innerHTML = "";
   
   var header = document.createElement("div");
   header.className = "messageheader";
-  header.style.width = "550px"
-  document.querySelector(".blind").after(header)
+  header.style.width = "550px";
+  document.querySelector(".blind").after(header);
   var wc = document.createElement("div");
   wc.className = "wordcount";
-  document.querySelector(".body").after(wc)
+  document.querySelector(".body").after(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
   ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
