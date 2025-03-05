@@ -1,0 +1,38 @@
+name: NodeJS Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Build
+      run: |
+        npm install --legacy-peer-deps
+        npm run build
+
+    - name: Zip dist folder
+      run: |
+        zip -r dist.zip dist
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-zip
+        path: dist.zip

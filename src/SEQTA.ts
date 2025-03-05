@@ -4,7 +4,6 @@ import Sortable from "sortablejs"
 import browser from "webextension-polyfill"
 import { animate, stagger } from "motion"
 // import { BlockNoteEditor } from "@blocknote/core";
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document'
 
 // Internal utilities and functions
 import { delay } from "@/seqta/utils/delay"
@@ -46,6 +45,364 @@ import documentLoadCSS from "@/css/documentload.scss?inline"
 import renderSvelte from "@/interface/main"
 import Settings from "@/interface/pages/settings.svelte"
 import { settingsPopup } from "./interface/hooks/SettingsPopup"
+
+// CKEditor
+import {
+	ClassicEditor,
+	Alignment,
+	Autoformat,
+	AutoImage,
+	Autosave,
+	Base64UploadAdapter,
+	BlockQuote,
+	Bold,
+	Code,
+	CodeBlock,
+	Emoji,
+	Essentials,
+	FindAndReplace,
+	FontBackgroundColor,
+	FontColor,
+	FontFamily,
+	FontSize,
+	FullPage,
+	GeneralHtmlSupport,
+	Heading,
+	Highlight,
+	HorizontalLine,
+	HtmlComment,
+	HtmlEmbed,
+	ImageBlock,
+	ImageCaption,
+	ImageInline,
+	ImageInsert,
+	ImageInsertViaUrl,
+	ImageResize,
+	ImageStyle,
+	ImageTextAlternative,
+	ImageToolbar,
+	ImageUpload,
+	Indent,
+	IndentBlock,
+	Italic,
+	Link,
+	LinkImage,
+	List,
+	ListProperties,
+	Markdown,
+	MediaEmbed,
+	Mention,
+	Paragraph,
+	PasteFromMarkdownExperimental,
+	PasteFromOffice,
+	RemoveFormat,
+	ShowBlocks,
+	SourceEditing,
+	SpecialCharacters,
+	SpecialCharactersArrows,
+	SpecialCharactersCurrency,
+	SpecialCharactersEssentials,
+	SpecialCharactersLatin,
+	SpecialCharactersMathematical,
+	SpecialCharactersText,
+	Strikethrough,
+	Style,
+	Subscript,
+	Superscript,
+	Table,
+	TableCaption,
+	TableCellProperties,
+	TableColumnResize,
+	TableProperties,
+	TableToolbar,
+	TextTransformation,
+	TodoList,
+	Underline,
+	WordCount
+} from 'ckeditor5';
+
+import 'ckeditor5/ckeditor5.css';
+
+import './css/ckeditor.css';
+
+
+const editorConfig = {
+	toolbar: {
+		items: [
+			'sourceEditing',
+			'showBlocks',
+			'findAndReplace',
+			'|',
+			'heading',
+			'style',
+			'|',
+			'fontSize',
+			'fontFamily',
+			'fontColor',
+			'fontBackgroundColor',
+			'|',
+			'bold',
+			'italic',
+			'underline',
+			'strikethrough',
+			'subscript',
+			'superscript',
+			'code',
+			'removeFormat',
+			'|',
+			'emoji',
+			'specialCharacters',
+			'horizontalLine',
+			'link',
+			'insertImage',
+			'mediaEmbed',
+			'insertTable',
+			'highlight',
+			'blockQuote',
+			'codeBlock',
+			'htmlEmbed',
+			'|',
+			'alignment',
+			'|',
+			'bulletedList',
+			'numberedList',
+			'todoList',
+			'outdent',
+			'indent'
+		],
+		shouldNotGroupWhenFull: false
+	},
+	plugins: [
+		Alignment,
+		Autoformat,
+		AutoImage,
+		Autosave,
+		Base64UploadAdapter,
+		BlockQuote,
+		Bold,
+		Code,
+		CodeBlock,
+		Emoji,
+		Essentials,
+		FindAndReplace,
+		FontBackgroundColor,
+		FontColor,
+		FontFamily,
+		FontSize,
+		FullPage,
+		GeneralHtmlSupport,
+		Heading,
+		Highlight,
+		HorizontalLine,
+		HtmlComment,
+		HtmlEmbed,
+		ImageBlock,
+		ImageCaption,
+		ImageInline,
+		ImageInsert,
+		ImageInsertViaUrl,
+		ImageResize,
+		ImageStyle,
+		ImageTextAlternative,
+		ImageToolbar,
+		ImageUpload,
+		Indent,
+		IndentBlock,
+		Italic,
+		Link,
+		LinkImage,
+		List,
+		ListProperties,
+		Markdown,
+		MediaEmbed,
+		Mention,
+		Paragraph,
+		PasteFromMarkdownExperimental,
+		PasteFromOffice,
+		RemoveFormat,
+		ShowBlocks,
+		SourceEditing,
+		SpecialCharacters,
+		SpecialCharactersArrows,
+		SpecialCharactersCurrency,
+		SpecialCharactersEssentials,
+		SpecialCharactersLatin,
+		SpecialCharactersMathematical,
+		SpecialCharactersText,
+		Strikethrough,
+		Style,
+		Subscript,
+		Superscript,
+		Table,
+		TableCaption,
+		TableCellProperties,
+		TableColumnResize,
+		TableProperties,
+		TableToolbar,
+		TextTransformation,
+		TodoList,
+		Underline,
+		WordCount
+	],
+	fontFamily: {
+		supportAllValues: true
+	},
+	fontSize: {
+		options: [10, 12, 14, 'default', 18, 20, 22],
+		supportAllValues: true
+	},
+	heading: {
+		options: [
+			{
+				model: 'paragraph',
+				title: 'Paragraph',
+				class: 'ck-heading_paragraph'
+			},
+			{
+				model: 'heading1',
+				view: 'h1',
+				title: 'Heading 1',
+				class: 'ck-heading_heading1'
+			},
+			{
+				model: 'heading2',
+				view: 'h2',
+				title: 'Heading 2',
+				class: 'ck-heading_heading2'
+			},
+			{
+				model: 'heading3',
+				view: 'h3',
+				title: 'Heading 3',
+				class: 'ck-heading_heading3'
+			},
+			{
+				model: 'heading4',
+				view: 'h4',
+				title: 'Heading 4',
+				class: 'ck-heading_heading4'
+			},
+			{
+				model: 'heading5',
+				view: 'h5',
+				title: 'Heading 5',
+				class: 'ck-heading_heading5'
+			},
+			{
+				model: 'heading6',
+				view: 'h6',
+				title: 'Heading 6',
+				class: 'ck-heading_heading6'
+			}
+		]
+	},
+	htmlSupport: {
+		allow: [
+			{
+				name: /^.*$/,
+				styles: true,
+				attributes: true,
+				classes: true
+			}
+		]
+	},
+	image: {
+		toolbar: [
+			'toggleImageCaption',
+			'imageTextAlternative',
+			'|',
+			'imageStyle:inline',
+			'imageStyle:wrapText',
+			'imageStyle:breakText',
+			'|',
+			'resizeImage'
+		]
+	},
+	licenseKey: "GPL",
+	link: {
+		addTargetToExternalLinks: true,
+		defaultProtocol: 'https://',
+		decorators: {
+			toggleDownloadable: {
+				mode: 'manual',
+				label: 'Downloadable',
+				attributes: {
+					download: 'file'
+				}
+			}
+		}
+	},
+	list: {
+		properties: {
+			styles: true,
+			startIndex: true,
+			reversed: true
+		}
+	},
+	mention: {
+		feeds: [
+			{
+				marker: '@',
+				feed: [
+					/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+				]
+			}
+		]
+	},
+	placeholder: 'Type or paste your content here!',
+	style: {
+		definitions: [
+			{
+				name: 'Article category',
+				element: 'h3',
+				classes: ['category']
+			},
+			{
+				name: 'Title',
+				element: 'h2',
+				classes: ['document-title']
+			},
+			{
+				name: 'Subtitle',
+				element: 'h3',
+				classes: ['document-subtitle']
+			},
+			{
+				name: 'Info box',
+				element: 'p',
+				classes: ['info-box']
+			},
+			{
+				name: 'Side quote',
+				element: 'blockquote',
+				classes: ['side-quote']
+			},
+			{
+				name: 'Marker',
+				element: 'span',
+				classes: ['marker']
+			},
+			{
+				name: 'Spoiler',
+				element: 'span',
+				classes: ['spoiler']
+			},
+			{
+				name: 'Code (dark)',
+				element: 'pre',
+				classes: ['fancy-code', 'fancy-code-dark']
+			},
+			{
+				name: 'Code (bright)',
+				element: 'pre',
+				classes: ['fancy-code', 'fancy-code-bright']
+			}
+		]
+	},
+	table: {
+		contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+	}
+};
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -3360,26 +3717,27 @@ async function handleAssessments(node: Element): Promise<void> {
 async function handleDirectMessages(node: Element): Promise<void> {
   console.info("[BetterSEQTA+] Loading Message Editor")
   if (!(node instanceof HTMLElement)) return
-  const div = document.querySelector(".body")
+  const div = document.querySelector(".body") as HTMLElement
   div.innerHTML = ""
   
   var header = document.createElement("div");
   header.className = "messageheader";
   header.style.width = "650px"
-  document.querySelector(".prime").appendChild(header);
-  header.after(document.querySelector(".note.blindWarning"))
-
-  DecoupledEditor.create( document.querySelector(".body") , {licenseKey: 'GPL'})
-    .then( editor => {
-        const toolbarContainer = document.querySelector( '.messageheader' );
-
-        toolbarContainer.appendChild( editor.ui.view.toolbar.element );
-        console.log( 'Editor was initialized', editor );
-    } )
-    .catch( error => {
-        console.error( error.stack );
-    } );
-  let power = document.querySelector(".ck.ck-powered-by")
+  document.querySelector(".blind").after(header)
+  var wc = document.createElement("div");
+  wc.className = "wordcount";
+  document.querySelector(".content").appendChild(wc);
+  (document.querySelector(".body") as HTMLElement).after(wc);
+  (document.querySelector(".body") as HTMLElement).style["width"] = '650px';
+  ClassicEditor.create(div, editorConfig as any).then(editor => {
+    const wordCount = editor.plugins.get('WordCount');
+    editor.ui.element.style.width = '650px';
+    (document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
+  
+    (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+  
+  });
+  let power = document.querySelector(".ck.ck-powered-by") as HTMLElement
   power.innerHTML = ""
   return
 }
