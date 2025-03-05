@@ -170,7 +170,7 @@ const editorConfig = {
 			'outdent',
 			'indent'
 		],
-		shouldNotGroupWhenFull: false
+		shouldNotGroupWhenFull: true
 	},
 	plugins: [
 		Alignment,
