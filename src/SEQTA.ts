@@ -3738,7 +3738,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
   
   });
-  var win = window.open('Compose Message')
+  var win = window.open('','','300x300')
   // win.document.close();
   var el = win.document.createElement("div");
   el.innerHTML = document.querySelector('.content').html();
