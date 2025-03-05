@@ -3741,7 +3741,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
   var win = window.open('','','300x300')
   // win.document.close();
   var el = win.document.createElement("div");
-  el.innerHTML = document.querySelector('.content').innerHTML;
+  el.innerHTML = document.querySelector('.uiSlidePane.legacy-root.shown').innerHTML;
   win.document.body.appendChild(el);
   return
 }
