@@ -3729,7 +3729,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
   document.querySelector(".content").appendChild(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
-
+  if (true == false) {
   var win = window.open('','','300x300')
   win.document.getElementsByTagName('html')[0].innerHTML = document.getElementsByTagName('html')[0].innerHTML
   win.document.querySelector('.container').innerHTML = ""
@@ -3739,6 +3739,13 @@ async function handleDirectMessages(node: Element): Promise<void> {
     editor.ui.element.style.height = 'auto'
     (win.document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (win.document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+  });} else {
+  ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
+    const wordCount = editor.plugins.get('WordCount');
+    editor.ui.element.style.width = '600px';
+    editor.ui.element.style.height = 'auto'
+    (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
+    (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
   });
   return
 }
