@@ -3731,7 +3731,8 @@ async function handleDirectMessages(node: Element): Promise<void> {
   (document.querySelector(".body") as HTMLElement).style["width"] = '650px';
   ClassicEditor.create(div, editorConfig as any).then(editor => {
     const wordCount = editor.plugins.get('WordCount');
-    editor.ui.element.style.width = '650px';
+    editor.ui.element.style.width = 'auto';
+    editor.ui.element.style.height = 'auto'
     (document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
   
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
