@@ -58,8 +58,7 @@ html {
   display: none;
 }
 .pane .tall {
-  height: 90vh;
-  width: 90vh;
+  min-width: 85%;
 }
 .resizeBar {
   background-color: rgb(228 228 231);
