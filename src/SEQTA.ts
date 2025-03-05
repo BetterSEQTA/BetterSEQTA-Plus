@@ -3729,19 +3729,21 @@ async function handleDirectMessages(node: Element): Promise<void> {
   document.querySelector(".content").appendChild(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
-  ClassicEditor.create(div, editorConfig as any).then(editor => {
-    const wordCount = editor.plugins.get('WordCount');
-    editor.ui.element.style.width = '600px';
-    editor.ui.element.style.height = 'auto'
-    (document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
-  
-    (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
-  
-  });
+
   var win = window.open('','','300x300')
   // win.document.close();
   var el = win.document.createElement("div");
   el.innerHTML = document.querySelector('.uiSlidePane.legacy-root.shown').innerHTML;
+  win.document.head.innerHTML = document.head.innerHTML
   win.document.body.appendChild(el);
+  ClassicEditor.create(win.document.querySelector('.body'), editorConfig as any).then(editor => {
+    const wordCount = editor.plugins.get('WordCount');
+    editor.ui.element.style.width = '600px';
+    editor.ui.element.style.height = 'auto'
+    (win.document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
+  
+    (win.document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+  
+  });
   return
 }
