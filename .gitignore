@@ -1,0 +1,23 @@
+# npm
+node_modules/
+package-lock.json
+bun.lockb
+pnpm-lock.yaml
+yarn.lock
+
+.parcel-cache
+.env
+.env.submit
+
+dependency-graph.svg
+
+# Build
+extension.zip
+build/
+dist/
+betterseqtaplus-safari/
+
+.million/
+.vscode/
+
+**/.DS_Store
