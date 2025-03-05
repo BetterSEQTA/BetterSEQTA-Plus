@@ -3733,5 +3733,12 @@ async function handleDirectMessages(node: Element): Promise<void> {
   var win = window.open('','','300x300')
   win.document.getElementsByTagName('html')[0].innerHTML = document.getElementsByTagName('html')[0].innerHTML
   win.document.querySelector('.container').innerHTML = ""
+  ClassicEditor.create(win.document.querySelector('.body'), editorConfig as any).then(editor => {
+    const wordCount = editor.plugins.get('WordCount');
+    editor.ui.element.style.width = '600px';
+    editor.ui.element.style.height = 'auto'
+    (win.document.querySelector('wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
+    (win.document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+  });
   return
 }
