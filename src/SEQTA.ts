@@ -3746,6 +3746,6 @@ async function handleDirectMessages(node: Element): Promise<void> {
     editor.ui.element.style.height = 'auto'
     (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
-  });
+  });};
   return
 }
