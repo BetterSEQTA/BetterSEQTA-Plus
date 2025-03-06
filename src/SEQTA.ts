@@ -3805,7 +3805,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   })
 
   function AppendID(response) {
-	id = response.payload.id
+	const obj = JSON.parse(response);  
+	id = obj.payload.id
 	fields.push(`${id}`)
   }
   var files;	
