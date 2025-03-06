@@ -124,6 +124,7 @@ import {
 import 'ckeditor5/ckeditor5.css';
 
 import './css/ckeditor.css';
+import { toInteger } from "lodash"
 
 
 const editorConfig = {
@@ -3714,37 +3715,92 @@ async function handleAssessments(node: Element): Promise<void> {
   // Add the average assessment item
   addAverageAssessment()
 }
-async function handleDirectMessages(node: Element): Promise<void> {
+async function handleDirectMessages(node: Element): Promise<void> { // Only a bit complex [aka 11]
   console.info("[BetterSEQTA+] Loading Message Editor");
-  var closeelement = document.querySelector('[data-id="send"]');
+  var closeelement = document.querySelector('[data-id="send"]') as HTMLElement
   closeelement.setAttribute('data-id','');
   closeelement.setAttribute('id', 'customsendbutton')
+
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
-  function SendMessage(html) {
+  async function SendMessage(html: any) {
+    var parts = []
+    var children = (document.querySelector('.list') as HTMLElement).children;
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i] as HTMLElement
+      var classname = child.className
+      if (classname.includes("staff")) {
+        parts.push({staff: true, id: toInteger(child.getAttribute("item-id"))})
+      } else {
+        parts.push({staff: false, id: toInteger(child.getAttribute("item-id"))})
+      }
+
+      // Do stuff
+    }
+    var subject = ""
+    var item = (document.querySelector('.subject') as HTMLElement).children
+    for (var i = 0; i < item.length; i++) {
+      var child = children[i] as HTMLElement
+      var classname = child.className
+      console.log(classname)
+      if (classname.includes("subject")) {
+        subject = (<HTMLInputElement>child).value
+
+        break
+      } else {
+        continue
+      }
+      // Do stuff
+    }
+    if (subject == "") {
+      subject = "Empty Subject"
+    }
+    let blinditem = false
+    var blind = (<HTMLInputElement>(document.querySelector('.blind') as HTMLElement).children[0]).getAttribute("data-checked")
+    console.log(blind)
+    if (blind == "1") {
+      blinditem = true
+    } 
+    console.log(parts)
+    await fetch(`https://${window.location.hostname}/seqta/student/save/message`, {
+      method: "POST",
+      body: JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":[]}),
+      headers: {
+        'Accept': 'text/javascript, text/html, application/xml, text/xml, */*',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'en-US,en;q=0.9,en-AU;q=0.8',
+        'Content-Length': '115',
+        'Content-Type': 'application/json; charset=UTF-8'
+      }
+    })
 	  console.log(html)
 	  return
   }
   var header = document.createElement("div");
   header.className = "messageheader";
   header.style.width = "550px";
-  document.querySelector(".blind").after(header);
+  (document.querySelector(".blind") as HTMLElement).after(header);
   var wc = document.createElement("div");
   wc.className = "wordcount";
-  document.querySelector(".body").after(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
+  // (document.querySelector(".body") as HTMLElement).after(wc);
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
-  let e;
-  ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
+  let e: any;
+  ClassicEditor.create(document.querySelector('.body') as HTMLElement, editorConfig as any).then(editor => {
+    editor.conversion.attributeToElement( {
+      model: 'p',
+      view: '',
+      converterPriority: 'high'
+    } );
+    // The following commented lines cause issues; will fix once needed
     // const wordCount = editor.plugins.get('WordCount');
     // (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     // (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
     e = editor
   });
-  // Causes the editor to not be ready: console.log(e.getData())
-  closeelement!.addEventListener("click", function () {
-     SendMessage(e.getData())
+  closeelement!.addEventListener("click", async function () {
+     await SendMessage(e.getData())
   }) 
   return
 }
