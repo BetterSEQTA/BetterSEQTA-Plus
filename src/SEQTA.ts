@@ -3734,8 +3734,10 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       var classname = child.className
       if (classname.includes("staff")) {
         parts.push({staff: true, id: toInteger(child.getAttribute("item-id"))})
-      } else {
-        parts.push({staff: false, id: toInteger(child.getAttribute("item-id"))})
+      } else if (classname.includes("student") {
+        parts.push({student: true, id: toInteger(child.getAttribute("item-id"))})
+      } else if (classname.includes("tutor") {
+        parts.push({tutor: true, id: toInteger(child.getAttribute("item-id"))})
       }
 
       // Do stuff
