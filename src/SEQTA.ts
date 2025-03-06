@@ -3740,11 +3740,12 @@ async function handleDirectMessages(node: Element): Promise<void> {
     const wordCount = editor.plugins.get('WordCount');
     (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
-    e = editor.getData() 
+    e = editor
+    console.log(editor)
   });
-  console.log(e)
+  console.log(e.getData())
   closeelement!.addEventListener("click", function () {
-     SendMessage(e)
+     SendMessage(e.getData())
   }) 
   return
 }
