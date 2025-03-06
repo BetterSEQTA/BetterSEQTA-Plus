@@ -3719,7 +3719,9 @@ async function handleDirectMessages(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
-  
+  function SendMessage(html) {
+	  console.log(html)
+  }
   var header = document.createElement("div");
   header.className = "messageheader";
   header.style.width = "550px";
@@ -3733,6 +3735,12 @@ async function handleDirectMessages(node: Element): Promise<void> {
     const wordCount = editor.plugins.get('WordCount');
     (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+    var closeelement = document.querySelector('[data-id="send"]');
+    closeelement.setAttribute('data-id','');​
+    closeelement!.addEventListener("click", function () {
+       SendMessage(editor.getData() ?? "")
+     })  
   });
+
   return
 }
