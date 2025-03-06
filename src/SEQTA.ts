@@ -3845,15 +3845,15 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   const handler = handlerb.children
   for (var i = 0; i < handler.length; i++) {
       var child = handler[i] as HTMLElement
-      var classname = child.querySelector("button")
+      var classname = child.className
       if (classname == undefined) {
 	continue
-      } else if (classname == "uiButton") {
+      } else if ("uiButton" in classname) {
 	child.remove()
-	var b = document.create("input")
+	var b = document.createElement("input")
 	b.setAttribute("type", "file")
 	b.setAttribute("id", "file")
-	var a = document.create("label")
+	var a = document.createElement("label")
 	a.setAttribute("for", "file")
 	a.innerHTML = "Select a file"
 	handlerb.appendChild(b)
