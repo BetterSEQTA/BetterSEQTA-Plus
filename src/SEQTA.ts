@@ -3831,6 +3831,15 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	  xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               AppendID(xhr.response)
+	      filea = document.querySelector("uiFileList")
+	      filearea = filea.querySelector(".list.inline.no-controls"
+	      e = document.createElement("a")
+	      e.setAttribute("target", "_blank")
+	      e.setAttribute("href", "")
+	      e.setAttribute("class", "uiFile inline")	
+	      e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+	      e.setAttribute("title", file.name)
+	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")	    
             }
           };
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
