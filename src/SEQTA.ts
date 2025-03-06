@@ -3736,7 +3736,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
     var closeelement = document.querySelector('[data-id="send"]');
-    closeelement.setAttribute('data-id','');​
+    closeelement.setAttribute('data-id','');
     closeelement!.addEventListener("click", function () {
        SendMessage(editor.getData() ?? "")
      })  
