@@ -3742,7 +3742,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     // (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
     e = editor
   });
-  console.log(e.getData())
+  // Causes the editor to not be ready: console.log(e.getData())
   closeelement!.addEventListener("click", function () {
      SendMessage(e.getData())
   }) 
