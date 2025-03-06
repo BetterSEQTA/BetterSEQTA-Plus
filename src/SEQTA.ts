@@ -3764,14 +3764,15 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       blinditem = true
     } 
     console.log(parts)
+    const payload = JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":fields}),
     await fetch(`https://${window.location.hostname}/seqta/student/save/message`, {
       method: "POST",
-      body: JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":fields}),
+      body: payload
       headers: {
         'Accept': 'text/javascript, text/html, application/xml, text/xml, */*',
         'Accept-Encoding': 'gzip, deflate, br, zstd',
         'Accept-Language': 'en-US,en;q=0.9,en-AU;q=0.8',
-        'Content-Length': '115',
+        'Content-Length': `${Buffer.byteLength(payload, ['UTF-8'])}`
         'Content-Type': 'application/json; charset=UTF-8'
       }
     })
