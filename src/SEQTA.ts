@@ -3848,7 +3848,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       var classname = child.className
       if (classname == undefined) {
 	continue
-      } else if ("uiButton" in classname) {
+      } else if (classname.includes("uiButton")) {
 	child.remove()
 	var b = document.createElement("input")
 	b.setAttribute("type", "file")
@@ -3858,7 +3858,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	a.innerHTML = "Select a file"
 	handlerb.appendChild(b)
 	handlerb.appendChild(a)
-      } else if (classname == ".note.droppable") {
+      } else if (classname.includes("note droppable")) {
 	child.setAttribute("onDrop", "dropHandler(event);")
 	child.setAttribute("id", "drop_zone")
       }
