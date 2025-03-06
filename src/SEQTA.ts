@@ -3802,7 +3802,12 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   });
   closeelement!.addEventListener("click", async function () {
      await SendMessage(e.getData())
-  }) 
+  })
+  var fields = []	
+  function AppendID(response) {
+	id = response.payload.id
+	fields.push(`${id}`)
+  }
   var files;	
   function dropHandler(ev) {
     console.log("File(s) dropped");
@@ -3820,7 +3825,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
           const xhr = new XMLHttpRequest();
 	  xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
-              console.log(xhr.response)
+              AppendID(xhr.response)
             }
           };
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
@@ -3850,6 +3855,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	continue
       } else if (classname.includes("uiButton")) {
 	child.remove()
+	
 	var b = document.createElement("input")
 	b.setAttribute("type", "file")
 	b.setAttribute("id", "file")
@@ -3859,6 +3865,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	handlerb.appendChild(b)
 	handlerb.appendChild(a)
       } else if (classname.includes("note droppable")) {
+	child.className = "droppablefield"
 	child.setAttribute("onDrop", "dropHandler(event);")
 	child.setAttribute("id", "drop_zone")
       }
@@ -3887,6 +3894,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         console.log(xhr.response)
+	AppendID(xhr.response)
       }
     };
     // Link abort button
