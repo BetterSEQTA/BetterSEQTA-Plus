@@ -3741,10 +3741,9 @@ async function handleDirectMessages(node: Element): Promise<void> {
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
     return editor.getData() 
   });
-  console.log(e)
-
+  console.log(e.getData())
   closeelement!.addEventListener("click", function () {
-     SendMessage(e)
+     SendMessage(e.getData())
   }) 
   return
 }
