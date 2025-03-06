@@ -3818,6 +3818,11 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
           const file = item.getAsFile();
           console.log(`… file[${i}].name = ${file.name}`);
           const xhr = new XMLHttpRequest();
+	  xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+              console.log(xhr.response)
+            }
+          };
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
           xhr.setRequestHeader('X-File-Name', file.name);
           xhr.setRequestHeader('X-File-Size', file.size);
@@ -3839,7 +3844,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   const handler = document.querySelector(".uiFileHandler").children
 
   for (var i = 0; i < handler.length; i++) {
-      var child = children[i] as HTMLElement
+      var child = handler[i] as HTMLElement
       var classname = child.querySelector("button")
       if (classname == undefined) {
 	continue
@@ -3876,8 +3881,13 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   
   fileInput.addEventListener("change", () => {
     const xhr = new XMLHttpRequest();
+	
     xhr.timeout = 2000; // 2 seconds
-
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        console.log(xhr.response)
+      }
+    };
     // Link abort button
     abortButton.addEventListener(
       "click",
