@@ -3737,15 +3737,14 @@ async function handleDirectMessages(node: Element): Promise<void> {
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
   let e;
   ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
-    const wordCount = editor.plugins.get('WordCount');
-    (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
-    (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
-    e = editor.getData()
-    console.log(e)
+    // const wordCount = editor.plugins.get('WordCount');
+    // (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
+    // (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+    e = editor
   });
-  console.log(e)
+  console.log(e.getData())
   closeelement!.addEventListener("click", function () {
-     SendMessage(e)
+     SendMessage(e.getData())
   }) 
   return
 }
