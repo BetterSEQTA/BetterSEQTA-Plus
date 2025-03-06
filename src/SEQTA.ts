@@ -3863,13 +3863,13 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	child.setAttribute("id", "drop_zone")
       }
   }
-  const logs = document.create("p")
+  const logs = document.createElement("p")
   logs.setAttribute("id", "output")
   
-  const pb = document.create("p")
+  const pb = document.createElement("p")
   pb.setAttribute("id", "progressbar")
 
-  const ab = document.create("button")
+  const ab = document.createElement("button")
   ab.setAttribute("id", "abort")
   handler.appendChild(logs)
   handler.appendChild(pb)
