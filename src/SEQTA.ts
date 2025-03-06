@@ -3841,8 +3841,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 
   // File sending (please don't put this in a function)	
 
-  const handler = document.querySelector(".uiFileHandler").children
-
+  const handlerb = document.querySelector(".uiFileHandler")
+  const handler = handlerb.children
   for (var i = 0; i < handler.length; i++) {
       var child = handler[i] as HTMLElement
       var classname = child.querySelector("button")
@@ -3856,8 +3856,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	var a = document.create("label")
 	a.setAttribute("for", "file")
 	a.innerHTML = "Select a file"
-	handler.appendChild(b)
-	handler.appendChild(a)
+	handlerb.appendChild(b)
+	handlerb.appendChild(a)
       } else if (classname == ".note.droppable") {
 	child.setAttribute("onDrop", "dropHandler(event);")
 	child.setAttribute("id", "drop_zone")
@@ -3871,9 +3871,9 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 
   const ab = document.createElement("button")
   ab.setAttribute("id", "abort")
-  handler.appendChild(logs)
-  handler.appendChild(pb)
-  handler.appendChild(ab)
+  handlerb.appendChild(logs)
+  handlerb.appendChild(pb)
+  handlerb.appendChild(ab)
   const fileInput = document.getElementById("file");
   const progressBar = document.querySelector("progress");
   const log = document.querySelector("output");
