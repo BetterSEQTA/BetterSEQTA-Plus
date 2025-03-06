@@ -3,6 +3,7 @@ import Color from "color"
 import Sortable from "sortablejs"
 import browser from "webextension-polyfill"
 import { animate, stagger } from "motion"
+import {Buffer) from "node:buffer"
 // import { BlockNoteEditor } from "@blocknote/core";
 
 // Internal utilities and functions
