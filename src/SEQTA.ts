@@ -3716,11 +3716,15 @@ async function handleAssessments(node: Element): Promise<void> {
 }
 async function handleDirectMessages(node: Element): Promise<void> {
   console.info("[BetterSEQTA+] Loading Message Editor");
+  var closeelement = document.querySelector('[data-id="send"]');
+  closeelement.setAttribute('data-id','');
+  closeelement.setAttribute('id', 'customsendbutton'
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
   function SendMessage(html) {
 	  console.log(html)
+	  return
   }
   var header = document.createElement("div");
   header.className = "messageheader";
@@ -3731,16 +3735,16 @@ async function handleDirectMessages(node: Element): Promise<void> {
   document.querySelector(".body").after(wc);
   (document.querySelector(".body") as HTMLElement).after(wc);
   (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
-  ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
+  let e = ClassicEditor.create(document.querySelector('.body'), editorConfig as any).then(editor => {
     const wordCount = editor.plugins.get('WordCount');
     (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
     (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
-    var closeelement = document.querySelector('[data-id="send"]');
-    closeelement.setAttribute('data-id','');
-    closeelement!.addEventListener("click", function () {
-       SendMessage(editor.getData() ?? "")
-     })  
+    return editor.getData() 
   });
+  console.log(e)
 
+  closeelement!.addEventListener("click", function () {
+     SendMessage(e)
+  }) 
   return
 }
