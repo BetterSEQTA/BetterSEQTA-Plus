@@ -3718,7 +3718,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
   console.info("[BetterSEQTA+] Loading Message Editor");
   var closeelement = document.querySelector('[data-id="send"]');
   closeelement.setAttribute('data-id','');
-  closeelement.setAttribute('id', 'customsendbutton'
+  closeelement.setAttribute('id', 'customsendbutton')
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
