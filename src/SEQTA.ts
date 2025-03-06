@@ -3724,6 +3724,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
+
   async function SendMessage(html: any) {
     var parts = []
     var children = (document.querySelector('.list') as HTMLElement).children;
@@ -3802,5 +3803,127 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   closeelement!.addEventListener("click", async function () {
      await SendMessage(e.getData())
   }) 
+  var files;	
+  function dropHandler(ev) {
+    console.log("File(s) dropped");
+
+    // Prevent default behavior (Prevent file from being opened)
+    ev.preventDefault();
+
+    if (ev.dataTransfer.items) {
+      // Use DataTransferItemList interface to access the file(s)
+      [...ev.dataTransfer.items].forEach((item, i) => {
+        // If dropped items aren't files, reject them
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          console.log(`… file[${i}].name = ${file.name}`);
+	  xhr = new XMLHttpRequest();
+          xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
+          xhr.setRequestHeader('X-File-Name', file.name);
+          xhr.setRequestHeader('X-File-Size', file.size);
+          xhr.setRequestHeader('Content-Type', file.type);
+          xhr.send(file);
+        }
+      });
+    } else {
+      // Use DataTransfer interface to access the file(s)
+      [...ev.dataTransfer.files].forEach((file, i) => {
+	files = file
+        console.log(`… file[${i}].name = ${file.name}`);
+      });
+    }
+  }
+
+  // File sending (please don't put this in a function)	
+
+  const handler = document.querySelector(".uiFileHandler").children
+
+  for (var i = 0; i < handler.length; i++) {
+      var child = children[i] as HTMLElement
+      var classname = child.querySelector("button")
+      if (classname == undefined) {
+	continue
+      } else if (classname == "uiButton") {
+	child.remove()
+	var b = document.create("input")
+	b.setAttribute("type", "file")
+	b.setAttribute("id", "file")
+	var a = document.create("label")
+	a.setAttribute("for", "file")
+	a.innerHTML = "Select a file"
+	handler.appendChild(b)
+	handler.appendChild(a)
+      } else if (classname == ".note.droppable") {
+	child.setAttribute("onDrop", "dropHandler(event);")
+	child.setAttribute("id", "drop_zone")
+      }
+  }
+  const fileInput = document.getElementById("file");
+  const dropInput = document.querySelector(".note.droppable")
+  const progressBar = document.querySelector("progress");
+  const log = document.querySelector("output");
+  const abortButton = document.getElementById("abort");
+  
+  fileInput.addEventListener("change", () => {
+    const xhr = new XMLHttpRequest();
+    xhr.timeout = 2000; // 2 seconds
+
+    // Link abort button
+    abortButton.addEventListener(
+      "click",
+      () => {
+        xhr.abort();
+      },
+      { once: true },
+    );
+
+    // When the upload starts, we display the progress bar
+    xhr.upload.addEventListener("loadstart", (event) => {
+      progressBar.classList.add("visible");
+      progressBar.value = 0;
+      progressBar.max = event.total;
+      log.textContent = "Uploading (0%)…";
+      abortButton.disabled = false;
+    });
+
+    // Each time a progress event is received, we update the bar
+    xhr.upload.addEventListener("progress", (event) => {
+      progressBar.value = event.loaded;
+      log.textContent = `Uploading (${(
+        (event.loaded / event.total) *
+        100
+      ).toFixed(2)}%)…`;
+    });
+
+    // When the upload is finished, we hide the progress bar.
+    xhr.upload.addEventListener("loadend", (event) => {
+      progressBar.classList.remove("visible");
+      if (event.loaded !== 0) {
+        log.textContent = "Upload finished.";
+      }
+      abortButton.disabled = true;
+    });
+
+    // In case of an error, an abort, or a timeout, we hide the progress bar
+    // Note that these events can be listened to on the xhr object too
+    function errorAction(event) {
+      progressBar.classList.remove("visible");
+      log.textContent = `Upload failed: ${event.type}`;
+    }
+    xhr.upload.addEventListener("error", errorAction);
+    xhr.upload.addEventListener("abort", errorAction);
+    xhr.upload.addEventListener("timeout", errorAction);
+
+    // Build the payload
+    const fileData = new FormData();
+    fileData.append("file", fileInput.files[0]);
+
+    // Theoretically, event listeners could be set after the open() call
+    // but browsers are buggy here
+    xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
+    xhr.setRequestHeader('X-File-Name', fileInput.files[0].name);
+    xhr.setRequestHeader('X-File-Size', fileInput.files[0].size);
+    xhr.setRequestHeader('Content-Type', fileInput.files[0].type);
+    xhr.send(fileData);
   return
 }
