@@ -3858,6 +3858,17 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	child.setAttribute("id", "drop_zone")
       }
   }
+  const logs = document.create("p")
+  logs.setAttribute("id", "output")
+  
+  const pb = document.create("p")
+  pb.setAttribute("id", "progressbar")
+
+  ab = document.create("button")
+  ab.setAttribute("id", "abort")
+  handler.appendChild(logs)
+  handler.appendChild(pb)
+  handler.appendChild(ab)
   const fileInput = document.getElementById("file");
   const dropInput = document.querySelector(".note.droppable")
   const progressBar = document.querySelector("progress");
@@ -3924,6 +3935,6 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     xhr.setRequestHeader('X-File-Name', fileInput.files[0].name);
     xhr.setRequestHeader('X-File-Size', fileInput.files[0].size);
     xhr.setRequestHeader('Content-Type', fileInput.files[0].type);
-    xhr.send(fileData);
+    xhr.send(fileData)});
   return
 }
