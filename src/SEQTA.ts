@@ -3775,8 +3775,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         'Content-Type': 'application/json; charset=UTF-8'
       }
     })
-	  console.log(html)
-	  return
+          console.log(html)
+          return
   }
   var header = document.createElement("div");
   header.className = "messageheader";
@@ -3817,7 +3817,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         if (item.kind === "file") {
           const file = item.getAsFile();
           console.log(`… file[${i}].name = ${file.name}`);
-	  xhr = new XMLHttpRequest();
+          const xhr = new XMLHttpRequest();
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
           xhr.setRequestHeader('X-File-Name', file.name);
           xhr.setRequestHeader('X-File-Size', file.size);
@@ -3864,13 +3864,12 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   const pb = document.create("p")
   pb.setAttribute("id", "progressbar")
 
-  ab = document.create("button")
+  const ab = document.create("button")
   ab.setAttribute("id", "abort")
   handler.appendChild(logs)
   handler.appendChild(pb)
   handler.appendChild(ab)
   const fileInput = document.getElementById("file");
-  const dropInput = document.querySelector(".note.droppable")
   const progressBar = document.querySelector("progress");
   const log = document.querySelector("output");
   const abortButton = document.getElementById("abort");
