@@ -3720,7 +3720,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   var closeelement = document.querySelector('[data-id="send"]') as HTMLElement
   closeelement.setAttribute('data-id','');
   closeelement.setAttribute('id', 'customsendbutton')
-
+  var fields = []	
   if (!(node instanceof HTMLElement)) return
   const div = document.querySelector(".body") as HTMLElement;
   div.innerHTML = "";
@@ -3766,7 +3766,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     console.log(parts)
     await fetch(`https://${window.location.hostname}/seqta/student/save/message`, {
       method: "POST",
-      body: JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":[]}),
+      body: JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":fields}),
       headers: {
         'Accept': 'text/javascript, text/html, application/xml, text/xml, */*',
         'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -3803,7 +3803,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   closeelement!.addEventListener("click", async function () {
      await SendMessage(e.getData())
   })
-  var fields = []	
+
   function AppendID(response) {
 	id = response.payload.id
 	fields.push(`${id}`)
