@@ -20,7 +20,9 @@ button.uiButton.timetable-zoom.iconFamily,
 .iconFamily {
   font-family: "IconFamily" !important;
 }
-
+input[type="file"] {
+  display: none;
+}
 body,
 .legacy-root input,
 .legacy-root textarea,
