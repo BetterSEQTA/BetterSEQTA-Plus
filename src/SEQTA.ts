@@ -3851,7 +3851,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 		var ef = document.querySelector(`a[data-file = ${id}]`)      
 	      	ef.remove()
 		var id = fields.indexOf(id)
-		fields.splice(id, 1))      
+		fields.splice(id, 1)    
 	      });
 	      e.append(deletebutton)	    
             }
