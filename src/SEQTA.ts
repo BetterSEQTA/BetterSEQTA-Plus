@@ -3718,6 +3718,78 @@ async function handleAssessments(node: Element): Promise<void> {
   addAverageAssessment()
 }
 async function handleDirectMessages(node: Element): Promise<void> {
+  function AppendID(response: string) {
+    const obj = JSON.parse(response)
+    const id = obj.payload.id
+    fields.push(`${id}`)
+  }
+  async function SendMessage(html: any) {
+    
+    var parts: any = []
+    var children = (document.querySelector(".list") as HTMLElement).children
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i] as HTMLElement
+      var classname = child.className
+      if (classname.includes("staff")) {
+        parts.push({
+          staff: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
+      } else if (classname.includes("student")) {
+        parts.push({
+          student: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
+      } else if (classname.includes("tutor")) {
+        parts.push({
+          tutor: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
+      }
+
+      // Do stuff
+    }
+    var subject = ""
+    var item = (document.querySelector(".uiShortText.subject") as HTMLInputElement)
+    if (item.value == "") {
+      subject = "No subject given"
+    } else {
+      subject = item.value
+    }
+    let blinditem = false
+    var blind = (<HTMLInputElement>(
+      (document.querySelector(".blind") as HTMLElement).children[0]
+    )).getAttribute("data-checked")
+    console.log(blind)
+    if (blind == "1") {
+      blinditem = true
+    }
+    console.log(parts)
+    const payload = JSON.stringify({
+      subject: subject,
+      contents: html,
+      participants: parts,
+      blind: blinditem,
+      files: fields,
+    })
+    await fetch(
+      `https://${window.location.hostname}/seqta/student/save/message`,
+      {
+        method: "POST",
+        body: payload,
+        headers: {
+          Accept: "text/javascript, text/html, application/xml, text/xml, */*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Accept-Language": "en-US,en;q=0.9,en-AU;q=0.8",
+          "Content-Length": `${Buffer.byteLength(payload)}`,
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+      },
+    )
+    console.log(html)
+    window.location.reload() 
+    return
+  }
   if (settingsState.cme) {
     document.getElementById("content")?.remove()
     // Only a bit complex [aka 44]
@@ -3735,73 +3807,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     const div = document.querySelector(".body") as HTMLElement
     div.innerHTML = ""
 
-    async function SendMessage(html: any) {
     
-      var parts: any = []
-      var children = (document.querySelector(".list") as HTMLElement).children
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i] as HTMLElement
-        var classname = child.className
-        if (classname.includes("staff")) {
-          parts.push({
-            staff: true,
-            id: toInteger(child.getAttribute("item-id")),
-          })
-        } else if (classname.includes("student")) {
-          parts.push({
-            student: true,
-            id: toInteger(child.getAttribute("item-id")),
-          })
-        } else if (classname.includes("tutor")) {
-          parts.push({
-            tutor: true,
-            id: toInteger(child.getAttribute("item-id")),
-          })
-        }
-
-        // Do stuff
-      }
-      var subject = ""
-      var item = (document.querySelector(".uiShortText.subject") as HTMLInputElement)
-      if (item.value == "") {
-        subject = "No subject given"
-      } else {
-        subject = item.value
-      }
-      let blinditem = false
-      var blind = (<HTMLInputElement>(
-        (document.querySelector(".blind") as HTMLElement).children[0]
-      )).getAttribute("data-checked")
-      console.log(blind)
-      if (blind == "1") {
-        blinditem = true
-      }
-      console.log(parts)
-      const payload = JSON.stringify({
-        subject: subject,
-        contents: html,
-        participants: parts,
-        blind: blinditem,
-        files: fields,
-      })
-      await fetch(
-        `https://${window.location.hostname}/seqta/student/save/message`,
-        {
-          method: "POST",
-          body: payload,
-          headers: {
-            Accept: "text/javascript, text/html, application/xml, text/xml, */*",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Accept-Language": "en-US,en;q=0.9,en-AU;q=0.8",
-            "Content-Length": `${Buffer.byteLength(payload)}`,
-            "Content-Type": "application/json; charset=UTF-8",
-          },
-        },
-      )
-      console.log(html)
-      window.location.reload() 
-      return
-    }
     var header = document.createElement("div")
     header.className = "messageheader"
     header.style.width = "550px"
@@ -3822,11 +3828,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
       await SendMessage(e.getData())
     })
 
-    function AppendID(response: string) {
-      const obj = JSON.parse(response)
-      const id = obj.payload.id
-      fields.push(`${id}`)
-    }
+
     
     // Will fix later: window.dropHandler = dropHandler(ev)
     // File sending (please don't put this in a function)
