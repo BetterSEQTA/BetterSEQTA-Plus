@@ -62,6 +62,16 @@ html {
 .pane.tall {
   min-width: 90%;
 }
+.customdroppablefield {
+  min-height: 30%;
+  text-align: center;
+}
+.formItem {
+  text-align: center;
+  border-radius: 32px !important;
+  color: var(--text-primary) !important;
+  margin-top: 4px !important;
+}
 .resizeBar {
   background-color: rgb(228 228 231);
   position: absolute;
@@ -1888,6 +1898,11 @@ div.entry.class[style*="width: 46.5%"] {
   width: auto !important;
 }
 .uiFileHandler .uiButton {
+  border-radius: 32px !important;
+  color: var(--text-primary) !important;
+  margin-top: 4px !important;
+}
+.FormUiButton {
   border-radius: 32px !important;
   color: var(--text-primary) !important;
   margin-top: 4px !important;
