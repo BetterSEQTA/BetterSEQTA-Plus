@@ -180,6 +180,16 @@
       }
     },
     {
+      title: "Custom Message Editor",
+      description: "Enables Custom Message Editor ",
+      id: 12,
+      Component: Switch,
+      props: {
+        state: $settingsState.cme,
+        onChange: (isOn: boolean) => settingsState.cme = isOn
+      }
+    },
+    {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
       id: 12,
