@@ -3829,31 +3829,31 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
           const file = item.getAsFile();
           console.log(`… file[${i}].name = ${file.name}`);
           const xhr = new XMLHttpRequest();
-	  xhr.onreadystatechange = () => {
+	        xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               AppendID(xhr.response)
-	      var filea = document.querySelector("uiFileList")
-	      var filearea = filea.querySelector(".list.inline.no-controls")
-	      var e = document.createElement("a")
-	      e.setAttribute("target", "_blank")
-	      e.setAttribute("href", "")
-	      e.setAttribute("class", "uiFile inline")	
-	      e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
-	      e.setAttribute("title", file.name)
-	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")
-	      filearea.append(e)
-	      var deletebutton = document.createElement("button")
-	      deletebutton.setAttribute("type", "button")
-	      deletebutton.setAttribute("class", "uiButton delete")
-	      deletebutton.innerHTML = "Delete File"
-	      deletebutton.addEventListener("delete", () => {
-		var id = JSON.parse(xhr.response).payload.id      
-		var ef = document.querySelector(`a[data-file = ${id}]`)      
-	      	ef.remove()
-		var id = fields.indexOf(id)
-		fields.splice(id, 1)    
-	      });
-	      e.append(deletebutton)	    
+	            var filea = document.querySelector("uiFileList")
+	            var filearea = filea.querySelector(".list.inline.no-controls")
+	            var e = document.createElement("a")
+	            e.setAttribute("target", "_blank")
+	            e.setAttribute("href", "")
+              e.setAttribute("class", "uiFile inline")	
+              e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+              e.setAttribute("title", file.name)
+              e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+              filearea.append(e)
+              var deletebutton = document.createElement("button")
+              deletebutton.setAttribute("type", "button")
+              deletebutton.setAttribute("class", "uiButton delete")
+              deletebutton.innerHTML = "Delete File"
+              deletebutton.addEventListener("delete", () => {
+                var id = JSON.parse(xhr.response).payload.id      
+                var ef = document.querySelector(`a[data-file = ${id}]`)      
+                ef.remove()
+                var id = fields.indexOf(id)
+                fields.splice(id, 1)    
+              });
+              e.append(deletebutton)	    
             }
           };
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
@@ -3866,7 +3866,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     } else {
       // Use DataTransfer interface to access the file(s)
       [...ev.dataTransfer.files].forEach((file, i) => {
-	files = file
+	      files = file
         console.log(`… file[${i}].name = ${file.name}`);
       });
     }
@@ -3880,22 +3880,22 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       var child = handler[i] as HTMLElement
       var classname = child.className
       if (classname == undefined) {
-	continue
+	      continue
       } else if (classname.includes("uiButton")) {
-	child.remove()
+	      child.remove()
 	
-	var b = document.createElement("input")
-	b.setAttribute("type", "file")
-	b.setAttribute("id", "file")
-	var a = document.createElement("label")
-	a.setAttribute("for", "file")
-	a.innerHTML = "Select a file"
-	handlerb.appendChild(b)
-	handlerb.appendChild(a)
+        var b = document.createElement("input")
+        b.setAttribute("type", "file")
+        b.setAttribute("id", "file")
+        var a = document.createElement("label")
+        a.setAttribute("for", "file")
+        a.innerHTML = "Select a file"
+        handlerb.appendChild(b)
+        handlerb.appendChild(a)
       } else if (classname.includes("note droppable")) {
-	child.className = "droppablefield"
-	child.setAttribute("onDrop", "dropHandler(event);")
-	child.setAttribute("id", "drop_zone")
+        child.className = "droppablefield"
+        child.setAttribute("onDrop", "dropHandler(event);")
+        child.setAttribute("id", "drop_zone")
       }
   }
   const logs = document.createElement("div")
@@ -3920,31 +3920,31 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	
     xhr.timeout = 2000; // 2 seconds
     xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-              AppendID(xhr.response)
-	      var filea = document.querySelector("uiFileList")
-	      var filearea = filea.querySelector(".list.inline.no-controls")
-	      var e = document.createElement("a")
-	      e.setAttribute("target", "_blank")
-	      e.setAttribute("href", "")
-	      e.setAttribute("class", "uiFile inline")	
-	      e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
-	      e.setAttribute("title", file.name)
-	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")
-	      filearea.append(e)
-	      var deletebutton = document.createElement("button")
-	      deletebutton.setAttribute("type", "button")
-	      deletebutton.setAttribute("class", "uiButton delete")
-	      deletebutton.innerHTML = "Delete File"
-	      deletebutton.addEventListener("delete", () => {
-		var id = JSON.parse(xhr.response).payload.id      
-		var ef = document.querySelector(`a[data-file = ${id}]`)      
-	      	ef.remove()
-		var id = fields.indexOf(id)
-		fields.splice(id, 1)    
-	      });
-	      e.append(deletebutton)
-	    }
+      if (xhr.readyState === 4) {
+        AppendID(xhr.response)
+        var filea = document.querySelector("uiFileList")
+        var filearea = filea.querySelector(".list.inline.no-controls")
+        var e = document.createElement("a")
+        e.setAttribute("target", "_blank")
+        e.setAttribute("href", "")
+        e.setAttribute("class", "uiFile inline")	
+        e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+        e.setAttribute("title", file.name)
+        e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+        filearea.append(e)
+        var deletebutton = document.createElement("button")
+        deletebutton.setAttribute("type", "button")
+        deletebutton.setAttribute("class", "uiButton delete")
+        deletebutton.innerHTML = "Delete File"
+        deletebutton.addEventListener("delete", () => {
+          var id = JSON.parse(xhr.response).payload.id      
+          var ef = document.querySelector(`a[data-file = ${id}]`)      
+          ef.remove()
+          var id = fields.indexOf(id)
+          fields.splice(id, 1)    
+        });
+        e.append(deletebutton)	    
+      }
     };
     // Link abort button
     abortButton.addEventListener(
@@ -4002,6 +4002,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     xhr.setRequestHeader('X-File-Name', fileInput.files[0].name);
     xhr.setRequestHeader('X-File-Size', fileInput.files[0].size);
     xhr.setRequestHeader('Content-Type', fileInput.files[0].type);
-    xhr.send(fileData)};
+    xhr.send(fileData)});
   return
+}
+
 }
