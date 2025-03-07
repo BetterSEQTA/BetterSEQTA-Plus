@@ -3932,7 +3932,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         e.setAttribute("title", file.name)
         e.setAttribute("style", "background-color: rgb(77, 105, 191);")
         filearea.append(e)
-        function Delete() {
+        e.addEventListener("click", () => {
           var id = JSON.parse(xhr.response).payload.id      
           var ef = document.querySelector(`a[data-file = ${id}]`)      
           ef.remove()
@@ -3941,7 +3941,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         }
 	window.Delete = Delete()       
         e.append(deletebutton)	    
-      }
+      })
     };
     // Link abort button
     abortButton.addEventListener(
