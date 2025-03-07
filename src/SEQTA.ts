@@ -3929,13 +3929,13 @@ async function handleDirectMessages(node: Element): Promise<void> {
 
     const pb = document.createElement("progress")
     pb.setAttribute("id", "progress")
-    pb.setAttribute("style", "text-align: center;")
-    var ia = document.getElementById("file") as HTMLElement
+    pb.setAttribute("style", "display: none;")
+    var ia = document.getElementById("file") 
     ia.before(logs)
     ia.before(pb)
     // handlerb.appendChild(ab)
     const fileInput = document.getElementById("file") as HTMLElement
-    const progressBar = document.getElementById("progress") as HTMLInputElement
+    const progressBar = document.getElementById("progress")
     const log = document.getElementById("output") as HTMLElement
     // const abortButton = document.getElementById("abort")
 
@@ -3966,7 +3966,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
 
       // When the upload starts, we display the progress bar
       xhr.upload.addEventListener("loadstart", (event) => {
-        progressBar.classList.add("visible")
+        progressBar.setAttribute("style", "display: block")
         progressBar.value = 0
         progressBar.max = event.total
         log.textContent = "Uploading (0%)…"
@@ -3983,7 +3983,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
 
       // When the upload is finished, we hide the progress bar.
       xhr.upload.addEventListener("loadend", (event) => {
-        progressBar.classList.remove("visible")
+        progressBar.setAttribute("style", "display: none")
         if (event.loaded !== 0) {
           log.textContent = "Upload finished."
         }
