@@ -3887,7 +3887,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         var b = document.createElement("input")
         b.setAttribute("type", "file")
         b.setAttribute("id", "file")
-        var a = document.createElement("label")
+        var a = document.createElement("button")
         a.setAttribute("for", "file")
         a.innerHTML = "Select a file"
         handlerb.appendChild(b)
@@ -3904,9 +3904,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   const pb = document.createElement("div")
   pb.setAttribute("id", "progress")
 
-  const ab = document.createElement("button")
-  ab.setAttribute("id", "abort")
-  ab.innerHTML = "Abort Upload"
+  
   handlerb.appendChild(logs)
   handlerb.appendChild(pb)
   handlerb.appendChild(ab)
@@ -3924,11 +3922,11 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         var filearea = filea.querySelector(".list.inline.no-controls")
         var e = document.createElement("a")
         e.setAttribute("target", "_blank")
-        e.setAttribute("onclick", `Delete(); return false;`)
         e.setAttribute("class", "uiFile inline")	
         e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
         e.setAttribute("title", file.name)
         e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+	e.innerHTML = `<h5>${JSON.parse(xhr.response).payload.filename}</h5>`
         filearea.append(e)
         e.addEventListener("click", () => {
           var id = JSON.parse(xhr.response).payload.id      
@@ -3941,14 +3939,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         e.append(deletebutton)	    
       }
     };
-    // Link abort button
-    abortButton.addEventListener(
-      "click",
-      () => {
-        xhr.abort();
-      },
-      { once: true },
-    );
+
 
     // When the upload starts, we display the progress bar
     xhr.upload.addEventListener("loadstart", (event) => {
@@ -3956,7 +3947,6 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       progressBar.value = 0;
       progressBar.max = event.total;
       log.textContent = "Uploading (0%)…";
-      abortButton.disabled = false;
     });
 
     // Each time a progress event is received, we update the bar
@@ -3974,7 +3964,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       if (event.loaded !== 0) {
         log.textContent = "Upload finished.";
       }
-      abortButton.disabled = true;
+
     });
 
     // In case of an error, an abort, or a timeout, we hide the progress bar
