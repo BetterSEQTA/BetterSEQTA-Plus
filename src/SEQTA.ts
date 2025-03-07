@@ -3927,7 +3927,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     logs.setAttribute("id", "output")
     logs.setAttribute("style", "display: none;")
 
-    const pb = document.createElement("div")
+    const pb = document.createElement("progress")
     pb.setAttribute("id", "progress")
     pb.setAttribute("style", "text-align: center;")
     var ia = document.getElementById("file") as HTMLElement
