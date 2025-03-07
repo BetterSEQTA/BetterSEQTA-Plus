@@ -3907,7 +3907,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   
   handlerb.appendChild(logs)
   handlerb.appendChild(pb)
-  handlerb.appendChild(ab)
+  // handlerb.appendChild(ab)
   const fileInput = document.getElementById("file");
   const progressBar = document.querySelector("progress");
   const log = document.querySelector("output");
