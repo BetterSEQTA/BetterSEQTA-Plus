@@ -3920,10 +3920,30 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	
     xhr.timeout = 2000; // 2 seconds
     xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        console.log(xhr.response)
-	AppendID(xhr.response)
-      }
+            if (xhr.readyState === 4) {
+              AppendID(xhr.response)
+	      var filea = document.querySelector("uiFileList")
+	      var filearea = filea.querySelector(".list.inline.no-controls")
+	      var e = document.createElement("a")
+	      e.setAttribute("target", "_blank")
+	      e.setAttribute("href", "")
+	      e.setAttribute("class", "uiFile inline")	
+	      e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+	      e.setAttribute("title", file.name)
+	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+	      filearea.append(e)
+	      var deletebutton = document.createElement("button")
+	      deletebutton.setAttribute("type", "button")
+	      deletebutton.setAttribute("class", "uiButton delete")
+	      deletebutton.innerHTML = "Delete File"
+	      deletebutton.addEventListener("delete", () => {
+		var id = JSON.parse(xhr.response).payload.id      
+		var ef = document.querySelector(`a[data-file = ${id}]`)      
+	      	ef.remove()
+		var id = fields.indexOf(id)
+		fields.splice(id, 1)    
+	      });
+	      e.append(deletebutton)	
     };
     // Link abort button
     abortButton.addEventListener(
