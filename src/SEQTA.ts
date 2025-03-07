@@ -3833,7 +3833,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
             if (xhr.readyState === 4) {
               AppendID(xhr.response)
 	      var filea = document.querySelector("uiFileList")
-	      var filearea = filea.querySelector(".list.inline.no-controls"
+	      var filearea = filea.querySelector(".list.inline.no-controls")
 	      var e = document.createElement("a")
 	      e.setAttribute("target", "_blank")
 	      e.setAttribute("href", "")
