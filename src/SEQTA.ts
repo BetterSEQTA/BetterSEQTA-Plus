@@ -3917,8 +3917,6 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   
   fileInput.addEventListener("change", () => {
     const xhr = new XMLHttpRequest();
-	
-    xhr.timeout = 2000; // 2 seconds
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         AppendID(xhr.response)
