@@ -1224,7 +1224,6 @@ async function LoadPageElements(): Promise<void> {
     },
     handleDirectMessages,
   )
-  }
   if (settingsState.assessmentsAverage) {
     eventManager.register(
       "assessmentsAdded",
