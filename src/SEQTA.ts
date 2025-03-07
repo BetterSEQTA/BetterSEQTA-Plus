@@ -3934,7 +3934,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         filearea.append(e)
         e.addEventListener("click", () => {
           var id = JSON.parse(xhr.response).payload.id      
-          var ef = document.querySelector(`a[data-file = ${id}]`)      
+          var ef = document.querySelector(`a[data-file = '${id}']`)      
           ef.remove()
           var id = fields.indexOf(id)
           fields.splice(id, 1)    
