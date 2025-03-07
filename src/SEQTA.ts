@@ -3848,7 +3848,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
               deletebutton.innerHTML = "Delete File"
               deletebutton.addEventListener("delete", () => {
                 var id = JSON.parse(xhr.response).payload.id      
-                var ef = document.querySelector(`a[data-file = ${id}]`)      
+                var ef = document.querySelector(`a[data-file='${id}']`)      
                 ef.remove()
                 var id = fields.indexOf(id)
                 fields.splice(id, 1)    
