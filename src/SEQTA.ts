@@ -4006,4 +4006,3 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
   return
 }
 
-}
