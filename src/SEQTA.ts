@@ -3813,7 +3813,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	const id = obj.payload.id
 	fields.push(`${id}`)
   }
-  var files;	
+  var files;
+  function deleteAction() {}
   function dropHandler(ev) {
     console.log("File(s) dropped");
 
@@ -3839,7 +3840,18 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 	      e.setAttribute("class", "uiFile inline")	
 	      e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
 	      e.setAttribute("title", file.name)
-	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")	    
+	      e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+	      deletebutton = document.createElement("button")
+	      deletebutton.setAttribute("type", "button")
+	      deletebutton.setAttribute("class", "uiButton delete")
+	      deletebutton.innerHTML = "Delete File"
+	      deletebutton.addEventListener("delete", () => {
+		var id = JSON.parse(xhr.response).payload.id      
+		var ef = document.querySelector(`a[data-file = ${id}]`)      
+	      	ef.remove()
+		var id = fields.indexOf(id)
+		fields.splice(id, 1)      
+	      });	
             }
           };
           xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
