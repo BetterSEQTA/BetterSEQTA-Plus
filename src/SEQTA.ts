@@ -3832,7 +3832,6 @@ async function handleDirectMessages(node: Element): Promise<void> {
     // Will fix later: window.dropHandler = dropHandler(ev)
     // File sending (please don't put this in a function)
 
-<<<<<<< HEAD
     const handlerb = document.querySelector(".uiFileHandler") as HTMLElement
     handlerb.className = "somefilebitthingy1"
     handlerb.setAttribute("style", "text-align: center;")
@@ -3880,54 +3879,6 @@ async function handleDirectMessages(node: Element): Promise<void> {
                     fields.splice(id, 1)
                   })
                 }
-=======
-  const handlerb = document.querySelector(".uiFileHandler") as HTMLElement
-  handlerb.className = "somefilebitthingy1"
-  handlerb.setAttribute("style", "text-align: center;")
-  handlerb.querySelector(".note.droppable")?.remove()
-  let child2 = document.createElement("div")
-  child2.className = "customdroppablefield"
-  handlerb.after(child2)
-  child2.addEventListener("dragover", (event) => {
-    child2.setAttribute("style", "color: red;")
-  });
-  
-  child2.addEventListener("drop", (event) => {
-      child2.setAttribute("style", "")
-      const ev = event as DragEvent
-      console.log("File(s) dropped")
-  
-      // Prevent default behavior (Prevent file from being opened)
-      ev.preventDefault()
-  
-      if ((ev.dataTransfer as DataTransfer).items) {
-        // Use DataTransferItemList interface to access the file(s)
-        [...(ev.dataTransfer as DataTransfer).items].forEach((item, i) => {
-          // If dropped items aren't files, reject them
-          if (item.kind === "file") {
-            const file = item.getAsFile() as File
-            console.log(`… file[${i}].name = ${file.name}`)
-            const xhr = new XMLHttpRequest()
-            xhr.onreadystatechange = () => {
-              if (xhr.readyState === 4) {
-                AppendID(xhr.response)
-                var filea = document.querySelector(".uiFileList") as HTMLElement
-                var filearea = filea.querySelector(".list.inline.no-controls") as HTMLElement
-                var e = document.createElement("a")
-                e.setAttribute("target", "_blank")
-                e.setAttribute("class", "uiFile inline")
-                e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
-                e.setAttribute("style", "background-color: rgb(77, 105, 191);")
-                e.innerHTML = `${JSON.parse(xhr.response).payload.filename}`
-                child2.before(e)
-                e.addEventListener("click", () => {
-                  var id = JSON.parse(xhr.response).payload.id
-                  var ef = document.querySelector(`a[data-file = '${id}']`) as HTMLElement
-                  ef.remove()
-                  var id: any = fields.indexOf(id)
-                  fields.splice(id, 1)
-                })
->>>>>>> a8b299e8edbded4c1cf865d2aec6a4ad907e23b8
               }
               xhr.open(
                 "POST",
@@ -3939,7 +3890,6 @@ async function handleDirectMessages(node: Element): Promise<void> {
               xhr.setRequestHeader("Content-Type", file.type)
               xhr.send(file)
             }
-<<<<<<< HEAD
           })
         } else {
           // Use DataTransfer interface to access the file(s)
@@ -3948,25 +3898,6 @@ async function handleDirectMessages(node: Element): Promise<void> {
             console.log(`… file[${i}].name = ${file.name}`)
           })
         }
-=======
-            xhr.open(
-              "POST",
-              `https://${window.location.hostname}/seqta/student/file/upload/xhr2`,
-              true,
-            )
-            xhr.setRequestHeader("X-File-Name", file.name)
-            xhr.setRequestHeader("X-File-Size", file.size)
-            xhr.setRequestHeader("Content-Type", file.type)
-            xhr.send(file)
-          }
-        })
-      } else {
-        // Use DataTransfer interface to access the file(s)
-        [...ev.dataTransfer.files].forEach((file, i) => {
-          files = file
-          console.log(`… file[${i}].name = ${file.name}`)
-        })
->>>>>>> a8b299e8edbded4c1cf865d2aec6a4ad907e23b8
       }
     )
     
