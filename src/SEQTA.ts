@@ -3838,7 +3838,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     let child2 = document.createElement("div")
     child2.className = "customdroppablefield"
     handlerb.after(child2)
-    child2.addEventListener("dragover", (event) => {
+    child2.addEventListener("dragover", () => {
       child2.setAttribute("style", "color: red;")
     });
     
@@ -3885,15 +3885,14 @@ async function handleDirectMessages(node: Element): Promise<void> {
                 true,
               )
               xhr.setRequestHeader("X-File-Name", file.name)
-              xhr.setRequestHeader("X-File-Size", file.size)
+              xhr.setRequestHeader("X-File-Size", String(file.size))
               xhr.setRequestHeader("Content-Type", file.type)
               xhr.send(file)
             }
           })
         } else {
           // Use DataTransfer interface to access the file(s)
-          [...ev.dataTransfer.files].forEach((file, i) => {
-            files = file
+          [...(ev.dataTransfer as DataTransfer).files].forEach((file, i) => {
             console.log(`… file[${i}].name = ${file.name}`)
           })
         }
@@ -3934,8 +3933,8 @@ async function handleDirectMessages(node: Element): Promise<void> {
     ia.before(pb)
     // handlerb.appendChild(ab)
     const fileInput = document.getElementById("file") as HTMLElement
-    const progressBar = document.getElementById("progress")
-    const log = document.getElementById("output")
+    const progressBar = document.getElementById("progress") as HTMLInputElement
+    const log = document.getElementById("output") as HTMLElement
     // const abortButton = document.getElementById("abort")
 
     fileInput.addEventListener("change", () => {
@@ -3990,7 +3989,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
 
       // In case of an error, an abort, or a timeout, we hide the progress bar
       // Note that these events can be listened to on the xhr object too
-      function errorAction(event) {
+      function errorAction(event: any) {
         progressBar.classList.remove("visible")
         log.textContent = `Upload failed: ${event.type}`
       }
