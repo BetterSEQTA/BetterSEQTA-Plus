@@ -181,7 +181,7 @@
     },
     {
       title: "Custom Message Editor",
-      description: "Enables Custom Message Editor (doesn't currently work)",
+      description: "Enables Custom Message Editor ",
       id: 12,
       Component: Switch,
       props: {
