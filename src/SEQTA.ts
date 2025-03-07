@@ -3943,7 +3943,8 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
 		var id = fields.indexOf(id)
 		fields.splice(id, 1)    
 	      });
-	      e.append(deletebutton)	
+	      e.append(deletebutton)
+	    }
     };
     // Link abort button
     abortButton.addEventListener(
