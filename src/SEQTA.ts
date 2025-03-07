@@ -3876,8 +3876,8 @@ async function handleDirectMessages(node: Element): Promise<void> {
                     var id = JSON.parse(xhr.response).payload.id
                     var ef = document.querySelector(`a[data-file = '${id}']`) as HTMLElement
                     ef.remove()
-                    var id: any = fields.indexOf(id)
-                    fields.splice(id, 1)
+                    var id2: any = fields.indexOf(id)
+                    fields.splice(id2, 1)
                   })
                 }
               }
@@ -3958,8 +3958,8 @@ async function handleDirectMessages(node: Element): Promise<void> {
             var id = JSON.parse(xhr.response).payload.id
             var ef = document.querySelector(`a[data-file = '${id}']`)
             ef.remove()
-            var id = fields.indexOf(id)
-            fields.splice(id, 1)
+            var id2 = fields.indexOf(id)
+            fields.splice(id2, 1)
           })
         }
       }
