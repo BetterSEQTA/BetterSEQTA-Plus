@@ -3871,7 +3871,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       });
     }
   }
-  window.dropHandler = dropHandler(ev)
+  // Will fix later: window.dropHandler = dropHandler(ev)
   // File sending (please don't put this in a function)	
 
   const handlerb = document.querySelector(".uiFileHandler")
