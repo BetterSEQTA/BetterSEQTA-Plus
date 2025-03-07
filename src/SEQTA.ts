@@ -3968,13 +3968,13 @@ async function handleDirectMessages(node: Element): Promise<void> {
       xhr.upload.addEventListener("loadstart", (event) => {
         progressBar.setAttribute("style", "display: block")
         progressBar.value = 0
-        progressBar.max = event.total
+        progressBar.max = 100
         log.textContent = "Uploading (0%)…"
       })
 
       // Each time a progress event is received, we update the bar
       xhr.upload.addEventListener("progress", (event) => {
-        progressBar.value = event.loaded
+        progressBar.value = (event.loaded / event.total)*100
         log.textContent = `Uploading (${(
           (event.loaded / event.total) *
           100
