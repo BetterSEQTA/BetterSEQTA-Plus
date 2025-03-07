@@ -3894,7 +3894,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         handlerb.appendChild(a)
       } else if (classname.includes("note droppable")) {
         child.className = "droppablefield"
-        child.setAttribute("onDrop", "dropHandler(event);")
+        child.setAttribute("onDrop", `${dropHandler(event)}`)
         child.setAttribute("id", "drop_zone")
       }
   }
@@ -3926,17 +3926,13 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         var filearea = filea.querySelector(".list.inline.no-controls")
         var e = document.createElement("a")
         e.setAttribute("target", "_blank")
-        e.setAttribute("href", "")
+        e.setAttribute("onclick", `${Delete()}; return false;`)
         e.setAttribute("class", "uiFile inline")	
         e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
         e.setAttribute("title", file.name)
         e.setAttribute("style", "background-color: rgb(77, 105, 191);")
         filearea.append(e)
-        var deletebutton = document.createElement("button")
-        deletebutton.setAttribute("type", "button")
-        deletebutton.setAttribute("class", "uiButton delete")
-        deletebutton.innerHTML = "Delete File"
-        deletebutton.addEventListener("delete", () => {
+        function Delete() {
           var id = JSON.parse(xhr.response).payload.id      
           var ef = document.querySelector(`a[data-file = ${id}]`)      
           ef.remove()
