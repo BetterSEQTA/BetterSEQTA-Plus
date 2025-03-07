@@ -3887,8 +3887,9 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         var b = document.createElement("input")
         b.setAttribute("type", "file")
         b.setAttribute("id", "file")
-        var a = document.createElement("button")
+        var a = document.createElement("label")
         a.setAttribute("for", "file")
+	a.setAttribute("class", "uiButton")
         a.innerHTML = "Select a file"
         handlerb.appendChild(b)
         handlerb.appendChild(a)
