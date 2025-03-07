@@ -4001,4 +4001,3 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     xhr.send(fileData)});
   return
 }
-
