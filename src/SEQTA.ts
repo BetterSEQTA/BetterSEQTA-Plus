@@ -4001,6 +4001,6 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
     xhr.setRequestHeader('X-File-Name', fileInput.files[0].name);
     xhr.setRequestHeader('X-File-Size', fileInput.files[0].size);
     xhr.setRequestHeader('Content-Type', fileInput.files[0].type);
-    xhr.send(fileData)});
+    xhr.send(fileData)};
   return
 }
