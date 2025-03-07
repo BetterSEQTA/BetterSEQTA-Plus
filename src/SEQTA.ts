@@ -1105,7 +1105,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
         applyDarkModeToIframe(iframe, cssLink)
 
         if (element.classList.contains("cke_wysiwyg_frame")) {
-          (async () => {
+          ;(async () => {
             await delay(100)
             iframe.contentDocument?.body.setAttribute("spellcheck", "true")
           })()
@@ -1224,7 +1224,7 @@ async function LoadPageElements(): Promise<void> {
     },
     handleDirectMessages,
   )
-
+  }
   if (settingsState.assessmentsAverage) {
     eventManager.register(
       "assessmentsAdded",
@@ -1312,7 +1312,7 @@ function handleTimetableZoom(): void {
     // Update all day columns (TDs)
     const dayColumns = document.querySelectorAll(".dailycal .content .days td")
     dayColumns.forEach((td: Element) => {
-      (td as HTMLElement).style.height = `${newContainerHeight}px`
+      ;(td as HTMLElement).style.height = `${newContainerHeight}px`
     })
 
     // Update all entries using stored ratios
@@ -1338,7 +1338,7 @@ function handleTimetableZoom(): void {
       const times = timeColumn.querySelectorAll(".time")
       const timeHeight = newContainerHeight / times.length
       times.forEach((time: Element) => {
-        (time as HTMLElement).style.height = `${timeHeight}px`
+        ;(time as HTMLElement).style.height = `${timeHeight}px`
       })
     }
 
@@ -1562,7 +1562,7 @@ function CheckNoticeTextColour(notice: any) {
         const hex1 = hex.slice(0, -1)
         var threshold = GetThresholdOfColor(hex1)
         if (settingsState.DarkMode && threshold < 100) {
-          (node as HTMLElement).style.cssText = "--color: undefined;"
+          ;(node as HTMLElement).style.cssText = "--color: undefined;"
         }
       }
     },
@@ -1942,7 +1942,7 @@ export function OpenMenuOptions() {
 
     ;(element as HTMLElement).classList.add("draggable")
     if ((element as HTMLElement).classList.contains("hasChildren")) {
-      (element as HTMLElement).classList.remove("active")
+      ;(element as HTMLElement).classList.remove("active")
       ;(element.firstChild as HTMLElement).classList.remove("noscroll")
     }
 
@@ -1979,12 +1979,12 @@ export function OpenMenuOptions() {
   for (let i = 0; i < buttons.length; i++) {
     let id = buttons[i].id as string | undefined
     if (menuItems[id as keyof typeof menuItems]) {
-      (buttons[i] as HTMLInputElement).checked =
+      ;(buttons[i] as HTMLInputElement).checked =
         menuItems[id as keyof typeof menuItems].toggle
     } else {
-      (buttons[i] as HTMLInputElement).checked = true
+      ;(buttons[i] as HTMLInputElement).checked = true
     }
-    (buttons[i] as HTMLInputElement).checked = true
+    ;(buttons[i] as HTMLInputElement).checked = true
   }
 
   try {
@@ -2094,7 +2094,7 @@ function saveNewOrder(sortable: any) {
 }
 
 function cloneAttributes(target: any, source: any) {
-  [...source.attributes].forEach((attr) => {
+  ;[...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue)
   })
 }
@@ -2781,7 +2781,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
       upcomingDates[element.due as keyof typeof upcomingDates]
 
     if (assessmentDateDiv) {
-      (assessmentDateDiv as any).assessments.push(element)
+      ;(assessmentDateDiv as any).assessments.push(element)
     }
   }
 
@@ -2848,7 +2848,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
       if (subjectoptions[item]) {
         element.classList.remove("hidden")
       }
-      (element.parentNode! as HTMLElement).classList.remove("hidden")
+      ;(element.parentNode! as HTMLElement).classList.remove("hidden")
 
       let children = element.parentNode!.parentNode!.children
       for (let i = 0; i < children.length; i++) {
@@ -2868,7 +2868,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
               "data-day",
             )
           ) {
-            (element.parentNode!.parentNode! as HTMLElement).classList.add(
+            ;(element.parentNode!.parentNode! as HTMLElement).classList.add(
               "hidden",
             )
           } else {
@@ -2879,7 +2879,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
           }
         }
       } else {
-        (element.parentNode!.parentNode! as HTMLElement).classList.remove(
+        ;(element.parentNode!.parentNode! as HTMLElement).classList.remove(
           "hidden",
         )
       }
