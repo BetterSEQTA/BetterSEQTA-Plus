@@ -3871,7 +3871,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       });
     }
   }
-  window.dropHandler = dropHandler(event)
+  window.dropHandler = dropHandler(ev)
   // File sending (please don't put this in a function)	
 
   const handlerb = document.querySelector(".uiFileHandler")
@@ -3894,7 +3894,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         handlerb.appendChild(a)
       } else if (classname.includes("note droppable")) {
         child.className = "droppablefield"
-        child.setAttribute("onDrop", `dropHandler(event)`)
+        child.setAttribute("onDrop", ``) // dropHandler(event)
         child.setAttribute("id", "drop_zone")
       }
   }
