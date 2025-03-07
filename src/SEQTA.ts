@@ -3871,7 +3871,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       });
     }
   }
-
+  window.dropHandler = dropHandler(event)
   // File sending (please don't put this in a function)	
 
   const handlerb = document.querySelector(".uiFileHandler")
@@ -3894,7 +3894,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         handlerb.appendChild(a)
       } else if (classname.includes("note droppable")) {
         child.className = "droppablefield"
-        child.setAttribute("onDrop", `${dropHandler(event)}`)
+        child.setAttribute("onDrop", `dropHandler(event)`)
         child.setAttribute("id", "drop_zone")
       }
   }
@@ -3926,7 +3926,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
         var filearea = filea.querySelector(".list.inline.no-controls")
         var e = document.createElement("a")
         e.setAttribute("target", "_blank")
-        e.setAttribute("onclick", `${Delete()}; return false;`)
+        e.setAttribute("onclick", `Delete(); return false;`)
         e.setAttribute("class", "uiFile inline")	
         e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
         e.setAttribute("title", file.name)
@@ -3939,6 +3939,7 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
           var id = fields.indexOf(id)
           fields.splice(id, 1)    
         }
+	window.Delete = Delete()       
         e.append(deletebutton)	    
       }
     };
