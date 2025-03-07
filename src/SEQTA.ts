@@ -1105,7 +1105,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
         applyDarkModeToIframe(iframe, cssLink)
 
         if (element.classList.contains("cke_wysiwyg_frame")) {
-          ;(async () => {
+          (async () => {
             await delay(100)
             iframe.contentDocument?.body.setAttribute("spellcheck", "true")
           })()
@@ -1312,7 +1312,7 @@ function handleTimetableZoom(): void {
     // Update all day columns (TDs)
     const dayColumns = document.querySelectorAll(".dailycal .content .days td")
     dayColumns.forEach((td: Element) => {
-      ;(td as HTMLElement).style.height = `${newContainerHeight}px`
+      (td as HTMLElement).style.height = `${newContainerHeight}px`
     })
 
     // Update all entries using stored ratios
@@ -1338,7 +1338,7 @@ function handleTimetableZoom(): void {
       const times = timeColumn.querySelectorAll(".time")
       const timeHeight = newContainerHeight / times.length
       times.forEach((time: Element) => {
-        ;(time as HTMLElement).style.height = `${timeHeight}px`
+        (time as HTMLElement).style.height = `${timeHeight}px`
       })
     }
 
@@ -1562,7 +1562,7 @@ function CheckNoticeTextColour(notice: any) {
         const hex1 = hex.slice(0, -1)
         var threshold = GetThresholdOfColor(hex1)
         if (settingsState.DarkMode && threshold < 100) {
-          ;(node as HTMLElement).style.cssText = "--color: undefined;"
+          (node as HTMLElement).style.cssText = "--color: undefined;"
         }
       }
     },
@@ -1942,7 +1942,7 @@ export function OpenMenuOptions() {
 
     ;(element as HTMLElement).classList.add("draggable")
     if ((element as HTMLElement).classList.contains("hasChildren")) {
-      ;(element as HTMLElement).classList.remove("active")
+      (element as HTMLElement).classList.remove("active")
       ;(element.firstChild as HTMLElement).classList.remove("noscroll")
     }
 
@@ -1979,12 +1979,12 @@ export function OpenMenuOptions() {
   for (let i = 0; i < buttons.length; i++) {
     let id = buttons[i].id as string | undefined
     if (menuItems[id as keyof typeof menuItems]) {
-      ;(buttons[i] as HTMLInputElement).checked =
+      (buttons[i] as HTMLInputElement).checked =
         menuItems[id as keyof typeof menuItems].toggle
     } else {
-      ;(buttons[i] as HTMLInputElement).checked = true
+      (buttons[i] as HTMLInputElement).checked = true
     }
-    ;(buttons[i] as HTMLInputElement).checked = true
+    (buttons[i] as HTMLInputElement).checked = true
   }
 
   try {
@@ -2094,7 +2094,7 @@ function saveNewOrder(sortable: any) {
 }
 
 function cloneAttributes(target: any, source: any) {
-  ;[...source.attributes].forEach((attr) => {
+  [...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue)
   })
 }
@@ -2781,7 +2781,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
       upcomingDates[element.due as keyof typeof upcomingDates]
 
     if (assessmentDateDiv) {
-      ;(assessmentDateDiv as any).assessments.push(element)
+      (assessmentDateDiv as any).assessments.push(element)
     }
   }
 
@@ -2848,7 +2848,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
       if (subjectoptions[item]) {
         element.classList.remove("hidden")
       }
-      ;(element.parentNode! as HTMLElement).classList.remove("hidden")
+      (element.parentNode! as HTMLElement).classList.remove("hidden")
 
       let children = element.parentNode!.parentNode!.children
       for (let i = 0; i < children.length; i++) {
@@ -2868,7 +2868,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
               "data-day",
             )
           ) {
-            ;(element.parentNode!.parentNode! as HTMLElement).classList.add(
+            (element.parentNode!.parentNode! as HTMLElement).classList.add(
               "hidden",
             )
           } else {
@@ -2879,7 +2879,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
           }
         }
       } else {
-        ;(element.parentNode!.parentNode! as HTMLElement).classList.remove(
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove(
           "hidden",
         )
       }
@@ -3832,6 +3832,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
     // Will fix later: window.dropHandler = dropHandler(ev)
     // File sending (please don't put this in a function)
 
+<<<<<<< HEAD
     const handlerb = document.querySelector(".uiFileHandler") as HTMLElement
     handlerb.className = "somefilebitthingy1"
     handlerb.setAttribute("style", "text-align: center;")
@@ -3879,6 +3880,54 @@ async function handleDirectMessages(node: Element): Promise<void> {
                     fields.splice(id, 1)
                   })
                 }
+=======
+  const handlerb = document.querySelector(".uiFileHandler") as HTMLElement
+  handlerb.className = "somefilebitthingy1"
+  handlerb.setAttribute("style", "text-align: center;")
+  handlerb.querySelector(".note.droppable")?.remove()
+  let child2 = document.createElement("div")
+  child2.className = "customdroppablefield"
+  handlerb.after(child2)
+  child2.addEventListener("dragover", (event) => {
+    child2.setAttribute("style", "color: red;")
+  });
+  
+  child2.addEventListener("drop", (event) => {
+      child2.setAttribute("style", "")
+      const ev = event as DragEvent
+      console.log("File(s) dropped")
+  
+      // Prevent default behavior (Prevent file from being opened)
+      ev.preventDefault()
+  
+      if ((ev.dataTransfer as DataTransfer).items) {
+        // Use DataTransferItemList interface to access the file(s)
+        [...(ev.dataTransfer as DataTransfer).items].forEach((item, i) => {
+          // If dropped items aren't files, reject them
+          if (item.kind === "file") {
+            const file = item.getAsFile() as File
+            console.log(`… file[${i}].name = ${file.name}`)
+            const xhr = new XMLHttpRequest()
+            xhr.onreadystatechange = () => {
+              if (xhr.readyState === 4) {
+                AppendID(xhr.response)
+                var filea = document.querySelector(".uiFileList") as HTMLElement
+                var filearea = filea.querySelector(".list.inline.no-controls") as HTMLElement
+                var e = document.createElement("a")
+                e.setAttribute("target", "_blank")
+                e.setAttribute("class", "uiFile inline")
+                e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+                e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+                e.innerHTML = `${JSON.parse(xhr.response).payload.filename}`
+                child2.before(e)
+                e.addEventListener("click", () => {
+                  var id = JSON.parse(xhr.response).payload.id
+                  var ef = document.querySelector(`a[data-file = '${id}']`) as HTMLElement
+                  ef.remove()
+                  var id: any = fields.indexOf(id)
+                  fields.splice(id, 1)
+                })
+>>>>>>> a8b299e8edbded4c1cf865d2aec6a4ad907e23b8
               }
               xhr.open(
                 "POST",
@@ -3890,6 +3939,7 @@ async function handleDirectMessages(node: Element): Promise<void> {
               xhr.setRequestHeader("Content-Type", file.type)
               xhr.send(file)
             }
+<<<<<<< HEAD
           })
         } else {
           // Use DataTransfer interface to access the file(s)
@@ -3898,6 +3948,25 @@ async function handleDirectMessages(node: Element): Promise<void> {
             console.log(`… file[${i}].name = ${file.name}`)
           })
         }
+=======
+            xhr.open(
+              "POST",
+              `https://${window.location.hostname}/seqta/student/file/upload/xhr2`,
+              true,
+            )
+            xhr.setRequestHeader("X-File-Name", file.name)
+            xhr.setRequestHeader("X-File-Size", file.size)
+            xhr.setRequestHeader("Content-Type", file.type)
+            xhr.send(file)
+          }
+        })
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        [...ev.dataTransfer.files].forEach((file, i) => {
+          files = file
+          console.log(`… file[${i}].name = ${file.name}`)
+        })
+>>>>>>> a8b299e8edbded4c1cf865d2aec6a4ad907e23b8
       }
     )
     
