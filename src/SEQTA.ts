@@ -3,7 +3,7 @@ import Color from "color"
 import Sortable from "sortablejs"
 import browser from "webextension-polyfill"
 import { animate, stagger } from "motion"
-import {Buffer} from "buffer"
+import { Buffer } from "buffer"
 // import { BlockNoteEditor } from "@blocknote/core";
 
 // Internal utilities and functions
@@ -49,362 +49,367 @@ import { settingsPopup } from "./interface/hooks/SettingsPopup"
 
 // CKEditor
 import {
-	Alignment,
-	Autoformat,
-	AutoImage,
-	Autosave,
-	Base64UploadAdapter,
-	BlockQuote,
-	Bold,
-	ClassicEditor,
-	Code,
-	CodeBlock,
-	Emoji,
-	Essentials,
-	FindAndReplace,
-	FontBackgroundColor,
-	FontColor,
-	FontFamily,
-	FontSize,
-	FullPage,
-	GeneralHtmlSupport,
-	Heading,
-	Highlight,
-	HorizontalLine,
-	HtmlComment,
-	HtmlEmbed,
-	ImageBlock,
-	ImageCaption,
-	ImageInline,
-	ImageInsert,
-	ImageInsertViaUrl,
-	ImageResize,
-	ImageStyle,
-	ImageTextAlternative,
-	ImageToolbar,
-	ImageUpload,
-	Indent,
-	IndentBlock,
-	Italic,
-	Link,
-	LinkImage,
-	List,
-	ListProperties,
-	Markdown,
-	MediaEmbed,
-	Mention,
-	Paragraph,
-	PasteFromMarkdownExperimental,
-	PasteFromOffice,
-	RemoveFormat,
-	ShowBlocks,
-	SourceEditing,
-	SpecialCharacters,
-	SpecialCharactersArrows,
-	SpecialCharactersCurrency,
-	SpecialCharactersEssentials,
-	SpecialCharactersLatin,
-	SpecialCharactersMathematical,
-	SpecialCharactersText,
-	Strikethrough,
-	Style,
-	Subscript,
-	Superscript,
-	Table,
-	TableCaption,
-	TableCellProperties,
-	TableColumnResize,
-	TableProperties,
-	TableToolbar,
-	TextTransformation,
-	TodoList,
-	Underline,
-	WordCount
-} from 'ckeditor5';
+  Alignment,
+  Autoformat,
+  AutoImage,
+  Autosave,
+  Base64UploadAdapter,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  Code,
+  CodeBlock,
+  Emoji,
+  Essentials,
+  FindAndReplace,
+  FontBackgroundColor,
+  FontColor,
+  FontFamily,
+  FontSize,
+  FullPage,
+  GeneralHtmlSupport,
+  Heading,
+  Highlight,
+  HorizontalLine,
+  HtmlComment,
+  HtmlEmbed,
+  ImageBlock,
+  ImageCaption,
+  ImageInline,
+  ImageInsert,
+  ImageInsertViaUrl,
+  ImageResize,
+  ImageStyle,
+  ImageTextAlternative,
+  ImageToolbar,
+  ImageUpload,
+  Indent,
+  IndentBlock,
+  Italic,
+  Link,
+  LinkImage,
+  List,
+  ListProperties,
+  Markdown,
+  MediaEmbed,
+  Mention,
+  Paragraph,
+  PasteFromMarkdownExperimental,
+  PasteFromOffice,
+  RemoveFormat,
+  ShowBlocks,
+  SourceEditing,
+  SpecialCharacters,
+  SpecialCharactersArrows,
+  SpecialCharactersCurrency,
+  SpecialCharactersEssentials,
+  SpecialCharactersLatin,
+  SpecialCharactersMathematical,
+  SpecialCharactersText,
+  Strikethrough,
+  Style,
+  Subscript,
+  Superscript,
+  Table,
+  TableCaption,
+  TableCellProperties,
+  TableColumnResize,
+  TableProperties,
+  TableToolbar,
+  TextTransformation,
+  TodoList,
+  Underline,
+  WordCount,
+} from "ckeditor5"
 
-import 'ckeditor5/ckeditor5.css';
+import "ckeditor5/ckeditor5.css"
 
-import './css/ckeditor.css';
+import "./css/ckeditor.css"
 import { toInteger } from "lodash"
 
-
 const editorConfig = {
-	toolbar: {
-		items: [
-			'sourceEditing',
-			'showBlocks',
-			'findAndReplace',
-			'|',
-			'heading',
-			'style',
-			'|',
-			'fontSize',
-			'fontFamily',
-			'fontColor',
-			'fontBackgroundColor',
-			'|',
-			'bold',
-			'italic',
-			'underline',
-			'strikethrough',
-			'subscript',
-			'superscript',
-			'code',
-			'removeFormat',
-			'|',
-			'emoji',
-			'specialCharacters',
-			'horizontalLine',
-			'link',
-			'insertImage',
-			'mediaEmbed',
-			'insertTable',
-			'highlight',
-			'blockQuote',
-			'codeBlock',
-			'htmlEmbed',
-			'|',
-			'alignment',
-			'|',
-			'bulletedList',
-			'numberedList',
-			'todoList',
-			'outdent',
-			'indent'
-		],
-		shouldNotGroupWhenFull: true
-	},
-	plugins: [
-		Alignment,
-		Autoformat,
-		AutoImage,
-		Autosave,
-		Base64UploadAdapter,
-		BlockQuote,
-		Bold,
-		Code,
-		CodeBlock,
-		Emoji,
-		Essentials,
-		FindAndReplace,
-		FontBackgroundColor,
-		FontColor,
-		FontFamily,
-		FontSize,
-		FullPage,
-		GeneralHtmlSupport,
-		Heading,
-		Highlight,
-		HorizontalLine,
-		HtmlComment,
-		HtmlEmbed,
-		ImageBlock,
-		ImageCaption,
-		ImageInline,
-		ImageInsert,
-		ImageInsertViaUrl,
-		ImageResize,
-		ImageStyle,
-		ImageTextAlternative,
-		ImageToolbar,
-		ImageUpload,
-		Indent,
-		IndentBlock,
-		Italic,
-		Link,
-		LinkImage,
-		List,
-		ListProperties,
-		Markdown,
-		MediaEmbed,
-		Mention,
-		Paragraph,
-		PasteFromMarkdownExperimental,
-		PasteFromOffice,
-		RemoveFormat,
-		ShowBlocks,
-		SourceEditing,
-		SpecialCharacters,
-		SpecialCharactersArrows,
-		SpecialCharactersCurrency,
-		SpecialCharactersEssentials,
-		SpecialCharactersLatin,
-		SpecialCharactersMathematical,
-		SpecialCharactersText,
-		Strikethrough,
-		Style,
-		Subscript,
-		Superscript,
-		Table,
-		TableCaption,
-		TableCellProperties,
-		TableColumnResize,
-		TableProperties,
-		TableToolbar,
-		TextTransformation,
-		TodoList,
-		Underline,
-		WordCount
-	],
-	fontFamily: {
-		supportAllValues: true
-	},
-	fontSize: {
-		options: [10, 12, 14, 'default', 18, 20, 22],
-		supportAllValues: true
-	},
-	heading: {
-		options: [
-			{
-				model: 'paragraph',
-				title: 'Paragraph',
-				class: 'ck-heading_paragraph'
-			},
-			{
-				model: 'heading1',
-				view: 'h1',
-				title: 'Heading 1',
-				class: 'ck-heading_heading1'
-			},
-			{
-				model: 'heading2',
-				view: 'h2',
-				title: 'Heading 2',
-				class: 'ck-heading_heading2'
-			},
-			{
-				model: 'heading3',
-				view: 'h3',
-				title: 'Heading 3',
-				class: 'ck-heading_heading3'
-			},
-			{
-				model: 'heading4',
-				view: 'h4',
-				title: 'Heading 4',
-				class: 'ck-heading_heading4'
-			},
-			{
-				model: 'heading5',
-				view: 'h5',
-				title: 'Heading 5',
-				class: 'ck-heading_heading5'
-			},
-			{
-				model: 'heading6',
-				view: 'h6',
-				title: 'Heading 6',
-				class: 'ck-heading_heading6'
-			}
-		]
-	},
-	htmlSupport: {
-		allow: [
-			{
-				name: /^.*$/,
-				styles: true,
-				attributes: true,
-				classes: true
-			}
-		]
-	},
-	image: {
-		toolbar: [
-			'toggleImageCaption',
-			'imageTextAlternative',
-			'|',
-			'imageStyle:inline',
-			'imageStyle:wrapText',
-			'imageStyle:breakText',
-			'|',
-			'resizeImage'
-		]
-	},
-	licenseKey: "GPL",
-	link: {
-		addTargetToExternalLinks: true,
-		defaultProtocol: 'https://',
-		decorators: {
-			toggleDownloadable: {
-				mode: 'manual',
-				label: 'Downloadable',
-				attributes: {
-					download: 'file'
-				}
-			}
-		}
-	},
-	list: {
-		properties: {
-			styles: true,
-			startIndex: true,
-			reversed: true
-		}
-	},
-	mention: {
-		feeds: [
-			{
-				marker: '@',
-				feed: [
-					/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
-				]
-			}
-		]
-	},
-	placeholder: 'Type or paste your content here!',
-	style: {
-		definitions: [
-			{
-				name: 'Article category',
-				element: 'h3',
-				classes: ['category']
-			},
-			{
-				name: 'Title',
-				element: 'h2',
-				classes: ['document-title']
-			},
-			{
-				name: 'Subtitle',
-				element: 'h3',
-				classes: ['document-subtitle']
-			},
-			{
-				name: 'Info box',
-				element: 'p',
-				classes: ['info-box']
-			},
-			{
-				name: 'Side quote',
-				element: 'blockquote',
-				classes: ['side-quote']
-			},
-			{
-				name: 'Marker',
-				element: 'span',
-				classes: ['marker']
-			},
-			{
-				name: 'Spoiler',
-				element: 'span',
-				classes: ['spoiler']
-			},
-			{
-				name: 'Code (dark)',
-				element: 'pre',
-				classes: ['fancy-code', 'fancy-code-dark']
-			},
-			{
-				name: 'Code (bright)',
-				element: 'pre',
-				classes: ['fancy-code', 'fancy-code-bright']
-			}
-		]
-	},
-	table: {
-		contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
-	}
-};
+  toolbar: {
+    items: [
+      "sourceEditing",
+      "showBlocks",
+      "findAndReplace",
+      "|",
+      "heading",
+      "style",
+      "|",
+      "fontSize",
+      "fontFamily",
+      "fontColor",
+      "fontBackgroundColor",
+      "|",
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "subscript",
+      "superscript",
+      "code",
+      "removeFormat",
+      "|",
+      "emoji",
+      "specialCharacters",
+      "horizontalLine",
+      "link",
+      "insertImage",
+      "mediaEmbed",
+      "insertTable",
+      "highlight",
+      "blockQuote",
+      "codeBlock",
+      "htmlEmbed",
+      "|",
+      "alignment",
+      "|",
+      "bulletedList",
+      "numberedList",
+      "todoList",
+      "outdent",
+      "indent",
+    ],
+    shouldNotGroupWhenFull: true,
+  },
+  plugins: [
+    Alignment,
+    Autoformat,
+    AutoImage,
+    Autosave,
+    Base64UploadAdapter,
+    BlockQuote,
+    Bold,
+    Code,
+    CodeBlock,
+    Emoji,
+    Essentials,
+    FindAndReplace,
+    FontBackgroundColor,
+    FontColor,
+    FontFamily,
+    FontSize,
+    FullPage,
+    GeneralHtmlSupport,
+    Heading,
+    Highlight,
+    HorizontalLine,
+    HtmlComment,
+    HtmlEmbed,
+    ImageBlock,
+    ImageCaption,
+    ImageInline,
+    ImageInsert,
+    ImageInsertViaUrl,
+    ImageResize,
+    ImageStyle,
+    ImageTextAlternative,
+    ImageToolbar,
+    ImageUpload,
+    Indent,
+    IndentBlock,
+    Italic,
+    Link,
+    LinkImage,
+    List,
+    ListProperties,
+    Markdown,
+    MediaEmbed,
+    Mention,
+    Paragraph,
+    PasteFromMarkdownExperimental,
+    PasteFromOffice,
+    RemoveFormat,
+    ShowBlocks,
+    SourceEditing,
+    SpecialCharacters,
+    SpecialCharactersArrows,
+    SpecialCharactersCurrency,
+    SpecialCharactersEssentials,
+    SpecialCharactersLatin,
+    SpecialCharactersMathematical,
+    SpecialCharactersText,
+    Strikethrough,
+    Style,
+    Subscript,
+    Superscript,
+    Table,
+    TableCaption,
+    TableCellProperties,
+    TableColumnResize,
+    TableProperties,
+    TableToolbar,
+    TextTransformation,
+    TodoList,
+    Underline,
+    WordCount,
+  ],
+  fontFamily: {
+    supportAllValues: true,
+  },
+  fontSize: {
+    options: [10, 12, 14, "default", 18, 20, 22],
+    supportAllValues: true,
+  },
+  heading: {
+    options: [
+      {
+        model: "paragraph",
+        title: "Paragraph",
+        class: "ck-heading_paragraph",
+      },
+      {
+        model: "heading1",
+        view: "h1",
+        title: "Heading 1",
+        class: "ck-heading_heading1",
+      },
+      {
+        model: "heading2",
+        view: "h2",
+        title: "Heading 2",
+        class: "ck-heading_heading2",
+      },
+      {
+        model: "heading3",
+        view: "h3",
+        title: "Heading 3",
+        class: "ck-heading_heading3",
+      },
+      {
+        model: "heading4",
+        view: "h4",
+        title: "Heading 4",
+        class: "ck-heading_heading4",
+      },
+      {
+        model: "heading5",
+        view: "h5",
+        title: "Heading 5",
+        class: "ck-heading_heading5",
+      },
+      {
+        model: "heading6",
+        view: "h6",
+        title: "Heading 6",
+        class: "ck-heading_heading6",
+      },
+    ],
+  },
+  htmlSupport: {
+    allow: [
+      {
+        name: /^.*$/,
+        styles: true,
+        attributes: true,
+        classes: true,
+      },
+    ],
+  },
+  image: {
+    toolbar: [
+      "toggleImageCaption",
+      "imageTextAlternative",
+      "|",
+      "imageStyle:inline",
+      "imageStyle:wrapText",
+      "imageStyle:breakText",
+      "|",
+      "resizeImage",
+    ],
+  },
+  licenseKey: "GPL",
+  link: {
+    addTargetToExternalLinks: true,
+    defaultProtocol: "https://",
+    decorators: {
+      toggleDownloadable: {
+        mode: "manual",
+        label: "Downloadable",
+        attributes: {
+          download: "file",
+        },
+      },
+    },
+  },
+  list: {
+    properties: {
+      styles: true,
+      startIndex: true,
+      reversed: true,
+    },
+  },
+  mention: {
+    feeds: [
+      {
+        marker: "@",
+        feed: [
+          /* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+        ],
+      },
+    ],
+  },
+  placeholder: "Type or paste your content here!",
+  style: {
+    definitions: [
+      {
+        name: "Article category",
+        element: "h3",
+        classes: ["category"],
+      },
+      {
+        name: "Title",
+        element: "h2",
+        classes: ["document-title"],
+      },
+      {
+        name: "Subtitle",
+        element: "h3",
+        classes: ["document-subtitle"],
+      },
+      {
+        name: "Info box",
+        element: "p",
+        classes: ["info-box"],
+      },
+      {
+        name: "Side quote",
+        element: "blockquote",
+        classes: ["side-quote"],
+      },
+      {
+        name: "Marker",
+        element: "span",
+        classes: ["marker"],
+      },
+      {
+        name: "Spoiler",
+        element: "span",
+        classes: ["spoiler"],
+      },
+      {
+        name: "Code (dark)",
+        element: "pre",
+        classes: ["fancy-code", "fancy-code-dark"],
+      },
+      {
+        name: "Code (bright)",
+        element: "pre",
+        classes: ["fancy-code", "fancy-code-bright"],
+      },
+    ],
+  },
+  table: {
+    contentToolbar: [
+      "tableColumn",
+      "tableRow",
+      "mergeTableCells",
+      "tableProperties",
+      "tableCellProperties",
+    ],
+  },
+}
 
 let SettingsClicked = false
 export let MenuOptionsOpen = false
@@ -1102,7 +1107,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
         applyDarkModeToIframe(iframe, cssLink)
 
         if (element.classList.contains("cke_wysiwyg_frame")) {
-          (async () => {
+          ;(async () => {
             await delay(100)
             iframe.contentDocument?.body.setAttribute("spellcheck", "true")
           })()
@@ -1310,7 +1315,7 @@ function handleTimetableZoom(): void {
     // Update all day columns (TDs)
     const dayColumns = document.querySelectorAll(".dailycal .content .days td")
     dayColumns.forEach((td: Element) => {
-      (td as HTMLElement).style.height = `${newContainerHeight}px`
+      ;(td as HTMLElement).style.height = `${newContainerHeight}px`
     })
 
     // Update all entries using stored ratios
@@ -1336,7 +1341,7 @@ function handleTimetableZoom(): void {
       const times = timeColumn.querySelectorAll(".time")
       const timeHeight = newContainerHeight / times.length
       times.forEach((time: Element) => {
-        (time as HTMLElement).style.height = `${timeHeight}px`
+        ;(time as HTMLElement).style.height = `${timeHeight}px`
       })
     }
 
@@ -1560,7 +1565,7 @@ function CheckNoticeTextColour(notice: any) {
         const hex1 = hex.slice(0, -1)
         var threshold = GetThresholdOfColor(hex1)
         if (settingsState.DarkMode && threshold < 100) {
-          (node as HTMLElement).style.cssText = "--color: undefined;"
+          ;(node as HTMLElement).style.cssText = "--color: undefined;"
         }
       }
     },
@@ -1940,7 +1945,7 @@ export function OpenMenuOptions() {
 
     ;(element as HTMLElement).classList.add("draggable")
     if ((element as HTMLElement).classList.contains("hasChildren")) {
-      (element as HTMLElement).classList.remove("active")
+      ;(element as HTMLElement).classList.remove("active")
       ;(element.firstChild as HTMLElement).classList.remove("noscroll")
     }
 
@@ -1977,12 +1982,12 @@ export function OpenMenuOptions() {
   for (let i = 0; i < buttons.length; i++) {
     let id = buttons[i].id as string | undefined
     if (menuItems[id as keyof typeof menuItems]) {
-      (buttons[i] as HTMLInputElement).checked =
+      ;(buttons[i] as HTMLInputElement).checked =
         menuItems[id as keyof typeof menuItems].toggle
     } else {
-      (buttons[i] as HTMLInputElement).checked = true
+      ;(buttons[i] as HTMLInputElement).checked = true
     }
-    (buttons[i] as HTMLInputElement).checked = true
+    ;(buttons[i] as HTMLInputElement).checked = true
   }
 
   try {
@@ -2092,7 +2097,7 @@ function saveNewOrder(sortable: any) {
 }
 
 function cloneAttributes(target: any, source: any) {
-  [...source.attributes].forEach((attr) => {
+  ;[...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue)
   })
 }
@@ -2779,7 +2784,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
       upcomingDates[element.due as keyof typeof upcomingDates]
 
     if (assessmentDateDiv) {
-      (assessmentDateDiv as any).assessments.push(element)
+      ;(assessmentDateDiv as any).assessments.push(element)
     }
   }
 
@@ -2846,7 +2851,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
       if (subjectoptions[item]) {
         element.classList.remove("hidden")
       }
-      (element.parentNode! as HTMLElement).classList.remove("hidden")
+      ;(element.parentNode! as HTMLElement).classList.remove("hidden")
 
       let children = element.parentNode!.parentNode!.children
       for (let i = 0; i < children.length; i++) {
@@ -2866,7 +2871,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
               "data-day",
             )
           ) {
-            (element.parentNode!.parentNode! as HTMLElement).classList.add(
+            ;(element.parentNode!.parentNode! as HTMLElement).classList.add(
               "hidden",
             )
           } else {
@@ -2877,7 +2882,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
           }
         }
       } else {
-        (element.parentNode!.parentNode! as HTMLElement).classList.remove(
+        ;(element.parentNode!.parentNode! as HTMLElement).classList.remove(
           "hidden",
         )
       }
@@ -3716,34 +3721,46 @@ async function handleAssessments(node: Element): Promise<void> {
   // Add the average assessment item
   addAverageAssessment()
 }
-async function handleDirectMessages(node: Element): Promise<void> { // Only a bit complex [aka 11]
-  console.info("[BetterSEQTA+] Loading Message Editor");
+async function handleDirectMessages(node: Element): Promise<void> {
+  document.getElementById("content")?.remove()
+  // Only a bit complex [aka 45]
+  console.info("[BetterSEQTA+] Loading Message Editor")
   var closeelement = document.querySelector('[data-id="send"]') as HTMLElement
-  closeelement.setAttribute('data-id','');
-  closeelement.setAttribute('id', 'customsendbutton')
-  var fields = []	
+  closeelement.setAttribute("data-id", "")
+  closeelement.setAttribute("id", "customsendbutton")
+  var fields = []
   if (!(node instanceof HTMLElement)) return
-  const div = document.querySelector(".body") as HTMLElement;
-  div.innerHTML = "";
+  const div = document.querySelector(".body") as HTMLElement
+  div.innerHTML = ""
 
   async function SendMessage(html: any) {
+  
     var parts = []
-    var children = (document.querySelector('.list') as HTMLElement).children;
+    var children = (document.querySelector(".list") as HTMLElement).children
     for (var i = 0; i < children.length; i++) {
       var child = children[i] as HTMLElement
       var classname = child.className
       if (classname.includes("staff")) {
-        parts.push({staff: true, id: toInteger(child.getAttribute("item-id"))})
+        parts.push({
+          staff: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
       } else if (classname.includes("student")) {
-        parts.push({student: true, id: toInteger(child.getAttribute("item-id"))})
+        parts.push({
+          student: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
       } else if (classname.includes("tutor")) {
-        parts.push({tutor: true, id: toInteger(child.getAttribute("item-id"))})
+        parts.push({
+          tutor: true,
+          id: toInteger(child.getAttribute("item-id")),
+        })
       }
 
       // Do stuff
     }
     var subject = ""
-    var item = (document.querySelector('.subject') as HTMLElement).children
+    var item = (document.querySelector(".subject") as HTMLElement).children
     for (var i = 0; i < item.length; i++) {
       var child = children[i] as HTMLElement
       var classname = child.className
@@ -3761,233 +3778,238 @@ async function handleDirectMessages(node: Element): Promise<void> { // Only a bi
       subject = "Empty Subject"
     }
     let blinditem = false
-    var blind = (<HTMLInputElement>(document.querySelector('.blind') as HTMLElement).children[0]).getAttribute("data-checked")
+    var blind = (<HTMLInputElement>(
+      (document.querySelector(".blind") as HTMLElement).children[0]
+    )).getAttribute("data-checked")
     console.log(blind)
     if (blind == "1") {
       blinditem = true
-    } 
+    }
     console.log(parts)
-    const payload = JSON.stringify({"subject":subject,"contents":html,"participants":parts,"blind":blinditem,"files":fields})
-    await fetch(`https://${window.location.hostname}/seqta/student/save/message`, {
-      method: "POST",
-      body: payload,
-      headers: {
-        'Accept': 'text/javascript, text/html, application/xml, text/xml, */*',
-        'Accept-Encoding': 'gzip, deflate, br, zstd',
-        'Accept-Language': 'en-US,en;q=0.9,en-AU;q=0.8',
-        'Content-Length': `${Buffer.byteLength(payload, ['UTF-8'])}`,
-        'Content-Type': 'application/json; charset=UTF-8'
-      }
+    const payload = JSON.stringify({
+      subject: subject,
+      contents: html,
+      participants: parts,
+      blind: blinditem,
+      files: fields,
     })
-          console.log(html)
-          return
+    await fetch(
+      `https://${window.location.hostname}/seqta/student/save/message`,
+      {
+        method: "POST",
+        body: payload,
+        headers: {
+          Accept: "text/javascript, text/html, application/xml, text/xml, */*",
+          "Accept-Encoding": "gzip, deflate, br, zstd",
+          "Accept-Language": "en-US,en;q=0.9,en-AU;q=0.8",
+          "Content-Length": `${Buffer.byteLength(payload)}`,
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+      },
+    )
+    console.log(html)
+    window.location.reload() 
+    return
   }
-  var header = document.createElement("div");
-  header.className = "messageheader";
-  header.style.width = "550px";
-  (document.querySelector(".blind") as HTMLElement).after(header);
-  var wc = document.createElement("div");
-  wc.className = "wordcount";
-  (document.querySelector(".body") as HTMLElement).after(wc);
+  var header = document.createElement("div")
+  header.className = "messageheader"
+  header.style.width = "550px"
+  ;(document.querySelector(".blind") as HTMLElement).after(header)
+  var wc = document.createElement("div")
+  wc.className = "wordcount"
+  ;(document.querySelector(".body") as HTMLElement).after(wc)
   // (document.querySelector(".body") as HTMLElement).after(wc);
-  (document.querySelector(".body") as HTMLElement).style["width"] = '550px';
-  let e: any;
-  ClassicEditor.create(document.querySelector('.body') as HTMLElement, editorConfig as any).then(editor => {
-    editor.conversion.attributeToElement( {
-      model: 'p',
-      view: '',
-      converterPriority: 'high'
-    } );
-    // The following commented lines cause issues; will fix once needed
-    // const wordCount = editor.plugins.get('WordCount');
-    // (document.querySelector('.wordcount') as HTMLElement).appendChild(wordCount.wordCountContainer);
-    // (document.querySelector('.messageheader') as HTMLElement).appendChild(editor.ui.view.menuBarView.element as HTMLElement)
+  ;(document.querySelector(".body") as HTMLElement).style["width"] = "550px"
+  let e: any
+  ClassicEditor.create(
+    document.querySelector(".body") as HTMLElement,
+    editorConfig as any,
+  ).then((editor) => {
     e = editor
-  });
+  })
   closeelement!.addEventListener("click", async function () {
-     await SendMessage(e.getData())
+    await SendMessage(e.getData())
   })
 
-  function AppendID(response) {
-	const obj = JSON.parse(response);  
-	const id = obj.payload.id
-	fields.push(`${id}`)
+  function AppendID(response: string) {
+    const obj = JSON.parse(response)
+    const id = obj.payload.id
+    fields.push(`${id}`)
   }
-  var files;
-  function deleteAction() {}
-  function dropHandler(ev) {
-    console.log("File(s) dropped");
+  // var files
+  // function dropHandler(ev) {
+  //   console.log("File(s) dropped")
 
-    // Prevent default behavior (Prevent file from being opened)
-    ev.preventDefault();
+  //   // Prevent default behavior (Prevent file from being opened)
+  //   ev.preventDefault()
 
-    if (ev.dataTransfer.items) {
-      // Use DataTransferItemList interface to access the file(s)
-      [...ev.dataTransfer.items].forEach((item, i) => {
-        // If dropped items aren't files, reject them
-        if (item.kind === "file") {
-          const file = item.getAsFile();
-          console.log(`… file[${i}].name = ${file.name}`);
-          const xhr = new XMLHttpRequest();
-	        xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-              AppendID(xhr.response)
-	            var filea = document.querySelector("uiFileList")
-	            var filearea = filea.querySelector(".list.inline.no-controls")
-	            var e = document.createElement("a")
-	            e.setAttribute("target", "_blank")
-	            e.setAttribute("href", "")
-              e.setAttribute("class", "uiFile inline")	
-              e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
-              e.setAttribute("title", file.name)
-              e.setAttribute("style", "background-color: rgb(77, 105, 191);")
-              filearea.append(e)
-              var deletebutton = document.createElement("button")
-              deletebutton.setAttribute("type", "button")
-              deletebutton.setAttribute("class", "uiButton delete")
-              deletebutton.innerHTML = "Delete File"
-              deletebutton.addEventListener("delete", () => {
-                var id = JSON.parse(xhr.response).payload.id      
-                var ef = document.querySelector(`a[data-file='${id}']`)      
-                ef.remove()
-                var id = fields.indexOf(id)
-                fields.splice(id, 1)    
-              });
-              e.append(deletebutton)	    
-            }
-          };
-          xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
-          xhr.setRequestHeader('X-File-Name', file.name);
-          xhr.setRequestHeader('X-File-Size', file.size);
-          xhr.setRequestHeader('Content-Type', file.type);
-          xhr.send(file);
-        }
-      });
-    } else {
-      // Use DataTransfer interface to access the file(s)
-      [...ev.dataTransfer.files].forEach((file, i) => {
-	      files = file
-        console.log(`… file[${i}].name = ${file.name}`);
-      });
-    }
-  }
+  //   if (ev.dataTransfer.items) {
+  //     // Use DataTransferItemList interface to access the file(s)
+  //     ;[...ev.dataTransfer.items].forEach((item, i) => {
+  //       // If dropped items aren't files, reject them
+  //       if (item.kind === "file") {
+  //         const file = item.getAsFile()
+  //         console.log(`… file[${i}].name = ${file.name}`)
+  //         const xhr = new XMLHttpRequest()
+  //         xhr.onreadystatechange = () => {
+  //           if (xhr.readyState === 4) {
+  //             AppendID(xhr.response)
+  //             var filea = document.querySelector("uiFileList")
+  //             var filearea = filea.querySelector(".list.inline.no-controls")
+  //             var e = document.createElement("a")
+  //             e.setAttribute("target", "_blank")
+  //             e.setAttribute("href", "")
+  //             e.setAttribute("class", "uiFile inline")
+  //             e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
+  //             e.setAttribute("title", file.name)
+  //             e.setAttribute("style", "background-color: rgb(77, 105, 191);")
+  //             filearea.append(e)
+  //             var deletebutton = document.createElement("button")
+  //             deletebutton.setAttribute("type", "button")
+  //             deletebutton.setAttribute("class", "uiButton delete")
+  //             deletebutton.innerHTML = "Delete File"
+  //             deletebutton.addEventListener("delete", () => {
+  //               var id = JSON.parse(xhr.response).payload.id
+  //               var ef = document.querySelector(`a[data-file='${id}']`)
+  //               ef.remove()
+  //               var id = fields.indexOf(id)
+  //               fields.splice(id, 1)
+  //             })
+  //             e.append(deletebutton)
+  //           }
+  //         }
+  //         xhr.open(
+  //           "POST",
+  //           `https://${window.location.hostname}/seqta/student/file/upload/xhr2`,
+  //           true,
+  //         )
+  //         xhr.setRequestHeader("X-File-Name", file.name)
+  //         xhr.setRequestHeader("X-File-Size", file.size)
+  //         xhr.setRequestHeader("Content-Type", file.type)
+  //         xhr.send(file)
+  //       }
+  //     })
+  //   } else {
+  //     // Use DataTransfer interface to access the file(s)
+  //     ;[...ev.dataTransfer.files].forEach((file, i) => {
+  //       files = file
+  //       console.log(`… file[${i}].name = ${file.name}`)
+  //     })
+  //   }
+  // }
   // Will fix later: window.dropHandler = dropHandler(ev)
-  // File sending (please don't put this in a function)	
+  // File sending (please don't put this in a function)
 
-  const handlerb = document.querySelector(".uiFileHandler")
+  const handlerb = document.querySelector(".uiFileHandler") as HTMLElement
   const handler = handlerb.children
   for (var i = 0; i < handler.length; i++) {
-      var child = handler[i] as HTMLElement
-      var classname = child.className
-      if (classname == undefined) {
-	      continue
-      } else if (classname.includes("uiButton")) {
-	      child.remove()
-	
-        var b = document.createElement("input")
-        b.setAttribute("type", "file")
-        b.setAttribute("id", "file")
-        var a = document.createElement("label")
-        a.setAttribute("for", "file")
-	a.setAttribute("class", "uiButton")
-        a.innerHTML = "Select a file"
-        handlerb.appendChild(b)
-        handlerb.appendChild(a)
-      } else if (classname.includes("note droppable")) {
-        child.className = "droppablefield"
-        child.setAttribute("onDrop", ``) // dropHandler(event)
-        child.setAttribute("id", "drop_zone")
-      }
+    var child = handler[i] as HTMLElement
+    var classname = child.className
+    if (classname == undefined) {
+      continue
+    } else if (classname.includes("uiButton")) {
+      child.remove()
+
+      var b = document.createElement("input")
+      b.setAttribute("type", "file")
+      b.setAttribute("id", "file")
+      var a = document.createElement("label")
+      a.setAttribute("for", "file")
+      a.innerHTML = "Select a file"
+      handlerb.appendChild(b)
+      handlerb.appendChild(a)
+    } else if (classname.includes("note droppable")) {
+      child.className = "droppablefield"
+      child.setAttribute("onDrop", ``) // dropHandler(event)
+      child.setAttribute("id", "drop_zone")
+    }
   }
   const logs = document.createElement("div")
   logs.setAttribute("id", "output")
-  
+
   const pb = document.createElement("div")
   pb.setAttribute("id", "progress")
 
-  
   handlerb.appendChild(logs)
   handlerb.appendChild(pb)
   // handlerb.appendChild(ab)
-  const fileInput = document.getElementById("file");
-  const progressBar = document.querySelector("progress");
-  const log = document.querySelector("output");
-  const abortButton = document.getElementById("abort");
-  
+  const fileInput = document.getElementById("file") as HTMLElement
+  const progressBar = document.getElementById("progress")
+  const log = document.getElementById("output")
+  // const abortButton = document.getElementById("abort")
+
   fileInput.addEventListener("change", () => {
-    const xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest()
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         AppendID(xhr.response)
-        var filea = document.querySelector(".uiFileList")
-        var filearea = filea.querySelector(".list.inline.no-controls")
+        var filea = document.querySelector(".uiFileList") as HTMLElement
+        var filearea = filea.querySelector(".list.inline.no-controls") as HTMLElement
         var e = document.createElement("a")
         e.setAttribute("target", "_blank")
-        e.setAttribute("class", "uiFile inline")	
+        e.setAttribute("class", "uiFile inline")
         e.setAttribute("data-file", JSON.parse(xhr.response).payload.id)
-        e.setAttribute("title", file.name)
         e.setAttribute("style", "background-color: rgb(77, 105, 191);")
-	e.innerHTML = `<h5>${JSON.parse(xhr.response).payload.filename}</h5>`
+        e.innerHTML = `${JSON.parse(xhr.response).payload.filename}`
         filearea.append(e)
         e.addEventListener("click", () => {
-          var id = JSON.parse(xhr.response).payload.id      
-          var ef = document.querySelector(`a[data-file = '${id}']`)      
+          var id = JSON.parse(xhr.response).payload.id
+          var ef = document.querySelector(`a[data-file = '${id}']`)
           ef.remove()
           var id = fields.indexOf(id)
-          fields.splice(id, 1)    
+          fields.splice(id, 1)
         })
-	window.Delete = Delete()       
-        e.append(deletebutton)	    
       }
-    };
-
+    }
 
     // When the upload starts, we display the progress bar
     xhr.upload.addEventListener("loadstart", (event) => {
-      progressBar.classList.add("visible");
-      progressBar.value = 0;
-      progressBar.max = event.total;
-      log.textContent = "Uploading (0%)…";
-    });
+      progressBar.classList.add("visible")
+      progressBar.value = 0
+      progressBar.max = event.total
+      log.textContent = "Uploading (0%)…"
+    })
 
     // Each time a progress event is received, we update the bar
     xhr.upload.addEventListener("progress", (event) => {
-      progressBar.value = event.loaded;
+      progressBar.value = event.loaded
       log.textContent = `Uploading (${(
         (event.loaded / event.total) *
         100
-      ).toFixed(2)}%)…`;
-    });
+      ).toFixed(2)}%)…`
+    })
 
     // When the upload is finished, we hide the progress bar.
     xhr.upload.addEventListener("loadend", (event) => {
-      progressBar.classList.remove("visible");
+      progressBar.classList.remove("visible")
       if (event.loaded !== 0) {
-        log.textContent = "Upload finished.";
+        log.textContent = "Upload finished."
       }
-
-    });
+    })
 
     // In case of an error, an abort, or a timeout, we hide the progress bar
     // Note that these events can be listened to on the xhr object too
     function errorAction(event) {
-      progressBar.classList.remove("visible");
-      log.textContent = `Upload failed: ${event.type}`;
+      progressBar.classList.remove("visible")
+      log.textContent = `Upload failed: ${event.type}`
     }
-    xhr.upload.addEventListener("error", errorAction);
-    xhr.upload.addEventListener("abort", errorAction);
-    xhr.upload.addEventListener("timeout", errorAction);
+    xhr.upload.addEventListener("error", errorAction)
+    xhr.upload.addEventListener("abort", errorAction)
+    xhr.upload.addEventListener("timeout", errorAction)
 
     // Build the payload
-    const fileData = new FormData();
-    fileData.append("file", fileInput.files[0]);
 
     // Theoretically, event listeners could be set after the open() call
     // but browsers are buggy here
-    xhr.open('POST', `https://${window.location.hostname}/seqta/student/file/upload/xhr2`, true);
-    xhr.setRequestHeader('X-File-Name', fileInput.files[0].name);
-    xhr.setRequestHeader('X-File-Size', fileInput.files[0].size);
-    xhr.setRequestHeader('Content-Type', fileInput.files[0].type);
-    xhr.send(fileData)});
+    xhr.open(
+      "POST",
+      `https://${window.location.hostname}/seqta/student/file/upload/xhr2`,
+      true,
+    )
+    xhr.setRequestHeader("X-File-Name", fileInput.files[0].name)
+    xhr.setRequestHeader("X-File-Size", fileInput.files[0].size)
+    xhr.setRequestHeader("Content-Type", fileInput.files[0].type)
+    xhr.send(fileInput.files[0])
+  })
   return
 }
