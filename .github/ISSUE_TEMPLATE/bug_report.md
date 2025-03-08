@@ -11,13 +11,13 @@ assignees: ''
 Please provide a clear and concise description of the bug.
 
 **Steps to Reproduce**  
-Please list the steps taken to reproduce the issue.
+Please list the actions that caused the issue.
 
 **Expected Behavior**  
-Please describe the expected behaviour clearly and concisely.
+Please describe how you think the program should have behaved, making sure to be as clear and concise as possible.
 
-**Screenshots**  
-If applicable, please include any screenshots that may help clarify the issue.
+**Screenshots**
+If applicable, please provide screenshots. This will help us to reproduce the issue and better understand what we are looking for.
 
 **Additional Context**  
-Feel free to provide any additional context or information relevant to the problem.
+Feel free to provide any additional, applicable context or information that is relevant to the problem.
