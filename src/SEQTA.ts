@@ -992,31 +992,31 @@ function handleTimetableZoom(): void {
 }
 
 function handleTimetableAssessmentHide(): void {
-  const hideControls = document.createElement("div")
+  const hideControls = document.createElement("div") // Creates the div element which houses the eye icon
   hideControls.className = "timetable-hide-controls"
 
-  const hideOn = document.createElement("button")
+  const hideOn = document.createElement("button") // Creates the actual button which is clicked
   hideOn.className = "uiButton timetable-hide iconFamily"
   hideOn.innerHTML = "&#128065;" // Using unicode for hide icon
 
   hideControls.appendChild(hideOn)
 
-  const toolbar = document.getElementById("toolbar")
+  const toolbar = document.getElementById("toolbar") // Appends the new button to the toolbar
   toolbar?.appendChild(hideControls)
 
   function hideElements(): void {
-    const entries = document.querySelectorAll(".entry")
+    const entries = document.querySelectorAll(".entry") // Gets all the timetables entries on the page, and loops through
     entries.forEach((entry: Element) => {
       const entryEl = entry as HTMLElement
-      if (!entryEl.classList.contains("assessment") && !(entryEl.style.display === "none")) {
+      if (!entryEl.classList.contains("assessment") && !(entryEl.style.display === "none")) { // If the entry is not an assessment, and hasn't already been hidden, hide it.
         entryEl.style.display = "none"
-      } else {
+      } else { // Otherwise, it should be shown.
         entryEl.style.display = ""
       }
     })
   }
 
-  hideOn.addEventListener("click", () => {
+  hideOn.addEventListener("click", () => { // Listen for when the button is pressed
     hideElements()
   })
 
