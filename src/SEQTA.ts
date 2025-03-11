@@ -991,6 +991,37 @@ function handleTimetableZoom(): void {
   })
 }
 
+function handleTimetableAssessmentHide(): void {
+  const hideControls = document.createElement("div")
+  hideControls.className = "timetable-hide-controls"
+
+  const hideOn = document.createElement("button")
+  hideOn.className = "uiButton timetable-hide iconFamily"
+  hideOn.innerHTML = "&#xed93;" // Using unicode for zoom in icon
+
+  hideControls.appendChild(hideOn)
+
+  const toolbar = document.getElementById("toolbar")
+  toolbar?.appendChild(hideControls)
+
+  function hideElements(): void {
+    const entries = document.querySelectorAll(".entry")
+    entries.forEach((entry: Element) => {
+      const entryEl = entry as HTMLElement
+      if (!entryEl.classList.contains("assessment") && !(entryEl.style.display === "none")) {
+        entryEl.style.display = "none"
+      } else {
+        entryEl.style.display = ""
+      }
+    })
+  }
+
+  hideOn.addEventListener("click", () => {
+    hideElements()
+  })
+
+}
+
 async function handleNotices(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return
   if (!settingsState.animations) return
@@ -1068,6 +1099,7 @@ async function handleTimetable(): Promise<void> {
   }
 
   handleTimetableZoom()
+  handleTimetableAssessmentHide()
 }
 
 async function handleNewsPage(): Promise<void> {
