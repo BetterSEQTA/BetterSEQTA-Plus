@@ -1,4 +1,4 @@
-import { closeExtensionPopup, SettingsClicked, changeSettingsClicked } from "./Closers/closeExtensionPopup"
+import { changeSettingsClicked, closeExtensionPopup, SettingsClicked } from "./Closers/closeExtensionPopup"
 import { animate } from "motion"
 import { settingsState } from "./listeners/SettingsState"
 
