@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import { GetThresholdOfColor } from '@/SEQTA';
+import { GetThresholdOfColor } from '@/seqta/ui/colors/getThresholdColour';
 import { lightenAndPaleColor } from './lightenAndPaleColor';
 import ColorLuminance from './ColorLuminance';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';

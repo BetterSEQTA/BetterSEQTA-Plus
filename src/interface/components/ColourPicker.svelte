@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import ColourPicker from './ColourPicker.tsx';
-  import ReactAdapter from './utils/ReactAdapter.svelte';
   import { animate } from 'motion';
   import { delay } from '@/seqta/utils/delay.ts'
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState.ts'
 
   const { hidePicker, standalone = false, savePresets = true, customOnChange = null, customState = null } = $props<{
     hidePicker?: () => void,
@@ -15,6 +14,8 @@
 
   let background = $state<HTMLDivElement | null>(null);
   let content = $state<HTMLDivElement | null>(null);
+
+  let colour = $state<HTMLInputElement | null>(null);
 
   const closePicker = async () => {
     if (standalone) return;
@@ -78,11 +79,15 @@
       closePicker();
     }
   }
+
+  const changeColour = async () => {
+    settingsState.selectedColor = colour.value;
+  }
 </script>
 
 {#if standalone}
   <div class="h-auto rounded-xl overflow-clip">
-    <ReactAdapter customOnChange={customOnChange} customState={customState} savePresets={savePresets} el={ColourPicker} />
+    <input bind:this={colour} type="color" id="colourpicker" onchange={() => changeColour()} />
   </div>
 {:else}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -96,7 +101,7 @@
       bind:this={content}
       class="h-auto p-4 bg-white border shadow-lg cursor-auto rounded-xl dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700"
     >
-      <ReactAdapter customOnChange={customOnChange} customState={customState} savePresets={savePresets} el={ColourPicker} />
+    <input bind:this={colour} type="color" id="colourpicker" onchange={() => changeColour()} />
     </div>
   </div>
 {/if}

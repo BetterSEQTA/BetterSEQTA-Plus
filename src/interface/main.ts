@@ -19,6 +19,6 @@ export default function renderSvelte(
   style.setAttribute("type", "text/css")
   style.innerHTML = styles
   mountPoint.appendChild(style)
-
+  
   return app
 }
