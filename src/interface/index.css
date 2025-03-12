@@ -1,8 +1,42 @@
-@import './components/ColourPicker.css';
+@import './components/ColourPicker.css' layer(base);
+@import 'tailwindcss';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@plugin '@tailwindcss/forms';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --text-*: initial;
+  --text-xs: 0.65rem;
+  --text-sm: 0.775rem;
+  --text-base: 0.65rem;
+  --text-md: 0.65rem;
+  --text-lg: 1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 4rem;
+  --text-7xl: 5rem;
+  --text-8xl: 6rem;
+  --text-9xl: 8rem;
+  --text-10xl: 10rem;
+  --text-11xl: 12rem;
+  --text-12xl: 14rem;
+  --text-13xl: 16rem;
+  --text-14xl: 18rem;
+
+  --font-IconFamily: IconFamily;
+
+  --animate-spin-fast: spin 0.4s linear infinite;
+
+  --aspect-theme: 5 / 1;
+}
+
+button {
+  @apply cursor-pointer;
+}
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

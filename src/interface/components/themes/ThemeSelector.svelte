@@ -125,7 +125,7 @@
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
-          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
+          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={() => handleThemeClick(theme)}
         >
           {#if isEditMode}

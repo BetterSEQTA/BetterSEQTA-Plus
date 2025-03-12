@@ -41,7 +41,7 @@
 
 <div class="flex flex-col h-full">
   <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container">
-    <div bind:this={containerRef} class="relative flex">
+    <div bind:this={containerRef} class="flex relative">
       <MotionDiv
         class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
         animate={{ x: calcXPos(activeTab) }}
@@ -49,7 +49,7 @@
       />
       {#each tabs as { title }, index}
         <button
-          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-none"
+          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-hidden"
           onclick={() => activeTab = index}
         >
           {title}
@@ -57,7 +57,7 @@
       {/each}
     </div>
   </div>
-  <div class="h-full px-4 overflow-hidden">
+  <div class="overflow-hidden px-4 h-full">
     <MotionDiv
       class="h-full"
       animate={{ x: `${-activeTab * 100}%` }}
@@ -65,7 +65,7 @@
     >
       <div class="flex">
         {#each tabs as { Content, props }, index}
-          <div class="absolute focus:outline-none w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
+          <div class="absolute focus:outline-hidden w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
             style="left: {index * 100}%;">
              <Content {...props} />
           </div>
