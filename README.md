@@ -54,7 +54,7 @@
   - Opera Supported
   - Vivaldi Supported
   - Chromium-based browsers are supported
-  - Firefox (available [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/))
+  - Firefox Supported: [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)!
   - Safari (Experimental - only available via compilation)
 
 ## Creating Custom Themes
