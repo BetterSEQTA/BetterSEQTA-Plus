@@ -210,14 +210,14 @@
             {#each theme.CustomImages as image (image.id)}
               <div class="flex gap-2 items-center px-2 py-2 mb-4 h-16 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
                 <div class="h-full">
-                  <img src={image.url} alt={image.variableName} class="object-contain h-full rounded" />
+                  <img src={image.url} alt={image.variableName} class="object-contain h-full rounded-xs" />
                 </div>
                 <input
                   type="text"
                   bind:value={image.variableName}
                   oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
                   placeholder="CSS Variable Name"
-                  class="flex-grow flex-[3] w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-600/50 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+                  class="grow flex-3 w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-600/50 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
                 />
                 <button onclick={() => onRemoveImage(image.id)} class="p-2 transition dark:text-white">
                   <span class='text-xl font-IconFamily'>{'\ued8c'}</span>
@@ -255,7 +255,7 @@
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
   {#if codeEditorFullscreen}
-    <div class="absolute inset-0 z-[10000] bg-white dark:bg-zinc-900 dark:text-white">
+    <div class="absolute inset-0 z-10000 bg-white dark:bg-zinc-900 dark:text-white">
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
@@ -294,7 +294,7 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
@@ -310,7 +310,7 @@
       {/if}
       {#if theme.coverImage}
         <div class="absolute z-20 w-full h-full opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-        <img src={theme.coverImageUrl} alt='Cover' class="object-cover absolute z-0 w-full h-full rounded" />
+        <img src={theme.coverImageUrl} alt='Cover' class="object-cover absolute z-0 w-full h-full rounded-xs" />
       {/if}
     </div>
 

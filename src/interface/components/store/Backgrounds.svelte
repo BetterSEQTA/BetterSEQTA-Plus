@@ -176,7 +176,7 @@
 
 <div class="flex h-full">
   <!-- Sidebar -->
-  <div class="w-64 h-full p-4 border-r border-zinc-200 dark:border-zinc-700">
+  <div class="p-4 w-64 h-full border-r border-zinc-200 dark:border-zinc-700">
     <div class="mb-8">
       <h2 class="mb-4 text-lg font-semibold">Categories</h2>
       <nav class="space-y-2">
@@ -208,15 +208,15 @@
   </div>
 
   <!-- Main Content -->
-  <div class="flex-1 overflow-auto">
+  <div class="overflow-auto flex-1">
     <!-- Header -->
     <div class="sticky top-0 z-10 p-4 border-b bg-[#F1F1F3] dark:bg-zinc-900 dark:border-zinc-700">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Explore Backgrounds {searchTerm ? `- "${searchTerm}"` : ''}</h1>
-        <div class="flex items-center gap-4">
+        <div class="flex gap-4 items-center">
           <select 
             bind:value={sortBy} 
-            class="p-2 border rounded-lg border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800"
+            class="p-2 rounded-lg border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800"
           >
             <option value="newest">Newest</option>
             <option value="name">Name</option>
@@ -230,7 +230,7 @@
           <button
             class={`px-4 py-2 text-sm font-medium transition-colors rounded-full
               ${activeTab === tab.toLowerCase() ? 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700' : 
-                'bg-zinc-100 dark:bg-transparent dark:outline dark:outline-1 dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
+                'bg-zinc-100 dark:bg-transparent dark:outline dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
             onclick={() => activeTab = tab.toLowerCase() as typeof activeTab}
           >
             {tab}
@@ -244,15 +244,15 @@
       {#if isLoading}
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {#each Array(9) as _}
-            <div class="relative overflow-hidden rounded-lg animate-pulse">
+            <div class="overflow-hidden relative rounded-lg animate-pulse">
               <!-- Image placeholder -->
               <div class="w-full h-48 bg-zinc-200 dark:bg-zinc-800"></div>
               <!-- Gradient overlay -->
-              <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-zinc-300 dark:from-zinc-700 to-transparent">
+              <div class="absolute right-0 bottom-0 left-0 h-16 to-transparent bg-linear-to-t from-zinc-300 dark:from-zinc-700">
                 <!-- Title placeholder -->
-                <div class="absolute bottom-2 left-2 right-2">
+                <div class="absolute right-2 bottom-2 left-2">
                   <div class="w-2/3 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
-                  <div class="w-1/2 h-3 mt-2 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
+                  <div class="mt-2 w-1/2 h-3 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
                 </div>
               </div>
             </div>
@@ -271,7 +271,7 @@
             return true;
           }) as background (background.id)}
             <div
-              class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group"
+              class="overflow-hidden relative rounded-lg shadow-lg cursor-pointer group"
               onclick={() => toggleBackgroundInstallation(background)}
               onkeydown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -286,7 +286,7 @@
               {:else}
                 <video src={background.lowResUrl} class="object-cover w-full h-48" muted loop autoplay></video>
               {/if}
-              <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100">
+              <div class={`flex absolute inset-0 justify-center items-center opacity-0 transition-opacity duration-300 bg-black/50 group-hover:opacity-100 ${installingBackgrounds.has(background.id) ? 'opacity-100' : ''}`}>
                 {#if installingBackgrounds.has(background.id)}
                   <Spinner />
                 {:else if savedBackgrounds.includes(background.id)}
@@ -310,7 +310,7 @@
 </div>
 
 {#if settingsState.devMode}
-  <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
+  <div class="p-4 mt-8 rounded-xs bg-zinc-100 dark:bg-zinc-800">
     <h3 class="mb-2 font-bold">Debug Info:</h3>
     <p>{debugInfo}</p>
     <p>Total backgrounds: {backgrounds.length}</p>
