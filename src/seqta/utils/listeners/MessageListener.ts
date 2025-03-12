@@ -1,6 +1,8 @@
 import browser from 'webextension-polyfill'
 
-import { closeExtensionPopup, MenuOptionsOpen, OpenMenuOptions } from '@/plugins/monofile';
+import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
+import { MenuOptionsOpen, OpenMenuOptions } from "@/seqta/utils/Openers/OpenMenuOptions"
+
 import { deleteTheme } from '@/seqta/ui/themes/deleteTheme';
 import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes';
 import { saveTheme } from '@/seqta/ui/themes/saveTheme';

@@ -10,7 +10,7 @@
   import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
-  import { closeExtensionPopup } from '@/plugins/monofile'
+  import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();

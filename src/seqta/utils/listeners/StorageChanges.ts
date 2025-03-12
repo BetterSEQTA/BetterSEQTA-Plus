@@ -1,15 +1,17 @@
 import { settingsState } from './SettingsState';
 import { updateAllColors } from '@/seqta/ui/colors/Manager';
-import {
-  addShortcuts,
-  CreateBackground,
-  CreateCustomShortcutDiv,
-  disableNotificationCollector,
-  enableNotificationCollector,
-  FilterUpcomingAssessments,
-  RemoveBackground,
-  RemoveShortcutDiv,
-} from '@/plugins/monofile';
+
+
+import { addShortcuts } from "@/seqta/utils/Adders/AddShortcuts";
+import { CreateBackground } from "@/seqta/utils/CreateEnable/CreateBackground";
+import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
+import { disableNotificationCollector } from "@/seqta/utils/DisableRemove/DisableNotificationCollector";
+import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector";
+import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
+import { RemoveBackground } from "@/seqta/utils/DisableRemove/RemoveBackground";
+import { RemoveShortcutDiv } from "@/seqta/utils/DisableRemove/RemoveShortcutDiv";
+
+
 import { updateBgDurations } from '@/seqta/ui/Animation';
 import browser from 'webextension-polyfill';
 import type { CustomShortcut } from '@/types/storage';
