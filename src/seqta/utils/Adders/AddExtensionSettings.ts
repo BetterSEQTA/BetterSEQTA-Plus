@@ -1,4 +1,4 @@
-import { SettingsClicked, changeSettingsClicked, closeExtensionPopup } from "../Closers/closeExtensionPopup"
+import { changeSettingsClicked, closeExtensionPopup, SettingsClicked } from "../Closers/closeExtensionPopup"
 import renderSvelte from "@/interface/main"
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer"
 import Settings from "@/interface/pages/settings.svelte"
