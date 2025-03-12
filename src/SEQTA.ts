@@ -3046,10 +3046,10 @@ export async function SendNewsPage() {
   ;(titlediv! as HTMLElement).innerText = "News"
   AppendLoadingSymbol("newsloading", "#news-container")
 
-  const response = await browser.runtime.sendMessage({
+  const response = (await browser.runtime.sendMessage({
     type: "sendNews",
     source: settingsState.newsSource,
-  })
+  })) as any
   const newscontainer = document.querySelector("#news-container")
   document.getElementById("newsloading")?.remove()
 

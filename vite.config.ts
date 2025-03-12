@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite';
 import { join, resolve } from 'path';
 
-import tailwindcss from '@tailwindcss/vite'
-
 import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
@@ -32,7 +30,6 @@ export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
     react(),
-    tailwindcss(),
     svelte({
       emitCss: false
     }),
