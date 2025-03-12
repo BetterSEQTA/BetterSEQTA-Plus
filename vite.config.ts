@@ -11,6 +11,7 @@ import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import tailwindcss from '@tailwindcss/vite';
 
 import { chrome } from './src/manifests/chrome';
 import { brave } from './src/manifests/brave';
@@ -30,6 +31,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
     react(),
+    tailwindcss(),
     svelte({
       emitCss: false
     }),
