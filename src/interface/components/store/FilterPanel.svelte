@@ -31,7 +31,7 @@
   }
 </script>
 
-<div class="p-4 bg-white rounded-lg shadow dark:bg-gray-800">
+<div class="p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
   <h2 class="mb-4 text-xl font-semibold">Filters</h2>
   
   <div class="mb-4">
@@ -51,7 +51,7 @@
   <!-- Add similar sections for color, resolution, and orientation -->
   
   <button 
-    class="px-4 py-2 mt-4 text-white bg-red-500 rounded hover:bg-red-600" 
+    class="px-4 py-2 mt-4 text-white bg-red-500 rounded-xs hover:bg-red-600" 
     onclick={clearFilters}
   >
     Clear Filters

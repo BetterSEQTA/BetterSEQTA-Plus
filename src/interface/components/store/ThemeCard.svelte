@@ -11,7 +11,7 @@
     <div class="absolute bottom-1 left-3 z-10 mb-1 text-xl font-bold text-white">
       {theme.name}
     </div>
-    <div class='absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t to-transparent from-black/80'></div>
+    <div class='absolute bottom-0 z-0 w-full h-3/4 bg-linear-to-t to-transparent from-black/80'></div>
     <div class='w-full'>
       <img src={theme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-48 rounded-md" />
     </div>
