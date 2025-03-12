@@ -21,12 +21,12 @@ if (document.childNodes[1]) {
   init()
 }
 
-import * as plugins from "@/plugins"
+import * as plugins from "@/plugins" // Import the plugins from folder
 
 async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA Learn")
 
-  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
+  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) { // Verify we are on a SEQTA page
     IsSEQTAPage = true
     console.info("[BetterSEQTA+] Verified SEQTA Page")
 
@@ -35,14 +35,14 @@ async function init() {
     document.head.appendChild(documentLoadStyle)
 
     const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
-    icon.href = icon48
+    icon.href = icon48 // Change the icon
 
     try {
       // wait until settingsState has been loaded from storage
       await initializeSettingsState()
 
       if (settingsState.onoff) {
-        plugins.Monofile()
+        plugins.Monofile() // Init plugins
       }
       console.info(
         "[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.",
