@@ -45,7 +45,7 @@
 - Options to remove certain items from the side menu
 - Grades calculator
 - Custom Message Editor
-- Fully customisable themes and an offical theme store
+- Fully customisable themes and an official theme store
 - Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
   - Chrome Supported
