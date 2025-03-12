@@ -44,7 +44,7 @@ import documentLoadCSS from "@/css/documentload.scss?inline"
 
 
 
-import { MenuOptionsOpen, ChangeMenuItemPositions } from "@/seqta/utils/Openers/OpenMenuOptions"
+import { ChangeMenuItemPositions, MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions"
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage"
 
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage"
