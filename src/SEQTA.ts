@@ -23,6 +23,8 @@ if (document.childNodes[1]) {
 
 import * as plugins from "@/plugins" // Import the plugins from folder
 
+
+
 async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA Learn")
 
@@ -42,7 +44,10 @@ async function init() {
       await initializeSettingsState()
 
       if (settingsState.onoff) {
-        plugins.Monofile() // Init plugins
+        Object.values(plugins).forEach(plugin => {
+          plugin();
+        })
+        
       }
       console.info(
         "[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.",
