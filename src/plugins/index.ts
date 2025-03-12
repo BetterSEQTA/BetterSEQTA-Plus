@@ -1,0 +1,1 @@
+export { init as Monofile } from './monofile'

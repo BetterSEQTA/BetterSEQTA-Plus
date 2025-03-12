@@ -1,4 +1,5 @@
-import { addExtensionSettings, enableAnimatedBackground, GetThresholdOfColor, loadHomePage, SendNewsPage, setupSettingsButton } from "@/SEQTA";
+import { addExtensionSettings, enableAnimatedBackground, loadHomePage, SendNewsPage, setupSettingsButton } from "@/plugins/monofile";
+import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { updateBgDurations } from "./Animation";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
 import stringToHTML from "@/seqta/utils/stringToHTML";

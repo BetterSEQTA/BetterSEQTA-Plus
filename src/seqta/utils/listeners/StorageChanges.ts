@@ -9,7 +9,7 @@ import {
   FilterUpcomingAssessments,
   RemoveBackground,
   RemoveShortcutDiv,
-} from '@/SEQTA';
+} from '@/plugins/monofile';
 import { updateBgDurations } from '@/seqta/ui/Animation';
 import browser from 'webextension-polyfill';
 import type { CustomShortcut } from '@/types/storage';

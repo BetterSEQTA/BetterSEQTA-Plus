@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { initializeSettingsState, settingsState } from '@/seqta/utils/listeners/SettingsState'
 
-  import { closeExtensionPopup, OpenAboutPage, OpenWhatsNewPopup } from "@/SEQTA"
+  import { closeExtensionPopup, OpenAboutPage, OpenWhatsNewPopup } from "@/plugins/monofile"
   import ColourPicker from '../components/ColourPicker.svelte'
   import { settingsPopup } from '../hooks/SettingsPopup'
 

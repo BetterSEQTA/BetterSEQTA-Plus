@@ -1,4 +1,4 @@
-import { waitForElm } from "@/SEQTA";
+import { waitForElm } from "@/seqta/utils/waitForElm"
 import ReactFiber from "../ReactFiber";
 
 const handleNotificationClick = async (target: HTMLElement) => {
