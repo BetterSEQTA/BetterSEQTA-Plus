@@ -75,6 +75,7 @@ export default defineConfig(({ command }) => ({
     outDir: resolve(__dirname, 'dist', mode),
     emptyOutDir: false,
     minify: false,
+    sourcemap: "inline",
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
