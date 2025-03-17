@@ -97,7 +97,7 @@ export async function init() {
 
         // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === "development") {
-          import("./css/injected.scss")
+          import("../css/injected.scss")
         } else {
           const injectedStyle = document.createElement("style")
           injectedStyle.textContent = injectedCSS

@@ -6,7 +6,6 @@ import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 import ClosePlugin from './lib/closePlugin';
 
-import react from '@vitejs/plugin-react';
 import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
@@ -31,7 +30,6 @@ const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether 
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
-    react(),
     tailwindcss(),
     svelte({
       emitCss: false
