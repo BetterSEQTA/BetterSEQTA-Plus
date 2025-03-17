@@ -10,7 +10,6 @@ import { delay } from "@/seqta/utils/delay"
 import stringToHTML from "@/seqta/utils/stringToHTML"
 import { MessageHandler } from "@/seqta/utils/listeners/MessageListener"
 import {
-  initializeSettingsState,
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges"
@@ -21,9 +20,7 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager"
 import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector"
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners"
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements"
-import { enableCurrentTheme } from "@/seqta/ui/themes/enableCurrent"
 import { updateAllColors } from "@/seqta/ui/colors/Manager"
-import pageState from "@/pageState.js?url"
 import loading from "@/seqta/ui/Loading"
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage"
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage"
@@ -34,76 +31,13 @@ import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json"
 
 // Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff"
-import icon48 from "@/resources/icons/icon-48.png?base64"
 
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw"
-import injectedCSS from "@/css/injected.scss?inline"
-import documentLoadCSS from "@/css/documentload.scss?inline"
-
-var IsSEQTAPage = false
-let hasSEQTAText = false
-
-// This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
-if (document.childNodes[1]) {
-  hasSEQTAText =
-    document.childNodes[1].textContent?.includes(
-      "Copyright (c) SEQTA Software",
-    ) ?? false
-  init()
-}
-
-export async function init() {
-  CheckForMenuList()
-  const hasSEQTATitle = document.title.includes("SEQTA Learn")
-
-  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-    IsSEQTAPage = true
-    console.info("[BetterSEQTA+] Verified SEQTA Page")
-
-    const documentLoadStyle = document.createElement("style")
-    documentLoadStyle.textContent = documentLoadCSS
-    document.head.appendChild(documentLoadStyle)
-
-    const icon = document.querySelector('link[rel*="icon"]')! as HTMLLinkElement
-    icon.href = icon48
-
-    try {
-      // wait until settingsState has been loaded from storage
-      await initializeSettingsState()
-
-      if (settingsState.onoff) {
-        injectMainScript()
-        enableCurrentTheme()
-
-        if (typeof settingsState.assessmentsAverage == "undefined") {
-          settingsState.assessmentsAverage = true
-        }
-
-        // TEMP FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
-        if (import.meta.env.MODE === "development") {
-          import("../css/injected.scss")
-        } else {
-          const injectedStyle = document.createElement("style")
-          injectedStyle.textContent = injectedCSS
-          document.head.appendChild(injectedStyle)
-        }
-      }
-      console.info(
-        "[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.",
-      )
-      main()
-    } catch (error: any) {
-      console.error(error)
-    }
-  }
-}
 
 function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`
 }
-
-
 
 async function HideMenuItems(): Promise<void> {
   try {
@@ -123,14 +57,6 @@ async function HideMenuItems(): Promise<void> {
   } catch (error) {
     console.error("[BetterSEQTA+] An error occurred:", error)
   }
-}
-
-
-
-function injectMainScript() {
-  const mainScript = document.createElement("script")
-  mainScript.src = browser.runtime.getURL(pageState)
-  document.head.appendChild(mainScript)
 }
 
 export function hideSideBar() {
@@ -172,13 +98,6 @@ export async function finishLoad() {
     OpenWhatsNewPopup()
   }
 }
-
-
-
-
-
-
-
 
 export function GetCSSElement(file: string) {
   const cssFile = browser.runtime.getURL(file)
@@ -855,7 +774,7 @@ export function showConflictPopup() {
   })
 }
 
-function main() {
+export function init() {
   if (typeof settingsState.onoff === "undefined") {
     browser.runtime.sendMessage({ type: "setDefaultStorage" })
   }

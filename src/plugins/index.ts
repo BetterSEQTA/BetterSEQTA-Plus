@@ -1,2 +1,2 @@
 export { init as Monofile } from './monofile'
-export { init as Hello } from './hello'
+export { init as Themes } from './themes'
