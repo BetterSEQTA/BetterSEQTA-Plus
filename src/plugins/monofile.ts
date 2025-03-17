@@ -861,14 +861,14 @@ export function AppendElementsToDisabledPage() {
   document.head.append(settingsStyle)
 }
 
-async function CheckForMenuList() {
+/*async function CheckForMenuList() {
   try {
     await waitForElm("#menu > ul")
     ObserveMenuItemPosition()
   } catch (error) {
     return
   }
-}
+}*/
 
 async function handleAssessments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return
