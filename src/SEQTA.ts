@@ -1,4 +1,3 @@
-
 import {
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
@@ -41,10 +40,18 @@ async function init() {
       await main()
 
       if (settingsState.onoff) {
-        Object.values(plugins).forEach(plugin => {
-          plugin();
-        })
+        // Initialize legacy plugins
+        const legacyPlugins = [plugins.Monofile, plugins.Themes];
+        legacyPlugins.forEach(plugin => {
+          if (typeof plugin === 'function') {
+            plugin();
+          }
+        });
+
+        // Initialize new plugin system
+        await plugins.initializePlugins();
       }
+      
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       )
