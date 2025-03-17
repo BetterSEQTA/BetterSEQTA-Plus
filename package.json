@@ -38,6 +38,8 @@
     "@bedframe/cli": "^0.0.91",
     "@crxjs/vite-plugin": "2.0.0-beta.25",
     "@types/mime-types": "^2.1.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "cross-env": "^7.0.3",
     "dependency-cruiser": "^16.10.0",
     "eslint": "9.22.0",
