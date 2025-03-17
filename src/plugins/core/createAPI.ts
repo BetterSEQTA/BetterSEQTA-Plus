@@ -1,4 +1,4 @@
-import type { Plugin, PluginAPI, PluginSettings, SEQTAAPI, SettingsAPI, StorageAPI, EventsAPI } from './types';
+import type { EventsAPI, Plugin, PluginAPI, PluginSettings, SEQTAAPI, SettingsAPI, StorageAPI } from './types';
 import { eventManager } from '@/seqta/utils/listeners/EventManager';
 import ReactFiber from '@/seqta/utils/ReactFiber';
 import browser from 'webextension-polyfill';
