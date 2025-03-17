@@ -46,7 +46,7 @@ async function init() {
         })
       }
       console.info(
-        "[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.",
+        "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       )
     } catch (error: any) {
       console.error(error)
