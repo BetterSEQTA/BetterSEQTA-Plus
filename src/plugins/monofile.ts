@@ -918,7 +918,7 @@ async function handleAssessments(node: Element): Promise<void> {
     }
 
     // Check if it's a letter grade
-    if (letterGradeMap.hasOwnProperty(trimmedGrade)) {
+    if (Object.prototype.hasOwnProperty.call(letterGradeMap, trimmedGrade)) {
       return letterGradeMap[trimmedGrade]
     }
 
