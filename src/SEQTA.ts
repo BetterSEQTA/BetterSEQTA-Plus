@@ -1,6 +1,5 @@
 
 import {
-  initializeSettingsState,
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 import documentLoadCSS from "@/css/documentload.scss?inline"
@@ -21,9 +20,8 @@ if (document.childNodes[1]) {
   init()
 }
 
-import * as plugins from "@/plugins" // Import the plugins from folder
-
-
+import * as plugins from "@/plugins"
+import { main } from "@/seqta/main"
 
 async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA Learn")
@@ -40,14 +38,12 @@ async function init() {
     icon.href = icon48 // Change the icon
 
     try {
-      // wait until settingsState has been loaded from storage
-      await initializeSettingsState()
+      await main()
 
       if (settingsState.onoff) {
         Object.values(plugins).forEach(plugin => {
           plugin();
         })
-        
       }
       console.info(
         "[BetterSEQTA+] Successfully initalised BetterSEQTA+, starting to load assets.",
