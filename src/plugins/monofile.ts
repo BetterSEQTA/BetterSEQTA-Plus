@@ -1,12 +1,11 @@
 // Third-party libraries
-
-
 import browser from "webextension-polyfill"
 import { animate, stagger } from "motion"
 
 // Internal utilities and functions
-import { waitForElm } from "@/seqta/utils/waitForElm"
+import { ChangeMenuItemPositions, MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions"
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour"
+import { waitForElm } from "@/seqta/utils/waitForElm"
 import { delay } from "@/seqta/utils/delay"
 import stringToHTML from "@/seqta/utils/stringToHTML"
 import { MessageHandler } from "@/seqta/utils/listeners/MessageListener"
@@ -15,46 +14,32 @@ import {
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges"
+import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat"
 import { eventManager } from "@/seqta/utils/listeners/EventManager"
 
 // UI and theme management
+import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector"
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners"
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements"
 import { enableCurrentTheme } from "@/seqta/ui/themes/enableCurrent"
-import loading from "@/seqta/ui/Loading"
 import { updateAllColors } from "@/seqta/ui/colors/Manager"
 import pageState from "@/pageState.js?url"
+import loading from "@/seqta/ui/Loading"
+import { SendNewsPage } from "@/seqta/utils/SendNewsPage"
+import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage"
+import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew"
 
 // JSON content
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json"
 
-
 // Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff"
-
 import icon48 from "@/resources/icons/icon-48.png?base64"
-
-import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat"
 
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw"
 import injectedCSS from "@/css/injected.scss?inline"
 import documentLoadCSS from "@/css/documentload.scss?inline"
-
-
-
-
-import { ChangeMenuItemPositions, MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions"
-import { SendNewsPage } from "@/seqta/utils/SendNewsPage"
-
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage"
-
-import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector"
-
-import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew"
-
-
-
 
 var IsSEQTAPage = false
 let hasSEQTAText = false
@@ -509,10 +494,10 @@ function handleTimetableAssessmentHide(): void {
     const entries = document.querySelectorAll(".entry") // Gets all the timetables entries on the page, and loops through
     entries.forEach((entry: Element) => {
       const entryEl = entry as HTMLElement
-      if (!entryEl.classList.contains("assessment") && !(entryEl.style.display === "none")) { // If the entry is not an assessment, and hasn't already been hidden, hide it.
-        entryEl.style.display = "none"
+      if (!entryEl.classList.contains("assessment") && !(entryEl.style.opacity === "0.3")) { // If the entry is not an assessment, and hasn't already been hidden, hide it.
+        entryEl.style.opacity = "0.3"
       } else { // Otherwise, it should be shown.
-        entryEl.style.display = ""
+        entryEl.style.opacity = "1"
       }
     })
   }
