@@ -25,7 +25,8 @@ const targets: BuildTarget[] = [
   chrome, brave, edge, firefox, opera, safari
 ]
 
-const mode = process.env.MODE || 'chrome';
+const mode = process.env.MODE || 'chrome'; // Check the environment variable to determine which build type to use.
+const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
 
 export default defineConfig(({ command }) => ({
   plugins: [
@@ -75,6 +76,7 @@ export default defineConfig(({ command }) => ({
     outDir: resolve(__dirname, 'dist', mode),
     emptyOutDir: false,
     minify: false,
+    sourcemap: sourcemap,
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
