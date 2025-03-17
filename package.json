@@ -11,7 +11,7 @@
     "build:chrome": "cross-env MODE=chrome vite build",
     "build:firefox": "cross-env MODE=firefox vite build",
     "build:safari": "cross-env MODE=safari vite build",
-    "build:dev": "cross-env MODE=chrome vite build --config vite-dev.config.ts && cross-env MODE=firefox vite build --config vite-dev.config.ts",
+    "build:dev": "cross-env MODE=chrome SOURCEMAP=true vite build && cross-env MODE=firefox SOURCEMAP=true vite build",
     "convert:safari": "xcrun safari-web-extension-converter dist/safari --project-location . --app-name $npm_package_name-safari",
     "dependency-graph": "depcruise src --include-only \"^src\" --output-type dot | dot -T svg > dependency-graph.svg",
     "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
