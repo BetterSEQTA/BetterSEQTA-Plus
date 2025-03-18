@@ -208,7 +208,7 @@
             {#each theme.CustomImages as image (image.id)}
               <div class="flex gap-2 items-center px-2 py-2 mb-4 h-16 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
                 <div class="h-full">
-                  <img src="data:image/png;base64, {image.blob}" alt={image.variableName} class="object-contain h-full rounded-xs" />
+                  <img src={URL.createObjectURL(image.blob)} alt={image.variableName} class="object-contain h-full rounded-xs" />
                 </div>
                 <input
                   type="text"
@@ -308,7 +308,7 @@
       {/if}
       {#if theme.coverImage}
         <div class="absolute z-20 w-full h-full opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-        <img src="data:image/png;base64, {theme.coverImage}" alt='Cover' class="object-cover absolute z-0 w-full h-full rounded-xs" />
+        <img src="{typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}" alt='Cover' class="object-cover absolute z-0 w-full h-full rounded-xs" />
       {/if}
     </div>
 
