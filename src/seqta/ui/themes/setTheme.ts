@@ -29,8 +29,9 @@ export const setTheme = async (themeId: string) => {
     await applyTheme(theme);
 
     settingsState.selectedTheme = themeId
-    settingsState.selectedColor = theme.selectedColor ? theme.selectedColor : (theme.defaultColour !== '' ? theme.defaultColour : '#007bff')
-    settingsState.originalSelectedColor = originalSelectedColor.selectedColor
+    //settingsState.selectedColor = theme.selectedColor ? theme.selectedColor : (theme.defaultColour !== '' ? theme.defaultColour : '#007bff')
+    settingsState.originalSelectedColor = settingsState.selectedColor;
+    settingsState.selectedColor = theme.defaultColour;
   } catch (error) {
     console.error('Error setting theme:', error);
   }
