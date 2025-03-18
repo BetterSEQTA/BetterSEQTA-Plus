@@ -5,11 +5,110 @@
   import Select from "@/interface/components/Select.svelte"
 
   import browser from "webextension-polyfill"
-  
+
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
+
+  import { getAllPluginSettings } from "@/plugins"
+
+  interface PluginSetting {
+    id: string;
+    title: string;
+    description?: string;
+    type: string;
+    default: any;
+    options?: Array<{value: string, label: string}>;
+  }
+
+  interface Plugin {
+    pluginId: string;
+    name: string;
+    settings: Record<string, PluginSetting>;
+  }
+
+  const pluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
+  let nextPluginSettingId = 1000;
+  const pluginSettingMap = new Map<number, {pluginId: string, settingKey: string}>();
+
+  function getPluginSettingId(pluginId: string, settingKey: string): number {
+    const id = nextPluginSettingId++;
+    pluginSettingMap.set(id, {pluginId, settingKey});
+    return id;
+  }
+  
+  async function loadPluginSettings() {
+    for (const plugin of pluginSettings) {
+      if (Object.keys(plugin.settings).length === 0) continue;
+      
+      const storageKey = `plugin.${plugin.pluginId}.settings`;
+      const stored = await browser.storage.local.get(storageKey);
+      
+      pluginSettingsValues[plugin.pluginId] = stored[storageKey] || {};
+      
+      for (const [key, setting] of Object.entries(plugin.settings)) {
+        if (pluginSettingsValues[plugin.pluginId][key] === undefined) {
+          pluginSettingsValues[plugin.pluginId][key] = setting.default;
+        }
+      }
+    }
+  }
+  
+  async function updatePluginSetting(pluginId: string, key: string, value: any) {
+    const storageKey = `plugin.${pluginId}.settings`;
+    
+    if (!pluginSettingsValues[pluginId]) {
+      pluginSettingsValues[pluginId] = {};
+    }
+    pluginSettingsValues[pluginId][key] = value;
+    
+    const stored = await browser.storage.local.get(storageKey);
+    const currentSettings = (stored[storageKey] || {}) as Record<string, any>;
+    
+    currentSettings[key] = value;
+    
+    await browser.storage.local.set({ [storageKey]: currentSettings });
+  }
+
+  function getPluginSettingEntries() {
+    const entries: any[] = [];
+    
+    pluginSettings.forEach(plugin => {
+      if (Object.keys(plugin.settings).length === 0) return;
+      
+      Object.entries(plugin.settings).forEach(([key, setting]) => {
+        const id = getPluginSettingId(plugin.pluginId, key);
+        
+        entries.push({
+          title: setting.title || key,
+          description: setting.description || '',
+          id,
+          Component: setting.type === 'boolean' ? Switch :
+                    setting.type === 'select' ? Select :
+                    setting.type === 'number' ? Slider : 
+                    setting.type === 'string' ? (setting.options ? Select : null) : Switch,
+          props: {
+            state: pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default,
+            onChange: (value: any) => {
+              if (setting.type === 'number' && typeof value === 'string') {
+                value = parseFloat(value);
+              }
+              updatePluginSetting(plugin.pluginId, key, value);
+            },
+            options: setting.options
+          }
+        });
+      });
+    });
+    
+    return entries;
+  }
+
+  $effect(() => {
+    loadPluginSettings();
+  })
 
   const { showColourPicker } = $props<{ showColourPicker: () => void }>();
 </script>
@@ -28,7 +127,6 @@
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
-
     {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
@@ -86,16 +184,6 @@
       props: {
         state: $settingsState.animations,
         onChange: (isOn: boolean) => settingsState.animations = isOn
-      }
-    },
-    {
-      title: "Notification Collector",
-      description: "Uncaps the 9+ limit for notifications, showing the real number.",
-      id: 7,
-      Component: Switch,
-      props: {
-        state: $settingsState.notificationcollector,
-        onChange: (isOn: boolean) => settingsState.notificationcollector = isOn
       }
     },
     {
@@ -179,6 +267,7 @@
         ]
       }
     },
+    ...getPluginSettingEntries(),
     {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",

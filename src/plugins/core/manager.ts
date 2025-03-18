@@ -21,11 +21,10 @@ export class PluginManager {
   public dispatchPluginEvent(pluginId: string, event: string, args?: any) {
     const fullEventName = `plugin.${pluginId}.${event}`;
     
+    // Dispatch plugin event if it's running otherwise queue it
     if (this.runningPlugins.get(pluginId)) {
-      // If plugin is running, dispatch immediately
       document.dispatchEvent(new CustomEvent(fullEventName, { detail: args }));
     } else {
-      // Otherwise queue it
       const key = `${pluginId}:${event}`;
       if (!this.eventBacklog.has(key)) {
         this.eventBacklog.set(key, []);
@@ -66,6 +65,13 @@ export class PluginManager {
 
     try {
       const api = createPluginAPI(plugin);
+      
+      // Wait for both settings and storage to be loaded before starting the plugin
+      await Promise.all([
+        (api.settings as any).loaded,
+        api.storage.loaded
+      ]);
+      
       const result = await plugin.run(api);
       if (typeof result === 'function') {
         this.cleanupFunctions.set(plugin.id, result);
@@ -113,6 +119,38 @@ export class PluginManager {
 
   public getAllPlugins(): Plugin[] {
     return Array.from(this.plugins.values());
+  }
+
+  public getAllPluginSettings(): Array<{
+    pluginId: string;
+    name: string;
+    settings: {
+      [key: string]: {
+        id: string;
+        title: string;
+        description?: string;
+        type: string;
+        default: any;
+      }
+    }
+  }> {
+    return Array.from(this.plugins.entries()).map(([id, plugin]) => {
+      const settingsEntries = Object.entries(plugin.settings).map(([key, setting]) => {
+        return [key, {
+          id: key,
+          title: (setting as any).title || key,
+          description: (setting as any).description || '',
+          type: (setting as any).type,
+          default: (setting as any).default
+        }];
+      });
+
+      return {
+        pluginId: id,
+        name: plugin.name,
+        settings: Object.fromEntries(settingsEntries)
+      };
+    });
   }
 
   public isPluginRunning(pluginId: string): boolean {

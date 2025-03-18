@@ -1,19 +1,111 @@
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
-import type { Plugin } from '../../core/types';
+import type { Plugin, PluginSettings } from '../../core/types';
 import { convertTo12HourFormat } from '@/seqta/utils/convertTo12HourFormat';
 import { waitForElm } from '@/seqta/utils/waitForElm';
 
-const timetablePlugin: Plugin = {
+interface TimetableSettings extends PluginSettings {
+  enabled: {
+    type: 'boolean';
+    default: boolean;
+    title: string;
+    description: string;
+  };
+}
+
+const timetablePlugin: Plugin<TimetableSettings> = {
   id: 'timetable',
   name: 'Timetable Enhancer',
   description: 'Adds extra features to the timetable view',
   version: '1.0.0',
-  settings: {},
+  settings: {
+    enabled: {
+      type: 'boolean',
+      default: true,
+      title: 'Timetable Enhancer',
+      description: 'Adds extra features to the timetable view.',
+    }
+  },
 
   run: async (api) => {
-    api.seqta.onMount('.timetablepage', handleTimetable)
+    if (api.settings.enabled) {
+      api.seqta.onMount('.timetablepage', handleTimetable)
+    }
+    
+    const enabledCallback = (enabled: boolean) => {
+      if (enabled) {
+        api.seqta.onMount('.timetablepage', handleTimetable)
+      } else {
+        const timetablePage = document.querySelector('.timetablepage')
+        if (timetablePage) {
+          const zoomControls = document.querySelector('.timetable-zoom-controls')
+          if (zoomControls) zoomControls.remove()
+          
+          const hideControls = document.querySelector('.timetable-hide-controls')
+          if (hideControls) hideControls.remove()
+          
+          resetTimetableStyles()
+        }
+      }
+    }
+    
+    api.settings.onChange('enabled', enabledCallback)
+    
+    return () => {
+      api.settings.offChange('enabled', enabledCallback)
+    }
   }
 };
+
+// Store event handlers globally for cleanup
+const zoomHandlers = new WeakMap<Element, { zoomIn: () => void; zoomOut: () => void }>()
+
+function resetTimetableStyles(): void {
+  const firstDayColumn = document.querySelector(".dailycal .content .days td") as HTMLElement
+  if (!firstDayColumn) return
+  
+  const baseContainerHeight = parseInt(firstDayColumn.style.height) || firstDayColumn.offsetHeight
+  
+  const dayColumns = document.querySelectorAll(".dailycal .content .days td")
+  dayColumns.forEach((td: Element) => {
+    (td as HTMLElement).style.height = `${baseContainerHeight}px`
+  })
+  
+  const timeColumn = document.querySelector(".times")
+  if (timeColumn) {
+    const times = timeColumn.querySelectorAll(".time")
+    const timeHeight = baseContainerHeight / times.length
+    times.forEach((time: Element) => {
+      (time as HTMLElement).style.height = `${timeHeight}px`
+    })
+  }
+  
+  const lessons = document.querySelectorAll(".dailycal .lesson")
+  lessons.forEach((lesson: Element) => {
+    const lessonEl = lesson as HTMLElement
+    const originalHeight = lessonEl.getAttribute('data-original-height')
+    if (originalHeight) {
+      lessonEl.style.height = `${originalHeight}px`
+    }
+  })
+
+  const entries = document.querySelectorAll(".entry")
+  entries.forEach((entry: Element) => {
+    const entryEl = entry as HTMLElement
+    entryEl.style.opacity = '1'
+  })
+
+  const zoomControls = document.querySelector('.timetable-zoom-controls')
+  if (zoomControls) {
+    const handlers = zoomHandlers.get(zoomControls)
+    if (handlers) {
+      const zoomIn = zoomControls.querySelector('.timetable-zoom:nth-child(2)')
+      const zoomOut = zoomControls.querySelector('.timetable-zoom:nth-child(1)')
+      if (zoomIn) zoomIn.removeEventListener('click', handlers.zoomIn)
+      if (zoomOut) zoomOut.removeEventListener('click', handlers.zoomOut)
+      zoomHandlers.delete(zoomControls)
+    }
+  }
+}
 
 async function handleTimetable(): Promise<void> {
   await waitForElm(".time", true, 10)
@@ -58,17 +150,38 @@ function handleTimetableZoom(): void {
 
   const zoomIn = document.createElement("button")
   zoomIn.className = "uiButton timetable-zoom iconFamily"
-  zoomIn.innerHTML = "&#xed93;" // Using unicode for zoom in icon
+  zoomIn.innerHTML = "&#xed93;" // Unicode for zoom in icon (custom iconfamily)
 
   const zoomOut = document.createElement("button")
   zoomOut.className = "uiButton timetable-zoom iconFamily"
-  zoomOut.innerHTML = "&#xed94;" // Using unicode for zoom out icon
+  zoomOut.innerHTML = "&#xed94;" // Unicode for zoom out icon (custom iconfamily)
 
   zoomControls.appendChild(zoomOut)
   zoomControls.appendChild(zoomIn)
 
   const toolbar = document.getElementById("toolbar")
   toolbar?.appendChild(zoomControls)
+
+  // Store event listener references
+  const zoomInHandler = () => {
+    if (timetableZoomLevel < 2) {
+      timetableZoomLevel += 0.2
+      updateZoom()
+    }
+  }
+
+  const zoomOutHandler = () => {
+    if (timetableZoomLevel > 0.6) {
+      timetableZoomLevel -= 0.2
+      updateZoom()
+    }
+  }
+
+  zoomIn.addEventListener("click", zoomInHandler)
+  zoomOut.addEventListener("click", zoomOutHandler)
+
+  // Store references for cleanup
+  zoomHandlers.set(zoomControls, { zoomIn: zoomInHandler, zoomOut: zoomOutHandler })
 
   const initializePositions = () => {
     // Get the base container height from the first TD
@@ -147,20 +260,6 @@ function handleTimetableZoom(): void {
       block: "center",
     })
   }
-
-  zoomIn.addEventListener("click", () => {
-    if (timetableZoomLevel < 2) {
-      timetableZoomLevel += 0.2
-      updateZoom()
-    }
-  })
-
-  zoomOut.addEventListener("click", () => {
-    if (timetableZoomLevel > 0.6) {
-      timetableZoomLevel -= 0.2
-      updateZoom()
-    }
-  })
 }
 
 function handleTimetableAssessmentHide(): void {
