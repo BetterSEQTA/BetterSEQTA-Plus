@@ -20,9 +20,7 @@ export type LoadedCustomTheme = CustomTheme & {
     id: string;
     blob: Blob;
     variableName: string;
-    url: string | null;
   }[];
-  coverImageUrl?: string;
 };
 
 export type DownloadedTheme = CustomTheme & {
