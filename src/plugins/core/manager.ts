@@ -3,7 +3,7 @@ import { createPluginAPI } from './createAPI';
 
 export class PluginManager {
   private static instance: PluginManager;
-  private plugins: Map<string, Plugin<any>> = new Map();
+  private plugins: Map<string, Plugin<any, any>> = new Map();
   private runningPlugins: Map<string, boolean> = new Map();
   private eventBacklog: Map<string, any[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
@@ -45,7 +45,7 @@ export class PluginManager {
     }
   }
 
-  public registerPlugin<T extends PluginSettings>(plugin: Plugin<T>): void {
+  public registerPlugin<T extends PluginSettings, S>(plugin: Plugin<T, S>): void {
     if (this.plugins.has(plugin.id)) {
       throw new Error(`Plugin with id "${plugin.id}" is already registered`);
     }
