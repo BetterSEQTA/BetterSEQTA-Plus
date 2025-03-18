@@ -31,7 +31,6 @@ interface SelectSetting<T extends string> {
 
 type PluginSetting = BooleanSetting | StringSetting | NumberSetting | SelectSetting<string>;
 
-// Plugin settings configuration
 export type PluginSettings = {
   [key: string]: PluginSetting;
 }
@@ -43,15 +42,14 @@ type SettingValue<T extends PluginSetting> = T extends BooleanSetting ? boolean 
   T extends SelectSetting<infer O> ? O :
   never;
 
-// Settings API interface
 export type SettingsAPI<T extends PluginSettings> = {
   [K in keyof T]: SettingValue<T[K]>;
 } & {
   onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
   offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
+  loaded: Promise<void>; // Promise that resolves when settings are loaded
 }
 
-// SEQTA API interface
 export interface SEQTAAPI {
   onMount: (selector: string, callback: (element: Element) => void) => void;
   getFiber: (selector: string) => ReactFiber;
@@ -59,19 +57,20 @@ export interface SEQTAAPI {
   onPageChange: (callback: (page: string) => void) => void;
 }
 
-// Storage API interface
 export interface StorageAPI {
   get: <T>(key: string) => Promise<T | null>;
   set: <T>(key: string, value: T) => Promise<void>;
+  onChange: (key: string, callback: (value: any) => void) => void;
+  offChange: (key: string, callback: (value: any) => void) => void;
+  loaded: Promise<void>;
+  [key: string]: any;
 }
 
-// Events API interface
 export interface EventsAPI {
   on: (event: string, callback: (...args: any[]) => void) => void;
   emit: (event: string, ...args: any[]) => void;
 }
 
-// Complete Plugin API interface
 export interface PluginAPI<T extends PluginSettings> {
   seqta: SEQTAAPI;
   settings: SettingsAPI<T>;
@@ -79,7 +78,6 @@ export interface PluginAPI<T extends PluginSettings> {
   events: EventsAPI;
 }
 
-// Plugin interface
 export interface Plugin<T extends PluginSettings = PluginSettings> {
   id: string;
   name: string;

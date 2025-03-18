@@ -1,4 +1,3 @@
-import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import type { Plugin, PluginSettings } from '../../core/types';
 
 interface NotificationCollectorSettings extends PluginSettings {
@@ -53,29 +52,29 @@ const notificationCollectorPlugin: Plugin<NotificationCollectorSettings> = {
       }
     };
 
-    // Start polling when enabled
     const startPolling = () => {
       if (pollInterval) return; // Already polling
       checkNotifications();
       pollInterval = window.setInterval(checkNotifications, 30000);
     };
 
-    // Stop polling when disabled
     const stopPolling = () => {
       if (pollInterval) {
         window.clearInterval(pollInterval);
         pollInterval = null;
+        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+        if (alertDiv) {
+          alertDiv.textContent = "9+";
+        }
       }
     };
 
-    // Start/stop based on initial enabled state
-    if (settingsState.notificationcollector) {
+    if (api.settings.enabled) {
       api.seqta.onMount(".notifications__bubble___1EkSQ", (_) => {
         startPolling();
       });
     }
 
-    // Store callbacks for cleanup
     const enabledCallback = (enabled: boolean) => {
       if (enabled) {
         startPolling();
@@ -84,10 +83,8 @@ const notificationCollectorPlugin: Plugin<NotificationCollectorSettings> = {
       }
     };
 
-    // Handle settings changes
     api.settings.onChange('enabled', enabledCallback);
 
-    // Return cleanup function
     return () => {
       stopPolling();
       api.settings.offChange('enabled', enabledCallback);
