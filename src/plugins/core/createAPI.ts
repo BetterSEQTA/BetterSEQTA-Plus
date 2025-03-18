@@ -112,7 +112,7 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
   return proxy;
 }
 
-function createStorageAPI(pluginId: string): StorageAPI {
+function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in keyof T]: T[K] } {
   const prefix = `plugin.${pluginId}.storage.`;
   const cache: Record<string, any> = {};
   const listeners = new Map<string, Set<(value: any) => void>>();
@@ -152,28 +152,17 @@ function createStorageAPI(pluginId: string): StorageAPI {
   // Create the proxy for direct property access
   return new Proxy(cache, {
     get(target, prop: string) {
-      if (prop === 'get') {
-        return async <T>(key: string) => {
-          return target[key] as T || null;
-        };
-      }
-      if (prop === 'set') {
-        return async <T>(key: string, value: T) => {
-          target[key] = value;
-          await browser.storage.local.set({ [prefix + key]: value });
-        };
-      }
       if (prop === 'onChange') {
-        return (key: string, callback: (value: any) => void) => {
-          if (!listeners.has(key)) {
-            listeners.set(key, new Set());
+        return (key: keyof T, callback: (value: T[keyof T]) => void) => {
+          if (!listeners.has(key as string)) {
+            listeners.set(key as string, new Set());
           }
-          listeners.get(key)!.add(callback);
+          listeners.get(key as string)!.add(callback);
         };
       }
       if (prop === 'offChange') {
-        return (key: string, callback: (value: any) => void) => {
-          listeners.get(key)?.delete(callback);
+        return (key: keyof T, callback: (value: T[keyof T]) => void) => {
+          listeners.get(key as string)?.delete(callback);
         };
       }
       if (prop === 'loaded') {
@@ -184,7 +173,7 @@ function createStorageAPI(pluginId: string): StorageAPI {
       return target[prop];
     },
     set(target, prop: string, value: any) {
-      if (['get', 'set', 'onChange', 'offChange', 'loaded'].includes(prop)) {
+      if (['onChange', 'offChange', 'loaded'].includes(prop)) {
         return false;
       }
       
@@ -197,7 +186,7 @@ function createStorageAPI(pluginId: string): StorageAPI {
       
       return true;
     }
-  }) as StorageAPI;
+  }) as StorageAPI<T> & { [K in keyof T]: T[K] };
 }
 
 function createEventsAPI(pluginId: string): EventsAPI {
@@ -219,11 +208,11 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
-export function createPluginAPI<T extends PluginSettings>(plugin: Plugin<T>): PluginAPI<T> {
+export function createPluginAPI<T extends PluginSettings, S = any>(plugin: Plugin<T, S>): PluginAPI<T, S> {
   return {
     seqta: createSEQTAAPI(),
     settings: createSettingsAPI(plugin),
-    storage: createStorageAPI(plugin.id),
+    storage: createStorageAPI<S>(plugin.id),
     events: createEventsAPI(plugin.id),
   };
 } 

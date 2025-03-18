@@ -9,7 +9,12 @@ interface NotificationCollectorSettings extends PluginSettings {
   };
 }
 
-const notificationCollectorPlugin: Plugin<NotificationCollectorSettings> = {
+interface NotificationCollectorStorage {
+  lastNotificationCount: number;
+  lastCheckedTime: string;
+}
+
+const notificationCollectorPlugin: Plugin<NotificationCollectorSettings, NotificationCollectorStorage> = {
   id: 'notificationCollector',
   name: 'Notification Collector',
   description: 'Collects and displays SEQTA notifications',
@@ -26,8 +31,19 @@ const notificationCollectorPlugin: Plugin<NotificationCollectorSettings> = {
   run: async (api) => {
     let pollInterval: number | null = null;
 
+    // Store last notification count in storage
+    if (!api.storage.lastNotificationCount) {
+      api.storage.lastNotificationCount = 0;
+    }
+
     const checkNotifications = async () => {
       try {
+        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+
+        if (api.storage.lastNotificationCount !== 0) {
+          alertDiv.textContent = api.storage.lastNotificationCount.toString();
+        }
+        
         const response = await fetch(`${location.origin}/seqta/student/heartbeat?`, {
           method: 'POST',
           headers: {
@@ -40,10 +56,14 @@ const notificationCollectorPlugin: Plugin<NotificationCollectorSettings> = {
         });
 
         const data = await response.json();
-        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+        
+        // Store notification count for history
+        const notificationCount = data.payload.notifications.length;
+        api.storage.lastNotificationCount = notificationCount;
+        api.storage.lastCheckedTime = new Date().toISOString();
         
         if (alertDiv) {
-          alertDiv.textContent = data.payload.notifications.length.toString();
+          alertDiv.textContent = notificationCount.toString();
         } else {
           console.info("[BetterSEQTA+] No notifications currently");
         }

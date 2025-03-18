@@ -57,13 +57,25 @@ export interface SEQTAAPI {
   onPageChange: (callback: (page: string) => void) => void;
 }
 
-export interface StorageAPI {
-  get: <T>(key: string) => Promise<T | null>;
-  set: <T>(key: string, value: T) => Promise<void>;
-  onChange: (key: string, callback: (value: any) => void) => void;
-  offChange: (key: string, callback: (value: any) => void) => void;
+export interface StorageAPI<T = any> {
+  /**
+   * Register a callback to be called when a storage value changes
+   */
+  onChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => void;
+  
+  /**
+   * Remove a previously registered callback
+   */
+  offChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => void;
+  
+  /**
+   * Promise that resolves when storage values are loaded
+   */
   loaded: Promise<void>;
-  [key: string]: any;
+}
+
+export type TypedStorageAPI<T> = StorageAPI<T> & {
+  [K in keyof T]: T[K];
 }
 
 export interface EventsAPI {
@@ -71,18 +83,18 @@ export interface EventsAPI {
   emit: (event: string, ...args: any[]) => void;
 }
 
-export interface PluginAPI<T extends PluginSettings> {
+export interface PluginAPI<T extends PluginSettings, S = any> {
   seqta: SEQTAAPI;
   settings: SettingsAPI<T>;
-  storage: StorageAPI;
+  storage: TypedStorageAPI<S>;
   events: EventsAPI;
 }
 
-export interface Plugin<T extends PluginSettings = PluginSettings> {
+export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   id: string;
   name: string;
   description: string;
   version: string;
   settings: T;
-  run: (api: PluginAPI<T>) => void | Promise<void> | (() => void) | Promise<() => void>;
+  run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<() => void>;
 }
