@@ -65,13 +65,13 @@ const myPlugin: Plugin<MyPluginSettings, MyPluginStorage> = {
     // Initialize your settings here
   },
   run: (api) => {
-    if (!api.settings.get('enabled')) {
+    if (!api.settings.enabled) {
       return;
     }
 
     // Initialize storage with default values if needed
-    if (api.storage.get('lastRun') === undefined) {
-      api.storage.set('lastRun', new Date().toISOString());
+    if (api.storage.lastRun === undefined) {
+      api.storage.lastRun = new Date().toISOString();
     }
 
     // Your plugin logic goes here
@@ -147,7 +147,7 @@ api.seqta.onPageLoad('/timetable', () => {
 
 ```typescript
 // Get a setting value
-const isEnabled = api.settings.get('enabled');
+const isEnabled = api.settings.enabled;
 
 // Listen for settings changes
 api.settings.onChange('enabled', (newValue) => {
@@ -163,10 +163,10 @@ api.settings.onChange('enabled', (newValue) => {
 
 ```typescript
 // Get a stored value
-const lastRun = api.storage.get('lastRun');
+const lastRun = api.storage.lastRun;
 
 // Set a stored value
-api.storage.set('lastRun', new Date().toISOString());
+api.storage.lastRun = new Date().toISOString();
 
 // Listen for storage changes
 api.storage.onChange('lastRun', (newValue) => {
