@@ -11,6 +11,7 @@
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();
@@ -22,8 +23,10 @@
     if (theme.id === themes?.selectedTheme) {
       await disableTheme();
       themes.selectedTheme = '';
+      settingsState.selectedColor = settingsState.originalSelectedColor;
     } else {
       await setTheme(theme.id);
+      settingsState.selectedColor = theme.defaultColour;
       if (!themes) return;
       themes.selectedTheme = theme.id;
     }
