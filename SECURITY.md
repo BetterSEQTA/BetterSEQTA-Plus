@@ -12,4 +12,4 @@ Below here is the supported versions of BetterSEQTA+. Anything older than this i
 `*` May not work on other devices.
 ## Reporting a Vulnerability
 
-If you find vulnerabilities, REPORT IT IMMEDIATELY. Make an issue and use the template provided for vulnerabilities.
+If you find vulnerabilities, REPORT IT IMMEDIATELY. open the [advisories tab](https://github.com/BetterSEQTA/BetterSEQTA-Plus/security/advisories) on the left and click the green "report a vulnerability" button
