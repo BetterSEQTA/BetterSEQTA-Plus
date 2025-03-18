@@ -23,10 +23,9 @@
     if (theme.id === themes?.selectedTheme) {
       await disableTheme();
       themes.selectedTheme = '';
-      settingsState.selectedColor = settingsState.originalSelectedColor;
     } else {
       await setTheme(theme.id);
-      settingsState.selectedColor = theme.defaultColour;
+      settingsState.selectedColor = theme.defaultColour; // settingsState and the theme need to be synchronised.
       if (!themes) return;
       themes.selectedTheme = theme.id;
     }
