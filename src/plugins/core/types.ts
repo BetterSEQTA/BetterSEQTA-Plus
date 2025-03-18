@@ -1,27 +1,32 @@
 import ReactFiber from '@/seqta/utils/ReactFiber';
 
-interface BooleanSetting {
+export interface BooleanSetting {
   type: 'boolean';
   default: boolean;
   title: string;
   description?: string;
 }
 
-interface StringSetting {
+export interface StringSetting {
   type: 'string';
   default: string;
   title: string;
   description?: string;
+  maxLength?: number;
+  pattern?: string;
 }
 
-interface NumberSetting {
+export interface NumberSetting {
   type: 'number';
   default: number;
   title: string;
   description?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
-interface SelectSetting<T extends string> {
+export interface SelectSetting<T extends string> {
   type: 'select';
   options: readonly T[];
   default: T;
@@ -29,7 +34,7 @@ interface SelectSetting<T extends string> {
   description?: string;
 }
 
-type PluginSetting = BooleanSetting | StringSetting | NumberSetting | SelectSetting<string>;
+export type PluginSetting = BooleanSetting | StringSetting | NumberSetting | SelectSetting<string>;
 
 export type PluginSettings = {
   [key: string]: PluginSetting;
