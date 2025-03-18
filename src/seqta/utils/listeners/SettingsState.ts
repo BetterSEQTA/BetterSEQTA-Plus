@@ -74,6 +74,7 @@ class StorageManager {
   }
 
   private async saveToStorage(): Promise<void> {
+    // @ts-expect-error
     await browser.storage.local.set(this.data);
     this.notifySubscribers();
   }

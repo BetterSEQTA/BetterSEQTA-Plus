@@ -13,10 +13,12 @@ pluginManager.registerPlugin(notificationCollectorPlugin);
 export { init as Monofile } from './monofile';
 export { init as Themes } from './themes';
 
-// New plugin system initialization
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();
 }
 
-// Re-export plugin manager for direct access if needed
 export { pluginManager };
+
+export function getAllPluginSettings() {
+  return pluginManager.getAllPluginSettings();
+}
