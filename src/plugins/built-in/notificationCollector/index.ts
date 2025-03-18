@@ -1,33 +1,29 @@
-import type { Plugin, PluginSettings } from '../../core/types';
-
-interface NotificationCollectorSettings extends PluginSettings {
-  enabled: {
-    type: 'boolean';
-    default: boolean;
-    title: string;
-    description: string;
-  };
-}
+import type { Plugin } from '../../core/types';
+import { BasePlugin, BooleanSetting } from '../../core/settings';
 
 interface NotificationCollectorStorage {
   lastNotificationCount: number;
   lastCheckedTime: string;
 }
 
-const notificationCollectorPlugin: Plugin<NotificationCollectorSettings, NotificationCollectorStorage> = {
+class NotificationCollectorPluginClass extends BasePlugin {
+  @BooleanSetting({
+    default: true,
+    title: "Notification Collector",
+    description: "Uncaps the 9+ limit for notifications, showing the real number.",
+  })
+  enabled!: boolean;
+}
+
+// Create an instance to extract settings
+const settingsInstance = new NotificationCollectorPluginClass();
+
+const notificationCollectorPlugin: Plugin<typeof settingsInstance.settings, NotificationCollectorStorage> = {
   id: 'notificationCollector',
   name: 'Notification Collector',
   description: 'Collects and displays SEQTA notifications',
   version: '1.0.0',
-  settings: {
-    enabled: {
-      type: 'boolean',
-      default: true,
-      title: 'Notification Collector',
-      description: 'Uncaps the 9+ limit for notifications, showing the real number.',
-    }
-  },
-
+  settings: settingsInstance.settings,
   run: async (api) => {
     let pollInterval: number | null = null;
 
@@ -95,8 +91,8 @@ const notificationCollectorPlugin: Plugin<NotificationCollectorSettings, Notific
       });
     }
 
-    const enabledCallback = (enabled: boolean) => {
-      if (enabled) {
+    const enabledCallback = (value: any) => {
+      if (value) {
         startPolling();
       } else {
         stopPolling();

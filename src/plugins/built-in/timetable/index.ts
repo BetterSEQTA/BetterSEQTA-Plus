@@ -1,38 +1,35 @@
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
-import type { Plugin, PluginSettings } from '../../core/types';
+import type { Plugin } from '../../core/types';
 import { convertTo12HourFormat } from '@/seqta/utils/convertTo12HourFormat';
 import { waitForElm } from '@/seqta/utils/waitForElm';
+import { BasePlugin, BooleanSetting } from '../../core/settings';
 
-interface TimetableSettings extends PluginSettings {
-  enabled: {
-    type: 'boolean';
-    default: boolean;
-    title: string;
-    description: string;
-  };
+// Define only the typed settings - no need for redundant interface
+class TimetablePluginClass extends BasePlugin {
+  @BooleanSetting({
+    default: true,
+    title: "Timetable Enhancer",
+    description: "Adds extra features to the timetable view."
+  })
+  enabled!: boolean;
 }
 
-const timetablePlugin: Plugin<TimetableSettings> = {
+// Create an instance to extract settings
+const settingsInstance = new TimetablePluginClass();
+
+const timetablePlugin: Plugin<typeof settingsInstance.settings> = {
   id: 'timetable',
   name: 'Timetable Enhancer',
   description: 'Adds extra features to the timetable view',
   version: '1.0.0',
-  settings: {
-    enabled: {
-      type: 'boolean',
-      default: true,
-      title: 'Timetable Enhancer',
-      description: 'Adds extra features to the timetable view.',
-    }
-  },
-
+  settings: settingsInstance.settings,
   run: async (api) => {
     if (api.settings.enabled) {
       api.seqta.onMount('.timetablepage', handleTimetable)
     }
     
-    const enabledCallback = (enabled: boolean) => {
-      if (enabled) {
+    const enabledCallback = (value: any) => {
+      if (value) {
         api.seqta.onMount('.timetablepage', handleTimetable)
       } else {
         const timetablePage = document.querySelector('.timetablepage')
@@ -277,19 +274,16 @@ function handleTimetableAssessmentHide(): void {
 
   function hideElements(): void {
     const entries = document.querySelectorAll(".entry")
+    
     entries.forEach((entry: Element) => {
       const entryEl = entry as HTMLElement
-      if (!entryEl.classList.contains("assessment") && !(entryEl.style.opacity === "0.3")) {
-        entryEl.style.opacity = "0.3"
-      } else {
-        entryEl.style.opacity = "1"
+      if (!entryEl.classList.contains("assessment")) {
+        entryEl.style.opacity = entryEl.style.opacity === "0.3" ? "1" : "0.3"
       }
     })
   }
 
-  hideOn.addEventListener("click", () => {
-    hideElements()
-  })
+  hideOn.addEventListener("click", hideElements)
 }
 
 export default timetablePlugin; 
