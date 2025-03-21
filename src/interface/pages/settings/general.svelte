@@ -207,16 +207,6 @@
       }
     },
     {
-      title: "Lesson Alerts",
-      description: "Sends a native browser notification ~5 minutes prior to lessons.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.lessonalert,
-        onChange: (isOn: boolean) => settingsState.lessonalert = isOn
-      }
-    },
-    {
       title: "12 Hour Time",
       description: "Prefer 12 hour time format for SEQTA",
       id: 9,
