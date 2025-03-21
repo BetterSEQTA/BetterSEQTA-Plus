@@ -42,7 +42,7 @@ export const UpdateThemePreview = async (updatedTheme: LoadedCustomTheme) => {
   // Apply default color
   if (defaultColour) {
     // Store the original color if it hasn't been stored yet
-    if (originalColor === null) {
+    if (originalColor == null) {
       originalColor = settingsState.selectedColor;
     }
     settingsState.selectedColor = defaultColour;
@@ -62,13 +62,13 @@ export const ClearThemePreview = () => {
   }
 
   // Reset the color to the original value
-  if (originalColor !== null) {
+  if (originalColor != null) {
     settingsState.selectedColor = originalColor;
-    originalColor = null;
+    originalColor = settingsState.originalSelectedColor;
   }
 
   // Reset the theme (dark/light mode) to the original value
-  if (originalTheme !== null) {
+  if (originalTheme != null) {
     settingsState.DarkMode = originalTheme;
     originalTheme = null;
   }

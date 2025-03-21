@@ -1,0 +1,111 @@
+import type { Plugin } from '../../core/types';
+import { BasePlugin, BooleanSetting } from '../../core/settings';
+
+interface NotificationCollectorStorage {
+  lastNotificationCount: number;
+  lastCheckedTime: string;
+}
+
+class NotificationCollectorPluginClass extends BasePlugin {
+  @BooleanSetting({
+    default: true,
+    title: "Notification Collector",
+    description: "Uncaps the 9+ limit for notifications, showing the real number.",
+  })
+  enabled!: boolean;
+}
+
+// Create an instance to extract settings
+const settingsInstance = new NotificationCollectorPluginClass();
+
+const notificationCollectorPlugin: Plugin<typeof settingsInstance.settings, NotificationCollectorStorage> = {
+  id: 'notificationCollector',
+  name: 'Notification Collector',
+  description: 'Collects and displays SEQTA notifications',
+  version: '1.0.0',
+  settings: settingsInstance.settings,
+  run: async (api) => {
+    let pollInterval: number | null = null;
+
+    // Store last notification count in storage
+    if (!api.storage.lastNotificationCount) {
+      api.storage.lastNotificationCount = 0;
+    }
+
+    const checkNotifications = async () => {
+      try {
+        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+
+        if (api.storage.lastNotificationCount !== 0) {
+          alertDiv.textContent = api.storage.lastNotificationCount.toString();
+        }
+        
+        const response = await fetch(`${location.origin}/seqta/student/heartbeat?`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: JSON.stringify({
+            timestamp: "1970-01-01 00:00:00.0",
+            hash: "#?page=/home",
+          })
+        });
+
+        const data = await response.json();
+        
+        // Store notification count for history
+        const notificationCount = data.payload.notifications.length;
+        api.storage.lastNotificationCount = notificationCount;
+        api.storage.lastCheckedTime = new Date().toISOString();
+        
+        if (alertDiv) {
+          alertDiv.textContent = notificationCount.toString();
+        } else {
+          console.info("[BetterSEQTA+] No notifications currently");
+        }
+      } catch (error) {
+        console.error("[BetterSEQTA+] Error fetching notifications:", error);
+      }
+    };
+
+    const startPolling = () => {
+      if (pollInterval) return; // Already polling
+      checkNotifications();
+      pollInterval = window.setInterval(checkNotifications, 30000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        window.clearInterval(pollInterval);
+        pollInterval = null;
+        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+        if (alertDiv) {
+          alertDiv.textContent = "9+";
+        }
+      }
+    };
+
+    if (api.settings.enabled) {
+      api.seqta.onMount(".notifications__bubble___1EkSQ", (_) => {
+        startPolling();
+      });
+    }
+
+    const enabledCallback = (value: any) => {
+      if (value) {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    api.settings.onChange('enabled', enabledCallback);
+
+    return () => {
+      stopPolling();
+      api.settings.offChange('enabled', enabledCallback);
+    };
+  }
+};
+
+export default notificationCollectorPlugin;

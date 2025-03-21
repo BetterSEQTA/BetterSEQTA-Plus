@@ -17,7 +17,7 @@ export function handleImageUpload(event: Event, theme: LoadedCustomTheme): Promi
         const variableName = `custom-image-${theme.CustomImages.length}`;
         resolve({
           ...theme,
-          CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName, url: URL.createObjectURL(imageBlob) }],
+          CustomImages: [...theme.CustomImages, { id: imageId, blob: imageBlob, variableName, url: null }],
         });
       };
       reader.readAsDataURL(file);
@@ -51,7 +51,7 @@ export function handleCoverImageUpload(event: Event, theme: LoadedCustomTheme): 
       const reader = new FileReader();
       reader.onload = async () => {
         const imageBlob = await fetch(reader.result as string).then(res => res.blob());
-        resolve({ ...theme, coverImage: imageBlob, coverImageUrl: URL.createObjectURL(imageBlob) });
+        resolve({ ...theme, coverImage: imageBlob });
       };
       reader.readAsDataURL(file);
     });

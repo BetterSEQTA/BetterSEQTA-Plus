@@ -27,6 +27,7 @@ export const disableTheme = async () => {
     }
 
     settingsState.selectedTheme = ''
+    settingsState.selectedColor = settingsState.originalSelectedColor;
   } catch (error) {
     console.error('Error disabling theme:', error);
   } finally {
