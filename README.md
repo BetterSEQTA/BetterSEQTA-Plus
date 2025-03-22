@@ -47,20 +47,15 @@
 - Fully customisable themes and an official theme store
 - Notification for next lesson (sent 5 minutes before end of the lesson)
 - Browser Support
-  - Chrome Supported
-  - Edge Supported
-  - Brave Supported
-  - Opera Supported
-  - Vivaldi Supported
-  - Chromium-based browsers are supported
+  - Chrome, Edge, Brave, Opera and other Chromium-Based browsers are supported
   - Firefox Supported: [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)!
-  - Safari (Experimental - only available via compilation)
+  - Safari (Experimental and not recommended - only available via compilation)
 
 ## Creating Custom Themes
 
 If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://betterseqta.gitbook.io/betterseqta-docs). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator). 
 
-Don't worry- if you get stuck feel free to ask around in the discord. We're open and happy to help out! Happy creating :)
+Don't worry- if you get stuck feel free to ask around in the [discord](https://discord.gg/YzmbnCDkat). We're open and happy to help out! Happy creating :)
 
 ## Getting started
 
@@ -70,20 +65,43 @@ Don't worry- if you get stuck feel free to ask around in the discord. We're open
 git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus
 ```
 
-### Running Development
+
 
 1. Install dependencies
+
+You may install the dependencies like below:
 
 ```
 npm install # or your preferred package manager like pnpm or yarn
 ```
 
+But it is recommended to do it like this: 
+
+```
+npm install --legacy-peer-deps # Only NPM supported
+```
+### Running Development
 2. Run the dev script (it updates as you save files)
 
 ```
-npm run dev
+npm run dev # or use your perferred package manager
 ```
 
+
+
+### Building for production
+
+2. Run the build script
+
+```
+npm run build # or use your perferred package manager
+```
+
+2.1. Package it up (optional)
+
+```
+npm run zip # This REQUIRES 7-Zip to be installed in order to work. You can also use your perferred package manager
+```
 3. Load the extension into chrome
 
 - Go to `chrome://extensions`
@@ -91,27 +109,7 @@ npm run dev
 - Click `Load unpacked`
 - Select the `dist` folder
 
-Just remember, in order to update changes to the extension, you need to click the refresh button on the extension in `chrome://extensions` whenever anything's changed.
-
-### Building for production
-
-1. Install dependencies
-
-```
-npm install # or your preferred package manager like pnpm or yarn
-```
-
-2. Run the build script
-
-```
-npm run build
-```
-
-3. Package it up (optional)
-
-```
-npm run zip # This requires 7-Zip to be installed in order to work
-```
+Just remember, in order to update changes to the extension if you are running in developer mode, you need to click the refresh button on the extension in `chrome://extensions` whenever anything's changed.
 
 ## Folder Structure
 
@@ -136,4 +134,4 @@ This extension was initially developed by [Nulkem](https://github.com/Nulkem/bet
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=BetterSEQTA/BetterSEQTA-Plus&type=Date)](https://star-history.com/#sethburkart123/EvenBetterSEQTA&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=BetterSEQTA/BetterSEQTA-Plus&type=Date)](https://star-history.com/#BetterSEQTA/BetterSEQTA-Plus&Date)
