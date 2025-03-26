@@ -10,7 +10,6 @@ import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import tailwindcss from '@tailwindcss/vite';
 
 import { chrome } from './src/manifests/chrome';
 import { brave } from './src/manifests/brave';
@@ -31,7 +30,6 @@ const mode = process.env.MODE || 'chrome'; // Check the environment variable to 
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
-    tailwindcss(),
     svelte({
       emitCss: false
     }),
