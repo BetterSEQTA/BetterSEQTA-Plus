@@ -27,6 +27,7 @@
   - [Running Development](#running-development)
   - [Building for production](#building-for-production)
   - [Folder Structure](#folder-structure)
+- [Known Bugs](#known-bugs)
 - [Contributors](#contributors)
 - [Credits](#credits)
 - [Star History](#star-history)
@@ -122,6 +123,22 @@ The folder structure is as follows:
 - The `src/interface` folder contains source React & Svelte files that are required for the Settings page.
 
 - The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
+
+## Known Bugs
+> [!IMPORTANT]
+> Read This Before creating a bug report, any bug reports relating to already known/unfixable bugs WILL be deleted
+
+### Timetable Bugs
+- Editing a subject's colour causes the subject popup to not appear - Seqta issue, cannot fix
+- Scaling the timetable does not scale the time marker - Seqta issue, not high priority
+- The time marker lags behind as you scroll - Seqta issue, cannot fix
+
+### News Page Bugs
+- The news page's tab title sometimes does not change - In development
+- News page does not load in some instances of Firefox - In development
+
+### Theme Bugs
+- Images in themes fail to load in Firefox - In development
 
 ## Contributors
 
