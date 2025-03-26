@@ -75,6 +75,7 @@
         await InstallTheme(result);
         await fetchThemes();
       } catch (error) {
+        console.error('Error parsing file:', error);
         alert('Error parsing file. Please upload a valid JSON theme file.');
       }
       tempTheme = null;
@@ -94,6 +95,11 @@
 
   onDestroy(() => {
     themeUpdates.removeListener(fetchThemes);
+  })
+
+  $effect(() => {
+    if (!themes) return;
+    console.log(themes.selectedTheme);
   })
 </script>
 
@@ -125,7 +131,7 @@
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
-          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
+          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition outline-2 outline-zinc-300 dark:outline-white {theme.id === themes.selectedTheme ? 'outline-4' : 'outline-0'}"
           onclick={() => handleThemeClick(theme)}
         >
           {#if isEditMode}

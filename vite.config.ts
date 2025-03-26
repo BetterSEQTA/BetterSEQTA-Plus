@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
-import { join, resolve } from 'path';
-
+import path, { join, resolve } from 'path';
+import fs from 'fs';
 import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
@@ -19,7 +19,8 @@ import { firefox } from './src/manifests/firefox';
 import { opera } from './src/manifests/opera';
 import { safari } from './src/manifests/safari';
 import { crx } from '@crxjs/vite-plugin';
-
+import shadowDom from './lib/shadowDom';
+import touchGlobalCSSPlugin from './lib/touchGlobalCSS';
 const targets: BuildTarget[] = [
   chrome, brave, edge, firefox, opera, safari
 ]
@@ -41,6 +42,8 @@ export default defineConfig(({ command }) => ({
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
     }),
     updateManifestPlugin(),
+    shadowDom(),
+    touchGlobalCSSPlugin(),
     ...(command === 'build' ? [ClosePlugin()] : [])
   ],
   root: resolve(__dirname, './src'),

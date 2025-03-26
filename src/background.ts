@@ -154,53 +154,10 @@ function SetStorageValue(object: any) {
   }
 }
 
-async function UpdateCurrentValues() {
-  try {
-    const items = await browser.storage.local.get();
-    const CurrentValues = items;
-
-    const NewValue = Object.assign({}, DefaultValues, CurrentValues);
-
-    function CheckInnerElement(element: any) {
-      for (let i in element) {
-        if (typeof element[i] === 'object') {
-          // @ts-expect-error
-          if (!Array.isArray(DefaultValues[i])) {
-            // @ts-expect-error
-            NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
-          } else {
-            // @ts-expect-error
-            const length = DefaultValues[i].length;
-            // @ts-expect-error
-            NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
-            let NewArray = [];
-            for (let j = 0; j < length; j++) {
-              NewArray.push(NewValue[i][j]);
-            }
-            NewValue[i] = NewArray;
-          }
-        }
-      }
-    }
-
-    CheckInnerElement(DefaultValues);
-
-    if (items['customshortcuts']) {
-      NewValue['customshortcuts'] = items['customshortcuts'];
-    }
-
-    SetStorageValue(NewValue);
-    console.log('[BetterSEQTA+] Values updated successfully');
-  } catch (error) {
-    console.error('[BetterSEQTA+] Error updating values:', error);
-  }
-}
-
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
   browser.storage.local.remove(['data']);
 
-  UpdateCurrentValues();
   if ( event.reason == 'install', event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
   }
