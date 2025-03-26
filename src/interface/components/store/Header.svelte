@@ -47,7 +47,7 @@
         placeholder="Search themes..."
         value={searchTerm}
         oninput={(e: any) => setSearchTerm(e.target.value)}
-        class="px-4 py-2 pl-10 text-lg transition bg-gray-100/80 rounded-lg ring-0 focus:bg-gray-100/0 dark:focus:bg-zinc-700/50 focus:ring-[1px] ring-zinc-200 dark:ring-zinc-600 dark:bg-zinc-700/80 dark:text-gray-100 focus:outline-hidden focus:border-transparent" />
+        class="px-4 py-2 pl-10 text-lg transition bg-gray-100/80 rounded-lg ring-0 focus:bg-gray-100/0 dark:focus:bg-zinc-700/50 focus:ring-[1px] ring-zinc-200 dark:ring-zinc-600 dark:bg-zinc-700/80 dark:text-gray-100 focus:outline-none focus:border-transparent" />
       <svg
         class="absolute left-3 top-1/2 w-5 h-5 text-gray-400 transform -translate-y-1/2 dark:text-gray-200"
         fill="none"

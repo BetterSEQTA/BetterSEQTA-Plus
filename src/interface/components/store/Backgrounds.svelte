@@ -310,7 +310,7 @@
 </div>
 
 {#if settingsState.devMode}
-  <div class="p-4 mt-8 rounded-xs bg-zinc-100 dark:bg-zinc-800">
+  <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
     <h3 class="mb-2 font-bold">Debug Info:</h3>
     <p>{debugInfo}</p>
     <p>Total backgrounds: {backgrounds.length}</p>

@@ -49,7 +49,7 @@
       />
       {#each tabs as { title }, index}
         <button
-          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-hidden"
+          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-none"
           onclick={() => activeTab = index}
         >
           {title}
@@ -65,7 +65,7 @@
     >
       <div class="flex">
         {#each tabs as { Content, props }, index}
-          <div class="absolute focus:outline-hidden w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
+          <div class="absolute focus:outline-none w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
             style="left: {index * 100}%;">
              <Content {...props} />
           </div>
