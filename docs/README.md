@@ -43,7 +43,7 @@ If you need help with BetterSEQTA+, you can:
 
 - [Open an Issue](https://github.com/SeqtaLearning/betterseqta-plus/issues) - Report bugs or request features
 - [Join the Discord](https://discord.gg/YzmbnCDkat) - Chat with the community
-- [Email the Maintainers](mailto:betterseqta@example.com) - Contact the maintainers directly
+- [Email the Maintainers](mailto:betterseqta.plus@gmail.com) - Contact the maintainers directly
 
 ## Contributing to the Documentation
 

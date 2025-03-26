@@ -34,7 +34,6 @@ export function updateManifestPlugin(): PluginOption {
           }
 
           fs.watchFile(manifestPath, () => {
-            console.log('** watchFile **');
             try {
               const manifestContents = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
               if (manifestContents.web_accessible_resources?.some((resource: any) => resource.use_dynamic_url)) {

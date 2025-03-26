@@ -1,6 +1,7 @@
-import styles from "./index.css?inline"
+//import styles from "./index.css?inline"
 import { mount } from "svelte"
 import type { ComponentType } from "svelte"
+import './index.css'
 
 export default function renderSvelte(
   Component: ComponentType | any,
@@ -15,10 +16,5 @@ export default function renderSvelte(
     },
   })
 
-  const style = document.createElement("style")
-  style.setAttribute("type", "text/css")
-  style.innerHTML = styles
-  mountPoint.appendChild(style)
-  
   return app
 }
