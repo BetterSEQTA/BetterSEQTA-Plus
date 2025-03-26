@@ -49,13 +49,14 @@ browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (resp
       break;
 
     case 'sendNews':
-
       fetchNews(request.source ?? 'australia', sendResponse);
       return true;
   
     default:
       console.log('Unknown request type');
   }
+  
+  return true;
 });
 
 const DefaultValues: SettingsState = {
