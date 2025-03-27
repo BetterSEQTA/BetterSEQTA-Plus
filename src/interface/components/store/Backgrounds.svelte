@@ -1,10 +1,12 @@
 <script lang="ts">
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
-  import { setTheme } from '@/seqta/ui/themes/setTheme';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import Fuse from 'fuse.js';
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
+  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+
+  const themeManager = ThemeManager.getInstance();
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
   let { searchTerm } = $props<{ searchTerm: string }>();
@@ -170,7 +172,7 @@
   
   function selectNoBackground() {
     selectedBackground = null;
-    setTheme('');
+    themeManager.setTheme('');
   }
 </script>
 
