@@ -3,7 +3,7 @@ import browser from 'webextension-polyfill'
 import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 import { MenuOptionsOpen, OpenMenuOptions } from "@/seqta/utils/Openers/OpenMenuOptions"
 
-import { CloseThemeCreator, OpenThemeCreator } from '@/seqta/ui/ThemeCreator';
+import { CloseThemeCreator, OpenThemeCreator } from '@/plugins/built-in/themes/ThemeCreator';
 import sendThemeUpdate from '@/seqta/utils/sendThemeUpdate';
 import hideSensitiveContent from '@/seqta/ui/dev/hideSensitiveContent';
 import { ThemeManager } from '@/plugins/built-in/themes/theme-manager';
