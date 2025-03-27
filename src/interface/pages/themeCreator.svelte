@@ -21,7 +21,7 @@
     handleImageVariableChange,
     handleCoverImageUpload
   } from '../utils/themeImageHandlers';
-  import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
+  import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
@@ -121,7 +121,7 @@
 
   $effect(() => {
     if (themeLoaded) {
-      void themeManager.updatePreview(theme);
+      void themeManager.updatePreviewDebounced(theme);
     }
   });
 

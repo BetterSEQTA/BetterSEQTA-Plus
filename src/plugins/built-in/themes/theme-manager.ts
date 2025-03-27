@@ -1,6 +1,7 @@
 import localforage from 'localforage';
 import type { CustomTheme, LoadedCustomTheme } from '@/types/CustomThemes';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
+import debounce from '@/seqta/utils/debounce';
 
 type ThemeContent = {
   id: string;
@@ -516,6 +517,14 @@ export class ThemeManager {
       console.error('[ThemeManager] Error updating theme preview:', error);
     }
   }
+
+  /**
+   * Update the preview of a theme (debounced)
+   * @param theme - The theme to update the preview of
+   */
+  public updatePreviewDebounced = debounce((theme: Partial<LoadedCustomTheme>): void => {
+    this.updatePreview(theme);
+  }, 2);
 
   /**
    * Clear theme preview
