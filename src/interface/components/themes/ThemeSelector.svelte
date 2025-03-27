@@ -1,16 +1,13 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
-  import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
   import { onDestroy, onMount } from 'svelte'
   import { OpenThemeCreator } from '@/seqta/ui/ThemeCreator'
-  import shareTheme from '@/seqta/ui/themes/shareTheme'
-  import { InstallTheme } from '@/seqta/ui/themes/downloadTheme'
-  import { disableTheme } from '@/seqta/ui/themes/disableTheme'
-  import { setTheme } from '@/seqta/ui/themes/setTheme'
-  import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
+  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+
+  const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode } = $props<{ isEditMode: boolean }>();
@@ -20,10 +17,10 @@
   const handleThemeClick = async (theme: CustomTheme) => {
     if (isEditMode) return;
     if (theme.id === themes?.selectedTheme) {
-      await disableTheme();
+      await themeManager.disableTheme();
       themes.selectedTheme = '';
     } else {
-      await setTheme(theme.id);
+      await themeManager.setTheme(theme.id);
       if (!themes) return;
       themes.selectedTheme = theme.id;
     }
@@ -31,13 +28,13 @@
 
   const handleThemeDelete = async (themeId: string) => {
     try {
-      await deleteTheme(themeId);
+      await themeManager.deleteTheme(themeId);
       if (!themes) return;
 
       themes.themes = themes.themes.filter(theme => theme.id !== themeId);
       if (themeId === themes.selectedTheme) {
         themes.selectedTheme = '';
-        await disableTheme();
+        await themeManager.disableTheme();
       }
     } catch (error) {
       console.error('Error deleting theme:', error);
@@ -46,7 +43,7 @@
 
   const handleShareTheme = async (theme: CustomTheme) => {
     try {
-      await shareTheme(theme.id);
+      await themeManager.shareTheme(theme.id);
     } catch (error) {
       console.error('Error sharing theme:', error);
     }
@@ -72,7 +69,7 @@
       try {
         const result = JSON.parse(event.target?.result as string);
         tempTheme = result;
-        await InstallTheme(result);
+        await themeManager.installTheme(result);
         await fetchThemes();
       } catch (error) {
         console.error('Error parsing file:', error);
@@ -84,7 +81,10 @@
   }
 
   const fetchThemes = async () => {
-    themes = await getAvailableThemes();
+    themes = {
+      themes: await themeManager.getAvailableThemes(),
+      selectedTheme: themeManager.getSelectedThemeId() || '',
+    }
   }
 
   onMount(async () => {

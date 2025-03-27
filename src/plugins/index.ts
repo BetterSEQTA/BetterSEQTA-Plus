@@ -3,6 +3,7 @@ import { PluginManager } from './core/manager';
 // plugins
 import timetablePlugin from './built-in/timetable';
 import notificationCollectorPlugin from './built-in/notificationCollector';
+import themesPlugin from './built-in/themes';
 
 // Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
@@ -10,6 +11,7 @@ const pluginManager = PluginManager.getInstance();
 // Register built-in plugins
 pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);
+pluginManager.registerPlugin(themesPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
 // Legacy plugin exports

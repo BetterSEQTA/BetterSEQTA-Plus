@@ -7,7 +7,6 @@
   import { type LoadedCustomTheme } from '@/types/CustomThemes'
 
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
-  import { getTheme } from '@/seqta/ui/themes/getTheme'
 
   import Divider from '@/interface/components/themeCreator/divider.svelte'
   import Switch from '@/interface/components/Switch.svelte'
@@ -22,14 +21,13 @@
     handleImageVariableChange,
     handleCoverImageUpload
   } from '../utils/themeImageHandlers';
-  import { ClearThemePreview, UpdateThemePreview } from '@/seqta/ui/themes/UpdateThemePreview'
-  import { saveTheme } from '@/seqta/ui/themes/saveTheme'
   import { CloseThemeCreator } from '@/seqta/ui/ThemeCreator'
   import { themeUpdates } from '../hooks/ThemeUpdates'
-  import { disableTheme } from '@/seqta/ui/themes/disableTheme'
-  import { setTheme } from '@/seqta/ui/themes/setTheme'
+  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
   const { themeID } = $props<{ themeID: string }>()
+  const themeManager = ThemeManager.getInstance();
+
   let theme = $state<LoadedCustomTheme>({
     id: uuidv4(),
     name: '',
@@ -62,10 +60,10 @@
   }
 
   onMount(async () => {
-    await disableTheme();
+    await themeManager.disableTheme();
 
     if (themeID) {
-      const tempTheme = await getTheme(themeID)
+      const tempTheme = await themeManager.getTheme(themeID)
 
       if (!tempTheme) return
 
@@ -104,7 +102,7 @@
     theme = await handleCoverImageUpload(event, theme);
   }
 
-  function submitTheme() {
+  async function submitTheme() {
     const themeClone = JSON.parse(JSON.stringify(theme));
 
     // re-insert blobs into themeClone
@@ -114,15 +112,17 @@
     }))
     themeClone.coverImage = theme.coverImage
 
-    ClearThemePreview();
-    saveTheme(themeClone);
-    setTheme(themeClone.id);
+    themeManager.clearPreview();
+    await themeManager.saveTheme(themeClone);
+    await themeManager.setTheme(themeClone.id);
     themeUpdates.triggerUpdate();
     CloseThemeCreator();
   }
 
   $effect(() => {
-    UpdateThemePreview(theme);
+    if (themeLoaded) {
+      void themeManager.updatePreview(theme);
+    }
   });
 
   type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
@@ -215,7 +215,7 @@
                   bind:value={image.variableName}
                   oninput={(e) => onImageVariableChange(image.id, e.currentTarget.value)}
                   placeholder="CSS Variable Name"
-                  class="grow flex-3 w-full p-2 transition border-0 rounded-lg dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-600/50 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+                  class="p-2 w-full rounded-lg border-0 transition grow flex-3 dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-600/50 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
                 />
                 <button onclick={() => onRemoveImage(image.id)} class="p-2 transition dark:text-white">
                   <span class='text-xl font-IconFamily'>{'\ued8c'}</span>
@@ -253,7 +253,7 @@
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
   {#if codeEditorFullscreen}
-    <div class="absolute inset-0 z-10000 bg-white dark:bg-zinc-900 dark:text-white">
+    <div class="absolute inset-0 bg-white z-10000 dark:bg-zinc-900 dark:text-white">
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>

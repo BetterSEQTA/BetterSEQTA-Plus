@@ -9,15 +9,14 @@
   import type { Theme } from '../types/Theme'
   import browser from 'webextension-polyfill'
   import ThemeModal from '../components/store/ThemeModal.svelte'
-  import { StoreDownloadTheme } from '@/seqta/ui/themes/downloadTheme'
-  import { setTheme } from '@/seqta/ui/themes/setTheme'
   import Header from '../components/store/Header.svelte'
-  import { deleteTheme } from '@/seqta/ui/themes/deleteTheme'
-  import { getAvailableThemes } from '@/seqta/ui/themes/getAvailableThemes'
   import { themeUpdates } from '../hooks/ThemeUpdates'
+  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import Backgrounds from '../components/store/Backgrounds.svelte'
+
+  const themeManager = ThemeManager.getInstance();
 
   // State variables
   let searchTerm = $state('');
@@ -33,8 +32,8 @@
   let selectedBackground = $state<string | null>(null);
 
   const fetchCurrentThemes = async () => {
-    const themes = await getAvailableThemes();
-    currentThemes = themes.themes.filter(theme => theme !== null).map(theme => theme.id);
+    const themes = await themeManager.getAvailableThemes();
+    currentThemes = themes.filter(theme => theme !== null).map(theme => theme.id);
   };
 
   const setDisplayTheme = (theme: Theme | null) => {
@@ -123,8 +122,8 @@
               {setDisplayTheme}
               onInstall={async () => {
                 if (displayTheme) {
-                  await StoreDownloadTheme({themeContent: displayTheme})
-                  setTheme(displayTheme.id);
+                  await themeManager.downloadTheme(displayTheme);
+                  await themeManager.setTheme(displayTheme.id);
                   themeUpdates.triggerUpdate();
                   await fetchCurrentThemes();
                 }
@@ -132,7 +131,7 @@
               onRemove={async () => {
                 if (displayTheme?.id) {
                   console.debug('deleting theme', displayTheme.id);
-                  deleteTheme(displayTheme.id)
+                  await themeManager.deleteTheme(displayTheme.id);
                   themeUpdates.triggerUpdate();
                   await fetchCurrentThemes();
                 }
