@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
-  import { OpenThemeCreator } from '@/seqta/ui/ThemeCreator'
+  import { OpenThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'

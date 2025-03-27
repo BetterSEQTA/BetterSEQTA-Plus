@@ -41,7 +41,7 @@ async function init() {
 
       if (settingsState.onoff) {
         // Initialize legacy plugins
-        const legacyPlugins = [plugins.Monofile, plugins.Themes];
+        const legacyPlugins = [plugins.Monofile];
         legacyPlugins.forEach(plugin => {
           if (typeof plugin === 'function') {
             plugin();

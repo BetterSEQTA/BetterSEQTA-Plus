@@ -16,7 +16,6 @@ pluginManager.registerPlugin(themesPlugin);
 
 // Legacy plugin exports
 export { init as Monofile } from './monofile';
-export { init as Themes } from './themes';
 
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();
