@@ -2,6 +2,7 @@ import renderSvelte from "@/interface/main"
 import themeCreator from "@/interface/pages/themeCreator.svelte"
 import { unmount } from "svelte"
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager"
+import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
 let themeCreatorSvelteApp: any = null
 const themeManager = ThemeManager.getInstance();
@@ -13,6 +14,10 @@ const themeManager = ThemeManager.getInstance();
  */
 export function OpenThemeCreator(themeID: string = "") {
   CloseThemeCreator()
+
+  // Store that theme creator is open and save original color
+  localStorage.setItem('themeCreatorOpen', 'true');
+  localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
 
   const width = "310px"
 
@@ -83,6 +88,9 @@ export function OpenThemeCreator(themeID: string = "") {
  * @returns void
  */
 export function CloseThemeCreator() {
+  // Remove the stored flag
+  localStorage.removeItem('themeCreatorOpen');
+
   const themeCreator = document.getElementById("themeCreator")
   const closeButton = document.querySelector(
     ".themeCloseButton",
