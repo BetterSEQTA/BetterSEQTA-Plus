@@ -2,6 +2,7 @@ import localforage from 'localforage';
 import type { CustomTheme, LoadedCustomTheme } from '@/types/CustomThemes';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import debounce from '@/seqta/utils/debounce';
+import browser from 'webextension-polyfill';
 
 type ThemeContent = {
   id: string;
@@ -90,6 +91,15 @@ export class ThemeManager {
   public async initialize(): Promise<void> {
     console.debug('[ThemeManager] Starting initialization');
     try {
+      // Check if theme creator was open during reload
+      const themeCreatorOpen = localStorage.getItem('themeCreatorOpen');
+      if (themeCreatorOpen === 'true') {
+        console.debug('[ThemeManager] Theme creator was open, clearing preview state');
+        this.clearPreview();
+        // Clean up the flag
+        localStorage.removeItem('themeCreatorOpen');
+      }
+      
       if (settingsState.selectedTheme) {
         console.debug('[ThemeManager] Found selected theme, restoring:', settingsState.selectedTheme);
         await this.setTheme(settingsState.selectedTheme);
@@ -416,6 +426,7 @@ export class ThemeManager {
       // Store original settings if not already stored
       if (this.originalPreviewColor === null) {
         this.originalPreviewColor = settingsState.selectedColor;
+        localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
       }
       if (this.originalPreviewTheme === null) {
         this.originalPreviewTheme = settingsState.DarkMode;
@@ -548,11 +559,22 @@ export class ThemeManager {
       }
 
       // Restore original settings
-      if (this.originalPreviewColor !== null) {
+      const storedColor = localStorage.getItem('originalPreviewColor');
+      
+      if (storedColor) {
+        settingsState.selectedColor = storedColor;
+        localStorage.removeItem('originalPreviewColor');
+      } else if (this.originalPreviewColor !== null) {
+        console.debug('[ThemeManager] Restoring color from memory:', this.originalPreviewColor);
         settingsState.selectedColor = this.originalPreviewColor;
-        this.originalPreviewColor = null;
+        console.debug('[ThemeManager] Color after restore:', settingsState.selectedColor);
+      } else {
+        console.debug('[ThemeManager] No color to restore found');
       }
+      this.originalPreviewColor = null;
+
       if (this.originalPreviewTheme !== null) {
+        console.debug('[ThemeManager] Restoring dark mode:', this.originalPreviewTheme);
         settingsState.DarkMode = this.originalPreviewTheme;
         this.originalPreviewTheme = null;
       }
