@@ -96,11 +96,6 @@
   onDestroy(() => {
     themeUpdates.removeListener(fetchThemes);
   })
-
-  $effect(() => {
-    if (!themes) return;
-    console.log(themes.selectedTheme);
-  })
 </script>
 
 <div
