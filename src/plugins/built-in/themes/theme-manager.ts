@@ -145,6 +145,7 @@ export class ThemeManager {
       // Remove current theme if exists
       if (this.currentTheme) {
         console.debug('[ThemeManager] Removing current theme');
+
         await this.removeTheme(this.currentTheme);
       }
 
@@ -185,8 +186,12 @@ export class ThemeManager {
         settingsState.DarkMode = theme.forceDark;
       }
 
-      if (theme.defaultColour) {
-        console.debug('[ThemeManager] Setting color:', theme.defaultColour);
+      // Use the stored selected color if available, otherwise use the default
+      if (theme.selectedColor) {
+        console.debug('[ThemeManager] Restoring saved color:', theme.selectedColor);
+        settingsState.selectedColor = theme.selectedColor;
+      } else if (theme.defaultColour) {
+        console.debug('[ThemeManager] Using default color:', theme.defaultColour);
         settingsState.selectedColor = theme.defaultColour;
       }
 
@@ -217,6 +222,14 @@ export class ThemeManager {
             URL.revokeObjectURL(value.slice(4, -1)); // Remove url() wrapper
           }
           document.documentElement.style.removeProperty('--' + image.variableName);
+        });
+      }
+
+      if (this.currentTheme) {
+        // Store the current color with the theme before removing it
+        await localforage.setItem(this.currentTheme.id, {
+          ...this.currentTheme,
+          selectedColor: settingsState.selectedColor
         });
       }
 
@@ -489,14 +502,13 @@ export class ThemeManager {
       // Update previousImageVariableNames
       this.previousImageVariableNames = newImageVariableNames;
 
-      // Apply theme settings only if this is a new theme
-      if (!theme.webURL) {
-        if (forceDark !== undefined) {
-          settingsState.DarkMode = forceDark;
-        }
-        if (defaultColour) {
-          settingsState.selectedColor = defaultColour;
-        }
+      // Apply theme settings
+      if (forceDark !== undefined) {
+        settingsState.DarkMode = forceDark;
+      }
+      
+      if (defaultColour) {
+        settingsState.selectedColor = defaultColour;
       }
     } catch (error) {
       console.error('[ThemeManager] Error previewing theme:', error);
@@ -555,14 +567,14 @@ export class ThemeManager {
         this.previousImageVariableNames = newImageVariableNames;
       }
 
-      // Update theme settings only if this is a new theme
-      if (!theme.webURL) {
-        if (theme.forceDark !== undefined) {
-          settingsState.DarkMode = theme.forceDark;
-        }
-        if (theme.defaultColour) {
-          settingsState.selectedColor = theme.defaultColour;
-        }
+      // Always apply dark mode setting
+      if (theme.forceDark !== undefined) {
+        settingsState.DarkMode = theme.forceDark;
+      }
+
+      // Only apply color if this is a new theme
+      if (!theme.webURL && theme.defaultColour) {
+        settingsState.selectedColor = theme.defaultColour;
       }
     } catch (error) {
       console.error('[ThemeManager] Error updating theme preview:', error);
