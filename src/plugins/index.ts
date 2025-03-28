@@ -14,7 +14,6 @@ pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(themesPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
-// Legacy plugin exports
 export { init as Monofile } from './monofile';
 
 export async function initializePlugins(): Promise<void> {

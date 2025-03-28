@@ -2,8 +2,12 @@ import {
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 import documentLoadCSS from "@/css/documentload.scss?inline"
-
 import icon48 from "@/resources/icons/icon-48.png?base64"
+import browser from "webextension-polyfill"
+
+import * as plugins from "@/plugins"
+import { main } from "@/seqta/main"
+
 
 export let MenuOptionsOpen = false
 
@@ -18,9 +22,6 @@ if (document.childNodes[1]) {
     ) ?? false
   init()
 }
-
-import * as plugins from "@/plugins"
-import { main } from "@/seqta/main"
 
 async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA Learn")
@@ -37,16 +38,16 @@ async function init() {
     icon.href = icon48 // Change the icon
 
     try {
+      if (typeof settingsState.onoff === "undefined") {
+        browser.runtime.sendMessage({ type: "setDefaultStorage" })
+      }
+
       await main()
 
       if (settingsState.onoff) {
         // Initialize legacy plugins
-        const legacyPlugins = [plugins.Monofile];
-        legacyPlugins.forEach(plugin => {
-          if (typeof plugin === 'function') {
-            plugin();
-          }
-        });
+        console.log('init legacy plugins')
+        plugins.Monofile()
 
         // Initialize new plugin system
         await plugins.initializePlugins();
