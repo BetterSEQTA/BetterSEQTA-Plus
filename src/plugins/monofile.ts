@@ -585,10 +585,6 @@ export function showConflictPopup() {
 }
 
 export function init() {
-  if (typeof settingsState.onoff === "undefined") {
-    browser.runtime.sendMessage({ type: "setDefaultStorage" })
-  }
-
   const handleDisabled = () => {
     waitForElm(".code", true, 50).then(AppendElementsToDisabledPage)
   }
