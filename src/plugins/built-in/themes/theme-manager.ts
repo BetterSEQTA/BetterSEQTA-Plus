@@ -454,13 +454,15 @@ export class ThemeManager {
     try {
       const { CustomCSS, CustomImages, defaultColour, forceDark } = theme;
 
-      // Store original settings if not already stored
-      if (this.originalPreviewColor === null) {
-        this.originalPreviewColor = settingsState.selectedColor;
-        localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
-      }
-      if (this.originalPreviewTheme === null) {
-        this.originalPreviewTheme = settingsState.DarkMode;
+      // Store original settings only if this is a new theme
+      if (!theme.webURL) {
+        if (this.originalPreviewColor === null) {
+          this.originalPreviewColor = settingsState.selectedColor;
+          localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
+        }
+        if (this.originalPreviewTheme === null) {
+          this.originalPreviewTheme = settingsState.DarkMode;
+        }
       }
 
       // Apply custom CSS
@@ -487,12 +489,14 @@ export class ThemeManager {
       // Update previousImageVariableNames
       this.previousImageVariableNames = newImageVariableNames;
 
-      // Apply theme settings
-      if (forceDark !== undefined) {
-        settingsState.DarkMode = forceDark;
-      }
-      if (defaultColour) {
-        settingsState.selectedColor = defaultColour;
+      // Apply theme settings only if this is a new theme
+      if (!theme.webURL) {
+        if (forceDark !== undefined) {
+          settingsState.DarkMode = forceDark;
+        }
+        if (defaultColour) {
+          settingsState.selectedColor = defaultColour;
+        }
       }
     } catch (error) {
       console.error('[ThemeManager] Error previewing theme:', error);
@@ -505,12 +509,15 @@ export class ThemeManager {
   public async updatePreview(theme: Partial<LoadedCustomTheme>): Promise<void> {
     console.debug('[ThemeManager] Updating theme preview');
     try {
-      // Store original settings if not already stored
-      if (this.originalPreviewColor === null) {
-        this.originalPreviewColor = settingsState.selectedColor;
-      }
-      if (this.originalPreviewTheme === null) {
-        this.originalPreviewTheme = settingsState.DarkMode;
+      // Only store original settings if this is a new theme (not editing)
+      // We can tell it's a new theme if it has no webURL (which is set when a theme is saved/loaded)
+      if (!theme.webURL) {
+        if (this.originalPreviewColor === null) {
+          this.originalPreviewColor = settingsState.selectedColor;
+        }
+        if (this.originalPreviewTheme === null) {
+          this.originalPreviewTheme = settingsState.DarkMode;
+        }
       }
 
       // Apply CSS if changed
@@ -548,12 +555,14 @@ export class ThemeManager {
         this.previousImageVariableNames = newImageVariableNames;
       }
 
-      // Update theme settings
-      if (theme.forceDark !== undefined) {
-        settingsState.DarkMode = theme.forceDark;
-      }
-      if (theme.defaultColour) {
-        settingsState.selectedColor = theme.defaultColour;
+      // Update theme settings only if this is a new theme
+      if (!theme.webURL) {
+        if (theme.forceDark !== undefined) {
+          settingsState.DarkMode = theme.forceDark;
+        }
+        if (theme.defaultColour) {
+          settingsState.selectedColor = theme.defaultColour;
+        }
       }
     } catch (error) {
       console.error('[ThemeManager] Error updating theme preview:', error);

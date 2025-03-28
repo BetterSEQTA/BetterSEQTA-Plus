@@ -15,9 +15,11 @@ const themeManager = ThemeManager.getInstance();
 export function OpenThemeCreator(themeID: string = "") {
   CloseThemeCreator()
 
-  // Store that theme creator is open and save original color
+  // Only store original color if we're not editing an existing theme
   localStorage.setItem('themeCreatorOpen', 'true');
-  localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
+  if (!themeID) {
+    localStorage.setItem('originalPreviewColor', settingsState.selectedColor);
+  }
 
   const width = "310px"
 
