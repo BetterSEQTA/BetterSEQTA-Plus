@@ -51,7 +51,12 @@
     codeEditorFullscreen = !codeEditorFullscreen;
   }
 
-  function toggleAccordion(title: string) {
+  function toggleAccordion(title: string, e: MouseEvent | KeyboardEvent) {
+    // if the target is the fullscreen button return
+    if (e.target instanceof HTMLButtonElement && e.target.classList.contains('fullscreen-toggle')) {
+      return;
+    }
+
     if (closedAccordions.includes(title)) {
       closedAccordions = closedAccordions.filter(t => t !== title);
     } else {
@@ -160,8 +165,8 @@
     <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start' : 'items-center'} py-3">
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        onclick={() => { item.direction === 'vertical' && toggleAccordion(item.title) }}
-        onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title) }}
+        onclick={(e) => { item.direction === 'vertical' && toggleAccordion(item.title, e) }}
+        onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title, e) }}
         class="flex justify-between pr-4 {item.direction === 'vertical' ? 'cursor-pointer w-full select-none' : ''}">
 
         <div>
@@ -173,7 +178,7 @@
           <div class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
             {#if item.type === 'codeEditor'}
               <!-- Fullscreen toggle button -->
-              <button onclick={toggleCodeEditorFullscreen} class="mr-2 text-lg font-IconFamily">
+              <button onclick={toggleCodeEditorFullscreen} class="px-2 mr-2 text-lg font-IconFamily fullscreen-toggle">
                 {'\uebdb'}
               </button>
             {/if}
@@ -251,7 +256,7 @@
 
 <div class='h-screen overflow-y-scroll {$settingsState.DarkMode && "dark"} no-scrollbar'>
   {#if codeEditorFullscreen}
-    <div class="absolute inset-0 bg-white z-10000 dark:bg-zinc-900 dark:text-white">
+    <div class="absolute inset-0 bg-white z-[10000] dark:bg-zinc-900 dark:text-white">
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
