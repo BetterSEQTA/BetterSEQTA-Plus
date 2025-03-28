@@ -2,17 +2,17 @@ import localforage from 'localforage';
 import type { CustomTheme, LoadedCustomTheme } from '@/types/CustomThemes';
 import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import debounce from '@/seqta/utils/debounce';
-import browser from 'webextension-polyfill';
 
 type ThemeContent = {
   id: string;
   name: string;
-  coverImage: string; // base64
+  coverImage?: string; // base64, optional
   description: string;
-  defaultColour: string;
-  CanChangeColour: boolean;
-  CustomCSS: string;
-  hideThemeName: boolean;
+  defaultColour?: string;
+  CanChangeColour?: boolean;
+  CustomCSS?: string;
+  hideThemeName?: boolean;
+  forceDark?: boolean;
   images: { id: string, variableName: string, data: string }[]; // data: base64
 };
 
@@ -350,30 +350,61 @@ export class ThemeManager {
   public async installTheme(themeData: ThemeContent): Promise<void> {
     console.debug('[ThemeManager] Installing theme:', themeData.name);
     try {
-      const strippedCoverImage = this.stripBase64Prefix(themeData.coverImage);
-      const coverImageBlob = this.base64ToBlob(strippedCoverImage);
+      // Validate required fields
+      if (!themeData.id || !themeData.name) {
+        throw new Error('Theme is missing required fields (id or name)');
+      }
 
-      const images = themeData.images.map((image) => ({
-        ...image,
-        blob: this.base64ToBlob(this.stripBase64Prefix(image.data))
-      }));
+      // Handle cover image (optional)
+      let coverImageBlob = null;
+      if (themeData.coverImage) {
+        try {
+          const strippedCoverImage = this.stripBase64Prefix(themeData.coverImage);
+          coverImageBlob = this.base64ToBlob(strippedCoverImage);
+        } catch (e) {
+          console.warn('[ThemeManager] Failed to process cover image:', e);
+          // Continue without cover image
+        }
+      }
 
+      // Handle images (optional)
+      const images = themeData.images?.map((image) => {
+        try {
+          if (!image.id || !image.variableName || !image.data) {
+            console.warn('[ThemeManager] Skipping invalid image:', image);
+            return null;
+          }
+          return {
+            ...image,
+            blob: this.base64ToBlob(this.stripBase64Prefix(image.data))
+          };
+        } catch (e) {
+          console.warn('[ThemeManager] Failed to process image:', e);
+          return null;
+        }
+      }).filter(img => img !== null) ?? [];
+
+      // Create theme with defaults for optional fields
       const theme: LoadedCustomTheme = {
-        ...themeData,
+        id: themeData.id,
+        name: themeData.name,
+        description: themeData.description || '',
         webURL: themeData.id,
         coverImage: coverImageBlob,
-        CustomImages: images.map((image) => ({
-          id: image.id,
-          variableName: image.variableName,
-          blob: image.blob
-        })),
-        allowBackgrounds: true, // Default to allowing backgrounds
-        isEditable: false // Downloaded themes are not editable by default
+        CustomImages: images,
+        CustomCSS: themeData.CustomCSS || '',
+        defaultColour: themeData.defaultColour || 'rgba(0, 123, 255, 1)',
+        CanChangeColour: themeData.CanChangeColour ?? true,
+        allowBackgrounds: true,
+        isEditable: false,
+        hideThemeName: themeData.hideThemeName ?? false,
+        forceDark: themeData.forceDark
       };
 
       await this.saveTheme(theme);
     } catch (error) {
       console.error('[ThemeManager] Error installing theme:', error);
+      throw error; // Re-throw to handle in UI
     }
   }
 
