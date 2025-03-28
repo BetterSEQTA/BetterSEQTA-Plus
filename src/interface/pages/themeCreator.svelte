@@ -75,10 +75,8 @@
         }))
       }
 
-      if (tempTheme) {
-        theme = loadedTheme
-        themeLoaded = true
-      }
+      theme = loadedTheme
+      themeLoaded = true
     } else {
       themeLoaded = true
     }
