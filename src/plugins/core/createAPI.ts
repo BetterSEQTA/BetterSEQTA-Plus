@@ -43,6 +43,7 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
   let settings: { [K in keyof T]: T[K]['default'] };
+  const storageListeners = new Set<(changes: { [key: string]: any }, area: string) => void>();
 
   // Initialize settings with defaults
   settings = Object.entries(plugin.settings).reduce((acc, [key, setting]) => {
@@ -69,7 +70,7 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
   })();
 
   // Listen for storage changes
-  browser.storage.onChanged.addListener((changes, area) => {
+  const handleStorageChange = (changes: { [key: string]: any }, area: string) => {
     if (area === 'local' && changes[storageKey]) {
       const newValue = changes[storageKey].newValue;
       if (newValue) {
@@ -80,7 +81,9 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
         });
       }
     }
-  });
+  };
+  browser.storage.onChanged.addListener(handleStorageChange);
+  storageListeners.add(handleStorageChange);
 
   // Create a proxy to handle direct property access
   const proxy = new Proxy(settings, {
@@ -91,13 +94,13 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
             listeners.set(key, new Set());
           }
           listeners.get(key)!.add(callback);
+          return {
+            unregister: () => {
+              listeners.get(key)?.delete(callback);
+            }
+          };
         };
-      }
-      if (prop === 'offChange') {
-        return (key: keyof T, callback: (value: any) => void) => {
-          listeners.get(key)?.delete(callback);
-        };
-      }
+      }      
       if (prop === 'loaded') {
         return loaded;
       }
@@ -125,6 +128,7 @@ function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in ke
   const prefix = `plugin.${pluginId}.storage.`;
   const cache: Record<string, any> = {};
   const listeners = new Map<string, Set<(value: any) => void>>();
+  const storageListeners = new Set<(changes: { [key: string]: any }, area: string) => void>();
   
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
@@ -144,7 +148,7 @@ function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in ke
   })();
   
   // Listen for storage changes
-  browser.storage.onChanged.addListener((changes, area) => {
+  const handleStorageChange = (changes: { [key: string]: any }, area: string) => {
     if (area === 'local') {
       Object.entries(changes).forEach(([key, change]) => {
         if (key.startsWith(prefix)) {
@@ -156,7 +160,9 @@ function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in ke
         }
       });
     }
-  });
+  };
+  browser.storage.onChanged.addListener(handleStorageChange);
+  storageListeners.add(handleStorageChange);
   
   // Create the proxy for direct property access
   return new Proxy(cache, {
@@ -167,6 +173,11 @@ function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in ke
             listeners.set(key as string, new Set());
           }
           listeners.get(key as string)!.add(callback);
+          return {
+            unregister: () => {
+              listeners.get(key as string)?.delete(callback);
+            }
+          };
         };
       }
       if (prop === 'offChange') {
@@ -200,12 +211,28 @@ function createStorageAPI<T = any>(pluginId: string): StorageAPI<T> & { [K in ke
 
 function createEventsAPI(pluginId: string): EventsAPI {
   const prefix = `plugin.${pluginId}.`;
+  const eventListeners = new Map<string, Set<{ callback: (...args: any[]) => void, listener: EventListener }>>();
   
   return {
     on: (event, callback) => {
-      document.addEventListener(prefix + event, ((e: CustomEvent) => {
+      const fullEventName = prefix + event;
+      const listener = ((e: CustomEvent) => {
         callback(...(e.detail || []));
-      }) as EventListener);
+      }) as EventListener;
+      
+      document.addEventListener(fullEventName, listener);
+      
+      if (!eventListeners.has(event)) {
+        eventListeners.set(event, new Set());
+      }
+      eventListeners.get(event)!.add({ callback, listener });
+      
+      return {
+        unregister: () => {
+          document.removeEventListener(fullEventName, listener);
+          eventListeners.get(event)?.delete({ callback, listener });
+        }
+      };
     },
     emit: (event, ...args) => {
       document.dispatchEvent(
