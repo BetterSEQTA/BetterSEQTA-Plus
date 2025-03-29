@@ -1,12 +1,10 @@
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
-import { enableAnimatedBackground } from "@/seqta/utils/CreateEnable/EnableAnimatedBackground";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
-import { updateBgDurations } from "./Animation";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -42,7 +40,6 @@ async function getUserInfo() {
 
 export async function AddBetterSEQTAElements() {
   if (settingsState.onoff) {    
-    initializeSettings();
     if (settingsState.DarkMode) {
       document.documentElement.classList.add('dark');
     }
@@ -74,11 +71,6 @@ export async function AddBetterSEQTAElements() {
   addExtensionSettings();
   await createSettingsButton();
   setupSettingsButton();
-}
-
-function initializeSettings() {
-  enableAnimatedBackground();
-  updateBgDurations();
 }
 
 function createHomeButton(fragment: DocumentFragment, menuList: HTMLElement) {

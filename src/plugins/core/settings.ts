@@ -37,9 +37,9 @@ export function BooleanSetting(options: BooleanSettingOptions): PropertyDecorato
       proto.settings = {};
     }
     
-    // Add the setting to the prototype's settings object
+    // Add the setting to the prototype's settings object with const assertion
     proto.settings[propertyKey] = {
-      type: 'boolean',
+      type: 'boolean' as const,
       ...options
     };
   };
@@ -53,9 +53,9 @@ export function StringSetting(options: StringSettingOptions): PropertyDecorator 
       proto.settings = {};
     }
     
-    // Add the setting to the prototype's settings object
+    // Add the setting to the prototype's settings object with const assertion
     proto.settings[propertyKey] = {
-      type: 'string',
+      type: 'string' as const,
       ...options
     };
   };
@@ -69,9 +69,9 @@ export function NumberSetting(options: NumberSettingOptions): PropertyDecorator 
       proto.settings = {};
     }
     
-    // Add the setting to the prototype's settings object
+    // Add the setting to the prototype's settings object with const assertion
     proto.settings[propertyKey] = {
-      type: 'number',
+      type: 'number' as const,
       ...options
     };
   };
@@ -85,9 +85,9 @@ export function SelectSetting<T extends string>(options: SelectSettingOptions<T>
       proto.settings = {};
     }
     
-    // Add the setting to the prototype's settings object
+    // Add the setting to the prototype's settings object with const assertion
     proto.settings[propertyKey] = {
-      type: 'select',
+      type: 'select' as const,
       ...options
     };
   };
@@ -96,13 +96,13 @@ export function SelectSetting<T extends string>(options: SelectSettingOptions<T>
 // Base plugin class that handles settings
 export abstract class BasePlugin<T extends PluginSettings = PluginSettings> {
   // The settings property will be populated by decorators
-  settings: T = {} as T;
+  settings!: T;
   
   constructor() {
     // Copy settings from the prototype to the instance
     // This ensures that each instance has its own settings object
     if (this.constructor.prototype.settings) {
-      this.settings = { ...this.constructor.prototype.settings };
+      this.settings = { ...this.constructor.prototype.settings } as T;
     }
   }
 } 

@@ -1,0 +1,126 @@
+--- a/Users/sethburkart/Documents/Coding/betterseqta-plus/src/plugins/core/settings.ts
++++ b/Users/sethburkart/Documents/Coding/betterseqta-plus/src/plugins/core/settings.ts
+@@ -2,7 +2,7 @@
+ 
+ // Base interfaces for our settings
+ interface BaseSettingOptions {
+-  title: string;
++  readonly title: string; // Mark as readonly where appropriate
+   description?: string;
+ }
+ 
+@@ -11,21 +11,21 @@
+ }
+ 
+ interface StringSettingOptions extends BaseSettingOptions {
+-  default: string;
++  readonly default: string;
+   maxLength?: number;
+   pattern?: string;
+ }
+ 
+ interface NumberSettingOptions extends BaseSettingOptions {
+-  default: number;
++  readonly default: number;
+   min?: number;
+   max?: number;
+   step?: number;
+ }
+ 
+ interface SelectSettingOptions<T extends string> extends BaseSettingOptions {
+-  default: T;
+-  options: readonly T[];
++  readonly default: T;
++  readonly options: readonly T[];
+ }
+ 
+ // The actual decorators
+@@ -34,14 +34,16 @@
+     // Ensure the settings property exists on the constructor's prototype
+     const proto = target.constructor.prototype;
+     if (!proto.hasOwnProperty('settings')) {
+-      proto.settings = {};
++      // Initialize with a base type that can be extended
++      Object.defineProperty(proto, 'settings', {
++        value: {},
++        writable: true, // Allows adding properties
++        configurable: true,
++        enumerable: true
++      });
+     }
+-    
++
+     // Add the setting to the prototype's settings object with const assertion
+     proto.settings[propertyKey] = {
+       type: 'boolean' as const,
+       ...options
+     };
+-  };
+-}
+-
+-export function StringSetting(options: StringSettingOptions): PropertyDecorator {
+-  return (target: Object, propertyKey: string | symbol) => {
+-    // Ensure the settings property exists on the constructor's prototype
+-    const proto = target.constructor.prototype;
+-    if (!proto.hasOwnProperty('settings')) {
+-      proto.settings = {};
+-    }
+-    
+-    // Add the setting to the prototype's settings object with const assertion
+-    proto.settings[propertyKey] = {
+-      type: 'string' as const,
+-      ...options
+-    };
+   };
+ }
+ 
+@@ -50,14 +52,16 @@
+     // Ensure the settings property exists on the constructor's prototype
+     const proto = target.constructor.prototype;
+     if (!proto.hasOwnProperty('settings')) {
+-      proto.settings = {};
++       Object.defineProperty(proto, 'settings', {
++        value: {},
++        writable: true,
++        configurable: true,
++        enumerable: true
++      });
+     }
+-    
++
+     // Add the setting to the prototype's settings object with const assertion
+     proto.settings[propertyKey] = {
+       type: 'number' as const,
+       ...options
+     };
+-  };
+-}
+-
+-export function SelectSetting<T extends string>(options: SelectSettingOptions<T>): PropertyDecorator {
+-  return (target: Object, propertyKey: string | symbol) => {
+-    // Ensure the settings property exists on the constructor's prototype
+-    const proto = target.constructor.prototype;
+-    if (!proto.hasOwnProperty('settings')) {
+-      proto.settings = {};
+-    }
+-    
+-    // Add the setting to the prototype's settings object with const assertion
+-    proto.settings[propertyKey] = {
+-      type: 'select' as const,
+-      ...options
+-    };
+   };
+ }
+ 
+ // Base plugin class that handles settings
+ export abstract class BasePlugin<T extends PluginSettings = PluginSettings> {
+   // The settings property will be populated by decorators
+-  settings!: T;
+-  
++  // Keep the instance property and constructor logic as is,
++  // as changing it would require changing animated-background/index.ts
++  settings!: T; // Use definite assignment assertion
++
+   constructor() {
+     // Copy settings from the prototype to the instance
+     // This ensures that each instance has its own settings object

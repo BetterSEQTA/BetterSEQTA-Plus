@@ -41,7 +41,7 @@ export type PluginSettings = {
 }
 
 // Helper type to extract the actual value type from a setting
-type SettingValue<T extends PluginSetting> = T extends BooleanSetting ? boolean :
+export type SettingValue<T extends PluginSetting> = T extends BooleanSetting ? boolean :
   T extends StringSetting ? string :
   T extends NumberSetting ? number :
   T extends SelectSetting<infer O> ? O :
@@ -50,7 +50,7 @@ type SettingValue<T extends PluginSetting> = T extends BooleanSetting ? boolean 
 export type SettingsAPI<T extends PluginSettings> = {
   [K in keyof T]: SettingValue<T[K]>;
 } & {
-  onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
+  onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => { unregister: () => void };
   offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
   loaded: Promise<void>; // Promise that resolves when settings are loaded
 }
@@ -96,6 +96,7 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   description: string;
   version: string;
   settings: T;
+  styles?: string;  // Optional CSS styles for the plugin
   disableToggle?: boolean;  // Optional flag to show/hide the plugin's enable/disable toggle in settings
   run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<(() => void)>;
 }
