@@ -6,7 +6,7 @@ import browser from 'webextension-polyfill';
 function createSEQTAAPI(): SEQTAAPI {
   return {
     onMount: (selector, callback) => {
-      eventManager.register(
+      return eventManager.register(
         `${selector}Added`,
         {
           customCheck: (element) => element.matches(selector),
@@ -22,11 +22,20 @@ function createSEQTAAPI(): SEQTAAPI {
       return path.split('/')[0];
     },
     onPageChange: (callback) => {
-      window.addEventListener('hashchange', () => {
+      const handler = () => {
         const page = window.location.hash.split('?page=/')[1] || '';
         callback(page.split('/')[0]);
-      });
-    },
+      };
+    
+      window.addEventListener('hashchange', handler);
+    
+      // Return an unregister function
+      return {
+        unregister: () => {
+          window.removeEventListener('hashchange', handler);
+        }
+      };
+    }
   };
 }
 

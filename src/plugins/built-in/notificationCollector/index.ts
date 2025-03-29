@@ -1,29 +1,18 @@
 import type { Plugin } from '../../core/types';
-import { BasePlugin, BooleanSetting } from '../../core/settings';
 
 interface NotificationCollectorStorage {
   lastNotificationCount: number;
   lastCheckedTime: string;
 }
 
-class NotificationCollectorPluginClass extends BasePlugin {
-  @BooleanSetting({
-    default: true,
-    title: "Notification Collector",
-    description: "Uncaps the 9+ limit for notifications, showing the real number.",
-  })
-  enabled!: boolean;
-}
-
-// Create an instance to extract settings
-const settingsInstance = new NotificationCollectorPluginClass();
-
-const notificationCollectorPlugin: Plugin<typeof settingsInstance.settings, NotificationCollectorStorage> = {
+const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
   id: 'notificationCollector',
   name: 'Notification Collector',
   description: 'Collects and displays SEQTA notifications',
   version: '1.0.0',
-  settings: settingsInstance.settings,
+  settings: {},
+  disableToggle: true,
+
   run: async (api) => {
     let pollInterval: number | null = null;
 
@@ -80,30 +69,21 @@ const notificationCollectorPlugin: Plugin<typeof settingsInstance.settings, Noti
         pollInterval = null;
         const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
         if (alertDiv) {
-          alertDiv.textContent = "9+";
+          if (api.storage.lastNotificationCount > 9) {
+            alertDiv.textContent = "9+";
+          } else {
+            alertDiv.textContent = api.storage.lastNotificationCount.toString();
+          }
         }
       }
     };
 
-    if (api.settings.enabled) {
-      api.seqta.onMount(".notifications__bubble___1EkSQ", (_) => {
-        startPolling();
-      });
-    }
-
-    const enabledCallback = (value: any) => {
-      if (value) {
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
-
-    api.settings.onChange('enabled', enabledCallback);
+    api.seqta.onMount(".notifications__bubble___1EkSQ", (_) => {
+      startPolling();
+    });
 
     return () => {
       stopPolling();
-      api.settings.offChange('enabled', enabledCallback);
     };
   }
 };

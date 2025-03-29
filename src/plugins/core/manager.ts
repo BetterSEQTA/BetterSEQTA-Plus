@@ -1,5 +1,16 @@
 import type { Plugin, PluginSettings } from './types';
 import { createPluginAPI } from './createAPI';
+import browser from 'webextension-polyfill';
+
+interface PluginSettingsStorage {
+  enabled?: boolean;
+  [key: string]: any;
+}
+
+interface StorageChange<T = any> {
+  oldValue?: T;
+  newValue?: T;
+}
 
 export class PluginManager {
   private static instance: PluginManager;
@@ -9,7 +20,9 @@ export class PluginManager {
   private cleanupFunctions: Map<string, () => void> = new Map();
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    this.setupPluginStateListener();
+  }
 
   public static getInstance(): PluginManager {
     if (!PluginManager.instance) {
@@ -65,6 +78,17 @@ export class PluginManager {
 
     try {
       const api = createPluginAPI(plugin);
+      
+      // Check if plugin is enabled before starting
+      if (plugin.disableToggle) {
+        const settings = await browser.storage.local.get(`plugin.${pluginId}.settings`);
+        const pluginSettings = settings[`plugin.${pluginId}.settings`] as PluginSettingsStorage | undefined;
+        const enabled = pluginSettings?.enabled ?? true;
+        if (!enabled) {
+          console.info(`Plugin "${pluginId}" is disabled, skipping initialization`);
+          return;
+        }
+      }
       
       // Wait for both settings and storage to be loaded before starting the plugin
       await Promise.all([
@@ -145,9 +169,21 @@ export class PluginManager {
         }];
       });
 
+      if (plugin.disableToggle) {
+        settingsEntries.push([
+          'enabled', {
+            id: 'enabled',
+            title: plugin.name,
+            description: plugin.description,
+            type: 'boolean',
+            default: true
+          }
+        ])
+      }
       return {
         pluginId: id,
         name: plugin.name,
+        description: plugin.description,
         settings: Object.fromEntries(settingsEntries)
       };
     });
@@ -176,5 +212,37 @@ export class PluginManager {
     if (listeners) {
       listeners.delete(callback);
     }
+  }
+
+  // Add handler for plugin enable/disable state changes
+  private async handlePluginStateChange(pluginId: string, enabled: boolean): Promise<void> {
+    if (enabled) {
+      await this.startPlugin(pluginId);
+    } else {
+      await this.stopPlugin(pluginId);
+    }
+  }
+
+  // Add listener for plugin settings changes
+  private setupPluginStateListener(): void {
+    browser.storage.onChanged.addListener((changes: { [key: string]: StorageChange }, area: string) => {
+      if (area !== 'local') return;
+      
+      for (const [key, change] of Object.entries(changes)) {
+        const match = key.match(/^plugin\.(.+)\.settings$/);
+        if (!match) continue;
+        
+        const pluginId = match[1];
+        const plugin = this.plugins.get(pluginId);
+        if (!plugin?.disableToggle) continue;
+        
+        const enabled = (change.newValue as PluginSettingsStorage)?.enabled ?? true;
+        const wasEnabled = (change.oldValue as PluginSettingsStorage)?.enabled ?? true;
+        
+        if (enabled !== wasEnabled) {
+          this.handlePluginStateChange(pluginId, enabled);
+        }
+      }
+    });
   }
 } 
