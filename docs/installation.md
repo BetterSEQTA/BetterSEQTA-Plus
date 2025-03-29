@@ -6,9 +6,8 @@ This guide will walk you through the process of installing and setting up Better
 
 Before you begin, make sure you have the following installed:
 
-- [Node.js](https://nodejs.org/) (v16 or higher)
 - [npm](https://www.npmjs.com/) (v7 or higher) or [Bun](https://bun.sh/) (recommended)
-- A modern web browser (Chrome, Firefox, or Edge)
+- A modern web browser (Chrome, Firefox, Edge, etc.)
 
 ## Installation Methods
 
@@ -51,7 +50,7 @@ cd betterseqta-plus
 Using npm:
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 Using Bun (recommended):
@@ -60,7 +59,7 @@ Using Bun (recommended):
 bun install
 ```
 
-### 3. Set Up Environment Variables
+### 3. Set Up Environment Variables - Only required for pushing to extension stores from the command line
 
 Copy the example environment file:
 
