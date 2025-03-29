@@ -66,12 +66,7 @@ export interface StorageAPI<T = any> {
   /**
    * Register a callback to be called when a storage value changes
    */
-  onChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => void;
-  
-  /**
-   * Remove a previously registered callback
-   */
-  offChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => void;
+  onChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => { unregister: () => void };
   
   /**
    * Promise that resolves when storage values are loaded
@@ -84,7 +79,7 @@ export type TypedStorageAPI<T> = StorageAPI<T> & {
 }
 
 export interface EventsAPI {
-  on: (event: string, callback: (...args: any[]) => void) => void;
+  on: (event: string, callback: (...args: any[]) => void) => { unregister: () => void };
   emit: (event: string, ...args: any[]) => void;
 }
 
