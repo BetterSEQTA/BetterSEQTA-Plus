@@ -3,14 +3,11 @@ import { updateAllColors } from '@/seqta/ui/colors/Manager';
 
 
 import { addShortcuts } from "@/seqta/utils/Adders/AddShortcuts";
-import { CreateBackground } from "@/seqta/utils/CreateEnable/CreateBackground";
 import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
-import { RemoveBackground } from "@/seqta/utils/DisableRemove/RemoveBackground";
 import { RemoveShortcutDiv } from "@/seqta/utils/DisableRemove/RemoveShortcutDiv";
 
 
-import { updateBgDurations } from '@/seqta/ui/Animation';
 import browser from 'webextension-polyfill';
 import type { CustomShortcut } from '@/types/storage';
 
@@ -25,8 +22,6 @@ export class StorageChangeHandler {
     settingsState.register('onoff', this.handleOnOffChange.bind(this));
     settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
     settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
-    settingsState.register('bksliderinput', updateBgDurations.bind(this));
-    settingsState.register('animatedbk', this.handleAnimatedBkChange.bind(this));
     settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
     settingsState.register('subjectfilters', FilterUpcomingAssessments.bind(this));
   }
@@ -81,15 +76,6 @@ export class StorageChangeHandler {
 
     addShortcuts(addedShortcuts);
     RemoveShortcutDiv(removedShortcuts);
-  }
-
-  private handleAnimatedBkChange(newValue: boolean) {
-    if (newValue) {
-      CreateBackground();
-    } else {
-      RemoveBackground();
-      document.getElementById('container')!.style.background = 'var(--background-secondary)';
-    }
   }
 
   private handleTransparencyEffectsChange(newValue: boolean) {

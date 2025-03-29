@@ -19,6 +19,7 @@ export class PluginManager {
   private eventBacklog: Map<string, any[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
+  private styleElements: Map<string, HTMLStyleElement> = new Map();
 
   private constructor() {
     this.setupPluginStateListener();
@@ -89,6 +90,14 @@ export class PluginManager {
           return;
         }
       }
+
+      // Inject plugin styles if provided
+      if (plugin.styles) {
+        const styleElement = document.createElement('style');
+        styleElement.textContent = plugin.styles;
+        document.head.appendChild(styleElement);
+        this.styleElements.set(pluginId, styleElement);
+      }
       
       // Wait for both settings and storage to be loaded before starting the plugin
       await Promise.all([
@@ -123,6 +132,13 @@ export class PluginManager {
   }
 
   public async stopPlugin(pluginId: string): Promise<void> {
+    // Remove plugin styles
+    const styleElement = this.styleElements.get(pluginId);
+    if (styleElement) {
+      styleElement.remove();
+      this.styleElements.delete(pluginId);
+    }
+
     const cleanup = this.cleanupFunctions.get(pluginId);
     if (cleanup) {
       cleanup();
