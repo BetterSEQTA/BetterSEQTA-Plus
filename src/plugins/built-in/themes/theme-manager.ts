@@ -116,7 +116,7 @@ export class ThemeManager {
     console.debug('[ThemeManager] Cleaning up resources');
     try {
       if (this.currentTheme) {
-        await this.removeTheme(this.currentTheme);
+        await this.removeTheme(this.currentTheme, false);
       }
     } catch (error) {
       console.error('[ThemeManager] Error during cleanup:', error);
@@ -203,7 +203,7 @@ export class ThemeManager {
   /**
    * Remove theme and restore original settings
    */
-  private async removeTheme(theme: CustomTheme): Promise<void> {
+  private async removeTheme(theme: CustomTheme, clearSelectedTheme: boolean = true): Promise<void> {
     console.debug('[ThemeManager] Removing theme:', theme.name);
     try {
       // Remove custom CSS
@@ -246,7 +246,9 @@ export class ThemeManager {
       }
 
       this.currentTheme = null;
-      settingsState.selectedTheme = '';
+      if (clearSelectedTheme) {
+        settingsState.selectedTheme = '';
+      }
 
     } catch (error) {
       console.error('[ThemeManager] Error removing theme:', error);
@@ -433,7 +435,16 @@ export class ThemeManager {
         return;
       }
 
-      const { CustomImages = [], coverImage, ...themeWithoutImages } = theme;
+      // Extract only the fields we want to share
+      const {
+        CustomImages = [],
+        coverImage,
+        webURL,
+        isEditable,
+        selectedColor,
+        allowBackgrounds,
+        ...themeBasics
+      } = theme;
 
       // Convert images to base64
       const finalImages = await Promise.all(CustomImages.map(async (image) => ({
@@ -445,9 +456,9 @@ export class ThemeManager {
       // Convert cover image to base64
       const coverImageBase64 = coverImage ? await this.blobToBase64(coverImage) : null;
 
-      // Create shareable theme data
+      // Create shareable theme data with only necessary fields
       const shareableTheme = {
-        ...themeWithoutImages,
+        ...themeBasics,
         images: finalImages,
         coverImage: coverImageBase64
       };
