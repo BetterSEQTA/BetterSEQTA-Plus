@@ -5,9 +5,9 @@ class TestPluginClass extends BasePlugin {
   @BooleanSetting({
     default: true,
     title: "Test Plugin",
-    description: "A test plugin for BetterSEQTA+",
+    description: "Some random setting",
   })
-  enabled!: boolean;
+  someSetting!: boolean;
 }
 
 const settingsInstance = new TestPluginClass();
@@ -22,9 +22,14 @@ const testPlugin: Plugin<typeof settingsInstance.settings> = {
   run: async (api) => {
     console.log('Test plugin running');
 
-    api.seqta.onPageChange((page) => {
+    const { unregister } = api.seqta.onPageChange((page) => {
       console.log('Page changed to', page);
     });
+
+    return () => {
+      console.log('Test plugin stopped');
+      unregister();
+    }
   }
 };
 

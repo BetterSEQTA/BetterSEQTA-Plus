@@ -65,7 +65,6 @@ const DefaultValues: SettingsState = {
   bksliderinput: "50",
   transparencyEffects: false,
   lessonalert: true,
-  notificationcollector: true,
   defaultmenuorder: [],
   menuitems: {
     assessments: { toggle: true },

@@ -2,53 +2,32 @@ import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import type { Plugin } from '../../core/types';
 import { convertTo12HourFormat } from '@/seqta/utils/convertTo12HourFormat';
 import { waitForElm } from '@/seqta/utils/waitForElm';
-import { BasePlugin, BooleanSetting } from '../../core/settings';
 
-// Define only the typed settings - no need for redundant interface
-class TimetablePluginClass extends BasePlugin {
-  @BooleanSetting({
-    default: true,
-    title: "Timetable Enhancer",
-    description: "Adds extra features to the timetable view."
-  })
-  enabled!: boolean;
-}
-
-// Create an instance to extract settings
-const settingsInstance = new TimetablePluginClass();
-
-const timetablePlugin: Plugin<typeof settingsInstance.settings> = {
+const timetablePlugin: Plugin<{}, {}> = {
   id: 'timetable',
   name: 'Timetable Enhancer',
   description: 'Adds extra features to the timetable view',
   version: '1.0.0',
-  settings: settingsInstance.settings,
+  settings: {},
+  disableToggle: true,
+
   run: async (api) => {
-    if (api.settings.enabled) {
-      api.seqta.onMount('.timetablepage', handleTimetable)
-    }
-    
-    const enabledCallback = (value: any) => {
-      if (value) {
-        api.seqta.onMount('.timetablepage', handleTimetable)
-      } else {
-        const timetablePage = document.querySelector('.timetablepage')
-        if (timetablePage) {
-          const zoomControls = document.querySelector('.timetable-zoom-controls')
-          if (zoomControls) zoomControls.remove()
-          
-          const hideControls = document.querySelector('.timetable-hide-controls')
-          if (hideControls) hideControls.remove()
-          
-          resetTimetableStyles()
-        }
-      }
-    }
-    
-    api.settings.onChange('enabled', enabledCallback)
-    
+    const { unregister } = api.seqta.onMount('.timetablepage', handleTimetable)
+        
     return () => {
-      api.settings.offChange('enabled', enabledCallback)
+      // Call the unregister function to remove the mount listener
+      unregister();
+      
+      const timetablePage = document.querySelector('.timetablepage')
+      if (timetablePage) {
+        const zoomControls = document.querySelector('.timetable-zoom-controls')
+        if (zoomControls) zoomControls.remove()
+        
+        const hideControls = document.querySelector('.timetable-hide-controls')
+        if (hideControls) hideControls.remove()
+        
+        resetTimetableStyles()
+      }
     }
   }
 };

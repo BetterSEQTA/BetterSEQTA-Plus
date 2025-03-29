@@ -25,6 +25,7 @@
   interface Plugin {
     pluginId: string;
     name: string;
+    description: string;
     settings: Record<string, PluginSetting>;
   }
 
@@ -77,6 +78,23 @@
     
     pluginSettings.forEach(plugin => {
       if (Object.keys(plugin.settings).length === 0) return;
+      
+      // Add enable/disable toggle if plugin has disableToggle set
+      if ((plugin as any).disableToggle) {
+        entries.push({
+          title: `Enable ${plugin.name}`,
+          description: `${plugin.description}`,
+          id: getPluginSettingId(plugin.pluginId, 'enabled'),
+          Component: Switch,
+          props: {
+            state: pluginSettingsValues[plugin.pluginId]?.enabled ?? true,
+            onChange: (value: boolean) => {
+              updatePluginSetting(plugin.pluginId, 'enabled', value);
+              // The plugin manager will handle the actual enabling/disabling
+            }
+          }
+        });
+      }
       
       Object.entries(plugin.settings).forEach(([key, setting]) => {
         const id = getPluginSettingId(plugin.pluginId, key);

@@ -5,8 +5,6 @@ import { updateAllColors } from '@/seqta/ui/colors/Manager';
 import { addShortcuts } from "@/seqta/utils/Adders/AddShortcuts";
 import { CreateBackground } from "@/seqta/utils/CreateEnable/CreateBackground";
 import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
-import { disableNotificationCollector } from "@/seqta/utils/DisableRemove/DisableNotificationCollector";
-import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { RemoveBackground } from "@/seqta/utils/DisableRemove/RemoveBackground";
 import { RemoveShortcutDiv } from "@/seqta/utils/DisableRemove/RemoveShortcutDiv";
@@ -27,7 +25,6 @@ export class StorageChangeHandler {
     settingsState.register('onoff', this.handleOnOffChange.bind(this));
     settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
     settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
-    settingsState.register('notificationcollector', this.handleNotificationCollectorChange.bind(this));
     settingsState.register('bksliderinput', updateBgDurations.bind(this));
     settingsState.register('animatedbk', this.handleAnimatedBkChange.bind(this));
     settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
@@ -41,14 +38,6 @@ export class StorageChangeHandler {
   private handleOnOffChange(newValue: boolean) {
     if (newValue) return;
     browser.runtime.sendMessage({ type: 'reloadTabs' });
-  }
-
-  private handleNotificationCollectorChange(newValue: boolean) {
-    if (newValue) {
-      enableNotificationCollector();
-    } else {
-      disableNotificationCollector();
-    }
   }
 
   private handleCustomShortcutsChange(newValue: CustomShortcut[], oldValue: CustomShortcut[]) {

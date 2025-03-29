@@ -25,7 +25,6 @@ export interface SettingsState {
     welcome: ToggleItem;
   };
   menuorder: any[];
-  notificationcollector: boolean;
   onoff: boolean;
   selectedColor: string;
   originalSelectedColor: string;

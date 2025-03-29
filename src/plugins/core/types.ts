@@ -56,10 +56,10 @@ export type SettingsAPI<T extends PluginSettings> = {
 }
 
 export interface SEQTAAPI {
-  onMount: (selector: string, callback: (element: Element) => void) => void;
+  onMount: (selector: string, callback: (element: Element) => void) => { unregister: () => void };
   getFiber: (selector: string) => ReactFiber;
   getCurrentPage: () => string;
-  onPageChange: (callback: (page: string) => void) => void;
+  onPageChange: (callback: (page: string) => void) => { unregister: () => void };
 }
 
 export interface StorageAPI<T = any> {
@@ -101,5 +101,6 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   description: string;
   version: string;
   settings: T;
-  run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<() => void>;
+  disableToggle?: boolean;  // Optional flag to show/hide the plugin's enable/disable toggle in settings
+  run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<(() => void)>;
 }

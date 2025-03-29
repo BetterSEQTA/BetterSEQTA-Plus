@@ -19,8 +19,6 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement"
 
 import { convertTo12HourFormat } from "../convertTo12HourFormat"
 
-import { enableNotificationCollector } from "@/seqta/utils/CreateEnable/EnableNotificationCollector"
-
 let LessonInterval: any
 let currentSelectedDate = new Date()
 
@@ -247,10 +245,6 @@ export async function loadHomePage() {
         }
         noticeContainer.classList.remove("loading")
       }
-    }
-  
-    if (settingsState.notificationcollector) {
-      enableNotificationCollector()
     }
   
     return cleanup
