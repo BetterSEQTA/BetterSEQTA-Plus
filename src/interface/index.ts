@@ -1,25 +1,8 @@
 import "./index.css"
-import { mount } from "svelte"
-import type { ComponentType } from "svelte"
 import Settings from "./pages/settings.svelte"
 import IconFamily from '@/resources/fonts/IconFamily.woff'
 import browser from "webextension-polyfill"
-
-export default function renderSvelte(
-  Component: ComponentType | any,
-  mountPoint: ShadowRoot | HTMLElement,
-  props: Record<string, any> = {},
-) {
-  const app = mount(Component, {
-    target: mountPoint,
-    props: {
-      standalone: true,
-      ...props,
-    },
-  })
-
-  return app
-}
+import renderSvelte from "./main"
 
 function InjectCustomIcons() {
   console.info('[BetterSEQTA+] Injecting Icons')

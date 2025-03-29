@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite';
-import { join, resolve } from 'path';
-
+import path, { join, resolve } from 'path';
+import fs from 'fs';
 import { updateManifestPlugin } from './lib/patchPackage';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 import ClosePlugin from './lib/closePlugin';
 
-import react from '@vitejs/plugin-react';
 import million from "million/compiler";
 //import MillionLint from '@million/lint';
 
@@ -20,16 +19,17 @@ import { opera } from './src/manifests/opera';
 import { safari } from './src/manifests/safari';
 import { crx } from '@crxjs/vite-plugin';
 
+import touchGlobalCSSPlugin from './lib/touchGlobalCSS';
 const targets: BuildTarget[] = [
   chrome, brave, edge, firefox, opera, safari
 ]
 
-const mode = process.env.MODE || 'chrome';
+const mode = process.env.MODE || 'chrome'; // Check the environment variable to determine which build type to use.
+//const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
 
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
-    react(),
     svelte({
       emitCss: false
     }),
@@ -40,6 +40,7 @@ export default defineConfig(({ command }) => ({
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
     }),
     updateManifestPlugin(),
+    touchGlobalCSSPlugin(),
     ...(command === 'build' ? [ClosePlugin()] : [])
   ],
   root: resolve(__dirname, './src'),
@@ -73,6 +74,7 @@ export default defineConfig(({ command }) => ({
     outDir: resolve(__dirname, 'dist', mode),
     emptyOutDir: false,
     minify: false,
+    //sourcemap: sourcemap,
     rollupOptions: {
       input: {
         settings: join(__dirname, 'src', 'interface', 'index.html'),
