@@ -204,7 +204,8 @@ export class PluginManager {
         pluginId: id,
         name: plugin.name,
         description: plugin.description,
-        settings: Object.fromEntries(settingsEntries)
+        settings: Object.fromEntries(settingsEntries),
+        disableToggle: plugin.disableToggle
       };
     });
   }

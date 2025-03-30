@@ -34,14 +34,6 @@
 
   const pluginSettings = getAllPluginSettings() as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
-  let nextPluginSettingId = 1000;
-  const pluginSettingMap = new Map<number, {pluginId: string, settingKey: string}>();
-
-  function getPluginSettingId(pluginId: string, settingKey: string): number {
-    const id = nextPluginSettingId++;
-    pluginSettingMap.set(id, {pluginId, settingKey});
-    return id;
-  }
   
   async function loadPluginSettings() {
     for (const plugin of pluginSettings) {
@@ -76,81 +68,6 @@
     await browser.storage.local.set({ [storageKey]: currentSettings });
   }
 
-  function getPluginSettingEntries() {
-    const entries: any[] = [];
-
-    pluginSettings.forEach(plugin => {
-      if (Object.keys(plugin.settings).length === 0) return;
-
-      // Add enable/disable toggle if plugin has disableToggle set
-      if ((plugin as any).disableToggle) {
-        entries.push({
-          title: `Enable ${plugin.name}`,
-          description: `${plugin.description}`,
-          id: getPluginSettingId(plugin.pluginId, 'enabled'),
-          Component: Switch,
-          props: {
-            state: pluginSettingsValues[plugin.pluginId]?.enabled ?? true,
-            onChange: (value: boolean) => {
-              updatePluginSetting(plugin.pluginId, 'enabled', value);
-            }
-          }
-        });
-      }
-
-      Object.entries(plugin.settings).forEach(([key, setting]) => {
-        const id = getPluginSettingId(plugin.pluginId, key);
-
-        const props: Record<string, any> = {
-          state: pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default,
-          onChange: (value: any) => {
-            if (setting.type === 'number' && typeof value === 'string') {
-              value = parseFloat(value);
-            }
-            updatePluginSetting(plugin.pluginId, key, value);
-          }
-        };
-
-        if (setting.type === 'number') {
-          if (typeof setting.min === 'number') props.min = setting.min;
-          if (typeof setting.max === 'number') props.max = setting.max;
-          if (typeof setting.step === 'number') props.step = setting.step;
-        }
-
-        if (setting.type === 'select') {
-          props.options = setting.options;
-        }
-
-        let Component;
-        switch (setting.type) {
-          case 'boolean':
-            Component = Switch;
-            break;
-          case 'number':
-            Component = Slider;
-            break;
-          case 'select':
-            Component = Select;
-            break;
-          default:
-            Component = null;
-        }
-
-        if (!Component) return;
-
-        entries.push({
-          title: setting.title || key,
-          description: setting.description || '',
-          id,
-          Component,
-          props
-        });
-      });
-    });
-
-    return entries;
-  }
-
   $effect(() => {
     loadPluginSettings();
   })
@@ -171,6 +88,63 @@
 {/snippet}
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
+  {#each pluginSettings as plugin}
+    <div>
+      <!-- Always show enable toggle if disableToggle is true -->
+      {#if (plugin as any).disableToggle}
+        <div class="flex justify-between items-center px-4 py-3">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">Enable {plugin.name}</h2>
+            <p class="text-xs">{plugin.description}</p>
+          </div>
+          <div>
+            <Switch
+              state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
+              onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
+            />
+          </div>
+        </div>
+      {/if}
+
+      <!-- Only show other settings if plugin is enabled or has no disableToggle -->
+      {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
+        {#each Object.entries(plugin.settings) as [key, setting]}
+          <!-- Skip the 'enabled' setting if it's part of the settings object -->
+          {#if key !== 'enabled'}
+            <div class="flex justify-between items-center px-4 py-3">
+              <div class="pr-4">
+                <h2 class="text-sm font-bold">{setting.title || key}</h2>
+                <p class="text-xs">{setting.description || ''}</p>
+              </div>
+              <div>
+                {#if setting.type === 'boolean'}
+                  <Switch
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                  />
+                {:else if setting.type === 'number'}
+                  <Slider
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                    min={setting.min}
+                    max={setting.max}
+                    step={setting.step}
+                  />
+                {:else if setting.type === 'select'}
+                  <Select
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                    options={setting.options}
+                  />
+                {/if}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      {/if}
+    </div>
+  {/each}
+
   {#each [
     {
       title: "Transparency Effects",
@@ -282,7 +256,6 @@
         ]
       }
     },
-    ...getPluginSettingEntries(),
     {
       title: "BetterSEQTA+",
       description: "Enables BetterSEQTA+ features",
