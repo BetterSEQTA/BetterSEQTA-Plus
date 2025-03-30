@@ -42,58 +42,9 @@ function createSEQTAAPI(): SEQTAAPI {
 function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): SettingsAPI<T> & { loaded: Promise<void> } {
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
-  let settings: { [K in keyof T]: SettingValue<T[K]> };
-  const storageListeners = new Set<(changes: { [key: string]: any }, area: string) => void>();
 
-  // Initialize settings with defaults
-  const defaultSettings = {} as { [K in keyof T]: SettingValue<T[K]> };
-  for (const key in plugin.settings) {
-    defaultSettings[key] = plugin.settings[key].default as SettingValue<T[typeof key]>;
-  }
-  settings = defaultSettings;
-
-
-  // Create a promise that resolves when settings are loaded
-  const loaded = (async () => {
-    try {
-      const stored = await browser.storage.local.get(storageKey);
-      if (stored[storageKey]) {
-        Object.entries(stored[storageKey]).forEach(([key, value]) => {
-          if (key in settings) {
-            settings[key as keyof T] = value as any;
-            // Notify any listeners that might have been registered already
-            listeners.get(key as keyof T)?.forEach(callback => callback(value));
-          }
-        });
-      }
-    } catch (error) {
-      console.error(`[BetterSEQTA+] Error loading settings for plugin ${plugin.id}:`, error);
-    }
-  })();
-
-  // Listen for storage changes
-  const handleStorageChange = (changes: { [key: string]: any }, area: string) => {
-    if (area === 'local' && changes[storageKey]) {
-      const newValue = changes[storageKey].newValue;
-      if (newValue) {
-        // Update settings and notify listeners
-        Object.entries(newValue).forEach(([key, value]) => {
-          settings[key as keyof T] = value as any;
-          listeners.get(key as keyof T)?.forEach(callback => callback(value));
-        });
-      }
-    }
-  };
-  browser.storage.onChanged.addListener(handleStorageChange);
-  storageListeners.add(handleStorageChange);
-
-  const baseSettings = {} as { [K in keyof T]: SettingValue<T[K]> };
-  for (const key in plugin.settings) {
-    baseSettings[key] = plugin.settings[key].default as SettingValue<T[typeof key]>;
-  }
-
-  const settingsWithMeta = {
-    ...baseSettings,
+  // Initialize with default values
+  const settingsWithMeta: any = {
     onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       if (!listeners.has(key)) {
         listeners.set(key, new Set());
@@ -108,24 +59,72 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
     offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       listeners.get(key)?.delete(callback);
     },
-    loaded
+    loaded: Promise.resolve() // will be replaced below
   };
+
+  // Fill with defaults first
+  for (const key in plugin.settings) {
+    settingsWithMeta[key] = plugin.settings[key].default;
+  }
+
+  // Load stored settings and override defaults
+  const loaded = (async () => {
+    try {
+      const stored = await browser.storage.local.get(storageKey);
+      const storedSettings = stored[storageKey] as Partial<Record<keyof T, any>>;
+      if (storedSettings) {
+        for (const key in storedSettings) {
+          if (key in settingsWithMeta) {
+            settingsWithMeta[key] = storedSettings[key];
+            listeners.get(key as keyof T)?.forEach(cb => cb(storedSettings[key]));
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`[BetterSEQTA+] Error loading settings for plugin ${plugin.id}:`, error);
+    }
+  })();
+
+  settingsWithMeta.loaded = loaded;
+
+  // Listen for storage changes and update settingsWithMeta
+  const handleStorageChange = (changes: { [key: string]: browser.Storage.StorageChange }, area: string) => {
+    if (area !== 'local' || !(storageKey in changes)) return;
+
+    const newValue = changes[storageKey].newValue as Partial<Record<keyof T, any>> | undefined;
+    if (!newValue) return;
+
+    for (const key in newValue) {
+      const typedKey = key as keyof T;
+      settingsWithMeta[typedKey] = newValue[typedKey];
+      listeners.get(typedKey)?.forEach(cb => cb(newValue[typedKey]));
+    }
+  };
+
+  browser.storage.onChanged.addListener(handleStorageChange);
 
   const proxy = new Proxy(settingsWithMeta, {
     get(target, prop) {
-      return target[prop as keyof typeof target];
+      return target[prop];
     },
     set(target, prop, value) {
-      if (prop === 'onChange' || prop === 'offChange' || prop === 'loaded') return false;
+      if (['onChange', 'offChange', 'loaded'].includes(prop as string)) return false;
 
-      target[prop as keyof T] = value;
-      browser.storage.local.set({ [storageKey]: baseSettings }); // Only store base settings
-      listeners.get(prop as keyof T)?.forEach(callback => callback(value));
+      target[prop] = value;
+
+      // Reconstruct just the data keys for storage (excluding metadata methods)
+      const dataToStore: any = {};
+      for (const key in plugin.settings) {
+        dataToStore[key] = target[key];
+      }
+
+      browser.storage.local.set({ [storageKey]: dataToStore });
+
+      listeners.get(prop as keyof T)?.forEach(cb => cb(value));
       return true;
     }
-  }) as SettingsAPI<T>;
+  }) as SettingsAPI<T> & { loaded: Promise<void> };
 
-  
   return proxy;
 }
 

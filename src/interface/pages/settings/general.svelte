@@ -196,26 +196,6 @@
       }
     },
     {
-      title: "Assessment Average",
-      description: "Shows your subject average for assessments.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.assessmentsAverage,
-        onChange: (isOn: boolean) => settingsState.assessmentsAverage = isOn
-      }
-    },
-    {
-      title: "Letter Grade Averages",
-      description: "Shows the letter grade instead of the percentage in subject averages.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.lettergrade,
-        onChange: (isOn: boolean) => settingsState.lettergrade = isOn
-      }
-    },
-    {
       title: "12 Hour Time",
       description: "Prefer 12 hour time format for SEQTA",
       id: 9,

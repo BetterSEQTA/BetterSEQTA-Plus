@@ -5,14 +5,25 @@ export async function waitForElm(
     selector: string,
     usePolling: boolean = false,
     interval: number = 100,
+    maxIterations?: number
   ): Promise<Element> {
     if (usePolling) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
+        let iterations = 0;
+        if (maxIterations) {
+          iterations = 0;
+        }
         const checkForElement = () => {
           const element = document.querySelector(selector)
           if (element) {
             resolve(element)
           } else {
+            if (maxIterations) {
+              iterations++;
+              if (iterations >= maxIterations) {
+                reject(new Error("Element not found"));
+              }
+            }
             setTimeout(checkForElement, interval)
           }
         }
