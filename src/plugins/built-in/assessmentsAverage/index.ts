@@ -1,5 +1,5 @@
 import { BasePlugin } from "@/plugins/core/settings";
-import { defineSettings, booleanSetting, Setting } from "@/plugins/core/settingsHelpers";
+import { booleanSetting, defineSettings, Setting } from "@/plugins/core/settingsHelpers";
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
