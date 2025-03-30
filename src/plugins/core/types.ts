@@ -52,8 +52,8 @@ export type SettingsAPI<T extends PluginSettings> = {
 } & {
   onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => { unregister: () => void };
   offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
-  loaded: Promise<void>; // Promise that resolves when settings are loaded
-}
+  loaded: Promise<void>;
+}  
 
 export interface SEQTAAPI {
   onMount: (selector: string, callback: (element: Element) => void) => { unregister: () => void };

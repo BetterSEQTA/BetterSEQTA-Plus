@@ -1,4 +1,4 @@
-import type { EventsAPI, Plugin, PluginAPI, PluginSettings, SEQTAAPI, SettingsAPI, StorageAPI } from './types';
+import type { EventsAPI, Plugin, PluginAPI, PluginSettings, SEQTAAPI, SettingsAPI, SettingValue, StorageAPI } from './types';
 import { eventManager } from '@/seqta/utils/listeners/EventManager';
 import ReactFiber from '@/seqta/utils/ReactFiber';
 import browser from 'webextension-polyfill';
@@ -41,28 +41,17 @@ function createSEQTAAPI(): SEQTAAPI {
 
 function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): SettingsAPI<T> & { loaded: Promise<void> } {
   const storageKey = `plugin.${plugin.id}.settings`;
-  
-  // Use SettingValue to properly type the listeners
-  // This ensures callbacks get correctly typed parameters
-  const listeners = new Map<keyof T, Set<(value: SettingValue<T[keyof T]>) => void>>();
-  
+  const listeners = new Map<keyof T, Set<(value: any) => void>>();
   let settings: { [K in keyof T]: SettingValue<T[K]> };
   const storageListeners = new Set<(changes: { [key: string]: any }, area: string) => void>();
 
-  // Initialize settings with defaults and proper typing
-  settings = Object.entries(plugin.settings).reduce((acc, [key, setting]) => {
-    // Extract the value from the default based on the setting type
-    if (setting.type === 'boolean') {
-      acc[key as keyof T] = setting.default as SettingValue<T[keyof T]>;
-    } else if (setting.type === 'number') {
-      acc[key as keyof T] = setting.default as SettingValue<T[keyof T]>;
-    } else if (setting.type === 'string') {
-      acc[key as keyof T] = setting.default as SettingValue<T[keyof T]>;
-    } else if (setting.type === 'select') {
-      acc[key as keyof T] = setting.default as SettingValue<T[keyof T]>;
-    }
-    return acc;
-  }, {} as { [K in keyof T]: SettingValue<T[K]> });
+  // Initialize settings with defaults
+  const defaultSettings = {} as { [K in keyof T]: SettingValue<T[K]> };
+  for (const key in plugin.settings) {
+    defaultSettings[key] = plugin.settings[key].default as SettingValue<T[typeof key]>;
+  }
+  settings = defaultSettings;
+
 
   // Create a promise that resolves when settings are loaded
   const loaded = (async () => {
@@ -71,22 +60,9 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
       if (stored[storageKey]) {
         Object.entries(stored[storageKey]).forEach(([key, value]) => {
           if (key in settings) {
-            // Use proper type assertion based on the setting type
-            const settingType = plugin.settings[key as keyof T].type;
-            if (settingType === 'boolean' && typeof value === 'boolean') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'number' && typeof value === 'number') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'string' && typeof value === 'string') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'select' && typeof value === 'string') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            }
-            
+            settings[key as keyof T] = value as any;
             // Notify any listeners that might have been registered already
-            listeners.get(key as keyof T)?.forEach(callback => 
-              callback(settings[key as keyof T] as SettingValue<T[keyof T]>)
-            );
+            listeners.get(key as keyof T)?.forEach(callback => callback(value));
           }
         });
       }
@@ -102,24 +78,8 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
       if (newValue) {
         // Update settings and notify listeners
         Object.entries(newValue).forEach(([key, value]) => {
-          if (key in settings) {
-            // Use proper type assertion based on the setting type
-            const settingType = plugin.settings[key as keyof T].type;
-            if (settingType === 'boolean' && typeof value === 'boolean') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'number' && typeof value === 'number') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'string' && typeof value === 'string') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            } else if (settingType === 'select' && typeof value === 'string') {
-              settings[key as keyof T] = value as SettingValue<T[keyof T]>;
-            }
-            
-            // Notify listeners with the correctly typed value
-            listeners.get(key as keyof T)?.forEach(callback => 
-              callback(settings[key as keyof T] as SettingValue<T[keyof T]>)
-            );
-          }
+          settings[key as keyof T] = value as any;
+          listeners.get(key as keyof T)?.forEach(callback => callback(value));
         });
       }
     }
@@ -127,57 +87,45 @@ function createSettingsAPI<T extends PluginSettings>(plugin: Plugin<T>): Setting
   browser.storage.onChanged.addListener(handleStorageChange);
   storageListeners.add(handleStorageChange);
 
-  // Create a proxy to handle direct property access
-  const proxy = new Proxy(settings, {
-    get(target, prop: string) {
-      if (prop === 'onChange') {
-        return <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
-          if (!listeners.has(key)) {
-            listeners.set(key, new Set());
-          }
-          listeners.get(key)!.add(callback as (value: SettingValue<T[keyof T]>) => void);
-          return {
-            unregister: () => {
-              listeners.get(key)?.delete(callback as (value: SettingValue<T[keyof T]>) => void);
-            }
-          };
-        };
-      }      
-      if (prop === 'loaded') {
-        return loaded;
-      }
-      return target[prop as keyof T];
-    },
-    set(target, prop: string, value: any) {
-      if (prop === 'onChange' || prop === 'offChange' || prop === 'loaded') return false;
-      
-      // Try to apply the right type based on the setting definition
-      if (prop in plugin.settings) {
-        const settingType = plugin.settings[prop as keyof T].type;
-        if (settingType === 'boolean' && typeof value === 'boolean') {
-          target[prop as keyof T] = value as SettingValue<T[keyof T]>;
-        } else if (settingType === 'number' && typeof value === 'number') {
-          target[prop as keyof T] = value as SettingValue<T[keyof T]>;
-        } else if (settingType === 'string' && typeof value === 'string') {
-          target[prop as keyof T] = value as SettingValue<T[keyof T]>;
-        } else if (settingType === 'select' && typeof value === 'string') {
-          target[prop as keyof T] = value as SettingValue<T[keyof T]>;
-        }
-      }
-      
-      // Store all settings under the plugin's settings key
-      browser.storage.local.set({ 
-        [storageKey]: target 
-      });
-      
-      // Notify listeners
-      listeners.get(prop as keyof T)?.forEach(callback => 
-        callback(target[prop as keyof T] as SettingValue<T[keyof T]>)
-      );
-      return true;
-    },
-  }) as SettingsAPI<T> & { loaded: Promise<void> };
+  const baseSettings = {} as { [K in keyof T]: SettingValue<T[K]> };
+  for (const key in plugin.settings) {
+    baseSettings[key] = plugin.settings[key].default as SettingValue<T[typeof key]>;
+  }
 
+  const settingsWithMeta = {
+    ...baseSettings,
+    onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
+      if (!listeners.has(key)) {
+        listeners.set(key, new Set());
+      }
+      listeners.get(key)!.add(callback);
+      return {
+        unregister: () => {
+          listeners.get(key)!.delete(callback);
+        }
+      };
+    },
+    offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
+      listeners.get(key)?.delete(callback);
+    },
+    loaded
+  };
+
+  const proxy = new Proxy(settingsWithMeta, {
+    get(target, prop) {
+      return target[prop as keyof typeof target];
+    },
+    set(target, prop, value) {
+      if (prop === 'onChange' || prop === 'offChange' || prop === 'loaded') return false;
+
+      target[prop as keyof T] = value;
+      browser.storage.local.set({ [storageKey]: baseSettings }); // Only store base settings
+      listeners.get(prop as keyof T)?.forEach(callback => callback(value));
+      return true;
+    }
+  }) as SettingsAPI<T>;
+
+  
   return proxy;
 }
 

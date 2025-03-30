@@ -1,4 +1,4 @@
-import type { Plugin, PluginSettings } from './types';
+import type { Plugin, PluginSettings, BooleanSetting, StringSetting, NumberSetting, SelectSetting } from './types';
 import { createPluginAPI } from './createAPI';
 import browser from 'webextension-polyfill';
 
@@ -164,25 +164,29 @@ export class PluginManager {
   public getAllPluginSettings(): Array<{
     pluginId: string;
     name: string;
+    description: string;
     settings: {
-      [key: string]: {
-        id: string;
-        title: string;
-        description?: string;
-        type: string;
-        default: any;
-      }
+      [key: string]: (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
+                     (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
+                     (Omit<NumberSetting, 'type'> & { type: 'number', id: string }) |
+                     (Omit<SelectSetting<string>, 'type'> & { type: 'select', id: string, options: Array<{ value: string, label: string }> });
     }
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {
       const settingsEntries = Object.entries(plugin.settings).map(([key, setting]) => {
-        return [key, {
-          id: key,
-          title: (setting as any).title || key,
-          description: (setting as any).description || '',
-          type: (setting as any).type,
-          default: (setting as any).default
-        }];
+        const settingObj = setting as any;
+        // Create a copy of the setting object without any functions
+        const result: any = Object.fromEntries(
+          Object.entries(settingObj)
+            .filter(([_, value]) => typeof value !== 'function')
+        );
+        
+        // Ensure required properties are present
+        result.id = key;
+        result.title = result.title || key;
+        result.description = result.description || '';
+        
+        return [key, result];
       });
 
       if (plugin.disableToggle) {

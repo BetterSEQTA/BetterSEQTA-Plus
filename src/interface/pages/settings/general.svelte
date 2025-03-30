@@ -12,21 +12,24 @@
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   import { getAllPluginSettings } from "@/plugins"
+  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting } from "@/plugins/core/types"
 
-  interface PluginSetting {
-    id: string;
-    title: string;
-    description?: string;
-    type: string;
-    default: any;
-    options?: Array<{value: string, label: string}>;
-  }
+  // Union type representing all possible settings
+  type SettingType = 
+    (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
+    (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
+    (Omit<NumberSetting, 'type'> & { type: 'number', id: string }) |
+    (Omit<SelectSetting<string>, 'type'> & { 
+      type: 'select', 
+      id: string, 
+      options: Array<{ value: string, label: string }> 
+    });
 
   interface Plugin {
     pluginId: string;
     name: string;
     description: string;
-    settings: Record<string, PluginSetting>;
+    settings: Record<string, SettingType>;
   }
 
   const pluginSettings = getAllPluginSettings() as Plugin[];
@@ -75,10 +78,10 @@
 
   function getPluginSettingEntries() {
     const entries: any[] = [];
-    
+
     pluginSettings.forEach(plugin => {
       if (Object.keys(plugin.settings).length === 0) return;
-      
+
       // Add enable/disable toggle if plugin has disableToggle set
       if ((plugin as any).disableToggle) {
         entries.push({
@@ -90,37 +93,61 @@
             state: pluginSettingsValues[plugin.pluginId]?.enabled ?? true,
             onChange: (value: boolean) => {
               updatePluginSetting(plugin.pluginId, 'enabled', value);
-              // The plugin manager will handle the actual enabling/disabling
             }
           }
         });
       }
-      
+
       Object.entries(plugin.settings).forEach(([key, setting]) => {
         const id = getPluginSettingId(plugin.pluginId, key);
-        
+
+        const props: Record<string, any> = {
+          state: pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default,
+          onChange: (value: any) => {
+            if (setting.type === 'number' && typeof value === 'string') {
+              value = parseFloat(value);
+            }
+            updatePluginSetting(plugin.pluginId, key, value);
+          }
+        };
+
+        if (setting.type === 'number') {
+          if (typeof setting.min === 'number') props.min = setting.min;
+          if (typeof setting.max === 'number') props.max = setting.max;
+          if (typeof setting.step === 'number') props.step = setting.step;
+        }
+
+        if (setting.type === 'select') {
+          props.options = setting.options;
+        }
+
+        let Component;
+        switch (setting.type) {
+          case 'boolean':
+            Component = Switch;
+            break;
+          case 'number':
+            Component = Slider;
+            break;
+          case 'select':
+            Component = Select;
+            break;
+          default:
+            Component = null;
+        }
+
+        if (!Component) return;
+
         entries.push({
           title: setting.title || key,
           description: setting.description || '',
           id,
-          Component: setting.type === 'boolean' ? Switch :
-                    setting.type === 'select' ? Select :
-                    setting.type === 'number' ? Slider : 
-                    setting.type === 'string' ? (setting.options ? Select : null) : Switch,
-          props: {
-            state: pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default,
-            onChange: (value: any) => {
-              if (setting.type === 'number' && typeof value === 'string') {
-                value = parseFloat(value);
-              }
-              updatePluginSetting(plugin.pluginId, key, value);
-            },
-            options: setting.options
-          }
+          Component,
+          props
         });
       });
     });
-    
+
     return entries;
   }
 
@@ -153,26 +180,6 @@
       props: {
         state: $settingsState.transparencyEffects,
         onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
-      }
-    },
-    {
-      title: "Animated Background",
-      description: "Adds an animated background to BetterSEQTA. (May impact battery life)",
-      id: 2,
-      Component: Switch,
-      props: {
-        state: $settingsState.animatedbk,
-        onChange: (isOn: boolean) => settingsState.animatedbk = isOn
-      }
-    },
-    {
-      title: "Animated Background Speed",
-      description: "Controls the speed of the animated background.",
-      id: 3,
-      Component: Slider,
-      props: {
-        state: $settingsState.bksliderinput,
-        onChange: (value: number) => settingsState.bksliderinput = `${value}`
       }
     },
     {
