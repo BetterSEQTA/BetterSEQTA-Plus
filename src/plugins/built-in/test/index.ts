@@ -1,6 +1,6 @@
 import type { Plugin } from '@/plugins/core/types';
 import { BasePlugin } from '@/plugins/core/settings';
-import { defineSettings, booleanSetting, Setting } from '@/plugins/core/settingsHelpers';
+import { booleanSetting, defineSettings, Setting } from '@/plugins/core/settingsHelpers';
 
 // Step 1: Define settings with proper typing
 const settings = defineSettings({

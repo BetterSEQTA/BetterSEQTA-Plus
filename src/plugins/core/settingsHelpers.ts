@@ -1,4 +1,4 @@
-import type { NumberSetting, BooleanSetting, StringSetting, SelectSetting } from './types';
+import type { BooleanSetting, NumberSetting, SelectSetting, StringSetting } from './types';
 
 export function numberSetting(options: Omit<NumberSetting, 'type'>): NumberSetting {
   return {
