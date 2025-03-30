@@ -7,10 +7,6 @@
     step?: number
   }>();
   let percentage = $derived(((state - min) / (max - min)) * 100);
-
-  $effect(() => {
-    console.log('min / max / step', min, max, step);
-  });
 </script>
 
 <div class="relative mx-auto w-full max-w-lg">
