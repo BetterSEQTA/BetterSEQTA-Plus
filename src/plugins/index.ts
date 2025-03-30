@@ -10,11 +10,11 @@ import assessmentsAveragePlugin from './built-in/assessmentsAverage';
 const pluginManager = PluginManager.getInstance();
 
 // Register built-in plugins
-pluginManager.registerPlugin(timetablePlugin);
-pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(themesPlugin);
 pluginManager.registerPlugin(animatedBackgroundPlugin);
 pluginManager.registerPlugin(assessmentsAveragePlugin);
+pluginManager.registerPlugin(notificationCollectorPlugin);
+pluginManager.registerPlugin(timetablePlugin);
 //pluginManager.registerPlugin(testPlugin);
 
 export { init as Monofile } from './monofile';
