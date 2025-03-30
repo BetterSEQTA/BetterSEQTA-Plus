@@ -1,28 +1,34 @@
-import type { Plugin } from '../../core/types';
+import { BasePlugin } from '../../core/settings';
+import { type Plugin } from '@/plugins/core/types';
+import { defineSettings, numberSetting, Setting } from '@/plugins/core/settingsHelpers';
 import styles from './styles.css?inline';
-import { BasePlugin, NumberSetting } from '../../core/settings';
 
-class AnimatedBackgroundPluginClass extends BasePlugin {
-  @NumberSetting({
+const settings = defineSettings({
+  speed: numberSetting({
     default: 1,
     title: "Animation Speed",
-    description: "Controls the speed of the animated background",
+    description: "Controls how fast the background moves",
     min: 0.1,
-    max: 2
+    max: 2,
+    step: 0.05
   })
+});
+
+class AnimatedBackgroundPluginClass extends BasePlugin<typeof settings> {
+  @Setting(settings.speed)
   speed!: number;
 }
 
-const settingsInstance = new AnimatedBackgroundPluginClass();
+const instance = new AnimatedBackgroundPluginClass();
 
-const animatedBackgroundPlugin: Plugin<typeof settingsInstance.settings> = {
+const animatedBackgroundPlugin: Plugin<typeof settings> = {
   id: 'animated-background',
   name: 'Animated Background',
   description: 'Adds an animated background to BetterSEQTA+',
   version: '1.0.0',
   disableToggle: true,
-  styles,
-  settings: settingsInstance.settings,
+  styles: styles,
+  settings: instance.settings,
 
   run: async (api) => {
     // Create the background elements
