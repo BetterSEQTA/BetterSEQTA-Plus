@@ -1,4 +1,4 @@
-import type { Plugin, PluginSettings, BooleanSetting, StringSetting, NumberSetting, SelectSetting } from './types';
+import type { BooleanSetting, NumberSetting, Plugin, PluginSettings, SelectSetting, StringSetting } from './types';
 import { createPluginAPI } from './createAPI';
 import browser from 'webextension-polyfill';
 
