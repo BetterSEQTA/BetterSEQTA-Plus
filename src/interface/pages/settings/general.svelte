@@ -22,7 +22,7 @@
     (Omit<SelectSetting<string>, 'type'> & { 
       type: 'select', 
       id: string, 
-      options: Array<{ value: string, label: string }> 
+      options: string[]
     });
 
   interface Plugin {
@@ -130,11 +130,21 @@
                     max={setting.max}
                     step={setting.step}
                   />
+                {:else if setting.type === 'string'}
+                  <input
+                    type="text"
+                    class="px-2 py-1 text-sm rounded-md dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white"
+                    value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    oninput={(e) => updatePluginSetting(plugin.pluginId, key, e.currentTarget.value)}
+                  />                
                 {:else if setting.type === 'select'}
                   <Select
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                    options={setting.options}
+                  state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                  onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                  options={(setting.options as string[]).map(opt => ({
+                    value: opt,
+                    label: opt.charAt(0).toUpperCase() + opt.slice(1)
+                    }))}
                   />
                 {/if}
               </div>
