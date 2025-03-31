@@ -3,6 +3,21 @@
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the owners of this repository before making a change.
 
+## Community
+
+Join our community channels to discuss the project, get help, and connect with other contributors:
+
+- **Discord Server**: [Join our Discord](https://discord.gg/betterseqta)
+- **GitHub Discussions**: For longer-form conversations
+- **GitHub Issues**: For bug reports and feature requests
+
+## Creating Plugins
+
+If you're interested in creating plugins for BetterSEQTA+, check out our plugin development guides:
+
+- [Creating Your First Plugin](./docs/plugins/creating-plugins.md)
+- [Plugin API Reference](./docs/advanced/plugin-api.md)
+
 ## Pull Request Process
 
 1. It is recommended to start by opening an issue to discuss the change you wish to make. This will allow us to discuss the change and ensure it is a good fit for the project.

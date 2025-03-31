@@ -26,6 +26,7 @@ const testPlugin: Plugin<typeof settings> = {
   description: 'A test plugin for BetterSEQTA+',
   version: '1.0.0',
   settings: settingsInstance.settings,
+  disableToggle: true,
 
   run: async (api) => {
     console.log('Test plugin running');
