@@ -60,6 +60,12 @@ export function OpenWhatsNewPopup() {
   
     let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+      <h1>3.4.6 - Massive internal reworks!</h1>
+      <li>Reworked internals to function as a plugin system (more on this soon)</li>
+      <li>Rebuilt theme system that is significantly less buggy</li>
+      <li>Performance improvements</li>
+      <li>Other minor bug fixes</li>
+
       <h1>3.4.5 - News, Bug Fixes, and improvements!</h1>
       <li>Added alternative news sources</li>
       <li>Notifications now open direct messages</li>
