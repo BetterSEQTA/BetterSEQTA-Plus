@@ -1,0 +1,68 @@
+.search-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  margin-left: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: auto !important;
+  padding: 3px 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+
+  svg {
+    opacity: 0.8;
+  }
+
+  p {
+    font-size: 14px;
+    margin-left: 8px;
+    margin-right: 16px;
+    height: 100%;
+    margin-bottom: 0;
+    line-height: 32px;
+    font-weight: 400;
+  }
+}
+
+/* Light mode styles */
+.search-trigger {
+  background-color: rgba(248, 250, 252, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #555 !important;
+
+  p {
+    color: #555 !important;
+  }
+
+  svg {
+    color: #555;
+  }
+}
+
+.search-trigger:hover {
+  background-color: rgba(248, 250, 252, 1) !important;
+  color: #333 !important;
+}
+
+/* Dark mode styles */
+.dark .search-trigger {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #aaa !important;
+  
+  p {
+    color: #aaa !important;
+  }
+  
+  svg {
+    color: #aaa;
+  }
+}
+
+.dark .search-trigger:hover {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  color: #eee !important;
+} 
