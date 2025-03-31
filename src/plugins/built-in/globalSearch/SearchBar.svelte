@@ -134,7 +134,7 @@
       transition:fade={{ duration: 150 }}
     ></div>
 
-    <div class="fixed inset-0 z-[50000] flex justify-center place-items-start p-8 sm:p-6 md:p-8" 
+    <div class="fixed inset-0 z-[50000] flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none" 
          onclick={() => commandPalleteOpen = false}
          onkeydown={(e) => e.key === 'Escape' && (commandPalleteOpen = false)}
          role="button"
@@ -166,11 +166,11 @@
         </div>
 
         {#if filteredItems.length > 0}
-          <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-2 gap-2">
+          <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
             {#each filteredItems as item, i (item.text)}
               <li>
                 <button
-                  class="w-full flex items-center px-2 py-1.5 rounded-md transition duration-100 select-none cursor-default group 
+                  class="w-full flex items-center px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
                   {i === index 
                     ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' 
                     : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
