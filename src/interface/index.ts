@@ -26,4 +26,4 @@ if (!mountPoint) {
 }
 
 InjectCustomIcons()
-renderSvelte(Settings, mountPoint)
+renderSvelte(Settings, mountPoint, { standalone: true })
