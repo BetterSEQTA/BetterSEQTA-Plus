@@ -1,0 +1,31 @@
+.bg {
+  animation: slide 3s ease-in-out infinite alternate;
+  background: var(--better-main);
+  bottom: 0;
+  left: -50%;
+  opacity: 0.5;
+  position: fixed;
+  right: -50%;
+  top: 0;
+  z-index: 0 !important;
+  overflow: hidden;
+  scale: 1.5;
+}
+
+.bg2 {
+  animation-direction: alternate-reverse;
+  animation-duration: 4s;
+}
+
+.bg3 {
+  animation-duration: 5s;
+}
+
+@keyframes slide {
+  0% {
+    transform: translate(50%) rotate(-60deg);
+  }
+  100% {
+    transform: translateX(5%) rotate(-60deg);
+  }
+} 

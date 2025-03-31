@@ -55,6 +55,7 @@ const rssFeedsByCountry: Record<string, string[]> = {
 export async function fetchNews(source: string, sendResponse: any) {
   const parser = new Parser();
   let feeds: string[];
+  console.log('fetchNews', source)
 
   if (source === "australia") {
     const date = new Date();

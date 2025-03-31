@@ -1,8 +1,6 @@
 export interface SettingsState {
   DarkMode: boolean;
   selectedTheme: string;
-  animatedbk: boolean;
-  bksliderinput: string;
   customshortcuts: CustomShortcut[];
   defaultmenuorder: any[];
   lessonalert: boolean;
@@ -25,7 +23,6 @@ export interface SettingsState {
     welcome: ToggleItem;
   };
   menuorder: any[];
-  notificationcollector: boolean;
   onoff: boolean;
   selectedColor: string;
   originalSelectedColor: string;
@@ -38,9 +35,14 @@ export interface SettingsState {
   defaultPage: string;
   devMode?: boolean;
   originalDarkMode?: boolean;
-  assessmentsAverage?: boolean;
-  lettergrade: boolean;
   newsSource?: string;
+  
+  // depreciated keys
+  animatedbk: boolean;
+  bksliderinput: string;
+  lettergrade: boolean;
+  assessmentsAverage?: boolean;
+  notificationCollector?: boolean;
 }
 
 interface ToggleItem {
