@@ -1,155 +1,257 @@
-# BetterSEQTA+ Plugin System
+# Creating Plugins for BetterSEQTA+
 
-BetterSEQTA+ features a powerful plugin system that allows developers to extend and customize the functionality of SEQTA Learn. This document provides an overview of how the plugin system works and how to get started with creating your own plugins.
+Hey there! 👋 So you want to create a plugin for BetterSEQTA+? That's awesome! This guide will walk you through everything you need to know, from the very basics to more advanced features. Don't worry if you're new to this - we'll explain everything step by step.
 
 ## What is a Plugin?
 
-A plugin is a self-contained piece of code that adds functionality to BetterSEQTA+. Plugins can:
+In BetterSEQTA+, a plugin is like a mini-app that adds new features to SEQTA. Think of it as a piece of LEGO that you can snap onto SEQTA to make it do new things. For example, you could create a plugin that:
+- Changes how SEQTA looks
+- Adds new buttons or features
+- Shows extra information on your timetable
+- Collects notifications in a better way
+- Really, anything you can imagine!
 
-- Add new UI elements to SEQTA Learn
-- Modify existing UI elements
-- Add new features to SEQTA Learn
-- Modify or extend existing features
-- Store and retrieve user data
-- Respond to events in SEQTA Learn
+## Your First Plugin
 
-Each plugin is isolated from other plugins, with its own settings, storage, and lifecycle. This ensures that plugins can be enabled, disabled, or removed without affecting other parts of the system.
-
-## Plugin Architecture
-
-The BetterSEQTA+ plugin system consists of several key components:
-
-### 1. Plugin Interface
-
-All plugins implement the `Plugin` interface, which defines the structure and lifecycle methods of a plugin:
+Let's create a super simple plugin together. We'll make one that adds a friendly message to the SEQTA homepage. Here's what we'll need:
 
 ```typescript
-export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
-  id: string;
-  name: string;
-  description: string;
-  version: string;
-  settings: T;
-  run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<(() => void)>;
-}
+import type { Plugin } from '@/plugins/core/types';
+
+const myFirstPlugin: Plugin = {
+  // Every plugin needs these basic details
+  id: 'my-first-plugin',
+  name: 'My First Plugin',
+  description: 'Adds a friendly message to SEQTA',
+  version: '1.0.0',
+  
+  // This tells BetterSEQTA+ that users can turn our plugin on/off
+  disableToggle: true,
+  
+  // This is where the magic happens! 
+  run: async (api) => {
+    // Wait for the homepage to load
+    api.seqta.onMount('.home-page', (homePage) => {
+      // Create our message
+      const message = document.createElement('div');
+      message.textContent = 'Hello from my first plugin! 🎉';
+      message.style.padding = '20px';
+      message.style.backgroundColor = '#e9f5ff';
+      message.style.borderRadius = '8px';
+      message.style.margin = '20px';
+      
+      // Add it to the page
+      homePage.prepend(message);
+    });
+    
+    // Return a cleanup function that removes our message when the plugin is disabled
+    return () => {
+      const message = document.querySelector('.home-page > div');
+      message?.remove();
+    };
+  }
+};
+
+export default myFirstPlugin;
 ```
 
-### 2. Plugin API
+Let's break down what's happening here:
 
-When a plugin is run, it receives an instance of the `PluginAPI`, which provides access to various services and utilities:
+1. First, we import the `Plugin` type that tells TypeScript what a plugin should look like
+2. We create our plugin object with some basic information:
+   - `id`: A unique name for your plugin (use lowercase and dashes)
+   - `name`: A friendly name that users will see
+   - `description`: Explain what your plugin does
+   - `version`: Your plugin's version number
+3. We set `disableToggle: true` so users can turn our plugin on/off in settings
+4. The `run` function is where we put our plugin's code
+5. We use `api.seqta.onMount` to wait for the homepage to load
+6. We create and style a message element
+7. We return a cleanup function that removes our changes when the plugin is disabled
+
+## The Plugin API
+
+When your plugin runs, it gets access to a powerful API that lets you do all sorts of things. Let's look at what you can do:
+
+### SEQTA API (`api.seqta`)
+
+This helps you interact with SEQTA's pages:
 
 ```typescript
-export interface PluginAPI<T extends PluginSettings, S = any> {
-  seqta: SEQTAAPI;
-  settings: SettingsAPI<T>;
-  storage: TypedStorageAPI<S>;
-  events: EventsAPI;
-}
+// Wait for an element to appear on the page
+api.seqta.onMount('.some-class', (element) => {
+  // Do something with the element
+});
+
+// Know when the user changes pages
+api.seqta.onPageChange((page) => {
+  console.log('User went to:', page);
+});
+
+// Get the current page
+const currentPage = api.seqta.getCurrentPage();
 ```
 
-- **SEQTA API**: Provides methods for interacting with the SEQTA Learn UI
-- **Settings API**: Provides type-safe access to plugin settings
-- **Storage API**: Provides type-safe persistent storage for plugin data
-- **Events API**: Allows plugins to emit and listen for events
+### Settings API (`api.settings`)
 
-### 3. Plugin Manager
-
-The Plugin Manager is responsible for loading, starting, stopping, and managing plugins. It handles the lifecycle of each plugin and ensures that plugins have access to the resources they need.
-
-### 4. Plugin Registry
-
-The Plugin Registry is a central repository of all available plugins. Built-in plugins are automatically registered, and additional plugins can be registered dynamically.
-
-## Plugin Lifecycle
-
-Plugins follow a simple lifecycle:
-
-1. **Registration**: The plugin is registered with the Plugin Manager
-2. **Loading**: The plugin's settings and storage are loaded
-3. **Running**: The plugin's `run` method is called with the Plugin API
-4. **Cleanup**: If the plugin returns a cleanup function, it is called when the plugin is stopped
-
-## Creating a Plugin
-
-Creating a plugin for BetterSEQTA+ involves a few simple steps:
-
-1. Define your plugin's interface
-2. Implement the Plugin interface
-3. Register your plugin with the Plugin Manager
-
-For a detailed guide on creating plugins, see [Creating Your First Plugin](./creating-plugins.md).
-
-## Built-in Plugins
-
-BetterSEQTA+ comes with several built-in plugins that provide core functionality:
-
-- **Timetable**: Enhances the SEQTA timetable view
-- **Notification Collector**: Improves the notification system
-- **Theme Customizer**: Allows customization of the SEQTA theme
-- **Assessment Enhancer**: Adds features to the assessment view
-
-These plugins serve as good examples of how to use the plugin system effectively.
-
-## Type-Safe Settings and Storage
-
-One of the key features of the BetterSEQTA+ plugin system is its type-safe settings and storage. Using TypeScript generics, plugins can define the structure of their settings and storage, ensuring that they are used correctly throughout the codebase.
-
-### Settings Example
+Want to let users customize your plugin? Use settings!
 
 ```typescript
-interface MyPluginSettings extends PluginSettings {
-  enabled: {
-    type: 'boolean';
-    default: boolean;
-    title: string;
-    description: string;
-  };
-  refreshInterval: {
-    type: 'number';
-    default: number;
-    title: string;
-    description: string;
-    min: number;
-    max: number;
-  };
+import { BasePlugin } from '@/plugins/core/settings';
+import { booleanSetting, defineSettings, Setting } from '@/plugins/core/settingsHelpers';
+
+// Define your settings
+const settings = defineSettings({
+  showMessage: booleanSetting({
+    default: true,
+    title: "Show Welcome Message",
+    description: "Show a friendly message on the homepage",
+  })
+});
+
+// Create a class for your plugin
+class MyPluginClass extends BasePlugin<typeof settings> {
+  @Setting(settings.showMessage)
+  showMessage!: boolean;
 }
+
+// Create your plugin
+const settingsInstance = new MyPluginClass();
+
+const myPlugin: Plugin<typeof settings> = {
+  // ... other plugin details ...
+  settings: settingsInstance.settings,
+  
+  run: async (api) => {
+    // Use the setting
+    if (api.settings.showMessage) {
+      // Show the message
+    }
+    
+    // Listen for setting changes
+    api.settings.onChange('showMessage', (newValue) => {
+      if (newValue) {
+        // Show the message
+      } else {
+        // Hide the message
+      }
+    });
+  }
+};
 ```
 
-### Storage Example
+### Storage API (`api.storage`)
+
+Need to save some data? The storage API has got you covered:
 
 ```typescript
-interface MyPluginStorage {
-  lastRefresh: string;
-  savedItems: string[];
-  userPreferences: {
-    theme: 'light' | 'dark';
-    fontSize: number;
-  };
-}
+// Save some data
+await api.storage.set('lastVisit', new Date().toISOString());
+
+// Get it back later
+const lastVisit = await api.storage.get('lastVisit');
+
+// Listen for changes
+api.storage.onChange('lastVisit', (newValue) => {
+  console.log('Last visit updated:', newValue);
+});
 ```
 
-## Decorator-Based Settings
+### Events API (`api.events`)
 
-BetterSEQTA+ also offers a more modern, decorator-based approach to defining settings. For more information, see [Creating Plugins with Settings](../settings/creating-plugins.md).
+Want your plugin to be able to interface with other plugins? Then use events!
 
-## Plugin API Reference
+```typescript
+// Listen for an event
+api.events.on('myCustomEvent', (data) => {
+  console.log('Got event:', data);
+});
 
-The Plugin API provides a rich set of features for interacting with SEQTA Learn. For a complete reference, see [Plugin API Reference](../advanced/plugin-api.md).
+// Send an event
+api.events.emit('myCustomEvent', { some: 'data' });
+```
+
+## Adding Styles
+
+Want to make your plugin look pretty? You can add CSS styles:
+
+```typescript
+const myPlugin: Plugin = {
+  // ... other plugin details ...
+  
+  // Add your CSS here
+  styles: `
+    .my-plugin-message {
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin: 20px;
+      animation: slide-in 0.3s ease-out;
+    }
+    
+    @keyframes slide-in {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  `,
+  
+  run: async (api) => {
+    // Your plugin code here
+  }
+};
+```
 
 ## Best Practices
 
-When creating plugins for BetterSEQTA+, consider these best practices:
+Here are some tips to make your plugin awesome:
 
-1. **Use TypeScript**: Take advantage of TypeScript's type system to ensure type safety in your plugins.
-2. **Keep Plugins Focused**: Each plugin should do one thing well.
-3. **Handle Cleanup**: Always return a cleanup function from your plugin's `run` method to ensure proper resource management.
-4. **Document Your Code**: Add clear documentation to your code, especially for public APIs.
-5. **Test Thoroughly**: Test your plugins in different environments and with different configurations.
-6. **Follow UI Guidelines**: When adding UI elements, follow the SEQTA Learn UI guidelines to maintain a consistent experience.
-7. **Optimize Performance**: Be mindful of performance impact, especially for plugins that run on every page.
+1. **Always Clean Up**: When your plugin is disabled, clean up any changes you made:
+   ```typescript
+   run: async (api) => {
+     // Add stuff to the page
+     const element = document.createElement('div');
+     document.body.appendChild(element);
+     
+     // Return a cleanup function
+     return () => {
+       element.remove();
+     };
+   }
+   ```
 
-## Next Steps
+2. **Use TypeScript**: It helps catch errors before they happen and makes your code easier to understand.
 
-- [Creating Your First Plugin](./creating-plugins.md)
-- [Plugin API Reference](../advanced/plugin-api.md)
-- [Typed Storage API](../advanced/storage-api.md) 
+3. **Test Your Plugin**: Make sure it works in different situations:
+   - When SEQTA is loading
+   - When the user switches pages
+   - When the plugin is enabled/disabled
+   - When settings are changed
+
+4. **Keep It Fast**: Don't slow down SEQTA:
+   - Use `onMount` instead of intervals or timeouts
+   - Clean up event listeners when they're not needed
+   - Don't do heavy calculations on the main thread
+
+5. **Make It User-Friendly**:
+   - Add clear settings with good descriptions
+   - Use `disableToggle: true` so users can turn it off if needed
+   - Add helpful error messages if something goes wrong
+
+## Examples
+
+Want to see more examples? Check out our built-in plugins:
+- [themes](../../src/plugins/built-in/themes/index.ts): Shows how to change SEQTA's appearance
+- [notificationCollector](../../src/plugins/built-in/notificationCollector/index.ts): Shows how to work with SEQTA's notifications
+- [timetable](../../src/plugins/built-in/timetable/index.ts): Shows how to modify SEQTA's timetable view
+- [assessmentsAverage](../../src/plugins/built-in/assessmentsAverage/index.ts): Shows how to add new features to existing pages
+
+## Need Help?
+
+Got stuck? No worries! Here's where you can get help:
+- Join our [Discord server](https://discord.gg/YzmbnCDkat)
+- Check out the built-in plugins in the `src/plugins/built-in` folder
+- Open an issue on our [GitHub page](https://github.com/betterseqta/betterseqta-plus/issues)
+
+Happy coding and feel free to checkout the api reference [here](./api-reference.md)

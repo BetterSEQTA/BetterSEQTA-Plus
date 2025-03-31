@@ -176,6 +176,5 @@ bun run dev
 
 Now that you have BetterSEQTA+ installed, you can:
 
-- [Configure your settings](./settings/README.md)
-- [Create your own plugins](./plugins/creating-plugins.md)
+- [Getting Started with Plugins](./plugins/getting-started.md)
 - [Contribute to the project](../CONTRIBUTING.md) 

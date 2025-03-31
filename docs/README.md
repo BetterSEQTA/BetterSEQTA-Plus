@@ -12,24 +12,14 @@ Welcome to the BetterSEQTA+ documentation! This documentation will help you unde
 - [Contributing Guide](../CONTRIBUTING.md) - How to contribute to BetterSEQTA+
 
 ### Plugin System
-- [Plugin System Overview](./plugins/README.md) - Overview of the plugin system
-- [Creating Your First Plugin](./plugins/creating-plugins.md) - Guide to creating a simple plugin
-
-### Settings System
-- [Settings System Overview](./settings/README.md) - How the type-safe settings system works
-- [Creating Plugins with Settings](./settings/creating-plugins.md) - How to use the decorator-based settings in plugins
-- [Creating Custom UI Components](./settings/custom-ui-components.md) - How to create custom UI components for settings
-
-### Advanced Topics
-- [TypeScript Type System](./advanced/typescript.md) - How BetterSEQTA+ leverages TypeScript for type safety
-- [Plugin API Reference](./advanced/plugin-api.md) - Detailed reference for the Plugin API
-- [Storage API Reference](./advanced/storage-api.md) - Detailed reference for the Storage API
+- [Creating Your First Plugin](./plugins/README.md) - A comprehensive, beginner-friendly guide to creating plugins
+- [Plugin API Reference](./plugins/api-reference.md) - Detailed technical documentation of the plugin APIs
 
 ## Core Concepts
 
 BetterSEQTA+ is built around several core concepts:
 
-1. **Plugin System**: BetterSEQTA+ uses a plugin system to extend SEQTA with new features. Plugins are self-contained pieces of code that can be enabled or disabled by the user.
+1. **Plugin System**: BetterSEQTA+ uses a plugin system to extend SEQTA with new features. Plugins are self-contained pieces of code that can be enabled or disabled by the user. Check out our [plugin guide](./plugins/README.md) to learn how to create your own!
 
 2. **Type-Safe Settings**: Each plugin can define settings that are type-safe and automatically rendered in the settings UI. The settings system uses TypeScript decorators to make it easy to define settings with proper typing.
 
