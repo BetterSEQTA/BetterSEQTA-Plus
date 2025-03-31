@@ -116,6 +116,8 @@ Just remember, in order to update changes to the extension if you are running in
 The folder structure is as follows:
 
 - The `src` folder contains source files that are compiled to the build directory.
+- 
+- The `src/plugins` folder contains vital loaders required for BetterSEQTA+ functionality.
 
 - The `src/interface` folder contains source React & Svelte files that are required for the Settings page.
 
