@@ -46,7 +46,6 @@ async function init() {
 
       if (settingsState.onoff) {
         // Initialize legacy plugins
-        console.log('init legacy plugins')
         plugins.Monofile()
 
         // Initialize new plugin system
