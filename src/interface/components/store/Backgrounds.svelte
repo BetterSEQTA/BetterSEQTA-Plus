@@ -2,7 +2,7 @@
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
-  import Fuse from 'fuse.js';
+  import { Index } from 'flexsearch';
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
@@ -20,18 +20,11 @@
   let savedBackgrounds = $state<string[]>([]);
   let installingBackgrounds = $state<Set<string>>(new Set());
   let debugInfo = $state<string>('');
+  let searchIndex = $state<Index | null>(null);
 
   // New state variables
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
-
-  // Add Fuse.js options
-  const fuseOptions = {
-    keys: ['name', 'description'],
-    threshold: 0.4,
-    ignoreLocation: true
-  };
-  let fuse: Fuse<Background>;
 
   // Existing functions
   const loadStore = async () => {
@@ -43,7 +36,19 @@
       }
       const data = await response.json();
       backgrounds = data.backgrounds;
-      fuse = new Fuse(backgrounds, fuseOptions);
+      
+      // Initialize FlexSearch index
+      const index = new Index({
+        tokenize: "forward",
+        preset: "score"
+      });
+      
+      // Add backgrounds to the index
+      backgrounds.forEach((bg, i) => {
+        index.add(i, bg.name + " " + bg.description);
+      });
+      
+      searchIndex = index;
       debugInfo = `Loaded ${backgrounds.length} backgrounds`;
       await loadSavedBackgrounds();
     } catch (e) {
@@ -74,14 +79,10 @@
   let filteredBackgrounds = $derived((() => {
     let filtered = backgrounds;
     
-    // Use Fuse.js search if there's a search term
-    if (searchTerm.trim()) {
-      // @ts-ignore
-      if (fuse) {
-        filtered = fuse.search(searchTerm).map((result: any) => result.item) ?? [];
-      } else {
-        filtered = backgrounds.filter(bg => bg.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      }
+    // Use FlexSearch if there's a search term
+    if (searchTerm.trim() && searchIndex) {
+      const results = searchIndex.search(searchTerm) as number[];
+      filtered = results.map(i => backgrounds[i]);
     }
 
     // Apply category filtering

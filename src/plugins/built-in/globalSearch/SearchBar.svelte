@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import Fuse from 'fuse.js';
+  import { Index } from 'flexsearch';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { fade, scale } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
@@ -62,15 +62,22 @@
     }
   ];
 
-  const fuse = new Fuse(commandItems, {
-    includeScore: true,
-    keys: ['text', 'keybind']
+  // Create a FlexSearch index
+  const searchIndex = new Index({
+    tokenize: "forward",
+    preset: "score"
+  });
+  
+  // Add command items to the index
+  commandItems.forEach((item, i) => {
+    searchIndex.add(i, item.text + " " + item.keybind.join(" "));
   });
 
   // Replace reactive block with $effect
   $effect(() => {
     if (searchTerm.trim()) {
-      filteredItems = fuse.search(searchTerm).map(r => r.item);
+      const results = searchIndex.search(searchTerm) as number[];
+      filteredItems = results.map(i => commandItems[i]);
     } else {
       filteredItems = commandItems;
     }
