@@ -154,6 +154,17 @@ function SetStorageValue(object: any) {
   }
 }
 
+function convertBksliderToSpeed(bksliderinput: number): number {
+  const minBase = 50;
+  const maxBase = 150;
+
+  const scaledValue = 2 + ((maxBase - bksliderinput) / (maxBase - minBase)) ** 4;
+  const baseSpeed = 3;
+
+  const speed = baseSpeed / scaledValue;
+  return speed;
+}
+
 async function migrateLegacySettings() {
   const storage = await browser.storage.local.get(null) as unknown as SettingsState;
 
@@ -161,7 +172,7 @@ async function migrateLegacySettings() {
   if ('animatedbk' in storage || 'bksliderinput' in storage) {
     const animatedSettings = {
       enabled: storage.animatedbk ?? true,
-      speed: storage.bksliderinput ? parseFloat(storage.bksliderinput) / 100 * 2 : 1
+      speed: storage.bksliderinput ? convertBksliderToSpeed(parseFloat(storage.bksliderinput)) : 1
     };
     await browser.storage.local.set({ 'plugin.animated-background.settings': animatedSettings });
   }
