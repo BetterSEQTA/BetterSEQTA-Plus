@@ -153,14 +153,14 @@
         role="button"
         tabindex="0">
         <div class="relative p-2 border-b border-zinc-900/5 dark:border-zinc-100/5">
-          <div class="absolute top-1/2 translate-y-[calc(-50%-4px)] scale-125 left-5 w-6 h-6 text-[1.3rem] text-zinc-900 dark:text-zinc-400 text-opacity-40 pointer-events-none font-IconFamily">
+          <div class="absolute top-1/2 translate-y-[calc(-50%-3px)] scale-105 left-5 w-6 h-6 text-[1.3rem] text-zinc-900 dark:text-zinc-400 text-opacity-40 pointer-events-none font-IconFamily">
             {'\ueca5'}
           </div>
           <input
             bind:this={searchbar}
             bind:value={searchTerm}
             onkeydown={handleKeyNav}
-            class="pr-4 pl-12 w-full h-12 text-lg bg-transparent border-0 outline-none placeholder-zinc-400 text-zinc-900 dark:placeholder-zinc-500 dark:text-white focus:ring-0 sm:text-xl"
+            class="pr-4 pl-12 w-full h-10 text-lg bg-transparent border-0 outline-none placeholder-zinc-400 text-zinc-700 dark:placeholder-zinc-500 dark:text-white focus:ring-0 sm:text-xl"
             placeholder="Search..."
           />
         </div>

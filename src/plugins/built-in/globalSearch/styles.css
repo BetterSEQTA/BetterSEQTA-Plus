@@ -19,7 +19,7 @@
   p {
     font-size: 14px;
     margin-left: 8px;
-    margin-right: 16px;
+    margin-right: 48px;
     height: 100%;
     margin-bottom: 0;
     line-height: 32px;
@@ -29,7 +29,7 @@
 
 /* Light mode styles */
 .search-trigger {
-  background-color: rgba(248, 250, 252, 0.9) !important;
+  background-color: rgba(248, 250, 252, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
   color: #555 !important;
 
@@ -42,14 +42,8 @@
   }
 }
 
-.search-trigger:hover {
-  background-color: rgba(248, 250, 252, 1) !important;
-  color: #333 !important;
-}
-
-/* Dark mode styles */
 .dark .search-trigger {
-  background-color: rgba(30, 41, 59, 0.7) !important;
+  background-color: rgba(0, 0, 0, 0.03) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: #aaa !important;
   
@@ -61,8 +55,3 @@
     color: #aaa;
   }
 }
-
-.dark .search-trigger:hover {
-  background-color: rgba(30, 41, 59, 0.9) !important;
-  color: #eee !important;
-} 
