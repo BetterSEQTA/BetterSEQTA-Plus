@@ -54,7 +54,7 @@
 </script>
 
 <div 
-  class="flex fixed inset-0 z-50 justify-center items-end bg-black bg-opacity-70" 
+  class="flex fixed inset-0 z-50 justify-center items-end bg-black/70" 
   onclick={(e) => {
     if (e.target === e.currentTarget) hideModal();
   }} 
@@ -115,7 +115,7 @@
               <div class="absolute bottom-1 left-3 z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-0.5">
                 {relatedTheme.name}
               </div>
-              <div class="absolute bottom-0 z-0 w-full h-3/4 bg-gradient-to-t to-transparent from-black/80"></div>
+              <div class="absolute bottom-0 z-0 w-full h-3/4 to-transparent from-black/80 bg-linear-to-t"></div>
               <img src={relatedTheme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-48" />
             </div>
           </button>

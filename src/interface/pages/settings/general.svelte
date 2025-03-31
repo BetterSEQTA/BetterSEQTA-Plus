@@ -5,11 +5,72 @@
   import Select from "@/interface/components/Select.svelte"
 
   import browser from "webextension-polyfill"
-  
+
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
+
+  import { getAllPluginSettings } from "@/plugins"
+  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting } from "@/plugins/core/types"
+
+  // Union type representing all possible settings
+  type SettingType = 
+    (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
+    (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
+    (Omit<NumberSetting, 'type'> & { type: 'number', id: string }) |
+    (Omit<SelectSetting<string>, 'type'> & { 
+      type: 'select', 
+      id: string, 
+      options: string[]
+    });
+
+  interface Plugin {
+    pluginId: string;
+    name: string;
+    description: string;
+    settings: Record<string, SettingType>;
+  }
+
+  const pluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
+  
+  async function loadPluginSettings() {
+    for (const plugin of pluginSettings) {
+      if (Object.keys(plugin.settings).length === 0) continue;
+      
+      const storageKey = `plugin.${plugin.pluginId}.settings`;
+      const stored = await browser.storage.local.get(storageKey);
+      
+      pluginSettingsValues[plugin.pluginId] = stored[storageKey] || {};
+      
+      for (const [key, setting] of Object.entries(plugin.settings)) {
+        if (pluginSettingsValues[plugin.pluginId][key] === undefined) {
+          pluginSettingsValues[plugin.pluginId][key] = setting.default;
+        }
+      }
+    }
+  }
+  
+  async function updatePluginSetting(pluginId: string, key: string, value: any) {
+    const storageKey = `plugin.${pluginId}.settings`;
+    
+    if (!pluginSettingsValues[pluginId]) {
+      pluginSettingsValues[pluginId] = {};
+    }
+    pluginSettingsValues[pluginId][key] = value;
+    
+    const stored = await browser.storage.local.get(storageKey);
+    const currentSettings = (stored[storageKey] || {}) as Record<string, any>;
+    
+    currentSettings[key] = value;
+    
+    await browser.storage.local.set({ [storageKey]: currentSettings });
+  }
+
+  $effect(() => {
+    loadPluginSettings();
+  })
 
   const { showColourPicker } = $props<{ showColourPicker: () => void }>();
 </script>
@@ -28,7 +89,6 @@
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
-
     {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
@@ -37,26 +97,6 @@
       props: {
         state: $settingsState.transparencyEffects,
         onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
-      }
-    },
-    {
-      title: "Animated Background",
-      description: "Adds an animated background to BetterSEQTA. (May impact battery life)",
-      id: 2,
-      Component: Switch,
-      props: {
-        state: $settingsState.animatedbk,
-        onChange: (isOn: boolean) => settingsState.animatedbk = isOn
-      }
-    },
-    {
-      title: "Animated Background Speed",
-      description: "Controls the speed of the animated background.",
-      id: 3,
-      Component: Slider,
-      props: {
-        state: $settingsState.bksliderinput,
-        onChange: (value: number) => settingsState.bksliderinput = `${value}`
       }
     },
     {
@@ -86,46 +126,6 @@
       props: {
         state: $settingsState.animations,
         onChange: (isOn: boolean) => settingsState.animations = isOn
-      }
-    },
-    {
-      title: "Notification Collector",
-      description: "Uncaps the 9+ limit for notifications, showing the real number.",
-      id: 7,
-      Component: Switch,
-      props: {
-        state: $settingsState.notificationcollector,
-        onChange: (isOn: boolean) => settingsState.notificationcollector = isOn
-      }
-    },
-    {
-      title: "Assessment Average",
-      description: "Shows your subject average for assessments.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.assessmentsAverage,
-        onChange: (isOn: boolean) => settingsState.assessmentsAverage = isOn
-      }
-    },
-    {
-      title: "Letter Grade Averages",
-      description: "Shows the letter grade instead of the percentage in subject averages.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.lettergrade,
-        onChange: (isOn: boolean) => settingsState.lettergrade = isOn
-      }
-    },
-    {
-      title: "Lesson Alerts",
-      description: "Sends a native browser notification ~5 minutes prior to lessons.",
-      id: 8,
-      Component: Switch,
-      props: {
-        state: $settingsState.lessonalert,
-        onChange: (isOn: boolean) => settingsState.lessonalert = isOn
       }
     },
     {
@@ -178,20 +178,88 @@
           { value: "netherlands", label: "Netherlands" }
         ]
       }
-    },
-    {
-      title: "BetterSEQTA+",
-      description: "Enables BetterSEQTA+ features",
-      id: 12,
-      Component: Switch,
-      props: {
-        state: $settingsState.onoff,
-        onChange: (isOn: boolean) => settingsState.onoff = isOn
-      }
     }
   ] as option}
     {@render Setting(option)}
   {/each}
+  
+  {#each pluginSettings as plugin}
+    <div>
+      <!-- Always show enable toggle if disableToggle is true -->
+      {#if (plugin as any).disableToggle}
+        <div class="flex justify-between items-center px-4 py-3">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">Enable {plugin.name}</h2>
+            <p class="text-xs">{plugin.description}</p>
+          </div>
+          <div>
+            <Switch
+              state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
+              onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
+            />
+          </div>
+        </div>
+      {/if}
+
+      <!-- Only show other settings if plugin is enabled or has no disableToggle -->
+      {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
+        {#each Object.entries(plugin.settings) as [key, setting]}
+          <!-- Skip the 'enabled' setting if it's part of the settings object -->
+          {#if key !== 'enabled'}
+            <div class="flex justify-between items-center px-4 py-3">
+              <div class="pr-4">
+                <h2 class="text-sm font-bold">{setting.title || key}</h2>
+                <p class="text-xs">{setting.description || ''}</p>
+              </div>
+              <div>
+                {#if setting.type === 'boolean'}
+                  <Switch
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                  />
+                {:else if setting.type === 'number'}
+                  <Slider
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                    min={setting.min}
+                    max={setting.max}
+                    step={setting.step}
+                  />
+                {:else if setting.type === 'string'}
+                  <input
+                    type="text"
+                    class="px-2 py-1 text-sm rounded-md dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white"
+                    value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    oninput={(e) => updatePluginSetting(plugin.pluginId, key, e.currentTarget.value)}
+                  />                
+                {:else if setting.type === 'select'}
+                  <Select
+                  state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                  onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                  options={(setting.options as string[]).map(opt => ({
+                    value: opt,
+                    label: opt.charAt(0).toUpperCase() + opt.slice(1)
+                    }))}
+                  />
+                {/if}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      {/if}
+    </div>
+  {/each}
+
+  {@render Setting({
+    title: "BetterSEQTA+",
+    description: "Enables BetterSEQTA+ features",
+    id: 12,
+    Component: Switch,
+    props: {
+      state: $settingsState.onoff,
+      onChange: (isOn: boolean) => settingsState.onoff = isOn
+    }
+  })}
 
   {#if $settingsState.devMode}
     <div class="flex items-center justify-between px-4 py-3 mt-4 pt-[1.75rem]">

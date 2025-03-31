@@ -14,7 +14,7 @@ function reloadSeqtaPages() {
   result.then(open, console.error)
 }
 
-// Main message listener
+// @ts-ignore
 browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (response?: any) => void) => {
 
   switch (request.type) {
@@ -38,7 +38,7 @@ browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (resp
           sendResponse(response);
         });
       });
-      return true; // Keep message channel open for async response
+      return true;
 
     case 'githubTab':
       browser.tabs.create({ url: 'github.com/BetterSEQTA/BetterSEQTA-Plus' });
@@ -49,13 +49,14 @@ browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (resp
       break;
 
     case 'sendNews':
-
       fetchNews(request.source ?? 'australia', sendResponse);
       return true;
   
     default:
       console.log('Unknown request type');
   }
+  
+  return false;
 });
 
 const DefaultValues: SettingsState = {
@@ -64,7 +65,6 @@ const DefaultValues: SettingsState = {
   bksliderinput: "50",
   transparencyEffects: false,
   lessonalert: true,
-  notificationcollector: true,
   defaultmenuorder: [],
   menuitems: {
     assessments: { toggle: true },
@@ -154,54 +154,63 @@ function SetStorageValue(object: any) {
   }
 }
 
-async function UpdateCurrentValues() {
-  try {
-    const items = await browser.storage.local.get();
-    const CurrentValues = items;
+function convertBksliderToSpeed(bksliderinput: number): number {
+  const minBase = 50;
+  const maxBase = 150;
 
-    const NewValue = Object.assign({}, DefaultValues, CurrentValues);
+  const scaledValue = 2 + ((maxBase - bksliderinput) / (maxBase - minBase)) ** 4;
+  const baseSpeed = 3;
 
-    function CheckInnerElement(element: any) {
-      for (let i in element) {
-        if (typeof element[i] === 'object') {
-          // @ts-expect-error
-          if (!Array.isArray(DefaultValues[i])) {
-            // @ts-expect-error
-            NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
-          } else {
-            // @ts-expect-error
-            const length = DefaultValues[i].length;
-            // @ts-expect-error
-            NewValue[i] = Object.assign({}, DefaultValues[i], CurrentValues[i]);
-            let NewArray = [];
-            for (let j = 0; j < length; j++) {
-              NewArray.push(NewValue[i][j]);
-            }
-            NewValue[i] = NewArray;
-          }
-        }
-      }
-    }
+  const speed = baseSpeed / scaledValue;
+  return speed;
+}
 
-    CheckInnerElement(DefaultValues);
+async function migrateLegacySettings() {
+  const storage = await browser.storage.local.get(null) as unknown as SettingsState;
 
-    if (items['customshortcuts']) {
-      NewValue['customshortcuts'] = items['customshortcuts'];
-    }
-
-    SetStorageValue(NewValue);
-    console.log('[BetterSEQTA+] Values updated successfully');
-  } catch (error) {
-    console.error('[BetterSEQTA+] Error updating values:', error);
+  // Animated Background Migration
+  if ('animatedbk' in storage || 'bksliderinput' in storage) {
+    const animatedSettings = {
+      enabled: storage.animatedbk ?? true,
+      speed: storage.bksliderinput ? convertBksliderToSpeed(parseFloat(storage.bksliderinput)) : 1
+    };
+    await browser.storage.local.set({ 'plugin.animated-background.settings': animatedSettings });
   }
+
+  // Assessments Average Migration
+  if ('assessmentsAverage' in storage || 'lettergrade' in storage) {
+    const assessmentsSettings = {
+      enabled: storage.assessmentsAverage ?? true,
+      lettergrade: storage.lettergrade ?? false
+    };
+    await browser.storage.local.set({ 'plugin.assessments-average.settings': assessmentsSettings });
+  }
+
+  if ('selectedTheme' in storage) {
+    const themesSettings = { enabled: true };
+    await browser.storage.local.set({ 'plugin.themes.settings': themesSettings });
+  }
+  if (storage.notificationCollector !== false) {
+    await browser.storage.local.set({ 'plugin.notificationCollector.settings': { enabled: true } });
+  } else {
+    await browser.storage.local.set({ 'plugin.notificationCollector.settings': { enabled: false } });
+  }
+
+  const keysToRemove = [
+    'animatedbk',
+    'bksliderinput',
+    'assessmentsAverage',
+    'lettergrade'
+  ];
+  await browser.storage.local.remove(keysToRemove);
 }
 
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(['justupdated']);
   browser.storage.local.remove(['data']);
 
-  UpdateCurrentValues();
-  if ( event.reason == 'install', event.reason == 'update' ) {
+  if ( event.reason == 'install' || event.reason == 'update' ) {
     browser.storage.local.set({ justupdated: true });
+    migrateLegacySettings();
   }
 });

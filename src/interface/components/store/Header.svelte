@@ -20,8 +20,8 @@
 </script>
 
 <header class="fixed top-0 z-50 w-full h-[4.25rem] bg-white border-b shadow-md border-b-white/10 dark:bg-zinc-950/90 backdrop-blur-xl dark:text-white">
-  <div class="flex items-center justify-between px-4 py-1">
-    <div class="flex gap-4 cursor-pointer place-items-center" onkeydown={(e) => { if (e.key === 'Enter') clearSearch() }} onclick={clearSearch} role="button" tabindex="0">
+  <div class="flex justify-between items-center px-4 py-1">
+    <div class="flex gap-4 place-items-center cursor-pointer" onkeydown={(e) => { if (e.key === 'Enter') clearSearch() }} onclick={clearSearch} role="button" tabindex="0">
       <img src={browser.runtime.getURL(logo)} class="h-14 {darkMode ? 'hidden' : ''}" alt="Logo" />
       <img src={browser.runtime.getURL(logoDark)} class="h-14 {darkMode ? '' : 'hidden'}" alt="Dark Logo" />
 
@@ -41,7 +41,7 @@
       </button>
     </div>
 
-    <div class="relative flex gap-2">
+    <div class="flex relative gap-2">
       <input
         type="text"
         placeholder="Search themes..."
@@ -49,7 +49,7 @@
         oninput={(e: any) => setSearchTerm(e.target.value)}
         class="px-4 py-2 pl-10 text-lg transition bg-gray-100/80 rounded-lg ring-0 focus:bg-gray-100/0 dark:focus:bg-zinc-700/50 focus:ring-[1px] ring-zinc-200 dark:ring-zinc-600 dark:bg-zinc-700/80 dark:text-gray-100 focus:outline-none focus:border-transparent" />
       <svg
-        class="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2 dark:text-gray-200"
+        class="absolute left-3 top-1/2 w-5 h-5 text-gray-400 transform -translate-y-1/2 dark:text-gray-200"
         fill="none"
         stroke-linecap="round"
         stroke-linejoin="round"
