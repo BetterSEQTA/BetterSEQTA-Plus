@@ -5,7 +5,7 @@ import renderSvelte from '@/interface/main';
 import SearchBar from './SearchBar.svelte';
 import styles from './styles.css?inline';
 import { unmount } from 'svelte';
-import { loadDynamicItems, type DynamicContentItem } from './dynamicSearch';
+import { type DynamicContentItem, loadDynamicItems } from './dynamicSearch';
 import { waitForElm } from '@/seqta/utils/waitForElm';
 
 const settings = defineSettings({

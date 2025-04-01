@@ -1,6 +1,6 @@
 import Fuse, { type FuseResult } from 'fuse.js';
 import { getStaticCommands, type StaticCommandItem } from './commands';
-import { getAllDynamicItems, type DynamicContentItem } from './dynamicSearch';
+import { type DynamicContentItem, getAllDynamicItems } from './dynamicSearch';
 import type { CombinedResult } from './types';
 
 export function prepareDynamicItems(items: DynamicContentItem[]): DynamicContentItem[] {
