@@ -3,8 +3,8 @@
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { fade, scale } from 'svelte/transition';
   import { circOut, quintOut } from 'svelte/easing';
-  import { getStaticCommands, type StaticCommandItem } from './commands';
-  import { getAllDynamicItems, type DynamicContentItem } from './dynamicSearch';
+  import { type StaticCommandItem } from './commands';
+  import { type DynamicContentItem } from './dynamicSearch';
   import type { CombinedResult } from './types';
   import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
   import { highlightMatch, highlightSnippet } from './highlightUtils';
@@ -33,7 +33,6 @@
     
     console.debug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
   }
-
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
   let selectedIndex = $state(0);
@@ -171,7 +170,7 @@
          role="button"
          tabindex="0">
       <div
-        class="w-full max-w-2xl rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
+        class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
         transition:scale={{ duration: 100, start: 0.95, opacity: 0, easing: circOut }}
         onclick={(e) => {
           e.stopPropagation();
@@ -203,7 +202,7 @@
         />
 
         {#if combinedResults.length > 0}
-          <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
+          <ul class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
             {#each combinedResults as result, i (result.id)} 
               {@const isSelected = selectedIndex === (calculatorResult ? i + 1 : i)}
               {@const item = result.item} 
@@ -221,9 +220,9 @@
                       {@html highlightMatch(staticItem.text, searchTerm, result.matches)}
                     </span>
                     {#if staticItem.keybindLabel}
-                      <span class="flex-none ml-auto text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                        <kbd class="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800">{staticItem.keybindLabel}</kbd>
-                      </span>
+                      <div class="flex-none ml-auto">
+                        {@render Shortcut({ text: '', keybind: staticItem.keybindLabel })}
+                      </div>
                     {/if}
                   </button>
                 {:else if result.type === 'dynamic'}
@@ -266,7 +265,7 @@
             {/if}
           </div>
         {/if}
-        <div class="p-3 w-full border-t border-zinc-900/5 dark:border-zinc-100/5">
+        <div class="px-3 py-2 w-full border-t border-zinc-900/5 dark:border-zinc-100/5 bg-white/5">
           {#if combinedResults.length > 0 || calculatorResult}
             <div class="flex justify-between items-center text-sm text-zinc-500 dark:text-zinc-400">
               <div class="flex gap-4 items-center">
@@ -274,7 +273,7 @@
                   {#if selectedIndex >= 0 && selectedIndex < combinedResults.length}
                     {@const item = combinedResults[selectedIndex].item}
                     {#if 'keybind' in item && item.keybind}
-                      {@render Shortcut({ text: 'Shortcut', keybind: item.keybindLabel })}
+                      {@render Shortcut({ text: 'Shortcut', keybind: [ ...(item?.keybindLabel ?? []) ] })}
                     {/if}
                   {/if}
                 {/if}
@@ -299,7 +298,7 @@
   <div class="flex gap-2 items-center">
     <div class="flex gap-1 items-center">
       {#each keybind as key}
-        <kbd class="px-1 py-0.5 text-center align-middle rounded min-w-6 bg-zinc-100 dark:bg-zinc-800">{key}</kbd>
+        <kbd class="px-1 py-0.5 text-[0.8rem] text-center align-middle rounded min-w-6 bg-zinc-100 dark:bg-zinc-100/10">{key}</kbd>
       {/each}
     </div>
     <span>{text}</span>

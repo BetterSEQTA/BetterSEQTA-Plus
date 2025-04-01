@@ -48,20 +48,20 @@
       if (evaluated !== undefined) {
         if (math.typeOf(evaluated) === 'Unit') {
           // Handle unit conversion results
-          result = math.format(evaluated, { precision: 14 });
+          result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
           inputUnit = detectUnit(input);
           outputUnit = detectUnit(result);
         } else if (typeof evaluated === 'number') {
           // Handle regular numbers
           if (math.round(evaluated) === evaluated) {
-            result = math.format(evaluated, { precision: 14 });
+            result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
           } else {
-            result = math.format(evaluated, { precision: 14 });
+            result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
           }
           inputUnit = '';
           outputUnit = '';
         } else {
-          result = math.format(evaluated, { precision: 14 });
+          result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
           inputUnit = '';
           outputUnit = '';
         }
@@ -94,10 +94,11 @@
 
 {#if result !== null}
 <div class="p-2">
-  <p class="text-[0.85rem] p-1 pb-0.5 font-semibold text-zinc-500 dark:text-zinc-400">Calculator</p>
+  <p class="text-[0.85rem] p-1 pb-0.5 pt-0 font-semibold text-zinc-500 dark:text-zinc-400">Calculator</p>
   <div class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5' : ''}">
-    <div class="flex flex-col flex-1 items-center py-4 pl-4">
-      <div class="py-2 text-4xl font-semibold text-zinc-900 dark:text-white">
+    <div class="flex flex-col flex-1 items-center py-4 pl-4 min-w-0">
+      <div class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis" 
+        style="--char-count: {result?.length || 10}; font-size: min(2.5rem, max(1rem, calc(25vw / var(--char-count, 10))))">
         {searchTerm}
       </div>
       <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
@@ -105,7 +106,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col justify-center items-center w-12">
+    <div class="flex flex-col flex-shrink-0 justify-center items-center w-12">
       <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
       <div class="text-2xl text-zinc-900 dark:text-zinc-100">
         →
@@ -114,8 +115,9 @@
     </div>
 
     {#if !isCalculating}
-      <div class="flex flex-col flex-1 items-center py-4 pr-4">
-        <div class="py-2 text-4xl font-semibold text-zinc-900 dark:text-white">
+      <div class="flex flex-col flex-1 items-center py-4 pr-4 min-w-0">
+        <div class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis" 
+             style="--char-count: {result?.length || 10}; font-size: min(2.5rem, max(1rem, calc(30vw / var(--char-count, 10))))">
           {result}
         </div>
         <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
