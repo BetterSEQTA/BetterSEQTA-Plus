@@ -1,9 +1,11 @@
 import Fuse, { type FuseResult } from 'fuse.js';
 import { getStaticCommands, type StaticCommandItem } from './commands';
-import { type DynamicContentItem, getAllDynamicItems } from './dynamicSearch';
+import { type DynamicContentItem, getDynamicItems } from './dynamicSearch';
 import type { CombinedResult } from './types';
+import type { HydratedIndexItem } from './indexing/types';
 
-export function prepareDynamicItems(items: DynamicContentItem[]): DynamicContentItem[] {
+// This function is likely no longer needed as items are pre-processed by the indexer
+/* export function prepareDynamicItems(items: DynamicContentItem[]): DynamicContentItem[] {
   return items.map(item => {
     const preparedItem = { ...item };
     
@@ -12,18 +14,15 @@ export function prepareDynamicItems(items: DynamicContentItem[]): DynamicContent
       item.text,
       item.content,
       item.category,
-      item.keywords?.join(' ') || '',
-      ...Object.values(item.metadata || {})
-        .filter(value => typeof value === 'string')
     ].filter(Boolean).join(' ');
     
     return preparedItem;
   });
-}
+} */
 
 export function createSearchIndexes() {
   const commands = getStaticCommands();
-  const dynamicItems = prepareDynamicItems(getAllDynamicItems());
+  const dynamicItems = getDynamicItems(); // Returns HydratedIndexItem[]
   
   const commandOptions = {
     keys: ['text', 'category', 'keywords'],
@@ -35,13 +34,15 @@ export function createSearchIndexes() {
     useExtendedSearch: false
   };
   
+  // Keys for dynamic items remain the same structurally
   const dynamicOptions = {
     keys: [
-      'text', 
-      'content', 
-      'category', 
-      'keywords',
-      'allContent'
+      'text',
+      'content',
+      'category',
+      'metadata.author', // Example: Include specific metadata if needed
+      'metadata.subject', // Example: Include specific metadata if needed
+      // 'keywords', // Keywords are not currently part of IndexItem, add if needed
     ],
     includeScore: true,
     includeMatches: true,
@@ -53,7 +54,7 @@ export function createSearchIndexes() {
   
   return {
     commandsFuse: new Fuse(commands, commandOptions) as Fuse<StaticCommandItem>,
-    dynamicContentFuse: new Fuse(dynamicItems, dynamicOptions) as Fuse<DynamicContentItem>,
+    dynamicContentFuse: new Fuse(dynamicItems, dynamicOptions) as Fuse<HydratedIndexItem>,
     commands,
     dynamicItems
   };
@@ -61,7 +62,7 @@ export function createSearchIndexes() {
 
 export function searchCommands(
   commandsFuse: Fuse<StaticCommandItem>,
-  query: string, 
+  query: string,
   commandIdToItemMap: Map<string, StaticCommandItem>,
   limit = 10
 ): CombinedResult[] {
@@ -69,6 +70,8 @@ export function searchCommands(
   
   if (!query.trim()) {
     return Array.from(commandIdToItemMap.values())
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)) // Sort by priority when no query
+      .slice(0, limit) // Limit results even when no query
       .map(item => ({
         id: item.id,
         type: 'command' as const,
@@ -95,21 +98,25 @@ export function searchCommands(
 }
 
 export function searchDynamicItems(
-  dynamicContentFuse: Fuse<DynamicContentItem>,
-  query: string, 
-  dynamicIdToItemMap: Map<string, DynamicContentItem>,
-  limit = 10
+  dynamicContentFuse: Fuse<HydratedIndexItem>,
+  query: string,
+  dynamicIdToItemMap: Map<string, HydratedIndexItem>,
+  limit = 10,
+  sortByRecent: boolean = true // Added option to control sorting
 ): CombinedResult[] {
   if (!dynamicContentFuse) return [];
   
   if (!query.trim()) {
-    return Array.from(dynamicIdToItemMap.values())
-      .sort((a, b) => b.dateAdded - a.dateAdded)
+    let items = Array.from(dynamicIdToItemMap.values());
+    if (sortByRecent) {
+      items = items.sort((a, b) => b.dateAdded - a.dateAdded);
+    }
+    return items
       .slice(0, limit)
       .map(item => ({
         id: item.id,
         type: 'dynamic' as const,
-        score: 80,
+        score: 80, // Assign a default score for non-searched items
         item
       }));
   }
@@ -117,12 +124,12 @@ export function searchDynamicItems(
   const now = Date.now();
   const searchResults = dynamicContentFuse.search(query, { limit });
   
-  return searchResults.map((result: FuseResult<DynamicContentItem>) => {
+  return searchResults.map((result: FuseResult<HydratedIndexItem>) => {
     const item = result.item;
     const fuseScore = 10 * (1 - (result.score || 0.5));
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
-    const recencyBoost = 1 / (ageInDays + 1);
-    const score = fuseScore + recencyBoost + (item.priority ?? 0);
+    const recencyBoost = sortByRecent ? (1 / (ageInDays + 1)) : 0; // Apply boost only if sorting by recent
+    const score = fuseScore + recencyBoost;
     
     return {
       id: item.id,
@@ -135,14 +142,15 @@ export function searchDynamicItems(
 }
 
 export function performSearch(
-  query: string, 
+  query: string,
   commandsFuse: Fuse<StaticCommandItem>,
-  dynamicContentFuse: Fuse<DynamicContentItem>,
+  dynamicContentFuse: Fuse<HydratedIndexItem>,
   commandIdToItemMap: Map<string, StaticCommandItem>,
-  dynamicIdToItemMap: Map<string, DynamicContentItem>
+  dynamicIdToItemMap: Map<string, HydratedIndexItem>,
+  showRecentFirst: boolean // Pass sorting preference
 ): CombinedResult[] {
   const commandResults = searchCommands(commandsFuse, query, commandIdToItemMap);
-  const dynamicResults = searchDynamicItems(dynamicContentFuse, query, dynamicIdToItemMap);
+  const dynamicResults = searchDynamicItems(dynamicContentFuse, query, dynamicIdToItemMap, 10, showRecentFirst);
 
   const results = [...commandResults, ...dynamicResults];
   results.sort((a, b) => b.score - a.score);

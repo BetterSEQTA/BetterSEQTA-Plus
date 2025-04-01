@@ -5,8 +5,9 @@ import renderSvelte from '@/interface/main';
 import SearchBar from './SearchBar.svelte';
 import styles from './styles.css?inline';
 import { unmount } from 'svelte';
-import { type DynamicContentItem, loadDynamicItems } from './dynamicSearch';
+import { loadDynamicItems } from './dynamicSearch';
 import { waitForElm } from '@/seqta/utils/waitForElm';
+import { runIndexing, loadAllStoredItems } from './indexing/indexer';
 
 const settings = defineSettings({
   searchHotkey: stringSetting({
@@ -24,6 +25,11 @@ const settings = defineSettings({
     title: 'Transparency Effects',
     description: 'Enable transparency effects for the search bar',
   }),
+  runIndexingOnLoad: booleanSetting({
+    default: true,
+    title: 'Index on Page Load',
+    description: 'Run content indexing when SEQTA loads',
+  }),
 });
 
 class GlobalSearchPlugin extends BasePlugin<typeof settings> {
@@ -35,11 +41,14 @@ class GlobalSearchPlugin extends BasePlugin<typeof settings> {
 
   @Setting(settings.transparencyEffects)
   transparencyEffects!: boolean;
+  
+  @Setting(settings.runIndexingOnLoad)
+  runIndexingOnLoad!: boolean;
 }
 
 const settingsInstance = new GlobalSearchPlugin();
 
-const createSampleDynamicData = (): DynamicContentItem[] => {
+/* const createSampleDynamicData = (): DynamicContentItem[] => {
   const sampleMessages = [
     {
       id: 'message_1',
@@ -86,6 +95,14 @@ const createSampleDynamicData = (): DynamicContentItem[] => {
   ];
 
   return [...sampleMessages, ...sampleCourses, ...sampleAssessments];
+}; */
+
+// Update dynamic items directly from the indexer without conversion
+const updateDynamicItemsFromIndex = async () => {
+  const indexedItems = await loadAllStoredItems();
+  loadDynamicItems(indexedItems);
+  console.log(`Loaded ${indexedItems.length} indexed items into search.`);
+  window.dispatchEvent(new CustomEvent('dynamic-items-updated'));
 };
 
 const globalSearchPlugin: Plugin<typeof settings> = {
@@ -99,15 +116,20 @@ const globalSearchPlugin: Plugin<typeof settings> = {
 
   run: async (api) => {
     let app: any;
-
-    const dynamicData = createSampleDynamicData();
-    loadDynamicItems(dynamicData);
+    
+    // Run initial indexing and update dynamic items
+    if (api.settings.runIndexingOnLoad) {
+      setTimeout(async () => {
+        await runIndexing();
+        await updateDynamicItemsFromIndex();
+      }, 2000); // Delay initial indexing to let page load
+    }
 
     const mountSearchBar = (titleElement: Element) => {
       if (titleElement.querySelector('.search-trigger')) {
         return;
       }
-      // Create search button
+      
       const searchButton = document.createElement('div');
       searchButton.className = 'search-trigger';
       searchButton.innerHTML = `
@@ -120,26 +142,24 @@ const globalSearchPlugin: Plugin<typeof settings> = {
         <span style="margin-left: auto; display: flex; align-items: center; color: #777; font-size: 12px;">⌘K</span>
       `;
       
-      // Add button before the title
       titleElement.appendChild(searchButton);
       
-      // Create shadow DOM for Svelte component
       const searchRoot = document.createElement('div');
       document.body.appendChild(searchRoot);
       const searchRootShadow = searchRoot.attachShadow({ mode: 'open' });
       
       console.log('adding event listener to search button');
-      // Handle click on search button
+      
       searchButton.addEventListener('click', () => {
         console.log('search button clicked');
-        // @ts-ignore
+        // @ts-ignore - Intentionally adding to window
         window.setCommandPalleteOpen(true);
       });
       
-      // Mount Svelte component in shadow DOM
       try {
         app = renderSvelte(SearchBar, searchRootShadow, {
           transparencyEffects: api.settings.transparencyEffects ? true : false,
+          showRecentFirst: api.settings.showRecentFirst
         });
       } catch (error) {
         console.error('Error rendering Svelte component:', error);
