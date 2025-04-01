@@ -29,10 +29,10 @@ export function createSearchIndexes() {
     keys: ['text', 'category', 'keywords'],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.4,
-    minMatchCharLength: 2,
+    threshold: 0.6,
+    minMatchCharLength: 1,
     ignoreLocation: true,
-    useExtendedSearch: true
+    useExtendedSearch: false
   };
   
   const dynamicOptions = {
@@ -45,10 +45,10 @@ export function createSearchIndexes() {
     ],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.4,
-    minMatchCharLength: 2,
+    threshold: 0.6,
+    minMatchCharLength: 1,
     ignoreLocation: true,
-    useExtendedSearch: true
+    useExtendedSearch: false
   };
   
   return {

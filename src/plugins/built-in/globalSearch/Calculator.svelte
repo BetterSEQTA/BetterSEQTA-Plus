@@ -64,7 +64,7 @@
       isCalculating = true;
       
       // Let mathjs handle everything
-      const evaluated = math.evaluate(input);
+      const evaluated = math.evaluate(input.replace('**', '^'));
       
       // Format the result
       if (evaluated !== undefined) {
@@ -103,7 +103,7 @@
     } finally {
       isCalculating = false;
     }
-  }, 3);
+  }, 2);
   
   $effect(() => {
     processInput(searchTerm);
@@ -119,17 +119,17 @@
   <p class="text-[0.85rem] p-1 pb-0.5 font-semibold text-zinc-500 dark:text-zinc-400">Calculator</p>
   <div class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5' : ''}">
     <div class="flex flex-col flex-1 items-center py-4 pl-4">
-      <div class="text-3xl font-semibold text-zinc-900 dark:text-white">
+      <div class="py-2 text-4xl font-semibold text-zinc-900 dark:text-white">
         {searchTerm}
       </div>
-      <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800">
+      <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
         {inputUnit || 'Question'}
       </div>
     </div>
 
     <div class="flex flex-col justify-center items-center w-12">
       <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
-      <div class="text-2xl text-zinc-600 dark:text-zinc-400">
+      <div class="text-2xl text-zinc-900 dark:text-zinc-100">
         →
       </div>
       <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
@@ -137,10 +137,10 @@
 
     {#if !isCalculating}
       <div class="flex flex-col flex-1 items-center py-4 pr-4">
-        <div class="text-3xl font-semibold text-zinc-900 dark:text-white">
+        <div class="py-2 text-4xl font-semibold text-zinc-900 dark:text-white">
           {result}
         </div>
-        <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800">
+        <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
           {outputUnit || 'Result'}
         </div>
       </div>
