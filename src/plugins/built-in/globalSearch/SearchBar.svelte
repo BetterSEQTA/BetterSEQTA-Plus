@@ -266,10 +266,45 @@
             {/if}
           </div>
         {/if}
+        <div class="p-3 w-full border-t border-zinc-900/5 dark:border-zinc-100/5">
+          {#if combinedResults.length > 0 || calculatorResult}
+            <div class="flex justify-between items-center text-sm text-zinc-500 dark:text-zinc-400">
+              <div class="flex gap-4 items-center">
+                {#if !calculatorResult}
+                  {#if selectedIndex >= 0 && selectedIndex < combinedResults.length}
+                    {@const item = combinedResults[selectedIndex].item}
+                    {#if 'keybind' in item && item.keybind}
+                      {@render Shortcut({ text: 'Shortcut', keybind: item.keybindLabel })}
+                    {/if}
+                  {/if}
+                {/if}
+              </div>
+              <div class="flex gap-4 items-center">
+                {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
+                {#if calculatorResult && selectedIndex === 0}
+                  {@render Shortcut({ text: 'Copy result', keybind: ['↵']})}
+                {:else}
+                  {@render Shortcut({ text: 'Select', keybind: ['↵']})}
+                {/if}
+              </div>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
   </div>
 {/if}
+
+{#snippet Shortcut({ text, keybind }: { text: string, keybind: string[] }) }
+  <div class="flex gap-2 items-center">
+    <div class="flex gap-1 items-center">
+      {#each keybind as key}
+        <kbd class="px-1 py-0.5 text-center align-middle rounded min-w-6 bg-zinc-100 dark:bg-zinc-800">{key}</kbd>
+      {/each}
+    </div>
+    <span>{text}</span>
+  </div>
+{/snippet}
 
 <style>
   :global(.highlight) {
