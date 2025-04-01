@@ -28,7 +28,7 @@ const staticCommands: StaticCommandItem[] = [
       window.location.hash = '?page=/home';
       loadHomePage();
     },
-    priority: 10
+    priority: 4
   },
   {
     id: 'messages',
@@ -40,7 +40,7 @@ const staticCommands: StaticCommandItem[] = [
     action: () => {
       window.location.hash = '?page=/messages';
     },
-    priority: 10
+    priority: 4
   },
   {
     id: 'timetable',
@@ -52,7 +52,7 @@ const staticCommands: StaticCommandItem[] = [
     action: () => {
       window.location.hash = '?page=/timetable';
     },
-    priority: 10
+    priority: 4
   },
   {
     id: 'assessments',
@@ -64,7 +64,7 @@ const staticCommands: StaticCommandItem[] = [
     action: () => {
       window.location.hash = '?page=/assessments';
     },
-    priority: 10
+    priority: 4
   },
   {
     id: 'toggle-dark-mode',
@@ -72,7 +72,7 @@ const staticCommands: StaticCommandItem[] = [
     category: 'action',
     text: 'Toggle Dark Mode',
     action: () => settingsState.DarkMode = !settingsState.DarkMode,
-    priority: 5,
+    priority: 2,
     keywords: ['theme', 'appearance']
   }
 ];

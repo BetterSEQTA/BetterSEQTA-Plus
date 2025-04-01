@@ -6,7 +6,7 @@
   import { type StaticCommandItem } from './commands';
   import type { CombinedResult } from './types';
   import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
-  import { highlightMatch, highlightSnippet } from './highlightUtils';
+  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from './highlightUtils';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from './indexing/actions';
@@ -105,14 +105,14 @@
     };
   });
 
-  const performSearch = () => {
+  const performSearch = async () => {
     isLoading = true;
     selectedIndex = 0;
 
     const term = searchTerm.trim().toLowerCase();
     
     if (commandsFuse && dynamicContentFuse) {
-      combinedResults = doSearch(
+      combinedResults = await doSearch(
         term, 
         commandsFuse, 
         dynamicContentFuse, 
@@ -288,8 +288,9 @@
                       onclick={() => executeItemAction(dynamicItem)}
                     >
                       <div class="flex items-center w-full">
+                        <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{dynamicItem.metadata?.icon || '\ue924'}</div>
                         <span class="ml-4 text-lg truncate">
-                          {@html highlightMatch(dynamicItem.text, searchTerm, result.matches)}
+                          {@html stripHtmlButKeepHighlights(highlightMatch(dynamicItem.text, searchTerm, result.matches))}
                         </span>
                         <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
                           {dynamicItem.category} 
@@ -297,7 +298,7 @@
                       </div>
                       {#if dynamicItem.content}
                         <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
-                          {@html highlightSnippet(dynamicItem.content, searchTerm, result.matches)}
+                          {@html stripHtmlButKeepHighlights(highlightSnippet(dynamicItem.content, searchTerm, result.matches))}
                         </div>
                       {/if}
                     </button>
