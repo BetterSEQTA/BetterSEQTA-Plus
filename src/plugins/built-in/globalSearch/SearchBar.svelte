@@ -195,14 +195,15 @@
           />
         </div>
 
-        <Calculator 
-          searchTerm={searchTerm} 
-          isSelected={selectedIndex === 0} 
-          on:hasResult={(e) => updateCalculatorState(e.detail)}
-        />
-
-        {#if combinedResults.length > 0}
-          <ul class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
+        
+        <ul class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
+          <Calculator 
+            searchTerm={searchTerm} 
+            isSelected={selectedIndex === 0} 
+            on:hasResult={(e) => updateCalculatorState(e.detail)}
+          />
+          
+          {#if combinedResults.length > 0}
             {#each combinedResults as result, i (result.id)} 
               {@const isSelected = selectedIndex === (calculatorResult ? i + 1 : i)}
               {@const item = result.item} 
@@ -251,23 +252,23 @@
                 {/if}
               </li>
             {/each}
-          </ul>
-        {:else if !calculatorResult}
-          <div class="px-8 py-16 text-center text-zinc-900 dark:text-zinc-200 sm:px-16">
-            {#if isLoading}
-              <div class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>
-              <p class="mt-4 text-lg dark:text-zinc-300">Searching...</p>
-            {:else}
-              <svg class="mx-auto w-8 h-8 text-opacity-40 dark:text-opacity-60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-              </svg>
-              <p class="mt-6 text-lg dark:text-zinc-300">No matches found. Try something else.</p>
-            {/if}
-          </div>
-        {/if}
+          {:else if !calculatorResult}
+            <div class="px-8 py-16 text-center text-zinc-900 dark:text-zinc-200 sm:px-16">
+              {#if isLoading}
+                <div class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>
+                <p class="mt-4 text-lg dark:text-zinc-300">Searching...</p>
+              {:else}
+                <svg class="mx-auto w-8 h-8 text-opacity-40 dark:text-opacity-60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                </svg>
+                <p class="mt-6 text-lg dark:text-zinc-300">No matches found. Try something else.</p>
+              {/if}
+            </div>
+          {/if}
+        </ul>
         <div class="px-3 py-2 w-full border-t border-zinc-900/5 dark:border-zinc-100/5 bg-white/5">
           {#if combinedResults.length > 0 || calculatorResult}
-            <div class="flex justify-between items-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div class="flex justify-between items-center h-5 text-sm text-zinc-500 dark:text-zinc-400">
               <div class="flex gap-4 items-center">
                 {#if !calculatorResult}
                   {#if selectedIndex >= 0 && selectedIndex < combinedResults.length}

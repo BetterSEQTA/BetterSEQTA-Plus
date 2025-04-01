@@ -98,7 +98,7 @@
   <div class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5' : ''}">
     <div class="flex flex-col flex-1 items-center py-4 pl-4 min-w-0">
       <div class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis" 
-        style="--char-count: {result?.length || 10}; font-size: min(2.5rem, max(1rem, calc(25vw / var(--char-count, 10))))">
+        style="--char-count: {searchTerm?.length || 10}; font-size: min(2.5rem, max(1rem, calc(35vw / var(--char-count, 10))))">
         {searchTerm}
       </div>
       <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
