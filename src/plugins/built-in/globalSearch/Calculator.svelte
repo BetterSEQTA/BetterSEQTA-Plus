@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import debounce from '@/seqta/utils/debounce';
+  import { unitFullNames } from './unitMap';
   import * as math from 'mathjs';
 
   let { searchTerm = '', isSelected = false } = $props<{ searchTerm: string, isSelected: boolean }>();
@@ -13,28 +13,6 @@
   let isCalculating = $state(false);
   let inputUnit = $state<string>('');
   let outputUnit = $state<string>('');
-
-  // Map of unit abbreviations to full names
-  const unitFullNames: Record<string, string> = {
-    km: 'Kilometers',
-    m: 'Meters',
-    cm: 'Centimeters',
-    mm: 'Millimeters',
-    mi: 'Miles',
-    ft: 'Feet',
-    in: 'Inches',
-    kg: 'Kilograms',
-    g: 'Grams',
-    lb: 'Pounds',
-    oz: 'Ounces',
-    l: 'Liters',
-    ml: 'Milliliters',
-    gal: 'Gallons',
-    h: 'Hours',
-    min: 'Minutes',
-    s: 'Seconds',
-    ms: 'Milliseconds'
-  };
 
   function detectUnit(expression: string): string {
     try {
@@ -51,7 +29,7 @@
   }
   
   // Process the input with debounce to avoid unnecessary calculations
-  const processInput = debounce((input: string) => {
+  const processInput = (input: string) => {
     try {
       if (!input.trim()) {
         result = null;
@@ -103,7 +81,7 @@
     } finally {
       isCalculating = false;
     }
-  }, 2);
+  }
   
   $effect(() => {
     processInput(searchTerm);

@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { fade, scale } from 'svelte/transition';
-  import { quintOut } from 'svelte/easing';
+  import { circOut, quintOut } from 'svelte/easing';
   import { getStaticCommands, type StaticCommandItem } from './commands';
   import { getAllDynamicItems, type DynamicContentItem } from './dynamicSearch';
   import type { CombinedResult } from './types';
@@ -162,7 +162,7 @@
   <div role="dialog" aria-modal="true" class={settingsState.DarkMode ? 'dark' : ''}>
     <div 
       class="fixed inset-0 z-[50000] bg-zinc-900/40 dark:bg-black/60" 
-      transition:fade={{ duration: 150 }}
+      transition:fade={{ duration: 150, easing: quintOut }}
     ></div>
 
     <div class="fixed inset-0 z-[50000] flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none" 
@@ -172,7 +172,7 @@
          tabindex="0">
       <div
         class="w-full max-w-2xl rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
-        transition:scale={{ duration: 200, start: 0.95, opacity: 0, easing: quintOut }}
+        transition:scale={{ duration: 100, start: 0.95, opacity: 0, easing: circOut }}
         onclick={(e) => {
           e.stopPropagation();
         }}
