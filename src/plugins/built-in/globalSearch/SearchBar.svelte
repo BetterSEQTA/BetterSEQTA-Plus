@@ -4,20 +4,54 @@
   import { fade, scale } from 'svelte/transition';
   import { circOut, quintOut } from 'svelte/easing';
   import { type StaticCommandItem } from './commands';
-  import { type DynamicContentItem } from './dynamicSearch';
   import type { CombinedResult } from './types';
   import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
   import { highlightMatch, highlightSnippet } from './highlightUtils';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
+  import { actionMap } from './indexing/actions';
+  import type { IndexItem, HydratedIndexItem } from './indexing/types';
 
-  const { transparencyEffects } = $props<{ transparencyEffects: boolean }>();
+  const { 
+    transparencyEffects, 
+    showRecentFirst
+  } = $props<{ 
+    transparencyEffects: boolean, 
+    showRecentFirst: boolean 
+  }>();
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
-  let dynamicContentFuse = $state<Fuse<DynamicContentItem>>();
+  let dynamicContentFuse = $state<Fuse<HydratedIndexItem>>();
   
-  const dynamicIdToItemMap = $state(new Map<string, DynamicContentItem>());
+  const dynamicIdToItemMap = $state(new Map<string, HydratedIndexItem>());
   const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
+
+  let isIndexing = $state(false);
+  let completedJobs = $state(0);
+  let totalJobs = $state(0);
+
+  onMount(() => {
+    const progressHandler = (event: CustomEvent) => {
+      const { completed, total, indexing } = event.detail;
+      completedJobs = completed;
+      totalJobs = total;
+      isIndexing = indexing;
+    };
+
+    window.addEventListener('indexing-progress', progressHandler as EventListener);
+    
+    const itemsUpdatedHandler = () => {
+      console.log('Search Bar received items-updated event, re-indexing...');
+      setupSearchIndexes();
+      performSearch();
+    };
+    window.addEventListener('dynamic-items-updated', itemsUpdatedHandler);
+    
+    return () => {
+      window.removeEventListener('indexing-progress', progressHandler as EventListener);
+      window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
+    };
+  });
 
   function setupSearchIndexes() {
     const { commandsFuse: cfuse, dynamicContentFuse: dfuse, commands, dynamicItems } = createSearchIndexes();
@@ -42,7 +76,6 @@
   let prevSearchTerm = $state('');
   let calculatorResult = $state<string | null>(null);
 
-  // Function to check if calculator has a result
   const updateCalculatorState = (hasResult: string | null) => {
     calculatorResult = hasResult;
   };
@@ -50,7 +83,7 @@
   onMount(() => {
     setupSearchIndexes();
     
-    // @ts-ignore
+    // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen = (open: boolean) => {
       commandPalleteOpen = open;
     };
@@ -84,7 +117,8 @@
         commandsFuse, 
         dynamicContentFuse, 
         commandIdToItemMap, 
-        dynamicIdToItemMap
+        dynamicIdToItemMap,
+        showRecentFirst
       );
     } else {
       combinedResults = [];
@@ -131,14 +165,26 @@
     }
   };
 
+  function executeItemAction(item: StaticCommandItem | HydratedIndexItem) {
+    if ('action' in item && typeof item.action === 'function') {
+      (item as StaticCommandItem).action();
+    } else if ('actionId' in item && item.actionId && actionMap[item.actionId]) {
+      actionMap[item.actionId](item as IndexItem);
+    }
+    commandPalleteOpen = false;
+  }
+
   const executeSelected = () => {
     if (calculatorResult && selectedIndex === 0) {
       navigator.clipboard.writeText(calculatorResult);
+      commandPalleteOpen = false;
     } else {
       const resultIndex = calculatorResult ? selectedIndex - 1 : selectedIndex;
-      combinedResults[resultIndex]?.item.action();
+      const result = combinedResults[resultIndex];
+      if (result?.item) {
+        executeItemAction(result.item);
+      }
     }
-    commandPalleteOpen = false;
   };
 
   const handleKeyNav = (e: KeyboardEvent) => {
@@ -182,6 +228,7 @@
         }}
         role="button"
         tabindex="0">
+
         <div class="relative p-2 border-b border-zinc-900/5 dark:border-zinc-100/5">
           <div class="absolute top-1/2 translate-y-[calc(-50%-3px)] scale-105 left-5 w-6 h-6 text-[1.3rem] text-zinc-900 dark:text-zinc-400 text-opacity-40 pointer-events-none font-IconFamily">
             {'\ueca5'}
@@ -195,7 +242,6 @@
           />
         </div>
 
-        
         <ul class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
           <Calculator 
             searchTerm={searchTerm} 
@@ -209,12 +255,11 @@
               {@const item = result.item} 
               <li>
                 {#if result.type === 'command'}
-                  <!-- Render Static Command -->
                   {@const staticItem = item as StaticCommandItem}
                   <button
                     class="w-full flex items-center px-2 py-1.5 rounded-lg select-none cursor-pointer group 
                     {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
-                    onclick={() => { staticItem.action(); commandPalleteOpen = false; }}
+                    onclick={() => executeItemAction(staticItem)}
                   >
                     <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{staticItem.icon}</div>
                     <span class="ml-4 text-lg truncate">
@@ -227,28 +272,36 @@
                     {/if}
                   </button>
                 {:else if result.type === 'dynamic'}
-                  <!-- Render Dynamic Content Item -->
-                  {@const dynamicItem = item as DynamicContentItem}
-                  <button
-                    class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group 
-                    {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
-                    onclick={() => { dynamicItem.action(); commandPalleteOpen = false; }}
-                  >
-                    <div class="flex items-center w-full">
-                      <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{dynamicItem.icon}</div>
-                      <span class="ml-4 text-lg truncate">
-                        {@html highlightMatch(dynamicItem.text, searchTerm, result.matches)}
-                      </span>
-                      <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
-                        {dynamicItem.category} 
-                      </span>
-                    </div>
-                    {#if dynamicItem.content}
-                      <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
-                        {@html highlightSnippet(dynamicItem.content, searchTerm, result.matches)}
+                  {@const dynamicItem = item as HydratedIndexItem}
+                  {#if dynamicItem.renderComponent}
+                    <dynamicItem.renderComponent 
+                      item={dynamicItem} 
+                      isSelected={isSelected}
+                      searchTerm={searchTerm} 
+                      matches={result.matches} 
+                      on:click={() => executeItemAction(dynamicItem)} 
+                    />
+                  {:else}
+                    <button
+                      class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group 
+                      {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+                      onclick={() => executeItemAction(dynamicItem)}
+                    >
+                      <div class="flex items-center w-full">
+                        <span class="ml-4 text-lg truncate">
+                          {@html highlightMatch(dynamicItem.text, searchTerm, result.matches)}
+                        </span>
+                        <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
+                          {dynamicItem.category} 
+                        </span>
                       </div>
-                    {/if}
-                  </button>
+                      {#if dynamicItem.content}
+                        <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
+                          {@html highlightSnippet(dynamicItem.content, searchTerm, result.matches)}
+                        </div>
+                      {/if}
+                    </button>
+                  {/if}
                 {/if}
               </li>
             {/each}
@@ -279,12 +332,27 @@
                   {/if}
                 {/if}
               </div>
-              <div class="flex gap-4 items-center">
-                {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
-                {#if calculatorResult && selectedIndex === 0}
+              <div>
+                <div class="flex gap-4 items-center">
+                  {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
+                  {#if calculatorResult && selectedIndex === 0}
                   {@render Shortcut({ text: 'Copy result', keybind: ['↵']})}
-                {:else}
+                  {:else}
                   {@render Shortcut({ text: 'Select', keybind: ['↵']})}
+                  {/if}
+                </div>
+                {#if isIndexing}
+                  <div class="inset-x-0 top-0">
+                    <div class="absolute right-2 -bottom-4 text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Indexing
+                    </div>
+                    <div class="overflow-hidden h-0.5 bg-zinc-200 dark:bg-zinc-700">
+                      <div 
+                        class="h-full bg-blue-500 transition-all duration-300 ease-out"
+                        style="width: {(completedJobs / totalJobs) * 100}%"
+                      ></div>
+                    </div>
+                  </div>
                 {/if}
               </div>
             </div>
