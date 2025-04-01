@@ -1,7 +1,7 @@
-import { getAll, put, clear, remove } from './db';
+import { clear, getAll, put, remove } from './db';
 import { jobs } from './jobs';
 import { renderComponentMap } from './renderComponents';
-import type { IndexItem, HydratedIndexItem, Job, JobContext } from './types';
+import type { HydratedIndexItem, IndexItem, Job, JobContext } from './types';
 import { processItems } from '../vectorSearch';
 
 const META_STORE = 'meta';
