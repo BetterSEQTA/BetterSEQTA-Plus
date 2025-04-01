@@ -1,90 +1,49 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { Index } from 'flexsearch';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { fade, scale } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
+  import { getStaticCommands, type StaticCommandItem } from './commands';
+  import { getAllDynamicItems, type DynamicContentItem } from './dynamicSearch';
+  import type { CombinedResult } from './types';
+  import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
+  import { highlightMatch, highlightSnippet } from './highlightUtils';
+  import Fuse from 'fuse.js';
+
+  const { transparencyEffects } = $props<{ transparencyEffects: boolean }>();
+
+  let commandsFuse = $state<Fuse<StaticCommandItem>>();
+  let dynamicContentFuse = $state<Fuse<DynamicContentItem>>();
+  
+  const dynamicIdToItemMap = $state(new Map<string, DynamicContentItem>());
+  const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
+
+  function setupSearchIndexes() {
+    const { commandsFuse: cfuse, dynamicContentFuse: dfuse, commands, dynamicItems } = createSearchIndexes();
+    
+    commandsFuse = cfuse;
+    dynamicContentFuse = dfuse;
+    
+    dynamicIdToItemMap.clear();
+    commandIdToItemMap.clear();
+    
+    dynamicItems.forEach(item => dynamicIdToItemMap.set(item.id, item));
+    commands.forEach(item => commandIdToItemMap.set(item.id, item));
+    
+    console.debug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
+  }
 
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
-  let index = $state(0);
+  let selectedIndex = $state(0);
   let searchbar = $state<HTMLInputElement>();
-  let filteredItems = $state<CommandItem[]>([]);
-
-  $effect(() => {
-    if (!commandPalleteOpen) {
-      searchTerm = '';
-      index = 0;
-    }
-  })
-
-  interface CommandItem {
-    icon: string;
-    category: string;
-    text: string;
-    keybind: string[];
-    keybindLabel: string;
-    action: () => void;
-  }
-
-  const commandItems: CommandItem[] = [
-    {
-      icon: '\uec95',
-      category: 'quick-action',
-      text: 'Save File',
-      keybind: ['ctrl+s'],
-      keybindLabel: '⌘S',
-      action: () => console.log('Save File')
-    },
-    {
-      icon: '\ueadf',
-      category: 'quick-action',
-      text: 'Add New File',
-      keybind: ['ctrl+n'],
-      keybindLabel: '⌘N',
-      action: () => console.log('Add New File')
-    },
-    {
-      icon: '\ueb10',
-      category: 'result',
-      text: 'Favourite Folder',
-      keybind: ['ctrl+o'],
-      keybindLabel: 'Open Folder',
-      action: () => console.log('Favourite Folder')
-    },
-    {
-      icon: '\ueac4',
-      category: 'result',
-      text: 'Schoolwork',
-      keybind: ['ctrl+o'],
-      keybindLabel: 'Jump to...',
-      action: () => console.log('Open file')
-    }
-  ];
-
-  // Create a FlexSearch index
-  const searchIndex = new Index({
-    tokenize: "forward",
-    preset: "score"
-  });
-  
-  // Add command items to the index
-  commandItems.forEach((item, i) => {
-    searchIndex.add(i, item.text + " " + item.keybind.join(" "));
-  });
-
-  // Replace reactive block with $effect
-  $effect(() => {
-    if (searchTerm.trim()) {
-      const results = searchIndex.search(searchTerm) as number[];
-      filteredItems = results.map(i => commandItems[i]);
-    } else {
-      filteredItems = commandItems;
-    }
-    index = 0;
-  });
+  let combinedResults = $state<CombinedResult[]>([]); 
+  let isLoading = $state(false);
+  let prevSearchTerm = $state('');
 
   onMount(() => {
+    setupSearchIndexes();
+    
     // @ts-ignore
     window.setCommandPalleteOpen = (open: boolean) => {
       commandPalleteOpen = open;
@@ -102,19 +61,61 @@
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  });
+
+  const performSearch = () => {
+    isLoading = true;
+    selectedIndex = 0;
+
+    const term = searchTerm.trim().toLowerCase();
+    
+    if (commandsFuse && dynamicContentFuse) {
+      combinedResults = doSearch(
+        term, 
+        commandsFuse, 
+        dynamicContentFuse, 
+        commandIdToItemMap, 
+        dynamicIdToItemMap
+      );
+    } else {
+      combinedResults = [];
+    }
+    
+    isLoading = false;
+  };
+
+  $effect(() => {
+    if (commandPalleteOpen) {
+      performSearch();
+      tick().then(() => searchbar?.focus()); 
+    } else {
+      searchTerm = '';
+      selectedIndex = 0;
+      prevSearchTerm = '';
+      combinedResults = [];
+    }
+  });
+
+  $effect(() => {
+    if (commandPalleteOpen && searchTerm !== prevSearchTerm) {
+      prevSearchTerm = searchTerm;
+      performSearch();
+    }
   });
 
   const selectNext = () => {
-    if (index < filteredItems.length - 1) index++;
+    if (selectedIndex < combinedResults.length - 1) selectedIndex++;
   };
 
   const selectPrev = () => {
-    if (index > 0) index--;
+    if (selectedIndex > 0) selectedIndex--;
   };
 
   const executeSelected = () => {
-    filteredItems[index]?.action();
+    combinedResults[selectedIndex]?.item.action();
     commandPalleteOpen = false;
   };
 
@@ -147,7 +148,7 @@
          role="button"
          tabindex="0">
       <div
-        class="w-full max-w-2xl rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { settingsState.transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
+        class="w-full max-w-2xl rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
         transition:scale={{ duration: 200, start: 0.95, opacity: 0, easing: quintOut }}
         onclick={(e) => {
           e.stopPropagation();
@@ -172,38 +173,86 @@
           />
         </div>
 
-        {#if filteredItems.length > 0}
+        <!-- Unified results list -->
+        {#if combinedResults.length > 0}
           <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
-            {#each filteredItems as item, i (item.text)}
+            {#each combinedResults as result, i (result.id)} 
+              {@const isSelected = selectedIndex === i}
+              {@const item = result.item} 
               <li>
-                <button
-                  class="w-full flex items-center px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
-                  {i === index 
-                    ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' 
-                    : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
-                  onclick={() => { item.action(); commandPalleteOpen = false; }}
-                >
-                  <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center 
-                  {i === index 
-                    ? 'text-zinc-900 dark:text-white' 
-                    : 'text-zinc-600 dark:text-zinc-400'}">{item.icon}</div>
-                  <span class="ml-4 text-lg truncate">{item.text}</span>
-                  <span class="flex-none ml-auto text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                    <kbd class="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800">{item.keybindLabel}</kbd>
-                  </span>
-                </button>
+                {#if result.type === 'command'}
+                  <!-- Render Static Command -->
+                  {@const staticItem = item as StaticCommandItem}
+                  <button
+                    class="w-full flex items-center px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
+                    {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+                    onclick={() => { staticItem.action(); commandPalleteOpen = false; }}
+                  >
+                    <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{staticItem.icon}</div>
+                    <span class="ml-4 text-lg truncate">
+                      {@html highlightMatch(staticItem.text, searchTerm, result.matches)}
+                    </span>
+                    {#if staticItem.keybindLabel}
+                      <span class="flex-none ml-auto text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                        <kbd class="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800">{staticItem.keybindLabel}</kbd>
+                      </span>
+                    {/if}
+                  </button>
+                {:else if result.type === 'dynamic'}
+                  <!-- Render Dynamic Content Item -->
+                  {@const dynamicItem = item as DynamicContentItem}
+                  <button
+                    class="w-full flex flex-col px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
+                    {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+                    onclick={() => { dynamicItem.action(); commandPalleteOpen = false; }}
+                  >
+                    <div class="flex items-center w-full">
+                      <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{dynamicItem.icon}</div>
+                      <span class="ml-4 text-lg truncate">
+                        {@html highlightMatch(dynamicItem.text, searchTerm, result.matches)}
+                      </span>
+                      <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
+                        {dynamicItem.category} 
+                      </span>
+                    </div>
+                    {#if dynamicItem.content}
+                      <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
+                        {@html highlightSnippet(dynamicItem.content, searchTerm, result.matches)}
+                      </div>
+                    {/if}
+                  </button>
+                {/if}
               </li>
             {/each}
           </ul>
         {:else}
           <div class="px-8 py-16 text-center text-zinc-900 dark:text-zinc-200 sm:px-16">
-            <svg class="mx-auto w-8 h-8 text-opacity-40 dark:text-opacity-60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-            </svg>
-            <p class="mt-6 text-lg dark:text-zinc-300">No matches found. Try something else.</p>
+            {#if isLoading}
+              <div class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>
+              <p class="mt-4 text-lg dark:text-zinc-300">Searching...</p>
+            {:else}
+              <svg class="mx-auto w-8 h-8 text-opacity-40 dark:text-opacity-60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+              </svg>
+              <p class="mt-6 text-lg dark:text-zinc-300">No matches found. Try something else.</p>
+            {/if}
           </div>
         {/if}
       </div>
     </div>
   </div>
 {/if}
+
+<style>
+  :global(.highlight) {
+    background-color: rgba(200, 200, 200, 0.3);
+    font-weight: 500;
+    border-radius: 2px;
+    padding: 0 2px;
+    margin: 0 -2px;
+  }
+
+  .dark :global(.highlight) {
+    background-color: rgba(79, 79, 79, 0.2);
+  }
+</style>
