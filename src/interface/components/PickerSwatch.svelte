@@ -5,6 +5,7 @@
 </script>
 
 <button
+  aria-label="Color Picker Swatch"
   onclick={onClick}
   style="background: {$settingsState.selectedColor}"
   class="w-16 h-8 rounded-md"

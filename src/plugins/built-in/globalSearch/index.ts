@@ -107,7 +107,6 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       if (titleElement.querySelector('.search-trigger')) {
         return;
       }
-
       // Create search button
       const searchButton = document.createElement('div');
       searchButton.className = 'search-trigger';
@@ -138,9 +137,13 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       });
       
       // Mount Svelte component in shadow DOM
-      app = renderSvelte(SearchBar, searchRootShadow, {
-        transparencyEffects: api.settings.transparencyEffects,
-      });
+      try {
+        app = renderSvelte(SearchBar, searchRootShadow, {
+          transparencyEffects: api.settings.transparencyEffects ? true : false,
+        });
+      } catch (error) {
+        console.error('Error rendering Svelte component:', error);
+      }
     }
 
     const title = document.querySelector('#title');

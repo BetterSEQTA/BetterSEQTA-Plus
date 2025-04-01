@@ -66,7 +66,7 @@
 </script>
 
 {#snippet Shortcuts([index, Shortcut]: [string, { name: string, enabled: boolean }]) }
-<div class="flex items-center justify-between px-4 py-3">
+<div class="flex justify-between items-center px-4 py-3">
   <div class="pr-4">
     <h2 class="text-sm">{Shortcut.name}</h2>
   </div>
@@ -95,7 +95,7 @@
               class="w-full"
             >
               <input
-                class="w-full p-2 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
+                class="p-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
                 type="text"
                 placeholder="Shortcut Name"
                 bind:value={newTitle}
@@ -108,7 +108,7 @@
               class="w-full"
             >
               <input
-                class="w-full p-2 my-2 transition border-0 rounded-lg placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
+                class="p-2 my-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
                 type="text"
                 placeholder="URL eg. https://google.com"
                 bind:value={newURL}
@@ -142,9 +142,9 @@
 
     <!-- Custom Shortcuts Section -->
     {#each $settingsState.customshortcuts as shortcut, index}
-      <div class="flex items-center justify-between px-4 py-3">
+      <div class="flex justify-between items-center px-4 py-3">
         {shortcut.name}
-        <button onclick={() => deleteCustomShortcut(index)}>
+        <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
