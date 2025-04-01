@@ -9,6 +9,7 @@
   import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
   import { highlightMatch, highlightSnippet } from './highlightUtils';
   import Fuse from 'fuse.js';
+  import Calculator from './Calculator.svelte';
 
   const { transparencyEffects } = $props<{ transparencyEffects: boolean }>();
 
@@ -40,6 +41,12 @@
   let combinedResults = $state<CombinedResult[]>([]); 
   let isLoading = $state(false);
   let prevSearchTerm = $state('');
+  let calculatorResult = $state<string | null>(null);
+
+  // Function to check if calculator has a result
+  const updateCalculatorState = (hasResult: string | null) => {
+    calculatorResult = hasResult;
+  };
 
   onMount(() => {
     setupSearchIndexes();
@@ -107,15 +114,29 @@
   });
 
   const selectNext = () => {
-    if (selectedIndex < combinedResults.length - 1) selectedIndex++;
+    if (calculatorResult && selectedIndex === -1) {
+      selectedIndex = 0; // Move from calculator to first search result
+    } else if (selectedIndex < combinedResults.length - 1) {
+      selectedIndex++;
+    }
   };
 
   const selectPrev = () => {
-    if (selectedIndex > 0) selectedIndex--;
+    if (selectedIndex > 0) {
+      selectedIndex--;
+    } else if (selectedIndex === 0 && calculatorResult) {
+      selectedIndex = -1; // Move from first search result to calculator
+    }
   };
 
   const executeSelected = () => {
-    combinedResults[selectedIndex]?.item.action();
+    if (selectedIndex === -1 && calculatorResult) {
+      if (calculatorResult) {
+        navigator.clipboard.writeText(calculatorResult);
+      }
+    } else {
+      combinedResults[selectedIndex]?.item.action();
+    }
     commandPalleteOpen = false;
   };
 
@@ -173,7 +194,12 @@
           />
         </div>
 
-        <!-- Unified results list -->
+        <Calculator 
+          searchTerm={searchTerm} 
+          isSelected={selectedIndex === -1} 
+          on:hasResult={(e) => updateCalculatorState(e.detail)}
+        />
+
         {#if combinedResults.length > 0}
           <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
             {#each combinedResults as result, i (result.id)} 
@@ -225,7 +251,7 @@
               </li>
             {/each}
           </ul>
-        {:else}
+        {:else if !calculatorResult}
           <div class="px-8 py-16 text-center text-zinc-900 dark:text-zinc-200 sm:px-16">
             {#if isLoading}
               <div class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>

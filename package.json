@@ -85,6 +85,7 @@
     "idb": "^8.0.2",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
+    "mathjs": "^14.4.0",
     "million": "^3.1.11",
     "motion": "^12.4.12",
     "postcss": "^8.5.3",
