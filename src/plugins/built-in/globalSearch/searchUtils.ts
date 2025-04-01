@@ -1,8 +1,9 @@
 import Fuse, { type FuseResult } from 'fuse.js';
 import { getStaticCommands, type StaticCommandItem } from './commands';
-import { type DynamicContentItem, getDynamicItems } from './dynamicSearch';
+import { getDynamicItems } from './dynamicSearch';
 import type { CombinedResult } from './types';
 import type { HydratedIndexItem } from './indexing/types';
+import { searchVectors, type VectorSearchResult } from './vectorSearch';
 
 // This function is likely no longer needed as items are pre-processed by the indexer
 /* export function prepareDynamicItems(items: DynamicContentItem[]): DynamicContentItem[] {
@@ -47,9 +48,9 @@ export function createSearchIndexes() {
     includeScore: true,
     includeMatches: true,
     threshold: 0.6,
-    minMatchCharLength: 1,
-    ignoreLocation: true,
-    useExtendedSearch: false
+    minMatchCharLength: 3,
+    distance: 50,
+    useExtendedSearch: false,
   };
   
   return {
@@ -141,18 +142,74 @@ export function searchDynamicItems(
   });
 }
 
-export function performSearch(
+export async function performSearch(
   query: string,
   commandsFuse: Fuse<StaticCommandItem>,
   dynamicContentFuse: Fuse<HydratedIndexItem>,
   commandIdToItemMap: Map<string, StaticCommandItem>,
   dynamicIdToItemMap: Map<string, HydratedIndexItem>,
-  showRecentFirst: boolean // Pass sorting preference
-): CombinedResult[] {
+  showRecentFirst: boolean
+): Promise<CombinedResult[]> {
+  const startTime = performance.now();
+  
+  // Get all results first
   const commandResults = searchCommands(commandsFuse, query, commandIdToItemMap);
+  const commandEndTime = performance.now();
   const dynamicResults = searchDynamicItems(dynamicContentFuse, query, dynamicIdToItemMap, 10, showRecentFirst);
+  const fuseEndTime = performance.now();
 
-  const results = [...commandResults, ...dynamicResults];
+  // Get vector results in parallel
+  const vectorResults = await searchVectors(query, 10);
+  const vectorEndTime = performance.now();
+
+  console.log('Vector results:', vectorResults);
+
+  // Log timings
+  console.log(`Command search took ${commandEndTime - startTime} milliseconds`);
+  console.log(`Dynamic search took ${fuseEndTime - commandEndTime} milliseconds`);
+  console.log(`Vector search took ${vectorEndTime - fuseEndTime} milliseconds`);
+
+  // Create a map to store our final results, using ID as key to avoid duplicates
+  const resultMap = new Map<string, CombinedResult>();
+
+  // Add command results first (they keep their original scores)
+  commandResults.forEach(r => resultMap.set(r.id, r));
+
+  // Process dynamic results and vector results together
+  const seenIds = new Set<string>();
+
+  // Add dynamic results first
+  dynamicResults.forEach(r => {
+    seenIds.add(r.id);
+    const vectorMatch = vectorResults.find(v => v.object.id === r.id);
+    if (vectorMatch) {
+      // If we found it in both searches, combine the scores
+      resultMap.set(r.id, {
+        ...r,
+        score: r.score + (vectorMatch.similarity * 0.6) // Boost exact matches
+      });
+    } else {
+      // If only in Fuse results, keep as is
+      resultMap.set(r.id, r);
+    }
+  });
+
+  // Now add any vector results we haven't seen yet
+  vectorResults.forEach(v => {
+    const id = v.object.id;
+    if (!seenIds.has(id)) {
+      // This is a semantic match that Fuse missed - add it with the vector similarity as score
+      resultMap.set(id, {
+        id,
+        type: 'dynamic' as const,
+        score: v.similarity * 0.9, // High base score for semantic matches
+        item: v.object
+      });
+    }
+  });
+
+  // Convert to array and sort by score
+  const results = Array.from(resultMap.values());
   results.sort((a, b) => b.score - a.score);
   
   return results;

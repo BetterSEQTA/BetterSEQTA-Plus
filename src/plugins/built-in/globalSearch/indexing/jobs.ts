@@ -228,14 +228,6 @@ export const jobs: Record<string, Job> = {
           }
 
           offset += limit;
-
-          // If we've processed 500 messages and haven't found any existing ones,
-          // assume these are all new (first run) and stop here to avoid overwhelming
-          if (offset >= 500 && consecutiveExisting === 0) {
-            console.debug('[Messages Job] Processed 500 new messages, stopping for now');
-            hasMore = false;
-            break;
-          }
         } catch (error) {
           console.error('Error fetching messages:', error);
           break;

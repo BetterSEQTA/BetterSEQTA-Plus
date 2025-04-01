@@ -1,5 +1,48 @@
 import type { FuseResultMatch, MatchIndices } from './types';
 
+/**
+ * Simple utility to remove HTML tags from a string.
+ */
+export function stripHtmlTags(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace('\n', ' ');
+}
+
+/**
+ * Removes HTML tags from a string, but preserves <span class="highlight"> tags.
+ */
+export function stripHtmlButKeepHighlights(html: string): string {
+  if (!html) return '';
+  // Use a placeholder for highlight tags, strip others, then restore placeholders.
+  const highlightOpenPlaceholder = '__HIGHLIGHT_OPEN__';
+  const highlightClosePlaceholder = '__HIGHLIGHT_CLOSE__';
+
+  let processed = html.replace(/<span class="highlight">/g, highlightOpenPlaceholder);
+  processed = processed.replace(/<\/span>/g, (match, offset, fullString) => {
+    // Only replace </span> if it likely corresponds to our highlight span
+    // This is imperfect but helps avoid replacing unrelated spans.
+    // Look backwards for the nearest opening placeholder.
+    const lastPlaceholder = fullString.lastIndexOf(highlightOpenPlaceholder, offset);
+    if (lastPlaceholder !== -1) {
+      // Check if there's another opening tag between the placeholder and the closing span
+      const interveningContent = fullString.substring(lastPlaceholder + highlightOpenPlaceholder.length, offset);
+      if (!/<span/i.test(interveningContent)) {
+        return highlightClosePlaceholder;
+      }
+    }
+    return match; // Keep the original </span> if unsure
+  });
+  
+  // Strip all remaining HTML tags
+  processed = processed.replace(/<[^>]*>/g, '');
+
+  // Restore the highlight tags
+  processed = processed.replace(new RegExp(highlightOpenPlaceholder, 'g'), '<span class="highlight">');
+  processed = processed.replace(new RegExp(highlightClosePlaceholder, 'g'), '</span>');
+
+  return processed;
+}
+
 export function highlightMatch(
   text: string, 
   term: string, 

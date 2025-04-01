@@ -2,6 +2,7 @@ import { getAll, put, clear, remove } from './db';
 import { jobs } from './jobs';
 import { renderComponentMap } from './renderComponents';
 import type { IndexItem, HydratedIndexItem, Job, JobContext } from './types';
+import { processItems } from '../vectorSearch';
 
 const META_STORE = 'meta';
 const LOCK_KEY = 'bsq-indexer-lock';
@@ -94,6 +95,8 @@ export async function runIndexing(): Promise<void> {
   let completedJobs = 0;
   dispatchProgress(completedJobs, jobIds.length, true);
 
+  const allNewItems: HydratedIndexItem[] = [];
+
   for (const jobId of jobIds) {
     const job = jobs[jobId];
     const lastRun = await getLastRunMeta(jobId);
@@ -136,6 +139,13 @@ export async function runIndexing(): Promise<void> {
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);
 
+      // Add to our collection of new items for vector processing
+      const hydratedItems = merged.map(item => ({
+        ...item,
+        renderComponent: renderComponentMap[job.renderComponentId]
+      }));
+      allNewItems.push(...hydratedItems);
+
       console.debug(`%c[Indexer] ✅ ${job.label}: ${newItems.length} items indexed`, 'color: #00c46f');
     } catch (err) {
       console.debug(`%c[Indexer] ❌ ${job.label} failed:`, 'color: red');
@@ -144,6 +154,12 @@ export async function runIndexing(): Promise<void> {
 
     completedJobs++;
     dispatchProgress(completedJobs, jobIds.length, true);
+  }
+
+  // Process all new items through vector search
+  if (allNewItems.length > 0) {
+    console.debug(`%c[Indexer] Processing ${allNewItems.length} items for vector search...`, 'color: #4ea1ff');
+    await processItems(allNewItems);
   }
 
   stopHeartbeat();
