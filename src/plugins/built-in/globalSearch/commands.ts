@@ -1,3 +1,4 @@
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 import { loadHomePage } from '@/seqta/utils/Loaders/LoadHomePage';
 
 export interface BaseCommandItem {
@@ -12,17 +13,17 @@ export interface BaseCommandItem {
 
 export interface StaticCommandItem extends BaseCommandItem {
   keybind?: string[];
-  keybindLabel?: string;
+  keybindLabel?: string[];
 }
 
 const staticCommands: StaticCommandItem[] = [
   {
     id: 'home',
-    icon: '\uea83', 
+    icon: '\ueb4c', 
     category: 'navigation',
     text: 'Home',
     keybind: ['alt+h'],
-    keybindLabel: 'Alt+H',
+    keybindLabel: ['Alt', 'H'],
     action: () => {
       window.location.hash = '?page=/home';
       loadHomePage();
@@ -31,11 +32,11 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: 'messages',
-    icon: '\uea6e', 
+    icon: '\uebfd', 
     category: 'navigation',
-    text: 'Messages 4',
+    text: 'Direct Messages',
     keybind: ['alt+m'],
-    keybindLabel: 'Alt+M',
+    keybindLabel: ['Alt', 'M'],
     action: () => {
       window.location.hash = '?page=/messages';
     },
@@ -43,11 +44,11 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: 'timetable',
-    icon: '\uecce', 
+    icon: '\ue9cd', 
     category: 'navigation',
     text: 'Timetable',
     keybind: ['alt+t'],
-    keybindLabel: 'Alt+T',
+    keybindLabel: ['Alt', 'T'],
     action: () => {
       window.location.hash = '?page=/timetable';
     },
@@ -55,11 +56,11 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: 'assessments',
-    icon: '\uebb3', 
+    icon: '\ueac3', 
     category: 'navigation',
     text: 'Assessments',
     keybind: ['alt+a'],
-    keybindLabel: 'Alt+A',
+    keybindLabel: ['Alt', 'A'],
     action: () => {
       window.location.hash = '?page=/assessments';
     },
@@ -67,10 +68,10 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: 'toggle-dark-mode',
-    icon: '\ueaa9',
+    icon: '\uecfe',
     category: 'action',
     text: 'Toggle Dark Mode',
-    action: () => console.log('Toggle Dark Mode'),
+    action: () => settingsState.DarkMode = !settingsState.DarkMode,
     priority: 5,
     keywords: ['theme', 'appearance']
   }
