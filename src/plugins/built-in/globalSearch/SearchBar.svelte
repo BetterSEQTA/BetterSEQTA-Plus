@@ -113,10 +113,15 @@
     }
   });
 
+  $effect(() => {
+    if (combinedResults.length === 0 && calculatorResult && commandPalleteOpen) {
+      selectedIndex = 0;
+    }
+  });
+
   const selectNext = () => {
-    if (calculatorResult && selectedIndex === -1) {
-      selectedIndex = 0; // Move from calculator to first search result
-    } else if (selectedIndex < combinedResults.length - 1) {
+    const maxIndex = (calculatorResult ? 1 : 0) + combinedResults.length - 1;
+    if (selectedIndex < maxIndex) {
       selectedIndex++;
     }
   };
@@ -124,18 +129,15 @@
   const selectPrev = () => {
     if (selectedIndex > 0) {
       selectedIndex--;
-    } else if (selectedIndex === 0 && calculatorResult) {
-      selectedIndex = -1; // Move from first search result to calculator
     }
   };
 
   const executeSelected = () => {
-    if (selectedIndex === -1 && calculatorResult) {
-      if (calculatorResult) {
-        navigator.clipboard.writeText(calculatorResult);
-      }
+    if (calculatorResult && selectedIndex === 0) {
+      navigator.clipboard.writeText(calculatorResult);
     } else {
-      combinedResults[selectedIndex]?.item.action();
+      const resultIndex = calculatorResult ? selectedIndex - 1 : selectedIndex;
+      combinedResults[resultIndex]?.item.action();
     }
     commandPalleteOpen = false;
   };
@@ -196,21 +198,21 @@
 
         <Calculator 
           searchTerm={searchTerm} 
-          isSelected={selectedIndex === -1} 
+          isSelected={selectedIndex === 0} 
           on:hasResult={(e) => updateCalculatorState(e.detail)}
         />
 
         {#if combinedResults.length > 0}
           <ul class="overflow-y-auto max-h-[32rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
             {#each combinedResults as result, i (result.id)} 
-              {@const isSelected = selectedIndex === i}
+              {@const isSelected = selectedIndex === (calculatorResult ? i + 1 : i)}
               {@const item = result.item} 
               <li>
                 {#if result.type === 'command'}
                   <!-- Render Static Command -->
                   {@const staticItem = item as StaticCommandItem}
                   <button
-                    class="w-full flex items-center px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
+                    class="w-full flex items-center px-2 py-1.5 rounded-lg select-none cursor-pointer group 
                     {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                     onclick={() => { staticItem.action(); commandPalleteOpen = false; }}
                   >
@@ -228,7 +230,7 @@
                   <!-- Render Dynamic Content Item -->
                   {@const dynamicItem = item as DynamicContentItem}
                   <button
-                    class="w-full flex flex-col px-2 py-1.5 rounded-lg transition duration-150 select-none cursor-pointer group 
+                    class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group 
                     {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                     onclick={() => { dynamicItem.action(); commandPalleteOpen = false; }}
                   >

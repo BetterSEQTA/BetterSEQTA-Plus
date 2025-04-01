@@ -33,7 +33,7 @@ const staticCommands: StaticCommandItem[] = [
     id: 'messages',
     icon: '\uea6e', 
     category: 'navigation',
-    text: 'Messages',
+    text: 'Messages 4',
     keybind: ['alt+m'],
     keybindLabel: 'Alt+M',
     action: () => {
