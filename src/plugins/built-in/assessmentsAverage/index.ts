@@ -29,17 +29,51 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
 
   run: async (api) => {
     api.seqta.onMount(".assessmentsWrapper", async () => {
+      // Wait for any assessment item to load first
       await waitForElm(
-        "#main > .assessmentsWrapper .assessments .AssessmentItem__AssessmentItem___2EZ95",
+        "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
         true,
         10,
         1000
-      )
+      );
 
-      const assessmentsList = document.querySelector("#main > .assessmentsWrapper .assessments .AssessmentList__items___3LcmQ");
+      // Helper function to find actual class names by their base pattern
+      const getClassByPattern = (element: Element | Document, basePattern: string): string => {
+        // Find all classes on the element
+        const classes = Array.from(element.querySelectorAll('*'))
+          .flatMap(el => Array.from(el.classList))
+          .filter(className => className.startsWith(basePattern));
+        
+        return classes.length ? classes[0] : '';
+      };
+
+      // Find actual class names from the DOM
+      const sampleAssessmentItem = document.querySelector("[class*='AssessmentItem__AssessmentItem___']");
+      if (!sampleAssessmentItem) return;
+      
+      // Extract all necessary class patterns from a sample assessment item
+      const assessmentItemClass = Array.from(sampleAssessmentItem.classList)
+        .find(c => c.startsWith('AssessmentItem__AssessmentItem___')) || '';
+      
+      const metaContainerClass = getClassByPattern(sampleAssessmentItem, 'AssessmentItem__metaContainer___');
+      const metaClass = getClassByPattern(sampleAssessmentItem, 'AssessmentItem__meta___');
+      const simpleResultClass = getClassByPattern(sampleAssessmentItem, 'AssessmentItem__simpleResult___');
+      const titleClass = getClassByPattern(sampleAssessmentItem, 'AssessmentItem__title___');
+      
+      // Get Thermoscore classes
+      const thermoscoreElement = document.querySelector("[class*='Thermoscore__Thermoscore___']");
+      if (!thermoscoreElement) return;
+      
+      const thermoscoreClass = Array.from(thermoscoreElement.classList)
+        .find(c => c.startsWith('Thermoscore__Thermoscore___')) || '';
+      const fillClass = getClassByPattern(thermoscoreElement, 'Thermoscore__fill___');
+      const textClass = getClassByPattern(thermoscoreElement, 'Thermoscore__text___');
+            
+      // Find assessment list
+      const assessmentsList = document.querySelector("#main > .assessmentsWrapper .assessments [class*='AssessmentList__items___']");
       if (!assessmentsList) return;
 
-      const gradeElements = document.querySelectorAll(".Thermoscore__text___1NdvB");
+      const gradeElements = document.querySelectorAll("[class*='Thermoscore__text___']");
       if (!gradeElements.length) return;
 
       // Parse and average grades
@@ -87,21 +121,22 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
       const display = api.settings.lettergrade ? letterAvg : `${avg.toFixed(2)}%`;
 
       // Prevent duplicate
-      const existing = assessmentsList.querySelector(".AssessmentItem__title___2bELn");
+      const existing = assessmentsList.querySelector(`[class*='AssessmentItem__title___']`);
       if (existing?.textContent === "Subject Average") return;
 
+      // Use the dynamic class names in the HTML template
       const averageElement = stringToHTML(/* html */ `
-        <div class="AssessmentItem__AssessmentItem___2EZ95">
-          <div class="AssessmentItem__metaContainer___dMKma">
-            <div class="AssessmentItem__meta___WNSiK">
-              <div class="AssessmentItem__simpleResult___iBCeC">
-                <div class="AssessmentItem__title___2bELn">Subject Average</div>
+        <div class="${assessmentItemClass}">
+          <div class="${metaContainerClass}">
+            <div class="${metaClass}">
+              <div class="${simpleResultClass}">
+                <div class="${titleClass}">Subject Average</div>
               </div>
             </div>
           </div>
-          <div class="Thermoscore__Thermoscore___2tWMi">
-            <div class="Thermoscore__fill___35WjF" style="width: ${avg.toFixed(2)}%">
-              <div class="Thermoscore__text___1NdvB" title="${display}">${display}</div>
+          <div class="${thermoscoreClass}">
+            <div class="${fillClass}" style="width: ${avg.toFixed(2)}%">
+              <div class="${textClass}" title="${display}">${display}</div>
             </div>
           </div>
         </div>

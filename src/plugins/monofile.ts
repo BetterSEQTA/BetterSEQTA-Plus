@@ -178,15 +178,19 @@ function applyDarkModeToIframe(
 }
 
 function SortMessagePageItems(messagesParentElement: any) {
-  let filterbutton = document.createElement("div")
-  filterbutton.classList.add("messages-filterbutton")
-  filterbutton.innerText = "Filter"
-
-  let header = document.getElementsByClassName(
-    "MessageList__MessageList___3DxoC",
-  )[0].firstChild as HTMLElement
-  header.append(filterbutton)
-  messagesParentElement
+  try {
+    let filterbutton = document.createElement("div")
+    filterbutton.classList.add("messages-filterbutton")
+    filterbutton.innerText = "Filter"
+  
+    let header = document.querySelector(
+      "[class*='MessageList__MessageList___']",
+    ) as HTMLElement
+    header.append(filterbutton)
+    messagesParentElement
+  } catch (error) {
+    console.error("Error sorting message page items:", error)
+  }
 }
 
 async function LoadPageElements(): Promise<void> {
@@ -330,11 +334,7 @@ async function handleMessages(node: Element): Promise<void> {
   const element = document.getElementById("title")!.firstChild as HTMLElement
   element.innerText = "Direct Messages"
   document.title = "Direct Messages ― SEQTA Learn"
-  try {
-    SortMessagePageItems(node)
-  } catch (error) {
-    console.error("Error sorting message page items:", error)
-  }
+  SortMessagePageItems(node)
   
   if (!settingsState.animations) return
 

@@ -11,7 +11,7 @@ html.transparencyEffects:not(.dark) {
 
 html.transparencyEffects {
   /* Background Fixes */
-  .notifications__item___2ErJN,
+  [class*="notifications__item___"],
   #shortcuts {
     backdrop-filter: unset !important;
   }
@@ -24,21 +24,21 @@ html.transparencyEffects {
   /* Blurs */
   .draggable,
   .notice,
-  .BasicPanel__BasicPanel___1GP6s,
+  [class*="BasicPanel__BasicPanel___"],
   .message.addMessage,
   .singleSelect,
   .uiFileHandlerPanel,
-  .Module__wrapper___2sbOo,
-  .notifications__list___rp2L2,
+  [class*="Module__wrapper___"],
+  [class*="notifications__list___"],
   .thread,
   .calendar,
   .navigator,
   #title,
-  .LabelList__selected___3Egk7,
+  [class*="LabelList__selected___"],
   .buttonChecklist,
   .pane,
   .legacy-root button, .legacy-root a,
-  .MessageList__MessageList___3DxoC {
+  [class*="MessageList__MessageList___"] {
     backdrop-filter: blur(80px);
   }
   
@@ -47,7 +47,7 @@ html.transparencyEffects {
   }
 
   .whatsnewContainer,
-  .Message__Message___3oJaU {
+  [class*="Message__Message___"] {
     backdrop-filter: blur(50px);
   }
 

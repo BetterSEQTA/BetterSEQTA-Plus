@@ -77,26 +77,26 @@ const contentConfig: ContentConfig = {
   },
 
   messageSubject: {
-    selector: '.MessageList__subject___1NV5O',
+    selector: '[class*="MessageList__subject___"]',
     action: (element) => { element.textContent = getRandomElement(mockData.messages.subjects); }
   },
 
   messageSender: {
-    selector: '.MessageList__value___1sN24',
+    selector: '[class*="MessageList__value___"]',
     action: (element) => { element.textContent = getRandomElement(mockData.messages.sender); }
   },
 
   messageRecipients: {
-    selector: '.MessageList__recipients___3hqpE .MessageList__value___1sN24',
+    selector: '[class*="MessageList__recipients___"] [class*="MessageList__value___"]',
     action: (element) => { element.textContent = 'Recipient(s) Redacted'; }
   },
 
   messageDate: {
-    selector: '.MessageList__date___7muMb',
+    selector: '[class*="MessageList__date___"]',
     action: (element) => { element.textContent = getRandomDate().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }); }
   },
   avatarImage: {
-    selector: '.Avatar__Avatar___gE5kx',
+    selector: '[class*="Avatar__Avatar___"]',
     action: (element) => { 
       if (element instanceof HTMLElement) {
         element.style.removeProperty('background-image');
@@ -105,7 +105,7 @@ const contentConfig: ContentConfig = {
     }
   },
   notificationCount: {
-    selector: '.notifications__bubble___1EkSQ',
+    selector: '[class*="notifications__bubble___"]',
     action: (element) => { element.textContent = Math.floor(Math.random() * 100).toString(); }
   },
   schoolName: {
