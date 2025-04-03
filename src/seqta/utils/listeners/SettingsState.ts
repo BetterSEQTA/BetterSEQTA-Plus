@@ -70,7 +70,9 @@ class StorageManager {
 
   private async loadFromStorage(): Promise<void> {
     const result = await browser.storage.local.get();
-    this.data = { ...this.data, ...result };
+    Object.entries(result).forEach(([key, value]) => {
+      Reflect.set(this.data, key, value);
+    });
   }
 
   private async saveToStorage(): Promise<void> {
