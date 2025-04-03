@@ -60,6 +60,9 @@ export function OpenWhatsNewPopup() {
   
     let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+      <h1>3.4.6.1 - Hot patch!</h1>
+      <li>Fixed storage not updating and sometimes being replaced with default values</li>
+
       <h1>3.4.6 - Massive internal reworks!</h1>
       <li>Fix SEQTA classes not being applied correctly causing a totally broken experience</li>
       <li>Reworked internals to function as a plugin system (more on this soon)</li>
