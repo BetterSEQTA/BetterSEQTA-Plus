@@ -3,7 +3,6 @@ import browser from "webextension-polyfill"
 
 // Internal utilities and functions
 import {
-  initializeSettingsState,
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 
@@ -16,8 +15,6 @@ import injectedCSS from "@/css/injected.scss?inline"
 export async function main() {
   return new Promise(async (resolve, reject) => {
     try {
-      await initializeSettingsState()
-
       if (settingsState.onoff) {
         injectPageState()
 
