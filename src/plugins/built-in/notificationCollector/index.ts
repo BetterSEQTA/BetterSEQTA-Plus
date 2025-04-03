@@ -23,7 +23,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
 
     const checkNotifications = async () => {
       try {
-        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+        const alertDiv = document.querySelector("[class*='notifications__bubble___']") as HTMLElement;
 
         if (api.storage.lastNotificationCount !== 0) {
           alertDiv.textContent = api.storage.lastNotificationCount.toString();
@@ -67,7 +67,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
       if (pollInterval) {
         window.clearInterval(pollInterval);
         pollInterval = null;
-        const alertDiv = document.querySelector(".notifications__bubble___1EkSQ") as HTMLElement;
+        const alertDiv = document.querySelector("[class*='notifications__bubble___']") as HTMLElement;
         if (alertDiv) {
           if (api.storage.lastNotificationCount > 9) {
             alertDiv.textContent = "9+";
@@ -78,7 +78,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
       }
     };
 
-    api.seqta.onMount(".notifications__bubble___1EkSQ", (_) => {
+    api.seqta.onMount("[class*='notifications__bubble___']", (_) => {
       startPolling();
     });
 
