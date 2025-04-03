@@ -61,6 +61,7 @@ export function OpenWhatsNewPopup() {
     let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
       <h1>3.4.6 - Massive internal reworks!</h1>
+      <li>Fix SEQTA classes not being applied correctly causing a totally broken experience</li>
       <li>Reworked internals to function as a plugin system (more on this soon)</li>
       <li>Rebuilt theme system that is significantly less buggy</li>
       <li>Performance improvements</li>
@@ -259,7 +260,7 @@ export function OpenWhatsNewPopup() {
   
         <div>
           <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0;">
-           <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${browser.runtime.getURL(kofi)}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
+           <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
           </a>
         </div>
       </div>
