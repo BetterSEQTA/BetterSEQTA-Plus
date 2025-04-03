@@ -1,4 +1,5 @@
 import {
+  initializeSettingsState,
   settingsState,
 } from "@/seqta/utils/listeners/SettingsState"
 import documentLoadCSS from "@/css/documentload.scss?inline"
@@ -38,6 +39,8 @@ async function init() {
     icon.href = icon48 // Change the icon
 
     try {
+      await initializeSettingsState()
+
       if (typeof settingsState.onoff === "undefined") {
         browser.runtime.sendMessage({ type: "setDefaultStorage" })
       }
