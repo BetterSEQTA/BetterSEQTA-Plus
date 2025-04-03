@@ -330,8 +330,12 @@ async function handleMessages(node: Element): Promise<void> {
   const element = document.getElementById("title")!.firstChild as HTMLElement
   element.innerText = "Direct Messages"
   document.title = "Direct Messages ― SEQTA Learn"
-  SortMessagePageItems(node)
-
+  try {
+    SortMessagePageItems(node)
+  } catch (error) {
+    console.error("Error sorting message page items:", error)
+  }
+  
   if (!settingsState.animations) return
 
   // Hides messages on page load
