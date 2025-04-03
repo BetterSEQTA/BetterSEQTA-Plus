@@ -2,13 +2,13 @@ import { waitForElm } from "@/seqta/utils/waitForElm"
 import ReactFiber from "../ReactFiber";
 
 const handleNotificationClick = async (target: HTMLElement) => {
-  const notificationItem = target.closest('.notifications__item___2ErJN') as HTMLElement | null;
+  const notificationItem = target.closest('[class*="notifications__item___"]') as HTMLElement | null;
   if (!notificationItem) return;
 
   const buttonType = notificationItem.getAttribute('data-type');
   if (buttonType !== 'message') return;
 
-  const notificationList = await ReactFiber.find('.notifications__list___rp2L2').getState();
+  const notificationList = await ReactFiber.find('[class*="notifications__list___"]').getState();
   const buttonId = notificationItem.getAttribute('data-id');
   if (!buttonId) return;
 
@@ -16,19 +16,19 @@ const handleNotificationClick = async (target: HTMLElement) => {
     (item: any) => item.notificationID === parseInt(buttonId)
   );
 
-  await waitForElm('.Viewer__Viewer___32BH-', true, 20);
+  await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
 
   // Select the specific direct message
-  ReactFiber.find('.Viewer__Viewer___32BH-').setState({ selected: new Set([matchingNotification.message.messageID]) });
+  ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({ selected: new Set([matchingNotification.message.messageID]) });
 
   // Close the notifications panel
-  const notificationButton = document.querySelector('.notifications__notifications___3mmLY > button') as HTMLButtonElement | null;
+  const notificationButton = document.querySelector('[class*="notifications__notifications___"] > button') as HTMLButtonElement | null;
   notificationButton?.click();
 };
 
 const clickListeners = [
   {
-    selector: '.notifications__item___2ErJN',
+    selector: '[class*="notifications__item___"]',
     handler: handleNotificationClick,
   },
 ];
