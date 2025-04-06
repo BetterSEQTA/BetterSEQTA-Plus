@@ -2,7 +2,7 @@ import { settingsState } from "./listeners/SettingsState"
 import { animate, stagger } from "motion"
 import stringToHTML from "./stringToHTML"
 import browser from "webextension-polyfill"
-import kofi from "@/resources/kofi.png"
+import kofi from "@/resources/kofi.png?base64"
 
 export async function DeleteWhatsNew() {
   const bkelement = document.getElementById("whatsnewbk")
