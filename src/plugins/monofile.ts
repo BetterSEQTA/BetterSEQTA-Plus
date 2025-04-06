@@ -465,8 +465,6 @@ export function tryLoad() {
   )
 }
 
-
-
 function ReplaceMenuSVG(element: HTMLElement, svg: string) {
   let item = element.firstChild as HTMLElement
   item!.firstChild!.remove()
@@ -477,10 +475,11 @@ function ReplaceMenuSVG(element: HTMLElement, svg: string) {
   item.insertBefore(newsvg as Node, item.firstChild)
 }
 
+const processedSymbol = Symbol('processed')
+
 export async function ObserveMenuItemPosition() {
   await waitForElm("#menu > ul > li")
-  await delay(100)
-
+  
   eventManager.register(
     "menuList",
     {
@@ -488,6 +487,19 @@ export async function ObserveMenuItemPosition() {
     },
     (element: Element) => {
       const node = element as HTMLElement
+
+      // Only process top-level menu items and skip everything else
+      if (!node.classList.contains('item') || 
+          node.nodeName !== 'LI' || 
+          node.parentElement?.parentElement?.id !== 'menu') {
+        return
+      }
+
+      // Early exit if already processed
+      if ((element as any)[processedSymbol]) {
+        return
+      }
+
       if (!node?.dataset?.checked && !MenuOptionsOpen) {
         const key =
           MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
@@ -511,7 +523,9 @@ export async function ObserveMenuItemPosition() {
             label.replaceChild(span, textNode)
           }
         }
-        ChangeMenuItemPositions(settingsState.menuorder)
+        ChangeMenuItemPositions(settingsState.menuorder);
+        
+        (element as any)[processedSymbol] = true
       }
     },
   )
@@ -584,9 +598,10 @@ export function init() {
 
   if (settingsState.onoff) {
     console.info("[BetterSEQTA+] Enabled")
-    if (settingsState.DarkMode) document.documentElement.classList.add("dark")
+    if (settingsState.DarkMode) document.documentElement.classList.add("dark");
 
     document.querySelector(".legacy-root")?.classList.add("hidden")
+    ObserveMenuItemPosition();
 
     new StorageChangeHandler()
     new MessageHandler()
