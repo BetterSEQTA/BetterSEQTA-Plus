@@ -108,7 +108,6 @@ export class MessageHandler {
   editSidebar() {
     if (!MenuOptionsOpen) {
       OpenMenuOptions();
-      closeExtensionPopup();
     }
   }
 }
