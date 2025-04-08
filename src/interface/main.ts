@@ -1,9 +1,9 @@
 import { mount } from "svelte"
-import type { ComponentType } from "svelte"
+import type { SvelteComponent } from "svelte"
 import style from './index.css?inline'
 
 export default function renderSvelte(
-  Component: ComponentType | any,
+  Component: SvelteComponent | any,
   mountPoint: ShadowRoot | HTMLElement,
   props: Record<string, any> = {},
 ) {
