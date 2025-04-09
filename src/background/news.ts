@@ -19,20 +19,25 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://www.npr.org/rss/rss.php",
   ],
   taiwan: [
-    "https://focustaiwan.tw/rss",
-    "https://www.taipeitimes.com/rss/all.xml",
+    "https://news.ltn.com.tw/rss/all.xml",
+    "https://www.taipeitimes.com/xml/index.rss",
     "https://international.thenewslens.com/rss",
   ],
   hong_kong: [
-    "https://news.rthk.hk/rthk/en/rss.htm",
+    "https://rthk9.rthk.hk/rthk/news/rss/e_expressnews_elocal.xml",
     "https://www.scmp.com/rss/91/feed",
   ],
   panama: [
-    "http://www.panama-guide.com/backend.php",
+    "https://critica.com.pa/rss.xml",
+    "https://www.panamaamerica.com.pa/rss.xml",
+    "https://noticiassin.com/feed/",
+    "https://elcapitalfinanciero.com/feed/"
   ],
   canada: [
     "https://www.cbc.ca/cmlink/rss-topstories",
-    "https://www.theglobeandmail.com/?service=rss",
+    "https://calgaryherald.com/feed",
+    "https://ottawacitizen.com/feed",
+    "https://www.montrealgazette.com/feed"
   ],
   singapore: [
     "https://www.straitstimes.com/news/singapore/rss.xml",
@@ -43,20 +48,16 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://www.theguardian.com/uk/rss",
   ],
   japan: [
-    "https://www.japantimes.co.jp/feed/topstories.xml",
     "https://www3.nhk.or.jp/nhkworld/en/news/feeds/",
+    "https://news.livedoor.com/topics/rss/int.xml"
   ],
   netherlands: [
     "https://www.dutchnews.nl/feed/",
-    "http://feeds.nos.nl/nosnieuwsalgemeen",
+    "https://www.nrc.nl/rss/"
   ],
 };
 
 export async function fetchNews(source: string, sendResponse: any) {
-  const parser = new Parser();
-  let feeds: string[];
-  console.log('fetchNews', source)
-
   if (source === "australia") {
     const date = new Date();
 
@@ -72,6 +73,10 @@ export async function fetchNews(source: string, sendResponse: any) {
 
     return;
   }
+
+  const parser = new Parser();
+  let feeds: string[];
+  console.log('fetchNews', source)
 
   if (rssFeedsByCountry[source.toLowerCase()]) {
     // If the source is a country, fetch from predefined feeds
