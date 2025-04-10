@@ -1,27 +1,104 @@
-import { clear, getAll, put, remove } from './db';
-import { jobs } from './jobs';
-import { renderComponentMap } from './renderComponents';
-import type { HydratedIndexItem, IndexItem, Job, JobContext } from './types';
-import { processItems } from '../vectorSearch';
+import { clear, getAll, put, remove } from "./db";
+import { jobs } from "./jobs";
+import { renderComponentMap } from "./renderComponents";
+import type { HydratedIndexItem, IndexItem, Job, JobContext } from "./types";
+import { EmbeddingIndex, getEmbedding, initializeModel } from "client-vector-search";
 
-const META_STORE = 'meta';
-const LOCK_KEY = 'bsq-indexer-lock';
+const META_STORE = "meta";
+const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
 const LOCK_TIMEOUT = 20000;
 
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
+let vectorIndex: EmbeddingIndex | null = null;
+let isInitialized = false;
+
+async function initVectorSearch() {
+  if (isInitialized) return;
+
+  try {
+    await initializeModel();
+    vectorIndex = new EmbeddingIndex([]);
+    // Load existing items from IndexedDB
+    const stored = await vectorIndex.getAllObjectsFromIndexedDB();
+    if (stored.length > 0) {
+      stored.forEach((item) => vectorIndex!.add(item));
+      console.debug("Vector index loaded from IndexedDB");
+    }
+    isInitialized = true;
+  } catch (e) {
+    console.error("Failed to initialize vector search:", e);
+    throw e;
+  }
+}
+
+async function vectorizeItem(
+  item: HydratedIndexItem,
+): Promise<HydratedIndexItem & { embedding: number[] }> {
+  const textToEmbed = [
+    item.text,
+    item.content,
+    item.category,
+    item.metadata?.author,
+    item.metadata?.subject,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const embedding = await getEmbedding(textToEmbed);
+  return { ...item, embedding };
+}
+
+async function processItems(items: HydratedIndexItem[]) {
+  if (!vectorIndex) await initVectorSearch();
+
+  const unprocessedItems = items.filter((item) => {
+    try {
+      return !vectorIndex!.get({ id: item.id });
+    } catch {
+      return true;
+    }
+  });
+
+  if (unprocessedItems.length === 0) {
+    console.debug("No new items to vectorize");
+    return;
+  }
+
+  console.debug(`Vectorizing ${unprocessedItems.length} new items...`);
+
+  // Process in batches to avoid UI freeze
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < unprocessedItems.length; i += BATCH_SIZE) {
+    const batch = unprocessedItems.slice(i, i + BATCH_SIZE);
+    const vectorized = await Promise.all(batch.map(vectorizeItem));
+
+    for (const item of vectorized) {
+      vectorIndex!.add(item);
+    }
+
+    // Save periodically to avoid losing progress
+    await vectorIndex!.saveIndex("indexedDB");
+
+    // Log progress
+    console.debug(
+      `Vectorized ${Math.min(i + BATCH_SIZE, unprocessedItems.length)}/${unprocessedItems.length} items`,
+    );
+  }
+}
+
 function shouldRun(job: Job, lastRun?: number): boolean {
   const now = Date.now();
 
-  if (job.frequency === 'pageLoad') return true;
+  if (job.frequency === "pageLoad") return true;
   if (!lastRun) return true;
 
-  if (job.frequency.type === 'interval') {
+  if (job.frequency.type === "interval") {
     return now - lastRun >= job.frequency.ms;
   }
 
-  if (job.frequency.type === 'expiry') {
+  if (job.frequency.type === "expiry") {
     return now - lastRun >= job.frequency.afterMs;
   }
 
@@ -29,7 +106,7 @@ function shouldRun(job: Job, lastRun?: number): boolean {
 }
 
 function getLastRunMeta(jobId: string): Promise<number | undefined> {
-  return getAll(META_STORE).then(metaItems => {
+  return getAll(META_STORE).then((metaItems) => {
     const match = metaItems.find((m: any) => m.jobId === jobId);
     return match?.lastRun;
   });
@@ -40,7 +117,7 @@ async function updateLastRunMeta(jobId: string): Promise<void> {
 }
 
 function shouldIndex(): boolean {
-  const last = parseInt(localStorage.getItem(LOCK_KEY) || '0', 10);
+  const last = parseInt(localStorage.getItem(LOCK_KEY) || "0", 10);
   return isNaN(last) || Date.now() - last > LOCK_TIMEOUT;
 }
 
@@ -57,8 +134,8 @@ function stopHeartbeat() {
 }
 
 function dispatchProgress(completed: number, total: number, indexing: boolean) {
-  const event = new CustomEvent('indexing-progress', {
-    detail: { completed, total, indexing }
+  const event = new CustomEvent("indexing-progress", {
+    detail: { completed, total, indexing },
   });
   window.dispatchEvent(event);
 }
@@ -84,12 +161,15 @@ export async function loadAllStoredItems(): Promise<HydratedIndexItem[]> {
 
 export async function runIndexing(): Promise<void> {
   if (!shouldIndex()) {
-    console.debug('%c[Indexer] Skipping indexing (another tab has the lock)', 'color: gray');
+    console.debug(
+      "%c[Indexer] Skipping indexing (another tab has the lock)",
+      "color: gray",
+    );
     return;
   }
 
   startHeartbeat();
-  console.debug('%c[Indexer] Starting indexing...', 'color: green');
+  console.debug("%c[Indexer] Starting indexing...", "color: green");
 
   const jobIds = Object.keys(jobs);
   let completedJobs = 0;
@@ -102,7 +182,10 @@ export async function runIndexing(): Promise<void> {
     const lastRun = await getLastRunMeta(jobId);
 
     if (!shouldRun(job, lastRun)) {
-      console.debug(`%c[Indexer] Skipping job "${jobId}" (not due)`, 'color: gray');
+      console.debug(
+        `%c[Indexer] Skipping job "${jobId}" (not due)`,
+        "color: gray",
+      );
       completedJobs++;
       dispatchProgress(completedJobs, jobIds.length, true);
       continue;
@@ -111,7 +194,7 @@ export async function runIndexing(): Promise<void> {
     const getStoredItems = async () => await getAll(jobId);
     const setStoredItems = async (items: IndexItem[]) => {
       await clear(jobId);
-      await Promise.all(items.map(i => put(jobId, i, i.id)));
+      await Promise.all(items.map((i) => put(jobId, i, i.id)));
     };
     const addItem = async (item: IndexItem) => {
       await put(jobId, item, item.id);
@@ -127,7 +210,7 @@ export async function runIndexing(): Promise<void> {
       removeItem,
     };
 
-    console.debug(`%c[Indexer] Running job "${jobId}"...`, 'color: #4ea1ff');
+    console.debug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
 
     try {
       const newItems = await job.run(ctx);
@@ -140,15 +223,18 @@ export async function runIndexing(): Promise<void> {
       await updateLastRunMeta(jobId);
 
       // Add to our collection of new items for vector processing
-      const hydratedItems = merged.map(item => ({
+      const hydratedItems = merged.map((item) => ({
         ...item,
-        renderComponent: renderComponentMap[job.renderComponentId]
+        renderComponent: renderComponentMap[job.renderComponentId],
       }));
       allNewItems.push(...hydratedItems);
 
-      console.debug(`%c[Indexer] ✅ ${job.label}: ${newItems.length} items indexed`, 'color: #00c46f');
+      console.debug(
+        `%c[Indexer] ✅ ${job.label}: ${newItems.length} items indexed`,
+        "color: #00c46f",
+      );
     } catch (err) {
-      console.debug(`%c[Indexer] ❌ ${job.label} failed:`, 'color: red');
+      console.debug(`%c[Indexer] ❌ ${job.label} failed:`, "color: red");
       console.error(err);
     }
 
@@ -158,7 +244,10 @@ export async function runIndexing(): Promise<void> {
 
   // Process all new items through vector search
   if (allNewItems.length > 0) {
-    console.debug(`%c[Indexer] Processing ${allNewItems.length} items for vector search...`, 'color: #4ea1ff');
+    console.debug(
+      `%c[Indexer] Processing ${allNewItems.length} items for vector search...`,
+      "color: #4ea1ff",
+    );
     await processItems(allNewItems);
   }
 

@@ -1,4 +1,4 @@
-import type { SvelteComponent } from 'svelte';
+import type { SvelteComponent } from "svelte";
 
 export interface IndexItem {
   id: string;
@@ -16,9 +16,9 @@ export interface HydratedIndexItem extends IndexItem {
 }
 
 export type Frequency =
-  | 'pageLoad'
-  | { type: 'interval'; ms: number }
-  | { type: 'expiry'; afterMs: number };
+  | "pageLoad"
+  | { type: "interval"; ms: number }
+  | { type: "expiry"; afterMs: number };
 
 export interface JobContext {
   getStoredItems: () => Promise<IndexItem[]>;

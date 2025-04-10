@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
-import path, { join, resolve } from 'path';
-import fs from 'fs';
+import { join, resolve } from 'path';
+
 import { updateManifestPlugin } from './lib/patchPackage';
+import touchGlobalCSSPlugin from './lib/touchGlobalCSS';
+import InlineWorkerPlugin from './lib/inlineWorker';
 import { base64Loader } from './lib/base64loader';
 import type { BuildTarget } from './lib/types';
 import ClosePlugin from './lib/closePlugin';
@@ -19,7 +21,6 @@ import { opera } from './src/manifests/opera';
 import { safari } from './src/manifests/safari';
 import { crx } from '@crxjs/vite-plugin';
 
-import touchGlobalCSSPlugin from './lib/touchGlobalCSS';
 const targets: BuildTarget[] = [
   chrome, brave, edge, firefox, opera, safari
 ]
@@ -30,6 +31,7 @@ const mode = process.env.MODE || 'chrome'; // Check the environment variable to 
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
+    InlineWorkerPlugin(),
     svelte({
       emitCss: false
     }),
@@ -69,6 +71,9 @@ export default defineConfig(({ command }) => ({
   },
   legacy: {
     skipWebSocketTokenCheck: true,
+  },
+  worker: {
+    format: 'es',
   },
   build: {
     outDir: resolve(__dirname, 'dist', mode),
