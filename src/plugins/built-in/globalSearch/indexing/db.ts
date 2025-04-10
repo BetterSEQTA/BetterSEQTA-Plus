@@ -1,6 +1,6 @@
-const DB_NAME = 'betterseqta-index';
-const META_STORE = 'meta';
-const VERSION_KEY = 'betterseqta-index-version';
+const DB_NAME = "betterseqta-index";
+const META_STORE = "meta";
+const VERSION_KEY = "betterseqta-index-version";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -22,12 +22,12 @@ function openDB(): Promise<IDBDatabase> {
 
   dbPromise = new Promise((resolve, reject) => {
     let request: IDBOpenDBRequest;
-    
+
     try {
       request = indexedDB.open(DB_NAME, currentVersion);
     } catch (e) {
       // If there's a version error, try to delete the database and start fresh
-      console.warn('Database version conflict, recreating database...');
+      console.warn("Database version conflict, recreating database...");
       indexedDB.deleteDatabase(DB_NAME);
       localStorage.removeItem(VERSION_KEY);
       request = indexedDB.open(DB_NAME, 1);
@@ -48,9 +48,9 @@ function openDB(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => resolve(request.result);
-    
+
     request.onerror = () => {
-      console.error('Error opening database:', request.error);
+      console.error("Error opening database:", request.error);
       // If there's an error, try to recover by deleting and recreating
       indexedDB.deleteDatabase(DB_NAME);
       localStorage.removeItem(VERSION_KEY);
@@ -61,7 +61,7 @@ function openDB(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
-async function getStore(store: string, mode: IDBTransactionMode = 'readonly') {
+async function getStore(store: string, mode: IDBTransactionMode = "readonly") {
   const db = await openDB();
 
   // Create store dynamically if needed
@@ -79,10 +79,10 @@ function upgradeDB(newStore: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const currentVersion = getCurrentVersion();
     const newVersion = currentVersion + 1;
-    
+
     // Close any existing connections
     if (dbPromise) {
-      dbPromise.then(db => db.close());
+      dbPromise.then((db) => db.close());
       dbPromise = null;
     }
 
@@ -103,7 +103,7 @@ function upgradeDB(newStore: string): Promise<void> {
     };
 
     request.onerror = () => {
-      console.error('Error upgrading database:', request.error);
+      console.error("Error upgrading database:", request.error);
       reject(request.error);
     };
   });
@@ -137,9 +137,13 @@ export async function get(store: string, key: string): Promise<any> {
   }
 }
 
-export async function put(store: string, value: any, key?: string): Promise<void> {
+export async function put(
+  store: string,
+  value: any,
+  key?: string,
+): Promise<void> {
   try {
-    const s = await getStore(store, 'readwrite');
+    const s = await getStore(store, "readwrite");
     return new Promise((resolve, reject) => {
       const req = key ? s.put(value, key) : s.put(value);
       req.onsuccess = () => resolve();
@@ -153,7 +157,7 @@ export async function put(store: string, value: any, key?: string): Promise<void
 
 export async function remove(store: string, key: string): Promise<void> {
   try {
-    const s = await getStore(store, 'readwrite');
+    const s = await getStore(store, "readwrite");
     return new Promise((resolve, reject) => {
       const req = s.delete(key);
       req.onsuccess = () => resolve();
@@ -167,7 +171,7 @@ export async function remove(store: string, key: string): Promise<void> {
 
 export async function clear(store: string): Promise<void> {
   try {
-    const s = await getStore(store, 'readwrite');
+    const s = await getStore(store, "readwrite");
     return new Promise((resolve, reject) => {
       const req = s.clear();
       req.onsuccess = () => resolve();
@@ -186,7 +190,7 @@ export async function resetDatabase(): Promise<void> {
     db.close();
     dbPromise = null;
   }
-  
+
   return new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(DB_NAME);
     req.onsuccess = () => {

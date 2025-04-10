@@ -1,7 +1,7 @@
 <script lang="ts">
   import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../highlightUtils';
   import type { DynamicContentItem } from '../dynamicSearch';
-  import type { FuseResultMatch } from '../types';
+  import type { FuseResultMatch } from '../core/types';
 
   const { item, isSelected, searchTerm, matches } = $props<{
     item: DynamicContentItem;

@@ -32,15 +32,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["*/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["resources/*"],
-      "matches": ["*://*/*"]
-    },
-    {
-      "resources": ["seqta/utils/migration/migrate.html"],
+      "resources": ["*/*", "resources/*", "seqta/utils/migration/migrate.html", "plugins/built-in/globalSearch/*"],
       "matches": ["*://*/*"]
     }
   ]

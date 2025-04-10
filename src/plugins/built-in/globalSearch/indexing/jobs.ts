@@ -1,9 +1,9 @@
-import type { Job } from './types';
-import type { IndexItem } from './types';
+import type { Job } from "./types";
+import type { IndexItem } from "./types";
 
 interface MessageNotification {
   notificationID: number;
-  type: 'message';
+  type: "message";
   message: {
     subtitle: string;
     messageID: number;
@@ -14,7 +14,7 @@ interface MessageNotification {
 
 interface AssessmentNotification {
   notificationID: number;
-  type: 'coneqtassessments';
+  type: "coneqtassessments";
   coneqtAssessments: {
     programmeID: number;
     metaclassID: number;
@@ -79,45 +79,56 @@ interface MessageContentResponse {
 
 // Helper to strip HTML tags from text
 function stripHtmlTags(html: string): string {
-  return html.replace(/<[^>]*>/g, '');
+  return html.replace(/<[^>]*>/g, "");
 }
 
 // Helper to fetch messages with pagination
-async function fetchMessages(offset: number = 0, limit: number = 100): Promise<MessageListResponse> {
-  const response = await fetch(`${location.origin}/seqta/student/load/message`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8'
+async function fetchMessages(
+  offset: number = 0,
+  limit: number = 100,
+): Promise<MessageListResponse> {
+  const response = await fetch(
+    `${location.origin}/seqta/student/load/message`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({
+        searchValue: "",
+        sortBy: "date",
+        sortOrder: "desc",
+        action: "list",
+        label: "inbox",
+        offset,
+        limit,
+        datetimeUntil: null,
+      }),
     },
-    body: JSON.stringify({
-      searchValue: "",
-      sortBy: "date",
-      sortOrder: "desc",
-      action: "list",
-      label: "inbox",
-      offset,
-      limit,
-      datetimeUntil: null
-    })
-  });
+  );
 
   return await response.json();
 }
 
 // Helper to fetch message content
-async function fetchMessageContent(messageId: number): Promise<MessageContentResponse> {
-  const response = await fetch(`${location.origin}/seqta/student/load/message`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8'
+async function fetchMessageContent(
+  messageId: number,
+): Promise<MessageContentResponse> {
+  const response = await fetch(
+    `${location.origin}/seqta/student/load/message`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({
+        action: "message",
+        id: messageId,
+      }),
     },
-    body: JSON.stringify({
-      action: "message",
-      id: messageId
-    })
-  });
+  );
 
   return await response.json();
 }
@@ -125,14 +136,14 @@ async function fetchMessageContent(messageId: number): Promise<MessageContentRes
 // Helper to fetch notifications
 async function fetchNotifications(): Promise<Notification[]> {
   const response = await fetch(`${location.origin}/seqta/student/heartbeat?`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json; charset=utf-8'
+      "Content-Type": "application/json; charset=utf-8",
     },
     body: JSON.stringify({
       timestamp: "1970-01-01 00:00:00.0",
       hash: "#?page=/notifications",
-    })
+    }),
   });
 
   const json = await response.json();
@@ -141,15 +152,15 @@ async function fetchNotifications(): Promise<Notification[]> {
 
 export const jobs: Record<string, Job> = {
   messages: {
-    id: 'messages',
-    label: 'Messages',
-    renderComponentId: 'message',
-    frequency: { type: 'expiry', afterMs: 1000 * 60 * 5 }, // every 5 minutes
+    id: "messages",
+    label: "Messages",
+    renderComponentId: "message",
+    frequency: { type: "expiry", afterMs: 1000 * 60 * 5 }, // every 5 minutes
 
     run: async (ctx) => {
       // Get existing items first
       const existing = await ctx.getStoredItems();
-      const existingIds = new Set(existing.map(i => i.id));
+      const existingIds = new Set(existing.map((i) => i.id));
       const newItems: IndexItem[] = [];
       let offset = 0;
       const limit = 100;
@@ -160,9 +171,9 @@ export const jobs: Record<string, Job> = {
       while (hasMore) {
         try {
           const response = await fetchMessages(offset, limit);
-          
+
           if (response.status !== "200") {
-            console.error('Failed to fetch messages:', response);
+            console.error("Failed to fetch messages:", response);
             break;
           }
 
@@ -172,13 +183,15 @@ export const jobs: Record<string, Job> = {
           // Process each message
           for (const message of messages) {
             const id = message.id.toString();
-            
+
             // Skip if we already have this message
             if (existingIds.has(id)) {
               consecutiveExisting++;
               // If we've found 20 consecutive existing messages, assume we've caught up
               if (consecutiveExisting >= 20) {
-                console.debug('[Messages Job] Found 20 consecutive existing messages, stopping fetch');
+                console.debug(
+                  "[Messages Job] Found 20 consecutive existing messages, stopping fetch",
+                );
                 hasMore = false;
                 break;
               }
@@ -191,9 +204,12 @@ export const jobs: Record<string, Job> = {
             try {
               // Fetch message content
               const contentResponse = await fetchMessageContent(message.id);
-              
+
               if (contentResponse.status !== "200") {
-                console.error('Failed to fetch message content:', contentResponse);
+                console.error(
+                  "Failed to fetch message content:",
+                  contentResponse,
+                );
                 continue;
               }
 
@@ -202,7 +218,7 @@ export const jobs: Record<string, Job> = {
               newItems.push({
                 id,
                 text: message.subject,
-                category: 'messages',
+                category: "messages",
                 content: `From: ${message.sender}\n\n${content}`,
                 dateAdded: new Date(message.date).getTime(),
                 metadata: {
@@ -213,28 +229,28 @@ export const jobs: Record<string, Job> = {
                   timestamp: message.date,
                   hasAttachments: message.attachments,
                   attachmentCount: message.attachmentCount,
-                  read: message.read === 1
+                  read: message.read === 1,
                 },
-                actionId: 'message',
-                renderComponentId: 'message'
+                actionId: "message",
+                renderComponentId: "message",
               });
 
               // Add to existingIds as we process to prevent duplicates in the same run
               existingIds.add(id);
             } catch (error) {
-              console.error('Error fetching message content:', error);
+              console.error("Error fetching message content:", error);
               continue;
             }
           }
 
           offset += limit;
         } catch (error) {
-          console.error('Error fetching messages:', error);
+          console.error("Error fetching messages:", error);
           break;
         }
 
         // Small delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       console.debug(`[Messages Job] Found ${newItems.length} new messages`);
@@ -243,38 +259,40 @@ export const jobs: Record<string, Job> = {
 
     purge: (items) => {
       // Keep messages from the last 30 days
-      const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
-      return items.filter(i => i.dateAdded >= cutoff);
-    }
+      const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      return items.filter((i) => i.dateAdded >= cutoff);
+    },
   },
 
   assessments: {
-    id: 'assessments',
-    label: 'Assessments',
-    renderComponentId: 'assessment',
-    frequency: { type: 'expiry', afterMs: 1000 * 60 * 15 }, // every 15 minutes
+    id: "assessments",
+    label: "Assessments",
+    renderComponentId: "assessment",
+    frequency: { type: "expiry", afterMs: 1000 * 60 * 15 }, // every 15 minutes
 
     run: async (ctx) => {
       const notifications = await fetchNotifications();
-      const assessmentNotifications = notifications.filter((n): n is (MessageNotification | AssessmentNotification) => 
-        n.type === 'coneqtassessments' || 
-        (n.type === 'message' && n.message.title.toLowerCase().includes('assessment'))
+      const assessmentNotifications = notifications.filter(
+        (n): n is MessageNotification | AssessmentNotification =>
+          n.type === "coneqtassessments" ||
+          (n.type === "message" &&
+            n.message.title.toLowerCase().includes("assessment")),
       );
 
       const existing = await ctx.getStoredItems();
-      const existingIds = new Set(existing.map(i => i.id));
+      const existingIds = new Set(existing.map((i) => i.id));
       const newItems: IndexItem[] = [];
 
       for (const notification of assessmentNotifications) {
         const id = notification.notificationID.toString();
         if (existingIds.has(id)) continue;
 
-        if (notification.type === 'coneqtassessments') {
+        if (notification.type === "coneqtassessments") {
           const { coneqtAssessments: assessment } = notification;
           newItems.push({
             id,
             text: assessment.title,
-            category: 'assessments',
+            category: "assessments",
             content: assessment.subtitle,
             dateAdded: new Date(notification.timestamp).getTime(),
             metadata: {
@@ -283,10 +301,10 @@ export const jobs: Record<string, Job> = {
               term: assessment.term,
               programmeId: assessment.programmeID,
               metaclassId: assessment.metaclassID,
-              timestamp: notification.timestamp
+              timestamp: notification.timestamp,
             },
-            actionId: 'assessment',
-            renderComponentId: 'assessment'
+            actionId: "assessment",
+            renderComponentId: "assessment",
           });
         } else {
           // Handle message-based assessments
@@ -294,17 +312,17 @@ export const jobs: Record<string, Job> = {
           newItems.push({
             id,
             text: message.title,
-            category: 'assessments',
+            category: "assessments",
             content: `From: ${message.subtitle}`,
             dateAdded: new Date(notification.timestamp).getTime(),
             metadata: {
               messageId: message.messageID,
               author: message.subtitle,
               timestamp: notification.timestamp,
-              isMessageBased: true
+              isMessageBased: true,
             },
-            actionId: 'assessment',
-            renderComponentId: 'assessment'
+            actionId: "assessment",
+            renderComponentId: "assessment",
           });
         }
       }
@@ -321,8 +339,8 @@ export const jobs: Record<string, Job> = {
       date.setMinutes(0);
       date.setSeconds(0);
       const cutoff = date.getTime();
-      return items.filter(i => i.dateAdded >= cutoff);
-    }
+      return items.filter((i) => i.dateAdded >= cutoff);
+    },
   },
 
   // We can add more job types here as needed:

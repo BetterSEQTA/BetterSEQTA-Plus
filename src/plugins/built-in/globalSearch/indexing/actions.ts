@@ -1,4 +1,4 @@
-import type { IndexItem } from './types';
+import type { IndexItem } from "./types";
 
 interface MessageMetadata {
   messageId: number;
@@ -29,12 +29,12 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   message: ((item: IndexItem & { metadata: MessageMetadata }) => {
     window.location.hash = `#?page=/messages&id=${item.metadata.messageId}`;
   }) as ActionHandler<any>,
-  
+
   assessment: ((item: IndexItem & { metadata: AssessmentMetadata }) => {
     if (item.metadata.isMessageBased) {
       window.location.hash = `#?page=/messages&id=${item.metadata.messageId}`;
     } else {
       window.location.hash = `#?page=/assessments&id=${item.metadata.assessmentId}`;
     }
-  }) as ActionHandler<any>
-}; 
+  }) as ActionHandler<any>,
+};

@@ -1,5 +1,5 @@
-import type { SvelteComponent } from 'svelte';
-import type { HydratedIndexItem } from './indexing/types';
+import type { SvelteComponent } from "svelte";
+import type { HydratedIndexItem } from "./indexing/types";
 
 export interface DynamicContentItem {
   id: string;
