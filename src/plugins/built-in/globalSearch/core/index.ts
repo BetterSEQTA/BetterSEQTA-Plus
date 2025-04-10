@@ -15,7 +15,7 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 import { loadAllStoredItems, runIndexing } from "../indexing/indexer";
 //import { initVectorSearch } from "../search/vector/vectorSearch";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
-import indexWorker from "./indexWorker?inlineWorker";
+import VectorSearchWorkerManager from "../search/vector/vectorSearch";
 
 const settings = defineSettings({
   searchHotkey: stringSetting({
@@ -88,18 +88,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     let app: any;
 
-    console.log("=======================")
-    /* const worker = new Worker(new URL('./indexWorker.ts', import.meta.url), {
-      type: 'module',
-    }); */
-    //const blob = new Blob([indexWorker], { type: 'application/javascript' });
-    const worker = indexWorker();
-    worker.addEventListener("message", (e) => {
-      console.log(e);
-    });
-
-    worker.postMessage({ type: "ready" });
-    console.log("=======================")
+    VectorSearchWorkerManager.getInstance();
 
     // Run initial indexing and update dynamic items
     if (api.settings.runIndexingOnLoad) {
@@ -165,9 +154,9 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       if (searchButton) searchButton.remove();
       if (searchRoot) searchRoot.remove();
 
-      // Clean up vector worker
+      // Clean up workers
       VectorWorkerManager.getInstance().terminate();
-
+      VectorSearchWorkerManager.getInstance().terminate();
       unmount(app);
     };
   },
