@@ -44,8 +44,9 @@ self.addEventListener('message', async (e) => {
   switch (type) {
     case 'search':
       console.log("Search request received", data);
-      const results = await searchVectors(data.query, data.topK);
-      self.postMessage({ type: 'searchResults', data: { messageId, results } });
+      searchVectors(data.query, data.topK).then((results) => {
+        self.postMessage({ type: 'searchResults', data: { messageId, results } });
+      });
       break;
     default:
       console.warn(`Unknown message type: ${type}`);
@@ -53,7 +54,3 @@ self.addEventListener('message', async (e) => {
 });
 
 initVectorSearch();
-
-export default function test() {
-  console.log("%cTest!!!", "background-color: #000; color: #fff;");
-}

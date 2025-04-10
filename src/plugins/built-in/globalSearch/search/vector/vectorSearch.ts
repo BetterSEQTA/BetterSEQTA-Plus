@@ -1,17 +1,19 @@
 import type { VectorSearchResult } from "./vectorTypes";
-//import vectorSearchWorker from "./vectorSearchWorker?worker";
+import vectorSearchWorker from "./vectorSearchWorker?inlineWorker";
 
 export function searchVectors(query: string, topK: number = 10): Promise<VectorSearchResult[]> {
-  //return VectorSearchWorkerManager.getInstance().search(query, topK);
-  return new Promise((resolve) => {
+  return VectorSearchWorkerManager.getInstance().search(query, topK);
+  /* return new Promise((resolve) => {
     resolve([]);
-  });
+  }); */
 }
 
-/* class VectorSearchWorkerManager {
+class VectorSearchWorkerManager {
   private static instance: VectorSearchWorkerManager;
   private worker: Worker | null = null;
   private pendingSearches = new Map<string, (results: VectorSearchResult[]) => void>();
+  private debounceTimer: NodeJS.Timeout | null = null;
+  private lastSearchParams: { query: string; topK: number; resolve: (results: VectorSearchResult[]) => void } | null = null;
 
   constructor() {
     this.initWorker();
@@ -19,7 +21,7 @@ export function searchVectors(query: string, topK: number = 10): Promise<VectorS
 
   private initWorker() {
     try {
-      this.worker = new vectorSearchWorker({ name: "vectorSearchWorker" });
+      this.worker = vectorSearchWorker();
       this.worker.addEventListener('message', this.messageHandler);
     } catch (e) {
       console.error("Failed to initialize vector search:", e);
@@ -46,21 +48,40 @@ export function searchVectors(query: string, topK: number = 10): Promise<VectorS
   }
 
   public async search(query: string, topK: number = 10): Promise<VectorSearchResult[]> {
-    console.log("Searching vectors", query, topK);
     if (!this.worker) {
       this.initWorker();
     }
-
-    const messageId = crypto.randomUUID();
+  
     return new Promise((resolve) => {
-      this.pendingSearches.set(messageId, resolve);
-      this.worker?.postMessage({
-        type: "search",
-        data: { query, topK },
-        messageId
-      });
+      this.lastSearchParams = { query, topK, resolve };
+      if (this.debounceTimer) clearTimeout(this.debounceTimer);
+      this.debounceTimer = setTimeout(() => {
+        const messageId = crypto.randomUUID();
+        if (this.lastSearchParams) {
+          this.pendingSearches.set(messageId, this.lastSearchParams.resolve);
+          this.worker?.postMessage({
+            type: "search",
+            data: { query: this.lastSearchParams.query, topK: this.lastSearchParams.topK },
+            messageId
+          });
+          this.lastSearchParams = null;
+        }
+        this.debounceTimer = null;
+      }, query !== '' ? 300 : 0);
     });
+  }
+
+  public terminate() {
+    if (this.worker) {
+      for (const [messageId, resolve] of this.pendingSearches.entries()) {
+        resolve([]);
+        this.pendingSearches.delete(messageId);
+      }
+
+      this.worker.terminate();
+      this.worker = null;
+    }
   }
 }
 
-export default VectorSearchWorkerManager; */
+export default VectorSearchWorkerManager;
