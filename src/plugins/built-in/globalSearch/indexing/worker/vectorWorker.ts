@@ -1,6 +1,6 @@
 import {
-  getEmbedding,
   EmbeddingIndex,
+  getEmbedding,
   initializeModel,
 } from "client-vector-search";
 import type { HydratedIndexItem } from "../types";
