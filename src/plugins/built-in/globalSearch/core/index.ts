@@ -12,7 +12,7 @@ import styles from "./styles.css?inline";
 import { unmount } from "svelte";
 import { loadDynamicItems } from "../dynamicSearch";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { runIndexing, loadAllStoredItems } from "../indexing/indexer";
+import { loadAllStoredItems, runIndexing } from "../indexing/indexer";
 //import { initVectorSearch } from "../search/vector/vectorSearch";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 import indexWorker from "./indexWorker?inlineWorker";
