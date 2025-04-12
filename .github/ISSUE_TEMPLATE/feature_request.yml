@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest a new Feature to be added or replaced in BetterSeqtaPLUS
+labels: enhancement
+title: "[FR]"
+body:
+
+- type: checkboxes
+  attributes:
+    label: Confirm
+    options:
+      - label: "Is this feature request related to a Bug report?"
+        required: false
+
+- type: input
+  attributes:
+      label: Bug report link
+      description: "If this feature request is related to a bug report, please insert the link to the bug report here"
+      placeholder: "https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/..."
+  validations:
+      required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ## Feature details
+      Before you request a feature, [please search](https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues) if it has already been requested. (Make sure to check closed issues as well!)
+
+      
+- type: dropdown
+  attributes:
+    label: Feature type
+    multiple: false
+    options:
+      - Graphical
+      - Functional
+      - Not Sure
+  validations:
+    required: true
+    
+
+- type: input
+  attributes:
+    label: Feature Details
+    description: Please write, with as much detail as possible, what you would like to see from this mod.
+    placeholder: I would like to see...
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional details
+    description: Anything else you want to add?
+  validations:
+    required: false
