@@ -4,12 +4,12 @@ labels: enhancement
 title: "[FR]"
 body:
 
--type: checkboxes
+- type: checkboxes
   attributes:
-      label: Confirm
-      options:
-        - label: "Is this feature request related to a Bug report?"
-          required: false
+    label: Confirm
+    options:
+      - label: "Is this feature request related to a Bug report?"
+        required: false
 
 - type: input
   attributes:
