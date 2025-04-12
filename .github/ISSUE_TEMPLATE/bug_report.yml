@@ -1,0 +1,56 @@
+name: Bug report
+description: Report an issue with the modpack in its unmodified state. For other issues, use Discord.
+labels: bug
+title: "[BUG]"
+body:
+- type: markdown
+  attributes:
+    value: |
+      Before reporting an issue, [please search](https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues) to make sure it has not already been reported (make sure to search closed issues as well!). 
+
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: Describe your issue. For general issues and questions you'll get a faster answer [from our Discord.](https://discord.gg/YzmbnCDkat)
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Extension version
+    description: What version of the extension are you using?
+    placeholder: Find it by opening the config menu and clicking the about icon in the top right.
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Browser
+    description: Which Browser are you using?
+    options:
+      - Chrome
+      - Firefox
+      - Brave
+      - Safari
+      - DuckDuckGO
+      - Microsoft Edge
+      - Other Chromium-Based Browser
+      - Other Non-Chromium-Based Browser
+  validations:
+    required: true
+
+- type: checkboxes
+  attributes:
+    label: Confirm
+    options:
+      - label: This bug report is about an issue with the extension itself. I have not modified the extension nor added any unsupported plugins. If this is not the case, I know that I should post the issue to the extension's Discord support channel instead.
+        required: true
+    
+- type: textarea
+  attributes:
+    label: Additional context
+    description: Screenshots, video or any other information. Include photos of the console if possible
+    placeholder: |
+      Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+  validations:
+    required: false
