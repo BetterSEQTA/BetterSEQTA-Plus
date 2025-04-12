@@ -42,7 +42,8 @@ body:
   attributes:
     label: Confirm
     options:
-      - label: This bug report is about an issue with the extension itself, I have not modified the extension nor added any unsupported plugins. If this is not the case, I know that I should post the issue to the extension's Discord support channel instead.
+      - label: This bug report is about an issue with the extension itself.
+        description: By ticking this box you agree to the following: I have not modified the extension nor added any unsupported plugins. If this is not the case, I know that I should post the issue to the extension's Discord support channel instead.
         required: true
     
 - type: textarea
