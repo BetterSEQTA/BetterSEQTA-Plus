@@ -16,7 +16,7 @@ body:
       label: Bug report link
       description: "If this feature request is related to a bug report, please insert the link to the bug report here"
       placeholder: "https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/..."
-    validations:
+      validations:
       required: false
 
 - type: markdown
