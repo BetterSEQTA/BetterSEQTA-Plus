@@ -4,6 +4,7 @@ import { getDynamicItems } from "./dynamicSearch";
 import type { CombinedResult } from "./core/types";
 import type { HydratedIndexItem } from "./indexing/types";
 import { searchVectors } from "./search/vector/vectorSearch";
+import type { VectorSearchResult } from "./search/vector/vectorTypes";
 
 export function createSearchIndexes() {
   const commands = getStaticCommands();
@@ -154,7 +155,10 @@ export async function performSearch(
   const fuseEndTime = performance.now();
 
   // Get vector results in parallel
-  const vectorResults = await searchVectors(query, 10);
+  let vectorResults: VectorSearchResult[] = [];
+  try {
+    vectorResults = await searchVectors(query, 10);
+  } catch (e) {}
   const vectorEndTime = performance.now();
 
   console.log("Vector results:", vectorResults);

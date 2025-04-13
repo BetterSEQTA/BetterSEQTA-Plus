@@ -33,5 +33,5 @@
       "node"
     ]
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/interface/+layout.sveltes"]
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "src/interface/+layout.svelte", "declarations.d.ts"]
 }
