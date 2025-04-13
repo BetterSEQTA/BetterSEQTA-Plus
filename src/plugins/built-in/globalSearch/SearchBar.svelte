@@ -11,6 +11,7 @@
   import Calculator from './components/Calculator.svelte';
   import { actionMap } from './indexing/actions';
   import type { IndexItem, HydratedIndexItem } from './indexing/types';
+  import debounce from 'lodash/debounce';
 
   const { 
     transparencyEffects, 
@@ -127,22 +128,21 @@
     isLoading = false;
   };
 
+  const debouncedPerformSearch = debounce(performSearch, 10);
+
   $effect(() => {
     if (commandPalleteOpen) {
-      performSearch();
+      if (searchTerm === '') {
+        performSearch();
+      } else {
+        debouncedPerformSearch();
+      }
       tick().then(() => searchbar?.focus()); 
     } else {
       searchTerm = '';
       selectedIndex = 0;
       prevSearchTerm = '';
       combinedResults = [];
-    }
-  });
-
-  $effect(() => {
-    if (commandPalleteOpen && searchTerm !== prevSearchTerm) {
-      prevSearchTerm = searchTerm;
-      performSearch();
     }
   });
 

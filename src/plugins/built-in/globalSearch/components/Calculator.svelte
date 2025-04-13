@@ -31,7 +31,10 @@
   // Process the input with debounce to avoid unnecessary calculations
   const processInput = (input: string) => {
     try {
-      if (!input.trim()) {
+      if (
+        !input.trim() || 
+        (input.trim().length <= 2 && !/\d/.test(input))
+      ) {
         result = null;
         inputUnit = '';
         outputUnit = '';

@@ -10,12 +10,10 @@ import renderSvelte from "@/interface/main";
 import SearchBar from "../SearchBar.svelte";
 import styles from "./styles.css?inline";
 import { unmount } from "svelte";
-import { loadDynamicItems } from "../dynamicSearch";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { loadAllStoredItems, runIndexing } from "../indexing/indexer";
-//import { initVectorSearch } from "../search/vector/vectorSearch";
+import { runIndexing } from "../indexing/indexer";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
-import VectorSearchWorkerManager from "../search/vector/vectorSearch";
+import { initVectorSearch } from "../search/vector/vectorSearch";
 
 const settings = defineSettings({
   searchHotkey: stringSetting({
@@ -56,26 +54,6 @@ class GlobalSearchPlugin extends BasePlugin<typeof settings> {
 
 const settingsInstance = new GlobalSearchPlugin();
 
-const updateDynamicItemsFromIndex = async () => {
-  const indexedItems = await loadAllStoredItems();
-  loadDynamicItems(indexedItems);
-  console.log(`Loaded ${indexedItems.length} indexed items into search.`);
-
-  // Process items through vector search worker
-  const workerManager = VectorWorkerManager.getInstance();
-  await workerManager.processItems(indexedItems, (progress) => {
-    if (progress.status === "started") {
-      console.debug(`Starting vector processing of ${progress.total} items...`);
-    } else if (progress.status === "processing") {
-      console.debug(`Vectorized ${progress.processed}/${progress.total} items`);
-    } else if (progress.status === "complete") {
-      console.debug("Vector processing complete:", progress.message);
-    }
-  });
-
-  window.dispatchEvent(new CustomEvent("dynamic-items-updated"));
-};
-
 const globalSearchPlugin: Plugin<typeof settings> = {
   id: "global-search",
   name: "Global Search",
@@ -88,13 +66,12 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     let app: any;
 
-    VectorSearchWorkerManager.getInstance();
+    initVectorSearch();
 
     // Run initial indexing and update dynamic items
     if (api.settings.runIndexingOnLoad) {
       setTimeout(async () => {
         await runIndexing();
-        await updateDynamicItemsFromIndex();
       }, 2000); // Delay initial indexing to let page load
     }
 
@@ -156,7 +133,6 @@ const globalSearchPlugin: Plugin<typeof settings> = {
 
       // Clean up workers
       VectorWorkerManager.getInstance().terminate();
-      VectorSearchWorkerManager.getInstance().terminate();
       unmount(app);
     };
   },
