@@ -7,7 +7,7 @@ export function searchVectors(query: string, topK: number = 10): Promise<VectorS
 }
  */
 
-import { getEmbedding, EmbeddingIndex, initializeModel } from 'client-vector-search';
+import { EmbeddingIndex, getEmbedding, initializeModel } from 'client-vector-search';
 import type { HydratedIndexItem } from '../../indexing/types';
 import type { SearchResult } from 'client-vector-search';
 
