@@ -1669,7 +1669,7 @@ body,
 div,
 ol,
 ul {
-  scrollbar-width: thin !important;
+  scrollbar-width: thin;
   scrollbar-color: #babac0 #fff !important;
 }
 
@@ -1678,7 +1678,7 @@ ul {
   div,
   ol,
   ul {
-    scrollbar-width: thin !important;
+    scrollbar-width: thin;
     scrollbar-color: #333 #111 !important;
   }
 }
@@ -3349,4 +3349,9 @@ body {
         visibility 0s linear 0.3s;
     }
   }
+}
+
+.noscroll * {
+  -ms-overflow-style: none;
+  scrollbar-width: none !important;
 }
