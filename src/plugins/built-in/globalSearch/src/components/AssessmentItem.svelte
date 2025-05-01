@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../highlightUtils';
-  import type { DynamicContentItem } from '../dynamicSearch';
+  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../utils/highlight';
+  import type { DynamicContentItem } from '../utils/dynamicItems';
   import type { FuseResultMatch } from '../core/types';
 
   const { item, isSelected, searchTerm, matches } = $props<{
@@ -9,21 +9,6 @@
     searchTerm: string;
     matches?: readonly FuseResultMatch[];
   }>();
-    
-  /* const dueDate = $derived(item.metadata?.dueDate 
-    ? new Date(item.metadata.dueDate)
-    : null); */
-    
-  /* const formattedDueDate = $derived(dueDate
-    ? dueDate.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    : 'No due date'); */
-    
-  //const isPastDue = $derived(dueDate ? dueDate.getTime() < Date.now() : false);
 </script>
 
 <button

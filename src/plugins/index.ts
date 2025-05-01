@@ -6,7 +6,7 @@ import notificationCollectorPlugin from './built-in/notificationCollector';
 import themesPlugin from './built-in/themes';
 import animatedBackgroundPlugin from './built-in/animatedBackground';
 import assessmentsAveragePlugin from './built-in/assessmentsAverage';
-import globalSearchPlugin from './built-in/globalSearch/core';
+import globalSearchPlugin from './built-in/globalSearch/src/core';
 import testPlugin from './built-in/test';
 
 // Initialize plugin manager
