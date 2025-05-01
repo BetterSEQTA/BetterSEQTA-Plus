@@ -3,14 +3,14 @@
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import { fade, scale } from 'svelte/transition';
   import { circOut, quintOut } from 'svelte/easing';
-  import { type StaticCommandItem } from './core/commands';
-  import type { CombinedResult } from './core/types';
-  import { createSearchIndexes, performSearch as doSearch } from './searchUtils';
-  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from './highlightUtils';
+  import { type StaticCommandItem } from '../core/commands';
+  import type { CombinedResult } from '../core/types';
+  import { createSearchIndexes, performSearch as doSearch } from '../search/searchUtils';
+  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../utils/highlight';
   import Fuse from 'fuse.js';
-  import Calculator from './components/Calculator.svelte';
-  import { actionMap } from './indexing/actions';
-  import type { IndexItem, HydratedIndexItem } from './indexing/types';
+  import Calculator from './Calculator.svelte';
+  import { actionMap } from '../indexing/actions';
+  import type { IndexItem, HydratedIndexItem } from '../indexing/types';
   import debounce from 'lodash/debounce';
 
   const { 

@@ -1,13 +1,4 @@
-/* import type { VectorSearchResult } from "./vectorTypes";
-import { VectorWorkerManager } from '../../indexing/worker/vectorWorkerManager';
-
-export function searchVectors(query: string, topK: number = 10): Promise<VectorSearchResult[]> {
-  // Use the single instance of the VectorWorkerManager (from indexing) to perform the search
-  return VectorWorkerManager.getInstance().search(query, topK);
-}
- */
-
-import { EmbeddingIndex, getEmbedding, initializeModel } from 'client-vector-search';
+import { getEmbedding, EmbeddingIndex, initializeModel } from 'client-vector-search';
 import type { HydratedIndexItem } from '../../indexing/types';
 import type { SearchResult } from 'client-vector-search';
 

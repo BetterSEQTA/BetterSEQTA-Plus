@@ -1,14 +1,14 @@
 import Fuse, { type FuseResult } from "fuse.js";
-import { getStaticCommands, type StaticCommandItem } from "./core/commands";
-import { getDynamicItems } from "./dynamicSearch";
-import type { CombinedResult } from "./core/types";
-import type { HydratedIndexItem } from "./indexing/types";
-import { searchVectors } from "./search/vector/vectorSearch";
-import type { VectorSearchResult } from "./search/vector/vectorTypes";
+import { getStaticCommands, type StaticCommandItem } from "../core/commands";
+import { getDynamicItems } from "../utils/dynamicItems";
+import type { CombinedResult } from "../core/types";
+import type { HydratedIndexItem } from "../indexing/types";
+import { searchVectors } from "./vector/vectorSearch";
+import type { VectorSearchResult } from "./vector/vectorTypes";
 
 export function createSearchIndexes() {
   const commands = getStaticCommands();
-  const dynamicItems = getDynamicItems(); // Returns HydratedIndexItem[]
+  const dynamicItems = getDynamicItems();
 
   const commandOptions = {
     keys: ["text", "category", "keywords"],
@@ -20,15 +20,13 @@ export function createSearchIndexes() {
     useExtendedSearch: false,
   };
 
-  // Keys for dynamic items remain the same structurally
   const dynamicOptions = {
     keys: [
       "text",
       "content",
       "category",
-      "metadata.author", // Example: Include specific metadata if needed
-      "metadata.subject", // Example: Include specific metadata if needed
-      // 'keywords', // Keywords are not currently part of IndexItem, add if needed
+      "metadata.author",
+      "metadata.subject",
     ],
     includeScore: true,
     includeMatches: true,

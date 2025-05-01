@@ -10,7 +10,6 @@ let isInitialized = false;
 let currentAbortController: AbortController | null = null;
 
 async function initWorker() {
-  // Avoid re-initialization
   if (isInitialized) {
     console.debug("Vector worker already initialized.");
     return;
