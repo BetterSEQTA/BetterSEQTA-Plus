@@ -10,7 +10,7 @@ import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { runIndexing } from "../indexing/indexer";
 import { initVectorSearch } from "../search/vector/vectorSearch";
-import { mountSearchBar, cleanupSearchBar } from "./mountSearchBar";
+import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 
 const settings = defineSettings({
   searchHotkey: stringSetting({
