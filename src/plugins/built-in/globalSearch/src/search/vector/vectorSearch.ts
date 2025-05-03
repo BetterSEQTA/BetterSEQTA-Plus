@@ -31,3 +31,9 @@ export async function searchVectors(query: string, topK: number = 10): Promise<V
   
   return results as VectorSearchResult[];
 }
+
+export async function refreshVectorCache() {
+  if (!vectorIndex) await initVectorSearch();
+  vectorIndex!.clearIndexedDBCache();
+  vectorIndex!.preloadIndexedDB();
+}

@@ -1,3 +1,4 @@
+import { refreshVectorCache } from '../../search/vector/vectorSearch';
 import type { HydratedIndexItem } from '../types';
 import vectorWorker from './vectorWorker.ts?inlineWorker';
 import type { SearchResult } from 'embeddia';
@@ -66,6 +67,10 @@ export class VectorWorkerManager {
             case 'progress':
               if (this.progressCallback) {
                 this.progressCallback(data);
+
+                if (data.status === 'complete') {
+                  refreshVectorCache();
+                }
               }
               break;
 
