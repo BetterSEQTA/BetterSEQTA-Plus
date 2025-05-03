@@ -7,7 +7,7 @@ import themesPlugin from './built-in/themes';
 import animatedBackgroundPlugin from './built-in/animatedBackground';
 import assessmentsAveragePlugin from './built-in/assessmentsAverage';
 import globalSearchPlugin from './built-in/globalSearch/src/core';
-import testPlugin from './built-in/test';
+//import testPlugin from './built-in/test';
 
 // Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
@@ -19,7 +19,7 @@ pluginManager.registerPlugin(assessmentsAveragePlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(globalSearchPlugin);
-pluginManager.registerPlugin(testPlugin);
+//pluginManager.registerPlugin(testPlugin);
 
 export { init as Monofile } from './monofile';
 

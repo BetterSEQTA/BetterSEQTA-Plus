@@ -84,7 +84,7 @@ export class PluginManager {
       if (plugin.disableToggle) {
         const settings = await browser.storage.local.get(`plugin.${pluginId}.settings`);
         const pluginSettings = settings[`plugin.${pluginId}.settings`] as PluginSettingsStorage | undefined;
-        const enabled = pluginSettings?.enabled ?? true;
+        const enabled = pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
         if (!enabled) {
           console.info(`Plugin "${pluginId}" is disabled, skipping initialization`);
           return;
@@ -185,6 +185,7 @@ export class PluginManager {
         result.id = key;
         result.title = result.title || key;
         result.description = result.description || '';
+        result.defaultEnabled = plugin.defaultEnabled ?? true;
         
         return [key, result];
       });
@@ -196,7 +197,7 @@ export class PluginManager {
             title: plugin.name,
             description: plugin.description,
             type: 'boolean',
-            default: true
+            default: plugin.defaultEnabled ?? true
           }
         ])
       }
@@ -205,7 +206,7 @@ export class PluginManager {
         name: plugin.name,
         description: plugin.description,
         settings: Object.fromEntries(settingsEntries),
-        disableToggle: plugin.disableToggle
+        disableToggle: plugin.disableToggle,
       };
     });
   }
@@ -258,7 +259,7 @@ export class PluginManager {
         if (!plugin?.disableToggle) continue;
         
         const enabled = (change.newValue as PluginSettingsStorage)?.enabled ?? true;
-        const wasEnabled = (change.oldValue as PluginSettingsStorage)?.enabled ?? true;
+        const wasEnabled = (change.oldValue as PluginSettingsStorage)?.enabled ?? plugin.defaultEnabled ?? true;
         
         if (enabled !== wasEnabled) {
           this.handlePluginStateChange(pluginId, enabled);

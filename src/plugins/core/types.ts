@@ -98,5 +98,6 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   settings: T;
   styles?: string;  // Optional CSS styles for the plugin
   disableToggle?: boolean;  // Optional flag to show/hide the plugin's enable/disable toggle in settings
+  defaultEnabled?: boolean;  // Optional flag to set the plugin's default enabled state
   run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<(() => void)>;
 }
