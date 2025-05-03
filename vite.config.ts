@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import { join, resolve } from 'path';
 
-import { updateManifestPlugin } from './lib/patchPackage';
 import touchGlobalCSSPlugin from './lib/touchGlobalCSS';
 import InlineWorkerPlugin from './lib/inlineWorker';
 import { base64Loader } from './lib/base64loader';
@@ -9,7 +8,6 @@ import type { BuildTarget } from './lib/types';
 import ClosePlugin from './lib/closePlugin';
 
 import million from "million/compiler";
-//import MillionLint from '@million/lint';
 
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
@@ -27,7 +25,6 @@ const targets: BuildTarget[] = [
 
 const mode = process.env.MODE || 'chrome'; // Check the environment variable to determine which build type to use.
 //const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
-
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
@@ -36,12 +33,10 @@ export default defineConfig(({ command }) => ({
       emitCss: false
     }),
     million.vite({ auto: true }),
-    //MillionLint.vite(), /* enable for testing and debugging performance */
     crx({
       manifest: targets.find(t => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome"
     }),
-    updateManifestPlugin(),
     touchGlobalCSSPlugin(),
     ...(command === 'build' ? [ClosePlugin()] : [])
   ],
