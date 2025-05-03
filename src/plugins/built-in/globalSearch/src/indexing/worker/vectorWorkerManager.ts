@@ -1,6 +1,6 @@
 import type { HydratedIndexItem } from '../types';
 import vectorWorker from './vectorWorker.ts?inlineWorker';
-import type { SearchResult } from 'client-vector-search';
+import type { SearchResult } from 'embeddia';
 
 export type ProgressCallback = (data: {
   status: 'started' | 'processing' | 'complete' | 'error' | 'cancelled';
