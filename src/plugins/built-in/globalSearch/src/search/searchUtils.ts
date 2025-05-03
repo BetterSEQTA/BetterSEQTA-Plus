@@ -134,15 +134,12 @@ export async function performSearch(
   dynamicIdToItemMap: Map<string, HydratedIndexItem>,
   showRecentFirst: boolean,
 ): Promise<CombinedResult[]> {
-  const startTime = performance.now();
-
   // Get all results first
   const commandResults = searchCommands(
     commandsFuse,
     query,
     commandIdToItemMap,
   );
-  const commandEndTime = performance.now();
   const dynamicResults = searchDynamicItems(
     dynamicContentFuse,
     query,
@@ -150,23 +147,12 @@ export async function performSearch(
     10,
     showRecentFirst,
   );
-  const fuseEndTime = performance.now();
 
   // Get vector results in parallel
   let vectorResults: VectorSearchResult[] = [];
   try {
     vectorResults = await searchVectors(query, 10);
   } catch (e) {}
-  const vectorEndTime = performance.now();
-
-  console.log("Vector results:", vectorResults);
-
-  // Log timings
-  console.log(`Command search took ${commandEndTime - startTime} milliseconds`);
-  console.log(
-    `Dynamic search took ${fuseEndTime - commandEndTime} milliseconds`,
-  );
-  console.log(`Vector search took ${vectorEndTime - fuseEndTime} milliseconds`);
 
   // Create a map to store our final results, using ID as key to avoid duplicates
   const resultMap = new Map<string, CombinedResult>();
