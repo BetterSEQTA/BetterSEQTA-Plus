@@ -42,7 +42,7 @@ async function init() {
       await initializeSettingsState()
 
       if (typeof settingsState.onoff === "undefined") {
-        browser.runtime.sendMessage({ type: "setDefaultStorage" })
+        await browser.runtime.sendMessage({ type: "setDefaultStorage" })
       }
 
       await main()
