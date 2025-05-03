@@ -31,8 +31,13 @@ const testPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     console.log('Test plugin running');
 
+    api.events.on('ping', (data) => {
+      console.log('Ping received! Page changed to: ', data);
+    });
+
     const { unregister } = api.seqta.onPageChange((page) => {
-      console.log('Page changed to', page);
+      //console.log('Page changed to', page);
+      api.events.emit('ping', page);
 
       console.log('Current setting value:', api.settings.someSetting);
     });
