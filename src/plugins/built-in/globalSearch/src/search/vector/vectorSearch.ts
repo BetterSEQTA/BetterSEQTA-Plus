@@ -1,6 +1,6 @@
-import { EmbeddingIndex, getEmbedding, initializeModel } from 'client-vector-search';
+import { EmbeddingIndex, getEmbedding, initializeModel } from 'embeddia';
 import type { HydratedIndexItem } from '../../indexing/types';
-import type { SearchResult } from 'client-vector-search';
+import type { SearchResult } from 'embeddia';
 
 let vectorIndex: EmbeddingIndex | null = null;
 

@@ -1,4 +1,4 @@
-import type { FuseResultMatch, MatchIndices } from "./core/types";
+import type { FuseResultMatch, MatchIndices } from "../core/types";
 
 /**
  * Simple utility to remove HTML tags from a string.

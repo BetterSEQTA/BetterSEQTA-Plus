@@ -74,7 +74,6 @@
   let searchbar = $state<HTMLInputElement>();
   let combinedResults = $state<CombinedResult[]>([]); 
   let isLoading = $state(false);
-  let prevSearchTerm = $state('');
   let calculatorResult = $state<string | null>(null);
 
   const updateCalculatorState = (hasResult: string | null) => {
@@ -141,7 +140,6 @@
     } else {
       searchTerm = '';
       selectedIndex = 0;
-      prevSearchTerm = '';
       combinedResults = [];
     }
   });
@@ -210,18 +208,18 @@
       transition:fade={{ duration: 150, easing: quintOut }}
     ></div>
 
-    <div class="fixed inset-0 z-[50000] flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none" 
+    <div class="fixed inset-0 z-[50000] flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none scale-120 origin-top" 
          onclick={() => commandPalleteOpen = false}
-         onkeydown={(e) => e.key === 'Escape' && (commandPalleteOpen = false)}
+         onkeydown={(e: KeyboardEvent) => e.key === 'Escape' && (commandPalleteOpen = false)}
          role="button"
          tabindex="0">
       <div
         class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
         transition:scale={{ duration: 100, start: 0.95, opacity: 0, easing: circOut }}
-        onclick={(e) => {
+        onclick={(e: MouseEvent) => {
           e.stopPropagation();
         }}
-        onkeydown={(e) => {
+        onkeydown={(e: KeyboardEvent) => {
           if (e.key === 'Escape') {
             commandPalleteOpen = false;
           }

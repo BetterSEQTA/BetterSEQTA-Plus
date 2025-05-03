@@ -2,7 +2,7 @@ import {
   EmbeddingIndex,
   getEmbedding,
   initializeModel,
-} from "client-vector-search";
+} from "embeddia";
 import type { HydratedIndexItem } from "../types";
 
 let vectorIndex: EmbeddingIndex | null = null;
