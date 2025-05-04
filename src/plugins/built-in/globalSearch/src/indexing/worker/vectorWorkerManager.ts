@@ -42,6 +42,8 @@ export class VectorWorkerManager {
         // Create the worker
         this.worker = vectorWorker();
 
+        console.log('Worker initialized', this.worker);
+
         const timeout = setTimeout(() => {
             console.error('Vector worker initialization timed out');
             this.worker?.terminate(); // Clean up worker if it exists
@@ -140,9 +142,12 @@ export class VectorWorkerManager {
     this.cancelAllSearches("Processing started");
 
     console.debug(`Sending ${items.length} items to worker for processing.`);
+
+    const serialisableItems = items.map(({ renderComponent, ...rest }) => rest);
+
     this.worker!.postMessage({
       type: 'process',
-      data: { items }
+      data: { items: serialisableItems }
     });
   }
 
@@ -173,6 +178,7 @@ export class VectorWorkerManager {
         this.searchPromises.set(messageId, { resolve: currentParams.resolve, reject: currentParams.reject, timer: searchTimer });
 
         console.debug(`Sending search request (ID: ${messageId}) to worker: "${currentParams.query}"`);
+        console.log(this.worker);
         this.worker.postMessage({
           type: "search",
           data: { query: currentParams.query, topK: currentParams.topK },

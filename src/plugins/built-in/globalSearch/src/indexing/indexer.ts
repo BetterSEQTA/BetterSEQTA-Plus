@@ -170,7 +170,10 @@ export async function runIndexing(): Promise<void> {
       let merged = mergeItems(stored, newItemsRaw);
       if (job.purge) merged = job.purge(merged);
 
-      await setStoredItems(merged); // Store merged non-vector data
+      console.log(merged);
+      console.log(merged.length);
+
+      await setStoredItems(merged);
       await updateLastRunMeta(jobId);
 
       // Hydrate items for vector processing
@@ -192,11 +195,11 @@ export async function runIndexing(): Promise<void> {
       allItemsFromJobs.push(...hydratedItems);
 
       console.debug(
-        `%c[Indexer] ✅ ${job.label}: ${newItemsRaw.length} new items fetched, ${merged.length} total stored (non-vector).`,
+        `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items fetched, ${merged.length} total stored (non-vector).`,
         "color: #00c46f",
       );
     } catch (err) {
-      console.debug(`%c[Indexer] ❌ ${job.label} failed:`, "color: red");
+      console.debug(`%c[Indexer] ${job.label} failed:`, "color: red");
       console.error(err);
     }
 

@@ -155,7 +155,7 @@ export const jobs: Record<string, Job> = {
     id: "messages",
     label: "Messages",
     renderComponentId: "message",
-    frequency: { type: "expiry", afterMs: 1000 * 60 * 5 }, // every 5 minutes
+    frequency: { type: "expiry", afterMs: 1000 }, // every 5 minutes
 
     run: async (ctx) => {
       // Get existing items first
@@ -258,8 +258,7 @@ export const jobs: Record<string, Job> = {
     },
 
     purge: (items) => {
-      // Keep messages from the last 30 days
-      const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const cutoff = Date.now() - 4 * 12 * 30 * 24 * 60 * 60 * 1000;
       return items.filter((i) => i.dateAdded >= cutoff);
     },
   },

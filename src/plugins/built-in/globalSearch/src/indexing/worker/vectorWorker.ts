@@ -86,7 +86,6 @@ async function processItems(items: HydratedIndexItem[], signal: AbortSignal) {
   const unprocessedItems = items.filter((item) => {
     if (signal.aborted) return false; // Check cancellation during filtering
     try {
-      // Check if the item ID already exists in the index (loaded or added)
       return !vectorIndex!.get({ id: item.id });
     } catch (e) {
       // If get throws (e.g., item not found), it means it's unprocessed
