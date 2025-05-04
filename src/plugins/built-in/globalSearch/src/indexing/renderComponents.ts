@@ -4,7 +4,7 @@ import AssessmentComponent from "../components/AssessmentItem.svelte";
 
 export const renderComponentMap: Record<string, typeof SvelteComponent> = {
   assessment: AssessmentComponent as unknown as typeof SvelteComponent,
-  // messages: MessageComponent,
+  message: AssessmentComponent as unknown as typeof SvelteComponent,
   // subject: SubjectComponent,
   // etc...
 };
