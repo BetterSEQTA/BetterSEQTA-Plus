@@ -43,7 +43,7 @@
   <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container">
     <div bind:this={containerRef} class="flex relative">
       <MotionDiv
-        class="absolute top-0 left-0 z-0 h-full bg-[#DDDDDD] dark:bg-[#38373D] rounded-full opacity-40 tab-width"
+        class="absolute top-0 left-0 z-0 h-full bg-gradient-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
         animate={{ x: calcXPos(activeTab) }}
         transition={springTransition}
       />
@@ -65,8 +65,9 @@
     >
       <div class="flex">
         {#each tabs as { Content, props }, index}
-          <div class="absolute focus:outline-none w-full transition-opacity duration-300 overflow-y-scroll no-scrollbar h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
-            style="left: {index * 100}%;">
+        <div class="absolute focus:outline-none w-full pt-2 transition-opacity duration-300 overflow-y-scroll no-scrollbar pb-2 h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
+          style="left: {index * 100}%;">
+          <div style="left: {index * 100}%;" class="fixed top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-zinc-200 dark:from-zinc-800 dark:to-transparent"></div>
              <Content {...props} />
           </div>
         {/each}

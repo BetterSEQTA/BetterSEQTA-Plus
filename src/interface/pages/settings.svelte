@@ -66,7 +66,7 @@
 
 <div class="w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode ? 'dark' : ''} { standalone ? 'h-[600px]' : 'h-full rounded-xl' } overflow-clip">
   <div class="flex relative flex-col gap-2 h-full overflow-clip bg-white dark:bg-zinc-800 dark:text-white">
-    <div class="grid place-items-center border-b border-b-zinc-200/40">
+    <div class="grid place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40">
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <img src={browser.runtime.getURL('resources/icons/betterseqta-dark-full.png')} class="w-4/5 dark:hidden" alt="Light logo" onclick={handleDevModeToggle} />
