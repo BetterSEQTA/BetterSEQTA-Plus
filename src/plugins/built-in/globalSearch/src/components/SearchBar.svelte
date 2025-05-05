@@ -111,6 +111,11 @@
     isLoading = true;
     selectedIndex = 0;
 
+    tick().then(() => {
+      const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
+      selectedElement?.scrollIntoView({ block: 'nearest' });
+    });
+
     const term = searchTerm.trim().toLowerCase();
     
     if (commandsFuse && dynamicContentFuse) {
@@ -143,20 +148,12 @@
       searchTerm = '';
       selectedIndex = 0;
       combinedResults = [];
-      tick().then(() => {
-        const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
-        selectedElement?.scrollIntoView({ block: 'nearest' });
-      });
     }
   });
 
   $effect(() => {
     if (combinedResults.length === 0 && calculatorResult && commandPalleteOpen) {
       selectedIndex = 0;
-      tick().then(() => {
-        const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
-        selectedElement?.scrollIntoView({ block: 'nearest' });
-      });
     }
   });
 
@@ -232,7 +229,7 @@
          role="button"
          tabindex="0">
       <div
-        class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur' : 'bg-white dark:bg-zinc-900' }"
+        class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl' : 'bg-white dark:bg-zinc-900' }"
         transition:scale={{ duration: 100, start: 0.95, opacity: 0, easing: circOut }}
         onclick={(e: MouseEvent) => {
           e.stopPropagation();
@@ -276,7 +273,7 @@
                 {#if result.type === 'command'}
                   {@const staticItem = item as StaticCommandItem}
                   <button
-                    class="w-full flex items-center px-2 py-1.5 rounded-lg select-none cursor-pointer group 
+                    class="w-full flex items-center px-2 py-1.5 rounded-lg select-none cursor-pointer group transition-colors duration-100
                     {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                     onclick={() => executeItemAction(staticItem)}
                   >

@@ -18,8 +18,7 @@ export const forumsJob: Job = {
   id: "forums",
   label: "Forums",
   renderComponentId: "forum",
-  //frequency: { type: "expiry", afterMs: 30 * 24 * 60 * 60 * 1000 }, // 30 days
-  frequency: { type: "interval", ms: 1000 }, // 1s
+  frequency: { type: "expiry", afterMs: 30 * 24 * 60 * 60 * 1000 }, // 30 days
 
   run: async (ctx) => {
     const existingIds = new Set(
