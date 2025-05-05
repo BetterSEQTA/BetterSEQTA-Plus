@@ -81,6 +81,7 @@
     "embeddia": "^1.1.4",
     "embla-carousel-autoplay": "^8.5.2",
     "embla-carousel-svelte": "^8.5.2",
+    "esbuild": "^0.25.3",
     "events": "^3.3.0",
     "flexsearch": "^0.8.147",
     "fuse.js": "^7.1.0",
