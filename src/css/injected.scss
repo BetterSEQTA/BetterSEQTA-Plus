@@ -1225,17 +1225,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   position: relative;
   transition: 200ms;
 }
-.customshortcut::after {
-  content: "Custom Shortcut";
-  position: absolute;
-  top: -4px;
-  right: -15px;
-  font-size: 8px;
-  padding: 2px 5px;
-  background: var(--better-alert-highlight);
-  border-radius: 8px;
-  color: white;
-}
 .shortcut:hover {
   background: var(--auto-background);
 }
