@@ -132,6 +132,7 @@ bun install
 #### Extension not appearing in SEQTA
 
 Make sure:
+
 - You're visiting a SEQTA Learn page
 - The extension is enabled
 - You've refreshed the page after installing the extension
@@ -139,6 +140,7 @@ Make sure:
 #### Development build not updating
 
 Try:
+
 1. Stopping the development server
 2. Clearing your browser cache
 3. Removing the extension from your browser
@@ -177,4 +179,4 @@ bun run dev
 Now that you have BetterSEQTA+ installed, you can:
 
 - [Getting Started with Plugins](./plugins/getting-started.md)
-- [Contribute to the project](../CONTRIBUTING.md) 
+- [Contribute to the project](../CONTRIBUTING.md)

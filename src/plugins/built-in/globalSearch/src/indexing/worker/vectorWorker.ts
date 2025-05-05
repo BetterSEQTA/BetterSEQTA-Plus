@@ -1,8 +1,4 @@
-import {
-  EmbeddingIndex,
-  getEmbedding,
-  initializeModel,
-} from "embeddia";
+import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { HydratedIndexItem } from "../types";
 
 let vectorIndex: EmbeddingIndex | null = null;

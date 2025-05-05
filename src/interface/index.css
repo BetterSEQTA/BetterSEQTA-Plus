@@ -1,4 +1,4 @@
-@import './components/ColourPicker.css';
+@import "./components/ColourPicker.css";
 
 @tailwind base;
 @tailwind components;

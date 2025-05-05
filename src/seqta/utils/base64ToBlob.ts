@@ -1,4 +1,4 @@
-const base64ToBlob = (base64: string, contentType: string = ''): Blob => {
+const base64ToBlob = (base64: string, contentType: string = ""): Blob => {
   const byteCharacters = atob(base64);
   const byteArrays: Uint8Array[] = [];
 

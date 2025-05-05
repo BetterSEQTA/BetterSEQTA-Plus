@@ -1,6 +1,6 @@
-import ColorPicker from "react-best-gradient-color-picker"
-import { useEffect, useRef, useState } from "react"
-import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
+import ColorPicker from "react-best-gradient-color-picker";
+import { useEffect, useRef, useState } from "react";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts";
 
 const defaultPresets = [
   "linear-gradient(30deg, rgba(229,209,218,1) 0%, RGBA(235,169,202,1) 46%, rgba(214,155,162,1) 100%)",
@@ -22,12 +22,12 @@ const defaultPresets = [
   "rgba(30, 64, 175, 0.89)",
   "rgba(134, 25, 143, 1)",
   "rgba(14, 165, 233, 0.9)",
-]
+];
 
 interface PickerProps {
-  customOnChange?: (color: string) => void
-  customState?: string
-  savePresets?: boolean
+  customOnChange?: (color: string) => void;
+  customState?: string;
+  savePresets?: boolean;
 }
 
 export default function Picker({
@@ -35,37 +35,49 @@ export default function Picker({
   customState,
   savePresets = true,
 }: PickerProps) {
-  const [customThemeColor, setCustomThemeColor] = useState<string | null>()
-  const [presets, setPresets] = useState<string[]>()
+  const [customThemeColor, setCustomThemeColor] = useState<string | null>();
+  const [presets, setPresets] = useState<string[]>();
 
-  const latestValuesRef = useRef({ customThemeColor, customOnChange, savePresets, presets });
+  const latestValuesRef = useRef({
+    customThemeColor,
+    customOnChange,
+    savePresets,
+    presets,
+  });
 
   useEffect(() => {
     if (customState !== undefined && customState !== null) {
-      setCustomThemeColor(customState)
+      setCustomThemeColor(customState);
     } else {
-      setCustomThemeColor(settingsState.selectedColor ?? null)
+      setCustomThemeColor(settingsState.selectedColor ?? null);
     }
 
     if (presets === undefined) {
-      const savedPresets = localStorage.getItem("colorPickerPresets")
-      setPresets(savedPresets ? JSON.parse(savedPresets) : defaultPresets)
+      const savedPresets = localStorage.getItem("colorPickerPresets");
+      setPresets(savedPresets ? JSON.parse(savedPresets) : defaultPresets);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    latestValuesRef.current = { customThemeColor, customOnChange, savePresets, presets };
+    latestValuesRef.current = {
+      customThemeColor,
+      customOnChange,
+      savePresets,
+      presets,
+    };
   }, [customThemeColor, customOnChange, savePresets, presets]);
 
   useEffect(() => {
     return () => {
-      const { customThemeColor, customOnChange, savePresets, presets } = latestValuesRef.current;
-      if (!(customThemeColor && !customOnChange && savePresets && presets)) return;
-        
+      const { customThemeColor, customOnChange, savePresets, presets } =
+        latestValuesRef.current;
+      if (!(customThemeColor && !customOnChange && savePresets && presets))
+        return;
+
       // Only proceed if presets are different (avoid unnecessary updates)
       const existingIndex = presets.indexOf(customThemeColor);
       let updatedPresets;
-      
+
       if (existingIndex === 0) {
         // No need to update if the selected color is already the first element
         return;
@@ -78,16 +90,19 @@ export default function Picker({
       } else {
         updatedPresets = [customThemeColor, ...presets].slice(0, 18);
       }
-    
-      localStorage.setItem("colorPickerPresets", JSON.stringify(updatedPresets));
-    }
-  }, [])
+
+      localStorage.setItem(
+        "colorPickerPresets",
+        JSON.stringify(updatedPresets),
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (customThemeColor && !customOnChange) {
-      settingsState.selectedColor = customThemeColor
+      settingsState.selectedColor = customThemeColor;
     }
-  }, [customThemeColor, customOnChange])
+  }, [customThemeColor, customOnChange]);
 
   return (
     <ColorPicker
@@ -97,12 +112,12 @@ export default function Picker({
       value={customThemeColor ?? ""}
       onChange={(color: string) => {
         if (customOnChange) {
-          customOnChange(color)
-          setCustomThemeColor(color)
+          customOnChange(color);
+          setCustomThemeColor(color);
         } else {
-          setCustomThemeColor(color)
+          setCustomThemeColor(color);
         }
       }}
     />
-  )
+  );
 }

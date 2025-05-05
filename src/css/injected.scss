@@ -758,7 +758,7 @@ ol > [data-label] {
   margin-left: 4px;
   margin-bottom: 4px;
 }
-[class*="Message__Message___"]  > .uiFrameWrapper .iframeWrapper {
+[class*="Message__Message___"] > .uiFrameWrapper .iframeWrapper {
   background: transparent;
 }
 [class*="Viewer__newMessage___"] {
@@ -1375,10 +1375,13 @@ div > ol:has(.uiFileHandlerWrapper) {
   margin: 20px auto 0px;
   cursor: pointer;
 }
-.dark [class*="notifications__detailsBody___"] > [class*="notifications__subtitle___"] {
+.dark
+  [class*="notifications__detailsBody___"]
+  > [class*="notifications__subtitle___"] {
   color: #c1bcbc;
 }
-[class*="notifications__detailsBody___"] > [class*="notifications__subtitle___"] {
+[class*="notifications__detailsBody___"]
+  > [class*="notifications__subtitle___"] {
   font-size: 12px;
 }
 [class*="notifications__notifications___"] > button {
@@ -1394,7 +1397,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   height: 25px;
   width: 24px;
 }
-[class*="notifications__notifications___"] > button > [class*="notifications__bubble___"] {
+[class*="notifications__notifications___"]
+  > button
+  > [class*="notifications__bubble___"] {
   background: var(--better-alert-highlight);
   width: 25px;
   height: 25px;
@@ -1710,7 +1715,9 @@ ul {
   > [class*="SelectedAssessment__meta___"] {
   border-bottom: 1px solid var(--better-main);
 }
-[class*="TabSet__TabSet___"] > ol[class*="TabSet__tabs___"] > li[class*="TabSet__selected___"] {
+[class*="TabSet__TabSet___"]
+  > ol[class*="TabSet__tabs___"]
+  > li[class*="TabSet__selected___"] {
   border-bottom-color: var(--better-main);
 }
 [class*="TabSet__TabSet___"] > ol[class*="TabSet__tabs___"] {
@@ -2181,7 +2188,9 @@ body {
   border-radius: 1600px;
 }
 
-[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__selected___"]
+[class*="MessageList__MessageList___"]
+  > ol
+  > li[class*="MessageList__selected___"]
   [class*="MessageList__unread___"] {
   box-shadow: none;
 }
@@ -2190,7 +2199,9 @@ body {
   box-shadow: none;
 }
 
-[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__unread___"]::before,
+[class*="MessageList__MessageList___"]
+  > ol
+  > li[class*="MessageList__unread___"]::before,
 [class*="MessageList__MessageList___"] > ol > li::before {
   content: "";
   position: absolute;
@@ -2202,7 +2213,9 @@ body {
   transition: width 0.1s;
 }
 
-[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__unread___"]::before {
+[class*="MessageList__MessageList___"]
+  > ol
+  > li[class*="MessageList__unread___"]::before {
   width: 3px;
 }
 .connectedNotificationsWrapper > div > button {
@@ -2283,7 +2296,9 @@ body {
   background: var(--background-secondary);
 }
 
-[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__selected___"] {
+[class*="MessageList__MessageList___"]
+  > ol
+  > li[class*="MessageList__selected___"] {
   background: rgb(228 225 225);
   color: var(--text-primary);
 }

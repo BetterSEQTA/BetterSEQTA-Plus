@@ -1,13 +1,13 @@
-import stringToHTML from "../stringToHTML"
+import stringToHTML from "../stringToHTML";
 
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
-  var shortcut = document.createElement("a")
-  shortcut.setAttribute("href", element.url)
-  shortcut.setAttribute("target", "_blank")
-  var shortcutdiv = document.createElement("div")
-  shortcutdiv.classList.add("shortcut")
-  shortcutdiv.classList.add("customshortcut")
+  var shortcut = document.createElement("a");
+  shortcut.setAttribute("href", element.url);
+  shortcut.setAttribute("target", "_blank");
+  var shortcutdiv = document.createElement("div");
+  shortcutdiv.classList.add("shortcut");
+  shortcutdiv.classList.add("customshortcut");
 
   let image = stringToHTML(
     `
@@ -25,13 +25,13 @@ export function CreateCustomShortcutDiv(element: any) {
       </text>
     </svg>
     `,
-  ).firstChild
-  ;(image as HTMLElement).classList.add("shortcuticondiv")
-  var text = document.createElement("p")
-  text.textContent = element.name
-  shortcutdiv.append(image!)
-  shortcutdiv.append(text)
-  shortcut.append(shortcutdiv)
+  ).firstChild;
+  (image as HTMLElement).classList.add("shortcuticondiv");
+  var text = document.createElement("p");
+  text.textContent = element.name;
+  shortcutdiv.append(image!);
+  shortcutdiv.append(text);
+  shortcut.append(shortcutdiv);
 
-  document.getElementById("shortcuts")!.append(shortcut)
+  document.getElementById("shortcuts")!.append(shortcut);
 }

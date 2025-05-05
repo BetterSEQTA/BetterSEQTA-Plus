@@ -1,4 +1,4 @@
-import './index.css';
+import "./index.css";
 
 declare module "*.png";
 declare module "*.svg";

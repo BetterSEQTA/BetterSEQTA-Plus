@@ -1,16 +1,16 @@
-import { settingsState } from "./listeners/SettingsState"
-import { animate, stagger } from "motion"
-import stringToHTML from "./stringToHTML"
-import browser from "webextension-polyfill"
-import kofi from "@/resources/kofi.png?base64"
+import { settingsState } from "./listeners/SettingsState";
+import { animate, stagger } from "motion";
+import stringToHTML from "./stringToHTML";
+import browser from "webextension-polyfill";
+import kofi from "@/resources/kofi.png?base64";
 
 export async function DeleteWhatsNew() {
-  const bkelement = document.getElementById("whatsnewbk")
-  const popup = document.getElementsByClassName("whatsnewContainer")[0]
+  const bkelement = document.getElementById("whatsnewbk");
+  const popup = document.getElementsByClassName("whatsnewContainer")[0];
 
   if (!settingsState.animations) {
-    bkelement?.remove()
-    return
+    bkelement?.remove();
+    return;
   }
 
   animate(
@@ -18,47 +18,47 @@ export async function DeleteWhatsNew() {
     { opacity: [1, 0], scale: [1, 0] },
     { ease: [0.22, 0.03, 0.26, 1] },
   ).then(() => {
-    bkelement?.remove()
-  })
+    bkelement?.remove();
+  });
 }
 
 export function OpenWhatsNewPopup() {
-    const background = document.createElement("div")
-    background.id = "whatsnewbk"
-    background.classList.add("whatsnewBackground")
-  
-    const container = document.createElement("div")
-    container.classList.add("whatsnewContainer")
-  
-    var header: any = stringToHTML(
-      /* html */
-      `<div class="whatsnewHeader">
+  const background = document.createElement("div");
+  background.id = "whatsnewbk";
+  background.classList.add("whatsnewBackground");
+
+  const container = document.createElement("div");
+  container.classList.add("whatsnewContainer");
+
+  var header: any = stringToHTML(
+    /* html */
+    `<div class="whatsnewHeader">
         <h1>What's New</h1>
         <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
       </div>`,
-    ).firstChild
-  
-    let imagecont = document.createElement("div")
-    imagecont.classList.add("whatsnewImgContainer")
-  
-    let video = document.createElement("video")
-    let source = document.createElement("source")
-  
-    source.setAttribute(
-      "src",
-      "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
-    )
-    video.autoplay = true
-    video.muted = true
-    video.loop = true
-    video.appendChild(source)
-    video.classList.add("whatsnewImg")
-    imagecont.appendChild(video)
-  
-    let textcontainer = document.createElement("div")
-    textcontainer.classList.add("whatsnewTextContainer")
-  
-    let text = stringToHTML(/* html */ `
+  ).firstChild;
+
+  let imagecont = document.createElement("div");
+  imagecont.classList.add("whatsnewImgContainer");
+
+  let video = document.createElement("video");
+  let source = document.createElement("source");
+
+  source.setAttribute(
+    "src",
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
+  );
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.appendChild(source);
+  video.classList.add("whatsnewImg");
+  imagecont.appendChild(video);
+
+  let textcontainer = document.createElement("div");
+  textcontainer.classList.add("whatsnewTextContainer");
+
+  let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
       <h1>3.4.6.1 - Hot patch!</h1>
       <li>Fixed storage not updating and sometimes being replaced with default values</li>
@@ -238,9 +238,9 @@ export function OpenWhatsNewPopup() {
       <h1>Create Custom Shortcuts</h1>
       <li>Found in the BetterSEQTA+ Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
     </div>
-    `).firstChild
-  
-    let footer = stringToHTML(/* html */ `
+    `).firstChild;
+
+  let footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
         Report bugs and feedback:
@@ -267,58 +267,58 @@ export function OpenWhatsNewPopup() {
           </a>
         </div>
       </div>
-    `).firstChild
-  
-    let exitbutton = document.createElement("div")
-    exitbutton.id = "whatsnewclosebutton"
-  
-    container.append(header)
-    container.append(imagecont)
-    container.append(textcontainer)
-    container.append(text as ChildNode)
-    container.append(footer as ChildNode)
-    container.append(exitbutton)
-  
-    background.append(container)
-  
-    document.getElementById("container")!.append(background)
-  
-    let bkelement = document.getElementById("whatsnewbk")
-    let popup = document.getElementsByClassName("whatsnewContainer")[0]
-  
-    if (settingsState.animations) {
-      animate(
-        [popup, bkelement as HTMLElement],
-        { scale: [0, 1] },
-        {
-          type: "spring",
-          stiffness: 220,
-          damping: 18,
-        },
-      )
-  
-      animate(
-        ".whatsnewTextContainer *",
-        { opacity: [0, 1], y: [10, 0] },
-        {
-          delay: stagger(0.05, { startDelay: 0.1 }),
-          duration: 0.5,
-          ease: [0.22, 0.03, 0.26, 1],
-        },
-      )
-    }
-  
-    delete settingsState.justupdated
-  
-    bkelement!.addEventListener("click", function (event) {
-      // Check if the click event originated from the element itself and not any of its children
-      if (event.target === bkelement) {
-        DeleteWhatsNew()
-      }
-    })
-  
-    var closeelement = document.getElementById("whatsnewclosebutton")
-    closeelement!.addEventListener("click", function () {
-      DeleteWhatsNew()
-    })
+    `).firstChild;
+
+  let exitbutton = document.createElement("div");
+  exitbutton.id = "whatsnewclosebutton";
+
+  container.append(header);
+  container.append(imagecont);
+  container.append(textcontainer);
+  container.append(text as ChildNode);
+  container.append(footer as ChildNode);
+  container.append(exitbutton);
+
+  background.append(container);
+
+  document.getElementById("container")!.append(background);
+
+  let bkelement = document.getElementById("whatsnewbk");
+  let popup = document.getElementsByClassName("whatsnewContainer")[0];
+
+  if (settingsState.animations) {
+    animate(
+      [popup, bkelement as HTMLElement],
+      { scale: [0, 1] },
+      {
+        type: "spring",
+        stiffness: 220,
+        damping: 18,
+      },
+    );
+
+    animate(
+      ".whatsnewTextContainer *",
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.05, { startDelay: 0.1 }),
+        duration: 0.5,
+        ease: [0.22, 0.03, 0.26, 1],
+      },
+    );
   }
+
+  delete settingsState.justupdated;
+
+  bkelement!.addEventListener("click", function (event) {
+    // Check if the click event originated from the element itself and not any of its children
+    if (event.target === bkelement) {
+      DeleteWhatsNew();
+    }
+  });
+
+  var closeelement = document.getElementById("whatsnewclosebutton");
+  closeelement!.addEventListener("click", function () {
+    DeleteWhatsNew();
+  });
+}

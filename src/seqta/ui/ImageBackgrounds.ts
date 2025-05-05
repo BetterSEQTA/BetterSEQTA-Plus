@@ -1,15 +1,18 @@
-import { getDataById, isIndexedDBSupported } from '@/interface/hooks/BackgroundDataLoader';
+import {
+  getDataById,
+  isIndexedDBSupported,
+} from "@/interface/hooks/BackgroundDataLoader";
 
 export async function appendBackgroundToUI() {
-  const parent = document.getElementById('container');
+  const parent = document.getElementById("container");
   if (!parent) return;
 
-  const backgroundContainer = document.createElement('div');
-  backgroundContainer.classList.add('imageBackground');
-  backgroundContainer.setAttribute('excludeDarkCheck', 'true');
+  const backgroundContainer = document.createElement("div");
+  backgroundContainer.classList.add("imageBackground");
+  backgroundContainer.setAttribute("excludeDarkCheck", "true");
 
-  const mediaContainer = document.createElement('div');
-  mediaContainer.id = 'media-container';
+  const mediaContainer = document.createElement("div");
+  mediaContainer.id = "media-container";
   backgroundContainer.appendChild(mediaContainer);
 
   parent.appendChild(backgroundContainer);
@@ -24,9 +27,9 @@ export async function loadBackground() {
   }
 
   try {
-    const selectedBackgroundId = localStorage.getItem('selectedBackground');
+    const selectedBackgroundId = localStorage.getItem("selectedBackground");
     if (!selectedBackgroundId) {
-      const backgroundContainer = document.querySelector('.imageBackground');
+      const backgroundContainer = document.querySelector(".imageBackground");
       if (backgroundContainer) {
         backgroundContainer.remove();
       }
@@ -36,35 +39,36 @@ export async function loadBackground() {
     const background = await getDataById(selectedBackgroundId);
     if (!background) return;
 
-    let backgroundContainer = document.querySelector('.imageBackground');
+    let backgroundContainer = document.querySelector(".imageBackground");
     if (!backgroundContainer) {
-      backgroundContainer = document.createElement('div');
-      backgroundContainer.classList.add('imageBackground');
-      backgroundContainer.setAttribute('excludeDarkCheck', 'true');
-      const parent = document.getElementById('container');
+      backgroundContainer = document.createElement("div");
+      backgroundContainer.classList.add("imageBackground");
+      backgroundContainer.setAttribute("excludeDarkCheck", "true");
+      const parent = document.getElementById("container");
       if (parent) {
         parent.appendChild(backgroundContainer);
       }
     }
 
-    let mediaContainer = document.getElementById('media-container');
+    let mediaContainer = document.getElementById("media-container");
     if (!mediaContainer) {
-      mediaContainer = document.createElement('div');
-      mediaContainer.id = 'media-container';
+      mediaContainer = document.createElement("div");
+      mediaContainer.id = "media-container";
       backgroundContainer.appendChild(mediaContainer);
     }
 
-    mediaContainer = document.getElementById('media-container');
+    mediaContainer = document.getElementById("media-container");
     if (!mediaContainer) return;
 
-    mediaContainer.innerHTML = '';
+    mediaContainer.innerHTML = "";
 
-    const mediaElement = background.type === 'video' 
-      ? document.createElement('video')
-      : document.createElement('img');
+    const mediaElement =
+      background.type === "video"
+        ? document.createElement("video")
+        : document.createElement("img");
 
     mediaElement.src = URL.createObjectURL(background.blob);
-    mediaElement.classList.add('background');
+    mediaElement.classList.add("background");
 
     if (mediaElement instanceof HTMLVideoElement) {
       mediaElement.loop = true;
@@ -74,6 +78,6 @@ export async function loadBackground() {
 
     mediaContainer.appendChild(mediaElement);
   } catch (error) {
-    console.error('Error loading background:', error);
+    console.error("Error loading background:", error);
   }
 }

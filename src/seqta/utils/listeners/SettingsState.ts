@@ -1,6 +1,6 @@
-import browser from 'webextension-polyfill';
-import type { SettingsState } from '@/types/storage';
-import type { Subscriber, Unsubscriber } from 'svelte/store';
+import browser from "webextension-polyfill";
+import type { SettingsState } from "@/types/storage";
+import type { Subscriber, Unsubscriber } from "svelte/store";
 
 type ChangeListener = (newValue: any, oldValue: any) => void;
 type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
@@ -19,7 +19,7 @@ class StorageManager {
     this.loadFromStorage();
 
     const handler: ProxyHandler<StorageManager> = {
-      get: (target, prop: keyof SettingsState | 'register' | 'initialize') => {
+      get: (target, prop: keyof SettingsState | "register" | "initialize") => {
         if (prop in target) {
           return (target as any)[prop];
         }
@@ -42,7 +42,7 @@ class StorageManager {
           }
         }
         return true;
-      }
+      },
     };
 
     this.initStorageListener();
@@ -63,7 +63,10 @@ class StorageManager {
     return instance;
   }
 
-  public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
+  public setKey<K extends keyof SettingsState>(
+    key: K,
+    value: SettingsState[K],
+  ): void {
     this.data[key] = value;
     this.saveToStorage();
   }
@@ -87,7 +90,7 @@ class StorageManager {
 
   private initStorageListener(): void {
     browser.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === 'local') {
+      if (areaName === "local") {
         for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
           if (newValue !== undefined) {
             (this.data as any)[key] = newValue;
@@ -151,4 +154,5 @@ class StorageManager {
 }
 
 export const settingsState = StorageManager.getInstance();
-export const initializeSettingsState = async () => await StorageManager.initialize();
+export const initializeSettingsState = async () =>
+  await StorageManager.initialize();

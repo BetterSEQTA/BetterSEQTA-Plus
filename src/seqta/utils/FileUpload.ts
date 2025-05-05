@@ -19,25 +19,25 @@ export async function UploadImage(file: File): Promise<any> {
 
   // Setting up the request options
   const requestOptions = {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Cookie': cookies,
-      'X-File-Name': fileName
+      Cookie: cookies,
+      "X-File-Name": fileName,
     },
-    body: file // Binary file data
+    body: file, // Binary file data
   };
 
   // Making the fetch request and returning the promise
-  return await fetch('/seqta/student/file/upload/xhr2', requestOptions)
-    .then(async response => {
+  return await fetch("/seqta/student/file/upload/xhr2", requestOptions)
+    .then(async (response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const json = await response.json();
       return `/seqta/student/load/file?type=message&file=${json.uuid}`;
     })
-    .catch(error => {
-      console.error('Error during file upload:', error);
+    .catch((error) => {
+      console.error("Error during file upload:", error);
       throw error;
     });
 }

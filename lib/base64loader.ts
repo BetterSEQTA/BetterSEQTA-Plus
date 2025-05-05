@@ -7,7 +7,7 @@ export const base64Loader = {
     const [filePath, query] = id.split("?");
     if (query !== "base64") return null;
 
-    const data = fs.readFileSync(filePath, { encoding: 'base64' });
+    const data = fs.readFileSync(filePath, { encoding: "base64" });
     const mimeType = mime.lookup(filePath);
     const dataURL = `data:${mimeType};base64,${data}`;
 

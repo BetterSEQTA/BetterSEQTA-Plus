@@ -49,12 +49,12 @@ export const messagesJob: Job = {
 
   run: async (ctx) => {
     const limit = 100;
-    const progress =
-      (await ctx.getProgress<MessagesProgress>()) ?? { offset: 0, done: false };
+    const progress = (await ctx.getProgress<MessagesProgress>()) ?? {
+      offset: 0,
+      done: false,
+    };
 
-    const existingIds = new Set(
-      (await ctx.getStoredItems()).map((i) => i.id),
-    );
+    const existingIds = new Set((await ctx.getStoredItems()).map((i) => i.id));
 
     let consecutiveExisting = 0;
 

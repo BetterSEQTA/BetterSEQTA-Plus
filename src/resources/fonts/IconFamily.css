@@ -1,6 +1,7 @@
 @font-face {
-  font-family: 'IconFamily';
-  src: local('IconFamily') local('Icon Family') url('/fonts/IconFamily.woff') format('woff');
+  font-family: "IconFamily";
+  src: local("IconFamily") local("Icon Family") url("/fonts/IconFamily.woff")
+    format("woff");
   font-weight: normal;
   font-style: normal;
 }

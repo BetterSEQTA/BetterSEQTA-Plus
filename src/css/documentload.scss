@@ -15,7 +15,7 @@
  * along with EvenBetterSEQTA.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@use 'injected/popup.scss';
+@use "injected/popup.scss";
 
 html {
   background: #161616 !important;
@@ -77,7 +77,9 @@ html {
   transform-origin: top;
   transition: transform 0.2s;
 }
-body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltiptext {
+body:has(.outside-container:not(.hide))
+  #AddedSettings.tooltip:hover
+  > .tooltiptext {
   transform: scale(0);
 }
 .assessmenttooltip svg {

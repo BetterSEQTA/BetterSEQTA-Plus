@@ -11,7 +11,7 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 import { runIndexing } from "../indexing/indexer";
 import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
-import { IndexedDbManager } from 'embeddia';
+import { IndexedDbManager } from "embeddia";
 
 const settings = defineSettings({
   searchHotkey: stringSetting({
@@ -65,12 +65,11 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
-    await IndexedDbManager.create(
-      'embeddiaDB',
-      'embeddiaObjectStore',
-      { primaryKey: 'id', autoIncrement: false }
-    );
-    
+    await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
+      primaryKey: "id",
+      autoIncrement: false,
+    });
+
     initVectorSearch();
 
     if (api.settings.runIndexingOnLoad) {

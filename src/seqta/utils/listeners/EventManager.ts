@@ -39,28 +39,37 @@ class EventManager {
     return instance;
   }
 
-  public register(event: string, options: EventListenerOptions, callback: (element: Element) => void): { unregister: () => void } {
+  public register(
+    event: string,
+    options: EventListenerOptions,
+    callback: (element: Element) => void,
+  ): { unregister: () => void } {
     const id = this.generateUniqueId();
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
     const unregister = () => this.unregisterById(event, id);
     this.listeners.get(event)!.push({ id, options, callback, unregister });
-    
+
     this.scanExistingElements(options, callback);
-    
+
     this.startObserving(options.parentElement);
     return { unregister };
   }
 
-  private async scanExistingElements(options: EventListenerOptions, callback: (element: Element) => void): Promise<void> {
+  private async scanExistingElements(
+    options: EventListenerOptions,
+    callback: (element: Element) => void,
+  ): Promise<void> {
     const root = options.parentElement || document.documentElement;
-    const elements = Array.from(root.getElementsByTagName('*'));
+    const elements = Array.from(root.getElementsByTagName("*"));
     elements.unshift(root);
-    
+
     for (let i = 0; i < elements.length; i += this.chunkSize) {
       const chunk = elements.slice(i, i + this.chunkSize);
-      const filteredChunk = chunk.filter(element => this.matchesOptions(element, options));
+      const filteredChunk = chunk.filter((element) =>
+        this.matchesOptions(element, options),
+      );
       for (const element of filteredChunk) {
         callback(element);
       }
@@ -76,7 +85,10 @@ class EventManager {
   private unregisterById(event: string, id: string): void {
     if (this.listeners.has(event)) {
       const listeners = this.listeners.get(event)!;
-      this.listeners.set(event, listeners.filter(listener => listener.id !== id));
+      this.listeners.set(
+        event,
+        listeners.filter((listener) => listener.id !== id),
+      );
     }
   }
 
@@ -93,9 +105,9 @@ class EventManager {
   }
 
   private handleMutations(mutations: MutationRecord[]): void {
-    mutations.forEach(mutation => {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(node => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList") {
+        mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             this.pendingElements.add(node as Element);
           }
@@ -148,19 +160,29 @@ class EventManager {
     }
   }
 
-  private matchesOptions(element: Element, options: EventListenerOptions): boolean {
-    if (options.elementType && element.tagName.toLowerCase() !== options.elementType.toLowerCase()) return false;
-    if (options.textContent && element.textContent !== options.textContent) return false;
-    if (options.className && !element.classList.contains(options.className)) return false;
+  private matchesOptions(
+    element: Element,
+    options: EventListenerOptions,
+  ): boolean {
+    if (
+      options.elementType &&
+      element.tagName.toLowerCase() !== options.elementType.toLowerCase()
+    )
+      return false;
+    if (options.textContent && element.textContent !== options.textContent)
+      return false;
+    if (options.className && !element.classList.contains(options.className))
+      return false;
     if (options.id && element.id !== options.id) return false;
     if (options.customCheck && !options.customCheck(element)) return false;
     return true;
   }
 
   private generateUniqueId(): string {
-    return '_' + Math.random().toString(36).substr(2, 9);
+    return "_" + Math.random().toString(36).substr(2, 9);
   }
 }
 
 export const eventManager = EventManager.getInstance();
-export const initializeEventManager = async () => await EventManager.initialize();
+export const initializeEventManager = async () =>
+  await EventManager.initialize();

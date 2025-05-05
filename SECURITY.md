@@ -4,12 +4,13 @@
 
 Below here is the supported versions of BetterSEQTA+. Anything older than this is not supported and contains bugs.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 3.4.3   | ✅ |
-| < 3.4.3   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 3.4.3   | ✅        |
+| < 3.4.3 | :x:       |
 
 `*` May not work on other devices.
+
 ## Reporting a Vulnerability
 
 If you find vulnerabilities, REPORT IT IMMEDIATELY. open the [advisories tab](https://github.com/BetterSEQTA/BetterSEQTA-Plus/security/advisories) on the left and click the green "report a vulnerability" button or use [this quick-link](https://github.com/BetterSEQTA/BetterSEQTA-Plus/security/advisories/new) to create a new report

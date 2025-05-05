@@ -3,8 +3,8 @@ class ReactFiber {
     this.selector = selector;
     this.debug = options.debug || false;
     this.nodes = [...document.querySelectorAll(selector)]; // Support multiple elements
-    this.fibers = this.nodes.map(node => this.getFiberNode(node));
-    this.components = this.fibers.map(fiber => this.getOwnerComponent(fiber));
+    this.fibers = this.nodes.map((node) => this.getFiberNode(node));
+    this.components = this.fibers.map((fiber) => this.getOwnerComponent(fiber));
 
     if (this.debug) {
       console.log("Selected Nodes:", this.nodes);
@@ -19,8 +19,10 @@ class ReactFiber {
 
   getFiberNode(node) {
     if (!node) return null;
-    const fiberKey = Object.getOwnPropertyNames(node).find(name =>
-      name.startsWith('__reactFiber') || name.startsWith('__reactInternalInstance')
+    const fiberKey = Object.getOwnPropertyNames(node).find(
+      (name) =>
+        name.startsWith("__reactFiber") ||
+        name.startsWith("__reactInternalInstance"),
     );
     return fiberKey ? node[fiberKey] : null;
   }
@@ -28,7 +30,10 @@ class ReactFiber {
   getOwnerComponent(fiberNode) {
     let current = fiberNode;
     while (current) {
-      if (current.stateNode && (current.stateNode.setState || current.stateNode.forceUpdate)) {
+      if (
+        current.stateNode &&
+        (current.stateNode.setState || current.stateNode.forceUpdate)
+      ) {
         return current.stateNode;
       }
       current = current.return;
@@ -42,7 +47,7 @@ class ReactFiber {
 
     if (key === undefined) {
       return state;
-    } else if (typeof key === 'string') {
+    } else if (typeof key === "string") {
       return state?.[key];
     } else if (Array.isArray(key)) {
       const filteredState = {};
@@ -57,23 +62,25 @@ class ReactFiber {
   }
 
   setState(update) {
-    this.components.forEach(component => {
+    this.components.forEach((component) => {
       if (component?.setState) {
-        if (typeof update === 'function') {
+        if (typeof update === "function") {
           // Functional update
-          component.setState(prevState => {
+          component.setState((prevState) => {
             const newState = update(prevState);
-            if (this.debug) console.log("✅ Updated State (Functional):", newState);
+            if (this.debug)
+              console.log("✅ Updated State (Functional):", newState);
             return newState;
           });
         } else {
           // Object update (merge with existing state)
-          component.setState(prevState => {
+          component.setState((prevState) => {
             const newState = {
               ...prevState,
-              ...update
+              ...update,
             };
-            if (this.debug) console.log("✅ Updated State (Object Merge):", newState);
+            if (this.debug)
+              console.log("✅ Updated State (Object Merge):", newState);
             return newState;
           });
         }
@@ -93,7 +100,7 @@ class ReactFiber {
   }
 
   setProp(propName) {
-    this.fibers.forEach(fiber => {
+    this.fibers.forEach((fiber) => {
       if (fiber?.memoizedProps) {
         fiber.memoizedProps[propName] = value;
       }
@@ -102,7 +109,7 @@ class ReactFiber {
   }
 
   forceUpdate() {
-    this.components.forEach(component => {
+    this.components.forEach((component) => {
       if (component?.forceUpdate) {
         component.forceUpdate();
         if (this.debug) console.log("🔄 Forced React Re-render");
@@ -113,12 +120,12 @@ class ReactFiber {
 }
 
 function makeSerializable(obj) {
-  if (typeof obj !== 'object' || obj === null) {
+  if (typeof obj !== "object" || obj === null) {
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => makeSerializable(item));
+    return obj.map((item) => makeSerializable(item));
   }
 
   const serializableObj = {};
@@ -126,17 +133,17 @@ function makeSerializable(obj) {
     if (Object.hasOwn(obj, key)) {
       let value = obj[key];
 
-      if (typeof value === 'function') {
-        value = '[Function]';
+      if (typeof value === "function") {
+        value = "[Function]";
       } else if (value instanceof HTMLElement) {
         value = {
-          type: 'HTMLElement',
+          type: "HTMLElement",
           id: value.id,
-          tagName: value.tagName
+          tagName: value.tagName,
         }; // Replace DOM node with ID/tag info
-      } else if (typeof value === 'symbol') {
+      } else if (typeof value === "symbol") {
         value = value.toString();
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         value = makeSerializable(value);
       }
 
@@ -146,17 +153,11 @@ function makeSerializable(obj) {
   return serializableObj;
 }
 
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   if (event.data.type === "reactFiberRequest") {
-    const {
-      selector,
-      action,
-      payload,
-      debug,
-      messageId
-    } = event.data;
+    const { selector, action, payload, debug, messageId } = event.data;
     const fiberInstance = ReactFiber.find(selector, {
-      debug
+      debug,
     });
 
     let response;
@@ -191,14 +192,17 @@ window.addEventListener('message', (event) => {
         response = null;
     }
 
-    if (response !== null && typeof response === 'object') {
+    if (response !== null && typeof response === "object") {
       response = makeSerializable(response);
     }
 
-    window.postMessage({
-      type: "reactFiberResponse",
-      response,
-      messageId,
-    }, "*");
+    window.postMessage(
+      {
+        type: "reactFiberResponse",
+        response,
+        messageId,
+      },
+      "*",
+    );
   }
 });

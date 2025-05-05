@@ -1,26 +1,26 @@
-import stringToHTML from "../stringToHTML"
-import browser from "webextension-polyfill"
-import { settingsState } from "../listeners/SettingsState"
-import { animate, stagger } from "motion"
-import { DeleteWhatsNew } from "../Whatsnew"
+import stringToHTML from "../stringToHTML";
+import browser from "webextension-polyfill";
+import { settingsState } from "../listeners/SettingsState";
+import { animate, stagger } from "motion";
+import { DeleteWhatsNew } from "../Whatsnew";
 
 export function OpenAboutPage() {
-    const background = document.createElement("div")
-    background.id = "whatsnewbk"
-    background.classList.add("whatsnewBackground")
-  
-    const container = document.createElement("div")
-    container.classList.add("whatsnewContainer")
-  
-    var header: any = stringToHTML(
-      /* html */
-      `<div class="whatsnewHeader">
+  const background = document.createElement("div");
+  background.id = "whatsnewbk";
+  background.classList.add("whatsnewBackground");
+
+  const container = document.createElement("div");
+  container.classList.add("whatsnewContainer");
+
+  var header: any = stringToHTML(
+    /* html */
+    `<div class="whatsnewHeader">
         <h1>About</h1>
         <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
       </div>`,
-    ).firstChild
-  
-    let text = stringToHTML(/* html */ `
+  ).firstChild;
+
+  let text = stringToHTML(/* html */ `
       <div class="whatsnewTextContainer" style="overflow-y: scroll;">
         <img src="${settingsState.DarkMode ? "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg" : "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg"}" class="aboutImg" />
   
@@ -29,9 +29,9 @@ export function OpenAboutPage() {
         <h1>Credits</h1>
         <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph and SethBurkart123.</p>
       </div>
-    `).firstChild
-  
-    let footer = stringToHTML(/* html */ `
+    `).firstChild;
+
+  let footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
         Report bugs and feedback:
@@ -52,56 +52,56 @@ export function OpenAboutPage() {
           </a>
         </div>
       </div>
-    `).firstChild
-  
-    let exitbutton = document.createElement("div")
-    exitbutton.id = "whatsnewclosebutton"
-  
-    container.append(header)
-    container.append(text as ChildNode)
-    container.append(footer as ChildNode)
-    container.append(exitbutton)
-  
-    background.append(container)
-  
-    document.getElementById("container")!.append(background)
-  
-    let bkelement = document.getElementById("whatsnewbk")
-    let popup = document.getElementsByClassName("whatsnewContainer")[0]
-  
-    if (settingsState.animations) {
-      animate(
-        [popup, bkelement as HTMLElement],
-        { scale: [0, 1] },
-        {
-          type: "spring",
-          stiffness: 220,
-          damping: 18,
-        },
-      )
-  
-      animate(
-        ".whatsnewTextContainer *",
-        { opacity: [0, 1], y: [10, 0] },
-        {
-          delay: stagger(0.05, { startDelay: 0.1 }),
-          duration: 0.5,
-          ease: [0.22, 0.03, 0.26, 1],
-        },
-      )
-    }
-  
-    delete settingsState.justupdated
-  
-    bkelement!.addEventListener("click", function (event) {
-      // Check if the click event originated from the element itself and not any of its children
-      if (event.target === bkelement) {
-        DeleteWhatsNew()
-      }
-    })
-  
-    var closeelement = document.getElementById("whatsnewclosebutton")
-    closeelement!.addEventListener("click", function () {
-      DeleteWhatsNew()
-    })
+    `).firstChild;
+
+  let exitbutton = document.createElement("div");
+  exitbutton.id = "whatsnewclosebutton";
+
+  container.append(header);
+  container.append(text as ChildNode);
+  container.append(footer as ChildNode);
+  container.append(exitbutton);
+
+  background.append(container);
+
+  document.getElementById("container")!.append(background);
+
+  let bkelement = document.getElementById("whatsnewbk");
+  let popup = document.getElementsByClassName("whatsnewContainer")[0];
+
+  if (settingsState.animations) {
+    animate(
+      [popup, bkelement as HTMLElement],
+      { scale: [0, 1] },
+      {
+        type: "spring",
+        stiffness: 220,
+        damping: 18,
+      },
+    );
+
+    animate(
+      ".whatsnewTextContainer *",
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.05, { startDelay: 0.1 }),
+        duration: 0.5,
+        ease: [0.22, 0.03, 0.26, 1],
+      },
+    );
   }
+
+  delete settingsState.justupdated;
+
+  bkelement!.addEventListener("click", function (event) {
+    // Check if the click event originated from the element itself and not any of its children
+    if (event.target === bkelement) {
+      DeleteWhatsNew();
+    }
+  });
+
+  var closeelement = document.getElementById("whatsnewclosebutton");
+  closeelement!.addEventListener("click", function () {
+    DeleteWhatsNew();
+  });
+}
