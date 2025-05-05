@@ -1,6 +1,5 @@
 import type { Job, IndexItem } from "../types";
-
-const stripHtmlTags = (html: string) => html.replace(/<[^>]*>/g, "");
+import { htmlToPlainText } from "../utils";
 
 const fetchMessages = async (offset = 0, limit = 100) => {
   const res = await fetch(`${location.origin}/seqta/student/load/message`, {
@@ -24,7 +23,7 @@ const fetchMessages = async (offset = 0, limit = 100) => {
   }>;
 };
 
-const fetchMessageContent = async (id: number) => {
+export const fetchMessageContent = async (id: number) => {
   const res = await fetch(`${location.origin}/seqta/student/load/message`, {
     method: "POST",
     credentials: "include",
@@ -96,7 +95,7 @@ export const messagesJob: Job = {
           id,
           text: msg.subject,
           category: "messages",
-          content: `From: ${msg.sender}\n\n${stripHtmlTags(full.payload.contents)}`,
+          content: `${htmlToPlainText(full.payload.contents)}\nFrom: ${msg.sender}`,
           dateAdded: new Date(msg.date).getTime(),
           metadata: {
             messageId: msg.id,
