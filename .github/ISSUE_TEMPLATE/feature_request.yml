@@ -41,14 +41,14 @@ body:
 - type: input
   attributes:
     label: Feature Details
-    description: Please write, with as much detail as possible, what you would like to see from this mod.
-    placeholder: I would like to see...
+    description: Please write, with as much detail as possible, what you would like to see from this feature.
+    placeholder: it would be cool if
   validations:
     required: false
 
 - type: textarea
   attributes:
     label: Additional details
-    description: Anything else you want to add?
+    description: Anything else that would help describe your vision (reference images, descriptions, etc)
   validations:
     required: false
