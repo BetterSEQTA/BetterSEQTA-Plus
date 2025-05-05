@@ -1,5 +1,5 @@
 import type { StaticCommandItem } from "./commands";
-import type { HydratedIndexItem } from "../indexing/types";
+import type { IndexItem } from "../indexing/types";
 
 export interface MatchIndices {
   readonly 0: number;
@@ -16,7 +16,7 @@ export interface CombinedResult {
   id: string;
   type: "command" | "dynamic";
   score: number;
-  item: StaticCommandItem | HydratedIndexItem;
+  item: StaticCommandItem | IndexItem;
   matches?: readonly FuseResultMatch[];
 }
 

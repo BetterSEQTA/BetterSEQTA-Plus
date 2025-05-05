@@ -1,5 +1,5 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
-import type { HydratedIndexItem } from "../../indexing/types";
+import type { IndexItem } from "../../indexing/types";
 import type { SearchResult } from "embeddia";
 
 let vectorIndex: EmbeddingIndex | null = null;
@@ -15,7 +15,7 @@ export async function initVectorSearch() {
 }
 
 export interface VectorSearchResult extends SearchResult {
-  object: HydratedIndexItem & { embedding: number[] };
+  object: IndexItem & { embedding: number[] };
 }
 
 export async function searchVectors(

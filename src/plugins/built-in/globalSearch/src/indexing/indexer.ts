@@ -1,7 +1,7 @@
 import { clear, getAll, get, put, remove } from "./db";
 import { jobs } from "./jobs";
 import { renderComponentMap } from "./renderComponents";
-import type { HydratedIndexItem, IndexItem, Job, JobContext } from "./types";
+import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 
 const META_STORE = "meta";
@@ -83,21 +83,14 @@ function dispatchProgress(
   window.dispatchEvent(event);
 }
 
-export async function loadAllStoredItems(): Promise<HydratedIndexItem[]> {
-  const all: HydratedIndexItem[] = [];
+export async function loadAllStoredItems(): Promise<IndexItem[]> {
+  const all: IndexItem[] = [];
   const jobIds = Object.keys(jobs);
 
   for (const jobId of jobIds) {
     try {
       const items = (await getAll(jobId)) as IndexItem[];
       const job = jobs[jobId];
-      const renderComponent = renderComponentMap[job.renderComponentId];
-
-      if (!renderComponent) {
-        console.warn(
-          `Render component not found for job ${jobId} (ID: ${job.renderComponentId})`,
-        );
-      }
 
       for (const item of items) {
         if (
@@ -108,10 +101,7 @@ export async function loadAllStoredItems(): Promise<HydratedIndexItem[]> {
           item.actionId &&
           job.renderComponentId
         ) {
-          all.push({
-            ...item,
-            renderComponent: renderComponent || undefined,
-          });
+          all.push(item);
         } else {
           console.warn(`Skipping invalid item from job ${jobId}:`, item);
         }
@@ -144,7 +134,7 @@ export async function runIndexing(): Promise<void> {
   const totalSteps = jobIds.length + 1;
   dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
 
-  const allItemsFromJobs: HydratedIndexItem[] = [];
+  const allItemsFromJobs: IndexItem[] = [];
 
   // --- Step 1: Run Fetching/Storing Jobs (Main Thread) ---
   for (const jobId of jobIds) {
@@ -225,35 +215,7 @@ export async function runIndexing(): Promise<void> {
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);
 
-      // Hydrate items for vector processing
-      const renderComponent = renderComponentMap[job.renderComponentId];
-      if (!renderComponent) {
-        console.warn(
-          `Render component not found for job ${jobId} (ID: ${job.renderComponentId}) during hydration`,
-        );
-      }
-      const hydratedItems = merged
-        .filter(
-          (item) =>
-            item &&
-            item.id &&
-            item.text &&
-            item.category &&
-            item.actionId &&
-            job.renderComponentId,
-        ) // Filter invalid before hydrating
-        .map((item) => ({
-          ...item,
-          renderComponent: renderComponent || undefined, // Assign undefined if not found
-        }));
-
-      if (hydratedItems.length !== merged.length) {
-        console.warn(
-          `[Indexer Job ${jobId}] Filtered out ${merged.length - hydratedItems.length} invalid items during hydration.`,
-        );
-      }
-
-      allItemsFromJobs.push(...hydratedItems);
+      allItemsFromJobs.push(...newItemsRaw);
 
       console.debug(
         `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items from run, ${merged.length} total stored in '${jobId}' store (non-vector).`,

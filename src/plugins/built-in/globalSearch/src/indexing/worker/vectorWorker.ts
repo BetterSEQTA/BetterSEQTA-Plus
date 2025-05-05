@@ -1,5 +1,5 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
-import type { HydratedIndexItem } from "../types";
+import type { IndexItem } from "../types";
 
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
@@ -35,8 +35,8 @@ async function initWorker() {
 }
 
 async function vectorizeItem(
-  item: HydratedIndexItem,
-): Promise<(HydratedIndexItem & { embedding: number[] }) | null> {
+  item: IndexItem,
+): Promise<(IndexItem & { embedding: number[] }) | null> {
   // Simplified for brevity - assumes embedding function doesn't need cancellation signal
   try {
     const textToEmbed = [
@@ -57,7 +57,7 @@ async function vectorizeItem(
   }
 }
 
-async function processItems(items: HydratedIndexItem[], signal: AbortSignal) {
+async function processItems(items: IndexItem[], signal: AbortSignal) {
   console.debug("Worker received process request.");
   if (!vectorIndex) {
     console.warn(
@@ -140,7 +140,7 @@ async function processItems(items: HydratedIndexItem[], signal: AbortSignal) {
     const vectorizationResults = await Promise.all(batch.map(vectorizeItem));
     const successfullyVectorized = vectorizationResults.filter(
       (result) => result !== null,
-    ) as (HydratedIndexItem & { embedding: number[] })[];
+    ) as (IndexItem & { embedding: number[] })[];
 
     if (signal.aborted) {
       console.debug("Processing cancelled after vectorization batch.");
