@@ -16,9 +16,9 @@
     max={max}
     step={step}
     bind:value={state}
-    style={`background: linear-gradient(to right, #30D259 ${percentage}%, #dddddd ${percentage}%)`}
+    style={`background: linear-gradient(to right, #30d259ad 0%, #30D259 ${percentage}%, #dddddd ${percentage}%)`}
     onchange={(e) => onChange(Number(e.currentTarget.value))}
-    class="w-full h-1 rounded-full appearance-none cursor-pointer dark:bg-[#38373D] bg-[#DDDDDD] slider"
+    class="w-full h-1 rounded-full appearance-none cursor-pointer slider"
   />
 </div>
 
@@ -38,6 +38,7 @@
     height: 24px;
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.3);
     background: white;
+    color: #30d259ad;
     cursor: pointer;
     border-radius: 50%;
   }

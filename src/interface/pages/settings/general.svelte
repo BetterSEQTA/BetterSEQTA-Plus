@@ -184,70 +184,74 @@
   {/each}
   
   {#each pluginSettings as plugin}
-  <div class="p-1 my-1 bg-white rounded-xl border shadow-sm border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
-    <!-- Always show enable toggle if disableToggle is true -->
-      {#if (plugin as any).disableToggle}
-        <div class="flex justify-between items-center px-4 py-3">
-          <div class="pr-4">
-            <h2 class="text-sm font-bold">Enable {plugin.name}</h2>
-            <p class="text-xs">{plugin.description}</p>
-          </div>
-          <div>
-            <Switch
-              state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
-              onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
-            />
-          </div>
-        </div>
-      {/if}
-
-      {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
-        {#each Object.entries(plugin.settings) as [key, setting]}
-          <!-- Skip the 'enabled' setting if it's part of the settings object -->
-          {#if key !== 'enabled'}
-            <div class="flex justify-between items-center px-4 py-3">
-              <div class="pr-4">
-                <h2 class="text-sm font-bold">{setting.title || key}</h2>
-                <p class="text-xs">{setting.description || ''}</p>
-              </div>
-              <div>
-                {#if setting.type === 'boolean'}
-                  <Switch
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                  />
-                {:else if setting.type === 'number'}
-                  <Slider
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                    min={setting.min}
-                    max={setting.max}
-                    step={setting.step}
-                  />
-                {:else if setting.type === 'string'}
-                  <input
-                    type="text"
-                    class="px-2 py-1 text-sm rounded-md dark:bg-[#38373D] bg-[#DDDDDD] dark:text-white"
-                    value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                    oninput={(e) => updatePluginSetting(plugin.pluginId, key, e.currentTarget.value)}
-                  />                
-                {:else if setting.type === 'select'}
-                  <Select
-                  state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                  onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                  options={(setting.options as string[]).map(opt => ({
-                    value: opt,
-                    label: opt.charAt(0).toUpperCase() + opt.slice(1)
-                    }))}
-                  />
-                {/if}
-              </div>
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
+      <!-- Always show enable toggle if disableToggle is true -->
+        {#if (plugin as any).disableToggle}
+          <div class="flex justify-between items-center px-4 py-3">
+            <div class="pr-4">
+              <h2 class="text-sm font-bold">Enable {plugin.name}</h2>
+              <p class="text-xs">{plugin.description}</p>
             </div>
-          {/if}
-        {/each}
-      {/if}
-    </div>
+            <div>
+              <Switch
+                state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
+                onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
+              />
+            </div>
+          </div>
+        {/if}
+  
+        {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
+          {#each Object.entries(plugin.settings) as [key, setting]}
+            <!-- Skip the 'enabled' setting if it's part of the settings object -->
+            {#if key !== 'enabled'}
+              <div class="flex justify-between items-center px-4 py-3">
+                <div class="pr-4">
+                  <h2 class="text-sm font-bold">{setting.title || key}</h2>
+                  <p class="text-xs">{setting.description || ''}</p>
+                </div>
+                <div>
+                  {#if setting.type === 'boolean'}
+                    <Switch
+                      state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                    />
+                  {:else if setting.type === 'number'}
+                    <Slider
+                      state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                      min={setting.min}
+                      max={setting.max}
+                      step={setting.step}
+                    />
+                  {:else if setting.type === 'string'}
+                    <input
+                      type="text"
+                      class="px-2 py-1 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD] dark:text-white border-none"
+                      value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                      oninput={(e) => updatePluginSetting(plugin.pluginId, key, e.currentTarget.value)}
+                    />                
+                  {:else if setting.type === 'select'}
+                    <Select
+                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                    options={(setting.options as string[]).map(opt => ({
+                      value: opt,
+                      label: opt.charAt(0).toUpperCase() + opt.slice(1)
+                      }))}
+                    />
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          {/each}
+        {/if}
+      </div>
+  </div>
   {/each}
+
+  <div class="p-1 border-none"></div>
 
   {@render Setting({
     title: "BetterSEQTA+",
