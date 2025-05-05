@@ -184,8 +184,8 @@
   {/each}
   
   {#each pluginSettings as plugin}
-    <div>
-      <!-- Always show enable toggle if disableToggle is true -->
+  <div class="p-1 my-1 bg-white rounded-xl border shadow-sm border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
+    <!-- Always show enable toggle if disableToggle is true -->
       {#if (plugin as any).disableToggle}
         <div class="flex justify-between items-center px-4 py-3">
           <div class="pr-4">
@@ -201,7 +201,6 @@
         </div>
       {/if}
 
-      <!-- Only show other settings if plugin is enabled or has no disableToggle -->
       {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
         {#each Object.entries(plugin.settings) as [key, setting]}
           <!-- Skip the 'enabled' setting if it's part of the settings object -->

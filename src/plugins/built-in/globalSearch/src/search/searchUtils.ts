@@ -14,9 +14,8 @@ export function createSearchIndexes() {
     keys: ["text", "category", "keywords"],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.6,
-    minMatchCharLength: 1,
-    ignoreLocation: true,
+    threshold: 0.4,
+    minMatchCharLength: 2,
     useExtendedSearch: false,
   };
 
