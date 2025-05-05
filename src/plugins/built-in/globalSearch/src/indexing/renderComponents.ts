@@ -10,6 +10,3 @@ export const renderComponentMap: Record<string, typeof SvelteComponent> = {
   // subject: SubjectComponent,
   // etc...
 };
-
-void AssessmentItem;
-void ForumItem;
