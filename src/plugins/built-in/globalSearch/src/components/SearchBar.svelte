@@ -10,8 +10,9 @@
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
-  import type { IndexItem, HydratedIndexItem } from '../indexing/types';
+  import type { IndexItem } from '../indexing/types';
   import debounce from 'lodash/debounce';
+  import { renderComponentMap } from '../indexing/renderComponents';
 
   const { 
     transparencyEffects, 
@@ -22,9 +23,9 @@
   }>();
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
-  let dynamicContentFuse = $state<Fuse<HydratedIndexItem>>();
+  let dynamicContentFuse = $state<Fuse<IndexItem>>();
   
-  const dynamicIdToItemMap = $state(new Map<string, HydratedIndexItem>());
+  const dynamicIdToItemMap = $state(new Map<string, IndexItem>());
   const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
 
   let isIndexing = $state(false);
@@ -75,6 +76,7 @@
   let combinedResults = $state<CombinedResult[]>([]); 
   let isLoading = $state(false);
   let calculatorResult = $state<string | null>(null);
+  let resultsList = $state<HTMLUListElement>();
 
   const updateCalculatorState = (hasResult: string | null) => {
     calculatorResult = hasResult;
@@ -141,12 +143,20 @@
       searchTerm = '';
       selectedIndex = 0;
       combinedResults = [];
+      tick().then(() => {
+        const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
+        selectedElement?.scrollIntoView({ block: 'nearest' });
+      });
     }
   });
 
   $effect(() => {
     if (combinedResults.length === 0 && calculatorResult && commandPalleteOpen) {
       selectedIndex = 0;
+      tick().then(() => {
+        const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
+        selectedElement?.scrollIntoView({ block: 'nearest' });
+      });
     }
   });
 
@@ -154,16 +164,24 @@
     const maxIndex = (calculatorResult ? 1 : 0) + combinedResults.length - 1;
     if (selectedIndex < maxIndex) {
       selectedIndex++;
+      tick().then(() => {
+        const selectedElement = resultsList?.querySelector(`li:nth-child(${selectedIndex + 1})`);
+        selectedElement?.scrollIntoView({ block: 'nearest' });
+      });
     }
   };
 
   const selectPrev = () => {
     if (selectedIndex > 0) {
       selectedIndex--;
+      tick().then(() => {
+        const selectedElement = resultsList?.querySelector(`li:nth-child(${selectedIndex + 1})`);
+        selectedElement?.scrollIntoView({ block: 'nearest' });
+      });
     }
   };
 
-  function executeItemAction(item: StaticCommandItem | HydratedIndexItem) {
+  function executeItemAction(item: StaticCommandItem | IndexItem) {
     if ('action' in item && typeof item.action === 'function') {
       (item as StaticCommandItem).action();
     } else if ('actionId' in item && item.actionId && actionMap[item.actionId]) {
@@ -240,7 +258,10 @@
           />
         </div>
 
-        <ul class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-1 gap-0.5 flex flex-col">
+        <ul 
+          bind:this={resultsList}
+          class="overflow-y-auto max-h-[24rem] text-base scroll-py-2 p-2 gap-0.5 flex flex-col"
+        >
           <Calculator 
             searchTerm={searchTerm} 
             isSelected={selectedIndex === 0} 
@@ -270,14 +291,18 @@
                     {/if}
                   </button>
                 {:else if result.type === 'dynamic'}
-                  {@const dynamicItem = item as HydratedIndexItem}
-                  {#if dynamicItem.renderComponent}
-                    <dynamicItem.renderComponent 
+                  {@const dynamicItem = item as IndexItem}
+                  {@const RenderComponent = renderComponentMap[dynamicItem.renderComponentId]}
+                  {#if RenderComponent}
+                    <RenderComponent 
                       item={dynamicItem} 
                       isSelected={isSelected}
                       searchTerm={searchTerm} 
                       matches={result.matches} 
-                      on:click={() => executeItemAction(dynamicItem)} 
+                      onclick={() => executeItemAction(dynamicItem)}
+                      onkeydown={() => {}}
+                      role="button"
+                      tabindex="0"
                     />
                   {:else}
                     <button

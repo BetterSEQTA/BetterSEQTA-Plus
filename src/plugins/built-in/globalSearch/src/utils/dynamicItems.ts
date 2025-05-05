@@ -1,5 +1,5 @@
 import type { SvelteComponent } from "svelte";
-import type { HydratedIndexItem } from "./indexing/types";
+import type { IndexItem } from "./indexing/types";
 
 export interface DynamicContentItem {
   id: string;
@@ -13,18 +13,18 @@ export interface DynamicContentItem {
   renderComponent?: typeof SvelteComponent;
 }
 
-let dynamicItems: HydratedIndexItem[] = [];
+let dynamicItems: IndexItem[] = [];
 
 /**
  * Loads a new set of dynamic items.
  */
-export function loadDynamicItems(items: HydratedIndexItem[]) {
+export function loadDynamicItems(items: IndexItem[]) {
   dynamicItems = items;
 }
 
 /**
  * Returns all currently loaded dynamic items.
  */
-export function getDynamicItems(): HydratedIndexItem[] {
+export function getDynamicItems(): IndexItem[] {
   return dynamicItems;
 }

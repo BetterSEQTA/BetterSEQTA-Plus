@@ -1,5 +1,5 @@
 import { refreshVectorCache } from "../../search/vector/vectorSearch";
-import type { HydratedIndexItem } from "../types";
+import type { IndexItem } from "../types";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 import type { SearchResult } from "embeddia";
 
@@ -156,7 +156,7 @@ export class VectorWorkerManager {
   }
 
   async processItems(
-    items: HydratedIndexItem[],
+    items: IndexItem[],
     onProgress?: ProgressCallback,
   ) {
     await this.ensureReady(); // Wait for worker to be ready
@@ -168,11 +168,10 @@ export class VectorWorkerManager {
 
     console.debug(`Sending ${items.length} items to worker for processing.`);
 
-    const serialisableItems = items.map(({ renderComponent, ...rest }) => rest);
 
     this.worker!.postMessage({
       type: "process",
-      data: { items: serialisableItems },
+      data: { items: items },
     });
   }
 

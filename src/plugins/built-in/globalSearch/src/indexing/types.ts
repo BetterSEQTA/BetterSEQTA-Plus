@@ -11,10 +11,6 @@ export interface IndexItem {
   renderComponentId: string;
 }
 
-export interface HydratedIndexItem extends IndexItem {
-  renderComponent: typeof SvelteComponent;
-}
-
 export type Frequency =
   | "pageLoad"
   | { type: "interval"; ms: number }

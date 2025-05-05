@@ -2,7 +2,7 @@ import Fuse, { type FuseResult } from "fuse.js";
 import { getStaticCommands, type StaticCommandItem } from "../core/commands";
 import { getDynamicItems } from "../utils/dynamicItems";
 import type { CombinedResult } from "../core/types";
-import type { HydratedIndexItem } from "../indexing/types";
+import type { IndexItem } from "../indexing/types";
 import { searchVectors } from "./vector/vectorSearch";
 import type { VectorSearchResult } from "./vector/vectorTypes";
 
@@ -41,7 +41,7 @@ export function createSearchIndexes() {
     dynamicContentFuse: new Fuse(
       dynamicItems,
       dynamicOptions,
-    ) as Fuse<HydratedIndexItem>,
+    ) as Fuse<IndexItem>,
     commands,
     dynamicItems,
   };
@@ -85,9 +85,9 @@ export function searchCommands(
 }
 
 export function searchDynamicItems(
-  dynamicContentFuse: Fuse<HydratedIndexItem>,
+  dynamicContentFuse: Fuse<IndexItem>,
   query: string,
-  dynamicIdToItemMap: Map<string, HydratedIndexItem>,
+  dynamicIdToItemMap: Map<string, IndexItem>,
   limit = 10,
   sortByRecent: boolean = true, // Added option to control sorting
 ): CombinedResult[] {
@@ -109,7 +109,7 @@ export function searchDynamicItems(
   const now = Date.now();
   const searchResults = dynamicContentFuse.search(query, { limit });
 
-  return searchResults.map((result: FuseResult<HydratedIndexItem>) => {
+  return searchResults.map((result: FuseResult<IndexItem>) => {
     const item = result.item;
     const fuseScore = 10 * (1 - (result.score || 0.5));
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
@@ -129,9 +129,9 @@ export function searchDynamicItems(
 export async function performSearch(
   query: string,
   commandsFuse: Fuse<StaticCommandItem>,
-  dynamicContentFuse: Fuse<HydratedIndexItem>,
+  dynamicContentFuse: Fuse<IndexItem>,
   commandIdToItemMap: Map<string, StaticCommandItem>,
-  dynamicIdToItemMap: Map<string, HydratedIndexItem>,
+  dynamicIdToItemMap: Map<string, IndexItem>,
   showRecentFirst: boolean,
 ): Promise<CombinedResult[]> {
   // Get all results first
@@ -182,6 +182,7 @@ export async function performSearch(
   // Now add any vector results we haven't seen yet
   vectorResults.forEach((v) => {
     const id = v.object.id;
+
     if (!seenIds.has(id)) {
       // This is a semantic match that Fuse missed - add it with the vector similarity as score
       resultMap.set(id, {
