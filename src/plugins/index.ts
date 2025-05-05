@@ -1,12 +1,12 @@
-import { PluginManager } from './core/manager';
+import { PluginManager } from "./core/manager";
 
 // plugins
-import timetablePlugin from './built-in/timetable';
-import notificationCollectorPlugin from './built-in/notificationCollector';
-import themesPlugin from './built-in/themes';
-import animatedBackgroundPlugin from './built-in/animatedBackground';
-import assessmentsAveragePlugin from './built-in/assessmentsAverage';
-import globalSearchPlugin from './built-in/globalSearch/src/core';
+import timetablePlugin from "./built-in/timetable";
+import notificationCollectorPlugin from "./built-in/notificationCollector";
+import themesPlugin from "./built-in/themes";
+import animatedBackgroundPlugin from "./built-in/animatedBackground";
+import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
+import globalSearchPlugin from "./built-in/globalSearch/src/core";
 //import testPlugin from './built-in/test';
 
 // Initialize plugin manager
@@ -21,7 +21,7 @@ pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(globalSearchPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
-export { init as Monofile } from './monofile';
+export { init as Monofile } from "./monofile";
 
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();

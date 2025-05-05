@@ -1,135 +1,134 @@
 // Third-party libraries
-import browser from "webextension-polyfill"
-import { animate, stagger } from "motion"
+import browser from "webextension-polyfill";
+import { animate, stagger } from "motion";
 
 // Internal utilities and functions
-import { ChangeMenuItemPositions, MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions"
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour"
-import { waitForElm } from "@/seqta/utils/waitForElm"
-import { delay } from "@/seqta/utils/delay"
-import stringToHTML from "@/seqta/utils/stringToHTML"
-import { MessageHandler } from "@/seqta/utils/listeners/MessageListener"
 import {
-  settingsState,
-} from "@/seqta/utils/listeners/SettingsState"
-import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges"
-import { eventManager } from "@/seqta/utils/listeners/EventManager"
+  ChangeMenuItemPositions,
+  MenuOptionsOpen,
+} from "@/seqta/utils/Openers/OpenMenuOptions";
+import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { waitForElm } from "@/seqta/utils/waitForElm";
+import { delay } from "@/seqta/utils/delay";
+import stringToHTML from "@/seqta/utils/stringToHTML";
+import { MessageHandler } from "@/seqta/utils/listeners/MessageListener";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
+import { eventManager } from "@/seqta/utils/listeners/EventManager";
 
 // UI and theme management
-import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners"
-import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements"
-import { updateAllColors } from "@/seqta/ui/colors/Manager"
-import loading from "@/seqta/ui/Loading"
-import { SendNewsPage } from "@/seqta/utils/SendNewsPage"
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage"
-import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew"
+import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
+import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
+import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import loading from "@/seqta/ui/Loading";
+import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
 
 // JSON content
-import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json"
+import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
 
 // Icons and fonts
-import IconFamily from "@/resources/fonts/IconFamily.woff"
+import IconFamily from "@/resources/fonts/IconFamily.woff";
 
 // Stylesheets
-import iframeCSS from "@/css/iframe.scss?raw"
+import iframeCSS from "@/css/iframe.scss?raw";
 
 function SetDisplayNone(ElementName: string) {
-  return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`
+  return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
 }
 
 async function HideMenuItems(): Promise<void> {
   try {
-    let stylesheetInnerText: string = ""
+    let stylesheetInnerText: string = "";
     for (const [menuItem, { toggle }] of Object.entries(
       settingsState.menuitems,
     )) {
       if (!toggle) {
-        stylesheetInnerText += SetDisplayNone(menuItem)
-        console.info(`[BetterSEQTA+] Hiding ${menuItem} menu item`)
+        stylesheetInnerText += SetDisplayNone(menuItem);
+        console.info(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
       }
     }
 
-    const menuItemStyle: HTMLStyleElement = document.createElement("style")
-    menuItemStyle.innerText = stylesheetInnerText
-    document.head.appendChild(menuItemStyle)
+    const menuItemStyle: HTMLStyleElement = document.createElement("style");
+    menuItemStyle.innerText = stylesheetInnerText;
+    document.head.appendChild(menuItemStyle);
   } catch (error) {
-    console.error("[BetterSEQTA+] An error occurred:", error)
+    console.error("[BetterSEQTA+] An error occurred:", error);
   }
 }
 
 export function hideSideBar() {
-  const sidebar = document.getElementById("menu") // The sidebar element to be closed
-  const main = document.getElementById("main") // The main content element that must be resized to fill the page
+  const sidebar = document.getElementById("menu"); // The sidebar element to be closed
+  const main = document.getElementById("main"); // The main content element that must be resized to fill the page
 
-  const currentMenuWidth = window.getComputedStyle(sidebar!).width // Get the styles of the different elements
-  const currentContentPosition = window.getComputedStyle(main!).position
+  const currentMenuWidth = window.getComputedStyle(sidebar!).width; // Get the styles of the different elements
+  const currentContentPosition = window.getComputedStyle(main!).position;
 
   if (currentMenuWidth != "0") {
     // Actually modify it to collapse the sidebar
-    sidebar!.style.width = "0"
+    sidebar!.style.width = "0";
   } else {
-    sidebar!.style.width = "100%"
+    sidebar!.style.width = "100%";
   }
 
   if (currentContentPosition != "relative") {
-    main!.style.position = "relative"
+    main!.style.position = "relative";
   } else {
-    main!.style.position = "absolute"
+    main!.style.position = "absolute";
   }
 }
 
-
-
 export async function finishLoad() {
   try {
-    document.querySelector(".legacy-root")?.classList.remove("hidden")
+    document.querySelector(".legacy-root")?.classList.remove("hidden");
 
-    const loadingbk = document.getElementById("loading")
-    loadingbk?.classList.add("closeLoading")
-    await delay(501)
-    loadingbk?.remove()
+    const loadingbk = document.getElementById("loading");
+    loadingbk?.classList.add("closeLoading");
+    await delay(501);
+    loadingbk?.remove();
   } catch (err) {
-    console.error("Error during loading cleanup:", err)
+    console.error("Error during loading cleanup:", err);
   }
 
   if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
-    OpenWhatsNewPopup()
+    OpenWhatsNewPopup();
   }
 }
 
 export function GetCSSElement(file: string) {
-  const cssFile = browser.runtime.getURL(file)
-  const fileref = document.createElement("link")
-  fileref.setAttribute("rel", "stylesheet")
-  fileref.setAttribute("type", "text/css")
-  fileref.setAttribute("href", cssFile)
+  const cssFile = browser.runtime.getURL(file);
+  const fileref = document.createElement("link");
+  fileref.setAttribute("rel", "stylesheet");
+  fileref.setAttribute("type", "text/css");
+  fileref.setAttribute("href", cssFile);
 
-  return fileref
+  return fileref;
 }
 
 function removeThemeTagsFromNotices() {
   // Grabs an array of the notice iFrames
-  const userHTMLArray = document.getElementsByClassName("userHTML")
+  const userHTMLArray = document.getElementsByClassName("userHTML");
   // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
     // Grabs the HTML of the body tag
-    const item1 = item as HTMLIFrameElement
-    const body = item1.contentWindow!.document.querySelectorAll("body")[0]
+    const item1 = item as HTMLIFrameElement;
+    const body = item1.contentWindow!.document.querySelectorAll("body")[0];
     if (body) {
       // Replaces the theme tag with nothing
-      const bodyText = body.innerHTML
+      const bodyText = body.innerHTML;
       body.innerHTML = bodyText
         .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-        .replace(/ +/, " ")
+        .replace(/ +/, " ");
     }
   }
 }
 
 async function updateIframesWithDarkMode(): Promise<void> {
-  const cssLink = document.createElement("style")
-  cssLink.classList.add("iframecss")
-  const cssContent = document.createTextNode(iframeCSS)
-  cssLink.appendChild(cssContent)
+  const cssLink = document.createElement("style");
+  cssLink.classList.add("iframecss");
+  const cssContent = document.createTextNode(iframeCSS);
+  cssLink.appendChild(cssContent);
 
   eventManager.register(
     "iframeAdded",
@@ -139,63 +138,63 @@ async function updateIframesWithDarkMode(): Promise<void> {
         !element.classList.contains("iframecss"),
     },
     (element) => {
-      const iframe = element as HTMLIFrameElement
+      const iframe = element as HTMLIFrameElement;
       try {
-        applyDarkModeToIframe(iframe, cssLink)
+        applyDarkModeToIframe(iframe, cssLink);
 
         if (element.classList.contains("cke_wysiwyg_frame")) {
           (async () => {
-            await delay(100)
-            iframe.contentDocument?.body.setAttribute("spellcheck", "true")
-          })()
+            await delay(100);
+            iframe.contentDocument?.body.setAttribute("spellcheck", "true");
+          })();
         }
       } catch (error) {
-        console.error("Error applying dark mode:", error)
+        console.error("Error applying dark mode:", error);
       }
     },
-  )
+  );
 }
 
 function applyDarkModeToIframe(
   iframe: HTMLIFrameElement,
   cssLink: HTMLStyleElement,
 ): void {
-  const iframeDocument = iframe.contentDocument
-  if (!iframeDocument) return
+  const iframeDocument = iframe.contentDocument;
+  if (!iframeDocument) return;
 
   iframe.onload = () => {
-    applyDarkModeToIframe(iframe, cssLink)
-  }
+    applyDarkModeToIframe(iframe, cssLink);
+  };
 
   if (settingsState.DarkMode) {
-    iframeDocument.documentElement.classList.add("dark")
+    iframeDocument.documentElement.classList.add("dark");
   }
 
-  const head = iframeDocument.head
+  const head = iframeDocument.head;
   if (head && !head.innerHTML.includes("iframecss")) {
-    head.innerHTML += cssLink.outerHTML
+    head.innerHTML += cssLink.outerHTML;
   }
 }
 
 function SortMessagePageItems(messagesParentElement: any) {
   try {
-    let filterbutton = document.createElement("div")
-    filterbutton.classList.add("messages-filterbutton")
-    filterbutton.innerText = "Filter"
-  
+    let filterbutton = document.createElement("div");
+    filterbutton.classList.add("messages-filterbutton");
+    filterbutton.innerText = "Filter";
+
     let header = document.querySelector(
       "[class*='MessageList__MessageList___']",
-    ) as HTMLElement
-    header.append(filterbutton)
-    messagesParentElement
+    ) as HTMLElement;
+    header.append(filterbutton);
+    messagesParentElement;
   } catch (error) {
-    console.error("Error sorting message page items:", error)
+    console.error("Error sorting message page items:", error);
   }
 }
 
 async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements()
-  const sublink: string | undefined = window.location.href.split("/")[4]
+  await AddBetterSEQTAElements();
+  const sublink: string | undefined = window.location.href.split("/")[4];
 
   eventManager.register(
     "messagesAdded",
@@ -204,7 +203,7 @@ async function LoadPageElements(): Promise<void> {
       className: "messages",
     },
     handleMessages,
-  )
+  );
 
   eventManager.register(
     "noticesAdded",
@@ -213,7 +212,7 @@ async function LoadPageElements(): Promise<void> {
       className: "notices",
     },
     CheckNoticeTextColour,
-  )
+  );
 
   eventManager.register(
     "dashboardAdded",
@@ -222,7 +221,7 @@ async function LoadPageElements(): Promise<void> {
       className: "dashboard",
     },
     handleDashboard,
-  )
+  );
 
   eventManager.register(
     "documentsAdded",
@@ -231,7 +230,7 @@ async function LoadPageElements(): Promise<void> {
       className: "documents",
     },
     handleDocuments,
-  )
+  );
 
   eventManager.register(
     "reportsAdded",
@@ -240,7 +239,7 @@ async function LoadPageElements(): Promise<void> {
       className: "reports",
     },
     handleReports,
-  )
+  );
 
   /* eventManager.register(
     "timetableAdded",
@@ -258,21 +257,21 @@ async function LoadPageElements(): Promise<void> {
       className: "notice",
     },
     handleNotices,
-  )
+  );
 
-  RegisterClickListeners()
+  RegisterClickListeners();
 
-  await handleSublink(sublink)
+  await handleSublink(sublink);
 }
 
 async function handleNotices(node: Element): Promise<void> {
-  if (!(node instanceof HTMLElement)) return
-  if (!settingsState.animations) return
+  if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
-  node.style.opacity = "0"
+  node.style.opacity = "0";
 
   // get index of node in relation to parent
-  const index = Array.from(node.parentElement!.children).indexOf(node)
+  const index = Array.from(node.parentElement!.children).indexOf(node);
 
   animate(
     node,
@@ -283,71 +282,73 @@ async function handleNotices(node: Element): Promise<void> {
       stiffness: 250,
       damping: 20,
     },
-  )
+  );
 }
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
   switch (sublink) {
     case "news":
-      await handleNewsPage()
-      break
+      await handleNewsPage();
+      break;
     case undefined:
-      window.location.replace(`${location.origin}/#?page=/${settingsState.defaultPage}`)
-      if (settingsState.defaultPage === "home") loadHomePage()
+      window.location.replace(
+        `${location.origin}/#?page=/${settingsState.defaultPage}`,
+      );
+      if (settingsState.defaultPage === "home") loadHomePage();
       if (settingsState.defaultPage === "documents")
-        handleDocuments(document.querySelector(".documents")!)
+        handleDocuments(document.querySelector(".documents")!);
       if (settingsState.defaultPage === "reports")
-        handleReports(document.querySelector(".reports")!)
+        handleReports(document.querySelector(".reports")!);
       if (settingsState.defaultPage === "messages")
-        handleMessages(document.querySelector(".messages")!)
+        handleMessages(document.querySelector(".messages")!);
 
-      finishLoad()
-      break
+      finishLoad();
+      break;
     case "home":
-      window.location.replace(`${location.origin}/#?page=/home`)
-      console.info("[BetterSEQTA+] Started Init")
-      if (settingsState.onoff) loadHomePage()
-      finishLoad()
-      break
+      window.location.replace(`${location.origin}/#?page=/home`);
+      console.info("[BetterSEQTA+] Started Init");
+      if (settingsState.onoff) loadHomePage();
+      finishLoad();
+      break;
 
     default:
-      await handleDefault()
-      break
+      await handleDefault();
+      break;
   }
 }
 
 async function handleNewsPage(): Promise<void> {
-  console.info("[BetterSEQTA+] Started Init")
+  console.info("[BetterSEQTA+] Started Init");
   if (settingsState.onoff) {
-    SendNewsPage()
-    finishLoad()
+    SendNewsPage();
+    finishLoad();
   }
 }
 
 async function handleDefault(): Promise<void> {
-  finishLoad()
+  finishLoad();
 }
 
 async function handleMessages(node: Element): Promise<void> {
-  if (!(node instanceof HTMLElement)) return
+  if (!(node instanceof HTMLElement)) return;
 
-  const element = document.getElementById("title")!.firstChild as HTMLElement
-  element.innerText = "Direct Messages"
-  document.title = "Direct Messages ― SEQTA Learn"
-  SortMessagePageItems(node)
-  
-  if (!settingsState.animations) return
+  const element = document.getElementById("title")!.firstChild as HTMLElement;
+  element.innerText = "Direct Messages";
+  document.title = "Direct Messages ― SEQTA Learn";
+  SortMessagePageItems(node);
+
+  if (!settingsState.animations) return;
 
   // Hides messages on page load
-  const style = document.createElement("style")
-  style.classList.add("messageHider")
-  style.innerHTML = "[data-message]{opacity: 0 !important;}"
-  document.head.append(style)
+  const style = document.createElement("style");
+  style.classList.add("messageHider");
+  style.innerHTML = "[data-message]{opacity: 0 !important;}";
+  document.head.append(style);
 
-  await waitForElm("[data-message]", true, 10)
+  await waitForElm("[data-message]", true, 10);
   const messages = Array.from(
     document.querySelectorAll("[data-message]"),
-  ).slice(0, 35)
+  ).slice(0, 35);
   animate(
     messages,
     { opacity: [0, 1], y: [10, 0] },
@@ -356,21 +357,21 @@ async function handleMessages(node: Element): Promise<void> {
       duration: 0.5,
       ease: [0.22, 0.03, 0.26, 1],
     },
-  )
+  );
 
-  document.head.querySelector("style.messageHider")?.remove()
+  document.head.querySelector("style.messageHider")?.remove();
 }
 
 async function handleDashboard(node: Element): Promise<void> {
-  if (!(node instanceof HTMLElement)) return
-  if (!settingsState.animations) return
+  if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
-  const style = document.createElement("style")
-  style.classList.add("dashboardHider")
-  style.innerHTML = ".dashboard{opacity: 0 !important;}"
-  document.head.append(style)
+  const style = document.createElement("style");
+  style.classList.add("dashboardHider");
+  style.innerHTML = ".dashboard{opacity: 0 !important;}";
+  document.head.append(style);
 
-  await waitForElm(".dashlet", true, 10)
+  await waitForElm(".dashlet", true, 10);
   animate(
     ".dashboard > *",
     { opacity: [0, 1], y: [10, 0] },
@@ -379,16 +380,16 @@ async function handleDashboard(node: Element): Promise<void> {
       duration: 0.5,
       ease: [0.22, 0.03, 0.26, 1],
     },
-  )
+  );
 
-  document.head.querySelector("style.dashboardHider")?.remove()
+  document.head.querySelector("style.dashboardHider")?.remove();
 }
 
 async function handleDocuments(node: Element): Promise<void> {
-  if (!(node instanceof HTMLElement)) return
-  if (!settingsState.animations) return
+  if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
-  await waitForElm(".document", true, 10)
+  await waitForElm(".document", true, 10);
   animate(
     ".documents tbody tr.document",
     { opacity: [0, 1], y: [10, 0] },
@@ -397,14 +398,14 @@ async function handleDocuments(node: Element): Promise<void> {
       duration: 0.5,
       ease: [0.22, 0.03, 0.26, 1],
     },
-  )
+  );
 }
 
 async function handleReports(node: Element): Promise<void> {
-  if (!(node instanceof HTMLElement)) return
-  if (!settingsState.animations) return
+  if (!(node instanceof HTMLElement)) return;
+  if (!settingsState.animations) return;
 
-  await waitForElm(".report", true, 10)
+  await waitForElm(".report", true, 10);
   animate(
     ".reports .item",
     { opacity: [0, 1], y: [10, 0] },
@@ -413,7 +414,7 @@ async function handleReports(node: Element): Promise<void> {
       duration: 0.5,
       ease: [0.22, 0.03, 0.26, 1],
     },
-  )
+  );
 }
 
 function CheckNoticeTextColour(notice: any) {
@@ -425,132 +426,134 @@ function CheckNoticeTextColour(notice: any) {
       parentElement: notice,
     },
     (node) => {
-      var hex = (node as HTMLElement).style.cssText.split(" ")[1]
+      var hex = (node as HTMLElement).style.cssText.split(" ")[1];
       if (hex) {
-        const hex1 = hex.slice(0, -1)
-        var threshold = GetThresholdOfColor(hex1)
+        const hex1 = hex.slice(0, -1);
+        var threshold = GetThresholdOfColor(hex1);
         if (settingsState.DarkMode && threshold < 100) {
-          (node as HTMLElement).style.cssText = "--color: undefined;"
+          (node as HTMLElement).style.cssText = "--color: undefined;";
         }
       }
     },
-  )
+  );
 }
 
 export function tryLoad() {
   waitForElm(".login").then(() => {
-    finishLoad()
-  })
+    finishLoad();
+  });
 
   waitForElm(".day-container").then(() => {
-    finishLoad()
-  })
+    finishLoad();
+  });
 
   waitForElm("[data-key=welcome]").then((elm: any) => {
-    elm.classList.remove("active")
-  })
+    elm.classList.remove("active");
+  });
 
   waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements()
-  })
+    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
+  });
 
-  updateIframesWithDarkMode()
+  updateIframesWithDarkMode();
   // Waits for page to call on load, run scripts
   document.addEventListener(
     "load",
     function () {
-      removeThemeTagsFromNotices()
+      removeThemeTagsFromNotices();
     },
     true,
-  )
+  );
 }
 
 function ReplaceMenuSVG(element: HTMLElement, svg: string) {
-  let item = element.firstChild as HTMLElement
-  item!.firstChild!.remove()
+  let item = element.firstChild as HTMLElement;
+  item!.firstChild!.remove();
 
-  item.innerHTML = `<span>${item.innerHTML}</span>`
+  item.innerHTML = `<span>${item.innerHTML}</span>`;
 
-  let newsvg = stringToHTML(svg).firstChild
-  item.insertBefore(newsvg as Node, item.firstChild)
+  let newsvg = stringToHTML(svg).firstChild;
+  item.insertBefore(newsvg as Node, item.firstChild);
 }
 
-const processedSymbol = Symbol('processed')
+const processedSymbol = Symbol("processed");
 
 export async function ObserveMenuItemPosition() {
-  await waitForElm("#menu > ul > li")
-  
+  await waitForElm("#menu > ul > li");
+
   eventManager.register(
     "menuList",
     {
       parentElement: document.querySelector("#menu")!.firstChild as Element,
     },
     (element: Element) => {
-      const node = element as HTMLElement
+      const node = element as HTMLElement;
 
       // Only process top-level menu items and skip everything else
-      if (!node.classList.contains('item') || 
-          node.nodeName !== 'LI' || 
-          node.parentElement?.parentElement?.id !== 'menu') {
-        return
+      if (
+        !node.classList.contains("item") ||
+        node.nodeName !== "LI" ||
+        node.parentElement?.parentElement?.id !== "menu"
+      ) {
+        return;
       }
 
       // Early exit if already processed
       if ((element as any)[processedSymbol]) {
-        return
+        return;
       }
 
       if (!node?.dataset?.checked && !MenuOptionsOpen) {
         const key =
-          MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey]
+          MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
         if (key) {
           ReplaceMenuSVG(
             node,
             MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-          )
+          );
         } else if (node?.firstChild?.nodeName === "LABEL") {
-          const label = node.firstChild as HTMLElement
-          let textNode = label.lastChild as HTMLElement
+          const label = node.firstChild as HTMLElement;
+          let textNode = label.lastChild as HTMLElement;
 
           if (
             textNode.nodeType === 3 &&
             textNode.parentNode &&
             textNode.parentNode.nodeName !== "SPAN"
           ) {
-            const span = document.createElement("span")
-            span.textContent = textNode.nodeValue
+            const span = document.createElement("span");
+            span.textContent = textNode.nodeValue;
 
-            label.replaceChild(span, textNode)
+            label.replaceChild(span, textNode);
           }
         }
         ChangeMenuItemPositions(settingsState.menuorder);
-        
-        (element as any)[processedSymbol] = true
+
+        (element as any)[processedSymbol] = true;
       }
     },
-  )
+  );
 }
 
 export function showConflictPopup() {
-  if (document.getElementById("conflict-popup")) return
-  document.body.classList.remove("hidden")
+  if (document.getElementById("conflict-popup")) return;
+  document.body.classList.remove("hidden");
 
-  const background = document.createElement("div")
-  background.id = "conflict-popup"
-  background.classList.add("whatsnewBackground")
-  background.style.zIndex = "10000000"
+  const background = document.createElement("div");
+  background.id = "conflict-popup";
+  background.classList.add("whatsnewBackground");
+  background.style.zIndex = "10000000";
 
-  const container = document.createElement("div")
-  container.classList.add("whatsnewContainer")
-  container.style.height = "auto"
+  const container = document.createElement("div");
+  container.classList.add("whatsnewContainer");
+  container.style.height = "auto";
 
   const headerHTML = /* html */ `
     <div class="whatsnewHeader">
       <h1>Extension Conflict Detected</h1>
       <p>Legacy BetterSEQTA Installed</p>
     </div>
-  `
-  const header = stringToHTML(headerHTML).firstChild
+  `;
+  const header = stringToHTML(headerHTML).firstChild;
 
   const textHTML = /* html */ `
     <div class="whatsnewTextContainer" style="overflow-y: auto; font-size: 1.3rem;">
@@ -562,91 +565,91 @@ export function showConflictPopup() {
         Please remove the older BetterSEQTA extension to ensure that BetterSEQTA+ works correctly.
       </p>
     </div>
-  `
-  const text = stringToHTML(textHTML).firstChild
+  `;
+  const text = stringToHTML(textHTML).firstChild;
 
-  const exitButton = document.createElement("div")
-  exitButton.id = "whatsnewclosebutton"
+  const exitButton = document.createElement("div");
+  exitButton.id = "whatsnewclosebutton";
 
-  if (header) container.append(header)
-  if (text) container.append(text)
-  container.append(exitButton)
+  if (header) container.append(header);
+  if (text) container.append(text);
+  container.append(exitButton);
 
-  background.append(container)
+  background.append(container);
 
-  document.getElementById("container")?.append(background)
+  document.getElementById("container")?.append(background);
 
   if (settingsState.animations) {
-    animate([background as HTMLElement], { opacity: [0, 1] })
+    animate([background as HTMLElement], { opacity: [0, 1] });
   }
 
   background.addEventListener("click", (event) => {
     if (event.target === background) {
-      background.remove()
+      background.remove();
     }
-  })
+  });
 
   exitButton.addEventListener("click", () => {
-    background.remove()
-  })
+    background.remove();
+  });
 }
 
 export function init() {
   const handleDisabled = () => {
-    waitForElm(".code", true, 50).then(AppendElementsToDisabledPage)
-  }
+    waitForElm(".code", true, 50).then(AppendElementsToDisabledPage);
+  };
 
   if (settingsState.onoff) {
-    console.info("[BetterSEQTA+] Enabled")
+    console.info("[BetterSEQTA+] Enabled");
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
 
-    document.querySelector(".legacy-root")?.classList.add("hidden")
+    document.querySelector(".legacy-root")?.classList.add("hidden");
     ObserveMenuItemPosition();
 
-    new StorageChangeHandler()
-    new MessageHandler()
+    new StorageChangeHandler();
+    new MessageHandler();
 
-    updateAllColors()
-    loading()
-    InjectCustomIcons()
-    HideMenuItems()
-    tryLoad()
+    updateAllColors();
+    loading();
+    InjectCustomIcons();
+    HideMenuItems();
+    tryLoad();
 
     setTimeout(() => {
       const legacyElement = document.querySelector(
         ".outside-container .bottom-container",
-      )
+      );
       if (legacyElement) {
-        console.log("Legacy extension detected")
-        showConflictPopup()
+        console.log("Legacy extension detected");
+        showConflictPopup();
       }
-    }, 1000)
+    }, 1000);
   } else {
-    handleDisabled()
-    window.addEventListener("load", handleDisabled)
+    handleDisabled();
+    window.addEventListener("load", handleDisabled);
   }
 }
 
 function InjectCustomIcons() {
-  console.info("[BetterSEQTA+] Injecting Icons")
+  console.info("[BetterSEQTA+] Injecting Icons");
 
-  const style = document.createElement("style")
-  style.setAttribute("type", "text/css")
+  const style = document.createElement("style");
+  style.setAttribute("type", "text/css");
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
       src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
-    }`
-  document.head.appendChild(style)
+    }`;
+  document.head.appendChild(style);
 }
 
 export function AppendElementsToDisabledPage() {
-  console.info("[BetterSEQTA+] Appending elements to disabled page")
-  AddBetterSEQTAElements()
+  console.info("[BetterSEQTA+] Appending elements to disabled page");
+  AddBetterSEQTAElements();
 
-  let settingsStyle = document.createElement("style")
+  let settingsStyle = document.createElement("style");
   settingsStyle.innerHTML = /* css */ `
   .addedButton {
     position: absolute !important;
@@ -671,6 +674,6 @@ export function AppendElementsToDisabledPage() {
     box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
     transform-origin: 70% 0;
   }
-  `
-  document.head.append(settingsStyle)
+  `;
+  document.head.append(settingsStyle);
 }

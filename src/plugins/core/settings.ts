@@ -1,14 +1,14 @@
-import type { PluginSettings } from './types';
+import type { PluginSettings } from "./types";
 
 export function Setting(settingDef: any): PropertyDecorator {
   return (target, propertyKey) => {
     const proto = target.constructor.prototype;
-    if (!proto.hasOwnProperty('settings')) {
-      Object.defineProperty(proto, 'settings', {
+    if (!proto.hasOwnProperty("settings")) {
+      Object.defineProperty(proto, "settings", {
         value: {},
         writable: true,
         configurable: true,
-        enumerable: true
+        enumerable: true,
       });
     }
 
@@ -27,7 +27,7 @@ export abstract class BasePlugin<T extends PluginSettings = PluginSettings> {
     // Copy settings from the prototype to the instance
     // This ensures that each instance has its own settings object
     // IMPORTANT: Ensure the prototype actually HAS settings before copying
-    if (this.constructor.prototype.hasOwnProperty('settings')) {
+    if (this.constructor.prototype.hasOwnProperty("settings")) {
       // Deep clone might be safer if settings objects become complex,
       // but a shallow clone is usually fine for this structure.
       this.settings = { ...this.constructor.prototype.settings } as T;

@@ -15,7 +15,10 @@ async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
   return rec?.progress as T | undefined;
 }
 
-async function saveProgress<T = any>(jobId: string, progress: T): Promise<void> {
+async function saveProgress<T = any>(
+  jobId: string,
+  progress: T,
+): Promise<void> {
   await put(META_STORE, { jobId, progress }, `progress:${jobId}`);
 }
 /* ───────────────────────────────────────────── */
@@ -67,7 +70,13 @@ function stopHeartbeat() {
   localStorage.removeItem(LOCK_KEY);
 }
 
-function dispatchProgress(completed: number, total: number, indexing: boolean, status?: string, detail?: string) {
+function dispatchProgress(
+  completed: number,
+  total: number,
+  indexing: boolean,
+  status?: string,
+  detail?: string,
+) {
   const event = new CustomEvent("indexing-progress", {
     detail: { completed, total, indexing, status, detail },
   });
@@ -79,31 +88,41 @@ export async function loadAllStoredItems(): Promise<HydratedIndexItem[]> {
   const jobIds = Object.keys(jobs);
 
   for (const jobId of jobIds) {
-      try {
-          const items = await getAll(jobId) as IndexItem[];
-          const job = jobs[jobId];
-          const renderComponent = renderComponentMap[job.renderComponentId];
+    try {
+      const items = (await getAll(jobId)) as IndexItem[];
+      const job = jobs[jobId];
+      const renderComponent = renderComponentMap[job.renderComponentId];
 
-          if (!renderComponent) {
-              console.warn(`Render component not found for job ${jobId} (ID: ${job.renderComponentId})`);
-          }
-
-          for (const item of items) {
-              // Ensure item has all required fields before pushing
-              if (item && item.id && item.text && item.category && item.actionId && job.renderComponentId) {
-                   all.push({
-                      ...item,
-                      renderComponent: renderComponent || undefined, // Assign undefined if not found
-                  });
-              } else {
-                   console.warn(`Skipping invalid item from job ${jobId}:`, item);
-              }
-          }
-      } catch (error) {
-          console.error(`Error loading items for job ${jobId}:`, error);
+      if (!renderComponent) {
+        console.warn(
+          `Render component not found for job ${jobId} (ID: ${job.renderComponentId})`,
+        );
       }
+
+      for (const item of items) {
+        if (
+          item &&
+          item.id &&
+          item.text &&
+          item.category &&
+          item.actionId &&
+          job.renderComponentId
+        ) {
+          all.push({
+            ...item,
+            renderComponent: renderComponent || undefined,
+          });
+        } else {
+          console.warn(`Skipping invalid item from job ${jobId}:`, item);
+        }
+      }
+    } catch (error) {
+      console.error(`Error loading items for job ${jobId}:`, error);
+    }
   }
-  console.debug(`[Indexer] Loaded ${all.length} items from non-vector storage.`);
+  console.debug(
+    `[Indexer] Loaded ${all.length} items from non-vector storage.`,
+  );
   return all;
 }
 
@@ -129,7 +148,12 @@ export async function runIndexing(): Promise<void> {
 
   // --- Step 1: Run Fetching/Storing Jobs (Main Thread) ---
   for (const jobId of jobIds) {
-    dispatchProgress(completedJobs, totalSteps, true, `Running job: ${jobs[jobId].label}`);
+    dispatchProgress(
+      completedJobs,
+      totalSteps,
+      true,
+      `Running job: ${jobs[jobId].label}`,
+    );
     const job = jobs[jobId];
     const lastRun = await getLastRunMeta(jobId);
 
@@ -139,26 +163,37 @@ export async function runIndexing(): Promise<void> {
         "color: gray",
       );
       completedJobs++;
-      dispatchProgress(completedJobs, totalSteps, true, `Skipped job: ${job.label}`);
+      dispatchProgress(
+        completedJobs,
+        totalSteps,
+        true,
+        `Skipped job: ${job.label}`,
+      );
       continue;
     }
 
-    const getStoredItems = async (storeId?: string) => await getAll(storeId ?? jobId);
+    const getStoredItems = async (storeId?: string) =>
+      await getAll(storeId ?? jobId);
     const setStoredItems = async (items: IndexItem[], storeId?: string) => {
       const targetStore = storeId ?? jobId;
       await clear(targetStore);
-      const validItems = items.filter(i => i && i.id);
+      const validItems = items.filter((i) => i && i.id);
       if (validItems.length !== items.length) {
-          console.warn(`[Indexer Job ${jobId} -> Store ${targetStore}] Filtered out ${items.length - validItems.length} invalid items before storing.`);
+        console.warn(
+          `[Indexer Job ${jobId} -> Store ${targetStore}] Filtered out ${items.length - validItems.length} invalid items before storing.`,
+        );
       }
       await Promise.all(validItems.map((i) => put(targetStore, i, i.id)));
     };
     const addItem = async (item: IndexItem, storeId?: string) => {
       const targetStore = storeId ?? jobId;
       if (item && item.id) {
-          await put(targetStore, item, item.id);
+        await put(targetStore, item, item.id);
       } else {
-          console.warn(`[Indexer Job ${jobId} -> Store ${targetStore}] Attempted to add invalid item:`, item);
+        console.warn(
+          `[Indexer Job ${jobId} -> Store ${targetStore}] Attempted to add invalid item:`,
+          item,
+        );
       }
     };
     const removeItem = async (id: string, storeId?: string) => {
@@ -193,18 +228,30 @@ export async function runIndexing(): Promise<void> {
       // Hydrate items for vector processing
       const renderComponent = renderComponentMap[job.renderComponentId];
       if (!renderComponent) {
-          console.warn(`Render component not found for job ${jobId} (ID: ${job.renderComponentId}) during hydration`);
+        console.warn(
+          `Render component not found for job ${jobId} (ID: ${job.renderComponentId}) during hydration`,
+        );
       }
       const hydratedItems = merged
-          .filter(item => item && item.id && item.text && item.category && item.actionId && job.renderComponentId) // Filter invalid before hydrating
-          .map((item) => ({
-            ...item,
-            renderComponent: renderComponent || undefined, // Assign undefined if not found
-       }));
+        .filter(
+          (item) =>
+            item &&
+            item.id &&
+            item.text &&
+            item.category &&
+            item.actionId &&
+            job.renderComponentId,
+        ) // Filter invalid before hydrating
+        .map((item) => ({
+          ...item,
+          renderComponent: renderComponent || undefined, // Assign undefined if not found
+        }));
 
-       if (hydratedItems.length !== merged.length) {
-            console.warn(`[Indexer Job ${jobId}] Filtered out ${merged.length - hydratedItems.length} invalid items during hydration.`);
-       }
+      if (hydratedItems.length !== merged.length) {
+        console.warn(
+          `[Indexer Job ${jobId}] Filtered out ${merged.length - hydratedItems.length} invalid items during hydration.`,
+        );
+      }
 
       allItemsFromJobs.push(...hydratedItems);
 
@@ -218,7 +265,12 @@ export async function runIndexing(): Promise<void> {
     }
 
     completedJobs++;
-    dispatchProgress(completedJobs, totalSteps, true, `Finished job: ${job.label}`);
+    dispatchProgress(
+      completedJobs,
+      totalSteps,
+      true,
+      `Finished job: ${job.label}`,
+    );
   }
 
   // --- Step 2: Delegate Vectorization to Worker (Off Main Thread) ---
@@ -233,53 +285,112 @@ export async function runIndexing(): Promise<void> {
       const workerManager = VectorWorkerManager.getInstance();
       // Pass a progress callback to the worker manager
       await workerManager.processItems(allItemsFromJobs, (progress) => {
-          // Update overall progress based on worker feedback
-          let detailMessage = progress.message || '';
-          if (progress.status === 'processing' && progress.total && progress.processed !== undefined) {
-              detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
-              // You could potentially update the 'completed' count more granularly here
-              // For simplicity, we'll just update the detail message
-          } else if (progress.status === 'complete') {
-              detailMessage = "Vectorization complete";
-              // Mark the vectorization step as complete
-              dispatchProgress(totalSteps, totalSteps, true, "Vectorization finished");
-          } else if (progress.status === 'error') {
-              detailMessage = `Vectorization error: ${progress.message}`;
-               dispatchProgress(completedJobs, totalSteps, true, "Vectorization failed", detailMessage); // Show error
-          } else if (progress.status === 'started') {
-              detailMessage = `Vectorization started for ${progress.total} items`;
-          } else if (progress.status === 'cancelled') {
-               detailMessage = `Vectorization cancelled: ${progress.message}`;
-               dispatchProgress(completedJobs, totalSteps, true, "Vectorization cancelled", detailMessage);
-          }
+        // Update overall progress based on worker feedback
+        let detailMessage = progress.message || "";
+        if (
+          progress.status === "processing" &&
+          progress.total &&
+          progress.processed !== undefined
+        ) {
+          detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
+          // You could potentially update the 'completed' count more granularly here
+          // For simplicity, we'll just update the detail message
+        } else if (progress.status === "complete") {
+          detailMessage = "Vectorization complete";
+          // Mark the vectorization step as complete
+          dispatchProgress(
+            totalSteps,
+            totalSteps,
+            true,
+            "Vectorization finished",
+          );
+        } else if (progress.status === "error") {
+          detailMessage = `Vectorization error: ${progress.message}`;
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            true,
+            "Vectorization failed",
+            detailMessage,
+          ); // Show error
+        } else if (progress.status === "started") {
+          detailMessage = `Vectorization started for ${progress.total} items`;
+        } else if (progress.status === "cancelled") {
+          detailMessage = `Vectorization cancelled: ${progress.message}`;
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            true,
+            "Vectorization cancelled",
+            detailMessage,
+          );
+        }
 
-          // Update the status detail
-          dispatchProgress(completedJobs, totalSteps, true, "Vectorization in progress", detailMessage);
+        // Update the status detail
+        dispatchProgress(
+          completedJobs,
+          totalSteps,
+          true,
+          "Vectorization in progress",
+          detailMessage,
+        );
 
-           // When worker signals completion of *its* task, mark the final step complete
-           if (progress.status === 'complete') {
-               completedJobs++; // Increment completion count *after* vectorization finishes
-               dispatchProgress(completedJobs, totalSteps, false, "Indexing finished"); // Set indexing to false
-           } else if (progress.status === 'error' || progress.status === 'cancelled') {
-               // Don't increment completed count on failure/cancel, just stop indexing indicator
-                dispatchProgress(completedJobs, totalSteps, false, "Indexing stopped due to error/cancel");
-           }
+        // When worker signals completion of *its* task, mark the final step complete
+        if (progress.status === "complete") {
+          completedJobs++; // Increment completion count *after* vectorization finishes
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            false,
+            "Indexing finished",
+          ); // Set indexing to false
+        } else if (
+          progress.status === "error" ||
+          progress.status === "cancelled"
+        ) {
+          // Don't increment completed count on failure/cancel, just stop indexing indicator
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            false,
+            "Indexing stopped due to error/cancel",
+          );
+        }
       });
-      console.debug("%c[Indexer] Vectorization task sent to worker.", "color: green");
+      console.debug(
+        "%c[Indexer] Vectorization task sent to worker.",
+        "color: green",
+      );
       // Note: runIndexing might return *before* vectorization is complete now.
       // The progress updates will signal the true end state.
     } catch (error) {
-        console.error(`%c[Indexer] ❌ Failed to send items to vector worker:`, "color: red", error);
-        dispatchProgress(completedJobs, totalSteps, false, "Vectorization failed", String(error)); // Stop indexing indicator
+      console.error(
+        `%c[Indexer] ❌ Failed to send items to vector worker:`,
+        "color: red",
+        error,
+      );
+      dispatchProgress(
+        completedJobs,
+        totalSteps,
+        false,
+        "Vectorization failed",
+        String(error),
+      ); // Stop indexing indicator
     }
-
   } else {
-    console.debug("%c[Indexer] No items to send for vectorization.", "color: gray");
+    console.debug(
+      "%c[Indexer] No items to send for vectorization.",
+      "color: gray",
+    );
     // If no vectorization needed, indexing is done here.
     completedJobs++; // Count the "skipped" vectorization step
-    dispatchProgress(completedJobs, totalSteps, false, "Indexing finished (no vectorization needed)");
+    dispatchProgress(
+      completedJobs,
+      totalSteps,
+      false,
+      "Indexing finished (no vectorization needed)",
+    );
   }
-
 
   // Stop heartbeat ONLY when all jobs *and* the vectorization dispatch are done.
   // The actual *completion* of vectorization is now asynchronous.
@@ -292,10 +403,10 @@ function mergeItems(existing: IndexItem[], incoming: IndexItem[]): IndexItem[] {
   const map = new Map<string, IndexItem>();
   // Prioritize incoming items if IDs clash
   for (const item of existing) {
-       if (item && item.id) map.set(item.id, item);
+    if (item && item.id) map.set(item.id, item);
   }
   for (const item of incoming) {
-      if (item && item.id) map.set(item.id, item);
+    if (item && item.id) map.set(item.id, item);
   }
   return Array.from(map.values());
 }

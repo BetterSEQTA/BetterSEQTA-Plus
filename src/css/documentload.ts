@@ -1,1 +1,1 @@
-import './documentload.scss';
+import "./documentload.scss";

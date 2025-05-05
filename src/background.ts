@@ -1,63 +1,68 @@
-import browser from 'webextension-polyfill'
+import browser from "webextension-polyfill";
 import type { SettingsState } from "@/types/storage";
-import { fetchNews } from './background/news';
+import { fetchNews } from "./background/news";
 
 function reloadSeqtaPages() {
-  const result = browser.tabs.query({})
-    function open (tabs: any) {
+  const result = browser.tabs.query({});
+  function open(tabs: any) {
     for (let tab of tabs) {
-      if (tab.title.includes('SEQTA Learn')) {
+      if (tab.title.includes("SEQTA Learn")) {
         browser.tabs.reload(tab.id);
       }
     }
   }
-  result.then(open, console.error)
+  result.then(open, console.error);
 }
 
 // @ts-ignore
-browser.runtime.onMessage.addListener((request: any, _: any, sendResponse: (response?: any) => void) => {
+browser.runtime.onMessage.addListener(
+  (request: any, _: any, sendResponse: (response?: any) => void) => {
+    switch (request.type) {
+      case "reloadTabs":
+        reloadSeqtaPages();
+        break;
 
-  switch (request.type) {
-    case 'reloadTabs':
-      reloadSeqtaPages();
-      break;
-    
-    case 'extensionPages':
-      browser.tabs.query({}).then(function (tabs) {
-        for (let tab of tabs) {
-          if (tab.url?.includes('chrome-extension://')) {
-            browser.tabs.sendMessage(tab.id!, request);
+      case "extensionPages":
+        browser.tabs.query({}).then(function (tabs) {
+          for (let tab of tabs) {
+            if (tab.url?.includes("chrome-extension://")) {
+              browser.tabs.sendMessage(tab.id!, request);
+            }
           }
-        }
-      });
-      break;
-    
-    case 'currentTab':
-      browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-        browser.tabs.sendMessage(tabs[0].id!, request).then(function (response) {
-          sendResponse(response);
         });
-      });
-      return true;
+        break;
 
-    case 'githubTab':
-      browser.tabs.create({ url: 'github.com/BetterSEQTA/BetterSEQTA-Plus' });
-      break;
-      
-    case 'setDefaultStorage':
-      SetStorageValue(DefaultValues);
-      break;
+      case "currentTab":
+        browser.tabs
+          .query({ active: true, currentWindow: true })
+          .then(function (tabs) {
+            browser.tabs
+              .sendMessage(tabs[0].id!, request)
+              .then(function (response) {
+                sendResponse(response);
+              });
+          });
+        return true;
 
-    case 'sendNews':
-      fetchNews(request.source ?? 'australia', sendResponse);
-      return true;
-  
-    default:
-      console.log('Unknown request type');
-  }
-  
-  return false;
-});
+      case "githubTab":
+        browser.tabs.create({ url: "github.com/BetterSEQTA/BetterSEQTA-Plus" });
+        break;
+
+      case "setDefaultStorage":
+        SetStorageValue(DefaultValues);
+        break;
+
+      case "sendNews":
+        fetchNews(request.source ?? "australia", sendResponse);
+        return true;
+
+      default:
+        console.log("Unknown request type");
+    }
+
+    return false;
+  },
+);
 
 const DefaultValues: SettingsState = {
   onoff: true,
@@ -86,66 +91,67 @@ const DefaultValues: SettingsState = {
   },
   menuorder: [],
   subjectfilters: {},
-  selectedTheme: '',
-  selectedColor: 'linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)',
-  originalSelectedColor: '',
+  selectedTheme: "",
+  selectedColor:
+    "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
+  originalSelectedColor: "",
   DarkMode: true,
   animations: true,
   assessmentsAverage: true,
-  defaultPage: 'home',
+  defaultPage: "home",
   shortcuts: [
     {
-      name: 'YouTube',
+      name: "YouTube",
       enabled: false,
     },
     {
-      name: 'Outlook',
+      name: "Outlook",
       enabled: true,
     },
     {
-      name: 'Office',
+      name: "Office",
       enabled: true,
     },
     {
-      name: 'Spotify',
+      name: "Spotify",
       enabled: false,
     },
     {
-      name: 'Google',
+      name: "Google",
       enabled: true,
     },
     {
-      name: 'DuckDuckGo',
+      name: "DuckDuckGo",
       enabled: false,
     },
     {
-      name: 'Cool Math Games',
+      name: "Cool Math Games",
       enabled: false,
     },
     {
-      name: 'SACE',
+      name: "SACE",
       enabled: false,
     },
     {
-      name: 'Google Scholar',
+      name: "Google Scholar",
       enabled: false,
     },
     {
-      name: 'Gmail',
+      name: "Gmail",
       enabled: false,
     },
     {
-      name: 'Netflix',
+      name: "Netflix",
       enabled: false,
     },
     {
-      name: 'Education Perfect',
+      name: "Education Perfect",
       enabled: false,
     },
   ],
   customshortcuts: [],
   lettergrade: false,
-  newsSource: 'australia',
+  newsSource: "australia",
 };
 
 function SetStorageValue(object: any) {
@@ -158,7 +164,8 @@ function convertBksliderToSpeed(bksliderinput: number): number {
   const minBase = 50;
   const maxBase = 150;
 
-  const scaledValue = 2 + ((maxBase - bksliderinput) / (maxBase - minBase)) ** 4;
+  const scaledValue =
+    2 + ((maxBase - bksliderinput) / (maxBase - minBase)) ** 4;
   const baseSpeed = 3;
 
   const speed = baseSpeed / scaledValue;
@@ -166,50 +173,64 @@ function convertBksliderToSpeed(bksliderinput: number): number {
 }
 
 async function migrateLegacySettings() {
-  const storage = await browser.storage.local.get(null) as unknown as SettingsState;
+  const storage = (await browser.storage.local.get(
+    null,
+  )) as unknown as SettingsState;
 
   // Animated Background Migration
-  if ('animatedbk' in storage || 'bksliderinput' in storage) {
+  if ("animatedbk" in storage || "bksliderinput" in storage) {
     const animatedSettings = {
       enabled: storage.animatedbk ?? true,
-      speed: storage.bksliderinput ? convertBksliderToSpeed(parseFloat(storage.bksliderinput)) : 1
+      speed: storage.bksliderinput
+        ? convertBksliderToSpeed(parseFloat(storage.bksliderinput))
+        : 1,
     };
-    await browser.storage.local.set({ 'plugin.animated-background.settings': animatedSettings });
+    await browser.storage.local.set({
+      "plugin.animated-background.settings": animatedSettings,
+    });
   }
 
   // Assessments Average Migration
-  if ('assessmentsAverage' in storage || 'lettergrade' in storage) {
+  if ("assessmentsAverage" in storage || "lettergrade" in storage) {
     const assessmentsSettings = {
       enabled: storage.assessmentsAverage ?? true,
-      lettergrade: storage.lettergrade ?? false
+      lettergrade: storage.lettergrade ?? false,
     };
-    await browser.storage.local.set({ 'plugin.assessments-average.settings': assessmentsSettings });
+    await browser.storage.local.set({
+      "plugin.assessments-average.settings": assessmentsSettings,
+    });
   }
 
-  if ('selectedTheme' in storage) {
+  if ("selectedTheme" in storage) {
     const themesSettings = { enabled: true };
-    await browser.storage.local.set({ 'plugin.themes.settings': themesSettings });
+    await browser.storage.local.set({
+      "plugin.themes.settings": themesSettings,
+    });
   }
   if (storage.notificationCollector !== false) {
-    await browser.storage.local.set({ 'plugin.notificationCollector.settings': { enabled: true } });
+    await browser.storage.local.set({
+      "plugin.notificationCollector.settings": { enabled: true },
+    });
   } else {
-    await browser.storage.local.set({ 'plugin.notificationCollector.settings': { enabled: false } });
+    await browser.storage.local.set({
+      "plugin.notificationCollector.settings": { enabled: false },
+    });
   }
 
   const keysToRemove = [
-    'animatedbk',
-    'bksliderinput',
-    'assessmentsAverage',
-    'lettergrade'
+    "animatedbk",
+    "bksliderinput",
+    "assessmentsAverage",
+    "lettergrade",
   ];
   await browser.storage.local.remove(keysToRemove);
 }
 
 browser.runtime.onInstalled.addListener(function (event) {
-  browser.storage.local.remove(['justupdated']);
-  browser.storage.local.remove(['data']);
+  browser.storage.local.remove(["justupdated"]);
+  browser.storage.local.remove(["data"]);
 
-  if ( event.reason == 'install' || event.reason == 'update' ) {
+  if (event.reason == "install" || event.reason == "update") {
     browser.storage.local.set({ justupdated: true });
     migrateLegacySettings();
   }

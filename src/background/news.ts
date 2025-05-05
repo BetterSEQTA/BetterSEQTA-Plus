@@ -1,11 +1,11 @@
-import Parser from 'rss-parser';
+import Parser from "rss-parser";
 
 const fetchAustraliaNews = async (url: string, sendResponse: any) => {
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
-      if (response.code == 'rateLimited') {
-        fetchAustraliaNews(url += '%00', sendResponse);
+      if (response.code == "rateLimited") {
+        fetchAustraliaNews((url += "%00"), sendResponse);
       } else {
         sendResponse({ news: response });
       }
@@ -31,13 +31,13 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://critica.com.pa/rss.xml",
     "https://www.panamaamerica.com.pa/rss.xml",
     "https://noticiassin.com/feed/",
-    "https://elcapitalfinanciero.com/feed/"
+    "https://elcapitalfinanciero.com/feed/",
   ],
   canada: [
     "https://www.cbc.ca/cmlink/rss-topstories",
     "https://calgaryherald.com/feed",
     "https://ottawacitizen.com/feed",
-    "https://www.montrealgazette.com/feed"
+    "https://www.montrealgazette.com/feed",
   ],
   singapore: [
     "https://www.straitstimes.com/news/singapore/rss.xml",
@@ -49,12 +49,9 @@ const rssFeedsByCountry: Record<string, string[]> = {
   ],
   japan: [
     "https://www3.nhk.or.jp/nhkworld/en/news/feeds/",
-    "https://news.livedoor.com/topics/rss/int.xml"
+    "https://news.livedoor.com/topics/rss/int.xml",
   ],
-  netherlands: [
-    "https://www.dutchnews.nl/feed/",
-    "https://www.nrc.nl/rss/"
-  ],
+  netherlands: ["https://www.dutchnews.nl/feed/", "https://www.nrc.nl/rss/"],
 };
 
 export async function fetchNews(source: string, sendResponse: any) {
@@ -63,11 +60,11 @@ export async function fetchNews(source: string, sendResponse: any) {
 
     const from =
       date.getFullYear() +
-      '-' +
+      "-" +
       (date.getMonth() + 1) +
-      '-' +
+      "-" +
       (date.getDate() - 5);
-  
+
     const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
     fetchAustraliaNews(url, sendResponse);
 
@@ -76,7 +73,7 @@ export async function fetchNews(source: string, sendResponse: any) {
 
   const parser = new Parser();
   let feeds: string[];
-  console.log('fetchNews', source)
+  console.log("fetchNews", source);
 
   if (rssFeedsByCountry[source.toLowerCase()]) {
     // If the source is a country, fetch from predefined feeds
@@ -85,7 +82,9 @@ export async function fetchNews(source: string, sendResponse: any) {
     // If the source is a URL, use it directly
     feeds = [source];
   } else {
-    throw new Error("Invalid source. Provide a country code or a valid RSS feed URL.");
+    throw new Error(
+      "Invalid source. Provide a country code or a valid RSS feed URL.",
+    );
   }
 
   const articlesPromises = feeds.map(async (feedUrl) => {

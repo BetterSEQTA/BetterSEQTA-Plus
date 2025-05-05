@@ -22,6 +22,7 @@ Thank you for your interest in contributing to BetterSEQTA+! This document provi
 BetterSEQTA+ is committed to providing a welcoming and inclusive environment for all contributors. We expect all participants to adhere to our Code of Conduct, which promotes respectful and harassment-free interaction.
 
 Key points:
+
 - Be respectful and inclusive
 - Focus on what is best for the community
 - Show empathy towards other community members
@@ -105,6 +106,7 @@ git checkout -b feature/my-new-feature
 2. **Write Clear Commit Messages**
 
    Follow the conventional commits format:
+
    ```
    feat: add new feature
    fix: resolve bug with timetable
@@ -118,6 +120,7 @@ git checkout -b feature/my-new-feature
 4. **Run Tests**
 
    Make sure all tests pass before submitting your PR:
+
    ```bash
    npm test
    ```
@@ -157,6 +160,7 @@ We follow TypeScript best practices and have a consistent code style:
 5. **Use Linters**
 
    We use ESLint and Prettier. Run them before submitting your PR:
+
    ```bash
    npm run lint
    npm run format
@@ -173,6 +177,7 @@ If you find a bug, please report it by creating an issue on GitHub:
 2. **Use the Bug Report Template**
 
    Fill in all sections of the bug report template:
+
    - Description
    - Steps to reproduce
    - Expected behavior
@@ -195,6 +200,7 @@ We welcome feature suggestions! To suggest a new feature:
 2. **Use the Feature Request Template**
 
    Fill in all sections of the feature request template:
+
    - Description
    - Use case
    - Potential implementation
@@ -259,4 +265,4 @@ If you have any questions about contributing, please:
 2. Ask in the Discord server
 3. Open a GitHub Discussion
 
-Thank you for contributing to BetterSEQTA+! Your efforts help make SEQTA better for students and teachers everywhere. 
+Thank you for contributing to BetterSEQTA+! Your efforts help make SEQTA better for students and teachers everywhere.

@@ -1,9 +1,13 @@
-import Color from 'color';
+import Color from "color";
 
-export function lightenAndPaleColor(inputColor: any, lightenFactor = 0.75, paleFactor = 0.55) {
+export function lightenAndPaleColor(
+  inputColor: any,
+  lightenFactor = 0.75,
+  paleFactor = 0.55,
+) {
   if (!inputColor) return;
 
-  if (inputColor.includes('gradient')) {
+  if (inputColor.includes("gradient")) {
     const baseColor = findMatchingColor(inputColor);
 
     return lightenAndPaleColor(baseColor, lightenFactor, paleFactor);
@@ -29,34 +33,44 @@ export function lightenAndPaleColor(inputColor: any, lightenFactor = 0.75, paleF
 }
 // Utility function to average an array of Color objects
 function averageColors(colors: any) {
-  let avgR = 0, avgG = 0, avgB = 0;
+  let avgR = 0,
+    avgG = 0,
+    avgB = 0;
   colors.forEach((color: any) => {
     avgR += color.red();
     avgG += color.green();
     avgB += color.blue();
   });
-  return Color.rgb(avgR / colors.length, avgG / colors.length, avgB / colors.length);
+  return Color.rgb(
+    avgR / colors.length,
+    avgG / colors.length,
+    avgB / colors.length,
+  );
 }
 // Main function to find a matching color for a CSS gradient
 function findMatchingColor(cssGradient: any) {
   try {
     // Step 1: Parse the gradient to extract color stops (case-insensitive)
-    const regex = /#[0-9a-fA-F]{6}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)/gi;
+    const regex =
+      /#[0-9a-fA-F]{6}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)/gi;
     const colorStops = cssGradient.match(regex);
 
     if (!colorStops) {
-      throw new Error('No valid color stops found in the provided CSS gradient.');
+      throw new Error(
+        "No valid color stops found in the provided CSS gradient.",
+      );
     }
 
     // Normalize and trim the color stops
-    const normalizedColorStops = colorStops.map((color: any) => color.toLowerCase().replace(/\s+/g, ''));
+    const normalizedColorStops = colorStops.map((color: any) =>
+      color.toLowerCase().replace(/\s+/g, ""),
+    );
 
     // Convert the color stops to Color objects
     const colorObjects = normalizedColorStops.map((color: any) => Color(color));
 
     // Step 2: Average the color stops
     const baseColor = averageColors(colorObjects);
-
 
     // Step 4: Return the matching color in HEX format
     return baseColor.hex();

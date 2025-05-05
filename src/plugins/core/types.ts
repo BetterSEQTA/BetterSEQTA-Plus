@@ -1,14 +1,14 @@
-import ReactFiber from '@/seqta/utils/ReactFiber';
+import ReactFiber from "@/seqta/utils/ReactFiber";
 
 export interface BooleanSetting {
-  type: 'boolean';
+  type: "boolean";
   default: boolean;
   title: string;
   description?: string;
 }
 
 export interface StringSetting {
-  type: 'string';
+  type: "string";
   default: string;
   title: string;
   description?: string;
@@ -17,7 +17,7 @@ export interface StringSetting {
 }
 
 export interface NumberSetting {
-  type: 'number';
+  type: "number";
   default: number;
   title: string;
   description?: string;
@@ -27,47 +27,69 @@ export interface NumberSetting {
 }
 
 export interface SelectSetting<T extends string> {
-  type: 'select';
+  type: "select";
   options: readonly T[];
   default: T;
   title: string;
   description?: string;
 }
 
-export type PluginSetting = BooleanSetting | StringSetting | NumberSetting | SelectSetting<string>;
+export type PluginSetting =
+  | BooleanSetting
+  | StringSetting
+  | NumberSetting
+  | SelectSetting<string>;
 
 export type PluginSettings = {
   [key: string]: PluginSetting;
-}
+};
 
 // Helper type to extract the actual value type from a setting
-export type SettingValue<T extends PluginSetting> = T extends BooleanSetting ? boolean :
-  T extends StringSetting ? string :
-  T extends NumberSetting ? number :
-  T extends SelectSetting<infer O> ? O :
-  never;
+export type SettingValue<T extends PluginSetting> = T extends BooleanSetting
+  ? boolean
+  : T extends StringSetting
+    ? string
+    : T extends NumberSetting
+      ? number
+      : T extends SelectSetting<infer O>
+        ? O
+        : never;
 
 export type SettingsAPI<T extends PluginSettings> = {
   [K in keyof T]: SettingValue<T[K]>;
 } & {
-  onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => { unregister: () => void };
-  offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
+  onChange: <K extends keyof T>(
+    key: K,
+    callback: (value: SettingValue<T[K]>) => void,
+  ) => { unregister: () => void };
+  offChange: <K extends keyof T>(
+    key: K,
+    callback: (value: SettingValue<T[K]>) => void,
+  ) => void;
   loaded: Promise<void>;
-}  
+};
 
 export interface SEQTAAPI {
-  onMount: (selector: string, callback: (element: Element) => void) => { unregister: () => void };
+  onMount: (
+    selector: string,
+    callback: (element: Element) => void,
+  ) => { unregister: () => void };
   getFiber: (selector: string) => ReactFiber;
   getCurrentPage: () => string;
-  onPageChange: (callback: (page: string) => void) => { unregister: () => void };
+  onPageChange: (callback: (page: string) => void) => {
+    unregister: () => void;
+  };
 }
 
 export interface StorageAPI<T = any> {
   /**
    * Register a callback to be called when a storage value changes
    */
-  onChange: <K extends keyof T>(key: K, callback: (value: T[K]) => void) => { unregister: () => void };
-  
+  onChange: <K extends keyof T>(
+    key: K,
+    callback: (value: T[K]) => void,
+  ) => { unregister: () => void };
+
   /**
    * Promise that resolves when storage values are loaded
    */
@@ -76,10 +98,13 @@ export interface StorageAPI<T = any> {
 
 export type TypedStorageAPI<T> = StorageAPI<T> & {
   [K in keyof T]: T[K];
-}
+};
 
 export interface EventsAPI {
-  on: (event: string, callback: (...args: any[]) => void) => { unregister: () => void };
+  on: (
+    event: string,
+    callback: (...args: any[]) => void,
+  ) => { unregister: () => void };
   emit: (event: string, ...args: any[]) => void;
 }
 
@@ -96,8 +121,10 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   description: string;
   version: string;
   settings: T;
-  styles?: string;  // Optional CSS styles for the plugin
-  disableToggle?: boolean;  // Optional flag to show/hide the plugin's enable/disable toggle in settings
-  defaultEnabled?: boolean;  // Optional flag to set the plugin's default enabled state
-  run: (api: PluginAPI<T, S>) => void | Promise<void> | (() => void) | Promise<(() => void)>;
+  styles?: string; // Optional CSS styles for the plugin
+  disableToggle?: boolean; // Optional flag to show/hide the plugin's enable/disable toggle in settings
+  defaultEnabled?: boolean; // Optional flag to set the plugin's default enabled state
+  run: (
+    api: PluginAPI<T, S>,
+  ) => void | Promise<void> | (() => void) | Promise<() => void>;
 }

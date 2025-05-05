@@ -8,7 +8,6 @@ html.transparencyEffects:not(.dark) {
   --background-secondary: rgba(229, 231, 235, 0.6);
 }
 
-
 html.transparencyEffects {
   /* Background Fixes */
   [class*="notifications__item___"],
@@ -37,11 +36,12 @@ html.transparencyEffects {
   [class*="LabelList__selected___"],
   .buttonChecklist,
   .pane,
-  .legacy-root button, .legacy-root a,
+  .legacy-root button,
+  .legacy-root a,
   [class*="MessageList__MessageList___"] {
     backdrop-filter: blur(80px);
   }
-  
+
   .report {
     backdrop-filter: blur(10px) !important;
   }

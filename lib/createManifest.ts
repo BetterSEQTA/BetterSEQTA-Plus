@@ -1,5 +1,5 @@
-import type { Browser, BuildTarget, Manifest } from './types'
-import type { AnyCase } from './utils'
+import type { Browser, BuildTarget, Manifest } from "./types";
+import type { AnyCase } from "./utils";
 /**
  *
  *
@@ -15,7 +15,7 @@ export function createManifest(
   return {
     manifest,
     browser,
-  }
+  };
 }
 
 /**
@@ -29,5 +29,5 @@ export function createManifest(
  * @return {*}  {@link Manifest}
  */
 export function createManifestBase(manifest: Manifest): Manifest {
-  return manifest
+  return manifest;
 }

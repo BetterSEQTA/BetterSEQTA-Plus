@@ -7,11 +7,13 @@ Welcome to the BetterSEQTA+ documentation! This documentation will help you unde
 ## Table of Contents
 
 ### Getting Started
+
 - [Project Overview](./README.md) - This file
 - [Installation Guide](./installation.md) - How to install and set up BetterSEQTA+
 - [Contributing Guide](../CONTRIBUTING.md) - How to contribute to BetterSEQTA+
 
 ### Plugin System
+
 - [Creating Your First Plugin](./plugins/README.md) - A comprehensive, beginner-friendly guide to creating plugins
 - [Plugin API Reference](./plugins/api-reference.md) - Detailed technical documentation of the plugin APIs
 
@@ -47,4 +49,4 @@ To contribute to the documentation:
 
 ## License
 
-BetterSEQTA+ is licensed under the [MIT License](../LICENSE). 
+BetterSEQTA+ is licensed under the [MIT License](../LICENSE).

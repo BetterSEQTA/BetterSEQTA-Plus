@@ -1,11 +1,11 @@
-declare module '*.mp4';
-declare module '*.woff';
-declare module '*.scss';
-declare module '*.png';
-declare module '*.html';
-declare module '*.svelte';
+declare module "*.mp4";
+declare module "*.woff";
+declare module "*.scss";
+declare module "*.png";
+declare module "*.html";
+declare module "*.svelte";
 
-declare module '*?inlineWorker' {
+declare module "*?inlineWorker" {
   const value: () => Worker;
   export default value;
 }

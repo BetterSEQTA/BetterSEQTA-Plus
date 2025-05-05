@@ -6,7 +6,7 @@ import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 export function mountSearchBar(
   titleElement: Element,
   api: any,
-  appRef: { current: any }
+  appRef: { current: any },
 ) {
   if (titleElement.querySelector(".search-trigger")) {
     return;

@@ -1,15 +1,13 @@
-import { settingsState } from './SettingsState';
-import { updateAllColors } from '@/seqta/ui/colors/Manager';
-
+import { settingsState } from "./SettingsState";
+import { updateAllColors } from "@/seqta/ui/colors/Manager";
 
 import { addShortcuts } from "@/seqta/utils/Adders/AddShortcuts";
 import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { RemoveShortcutDiv } from "@/seqta/utils/DisableRemove/RemoveShortcutDiv";
 
-
-import browser from 'webextension-polyfill';
-import type { CustomShortcut } from '@/types/storage';
+import browser from "webextension-polyfill";
+import type { CustomShortcut } from "@/types/storage";
 
 export class StorageChangeHandler {
   constructor() {
@@ -17,13 +15,22 @@ export class StorageChangeHandler {
   }
 
   private registerHandlers() {
-    settingsState.register('selectedColor', updateAllColors.bind(this));
-    settingsState.register('DarkMode', this.handleDarkModeChange.bind(this));
-    settingsState.register('onoff', this.handleOnOffChange.bind(this));
-    settingsState.register('shortcuts', this.handleShortcutsChange.bind(this));
-    settingsState.register('customshortcuts', this.handleCustomShortcutsChange.bind(this));
-    settingsState.register('transparencyEffects', this.handleTransparencyEffectsChange.bind(this));
-    settingsState.register('subjectfilters', FilterUpcomingAssessments.bind(this));
+    settingsState.register("selectedColor", updateAllColors.bind(this));
+    settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
+    settingsState.register("onoff", this.handleOnOffChange.bind(this));
+    settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
+    settingsState.register(
+      "customshortcuts",
+      this.handleCustomShortcutsChange.bind(this),
+    );
+    settingsState.register(
+      "transparencyEffects",
+      this.handleTransparencyEffectsChange.bind(this),
+    );
+    settingsState.register(
+      "subjectfilters",
+      FilterUpcomingAssessments.bind(this),
+    );
   }
 
   private handleDarkModeChange() {
@@ -32,16 +39,23 @@ export class StorageChangeHandler {
 
   private handleOnOffChange(newValue: boolean) {
     if (newValue) return;
-    browser.runtime.sendMessage({ type: 'reloadTabs' });
+    browser.runtime.sendMessage({ type: "reloadTabs" });
   }
 
-  private handleCustomShortcutsChange(newValue: CustomShortcut[], oldValue: CustomShortcut[]) {
+  private handleCustomShortcutsChange(
+    newValue: CustomShortcut[],
+    oldValue: CustomShortcut[],
+  ) {
     if (newValue) {
       if (newValue.length > oldValue.length) {
         CreateCustomShortcutDiv(newValue[oldValue.length]);
       } else if (newValue.length < oldValue.length) {
         const removedElement = oldValue.find(
-          (oldItem: any) => !newValue.some((newItem: any) => JSON.stringify(oldItem) === JSON.stringify(newItem))
+          (oldItem: any) =>
+            !newValue.some(
+              (newItem: any) =>
+                JSON.stringify(oldItem) === JSON.stringify(newItem),
+            ),
         );
 
         if (removedElement) {
@@ -51,7 +65,10 @@ export class StorageChangeHandler {
     }
   }
 
-  private handleShortcutsChange(newValue: { enabled: boolean, name: string }[], oldValue: { enabled: boolean, name: string }[]) {
+  private handleShortcutsChange(
+    newValue: { enabled: boolean; name: string }[],
+    oldValue: { enabled: boolean; name: string }[],
+  ) {
     const addedShortcuts = newValue.filter((newItem: any) => {
       const isAdded = oldValue.some((oldItem: any) => {
         const match = oldItem.name === newItem.name;
@@ -80,9 +97,9 @@ export class StorageChangeHandler {
 
   private handleTransparencyEffectsChange(newValue: boolean) {
     if (newValue) {
-      document.documentElement.classList.add('transparencyEffects');
+      document.documentElement.classList.add("transparencyEffects");
     } else {
-      document.documentElement.classList.remove('transparencyEffects');
+      document.documentElement.classList.remove("transparencyEffects");
     }
   }
 }

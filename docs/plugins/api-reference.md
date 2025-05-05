@@ -7,9 +7,13 @@ This document provides detailed technical information about BetterSEQTA+'s plugi
 Here's how a plugin is structured:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
-import { BasePlugin } from '@/plugins/core/settings';
-import { booleanSetting, defineSettings, Setting } from '@/plugins/core/settingsHelpers';
+import type { Plugin } from "@/plugins/core/types";
+import { BasePlugin } from "@/plugins/core/settings";
+import {
+  booleanSetting,
+  defineSettings,
+  Setting,
+} from "@/plugins/core/settingsHelpers";
 
 // First, define your settings
 const settings = defineSettings({
@@ -17,7 +21,7 @@ const settings = defineSettings({
     default: true,
     title: "Enable Feature",
     description: "Turn this feature on or off",
-  })
+  }),
 });
 
 // Create a class to handle your settings
@@ -31,28 +35,28 @@ const settingsInstance = new MyPluginClass();
 
 // Create your plugin
 const myPlugin: Plugin<typeof settings> = {
-  id: 'my-plugin',
-  name: 'My Plugin',
-  description: 'A cool plugin that does things',
-  version: '1.0.0',
+  id: "my-plugin",
+  name: "My Plugin",
+  description: "A cool plugin that does things",
+  version: "1.0.0",
   settings: settingsInstance.settings,
   disableToggle: true,
 
   run: async (api) => {
-    console.log('Plugin is running!');
-    
+    console.log("Plugin is running!");
+
     // Do stuff when settings change
-    api.settings.onChange('enabled', (enabled) => {
+    api.settings.onChange("enabled", (enabled) => {
       if (enabled) {
-        console.log('Feature enabled!');
+        console.log("Feature enabled!");
       }
     });
 
     // Return a cleanup function
     return () => {
-      console.log('Plugin cleanup');
+      console.log("Plugin cleanup");
     };
-  }
+  },
 };
 
 export default myPlugin;
@@ -63,27 +67,30 @@ export default myPlugin;
 The SEQTA API helps you interact with SEQTA's pages:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
+import type { Plugin } from "@/plugins/core/types";
 
 const seqtaPlugin: Plugin<typeof settings> = {
-  id: 'seqta-example',
-  name: 'SEQTA Example',
-  description: 'Shows how to use the SEQTA API',
-  version: '1.0.0',
+  id: "seqta-example",
+  name: "SEQTA Example",
+  description: "Shows how to use the SEQTA API",
+  version: "1.0.0",
   settings: {},
   disableToggle: true,
 
   run: async (api) => {
     // Wait for elements to appear
-    const { unregister: timetableUnregister } = api.seqta.onMount('.timetable', (timetable) => {
-      const button = document.createElement('button');
-      button.textContent = 'Export';
-      timetable.appendChild(button);
-    });
+    const { unregister: timetableUnregister } = api.seqta.onMount(
+      ".timetable",
+      (timetable) => {
+        const button = document.createElement("button");
+        button.textContent = "Export";
+        timetable.appendChild(button);
+      },
+    );
 
     // Track page changes
     const { unregister: pageUnregister } = api.seqta.onPageChange((page) => {
-      console.log('User went to:', page);
+      console.log("User went to:", page);
     });
 
     // Clean up when disabled
@@ -91,7 +98,7 @@ const seqtaPlugin: Plugin<typeof settings> = {
       timetableUnregister();
       pageUnregister();
     };
-  }
+  },
 };
 
 export default seqtaPlugin;
@@ -102,22 +109,29 @@ export default seqtaPlugin;
 Here's how to add settings to your plugin:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
-import { BasePlugin } from '@/plugins/core/settings';
-import { booleanSetting, stringSetting, numberSetting, selectSetting, defineSettings, Setting } from '@/plugins/core/settingsHelpers';
+import type { Plugin } from "@/plugins/core/types";
+import { BasePlugin } from "@/plugins/core/settings";
+import {
+  booleanSetting,
+  stringSetting,
+  numberSetting,
+  selectSetting,
+  defineSettings,
+  Setting,
+} from "@/plugins/core/settingsHelpers";
 
 // Define your settings
 const settings = defineSettings({
   darkMode: booleanSetting({
     default: false,
     title: "Dark Mode",
-    description: "Enable dark mode"
+    description: "Enable dark mode",
   }),
   userName: stringSetting({
     default: "",
     title: "User Name",
     description: "Your display name",
-    placeholder: "Enter your name..."
+    placeholder: "Enter your name...",
   }),
   theme: selectSetting({
     default: "light",
@@ -125,9 +139,9 @@ const settings = defineSettings({
     description: "Choose your theme",
     options: [
       { value: "light", label: "Light" },
-      { value: "dark", label: "Dark" }
-    ]
-  })
+      { value: "dark", label: "Dark" },
+    ],
+  }),
 });
 
 // Create your settings class
@@ -144,29 +158,29 @@ class ThemePluginClass extends BasePlugin<typeof settings> {
 
 // Create the plugin
 const themePlugin: Plugin<typeof settings> = {
-  id: 'theme-example',
-  name: 'Theme Example',
-  description: 'Shows how to use settings',
-  version: '1.0.0',
+  id: "theme-example",
+  name: "Theme Example",
+  description: "Shows how to use settings",
+  version: "1.0.0",
   settings: new ThemePluginClass().settings,
   disableToggle: true,
 
   run: async (api) => {
     // Apply initial settings
     if (api.settings.darkMode) {
-      document.body.classList.add('dark');
+      document.body.classList.add("dark");
     }
 
     // Listen for changes
-    const { unregister } = api.settings.onChange('darkMode', (enabled) => {
-      document.body.classList.toggle('dark', enabled);
+    const { unregister } = api.settings.onChange("darkMode", (enabled) => {
+      document.body.classList.toggle("dark", enabled);
     });
 
     return () => {
       unregister();
-      document.body.classList.remove('dark');
+      document.body.classList.remove("dark");
     };
-  }
+  },
 };
 
 export default themePlugin;
@@ -177,13 +191,13 @@ export default themePlugin;
 Here's how to use storage in your plugin:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
+import type { Plugin } from "@/plugins/core/types";
 
 const storagePlugin: Plugin<typeof settings> = {
-  id: 'storage-example',
-  name: 'Storage Example',
-  description: 'Shows how to use storage',
-  version: '1.0.0',
+  id: "storage-example",
+  name: "Storage Example",
+  description: "Shows how to use storage",
+  version: "1.0.0",
   settings: {},
   disableToggle: true,
 
@@ -192,21 +206,21 @@ const storagePlugin: Plugin<typeof settings> = {
     await api.storage.loaded;
 
     // Save some data
-    await api.storage.set('lastVisit', new Date().toISOString());
-    
+    await api.storage.set("lastVisit", new Date().toISOString());
+
     // Get saved data
-    const lastVisit = await api.storage.get('lastVisit');
-    console.log('Last visit:', lastVisit);
+    const lastVisit = await api.storage.get("lastVisit");
+    console.log("Last visit:", lastVisit);
 
     // Listen for changes
-    const { unregister } = api.storage.onChange('lastVisit', (newValue) => {
-      console.log('Last visit updated:', newValue);
+    const { unregister } = api.storage.onChange("lastVisit", (newValue) => {
+      console.log("Last visit updated:", newValue);
     });
 
     return () => {
       unregister();
     };
-  }
+  },
 };
 
 export default storagePlugin;
@@ -217,33 +231,39 @@ export default storagePlugin;
 Here's how to use events in your plugin:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
+import type { Plugin } from "@/plugins/core/types";
 
 const eventsPlugin: Plugin<typeof settings> = {
-  id: 'events-example',
-  name: 'Events Example',
-  description: 'Shows how to use events',
-  version: '1.0.0',
+  id: "events-example",
+  name: "Events Example",
+  description: "Shows how to use events",
+  version: "1.0.0",
   settings: {},
   disableToggle: true,
 
   run: async (api) => {
     // Listen for theme changes
-    const { unregister: themeListener } = api.events.on('theme.changed', (theme) => {
-      console.log('Theme changed to:', theme);
-    });
+    const { unregister: themeListener } = api.events.on(
+      "theme.changed",
+      (theme) => {
+        console.log("Theme changed to:", theme);
+      },
+    );
 
     // Listen for notifications
-    const { unregister: notifyListener } = api.events.on('notification.new', (notification) => {
-      console.log('New notification:', notification);
-    });
+    const { unregister: notifyListener } = api.events.on(
+      "notification.new",
+      (notification) => {
+        console.log("New notification:", notification);
+      },
+    );
 
     // Clean up listeners
     return () => {
       themeListener();
       notifyListener();
     };
-  }
+  },
 };
 
 export default eventsPlugin;
@@ -254,20 +274,20 @@ export default eventsPlugin;
 Here's how to write efficient plugins:
 
 ```typescript
-import type { Plugin } from '@/plugins/core/types';
+import type { Plugin } from "@/plugins/core/types";
 
 const efficientPlugin: Plugin<typeof settings> = {
-  id: 'efficient-example',
-  name: 'Efficient Example',
-  description: 'Shows performance best practices',
-  version: '1.0.0',
+  id: "efficient-example",
+  name: "Efficient Example",
+  description: "Shows performance best practices",
+  version: "1.0.0",
   settings: {},
   disableToggle: true,
 
   run: async (api) => {
     // ✅ Good: Use onMount
-    const { unregister } = api.seqta.onMount('.timetable', (el) => {
-      el.classList.add('enhanced');
+    const { unregister } = api.seqta.onMount(".timetable", (el) => {
+      el.classList.add("enhanced");
     });
 
     // ❌ Bad: Don't use intervals
@@ -277,7 +297,7 @@ const efficientPlugin: Plugin<typeof settings> = {
     // }, 100);
 
     // ✅ Good: Cache DOM elements
-    const header = document.querySelector('.header');
+    const header = document.querySelector(".header");
     if (header) {
       // Reuse header instead of querying again
     }
@@ -285,7 +305,7 @@ const efficientPlugin: Plugin<typeof settings> = {
     // ✅ Good: Batch DOM updates
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < 10; i++) {
-      const div = document.createElement('div');
+      const div = document.createElement("div");
       fragment.appendChild(div);
     }
     document.body.appendChild(fragment);
@@ -294,13 +314,14 @@ const efficientPlugin: Plugin<typeof settings> = {
       unregister();
       // clearInterval(interval); // If you used the bad approach
     };
-  }
+  },
 };
 
 export default efficientPlugin;
 ```
 
 Each plugin should be in its own file and exported as the default export. The plugin should:
+
 1. Import necessary types and helpers
 2. Define settings if needed
 3. Create a settings class if using settings
@@ -308,7 +329,8 @@ Each plugin should be in its own file and exported as the default export. The pl
 5. Export the plugin as default
 
 Remember to always:
+
 - Use proper TypeScript types
 - Clean up when your plugin is disabled
 - Handle errors gracefully
-- Follow the plugin structure shown above 
+- Follow the plugin structure shown above

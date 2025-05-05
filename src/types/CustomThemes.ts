@@ -13,7 +13,7 @@ export type CustomTheme = {
   webURL?: string;
   selectedColor?: string;
   forceDark?: boolean;
-}
+};
 
 export type LoadedCustomTheme = CustomTheme & {
   CustomImages: {
@@ -25,15 +25,15 @@ export type LoadedCustomTheme = CustomTheme & {
 
 export type DownloadedTheme = CustomTheme & {
   webURL: string;
-}
+};
 
 export type CustomImage = {
   id: string;
   blob: Blob;
   variableName: string;
-}
+};
 
 export type ThemeList = {
   themes: CustomTheme[];
   selectedTheme: string;
-}
+};

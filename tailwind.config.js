@@ -1,17 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx,html,svelte}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,html,svelte}"],
   darkMode: "class",
   theme: {
     fontSize: {
-      "xs": ".65rem",
-      "sm": ".775rem",
-      "base": "0.65rem",
-      "md": "0.65rem",
-      "lg": "1rem",
-      "xl": "1.25rem",
+      xs: ".65rem",
+      sm: ".775rem",
+      base: "0.65rem",
+      md: "0.65rem",
+      lg: "1rem",
+      xl: "1.25rem",
       "2xl": "1.5rem",
       "3xl": "1.875rem",
       "4xl": "2.25rem",
@@ -28,18 +26,15 @@ export default {
     },
     extend: {
       fontFamily: {
-        "IconFamily": "IconFamily"
+        IconFamily: "IconFamily",
       },
       animation: {
-        'spin-fast': 'spin 0.4s linear infinite',
+        "spin-fast": "spin 0.4s linear infinite",
       },
       aspectRatio: {
-        "theme": "5 / 1"
-      }
-    }
+        theme: "5 / 1",
+      },
+    },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [require("@tailwindcss/forms")],
 };
-  

@@ -22,7 +22,7 @@ class ThemeUpdates {
   }
 
   public triggerUpdate(): void {
-    this.listeners.forEach(callback => callback());
+    this.listeners.forEach((callback) => callback());
   }
 }
 

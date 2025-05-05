@@ -1,25 +1,25 @@
-import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement"
+import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 
 export function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {
-    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`)
+    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
     for (let i = 0; i < subjectdivs.length; i++) {
-      const element = subjectdivs[i]
+      const element = subjectdivs[i];
 
       if (!subjectoptions[item]) {
-        element.classList.add("hidden")
+        element.classList.add("hidden");
       }
       if (subjectoptions[item]) {
-        element.classList.remove("hidden")
+        element.classList.remove("hidden");
       }
-      (element.parentNode! as HTMLElement).classList.remove("hidden")
+      (element.parentNode! as HTMLElement).classList.remove("hidden");
 
-      let children = element.parentNode!.parentNode!.children
+      let children = element.parentNode!.parentNode!.children;
       for (let i = 0; i < children.length; i++) {
-        const element = children[i]
+        const element = children[i];
         if (element.hasAttribute("data-hidden")) {
-          element.remove()
+          element.remove();
         }
       }
 
@@ -35,33 +35,33 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
           ) {
             (element.parentNode!.parentNode! as HTMLElement).classList.add(
               "hidden",
-            )
+            );
           } else {
             AddPlaceHolderToParent(
               element.parentNode!.parentNode,
               element.parentNode!.querySelectorAll(".hidden").length,
-            )
+            );
           }
         }
       } else {
         (element.parentNode!.parentNode! as HTMLElement).classList.remove(
           "hidden",
-        )
+        );
       }
     }
   }
 }
 
 function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
-  let textcontainer = CreateElement("div", "upcoming-blank")
-  let textblank = CreateElement("p", "upcoming-hiddenassessment")
-  let s = ""
+  let textcontainer = CreateElement("div", "upcoming-blank");
+  let textblank = CreateElement("p", "upcoming-hiddenassessment");
+  let s = "";
   if (numberofassessments > 1) {
-    s = "s"
+    s = "s";
   }
-  textblank.innerText = `${numberofassessments} hidden assessment${s} due`
-  textcontainer.append(textblank)
-  textcontainer.setAttribute("data-hidden", "true")
+  textblank.innerText = `${numberofassessments} hidden assessment${s} due`;
+  textcontainer.append(textblank);
+  textcontainer.setAttribute("data-hidden", "true");
 
-  parent.append(textcontainer)
+  parent.append(textcontainer);
 }

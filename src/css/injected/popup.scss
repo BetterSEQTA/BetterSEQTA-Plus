@@ -36,5 +36,7 @@
   transform-origin: 70% 0;
   will-change: opacity, transform;
   transform: translateZ(0); // promotes GPU rendering
-  transition: opacity 0.05s, transform 0.05s;
+  transition:
+    opacity 0.05s,
+    transform 0.05s;
 }

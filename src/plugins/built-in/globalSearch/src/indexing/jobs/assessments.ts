@@ -49,21 +49,27 @@ const fetchNotifications = async () => {
 const fetchAssessmentName = async (
   assessmentId: number,
   metaclassId: number,
-  programmeId: number
+  programmeId: number,
 ): Promise<string> => {
   const searchAssessment = (data: any): string | null => {
     // Search syllabus
     for (const item of data.syllabus || []) {
-      const found = (item.assessments || []).find((a: any) => a.id === assessmentId);
+      const found = (item.assessments || []).find(
+        (a: any) => a.id === assessmentId,
+      );
       if (found) return found.title;
     }
 
     // Search pending
-    const foundPending = (data.pending || []).find((a: any) => a.id === assessmentId);
+    const foundPending = (data.pending || []).find(
+      (a: any) => a.id === assessmentId,
+    );
     if (foundPending) return foundPending.title;
 
     // Search tasks
-    const foundTask = (data.tasks || []).find((a: any) => a.id === assessmentId);
+    const foundTask = (data.tasks || []).find(
+      (a: any) => a.id === assessmentId,
+    );
     if (foundTask) return foundTask.title;
 
     return null;
@@ -88,11 +94,17 @@ const fetchAssessmentName = async (
   if (title) return title;
 
   // Try from /upcoming if not found in /past
-  const upcomingPayload = await fetchAssessments("/seqta/student/assessment/list/upcoming");
-  const foundUpcoming = (upcomingPayload || []).find((a: any) => a.id === assessmentId);
+  const upcomingPayload = await fetchAssessments(
+    "/seqta/student/assessment/list/upcoming",
+  );
+  const foundUpcoming = (upcomingPayload || []).find(
+    (a: any) => a.id === assessmentId,
+  );
   if (foundUpcoming) return foundUpcoming.title;
 
-  throw new Error(`Assessment with ID ${assessmentId} not found in past or upcoming.`);
+  throw new Error(
+    `Assessment with ID ${assessmentId} not found in past or upcoming.`,
+  );
 };
 
 /* ------------- Job ------------- */
@@ -103,9 +115,10 @@ export const assessmentsJob: Job = {
   frequency: { type: "expiry", afterMs: 15 * 60 * 1000 },
 
   run: async (ctx) => {
-    const progress =
-      (await ctx.getProgress<AssessmentsProgress>()) ?? { lastTs: 0 };
-  
+    const progress = (await ctx.getProgress<AssessmentsProgress>()) ?? {
+      lastTs: 0,
+    };
+
     let notifications: Notification[];
     try {
       notifications = await fetchNotifications();
@@ -113,25 +126,33 @@ export const assessmentsJob: Job = {
       console.error("[Assessments job] fetch failed:", e);
       return [];
     }
-  
+
     const notificationIsIndexed = async (id: string): Promise<boolean> => {
       const [inAssessments, inMessages] = await Promise.all([
-        ctx.getStoredItems("assessments").then((items) => items.some((i) => i.id === id)),
-        ctx.getStoredItems("messages").then((items) => items.some((i) => i.id === id)),
+        ctx
+          .getStoredItems("assessments")
+          .then((items) => items.some((i) => i.id === id)),
+        ctx
+          .getStoredItems("messages")
+          .then((items) => items.some((i) => i.id === id)),
       ]);
       return inAssessments || inMessages;
     };
-  
+
     const items: IndexItem[] = [];
-  
+
     for (const notif of notifications) {
       const id = notif.notificationID.toString();
       if (await notificationIsIndexed(id)) continue;
-  
+
       if (notif.type === "coneqtassessments") {
         const a = notif.coneqtAssessments;
 
-        const content = await fetchAssessmentName(a.assessmentID, a.metaclassID, a.programmeID);
+        const content = await fetchAssessmentName(
+          a.assessmentID,
+          a.metaclassID,
+          a.programmeID,
+        );
         items.push({
           id,
           text: a.title,
@@ -168,11 +189,11 @@ export const assessmentsJob: Job = {
             actionId: "message",
             renderComponentId: "message",
           },
-          "messages"
+          "messages",
         );
       }
     }
-  
+
     if (items.length) {
       const latest = Math.max(
         ...items.map((i) => i.dateAdded),
