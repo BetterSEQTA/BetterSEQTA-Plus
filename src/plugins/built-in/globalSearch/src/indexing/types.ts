@@ -21,10 +21,12 @@ export type Frequency =
   | { type: "expiry"; afterMs: number };
 
 export interface JobContext {
-  getStoredItems: () => Promise<IndexItem[]>;
-  setStoredItems: (items: IndexItem[]) => Promise<void>;
-  addItem: (item: IndexItem) => Promise<void>;
-  removeItem: (id: string) => Promise<void>;
+  getStoredItems: (storeId?: string) => Promise<IndexItem[]>;
+  setStoredItems: (items: IndexItem[], storeId?: string) => Promise<void>;
+  addItem: (item: IndexItem, storeId?: string) => Promise<void>;
+  removeItem: (id: string, storeId?: string) => Promise<void>;
+  getProgress: <T = any>() => Promise<T | undefined>;
+  setProgress: <T = any>(progress: T) => Promise<void>;
 }
 
 export interface Job {

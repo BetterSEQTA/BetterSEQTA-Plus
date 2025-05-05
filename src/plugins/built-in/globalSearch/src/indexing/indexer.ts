@@ -1,4 +1,4 @@
-import { clear, getAll, put, remove } from "./db";
+import { clear, getAll, get, put, remove } from "./db";
 import { jobs } from "./jobs";
 import { renderComponentMap } from "./renderComponents";
 import type { HydratedIndexItem, IndexItem, Job, JobContext } from "./types";
@@ -8,6 +8,17 @@ const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
 const LOCK_TIMEOUT = 20000;
+
+/* ─────────── Progress‑meta helpers ─────────── */
+async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
+  const rec = await get(META_STORE, `progress:${jobId}`);
+  return rec?.progress as T | undefined;
+}
+
+async function saveProgress<T = any>(jobId: string, progress: T): Promise<void> {
+  await put(META_STORE, { jobId, progress }, `progress:${jobId}`);
+}
+/* ───────────────────────────────────────────── */
 
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -132,26 +143,27 @@ export async function runIndexing(): Promise<void> {
       continue;
     }
 
-    // These DB operations happen on the main thread (acceptable per request)
-    const getStoredItems = async () => await getAll(jobId);
-    const setStoredItems = async (items: IndexItem[]) => {
-      await clear(jobId);
-      // Add validation before putting
+    const getStoredItems = async (storeId?: string) => await getAll(storeId ?? jobId);
+    const setStoredItems = async (items: IndexItem[], storeId?: string) => {
+      const targetStore = storeId ?? jobId;
+      await clear(targetStore);
       const validItems = items.filter(i => i && i.id);
       if (validItems.length !== items.length) {
-          console.warn(`[Indexer Job ${jobId}] Filtered out ${items.length - validItems.length} invalid items before storing.`);
+          console.warn(`[Indexer Job ${jobId} -> Store ${targetStore}] Filtered out ${items.length - validItems.length} invalid items before storing.`);
       }
-      await Promise.all(validItems.map((i) => put(jobId, i, i.id)));
+      await Promise.all(validItems.map((i) => put(targetStore, i, i.id)));
     };
-    const addItem = async (item: IndexItem) => {
-      if (item && item.id) { // Add validation
-          await put(jobId, item, item.id);
+    const addItem = async (item: IndexItem, storeId?: string) => {
+      const targetStore = storeId ?? jobId;
+      if (item && item.id) {
+          await put(targetStore, item, item.id);
       } else {
-          console.warn(`[Indexer Job ${jobId}] Attempted to add invalid item:`, item);
+          console.warn(`[Indexer Job ${jobId} -> Store ${targetStore}] Attempted to add invalid item:`, item);
       }
     };
-    const removeItem = async (id: string) => {
-      await remove(jobId, id);
+    const removeItem = async (id: string, storeId?: string) => {
+      const targetStore = storeId ?? jobId;
+      await remove(targetStore, id);
     };
 
     const ctx: JobContext = {
@@ -159,6 +171,8 @@ export async function runIndexing(): Promise<void> {
       setStoredItems,
       addItem,
       removeItem,
+      getProgress: () => loadProgress(jobId),
+      setProgress: (p) => saveProgress(jobId, p),
     };
 
     console.debug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
@@ -195,11 +209,11 @@ export async function runIndexing(): Promise<void> {
       allItemsFromJobs.push(...hydratedItems);
 
       console.debug(
-        `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items fetched, ${merged.length} total stored (non-vector).`,
+        `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items from run, ${merged.length} total stored in '${jobId}' store (non-vector).`,
         "color: #00c46f",
       );
     } catch (err) {
-      console.debug(`%c[Indexer] ${job.label} failed:`, "color: red");
+      console.debug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
       console.error(err);
     }
 
