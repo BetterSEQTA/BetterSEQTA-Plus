@@ -27,8 +27,7 @@ interface AssessmentNotification {
 
 type Notification = MessageNotification | AssessmentNotification;
 
-/* ------------- Progress model ------------- */
-interface AssessmentsProgress {
+interface NotificationsProgress {
   lastTs: number; // ms since epoch of last processed notification
 }
 
@@ -108,14 +107,14 @@ const fetchAssessmentName = async (
 };
 
 /* ------------- Job ------------- */
-export const assessmentsJob: Job = {
-  id: "assessments",
-  label: "Assessments",
-  renderComponentId: "assessment",
+export const notificationsJob: Job = {
+  id: "notifications",
+  label: "Notifications",
+  renderComponentId: "notifications",
   frequency: { type: "expiry", afterMs: 15 * 60 * 1000 },
 
   run: async (ctx) => {
-    const progress = (await ctx.getProgress<AssessmentsProgress>()) ?? {
+    const progress = (await ctx.getProgress<NotificationsProgress>()) ?? {
       lastTs: 0,
     };
 
@@ -123,14 +122,14 @@ export const assessmentsJob: Job = {
     try {
       notifications = await fetchNotifications();
     } catch (e) {
-      console.error("[Assessments job] fetch failed:", e);
+      console.error("[Notifications job] fetch failed:", e);
       return [];
     }
 
     const notificationIsIndexed = async (id: string): Promise<boolean> => {
       const [inAssessments, inMessages] = await Promise.all([
         ctx
-          .getStoredItems("assessments")
+          .getStoredItems("notifications")
           .then((items) => items.some((i) => i.id === id)),
         ctx
           .getStoredItems("messages")
