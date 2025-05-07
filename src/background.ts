@@ -101,10 +101,6 @@ const DefaultValues: SettingsState = {
   defaultPage: "home",
   shortcuts: [
     {
-      name: "YouTube",
-      enabled: false,
-    },
-    {
       name: "Outlook",
       enabled: true,
     },
@@ -113,40 +109,8 @@ const DefaultValues: SettingsState = {
       enabled: true,
     },
     {
-      name: "Spotify",
-      enabled: false,
-    },
-    {
       name: "Google",
       enabled: true,
-    },
-    {
-      name: "DuckDuckGo",
-      enabled: false,
-    },
-    {
-      name: "Cool Math Games",
-      enabled: false,
-    },
-    {
-      name: "SACE",
-      enabled: false,
-    },
-    {
-      name: "Google Scholar",
-      enabled: false,
-    },
-    {
-      name: "Gmail",
-      enabled: false,
-    },
-    {
-      name: "Netflix",
-      enabled: false,
-    },
-    {
-      name: "Education Perfect",
-      enabled: false,
     },
   ],
   customshortcuts: [],
