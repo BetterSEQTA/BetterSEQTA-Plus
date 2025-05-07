@@ -2,7 +2,7 @@ name: Feature request
 description: Suggest a new Feature to be added or replaced in BetterSeqtaPLUS
 labels: enhancement
 title: "[FR]"
-type: "Feature Request"
+
 body:
   - type: checkboxes
     attributes:
