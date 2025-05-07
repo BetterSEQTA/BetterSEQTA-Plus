@@ -70,14 +70,13 @@ export class StorageChangeHandler {
     oldValue: { enabled: boolean; name: string }[],
   ) {
     const addedShortcuts = newValue.filter((newItem: any) => {
-      const isAdded = oldValue.some((oldItem: any) => {
-        const match = oldItem.name === newItem.name;
-        const wasDisabled = !oldItem.enabled;
-        const isEnabled = newItem.enabled;
-        return match && wasDisabled && isEnabled;
+      const wasDisabledAndNowEnabled = oldValue.some((oldItem: any) => {
+        return oldItem.name === newItem.name && !oldItem.enabled && newItem.enabled;
       });
 
-      return isAdded;
+      const isNewShortcut = !oldValue.some((oldItem: any) => oldItem.name === newItem.name);
+
+      return (wasDisabledAndNowEnabled || isNewShortcut) && newItem.enabled;
     });
 
     const removedShortcuts = newValue.filter((newItem: any) => {

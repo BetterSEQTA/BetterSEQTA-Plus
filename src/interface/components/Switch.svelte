@@ -50,6 +50,6 @@
   }
 
   .dark .switch[data-ison="true"] {
-    @apply from-[#30D259]/50 to-[#30D259];
+    @apply from-[#30D259]/40 to-[#30D259];
   }
 </style>
