@@ -3,6 +3,7 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import Switch from "@/interface/components/Switch.svelte"
   import { onMount } from 'svelte';
+  import Shortcuts from "@/seqta/content/links.json"
 
   let isLoaded = $state(false);
 
@@ -21,10 +22,14 @@
     });
   });
 
-  const switchChange = (index: number) => {    
-    const updatedShortcuts = [...settingsState.shortcuts];
-    updatedShortcuts[index].enabled = !updatedShortcuts[index].enabled;
-    settingsState.shortcuts = updatedShortcuts;
+  const switchChange = (shortcut: any) => {    
+    const value = $settingsState.shortcuts.find(s => s.name === shortcut);
+    if (value) {
+      value.enabled = !value.enabled;
+      settingsState.shortcuts = settingsState.shortcuts;
+    } else {
+      settingsState.shortcuts = [...settingsState.shortcuts, { name: shortcut, enabled: true }];
+    }
   }
 
   let isFormVisible = $state(false);
@@ -64,15 +69,6 @@
     settingsState.customshortcuts = settingsState.customshortcuts.filter((_, i) => i !== index);
   };
 </script>
-
-{#snippet Shortcuts([index, Shortcut]: [string, { name: string, enabled: boolean }]) }
-<div class="flex justify-between items-center px-4 py-3">
-  <div class="pr-4">
-    <h2 class="text-sm">{Shortcut.name}</h2>
-  </div>
-  <Switch state={Shortcut.enabled} onChange={() => switchChange(parseInt(index))} />
-</div>
-{/snippet}
 
 <div class="flex flex-col pt-4 divide-y divide-zinc-100 dark:divide-zinc-700">
   {#if isLoaded}
@@ -136,8 +132,13 @@
       </MotionDiv>
     </div>
 
-    {#each Object.entries($settingsState.shortcuts) as shortcut}
-      {@render Shortcuts(shortcut)}
+    {#each Object.entries(Shortcuts) as shortcut}
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm">{shortcut[0]}</h2>
+        </div>
+        <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
+      </div>
     {/each}
 
     <!-- Custom Shortcuts Section -->
