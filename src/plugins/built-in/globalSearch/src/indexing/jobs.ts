@@ -1,10 +1,10 @@
 import type { Job } from "./types";
 import { messagesJob } from "./jobs/messages";
-import { assessmentsJob } from "./jobs/assessments";
+import { notificationsJob } from "./jobs/notifications";
 import { forumsJob } from "./jobs/forums";
 
 export const jobs: Record<string, Job> = {
   messages: messagesJob,
-  assessments: assessmentsJob,
+  notifications: notificationsJob,
   forums: forumsJob,
 };
