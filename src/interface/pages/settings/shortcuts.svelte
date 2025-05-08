@@ -135,7 +135,8 @@
     {#each Object.entries(Shortcuts) as shortcut}
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
-          <h2 class="text-sm">{shortcut[0]}</h2>
+          <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
+          <h2 class="text-sm">{shortcut[1].DisplayName || shortcut[0]}</h2>
         </div>
         <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
       </div>
