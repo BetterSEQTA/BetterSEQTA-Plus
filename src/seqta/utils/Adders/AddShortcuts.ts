@@ -15,7 +15,7 @@ export function addShortcuts(shortcuts: any) {
           linkDetails.link,
           linkDetails.icon,
           linkDetails.viewBox,
-          currentShortcut?.name,
+          linkDetails.DisplayName || currentShortcut?.name,
         );
       } else {
         console.warn(`No link details found for '${Itemname}'`);
