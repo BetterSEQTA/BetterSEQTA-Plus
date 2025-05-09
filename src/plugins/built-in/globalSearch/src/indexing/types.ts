@@ -9,6 +9,7 @@ export interface IndexItem {
   metadata: Record<string, any>;
   actionId: string;
   renderComponentId: string;
+  renderComponent?: typeof SvelteComponent;
 }
 
 export type Frequency =

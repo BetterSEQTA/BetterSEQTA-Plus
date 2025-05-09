@@ -86,6 +86,7 @@
     "flexsearch": "^0.8.147",
     "fuse.js": "^7.1.0",
     "idb": "^8.0.2",
+    "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "mathjs": "^14.4.0",
