@@ -1,3 +1,5 @@
+import links from "@/seqta/content/links.json";
+
 export function RemoveShortcutDiv(elements: any) {
   if (elements.length === 0) return;
 
@@ -8,7 +10,9 @@ export function RemoveShortcutDiv(elements: any) {
       const textElement = shortcut.querySelector("p"); // <p> is a direct child of .shortcut
       const title = textElement ? textElement.textContent : "";
 
-      let shouldRemove = title === element.name;
+      const elementName = links[element.name as keyof typeof links].DisplayName || element.name;
+
+      let shouldRemove = title === elementName;
 
       // Check href only if element.url exists
       if (element.url) {
