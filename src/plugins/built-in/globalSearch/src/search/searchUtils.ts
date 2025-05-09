@@ -21,18 +21,19 @@ export function createSearchIndexes() {
 
   const dynamicOptions = {
     keys: [
-      "text",
-      "content",
-      "category",
-      "metadata.author",
-      "metadata.subject",
+      { name: "text", weight: 2 },
+      { name: "content", weight: 1 },
+      { name: "category", weight: 1 },
+      { name: "metadata.subjectName", weight: 3 },
+      { name: "metadata.subjectCode", weight: 2 },
+      { name: "metadata.semesterDescription", weight: 1 }
     ],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.6,
-    minMatchCharLength: 3,
-    distance: 50,
-    useExtendedSearch: false,
+    threshold: 0.4, // Lower threshold to be more lenient
+    minMatchCharLength: 2,
+    distance: 100, // Increased distance to allow for more fuzzy matches
+    useExtendedSearch: true, // Enable extended search for better matching
   };
 
   return {
@@ -88,7 +89,7 @@ export function searchDynamicItems(
   query: string,
   dynamicIdToItemMap: Map<string, IndexItem>,
   limit = 10,
-  sortByRecent: boolean = true, // Added option to control sorting
+  sortByRecent: boolean = true,
 ): CombinedResult[] {
   if (!dynamicContentFuse) return [];
 
@@ -100,7 +101,7 @@ export function searchDynamicItems(
     return items.slice(0, limit).map((item) => ({
       id: item.id,
       type: "dynamic" as const,
-      score: 80, // Assign a default score for non-searched items
+      score: 80,
       item,
     }));
   }
@@ -111,9 +112,30 @@ export function searchDynamicItems(
   return searchResults.map((result: FuseResult<IndexItem>) => {
     const item = result.item;
     const fuseScore = 10 * (1 - (result.score || 0.5));
+    
+    // Boost score for subject matches
+    let score = fuseScore;
+    if (item.category === "subjects") {
+      // Check if the match is in subjectName or subjectCode
+      const hasSubjectMatch = result.matches?.some(match => 
+        match.key === "metadata.subjectName" || match.key === "metadata.subjectCode"
+      );
+      if (hasSubjectMatch) {
+        score += 20; // Boost score for direct subject matches
+      }
+      // Boost for higher year levels
+      const yearMatch = /^Year (\d+)/i.exec(item.metadata?.subjectName || "");
+      if (yearMatch) {
+        const yearNum = parseInt(yearMatch[1], 10);
+        if (!isNaN(yearNum)) {
+          score += yearNum; // Boost by year number
+        }
+      }
+    }
+
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
-    const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0; // Apply boost only if sorting by recent
-    const score = fuseScore + recencyBoost;
+    const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0;
+    score += recencyBoost;
 
     return {
       id: item.id,

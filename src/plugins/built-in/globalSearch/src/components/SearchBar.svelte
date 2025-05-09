@@ -196,6 +196,15 @@
       const result = combinedResults[resultIndex];
       if (result?.item) {
         executeItemAction(result.item);
+        if (result?.type === 'dynamic') {
+          tick().then(() => {
+            const li = resultsList?.querySelectorAll('li')[resultIndex];
+            if (li) {
+              const btn = li.querySelector('button, [tabindex="0"]');
+              if (btn) (btn as HTMLElement).click();
+            }
+          });
+        }
       }
     }
   };
