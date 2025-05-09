@@ -1,4 +1,4 @@
-import type { Job, IndexItem } from "../types";
+import type { IndexItem, Job } from "../types";
 
 const fetchSubjects = async () => {
   const res = await fetch(`${location.origin}/seqta/student/load/subjects`, {
