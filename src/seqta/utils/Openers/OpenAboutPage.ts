@@ -1,35 +1,41 @@
-import stringToHTML from "../stringToHTML";
-import browser from "webextension-polyfill";
-import { settingsState } from "../listeners/SettingsState";
-import { animate, stagger } from "motion";
-import { DeleteWhatsNew } from "../Whatsnew";
+// Import necessary modules and functions
+import stringToHTML from "../stringToHTML"; // Converts strings to HTML elements
+import browser from "webextension-polyfill"; // Provides webextension API for browser compatibility
+import { settingsState } from "../listeners/SettingsState"; // Manages the application's settings state
+import { animate, stagger } from "motion"; // Provides animation utilities
+import { DeleteWhatsNew } from "../Whatsnew"; // Function to delete the "What's New" section
 
+// Function to open the About page with necessary HTML structure and animations
 export function OpenAboutPage() {
+  // Create the background div for the "What's New" page
   const background = document.createElement("div");
-  background.id = "whatsnewbk";
-  background.classList.add("whatsnewBackground");
+  background.id = "whatsnewbk"; // Assign an ID for styling
+  background.classList.add("whatsnewBackground"); // Add a class for styling
 
+  // Create the container for the "What's New" content
   const container = document.createElement("div");
-  container.classList.add("whatsnewContainer");
+  container.classList.add("whatsnewContainer"); // Add a class for styling
 
+  // Create the header section with the extension version number
   var header: any = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
         <h1>About</h1>
         <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
       </div>`,
-  ).firstChild;
+  ).firstChild; // Convert the HTML string to an element
 
+  // Create the text content section with information about the extension
   let text = stringToHTML(/* html */ `
       <div class="whatsnewTextContainer" style="overflow-y: scroll;">
         <img src="${settingsState.DarkMode ? "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg" : "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg"}" class="aboutImg" />
   
-        <p>BetterSEQTA+ is a fork of BetterSEQTA which was originally developed by Nulkem, which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
-        <p>We are currently working on fixing bugs and adding good features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below).</p>
-        <h1>Credits</h1>
-        <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph and SethBurkart123.</p>
+        <p>BetterSEQTA+ is a fork of BetterSEQTA (originally developed by Nulkem), which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
+        <p>We are currently working on fixing bugs and adding Useful features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below).</p>
+        <h1>Credits:</h1>
+        <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123 and other contributors.</p>
       </div>
-    `).firstChild;
+    `).firstChild; // Convert the HTML string to an element
 
   let footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
@@ -54,54 +60,65 @@ export function OpenAboutPage() {
       </div>
     `).firstChild;
 
+  // Create the close button for exiting the "What's New" page
   let exitbutton = document.createElement("div");
-  exitbutton.id = "whatsnewclosebutton";
+  exitbutton.id = "whatsnewclosebutton"; // Assign an ID for styling
 
+  // Append the header, text, and close button elements to the container
   container.append(header);
   container.append(text as ChildNode);
-  container.append(footer as ChildNode);
+  container.append(footer as ChildNode); // Assuming footer is defined elsewhere
   container.append(exitbutton);
 
+  // Append the container to the background
   background.append(container);
 
+  // Append the background to the main container element in the DOM
   document.getElementById("container")!.append(background);
 
+  // Get references to the background and popup elements
   let bkelement = document.getElementById("whatsnewbk");
   let popup = document.getElementsByClassName("whatsnewContainer")[0];
 
+  // If animations are enabled in settings, apply animations to elements
   if (settingsState.animations) {
+    // Animate the popup and background with scaling effect
     animate(
       [popup, bkelement as HTMLElement],
       { scale: [0, 1] },
       {
-        type: "spring",
-        stiffness: 220,
-        damping: 18,
+        type: "spring", // Apply spring-type animation
+        stiffness: 220, // Spring stiffness value
+        damping: 18, // Spring damping value
       },
     );
 
+    // Animate the text container elements with fading and sliding effect
     animate(
       ".whatsnewTextContainer *",
       { opacity: [0, 1], y: [10, 0] },
       {
-        delay: stagger(0.05, { startDelay: 0.1 }),
-        duration: 0.5,
-        ease: [0.22, 0.03, 0.26, 1],
+        delay: stagger(0.05, { startDelay: 0.1 }), // Stagger delay for animation
+        duration: 0.5, // Animation duration
+        ease: [0.22, 0.03, 0.26, 1], // Easing function for the animation
       },
     );
   }
 
+  // Remove the 'justupdated' flag from settings state
   delete settingsState.justupdated;
 
+  // Add event listener to background element to close the "What's New" page on click
   bkelement!.addEventListener("click", function (event) {
-    // Check if the click event originated from the element itself and not any of its children
+    // Check if the click event originated from the background element itself
     if (event.target === bkelement) {
-      DeleteWhatsNew();
+      DeleteWhatsNew(); // Call the function to delete the "What's New" section
     }
   });
 
+  // Add event listener to close button to close the "What's New" page on click
   var closeelement = document.getElementById("whatsnewclosebutton");
   closeelement!.addEventListener("click", function () {
-    DeleteWhatsNew();
+    DeleteWhatsNew(); // Call the function to delete the "What's New" section
   });
 }
