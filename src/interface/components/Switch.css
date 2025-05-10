@@ -1,3 +1,8 @@
+/* 
+  Styles for the switch component when it's in the "on" state.
+  - Applies a green background color when `data-ison="true"`.
+  - Supports both dark mode and default mode.
+*/
 .dark .switch[data-ison="true"],
 .switch[data-ison="true"] {
   background-color: #30d259;
