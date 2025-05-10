@@ -1,31 +1,31 @@
 .bg {
-  animation: slide 3s ease-in-out infinite alternate;
-  background: var(--better-main);
-  bottom: 0;
-  left: -50%;
-  opacity: 0.5;
-  position: fixed;
-  right: -50%;
-  top: 0;
-  z-index: 0 !important;
-  overflow: hidden;
-  scale: 1.5;
+  animation: slide 3s ease-in-out infinite alternate; /* Applies the 'slide' keyframe animation with 3s duration, easing, infinite loop, alternating direction */
+  background: var(--better-main); /* Uses a CSS variable for the background color */
+  bottom: 0; /* Positions the bottom edge at the bottom of the viewport */
+  left: -50%; /* Starts the element halfway off the left side of the viewport */
+  opacity: 0.5; /* Sets transparency to 50% */
+  position: fixed; /* Fixes the element relative to the viewport */
+  right: -50%; /* Extends the element halfway off the right side of the viewport */
+  top: 0; /* Positions the top edge at the top of the viewport */
+  z-index: 0 !important; /* Places the background behind other elements, using !important to override other z-index values */
+  overflow: hidden; /* Hides any content that overflows the element’s box */
+  scale: 1.5; /* Scales the element to 1.5 times its normal size */
 }
 
 .bg2 {
-  animation-direction: alternate-reverse;
-  animation-duration: 4s;
+  animation-direction: alternate-reverse; /* Reverses the direction of the animation on alternate cycles */
+  animation-duration: 4s; /* Overrides animation duration to 4 seconds */
 }
 
 .bg3 {
-  animation-duration: 5s;
+  animation-duration: 5s; /* Overrides animation duration to 5 seconds */
 }
 
 @keyframes slide {
   0% {
-    transform: translate(50%) rotate(-60deg);
+    transform: translate(50%) rotate(-60deg); /* Starts fully translated to the right and rotated */
   }
   100% {
-    transform: translateX(5%) rotate(-60deg);
+    transform: translateX(5%) rotate(-60deg); /* Ends closer to center, maintaining rotation */
   }
 }
