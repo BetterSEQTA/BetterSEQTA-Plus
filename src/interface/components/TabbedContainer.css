@@ -1,3 +1,4 @@
+/* Sets the width of elements with the 'tab-width' class to the value of the --tab-width CSS variable */
 .tab-width {
   width: var(--tab-width);
 }
