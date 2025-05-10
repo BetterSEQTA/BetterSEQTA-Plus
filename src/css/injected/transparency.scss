@@ -1,23 +1,23 @@
 html.transparencyEffects.dark {
-  --background-primary: rgba(35, 35, 35, 0.6);
-  --background-secondary: rgba(26, 26, 26, 0.6);
+  --background-primary: rgba(35, 35, 35, 0.6); /* Dark mode background primary color with transparency */
+  --background-secondary: rgba(26, 26, 26, 0.6); /* Dark mode background secondary color with transparency */
 }
 
 html.transparencyEffects:not(.dark) {
-  --background-primary: rgba(255, 255, 255, 0.6);
-  --background-secondary: rgba(229, 231, 235, 0.6);
+  --background-primary: rgba(255, 255, 255, 0.6); /* Light mode background primary color with transparency */
+  --background-secondary: rgba(229, 231, 235, 0.6); /* Light mode background secondary color with transparency */
 }
 
 html.transparencyEffects {
   /* Background Fixes */
   [class*="notifications__item___"],
   #shortcuts {
-    backdrop-filter: unset !important;
+    backdrop-filter: unset !important; /* Disables backdrop filter for certain items */
   }
 
   .whatsnewTextContainer h1 {
-    background-color: transparent !important;
-    position: inherit;
+    background-color: transparent !important; /* Forces transparent background for the what's new section header */
+    position: inherit; /* Inherits position from the parent */
   }
 
   /* Blurs */
@@ -39,36 +39,36 @@ html.transparencyEffects {
   .legacy-root button,
   .legacy-root a,
   [class*="MessageList__MessageList___"] {
-    backdrop-filter: blur(80px);
+    backdrop-filter: blur(80px); /* Applies a blur effect to the elements for a transparent background */
   }
 
   .report {
-    backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important; /* Applies a mild blur effect to the report section */
   }
 
   .whatsnewContainer,
   [class*="Message__Message___"] {
-    backdrop-filter: blur(50px);
+    backdrop-filter: blur(50px); /* Applies a moderate blur effect to the what's new container and message elements */
   }
 
   #menu {
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); /* Applies a blur effect to the menu */
   }
 
   .title > a {
-    backdrop-filter: blur(0px) !important;
+    backdrop-filter: blur(0px) !important; /* Disables blur for the title link */
   }
 
   .search,
   .document,
   .border {
-    backdrop-filter: blur(80px);
+    backdrop-filter: blur(80px); /* Applies a blur effect to search, document, and border elements */
   }
 
   #main > .dashboard {
     section,
     .dashlet {
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px); /* Applies a light blur effect to sections and dashlets in the main dashboard */
     }
   }
 }
