@@ -1,4 +1,4 @@
-```typescript
+
 <script lang="ts">
   // Import necessary modules and components
   import { onMount } from 'svelte'
@@ -118,4 +118,3 @@
     </div>
   </div>
 {/if}
-```
