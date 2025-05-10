@@ -1,5 +1,4 @@
-// This is the PostCSS configuration file for your project
-
+// This is the PostCSS configuration file for the project
 module.exports = {
   plugins: {
     // TailwindCSS plugin to enable Tailwind CSS functionality
