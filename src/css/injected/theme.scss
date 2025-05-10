@@ -1,15 +1,15 @@
 html.dark {
-  --background-primary: #232323;
-  --background-secondary: #1a1a1a;
-  --theme-primary: #232323;
-  --theme-secondary: #1a1a1a;
-  --text-primary: white;
+  --background-primary: #232323; /* Dark mode primary background color */
+  --background-secondary: #1a1a1a; /* Dark mode secondary background color */
+  --theme-primary: #232323; /* Dark mode primary theme color */
+  --theme-secondary: #1a1a1a; /* Dark mode secondary theme color */
+  --text-primary: white; /* Dark mode primary text color */
 }
 
 html:not(.dark) {
-  --background-primary: #ffffff;
-  --background-secondary: #e5e7eb;
-  --theme-primary: #ffffff;
-  --theme-secondary: #e5e7eb;
-  --text-primary: black;
+  --background-primary: #ffffff; /* Light mode primary background color */
+  --background-secondary: #e5e7eb; /* Light mode secondary background color */
+  --theme-primary: #ffffff; /* Light mode primary theme color */
+  --theme-secondary: #e5e7eb; /* Light mode secondary theme color */
+  --text-primary: black; /* Light mode primary text color */
 }
