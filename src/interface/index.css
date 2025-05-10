@@ -1,50 +1,50 @@
-@import "./components/ColourPicker.css";
+@import "./components/ColourPicker.css"; /* Import custom styles for the ColourPicker component */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@tailwind base; /* Import Tailwind's base styles */
+@tailwind components; /* Import Tailwind's component classes */
+@tailwind utilities; /* Import Tailwind's utility classes */
 
 button {
-  @apply cursor-pointer;
+  @apply cursor-pointer; /* Apply pointer cursor to all buttons */
 }
 
 ::-webkit-scrollbar {
-  display: none;
+  display: none; /* Hide the scrollbar in WebKit-based browsers */
 }
 
 .tab-width {
-  width: var(--tab-width);
+  width: var(--tab-width); /* Set element width using a CSS variable */
 }
 
 input {
   &:focus {
-    box-shadow: unset !important;
+    box-shadow: unset !important; /* Remove default focus box-shadow from input fields */
   }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out; /* Apply fadeIn animation with timing */
 }
 
 @keyframes fadeIn {
   from {
-    opacity: 0;
+    opacity: 0; /* Start with invisible */
   }
   to {
-    opacity: 1;
+    opacity: 1; /* End fully visible */
   }
 }
 
 .no-scrollbar {
-  scrollbar-width: none !important;
+  scrollbar-width: none !important; /* Hide scrollbar in Firefox */
 }
 
 .cm-editor {
-  width: 100%;
-  min-height: 100px;
-  height: inherit;
+  width: 100%; /* Full width */
+  min-height: 100px; /* Minimum height of 100px */
+  height: inherit; /* Inherit height from parent */
 }
 
 .editorHeight {
-  height: calc(100vh - 58px);
+  height: calc(100vh - 58px); /* Set height based on viewport height minus 58px */
 }
