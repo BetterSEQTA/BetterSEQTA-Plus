@@ -22,7 +22,8 @@ export function addShortcuts(shortcuts: any) {
       }
     }
   }
-}
+} - comment
+
 
 function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   // Creates the stucture and element information for each seperate shortcut
