@@ -15,82 +15,92 @@
  * along with EvenBetterSEQTA.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@use "injected/popup.scss";
+@use "injected/popup.scss"; /* Imports the popup.scss file for additional styling */
 
 html {
-  background: #161616 !important;
-  background-color: #161616;
-  font-family: Rubik, Roboto !important;
+  background: #161616 !important; /* Sets the background color to dark gray */
+  background-color: #161616; /* Sets the background color to dark gray */
+  font-family: Rubik, Roboto !important; /* Applies Rubik and Roboto font families */
 }
 
 .tooltip svg {
-  fill: var(--theme-primary);
+  fill: var(--theme-primary); /* Sets the fill color of tooltip SVGs to the primary theme color */
 }
+
 .tooltip {
-  display: inline-block;
-  z-index: 5 !important;
-  width: 28px;
-  background: none;
-  box-shadow: none;
-  padding: 2px;
-  position: absolute;
+  display: inline-block; /* Displays the tooltip as an inline block */
+  z-index: 5 !important; /* Ensures the tooltip is above most other elements */
+  width: 28px; /* Sets a fixed width for the tooltip */
+  background: none; /* Removes background color */
+  box-shadow: none; /* Removes the box shadow */
+  padding: 2px; /* Adds padding inside the tooltip */
+  position: absolute; /* Positions the tooltip absolutely */
 }
+
 .tooltip .tooltiptext {
-  width: 120px;
-  transform: scale(0);
-  transition: transform 0.2s;
-  transform-origin: top;
-  background: var(--background-primary);
-  color: var(--text-primary);
-  text-align: center;
-  border-radius: 6px;
-  padding: 2px;
-  position: absolute;
-  z-index: 1;
-  top: 105%;
-  left: 50%;
-  margin-left: -62px;
+  width: 120px; /* Sets the width of the tooltip text */
+  transform: scale(0); /* Initially hides the tooltip text with zero scale */
+  transition: transform 0.2s; /* Smoothly animates the scaling effect */
+  transform-origin: top; /* Sets the origin of the transformation to the top */
+  background: var(--background-primary); /* Uses the primary background color for the tooltip */
+  color: var(--text-primary); /* Uses the primary text color */
+  text-align: center; /* Centers the text inside the tooltip */
+  border-radius: 6px; /* Applies rounded corners */
+  padding: 2px; /* Adds padding inside the tooltip text */
+  position: absolute; /* Positions the tooltip text absolutely */
+  z-index: 1; /* Places the tooltip text above other elements */
+  top: 105%; /* Positions the tooltip text below the tooltip container */
+  left: 50%; /* Centers the tooltip horizontally */
+  margin-left: -62px; /* Adjusts the tooltip text position for perfect centering */
 }
+
 .tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent transparent var(--text-primary) transparent;
+  content: ""; /* Creates an empty content for the arrow */
+  position: absolute; /* Positions the arrow absolutely */
+  bottom: 100%; /* Places the arrow at the bottom of the tooltip */
+  left: 50%; /* Centers the arrow horizontally */
+  margin-left: -5px; /* Adjusts the horizontal position of the arrow */
+  border-width: 5px; /* Sets the width of the arrow */
+  border-style: solid; /* Uses solid borders to create the arrow effect */
+  border-color: transparent transparent var(--text-primary) transparent; /* Colors the arrow */
 }
+
 .tooltiptext p:hover {
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.3) !important;
-  transition: 200ms;
+  cursor: pointer; /* Changes cursor to a pointer on hover */
+  background: rgba(0, 0, 0, 0.3) !important; /* Adds a semi-transparent background on hover */
+  transition: 200ms; /* Smoothens the transition effect */
 }
+
 .tooltiptext p {
-  border-radius: 8px !important;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  margin: 2px;
+  border-radius: 8px !important; /* Rounds the corners of the tooltip text */
+  padding-top: 2px; /* Adds padding to the top of the paragraph */
+  padding-bottom: 2px; /* Adds padding to the bottom of the paragraph */
+  margin: 2px; /* Adds margin around the paragraph */
 }
+
 .tooltip:hover .tooltiptext {
-  transform: scale(1);
-  transform-origin: top;
-  transition: transform 0.2s;
+  transform: scale(1); /* Scales the tooltip text to full size when hovered */
+  transform-origin: top; /* Keeps the transformation origin at the top */
+  transition: transform 0.2s; /* Smoothly animates the scaling effect */
 }
+
 body:has(.outside-container:not(.hide))
   #AddedSettings.tooltip:hover
   > .tooltiptext {
-  transform: scale(0);
+  transform: scale(0); /* Hides the tooltip text when certain conditions are met */
 }
+
 .assessmenttooltip svg {
-  fill: var(--text-primary);
+  fill: var(--text-primary); /* Sets the fill color of assessment tooltip SVGs to the primary text color */
 }
+
 .assessmenttooltip {
-  bottom: 0px;
-  left: 5px;
+  bottom: 0px; /* Positions the assessment tooltip at the bottom */
+  left: 5px; /* Positions the assessment tooltip 5px from the left */
 }
+
 .topmenutooltip {
-  top: 115% !important;
-  background: var(--text-primary) !important;
-  color: var(--theme-primary) !important;
+  top: 115% !important; /* Positions the top menu tooltip 15% below the top */
+  background: var(--text-primary) !important; /* Sets the background to the primary text color */
+  color: var(--theme-primary) !important; /* Sets the text color to the primary theme color */
 }
