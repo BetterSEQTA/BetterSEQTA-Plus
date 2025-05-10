@@ -1,71 +1,80 @@
+/* Styling for the search trigger button */
 .search-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  margin-left: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: auto !important;
-  padding: 3px 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(4px);
-  user-select: none;
+  display: flex; /* Align items horizontally */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Center the content within the button */
+  height: 32px; /* Set the height of the button */
+  margin-left: 10px; /* Space from the left of the container */
+  border-radius: 8px; /* Round the corners */
+  cursor: pointer; /* Change the cursor to pointer on hover */
+  transition: all 0.2s ease; /* Smooth transition for all properties */
+  margin-right: auto !important; /* Ensure the button aligns to the left */
+  padding: 3px 12px; /* Add padding inside the button */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for the button */
+  backdrop-filter: blur(4px); /* Apply a blur effect to the background */
+  user-select: none; /* Disable text selection on the button */
 
+  /* Style for the SVG icon inside the button */
   svg {
-    opacity: 0.8;
+    opacity: 0.8; /* Make the SVG slightly transparent */
   }
 
+  /* Style for the text inside the button */
   p {
-    font-size: 14px;
-    margin-left: 8px;
-    margin-right: 48px;
-    height: 100%;
-    margin-bottom: 0;
-    line-height: 32px;
-    font-weight: 400;
+    font-size: 14px; /* Set the font size */
+    margin-left: 8px; /* Space between the icon and the text */
+    margin-right: 48px; /* Space between the text and the right edge */
+    height: 100%; /* Ensure text takes full height */
+    margin-bottom: 0; /* Remove bottom margin */
+    line-height: 32px; /* Vertically center the text */
+    font-weight: 400; /* Set normal font weight */
   }
 }
 
-/* Light mode styles */
+/* Light mode styles for the search trigger button */
 .search-trigger {
-  background-color: rgba(248, 250, 252, 0.05) !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  color: #555 !important;
+  background-color: rgba(248, 250, 252, 0.05) !important; /* Light background */
+  border: 1px solid rgba(0, 0, 0, 0.1) !important; /* Light border */
+  color: #555 !important; /* Set text color to dark gray */
 
+  /* Style for the text in light mode */
   p {
-    color: #555 !important;
+    color: #555 !important; /* Text color */
   }
 
+  /* Style for the icon in light mode */
   svg {
-    color: #555;
+    color: #555; /* Icon color */
   }
 }
 
+/* Dark mode styles for the search trigger button */
 .dark .search-trigger {
-  background-color: rgba(0, 0, 0, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #aaa !important;
+  background-color: rgba(0, 0, 0, 0.03) !important; /* Dark background */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; /* Light border for dark mode */
+  color: #aaa !important; /* Light text color for dark mode */
 
+  /* Style for the text in dark mode */
   p {
-    color: #aaa !important;
+    color: #aaa !important; /* Text color */
   }
 
+  /* Style for the icon in dark mode */
   svg {
-    color: #aaa;
+    color: #aaa; /* Icon color */
   }
 }
 
-
+/* Highlight style for search results */
 .highlight {
-  background-color: rgba(255, 213, 0, 0.3);
-  font-weight: 500;
-  border-radius: 2px;
-  padding: 0 1px;
-  margin: 0 -1px;
+  background-color: rgba(255, 213, 0, 0.3); /* Yellow background for highlights */
+  font-weight: 500; /* Bold font weight */
+  border-radius: 2px; /* Rounded corners */
+  padding: 0 1px; /* Padding around the highlight text */
+  margin: 0 -1px; /* Negative margin to compensate for padding */
 }
 
+/* Dark mode highlight style */
 .dark .highlight {
-  background-color: rgba(255, 230, 100, 0.4);
+  background-color: rgba(255, 230, 100, 0.4); /* Lighter yellow background in dark mode */
 }
