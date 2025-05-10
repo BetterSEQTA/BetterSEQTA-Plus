@@ -9,29 +9,32 @@ import type {
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
 
+// Interface for storing plugin settings in local storage
 interface PluginSettingsStorage {
   enabled?: boolean;
   [key: string]: any;
 }
 
+// Interface for representing storage changes
 interface StorageChange<T = any> {
   oldValue?: T;
   newValue?: T;
 }
 
 export class PluginManager {
-  private static instance: PluginManager;
-  private plugins: Map<string, Plugin<any, any>> = new Map();
-  private runningPlugins: Map<string, boolean> = new Map();
-  private eventBacklog: Map<string, any[]> = new Map();
-  private cleanupFunctions: Map<string, () => void> = new Map();
-  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
-  private styleElements: Map<string, HTMLStyleElement> = new Map();
+  private static instance: PluginManager; // Singleton instance of PluginManager
+  private plugins: Map<string, Plugin<any, any>> = new Map(); // Store registered plugins
+  private runningPlugins: Map<string, boolean> = new Map(); // Track which plugins are currently running
+  private eventBacklog: Map<string, any[]> = new Map(); // Queue events for plugins that are not running
+  private cleanupFunctions: Map<string, () => void> = new Map(); // Store cleanup functions for plugins
+  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map(); // Store event listeners for plugins
+  private styleElements: Map<string, HTMLStyleElement> = new Map(); // Store style elements injected by plugins
 
   private constructor() {
-    this.setupPluginStateListener();
+    this.setupPluginStateListener(); // Set up listener for plugin state changes
   }
 
+  // Singleton pattern to get the single instance of PluginManager
   public static getInstance(): PluginManager {
     if (!PluginManager.instance) {
       PluginManager.instance = new PluginManager();
@@ -39,10 +42,11 @@ export class PluginManager {
     return PluginManager.instance;
   }
 
+  // Dispatch an event for a plugin, either immediately or queued if not running
   public dispatchPluginEvent(pluginId: string, event: string, args?: any) {
     const fullEventName = `plugin.${pluginId}.${event}`;
 
-    // Dispatch plugin event if it's running otherwise queue it
+    // Dispatch plugin event if it's running, otherwise queue it
     if (this.runningPlugins.get(pluginId)) {
       document.dispatchEvent(new CustomEvent(fullEventName, { detail: args }));
     } else {
@@ -54,6 +58,7 @@ export class PluginManager {
     }
   }
 
+  // Process events that were queued while the plugin was not running
   private async processBackloggedEvents(pluginId: string) {
     for (const [key, argsList] of this.eventBacklog.entries()) {
       const [eventPluginId, event] = key.split(":");
@@ -66,6 +71,7 @@ export class PluginManager {
     }
   }
 
+  // Register a plugin with the PluginManager
   public registerPlugin<T extends PluginSettings, S>(
     plugin: Plugin<T, S>,
   ): void {
@@ -75,6 +81,7 @@ export class PluginManager {
     this.plugins.set(plugin.id, plugin);
   }
 
+  // Start a plugin by its ID
   public async startPlugin(pluginId: string): Promise<void> {
     const plugin = this.plugins.get(pluginId);
     if (!plugin) {
@@ -136,6 +143,7 @@ export class PluginManager {
     }
   }
 
+  // Start all registered plugins
   public async startAllPlugins(): Promise<void> {
     const startPromises = Array.from(this.plugins.keys()).map((id) =>
       this.startPlugin(id).catch((error) => {
@@ -147,6 +155,7 @@ export class PluginManager {
     await Promise.allSettled(startPromises);
   }
 
+  // Stop a specific plugin by its ID
   public async stopPlugin(pluginId: string): Promise<void> {
     // Remove plugin styles
     const styleElement = this.styleElements.get(pluginId);
@@ -165,18 +174,22 @@ export class PluginManager {
     this.emit("plugin.stopped", pluginId);
   }
 
+  // Stop all running plugins
   public stopAllPlugins(): void {
     Array.from(this.plugins.keys()).forEach((id) => this.stopPlugin(id));
   }
 
+  // Get a specific plugin by its ID
   public getPlugin(pluginId: string): Plugin | undefined {
     return this.plugins.get(pluginId);
   }
 
+  // Get all registered plugins
   public getAllPlugins(): Plugin[] {
     return Array.from(this.plugins.values());
   }
 
+  // Get all plugin settings, including defaults
   public getAllPluginSettings(): Array<{
     pluginId: string;
     name: string;
@@ -236,10 +249,12 @@ export class PluginManager {
     });
   }
 
+  // Check if a plugin is currently running
   public isPluginRunning(pluginId: string): boolean {
     return this.runningPlugins.get(pluginId) || false;
   }
 
+  // Emit an event to listeners
   private emit(event: string, ...args: any[]): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
@@ -247,6 +262,7 @@ export class PluginManager {
     }
   }
 
+  // Register an event listener for a specific event
   public on(event: string, callback: (...args: any[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
@@ -254,6 +270,7 @@ export class PluginManager {
     this.listeners.get(event)!.add(callback);
   }
 
+  // Remove an event listener for a specific event
   public off(event: string, callback: (...args: any[]) => void): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
@@ -261,7 +278,7 @@ export class PluginManager {
     }
   }
 
-  // Add handler for plugin enable/disable state changes
+  // Handle plugin state changes (enable/disable)
   private async handlePluginStateChange(
     pluginId: string,
     enabled: boolean,
@@ -273,7 +290,7 @@ export class PluginManager {
     }
   }
 
-  // Add listener for plugin settings changes
+  // Set up a listener for plugin settings changes (enable/disable)
   private setupPluginStateListener(): void {
     browser.storage.onChanged.addListener(
       (changes: { [key: string]: StorageChange }, area: string) => {
