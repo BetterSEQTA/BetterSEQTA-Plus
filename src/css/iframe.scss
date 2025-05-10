@@ -16,7 +16,7 @@
  */
 
 body {
-  background: transparent;
+  background: transparent; /* Sets the body background to transparent */
 }
 
 .dark {
@@ -24,93 +24,94 @@ body {
   div,
   span,
   body {
-    color: white !important;
+    color: white !important; /* Sets text color to white for dark mode */
     text-shadow:
-      1px 1px 2px #161616,
+      1px 1px 2px #161616, /* Adds shadow effect for text to enhance readability */
       0 0 1em #161616;
   }
 
   body {
-    background-color: transparent !important;
+    background-color: transparent !important; /* Ensures the body background remains transparent in dark mode */
   }
 
   blockquote.forward > .preamble {
-    color: rgba(255, 255, 255, 0.7) !important;
-
+    color: rgba(255, 255, 255, 0.7) !important; /* Sets color of blockquote preamble to a semi-transparent white */
+  
     > p,
     div,
     span {
-      background: transparent !important;
+      background: transparent !important; /* Ensures no background for paragraphs, divs, and spans in preamble */
     }
 
     > .date > .value,
     blockquote.forward > .preamble > .sender > .value {
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: rgba(255, 255, 255, 0.7) !important; /* Sets the date and sender's value text to a semi-transparent white */
     }
 
     > .date > .label,
     blockquote.forward > .preamble > .sender > .label {
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: rgba(255, 255, 255, 0.7) !important; /* Sets the label color for date and sender to a semi-transparent white */
     }
   }
 
   [bgcolor="#ffffff"] > * {
-    color: black !important;
-    text-shadow: none !important;
+    color: black !important; /* Sets the color of elements with bgcolor set to white to black */
+    text-shadow: none !important; /* Removes text shadow for these elements */
   }
 
   table th {
-    background-color: #161616;
+    background-color: #161616; /* Sets table header background to dark color */
   }
 
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-    transition: 1s;
+    width: 10px; /* Sets scrollbar width */
+    height: 10px; /* Sets scrollbar height */
+    transition: 1s; /* Adds transition effect to the scrollbar */
   }
 
   ::-webkit-scrollbar-track {
-    background-color: transparent;
+    background-color: transparent; /* Makes the scrollbar track transparent */
   }
 
   ::-webkit-scrollbar-thumb {
-    border-radius: 10rem !important;
+    border-radius: 10rem !important; /* Rounds the scrollbar thumb */
   }
 
   ::-webkit-scrollbar-corner {
-    background: none;
+    background: none; /* Removes the background from the scrollbar corner */
   }
 
   .forward {
-    border-radius: 1rem;
+    border-radius: 1rem; /* Adds rounded corners to the forward block */
   }
 
   .preamble {
-    border-top-left-radius: 1rem;
-    border-top-right-radius: 1rem;
+    border-top-left-radius: 1rem; /* Rounds the top left corner of the preamble */
+    border-top-right-radius: 1rem; /* Rounds the top right corner of the preamble */
   }
 
   blockquote.forward > .preamble {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.7) !important; /* Sets preamble text to a semi-transparent white */
   }
 
   blockquote.forward > .preamble > .date > .value,
   blockquote.forward > .preamble > .sender > .value {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.7) !important; /* Sets the date and sender's value to a semi-transparent white */
   }
+
   blockquote.forward > .preamble > .date > .label,
   blockquote.forward > .preamble > .sender > .label {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.7) !important; /* Sets the label color for date and sender to a semi-transparent white */
   }
 
   #backgroundTable > * {
-    background-color: #161616;
-    border: none;
+    background-color: #161616; /* Sets the background color of all elements within backgroundTable to dark */
+    border: none; /* Removes borders from elements inside the backgroundTable */
   }
 
   .userHTML > div > a:not(.resource) {
-    color: #06b4fc;
-    text-decoration: underline;
-    transition: text-shadow 0.5s;
+    color: #06b4fc; /* Sets the link color to a bright blue */
+    text-decoration: underline; /* Underlines the link */
+    transition: text-shadow 0.5s; /* Smooth transition for text-shadow */
   }
 }
