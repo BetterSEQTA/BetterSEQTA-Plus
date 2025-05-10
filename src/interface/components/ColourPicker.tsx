@@ -1,7 +1,8 @@
-import ColorPicker from "react-best-gradient-color-picker";
-import { useEffect, useRef, useState } from "react";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts";
+import ColorPicker from "react-best-gradient-color-picker"; // Importing the ColorPicker component from the react-best-gradient-color-picker library
+import { useEffect, useRef, useState } from "react"; // Importing React hooks for managing state and side effects
+import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"; // Importing settings state for managing selected color from a global state
 
+// Default color presets for the color picker
 const defaultPresets = [
   "linear-gradient(30deg, rgba(229,209,218,1) 0%, RGBA(235,169,202,1) 46%, rgba(214,155,162,1) 100%)",
   "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
@@ -25,19 +26,21 @@ const defaultPresets = [
 ];
 
 interface PickerProps {
-  customOnChange?: (color: string) => void;
-  customState?: string;
-  savePresets?: boolean;
+  customOnChange?: (color: string) => void; // Callback function for when the color changes
+  customState?: string; // Custom initial color state passed from the parent component
+  savePresets?: boolean; // Boolean to decide whether to save presets in localStorage
 }
 
+// Picker component that renders the ColorPicker component with the necessary props
 export default function Picker({
   customOnChange,
   customState,
   savePresets = true,
 }: PickerProps) {
-  const [customThemeColor, setCustomThemeColor] = useState<string | null>();
-  const [presets, setPresets] = useState<string[]>();
+  const [customThemeColor, setCustomThemeColor] = useState<string | null>(); // State for holding the selected custom color
+  const [presets, setPresets] = useState<string[]>(); // State for holding the color presets
 
+  // Ref for holding the latest values of props and state to prevent stale closures
   const latestValuesRef = useRef({
     customThemeColor,
     customOnChange,
@@ -45,19 +48,22 @@ export default function Picker({
     presets,
   });
 
+  // Side effect for setting initial custom theme color and loading presets
   useEffect(() => {
     if (customState !== undefined && customState !== null) {
-      setCustomThemeColor(customState);
+      setCustomThemeColor(customState); // Use custom state if provided
     } else {
-      setCustomThemeColor(settingsState.selectedColor ?? null);
+      setCustomThemeColor(settingsState.selectedColor ?? null); // Otherwise, use global settings
     }
 
+    // Load presets from localStorage or use the default presets
     if (presets === undefined) {
       const savedPresets = localStorage.getItem("colorPickerPresets");
       setPresets(savedPresets ? JSON.parse(savedPresets) : defaultPresets);
     }
   }, []);
 
+  // Update latest values in the ref whenever relevant props or state change
   useEffect(() => {
     latestValuesRef.current = {
       customThemeColor,
@@ -67,6 +73,7 @@ export default function Picker({
     };
   }, [customThemeColor, customOnChange, savePresets, presets]);
 
+  // Side effect to save the presets to localStorage when the component unmounts or state changes
   useEffect(() => {
     return () => {
       const { customThemeColor, customOnChange, savePresets, presets } =
@@ -91,6 +98,7 @@ export default function Picker({
         updatedPresets = [customThemeColor, ...presets].slice(0, 18);
       }
 
+      // Save the updated presets to localStorage
       localStorage.setItem(
         "colorPickerPresets",
         JSON.stringify(updatedPresets),
@@ -98,24 +106,27 @@ export default function Picker({
     };
   }, []);
 
+  // Side effect for updating the global settings state when the color changes
   useEffect(() => {
     if (customThemeColor && !customOnChange) {
-      settingsState.selectedColor = customThemeColor;
+      settingsState.selectedColor = customThemeColor; // Update global selected color
     }
   }, [customThemeColor, customOnChange]);
 
+  // Render the ColorPicker component
   return (
     <ColorPicker
-      disableDarkMode={true}
-      presets={presets}
-      hideInputs={customOnChange ? false : true}
-      value={customThemeColor ?? ""}
+      disableDarkMode={true} // Disable dark mode for the color picker
+      presets={presets} // Pass the presets for the color picker
+      hideInputs={customOnChange ? false : true} // Hide inputs if no customOnChange callback is provided
+      value={customThemeColor ?? ""} // Set the current value of the picker
       onChange={(color: string) => {
+        // Handle color change
         if (customOnChange) {
-          customOnChange(color);
-          setCustomThemeColor(color);
+          customOnChange(color); // Call the customOnChange if provided
+          setCustomThemeColor(color); // Update the custom theme color state
         } else {
-          setCustomThemeColor(color);
+          setCustomThemeColor(color); // Otherwise, just update the custom theme color state
         }
       }}
     />
