@@ -1,4 +1,3 @@
-```css
 /* Apply transparent background to div elements containing #rbgcp-wrapper */
 div:has(> #rbgcp-wrapper) {
   background: transparent !important;
@@ -109,4 +108,3 @@ div:has(> #rbgcp-wrapper) {
     }
   }
 }
-```
