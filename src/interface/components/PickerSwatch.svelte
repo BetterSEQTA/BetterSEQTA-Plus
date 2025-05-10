@@ -4,7 +4,6 @@
   // Destructure onClick function from component props
   let { onClick } = $props<{ onClick: () => void }>();
 </script>
-
 <!--
   Button element styled as a color swatch.
   - `aria-label` improves accessibility.
