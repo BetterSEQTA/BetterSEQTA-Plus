@@ -8,101 +8,117 @@ const loadingSpinner = /* html */ `
     <svg height="220" width="220" viewBox="0 0 1000 1000" class="outer-circle svg"><path xmlns="http://www.w3.org/2000/svg" style="fill:currentColor; stroke:none;" d="M456 954L456 946C438.715 945.258 420.843 941.462 404 937.65C369.403 929.822 335.739 918.116 304 902.247C255.981 878.237 211.768 846.374 175.09 807C62.5744 686.214 23.1598 509.033 78.6921 353C96.4653 303.062 122.84 256.974 156.424 216C207.709 153.43 278.099 103.658 355 78C372.453 72.1767 389.992 67.0399 408 63.2107C413.31 62.0816 418.647 60.9853 424 60.0811C426.508 59.6575 430.352 59.6852 432.397 57.9869C434.897 55.9098 434 50.8766 434 48C417.656 48.1353 400.764 53.1855 385 57.1265C338.517 68.7473 294.608 88.2827 254 113.576C215.673 137.45 181.285 167.835 151.87 202C33.9725 338.933 8.37009 541.243 89.2485 703C110.949 746.4 139.693 786.693 174 821C210.688 857.688 253.047 888.542 300 910.781C332.484 926.167 365.934 937.716 401 945.65C418.745 949.666 437.768 953.624 456 954z"/></svg>
     `;
 
+// Function to append a loading symbol to a specified position in the DOM
 export function AppendLoadingSymbol(givenID: any, position: any) {
+  // Convert a string of HTML to a DOM element and set it to the loading symbol
   let loadingsymbol = stringToHTML(/* html */ `
       <div id="${givenID}">
-        ${loadingSpinner}
+        ${loadingSpinner}  <!-- The spinner element to display -->
       </div>`).firstChild;
 
+  // Append the loading symbol to the selected position in the document
   document.querySelector(position).appendChild(loadingsymbol);
 }
 
+// Default loading function to display a loading screen
 export default function loading() {
+  // Create the HTML structure for the loading screen with styling
   let loadinghtml = stringToHTML(/* html */ `
     <div class="bkloading" id="loading">
     <style>
       .bkloading {
-        transition: color 1ms linear, opacity 1s ease-in-out;
-        background-color: rgb(229, 231, 235);
-        color: black;
-        width: 100%;
-        overflow: hidden;
-        opacity: 1;
-        transition: 1s;
-        height: 100%;
-        z-index: 1000000;
-        position: absolute;
-        left: 0;
-        top: 0;
+        transition: color 1ms linear, opacity 1s ease-in-out;  // Smooth color and opacity transitions
+        background-color: rgb(229, 231, 235);  // Light background color
+        color: black;  // Text color
+        width: 100%;  // Full width
+        overflow: hidden;  // Hide overflow content
+        opacity: 1;  // Full opacity by default
+        transition: 1s;  // Transition duration
+        height: 100%;  // Full height
+        z-index: 1000000;  // Ensure it's on top of all other elements
+        position: absolute;  // Absolute positioning
+        left: 0;  // Align to the left of the screen
+        top: 0;  // Align to the top of the screen
       }
 
       .closeLoading {
-        opacity: 0;
+        opacity: 0;  // Set opacity to 0 when the loading is closed
       }
 
       .dark .bkloading {
-        background-color: rgb(26, 26, 26);
-        color: white;
+        background-color: rgb(26, 26, 26);  // Dark background in dark mode
+        color: white;  // White text in dark mode
       }
 
       .svg {
-        transform-origin: center;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        will-change: transform;
+        transform-origin: center;  // Spin from the center of the SVG
+        position: absolute;  // Absolute positioning for the SVG
+        top: 50%;  // Center it vertically
+        left: 50%;  // Center it horizontally
+        will-change: transform;  // Optimize for transform changes
       }
+
       .logo {
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);  // Center the logo exactly in the middle
       }
+
       .big-circle {
-        margin: -88px;
-        will-change: transform;
-        animation-timing-function: ease;
-        animation: spin 3s linear infinite;
-        -moz-animation: spin 3s linear infinite;
+        margin: -88px;  // Adjust margin for the big circle spinner
+        will-change: transform;  // Optimize for transform changes
+        animation-timing-function: ease;  // Set easing function for the animation
+        animation: spin 3s linear infinite;  // Spin animation for the big circle
+        -moz-animation: spin 3s linear infinite;  // Firefox spin animation
       }
+
       .small-circle {
-        margin: -66px;
-        will-change: transform;
-        animation-timing-function: ease;
-        animation: spin 3s linear infinite;
-        -moz-animation: spin 3s linear infinite;
+        margin: -66px;  // Adjust margin for the small circle spinner
+        will-change: transform;  // Optimize for transform changes
+        animation-timing-function: ease;  // Set easing function for the animation
+        animation: spin 3s linear infinite;  // Spin animation for the small circle
+        -moz-animation: spin 3s linear infinite;  // Firefox spin animation
       }
+
       .outer-circle {
-        margin: -108px;
-        will-change: transform;
-        animation-direction: alternate-reverse;
-        animation: spinback 1s linear infinite;
-        -moz-animation: spinback 1s linear infinite;
+        margin: -108px;  // Adjust margin for the outer circle spinner
+        will-change: transform;  // Optimize for transform changes
+        animation-direction: alternate-reverse;  // Reverse spin direction
+        animation: spinback 1s linear infinite;  // Backward spin animation for outer circle
+        -moz-animation: spinback 1s linear infinite;  // Firefox spinback animation
       }
+
+      /* Keyframe animations for the spinning effect */
       @-moz-keyframes spin {
         100% {
-          -moz-transform: rotate(360deg);
+          -moz-transform: rotate(360deg);  // Rotate 360 degrees in Firefox
         }
       }
+
       @-webkit-keyframes spin {
         100% {
-          -webkit-transform: rotate(360deg);
+          -webkit-transform: rotate(360deg);  // Rotate 360 degrees in WebKit browsers
         }
       }
+
       @keyframes spin {
         100% {
-          -webkit-transform: rotate(360deg);
-          transform: rotate(360deg);
+          -webkit-transform: rotate(360deg);  // Rotate 360 degrees in WebKit browsers
+          transform: rotate(360deg);  // Rotate 360 degrees
         }
       }
+
       @keyframes spinback {
         100% {
-          -webkit-transform: rotate(-360deg);
-          transform: rotate(-360deg);
+          -webkit-transform: rotate(-360deg);  // Reverse rotate for outer circle
+          transform: rotate(-360deg);  // Reverse rotate for outer circle
         }
       }
       </style>
-    ${loadingSpinner}
+    ${loadingSpinner}  <!-- Insert the spinner element -->
   <div style="position: absolute;bottom: 0;right: 0;padding: 10px;color: #4f4f4f;text-anchor: middle;font-size: 20px;">v${
-    browser.runtime.getManifest().version
+    browser.runtime.getManifest().version  // Display the extension version
   }</div></div>`);
+
+  // Select the <html> element and append the loading HTML
   var html = document.getElementsByTagName("html")[0];
-  html.append(loadinghtml.firstChild!);
+  html.append(loadinghtml.firstChild!);  // Append the first child (the loading screen) to the <html> element
 }
