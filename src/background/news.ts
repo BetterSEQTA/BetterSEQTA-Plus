@@ -1,9 +1,11 @@
 import Parser from "rss-parser";
 
+// Fetches Australian news from the given URL and processes the response
 const fetchAustraliaNews = async (url: string, sendResponse: any) => {
   fetch(url)
     .then((result) => result.json())
     .then((response) => {
+      // Retry the request if rate-limited
       if (response.code == "rateLimited") {
         fetchAustraliaNews((url += "%00"), sendResponse);
       } else {
@@ -12,6 +14,7 @@ const fetchAustraliaNews = async (url: string, sendResponse: any) => {
     });
 };
 
+// Predefined RSS feed URLs by country
 const rssFeedsByCountry: Record<string, string[]> = {
   usa: [
     "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
@@ -54,7 +57,9 @@ const rssFeedsByCountry: Record<string, string[]> = {
   netherlands: ["https://www.dutchnews.nl/feed/", "https://www.nrc.nl/rss/"],
 };
 
+// Main function to fetch news based on the source
 export async function fetchNews(source: string, sendResponse: any) {
+  // Handle fetching news specifically for Australia
   if (source === "australia") {
     const date = new Date();
 
@@ -66,15 +71,17 @@ export async function fetchNews(source: string, sendResponse: any) {
       (date.getDate() - 5);
 
     const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
-    fetchAustraliaNews(url, sendResponse);
+    fetchAustraliaNews(url, sendResponse); // Call the Australia-specific fetch function
 
     return;
   }
 
   const parser = new Parser();
   let feeds: string[];
+
   console.log("fetchNews", source);
 
+  // Determine the appropriate RSS feed based on country or URL
   if (rssFeedsByCountry[source.toLowerCase()]) {
     // If the source is a country, fetch from predefined feeds
     feeds = rssFeedsByCountry[source.toLowerCase()];
@@ -87,12 +94,14 @@ export async function fetchNews(source: string, sendResponse: any) {
     );
   }
 
+  // Fetch articles from each RSS feed
   const articlesPromises = feeds.map(async (feedUrl) => {
     try {
       const response = await fetch(feedUrl);
       const feedString = await response.text();
       const feed = await parser.parseString(feedString);
 
+      // Format the fetched articles
       return feed.items.map((item) => ({
         title: item.title || "",
         description: item.contentSnippet || "",
@@ -105,8 +114,10 @@ export async function fetchNews(source: string, sendResponse: any) {
     }
   });
 
+  // Wait for all articles to be fetched and combined
   const articlesArray = await Promise.all(articlesPromises);
   const articles = articlesArray.flat();
 
+  // Send the combined news articles as the response
   sendResponse({ news: { articles } });
 }
