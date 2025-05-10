@@ -1,4 +1,6 @@
+```ts
 <script lang="ts">
+  // Import necessary hooks and components
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
@@ -6,12 +8,16 @@
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
+  // Create an instance of ThemeManager
   const themeManager = ThemeManager.getInstance();
 
+  // Define the structure of a Background object
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
+  
+  // Bind the search term prop
   let { searchTerm } = $props<{ searchTerm: string }>();
 
-  // Existing states
+  // Define existing state variables
   let backgrounds = $state<Background[]>([]);
   let selectedCategory = $state<string>('All');
   let error = $state<string | null>(null);
@@ -22,11 +28,11 @@
   let debugInfo = $state<string>('');
   let searchIndex = $state<Index | null>(null);
 
-  // New state variables
+  // Define new state variables
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
 
-  // Existing functions
+  // Function to load background data from external store
   const loadStore = async () => {
     try {
       debugInfo = 'Fetching backgrounds...';
@@ -37,13 +43,13 @@
       const data = await response.json();
       backgrounds = data.backgrounds;
       
-      // Initialize FlexSearch index
+      // Initialize FlexSearch index for background search
       const index = new Index({
         tokenize: "forward",
         preset: "score"
       });
       
-      // Add backgrounds to the index
+      // Add each background to the index for searching by name and description
       backgrounds.forEach((bg, i) => {
         index.add(i, bg.name + " " + bg.description);
       });
@@ -59,6 +65,7 @@
     }
   };
 
+  // Function to load saved backgrounds from IndexedDB
   async function loadSavedBackgrounds(): Promise<void> {
     try {
       if (!isIndexedDBSupported()) {
@@ -72,20 +79,20 @@
     }
   }
 
-  // Load data on mount
+  // Load the background data on component mount
   loadStore();
 
-  // Derived states
+  // Derived state for filtered backgrounds based on search, category, and sort
   let filteredBackgrounds = $derived((() => {
     let filtered = backgrounds;
     
-    // Use FlexSearch if there's a search term
+    // Filter backgrounds based on search term using FlexSearch index
     if (searchTerm.trim() && searchIndex) {
       const results = searchIndex.search(searchTerm) as number[];
       filtered = results.map(i => backgrounds[i]);
     }
 
-    // Apply category filtering
+    // Filter backgrounds based on the selected category
     filtered = filtered.filter((bg: Background) => {
       return selectedCategory === 'All' 
         ? true 
@@ -94,7 +101,7 @@
           : bg.category === selectedCategory;
     });
 
-    // Apply sorting
+    // Sort backgrounds based on the selected sort method
     filtered.sort((a: Background, b: Background) => {
       switch (sortBy) {
         case 'name':
@@ -111,9 +118,10 @@
     return filtered;
   })());
 
+  // Derived state to get the unique categories from the backgrounds
   let categories = $derived([...new Set(backgrounds.map(bg => bg.category))]);
 
-  // Background management functions
+  // Function to save background from URL to IndexedDB
   async function saveBackgroundFromUrl(url: string, id: string, fileType: string): Promise<void> {
     try {
       if (!isIndexedDBSupported()) {
@@ -135,12 +143,14 @@
     }
   }
 
+  // Function to delete a background from IndexedDB
   async function deleteBackground(fileId: string): Promise<void> {
     installingBackgrounds = new Set(installingBackgrounds).add(fileId);
     try {
       await deleteData(fileId);
       savedBackgrounds = savedBackgrounds.filter(id => id !== fileId);
 
+      // If the deleted background was selected, deselect it
       if (selectedBackground === fileId) {
         selectNoBackground();
       }
@@ -152,6 +162,7 @@
     }
   }
 
+  // Function to install a background by saving it from its high-res URL
   async function installBackground(background: Background) {
     installingBackgrounds = new Set(installingBackgrounds).add(background.id);
     try {
@@ -163,6 +174,7 @@
     }
   }
 
+  // Function to toggle background installation (install or remove)
   async function toggleBackgroundInstallation(background: Background) {
     if (savedBackgrounds.includes(background.id)) {
       await deleteBackground(background.id);
@@ -171,6 +183,7 @@
     }
   }
   
+  // Function to deselect the currently selected background
   function selectNoBackground() {
     selectedBackground = null;
     themeManager.setTheme('');
@@ -178,11 +191,12 @@
 </script>
 
 <div class="flex h-full">
-  <!-- Sidebar -->
+  <!-- Sidebar for selecting categories -->
   <div class="p-4 w-64 h-full border-r border-zinc-200 dark:border-zinc-700">
     <div class="mb-8">
       <h2 class="mb-4 text-lg font-semibold">Categories</h2>
       <nav class="space-y-2">
+        <!-- Buttons for selecting 'All' and 'Featured' categories -->
         <button
           class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === 'All' ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
           onclick={() => selectedCategory = 'All'}
@@ -198,6 +212,7 @@
         
         <div class="my-2 border-b border-zinc-200 dark:border-zinc-700"></div>
         
+        <!-- Loop through the categories and generate buttons for each one -->
         {#each categories as category}
           <button
             class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === category ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
@@ -210,9 +225,9 @@
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main content area -->
   <div class="overflow-auto flex-1">
-    <!-- Header -->
+    <!-- Header section with title and sort options -->
     <div class="sticky top-0 z-10 p-4 border-b bg-[#F1F1F3] dark:bg-zinc-900 dark:border-zinc-700">
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Explore Backgrounds {searchTerm ? `- "${searchTerm}"` : ''}</h1>
@@ -227,7 +242,7 @@
         </div>
       </div>
 
-      <!-- Tabs -->
+      <!-- Tabs for filtering between different background types -->
       <div class="flex gap-2">
         {#each ['All', 'Installed', 'Photos', 'Videos'] as tab}
           <button
@@ -242,7 +257,7 @@
       </div>
     </div>
 
-    <!-- Background Grid -->
+    <!-- Background grid displaying images/videos -->
     <div class="p-4">
       {#if isLoading}
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -268,6 +283,7 @@
       {:else}
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {#each filteredBackgrounds.filter((bg: Background) => {
+            // Filter based on the active tab (installed, photos, videos)
             if (activeTab === 'installed') return savedBackgrounds.includes(bg.id);
             if (activeTab === 'photos') return bg.type === 'image';
             if (activeTab === 'videos') return bg.type !== 'image';
@@ -289,6 +305,7 @@
               {:else}
                 <video src={background.lowResUrl} class="object-cover w-full h-48" muted loop autoplay></video>
               {/if}
+              <!-- Background installation overlay -->
               <div class={`flex absolute inset-0 justify-center items-center opacity-0 transition-opacity duration-300 bg-black/50 group-hover:opacity-100 ${installingBackgrounds.has(background.id) ? 'opacity-100' : ''}`}>
                 {#if installingBackgrounds.has(background.id)}
                   <Spinner />
@@ -313,6 +330,7 @@
 </div>
 
 {#if settingsState.devMode}
+  <!-- Debug information displayed when devMode is enabled -->
   <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
     <h3 class="mb-2 font-bold">Debug Info:</h3>
     <p>{debugInfo}</p>
@@ -322,4 +340,4 @@
     <p>Selected Category: {selectedCategory}</p>
   </div>
 {/if}
-
+```
