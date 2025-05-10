@@ -1,10 +1,10 @@
 #menu ul:has(li.hasChildren.active) li.hasChildren.active {
-  box-shadow: inset 0px 0 var(--item-colour, transparent) !important;
-  background: transparent !important;
+  box-shadow: inset 0px 0 var(--item-colour, transparent) !important; /* Applies an inset shadow with fallback to transparent */
+  background: transparent !important; /* Forces background to be transparent for active items */
 }
 
 #menu ul:not(:has(li.hasChildren.active)) {
-  overflow-y: scroll !important;
+  overflow-y: scroll !important; /* Enables vertical scrolling when no active child exists */
 }
 
 #menu > ul:has(li.hasChildren.active) > li::before,
@@ -13,31 +13,31 @@
 #menu > ul:has(li.hasChildren.active) > li > svg,
 #menu > ul ul:has(li.hasChildren.active) > li > label,
 #menu > ul ul:has(li.hasChildren.active) > li > svg {
-  transform: translateX(-320px);
+  transform: translateX(-320px); /* Shifts elements leftward when a child is active */
 }
 
 #menu li.hasChildren:not(.active) li .sub {
-  display: none; // improves performance
+  display: none; // improves performance /* Hides submenus of inactive parent items to boost rendering performance */
 }
 
 .sub .sub {
-  top: 0 !important;
-  padding-top: 2px;
+  top: 0 !important; /* Forces submenu positioning to the top */
+  padding-top: 2px; /* Adds slight spacing at the top of nested submenus */
 }
 
 .sub:has(ul > li.hasChildren.active) > .nav > .back {
-  display: none !important;
+  display: none !important; /* Hides back button when a submenu has an active child */
 }
 
 #menu ul > li > label,
 #menu ul > li > svg {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease; /* Smooth transform animations for labels and icons */
 }
 
 #menu .sub {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease; /* Smooth transform animations for submenus */
 }
 
 #menu > ul:has(li.hasChildren.active) > li.active {
-  background: transparent !important;
+  background: transparent !important; /* Forces transparent background for active top-level items */
 }
