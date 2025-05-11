@@ -3,12 +3,15 @@ import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
+// Global variable to track if the menu options are open
 export let MenuOptionsOpen = false;
 
+// Function to open the menu options and configure the menu layout
 export function OpenMenuOptions() {
   var container = document.getElementById("container");
   var menu = document.getElementById("menu");
 
+  // Initialize default menu order if it is not set
   if (settingsState.defaultmenuorder.length == 0) {
     let childnodes = menu!.firstChild!.childNodes;
     let newdefaultmenuorder = [];
@@ -18,6 +21,8 @@ export function OpenMenuOptions() {
       settingsState.defaultmenuorder = newdefaultmenuorder;
     }
   }
+
+  // Update default menu order if it is different from the current child nodes
   let childnodes = menu!.firstChild!.childNodes;
   if (settingsState.defaultmenuorder.length != childnodes.length) {
     for (let i = 0; i < childnodes.length; i++) {
@@ -34,48 +39,57 @@ export function OpenMenuOptions() {
     }
   }
 
+  // Mark that the menu options are now open
   MenuOptionsOpen = true;
 
+  // Create a cover element to overlay the menu
   var cover = document.createElement("div");
-  cover.classList.add("notMenuCover");
-  menu!.style.zIndex = "20";
-  menu!.style.setProperty("--menuHidden", "flex");
-  container!.append(cover);
+  cover.classList.add("notMenuCover"); // Add class for styling
+  menu!.style.zIndex = "20"; // Set the z-index of the menu
+  menu!.style.setProperty("--menuHidden", "flex"); // Set menu visibility
+  container!.append(cover); // Append the cover to the container
 
+  // Create a container for the menu settings (edit options)
   var menusettings = document.createElement("div");
-  menusettings.classList.add("editmenuoption-container");
+  menusettings.classList.add("editmenuoption-container"); // Add class for styling
 
+  // Create buttons for restoring defaults and saving menu options
   var defaultbutton = document.createElement("div");
   defaultbutton.classList.add("editmenuoption");
   defaultbutton.innerText = "Restore Default";
-  defaultbutton.id = "restoredefaultoption";
+  defaultbutton.id = "restoredefaultoption"; // Set button ID
 
   var savebutton = document.createElement("div");
   savebutton.classList.add("editmenuoption");
   savebutton.innerText = "Save";
-  savebutton.id = "restoredefaultoption";
+  savebutton.id = "restoredefaultoption"; // Set button ID
 
+  // Append buttons to the menu settings container
   menusettings.appendChild(defaultbutton);
   menusettings.appendChild(savebutton);
 
+  // Append the menu settings container to the menu
   menu!.appendChild(menusettings);
 
+  // Loop through menu list items and make them draggable
   var ListItems = menu!.firstChild!.childNodes;
   for (let i = 0; i < ListItems.length; i++) {
     const element1 = ListItems[i];
     const element = element1 as HTMLElement;
 
-    (element as HTMLElement).classList.add("draggable");
+    (element as HTMLElement).classList.add("draggable"); // Add draggable class
     if ((element as HTMLElement).classList.contains("hasChildren")) {
       (element as HTMLElement).classList.remove("active");
       (element.firstChild as HTMLElement).classList.remove("noscroll");
     }
 
+    // Add toggle switch to each menu item
     let MenuItemToggle = stringToHTML(
       `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
     ).firstChild;
-    (element as HTMLElement).append(MenuItemToggle!);
+    (element as HTMLElement).append(MenuItemToggle!); // Append the toggle to the element
 
+    // Clone and move elements without "betterseqta" dataset attribute
     if (!element.dataset.betterseqta) {
       const a = document.createElement("section");
       a.innerHTML = element.innerHTML;
@@ -85,6 +99,7 @@ export function OpenMenuOptions() {
     }
   }
 
+  // Initialize menu items if they haven't been set
   if (Object.keys(settingsState.menuitems).length == 0) {
     menubuttons = menu!.firstChild!.childNodes;
     let menuItems = {} as any;
@@ -97,8 +112,8 @@ export function OpenMenuOptions() {
     settingsState.menuitems = menuItems;
   }
 
+  // Set initial checkbox states based on settings
   var menubuttons: any = document.getElementsByClassName("menuitem");
-
   let menuItems = settingsState.menuitems as any;
   let buttons = document.getElementsByClassName("menuitem");
   for (let i = 0; i < buttons.length; i++) {
@@ -112,21 +127,23 @@ export function OpenMenuOptions() {
     (buttons[i] as HTMLInputElement).checked = true;
   }
 
+  // Initialize sortable list for reordering menu items
   try {
     var el = document.querySelector("#menu > ul");
     var sortable = Sortable.create(el as HTMLElement, {
-      draggable: ".draggable",
-      dataIdAttr: "data-key",
-      animation: 150,
-      easing: "cubic-bezier(.5,0,.5,1)",
+      draggable: ".draggable", // Make elements with "draggable" class sortable
+      dataIdAttr: "data-key", // Use "data-key" attribute for item identification
+      animation: 150, // Animation speed
+      easing: "cubic-bezier(.5,0,.5,1)", // Easing function for the animation
       onEnd: function () {
-        saveNewOrder(sortable);
+        saveNewOrder(sortable); // Save new order after dragging
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error(err); // Log any errors related to Sortable.js
   }
 
+  // Function to handle display property changes when toggle is changed
   function changeDisplayProperty(element: any) {
     if (!element.checked) {
       element.parentNode.parentNode.style.display = "var(--menuHidden)";
@@ -140,6 +157,7 @@ export function OpenMenuOptions() {
     }
   }
 
+  // Function to store the current menu settings
   function StoreMenuSettings() {
     let menu = document.getElementById("menu");
     const menuItems: any = {};
@@ -152,29 +170,32 @@ export function OpenMenuOptions() {
 
       menuItems[id as keyof typeof menuItems] = element;
     }
-    settingsState.menuitems = menuItems;
+    settingsState.menuitems = menuItems; // Save updated menu items to settings
   }
 
+  // Add event listeners to menu buttons for changes in settings
   for (let i = 0; i < menubuttons.length; i++) {
     const element = menubuttons[i];
     element.addEventListener("change", () => {
       element.parentElement.parentElement.getAttribute("data-key");
-      StoreMenuSettings();
-      changeDisplayProperty(element);
+      StoreMenuSettings(); // Store settings on change
+      changeDisplayProperty(element); // Change display property based on toggle
     });
   }
 
+  // Function to close all menu settings and reset the menu state
   function closeAll() {
-    menusettings?.remove();
-    cover?.remove();
-    MenuOptionsOpen = false;
-    menu!.style.setProperty("--menuHidden", "none");
+    menusettings?.remove(); // Remove menu settings container
+    cover?.remove(); // Remove cover element
+    MenuOptionsOpen = false; // Mark menu as closed
+    menu!.style.setProperty("--menuHidden", "none"); // Reset menu visibility
 
+    // Reset the menu list items to their original state
     for (let i = 0; i < ListItems.length; i++) {
       const element1 = ListItems[i];
       const element = element1 as HTMLElement;
-      element.classList.remove("draggable");
-      element.setAttribute("draggable", "false");
+      element.classList.remove("draggable"); // Remove draggable class
+      element.setAttribute("draggable", "false"); // Set draggable attribute to false
 
       if (!element.dataset.betterseqta) {
         const a = document.createElement("li");
@@ -185,21 +206,25 @@ export function OpenMenuOptions() {
       }
     }
 
+    // Remove all toggle switches
     let switches = menu!.querySelectorAll(".onoffswitch");
     for (let i = 0; i < switches.length; i++) {
       switches[i].remove();
     }
   }
 
+  // Event listeners for closing menu settings
   cover?.addEventListener("click", closeAll);
   savebutton?.addEventListener("click", closeAll);
 
+  // Event listener for restoring default menu order
   defaultbutton?.addEventListener("click", function () {
     const options = settingsState.defaultmenuorder;
     settingsState.menuorder = options;
 
-    ChangeMenuItemPositions(options);
+    ChangeMenuItemPositions(options); // Change menu item positions to default order
 
+    // Set all menu items as checked and visible
     for (let i = 0; i < menubuttons.length; i++) {
       const element = menubuttons[i];
       element.checked = true;
@@ -209,21 +234,24 @@ export function OpenMenuOptions() {
         "important",
       );
     }
-    saveNewOrder(sortable);
+    saveNewOrder(sortable); // Save the new order
   });
 }
 
+// Function to save the new menu order after dragging
 function saveNewOrder(sortable: any) {
   var order = sortable.toArray();
-  settingsState.menuorder = order;
+  settingsState.menuorder = order; // Save the new order to settings
 }
 
+// Function to clone attributes from one element to another
 function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
-    target.setAttribute(attr.nodeName, attr.nodeValue);
+    target.setAttribute(attr.nodeName, attr.nodeValue); // Clone each attribute
   });
 }
 
+// Function to change the position of menu items based on a given order
 export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
   var menuList = document.querySelector("#menu")!.firstChild!.childNodes;
 
@@ -231,14 +259,14 @@ export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
   for (let i = 0; i < menuList.length; i++) {
     const menu = menuList[i] as HTMLElement;
 
-    let a = menuorder.indexOf(menu.dataset.key);
+    let a = menuorder.indexOf(menu.dataset.key); // Find index of the menu item in the order array
 
-    listorder.push(a);
+    listorder.push(a); // Store the index
   }
 
   var newArr = [];
   for (var i = 0; i < listorder.length; i++) {
-    newArr[listorder[i]] = menuList[i];
+    newArr[listorder[i]] = menuList[i]; // Reorder the menu items
   }
 
   let listItemsDOM = document.getElementById("menu")!.firstChild;
@@ -246,8 +274,8 @@ export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
     const element = newArr[i];
     if (element) {
       const elem = element as HTMLElement;
-      elem.setAttribute("data-checked", "true");
-      listItemsDOM!.appendChild(element);
+      elem.setAttribute("data-checked", "true"); // Mark the element as checked
+      listItemsDOM!.appendChild(element); // Append the reordered element
     }
   }
 }

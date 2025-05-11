@@ -10,6 +10,7 @@ export function createSearchIndexes() {
   const commands = getStaticCommands();
   const dynamicItems = getDynamicItems();
 
+  // Options for Fuse search on static commands
   const commandOptions = {
     keys: ["text", "category", "keywords"],
     includeScore: true,
@@ -19,6 +20,7 @@ export function createSearchIndexes() {
     useExtendedSearch: false,
   };
 
+  // Options for Fuse search on dynamic items
   const dynamicOptions = {
     keys: [
       "text",
@@ -46,85 +48,91 @@ export function createSearchIndexes() {
   };
 }
 
+// Function to search static commands using Fuse
 export function searchCommands(
   commandsFuse: Fuse<StaticCommandItem>,
   query: string,
   commandIdToItemMap: Map<string, StaticCommandItem>,
-  limit = 10,
+  limit = 10, // Limit for number of results
 ): CombinedResult[] {
-  if (!commandsFuse) return [];
+  if (!commandsFuse) return []; // Return empty if no Fuse instance exists
 
   if (!query.trim()) {
+    // If no query, return all commands sorted by priority
     return Array.from(commandIdToItemMap.values())
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)) // Sort by priority when no query
-      .slice(0, limit) // Limit results even when no query
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)) // Sort by priority
+      .slice(0, limit) // Limit results
       .map((item) => ({
         id: item.id,
         type: "command" as const,
-        score: 100 + (item.priority ?? 0),
+        score: 100 + (item.priority ?? 0), // High score based on priority
         item,
       }));
   }
 
+  // Perform search using Fuse
   const searchResults = commandsFuse.search(query, { limit });
 
   return searchResults.map((result: FuseResult<StaticCommandItem>) => {
     const item = result.item;
-    const fuseScore = 15 * (1 - (result.score || 0.5));
-    const score = fuseScore + (item.priority ?? 0);
+    const fuseScore = 15 * (1 - (result.score || 0.5)); // Adjust score based on Fuse match score
+    const score = fuseScore + (item.priority ?? 0); // Combine Fuse score with command priority
 
     return {
       id: item.id,
       type: "command" as const,
       score,
       item,
-      matches: result.matches,
+      matches: result.matches, // Include matches for the query
     };
   });
 }
 
+// Function to search dynamic items using Fuse
 export function searchDynamicItems(
   dynamicContentFuse: Fuse<IndexItem>,
   query: string,
   dynamicIdToItemMap: Map<string, IndexItem>,
   limit = 10,
-  sortByRecent: boolean = true, // Added option to control sorting
+  sortByRecent: boolean = true, // Option to sort by recency
 ): CombinedResult[] {
-  if (!dynamicContentFuse) return [];
+  if (!dynamicContentFuse) return []; // Return empty if no Fuse instance exists
 
   if (!query.trim()) {
+    // If no query, return all dynamic items sorted by recency if needed
     let items = Array.from(dynamicIdToItemMap.values());
     if (sortByRecent) {
-      items = items.sort((a, b) => b.dateAdded - a.dateAdded);
+      items = items.sort((a, b) => b.dateAdded - a.dateAdded); // Sort by dateAdded if sortByRecent is true
     }
     return items.slice(0, limit).map((item) => ({
       id: item.id,
       type: "dynamic" as const,
-      score: 80, // Assign a default score for non-searched items
+      score: 80, // Default score for non-searched items
       item,
     }));
   }
 
-  const now = Date.now();
+  const now = Date.now(); // Get current timestamp
   const searchResults = dynamicContentFuse.search(query, { limit });
 
   return searchResults.map((result: FuseResult<IndexItem>) => {
     const item = result.item;
-    const fuseScore = 10 * (1 - (result.score || 0.5));
-    const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
-    const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0; // Apply boost only if sorting by recent
-    const score = fuseScore + recencyBoost;
+    const fuseScore = 10 * (1 - (result.score || 0.5)); // Adjust score based on Fuse match score
+    const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24); // Calculate item age in days
+    const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0; // Boost score based on recency if needed
+    const score = fuseScore + recencyBoost; // Combine Fuse score with recency boost
 
     return {
       id: item.id,
       type: "dynamic" as const,
       score,
       item,
-      matches: result.matches,
+      matches: result.matches, // Include matches for the query
     };
   });
 }
 
+// Perform a comprehensive search combining static, dynamic, and vector-based searches
 export async function performSearch(
   query: string,
   commandsFuse: Fuse<StaticCommandItem>,
@@ -133,12 +141,8 @@ export async function performSearch(
   dynamicIdToItemMap: Map<string, IndexItem>,
   showRecentFirst: boolean,
 ): Promise<CombinedResult[]> {
-  // Get all results first
-  const commandResults = searchCommands(
-    commandsFuse,
-    query,
-    commandIdToItemMap,
-  );
+  // Perform search on static commands and dynamic items
+  const commandResults = searchCommands(commandsFuse, query, commandIdToItemMap);
   const dynamicResults = searchDynamicItems(
     dynamicContentFuse,
     query,
@@ -147,55 +151,52 @@ export async function performSearch(
     showRecentFirst,
   );
 
-  // Get vector results in parallel
+  // Perform vector search in parallel for semantic results
   let vectorResults: VectorSearchResult[] = [];
   try {
-    vectorResults = await searchVectors(query, 10);
+    vectorResults = await searchVectors(query, 10); // Get vector search results
   } catch (e) {}
 
-  // Create a map to store our final results, using ID as key to avoid duplicates
+  // Create a map to avoid duplicate results and merge different sources
   const resultMap = new Map<string, CombinedResult>();
 
-  // Add command results first (they keep their original scores)
+  // Add command results to resultMap
   commandResults.forEach((r) => resultMap.set(r.id, r));
 
-  // Process dynamic results and vector results together
-  const seenIds = new Set<string>();
-
-  // Add dynamic results first
+  // Add dynamic results and merge with vector results if necessary
+  const seenIds = new Set<string>(); // Track seen IDs to prevent duplicates
   dynamicResults.forEach((r) => {
     seenIds.add(r.id);
-    const vectorMatch = vectorResults.find((v) => v.object.id === r.id);
+    const vectorMatch = vectorResults.find((v) => v.object.id === r.id); // Check for vector match
     if (vectorMatch) {
-      // If we found it in both searches, combine the scores
+      // If both Fuse and vector match, combine their scores
       resultMap.set(r.id, {
         ...r,
-        score: r.score + vectorMatch.similarity * 0.6, // Boost exact matches
+        score: r.score + vectorMatch.similarity * 0.6, // Boost match score
       });
     } else {
-      // If only in Fuse results, keep as is
+      // If only Fuse match, keep original score
       resultMap.set(r.id, r);
     }
   });
 
-  // Now add any vector results we haven't seen yet
+  // Add vector results not already added
   vectorResults.forEach((v) => {
     const id = v.object.id;
-
     if (!seenIds.has(id)) {
-      // This is a semantic match that Fuse missed - add it with the vector similarity as score
+      // If vector result is not in Fuse results, add it
       resultMap.set(id, {
         id,
         type: "dynamic" as const,
-        score: v.similarity * 0.9, // High base score for semantic matches
+        score: v.similarity * 0.9, // Use vector similarity as score
         item: v.object,
       });
     }
   });
 
-  // Convert to array and sort by score
+  // Convert resultMap to array and sort by score
   const results = Array.from(resultMap.values());
-  results.sort((a, b) => b.score - a.score);
+  results.sort((a, b) => b.score - a.score); // Sort results by score in descending order
 
-  return results;
+  return results; // Return sorted search results
 }

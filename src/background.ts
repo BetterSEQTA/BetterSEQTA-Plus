@@ -1,17 +1,17 @@
-import browser from "webextension-polyfill";
-import type { SettingsState } from "@/types/storage";
-import { fetchNews } from "./background/news";
+import browser from "webextension-polyfill"; // WebExtension API polyfill
+import type { SettingsState } from "@/types/storage"; // Type definition for settings state
+import { fetchNews } from "./background/news"; // Function to fetch news data
 
 function reloadSeqtaPages() {
-  const result = browser.tabs.query({});
+  const result = browser.tabs.query({}); // Query all open tabs
   function open(tabs: any) {
     for (let tab of tabs) {
       if (tab.title.includes("SEQTA Learn")) {
-        browser.tabs.reload(tab.id);
+        browser.tabs.reload(tab.id); // Reload any tab with title including "SEQTA Learn"
       }
     }
   }
-  result.then(open, console.error);
+  result.then(open, console.error); // Handle tab query result
 }
 
 // @ts-ignore
@@ -19,14 +19,14 @@ browser.runtime.onMessage.addListener(
   (request: any, _: any, sendResponse: (response?: any) => void) => {
     switch (request.type) {
       case "reloadTabs":
-        reloadSeqtaPages();
+        reloadSeqtaPages(); // Reload SEQTA tabs
         break;
 
       case "extensionPages":
         browser.tabs.query({}).then(function (tabs) {
           for (let tab of tabs) {
             if (tab.url?.includes("chrome-extension://")) {
-              browser.tabs.sendMessage(tab.id!, request);
+              browser.tabs.sendMessage(tab.id!, request); // Send message to extension pages
             }
           }
         });
@@ -34,36 +34,37 @@ browser.runtime.onMessage.addListener(
 
       case "currentTab":
         browser.tabs
-          .query({ active: true, currentWindow: true })
+          .query({ active: true, currentWindow: true }) // Get current active tab
           .then(function (tabs) {
             browser.tabs
-              .sendMessage(tabs[0].id!, request)
+              .sendMessage(tabs[0].id!, request) // Send message to the current tab
               .then(function (response) {
-                sendResponse(response);
+                sendResponse(response); // Respond with received message
               });
           });
-        return true;
+        return true; // Indicate asynchronous response
 
       case "githubTab":
-        browser.tabs.create({ url: "github.com/BetterSEQTA/BetterSEQTA-Plus" });
+        browser.tabs.create({ url: "github.com/BetterSEQTA/BetterSEQTA-Plus" }); // Open GitHub page
         break;
 
       case "setDefaultStorage":
-        SetStorageValue(DefaultValues);
+        SetStorageValue(DefaultValues); // Set default storage values
         break;
 
       case "sendNews":
-        fetchNews(request.source ?? "australia", sendResponse);
-        return true;
+        fetchNews(request.source ?? "australia", sendResponse); // Fetch news and respond
+        return true; // Indicate asynchronous response
 
       default:
-        console.log("Unknown request type");
+        console.log("Unknown request type"); // Log unrecognized request types
     }
 
-    return false;
+    return false; // Default return for synchronous responses
   },
 );
 
+// Default settings values
 const DefaultValues: SettingsState = {
   onoff: true,
   animatedbk: true,
@@ -118,12 +119,14 @@ const DefaultValues: SettingsState = {
   newsSource: "australia",
 };
 
+// Set multiple values in local storage
 function SetStorageValue(object: any) {
   for (var i in object) {
-    browser.storage.local.set({ [i]: object[i] });
+    browser.storage.local.set({ [i]: object[i] }); // Store each setting individually
   }
 }
 
+// Convert background slider input to speed value for animation
 function convertBksliderToSpeed(bksliderinput: number): number {
   const minBase = 50;
   const maxBase = 150;
@@ -136,6 +139,7 @@ function convertBksliderToSpeed(bksliderinput: number): number {
   return speed;
 }
 
+// Migrate legacy settings to plugin-based structure
 async function migrateLegacySettings() {
   const storage = (await browser.storage.local.get(
     null,
@@ -187,15 +191,16 @@ async function migrateLegacySettings() {
     "assessmentsAverage",
     "lettergrade",
   ];
-  await browser.storage.local.remove(keysToRemove);
+  await browser.storage.local.remove(keysToRemove); // Remove legacy keys after migration
 }
 
+// Run on extension install or update
 browser.runtime.onInstalled.addListener(function (event) {
-  browser.storage.local.remove(["justupdated"]);
-  browser.storage.local.remove(["data"]);
+  browser.storage.local.remove(["justupdated"]); // Clear justupdated flag
+  browser.storage.local.remove(["data"]); // Remove old data
 
   if (event.reason == "install" || event.reason == "update") {
-    browser.storage.local.set({ justupdated: true });
-    migrateLegacySettings();
+    browser.storage.local.set({ justupdated: true }); // Mark as just updated
+    migrateLegacySettings(); // Migrate old settings
   }
 });

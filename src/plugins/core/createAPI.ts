@@ -1,3 +1,4 @@
+// Importing necessary types and utility functions
 import type {
   EventsAPI,
   Plugin,
@@ -12,8 +13,10 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import browser from "webextension-polyfill";
 
+// Function to create and return the SEQTA API
 function createSEQTAAPI(): SEQTAAPI {
   return {
+    // Registers a callback to be called when an element matching the selector is added to the DOM
     onMount: (selector, callback) => {
       return eventManager.register(
         `${selector}Added`,
@@ -23,22 +26,26 @@ function createSEQTAAPI(): SEQTAAPI {
         callback,
       );
     },
+    // Finds a React fiber node that matches the selector
     getFiber: (selector) => {
       return ReactFiber.find(selector);
     },
+    // Retrieves the current page from the URL
     getCurrentPage: () => {
       const path = window.location.hash.split("?page=/")[1] || "";
       return path.split("/")[0];
     },
+    // Registers a callback to be called when the page changes (based on the URL hash)
     onPageChange: (callback) => {
       const handler = () => {
         const page = window.location.hash.split("?page=/")[1] || "";
         callback(page.split("/")[0]);
       };
 
+      // Add event listener for page changes
       window.addEventListener("hashchange", handler);
 
-      // Return an unregister function
+      // Return an unregister function to remove the event listener
       return {
         unregister: () => {
           window.removeEventListener("hashchange", handler);
@@ -48,13 +55,14 @@ function createSEQTAAPI(): SEQTAAPI {
   };
 }
 
+// Function to create and return the settings API for a plugin
 function createSettingsAPI<T extends PluginSettings>(
   plugin: Plugin<T>,
 ): SettingsAPI<T> & { loaded: Promise<void> } {
-  const storageKey = `plugin.${plugin.id}.settings`;
-  const listeners = new Map<keyof T, Set<(value: any) => void>>();
+  const storageKey = `plugin.${plugin.id}.settings`;  // Storage key for plugin settings
+  const listeners = new Map<keyof T, Set<(value: any) => void>>(); // Listeners for settings changes
 
-  // Initialize with default values
+  // Initialize settings with default values
   const settingsWithMeta: any = {
     onChange: <K extends keyof T>(
       key: K,
@@ -79,7 +87,7 @@ function createSettingsAPI<T extends PluginSettings>(
     loaded: Promise.resolve(), // will be replaced below
   };
 
-  // Fill with defaults first
+  // Initialize with default settings
   for (const key in plugin.settings) {
     settingsWithMeta[key] = plugin.settings[key].default;
   }
@@ -132,6 +140,7 @@ function createSettingsAPI<T extends PluginSettings>(
 
   browser.storage.onChanged.addListener(handleStorageChange);
 
+  // Return a proxy to handle direct access to settings and syncing with storage
   const proxy = new Proxy(settingsWithMeta, {
     get(target, prop) {
       return target[prop];
@@ -142,12 +151,13 @@ function createSettingsAPI<T extends PluginSettings>(
 
       target[prop] = value;
 
-      // Reconstruct just the data keys for storage (excluding metadata methods)
+      // Prepare data for storage (excluding metadata methods)
       const dataToStore: any = {};
       for (const key in plugin.settings) {
         dataToStore[key] = target[key];
       }
 
+      // Save updated settings to storage
       browser.storage.local.set({ [storageKey]: dataToStore });
 
       listeners.get(prop as keyof T)?.forEach((cb) => cb(value));
@@ -158,22 +168,23 @@ function createSettingsAPI<T extends PluginSettings>(
   return proxy;
 }
 
+// Function to create and return the storage API for a plugin
 function createStorageAPI<T = any>(
   pluginId: string,
 ): StorageAPI<T> & { [K in keyof T]: T[K] } {
-  const prefix = `plugin.${pluginId}.storage.`;
-  const cache: Record<string, any> = {};
-  const listeners = new Map<string, Set<(value: any) => void>>();
+  const prefix = `plugin.${pluginId}.storage.`;  // Prefix for storage keys
+  const cache: Record<string, any> = {}; // In-memory cache of stored data
+  const listeners = new Map<string, Set<(value: any) => void>>(); // Listeners for storage changes
   const storageListeners = new Set<
     (changes: { [key: string]: any }, area: string) => void
   >();
 
-  // Load all existing storage values for this plugin
+  // Load existing storage values into cache
   const loadStoragePromise = (async () => {
     try {
       const allStorage = await browser.storage.local.get(null);
 
-      // Filter for this plugin's storage keys and populate cache
+      // Filter for plugin-specific keys and populate cache
       Object.entries(allStorage).forEach(([key, value]) => {
         if (key.startsWith(prefix)) {
           const shortKey = key.slice(prefix.length);
@@ -188,7 +199,7 @@ function createStorageAPI<T = any>(
     }
   })();
 
-  // Listen for storage changes
+  // Listen for changes to storage
   const handleStorageChange = (
     changes: { [key: string]: any },
     area: string,
@@ -199,7 +210,7 @@ function createStorageAPI<T = any>(
           const shortKey = key.slice(prefix.length);
           cache[shortKey] = change.newValue;
 
-          // Notify listeners
+          // Notify listeners of the updated value
           listeners
             .get(shortKey)
             ?.forEach((callback) => callback(change.newValue));
@@ -210,7 +221,7 @@ function createStorageAPI<T = any>(
   browser.storage.onChanged.addListener(handleStorageChange);
   storageListeners.add(handleStorageChange);
 
-  // Create the proxy for direct property access
+  // Return a proxy for direct access to storage values and syncing with browser storage
   return new Proxy(cache, {
     get(target, prop: string) {
       if (prop === "onChange") {
@@ -235,7 +246,7 @@ function createStorageAPI<T = any>(
         return loadStoragePromise;
       }
 
-      // Direct property access
+      // Return the value from cache for direct property access
       return target[prop];
     },
     set(target, prop: string, value: any) {
@@ -247,7 +258,7 @@ function createStorageAPI<T = any>(
       target[prop] = value;
       browser.storage.local.set({ [prefix + prop]: value });
 
-      // Notify listeners
+      // Notify listeners of the updated value
       listeners.get(prop)?.forEach((callback) => callback(value));
 
       return true;
@@ -255,14 +266,16 @@ function createStorageAPI<T = any>(
   }) as StorageAPI<T> & { [K in keyof T]: T[K] };
 }
 
+// Function to create and return the events API for a plugin
 function createEventsAPI(pluginId: string): EventsAPI {
-  const prefix = `plugin.${pluginId}.`;
+  const prefix = `plugin.${pluginId}.`;  // Prefix for event names
   const eventListeners = new Map<
     string,
     Set<{ callback: (...args: any[]) => void; listener: EventListener }>
   >();
 
   return {
+    // Register an event listener for a custom event
     on: (event, callback) => {
       const fullEventName = prefix + event;
       const listener = ((e: CustomEvent) => {
@@ -271,6 +284,7 @@ function createEventsAPI(pluginId: string): EventsAPI {
 
       document.addEventListener(fullEventName, listener);
 
+      // Store the listener for potential removal later
       if (!eventListeners.has(event)) {
         eventListeners.set(event, new Set());
       }
@@ -283,6 +297,7 @@ function createEventsAPI(pluginId: string): EventsAPI {
         },
       };
     },
+    // Emit a custom event with specified arguments
     emit: (event, ...args) => {
       document.dispatchEvent(
         new CustomEvent(prefix + event, {
@@ -293,13 +308,14 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
+// Function to create and return the plugin API
 export function createPluginAPI<T extends PluginSettings, S = any>(
   plugin: Plugin<T, S>,
 ): PluginAPI<T, S> {
   return {
-    seqta: createSEQTAAPI(),
-    settings: createSettingsAPI(plugin),
-    storage: createStorageAPI<S>(plugin.id),
-    events: createEventsAPI(plugin.id),
+    seqta: createSEQTAAPI(), // SEQTA API
+    settings: createSettingsAPI(plugin), // Settings API
+    storage: createStorageAPI<S>(plugin.id), // Storage API
+    events: createEventsAPI(plugin.id), // Events API
   };
 }
