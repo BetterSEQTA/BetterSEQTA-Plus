@@ -63,6 +63,10 @@ export const subjectsJob: Job = {
         const id = `${semester.code}-${subject.code}-${subject.metaclass}`;
         if (existingIds.has(id)) continue;
 
+        // Extract year level from subject code (assuming format like "YEAR10" or "10ENG")
+        const yearLevel = subject.code.match(/^YEAR(\d+)|^(\d+)/i)?.[1] || subject.code.match(/^(\d+)/)?.[1] || 0;
+        const isActive = subject.active === 1;
+
         // Create two items for each subject - one for assessments and one for course
         items.push(
           {
@@ -78,7 +82,9 @@ export const subjectsJob: Job = {
               programme: subject.programme,
               semesterCode: semester.code,
               semesterDescription: semester.description,
-              type: "assessments"
+              type: "assessments",
+              yearLevel: Number(yearLevel),
+              isActive
             },
             actionId: "subject-assessments",
             renderComponentId: "subject",
@@ -96,7 +102,9 @@ export const subjectsJob: Job = {
               programme: subject.programme,
               semesterCode: semester.code,
               semesterDescription: semester.description,
-              type: "course"
+              type: "course",
+              yearLevel: Number(yearLevel),
+              isActive
             },
             actionId: "subject-course",
             renderComponentId: "subject",
