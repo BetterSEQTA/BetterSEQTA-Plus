@@ -25,15 +25,16 @@ export function createSearchIndexes() {
       { name: "content", weight: 1 },
       { name: "category", weight: 1 },
       { name: "metadata.subjectName", weight: 3 },
-      { name: "metadata.subjectCode", weight: 2 },
-      { name: "metadata.semesterDescription", weight: 1 }
+      { name: "metadata.subjectCode", weight: 2.5 },
+      { name: "metadata.semesterDescription", weight: 1 },
+      { name: "metadata.yearLevel", weight: 1.5 }
     ],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.4, // Lower threshold to be more lenient
+    threshold: 0.4,
     minMatchCharLength: 2,
-    distance: 100, // Increased distance to allow for more fuzzy matches
-    useExtendedSearch: true, // Enable extended search for better matching
+    distance: 100,
+    useExtendedSearch: true,
   };
 
   return {
@@ -123,14 +124,15 @@ export function searchDynamicItems(
       if (hasSubjectMatch) {
         score += 20; // Boost score for direct subject matches
       }
-      // Boost for higher year levels
-      const yearMatch = /^Year (\d+)/i.exec(item.metadata?.subjectName || "");
-      if (yearMatch) {
-        const yearNum = parseInt(yearMatch[1], 10);
-        if (!isNaN(yearNum)) {
-          score += yearNum; // Boost by year number
-        }
+
+      // Boost for active subjects
+      if (item.metadata?.isActive) {
+        score += 15; // Boost for active subjects
       }
+
+      // Boost for year level
+      const yearLevel = item.metadata?.yearLevel || 0;
+      score += yearLevel; // Add year level to score
     }
 
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);

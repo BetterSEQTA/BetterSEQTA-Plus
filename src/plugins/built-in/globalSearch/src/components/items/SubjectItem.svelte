@@ -46,7 +46,7 @@
 >
   <div class="flex items-center w-full">
     <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">
-      {item.metadata?.type === 'assessments' ? '\uebee' : '\uec0a'}
+      {item.metadata?.type === 'assessments' ? '\ueac3' : '\ueb4d'}
     </div>
     <span class="ml-4 text-lg truncate">
       {@html stripHtmlButKeepHighlights(highlightMatch(item.text, searchTerm, matches))}
