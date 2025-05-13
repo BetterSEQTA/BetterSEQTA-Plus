@@ -33,4 +33,5 @@ export interface Job {
   renderComponentId: string;
   run: (ctx: JobContext) => Promise<IndexItem[]>;
   purge?: (items: IndexItem[]) => IndexItem[];
+  boostCriteria?: (item: IndexItem, searchTerm: string) => number;
 }

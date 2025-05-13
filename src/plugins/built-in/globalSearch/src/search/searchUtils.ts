@@ -5,6 +5,7 @@ import type { CombinedResult } from "../core/types";
 import type { IndexItem } from "../indexing/types";
 import { searchVectors } from "./vector/vectorSearch";
 import type { VectorSearchResult } from "./vector/vectorTypes";
+import { jobs } from "../indexing/jobs";
 
 export function createSearchIndexes() {
   const commands = getStaticCommands();
@@ -114,25 +115,12 @@ export function searchDynamicItems(
     const item = result.item;
     const fuseScore = 10 * (1 - (result.score || 0.5));
     
-    // Boost score for subject matches
     let score = fuseScore;
-    if (item.category === "subjects") {
-      // Check if the match is in subjectName or subjectCode
-      const hasSubjectMatch = result.matches?.some(match => 
-        match.key === "metadata.subjectName" || match.key === "metadata.subjectCode"
-      );
-      if (hasSubjectMatch) {
-        score += 20; // Boost score for direct subject matches
-      }
 
-      // Boost for active subjects
-      if (item.metadata?.isActive) {
-        score += 15; // Boost for active subjects
-      }
-
-      // Boost for year level
-      const yearLevel = item.metadata?.yearLevel || 0;
-      score += yearLevel; // Add year level to score
+    // apply boost criteria if it exists
+    const boost = jobs[item.category].boostCriteria?.(item, query);
+    if (boost) {
+      score += boost;
     }
 
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);

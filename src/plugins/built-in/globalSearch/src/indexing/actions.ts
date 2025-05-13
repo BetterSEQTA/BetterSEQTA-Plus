@@ -37,4 +37,12 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       window.location.hash = `#?page=/assessments&id=${item.metadata.assessmentId}`;
     }
   }) as ActionHandler<any>,
+
+  subjectassessment: ((item: IndexItem) => {
+    window.location.href = `/#?page=/assessments/${item.metadata.programme}:${item.metadata.subjectId}`;
+  }) as ActionHandler<any>,
+
+  subjectcourse: ((item: IndexItem) => {
+    window.location.href = `/#?page=/courses/${item.metadata.programme}:${item.metadata.subjectId}`;
+  }) as ActionHandler<any>,
 };
