@@ -114,7 +114,7 @@ Just remember, in order to update changes to the extension if you are running in
 The folder structure is as follows:
 
 - The `src` folder contains source files that are compiled to the build directory.
--
+
 - The `src/plugins` folder contains vital loaders required for BetterSEQTA+ functionality.
 
 - The `src/interface` folder contains source React & Svelte files that are required for the Settings page.
@@ -131,7 +131,7 @@ Want to contribute? [Click Here!](https://github.com/BetterSEQTA/BetterSEQTA-Plu
 
 ## Credits
 
-This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development by [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph)
+This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development from lead developers [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph) with help from other volunteers
 
 ## Star History
 
