@@ -196,15 +196,6 @@
       const result = combinedResults[resultIndex];
       if (result?.item) {
         executeItemAction(result.item);
-        if (result?.type === 'dynamic') {
-          tick().then(() => {
-            const li = resultsList?.querySelectorAll('li')[resultIndex];
-            if (li) {
-              const btn = li.querySelector('button, [tabindex="0"]');
-              if (btn) (btn as HTMLElement).click();
-            }
-          });
-        }
       }
     }
   };
@@ -306,7 +297,7 @@
                       searchTerm={searchTerm} 
                       matches={result.matches} 
                       onclick={() => executeItemAction(dynamicItem)}
-                      onkeydown={() => {}}
+                      onkeydown={() => executeItemAction(dynamicItem)}
                       role="button"
                       tabindex="0"
                     />

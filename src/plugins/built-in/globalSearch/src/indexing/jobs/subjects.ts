@@ -18,6 +18,24 @@ export const subjectsJob: Job = {
   label: "Subjects",
   renderComponentId: "subject",
   frequency: "pageLoad",
+  boostCriteria: (item, searchTerm) => {
+    let score = 0;
+    const hasSubjectMatch = searchTerm.toLowerCase().includes(item.metadata.subjectName.toLowerCase()) || searchTerm.toLowerCase().includes(item.metadata.subjectCode.toLowerCase());
+    if (hasSubjectMatch) {
+      score += 20; // Boost score for direct subject matches
+    }
+
+    // Boost for active subjects
+    if (item.metadata?.isActive) {
+      score += 15; // Boost for active subjects
+    }
+
+    // Boost for year level
+    const yearLevel = item.metadata?.yearLevel || 0;
+    score += yearLevel;
+    
+    return score;
+  },
 
   run: async (ctx) => {
     const existingIds = new Set(
@@ -83,10 +101,10 @@ export const subjectsJob: Job = {
               semesterCode: semester.code,
               semesterDescription: semester.description,
               type: "assessments",
-              yearLevel: Number(yearLevel),
+              yearLevel: yearLevel ? Number(yearLevel) : 0,
               isActive
             },
-            actionId: "subject-assessments",
+            actionId: "subjectassessment",
             renderComponentId: "subject",
           },
           {
@@ -103,10 +121,10 @@ export const subjectsJob: Job = {
               semesterCode: semester.code,
               semesterDescription: semester.description,
               type: "course",
-              yearLevel: Number(yearLevel),
+              yearLevel: yearLevel ? Number(yearLevel) : 0,
               isActive
             },
-            actionId: "subject-course",
+            actionId: "subjectcourse",
             renderComponentId: "subject",
           }
         );
