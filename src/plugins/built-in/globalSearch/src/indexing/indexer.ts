@@ -3,6 +3,7 @@ import { jobs } from "./jobs";
 import { renderComponentMap } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
+import { loadDynamicItems } from "../utils/dynamicItems";
 
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
@@ -357,6 +358,16 @@ export async function runIndexing(): Promise<void> {
   // Stop heartbeat ONLY when all jobs *and* the vectorization dispatch are done.
   // The actual *completion* of vectorization is now asynchronous.
   stopHeartbeat();
+
+  // Before loading dynamic items, attach renderComponent to each item if available
+  allItemsFromJobs.forEach(item => {
+    const renderComponent = renderComponentMap[item.renderComponentId];
+    if (renderComponent) {
+      item.renderComponent = renderComponent;
+    }
+  });
+  loadDynamicItems(allItemsFromJobs);
+  window.dispatchEvent(new Event("dynamic-items-updated"));
   // Final progress update might be handled by the worker callback now.
   // dispatchProgress(completedJobs, totalSteps, false); // This might be premature
 }
