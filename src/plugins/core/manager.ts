@@ -5,6 +5,7 @@ import type {
   PluginSettings,
   SelectSetting,
   StringSetting,
+  ButtonSetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
@@ -190,26 +191,30 @@ export class PluginManager {
             type: "select";
             id: string;
             options: Array<{ value: string; label: string }>;
-          });
+          })
+        | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> });
     };
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {
       const settingsEntries = Object.entries(plugin.settings).map(
         ([key, setting]) => {
           const settingObj = setting as any;
-          // Create a copy of the setting object without any functions
-          const result: any = Object.fromEntries(
-            Object.entries(settingObj).filter(
-              ([_, value]) => typeof value !== "function",
-            ),
-          );
-
-          // Ensure required properties are present
+          let result: any;
+          if (settingObj.type === "button") {
+            // For button, keep the trigger function
+            result = { ...settingObj };
+          } else {
+            // For others, strip functions
+            result = Object.fromEntries(
+              Object.entries(settingObj).filter(
+                ([_, value]) => typeof value !== "function",
+              ),
+            );
+          }
           result.id = key;
           result.title = result.title || key;
           result.description = result.description || "";
           result.defaultEnabled = plugin.defaultEnabled ?? true;
-
           return [key, result];
         },
       );

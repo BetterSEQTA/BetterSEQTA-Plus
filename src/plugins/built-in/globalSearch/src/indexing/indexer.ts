@@ -210,8 +210,7 @@ export async function runIndexing(): Promise<void> {
       let merged = mergeItems(stored, newItemsRaw);
       if (job.purge) merged = job.purge(merged);
 
-      console.log(merged);
-      console.log(merged.length);
+      console.log(`[Indexer] ${job.label}: ${merged.length} items stored in '${jobId}' store (non-vector).`);
 
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);

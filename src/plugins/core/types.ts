@@ -34,11 +34,19 @@ export interface SelectSetting<T extends string> {
   description?: string;
 }
 
+export interface ButtonSetting {
+  type: "button";
+  title: string;
+  description?: string;
+  trigger?: () => void | Promise<void>;
+}
+
 export type PluginSetting =
   | BooleanSetting
   | StringSetting
   | NumberSetting
-  | SelectSetting<string>;
+  | SelectSetting<string>
+  | ButtonSetting;
 
 export type PluginSettings = {
   [key: string]: PluginSetting;

@@ -12,7 +12,7 @@
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   import { getAllPluginSettings } from "@/plugins"
-  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting } from "@/plugins/core/types"
+  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
   type SettingType = 
@@ -23,6 +23,10 @@
       type: 'select', 
       id: string, 
       options: string[]
+    }) |
+    (Omit<ButtonSetting, 'type'> & { 
+      type: 'button', 
+      id: string 
     });
 
   interface Plugin {
@@ -45,7 +49,7 @@
       pluginSettingsValues[plugin.pluginId] = stored[storageKey] || {};
       
       for (const [key, setting] of Object.entries(plugin.settings)) {
-        if (pluginSettingsValues[plugin.pluginId][key] === undefined) {
+        if (pluginSettingsValues[plugin.pluginId][key] === undefined && setting.type !== 'button') {
           pluginSettingsValues[plugin.pluginId][key] = setting.default;
         }
       }
@@ -240,6 +244,11 @@
                       value: opt,
                       label: opt.charAt(0).toUpperCase() + opt.slice(1)
                       }))}
+                    />
+                  {:else if setting.type === 'button'}
+                    <Button
+                      onClick={() => setting.trigger?.()}
+                      text={setting.title}
                     />
                   {/if}
                 </div>

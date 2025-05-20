@@ -1,5 +1,6 @@
 import type {
   BooleanSetting,
+  ButtonSetting,
   NumberSetting,
   SelectSetting,
   StringSetting,
@@ -37,6 +38,15 @@ export function selectSetting<T extends string>(
 ): SelectSetting<T> {
   return {
     type: "select",
+    ...options,
+  };
+}
+
+export function buttonSetting(
+  options: Omit<ButtonSetting, "type">,
+): ButtonSetting {
+  return {
+    type: "button",
     ...options,
   };
 }
