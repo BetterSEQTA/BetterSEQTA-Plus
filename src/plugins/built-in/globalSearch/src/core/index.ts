@@ -2,6 +2,7 @@ import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
 import {
   booleanSetting,
+  buttonSetting,
   defineSettings,
   Setting,
   stringSetting,
@@ -34,6 +35,35 @@ const settings = defineSettings({
     title: "Index on Page Load",
     description: "Run content indexing when SEQTA loads",
   }),
+  resetIndex: buttonSetting({
+    title: "Reset Index",
+    description: "Reset the search index and storage",
+    trigger: async () => {
+      const confirmed = confirm("Are you sure you want to reset the search index and storage?");
+
+      if (confirmed) {
+        // Delete both 'embeddiaDB' and 'betterseqta-index' using native IndexedDB APIs
+        const deleteDb = (dbName: string) => {
+          return new Promise<void>((resolve, reject) => {
+            const req = indexedDB.deleteDatabase(dbName);
+            req.onsuccess = () => resolve();
+            req.onerror = () => reject(req.error);
+            req.onblocked = () => {
+              alert(`Please close all other tabs using this app to reset the database: ${dbName}`);
+              reject(new Error('Delete blocked'));
+            };
+          });
+        };
+        try {
+          await deleteDb("embeddiaDB");
+          await deleteDb("betterseqta-index");
+          alert("Search index and storage have been reset.");
+        } catch (e) {
+          alert("Failed to reset one or more databases: " + String(e));
+        }
+      }
+    },
+  }),
 });
 
 class GlobalSearchPlugin extends BasePlugin<typeof settings> {
@@ -48,6 +78,9 @@ class GlobalSearchPlugin extends BasePlugin<typeof settings> {
 
   @Setting(settings.runIndexingOnLoad)
   runIndexingOnLoad!: boolean;
+
+  @Setting(settings.resetIndex)
+  resetIndex!: () => void;
 }
 
 const settingsInstance = new GlobalSearchPlugin();

@@ -59,7 +59,6 @@
     
     if (!standalone) return;
     initializeSettingsState();
-    console.log('settingsState', $settingsState);
     StandaloneStore.setStandalone(true);
   });
 </script>
