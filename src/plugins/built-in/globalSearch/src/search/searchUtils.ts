@@ -167,6 +167,18 @@ export async function performSearch(
   // Add dynamic results first
   dynamicResults.forEach((r) => {
     seenIds.add(r.id);
+    
+    if (r.type === "dynamic") {
+      const dynamicItem = r.item as IndexItem;
+      const job = jobs[dynamicItem.category];
+      if (job && typeof job.boostCriteria === 'function') {
+        const boost = job.boostCriteria(dynamicItem, query);
+        if (boost) {
+          r.score += boost; // Add the boost to the score
+        }
+      }
+    }
+    
     const vectorMatch = vectorResults.find((v) => v.object.id === r.id);
     if (vectorMatch) {
       // If we found it in both searches, combine the scores
