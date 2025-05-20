@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../../utils/highlight';
+  import HighlightedText from '../../utils/HighlightedText.svelte';
   import type { DynamicContentItem } from '../../utils/dynamicItems';
   import type { FuseResultMatch } from '../../core/types';
 
@@ -20,15 +20,15 @@
   <div class="flex items-center w-full">
     <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{item.metadata?.icon || '\uebee'}</div>
     <span class="ml-4 text-lg truncate">
-      {@html stripHtmlButKeepHighlights(highlightMatch(item.text, searchTerm, matches))}
+      <HighlightedText text={item.text} term={searchTerm} matches={matches} />
     </span>
     <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
-      {item.category} 
+      {item.category}
     </span>
   </div>
   {#if item.content}
     <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
-      {@html stripHtmlButKeepHighlights(highlightSnippet(item.content, searchTerm, matches))}
+      <HighlightedText text={item.content} term={searchTerm} matches={matches} />
     </div>
   {/if}
 </button>

@@ -28,11 +28,10 @@ export const subjectsJob: Job = {
     // Boost for active subjects
     if (item.metadata?.isActive) {
       score += 15; // Boost for active subjects
+      console.log("active subject:", item.metadata.subjectName);
+    } else {
+      console.log("inactive subject:", item.metadata.subjectName);
     }
-
-    // Boost for year level
-    const yearLevel = item.metadata?.yearLevel || 0;
-    score += yearLevel;
     
     return score;
   },
@@ -81,9 +80,7 @@ export const subjectsJob: Job = {
         const id = `${semester.code}-${subject.code}-${subject.metaclass}`;
         if (existingIds.has(id)) continue;
 
-        // Extract year level from subject code (assuming format like "YEAR10" or "10ENG")
-        const yearLevel = subject.code.match(/^YEAR(\d+)|^(\d+)/i)?.[1] || subject.code.match(/^(\d+)/)?.[1] || 0;
-        const isActive = subject.active === 1;
+        const isActive = semester.active === 1;
 
         // Create two items for each subject - one for assessments and one for course
         items.push(
@@ -101,7 +98,6 @@ export const subjectsJob: Job = {
               semesterCode: semester.code,
               semesterDescription: semester.description,
               type: "assessments",
-              yearLevel: yearLevel ? Number(yearLevel) : 0,
               isActive
             },
             actionId: "subjectassessment",
@@ -121,7 +117,6 @@ export const subjectsJob: Job = {
               semesterCode: semester.code,
               semesterDescription: semester.description,
               type: "course",
-              yearLevel: yearLevel ? Number(yearLevel) : 0,
               isActive
             },
             actionId: "subjectcourse",

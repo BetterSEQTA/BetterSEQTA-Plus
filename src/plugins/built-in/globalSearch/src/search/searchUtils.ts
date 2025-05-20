@@ -25,10 +25,6 @@ export function createSearchIndexes() {
       { name: "text", weight: 2 },
       { name: "content", weight: 1 },
       { name: "category", weight: 1 },
-      { name: "metadata.subjectName", weight: 3 },
-      { name: "metadata.subjectCode", weight: 2.5 },
-      { name: "metadata.semesterDescription", weight: 1 },
-      { name: "metadata.yearLevel", weight: 1.5 }
     ],
     includeScore: true,
     includeMatches: true,
@@ -117,12 +113,6 @@ export function searchDynamicItems(
     
     let score = fuseScore;
 
-    // apply boost criteria if it exists
-    const boost = jobs[item.category].boostCriteria?.(item, query);
-    if (boost) {
-      score += boost;
-    }
-
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
     const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0;
     score += recencyBoost;
@@ -196,10 +186,18 @@ export async function performSearch(
 
     if (!seenIds.has(id)) {
       // This is a semantic match that Fuse missed - add it with the vector similarity as score
+      let score = v.similarity * 0.5; // High base score for semantic matches
+      const job = jobs[v.object.category];
+      if (job && typeof job.boostCriteria === 'function') {
+        const boost = job.boostCriteria(v.object, query);
+        if (boost) {
+          score += boost;
+        }
+      }
       resultMap.set(id, {
         id,
         type: "dynamic" as const,
-        score: v.similarity * 0.9, // High base score for semantic matches
+        score,
         item: v.object,
       });
     }
