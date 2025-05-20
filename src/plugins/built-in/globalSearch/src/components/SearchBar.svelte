@@ -6,13 +6,13 @@
   import { type StaticCommandItem } from '../core/commands';
   import type { CombinedResult } from '../core/types';
   import { createSearchIndexes, performSearch as doSearch } from '../search/searchUtils';
-  import { highlightMatch, highlightSnippet, stripHtmlButKeepHighlights } from '../utils/highlight';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
   import type { IndexItem } from '../indexing/types';
   import debounce from 'lodash/debounce';
   import { renderComponentMap } from '../indexing/renderComponents';
+  import HighlightedText from '../utils/HighlightedText.svelte';
 
   const { 
     transparencyEffects, 
@@ -279,7 +279,7 @@
                   >
                     <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{staticItem.icon}</div>
                     <span class="ml-4 text-lg truncate">
-                      {@html highlightMatch(staticItem.text, searchTerm, result.matches)}
+                      <HighlightedText text={staticItem.text} term={searchTerm} matches={result.matches} />
                     </span>
                     {#if staticItem.keybindLabel}
                       <div class="flex-none ml-auto">
@@ -310,7 +310,7 @@
                       <div class="flex items-center w-full">
                         <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}">{dynamicItem.metadata?.icon || '\ue924'}</div>
                         <span class="ml-4 text-lg truncate">
-                          {@html stripHtmlButKeepHighlights(highlightMatch(dynamicItem.text, searchTerm, result.matches))}
+                          <HighlightedText text={dynamicItem.text} term={searchTerm} matches={result.matches} />
                         </span>
                         <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
                           {dynamicItem.category} 
@@ -318,7 +318,7 @@
                       </div>
                       {#if dynamicItem.content}
                         <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
-                          {@html stripHtmlButKeepHighlights(highlightSnippet(dynamicItem.content, searchTerm, result.matches))}
+                          <HighlightedText text={dynamicItem.content} term={searchTerm} matches={result.matches} />
                         </div>
                       {/if}
                     </button>
