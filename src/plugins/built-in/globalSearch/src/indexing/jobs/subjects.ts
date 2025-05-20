@@ -25,12 +25,10 @@ export const subjectsJob: Job = {
       score += 20; // Boost score for direct subject matches
     }
 
-    // Boost for active subjects
-    if (item.metadata?.isActive) {
+    if (item.metadata.isActive) {
       score += 15; // Boost for active subjects
-      console.log("active subject:", item.metadata.subjectName);
     } else {
-      console.log("inactive subject:", item.metadata.subjectName);
+      score -= 50; // Penalty for inactive subjects
     }
     
     return score;
@@ -83,45 +81,53 @@ export const subjectsJob: Job = {
         const isActive = semester.active === 1;
 
         // Create two items for each subject - one for assessments and one for course
-        items.push(
-          {
-            id: `${id}-assessments`,
-            text: `${subject.title} Assessments`,
-            category: "subjects",
-            content: `View assessments for ${subject.title} (${semester.description})`,
-            dateAdded: Date.now(),
-            metadata: {
-              subjectId: subject.metaclass,
-              subjectName: subject.title,
-              subjectCode: subject.code,
-              programme: subject.programme,
-              semesterCode: semester.code,
-              semesterDescription: semester.description,
-              type: "assessments",
-              isActive
-            },
-            actionId: "subjectassessment",
-            renderComponentId: "subject",
+        const assessmentsItem = {
+          id: `${id}-assessments`,
+          text: `${subject.title} Assessments`,
+          category: "subjects",
+          content: `View assessments for ${subject.title} (${semester.description})`,
+          dateAdded: Date.now(),
+          metadata: {
+            subjectId: subject.metaclass,
+            subjectName: subject.title,
+            subjectCode: subject.code,
+            programme: subject.programme,
+            semesterCode: semester.code,
+            semesterDescription: semester.description,
+            type: "assessments",
+            isActive
           },
-          {
-            id: `${id}-course`,
-            text: `${subject.title} Course`,
-            category: "subjects",
-            content: `View course content for ${subject.title} (${semester.description})`,
-            dateAdded: Date.now(),
-            metadata: {
-              subjectId: subject.metaclass,
-              subjectName: subject.title,
-              subjectCode: subject.code,
-              programme: subject.programme,
-              semesterCode: semester.code,
-              semesterDescription: semester.description,
-              type: "course",
-              isActive
-            },
-            actionId: "subjectcourse",
-            renderComponentId: "subject",
-          }
+          actionId: "subjectassessment",
+          renderComponentId: "subject",
+        };
+        
+        const courseItem = {
+          id: `${id}-course`,
+          text: `${subject.title} Course`,
+          category: "subjects",
+          content: `View course content for ${subject.title} (${semester.description})`,
+          dateAdded: Date.now(),
+          metadata: {
+            subjectId: subject.metaclass,
+            subjectName: subject.title,
+            subjectCode: subject.code,
+            programme: subject.programme,
+            semesterCode: semester.code,
+            semesterDescription: semester.description,
+            type: "course",
+            isActive
+          },
+          actionId: "subjectcourse",
+          renderComponentId: "subject",
+        };
+        
+        // Log all subject items during indexing
+        console.log('Indexing subject:', assessmentsItem.text, assessmentsItem.metadata.isActive);
+        console.log('Indexing subject:', courseItem.text, courseItem.metadata.isActive);
+        
+        items.push(
+          assessmentsItem,
+          courseItem
         );
       }
     }
