@@ -9,7 +9,6 @@ const fetchSubjects = async () => {
   });
 
   const data = await res.json();
-  console.debug("[Subjects job] API response:", data);
   return data;
 };
 
@@ -19,14 +18,13 @@ export const subjectsJob: Job = {
   renderComponentId: "subject",
   frequency: "pageLoad",
   boostCriteria: (item, searchTerm) => {
-    let score = 0;
-    const hasSubjectMatch = searchTerm.toLowerCase().includes(item.metadata.subjectName.toLowerCase()) || searchTerm.toLowerCase().includes(item.metadata.subjectCode.toLowerCase());
-    if (hasSubjectMatch) {
-      score += 20; // Boost score for direct subject matches
+    if (searchTerm == "") {
+      return -100;
     }
 
+    let score = 0;
     if (item.metadata.isActive) {
-      score += 15; // Boost for active subjects
+      score += 1; // Boost for active subjects
     } else {
       score -= 50; // Penalty for inactive subjects
     }
@@ -120,11 +118,7 @@ export const subjectsJob: Job = {
           actionId: "subjectcourse",
           renderComponentId: "subject",
         };
-        
-        // Log all subject items during indexing
-        console.log('Indexing subject:', assessmentsItem.text, assessmentsItem.metadata.isActive);
-        console.log('Indexing subject:', courseItem.text, courseItem.metadata.isActive);
-        
+
         items.push(
           assessmentsItem,
           courseItem
