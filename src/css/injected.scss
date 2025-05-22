@@ -664,14 +664,12 @@ td.colourBar {
 }
 #toolbar span:has(.search) {
   position: relative;
-  /* Makes sure the pseudo-element is positioned relative to this element */
 }
 #toolbar .search {
   padding-left: 30px;
 }
 #toolbar span:has(.search)::before {
   content: "\eca5";
-  /* Unicode for the search icon */
   position: absolute;
   left: 8px;
   z-index: 10;
@@ -684,7 +682,7 @@ td.colourBar {
 }
 #container #content .search {
   width: 100%;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--background-primary);
 }
 #container #content .uiButton {
@@ -944,6 +942,17 @@ div > ol:has(.uiFileHandlerWrapper) {
 #main > .course > .content > .resources > .content {
   color: var(--text-primary);
   opacity: 0.8;
+}
+
+#content:has(#main > .course) #toolbar {
+  position: absolute;
+  top: 72px;
+  left: 0px;
+  z-index: 10;
+  
+  @media (min-width: 1400px) {
+    left: 402px;
+  }
 }
 
 #main > .notices > .notice > .contents {
@@ -1517,9 +1526,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
 }
 [class*="Input__Input___"]::before,
+.navigator::before,
 .ais-btnSearch::before {
   content: "";
-  /* Unicode for the search icon */
   transform: translateY(-50%);
   color: currentColor;
   font-size: 16px;
@@ -1629,9 +1638,6 @@ iframe.userHTML {
 .dailycal > .times > .time {
   padding: 0 !important;
 }
-.navigator {
-  border-top-right-radius: 16px;
-}
 .programmeNavigator > .navigator,
 .programmeNavigator > .navigator > li > ul {
   background: var(--background-primary);
@@ -1640,10 +1646,126 @@ iframe.userHTML {
 .programmeNavigator > .navigator > .week > .lessons > .lesson:hover {
   background: var(--auto-background);
 }
-.programmeNavigator > .navigator > .week > .lessons > .lesson.selected,
-.programmeNavigator > .navigator > .cover.selected {
-  background: transparent;
-  color: var(--text-primary) !important;
+
+.programmeNavigator {
+  box-shadow: 0 0 40px 0px rgba(0,0,0,0.05);
+
+  .navigator {
+    padding: 6px !important;
+
+    &::before {
+      position: fixed;
+      z-index: 10;
+      top: 95px;
+    }
+
+    &::after {
+      content: "";
+      position: fixed;
+      z-index: 1;
+      top: 70px;
+      width: 390px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--background-primary) 50%, rgba(0, 0, 0, 0));
+      pointer-events: none;
+    }
+
+    .search {
+      padding: 10px;
+      padding-left: 30px;
+      top: 8px;
+      margin-top: -50px;
+      z-index: 2;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+    }
+
+    .bar {
+      top: 13px;
+      padding-right: 4px;
+      position: sticky;
+      pointer-events: none;
+
+      button {
+        position: unset;
+        pointer-events: auto;
+      }
+    }
+
+    .meta {
+      border-radius: 8px;
+    }
+
+    .cover {
+      padding: 12px;
+    }
+
+    .cover,
+    .lesson {
+      border-radius: 8px;
+      transition: background 0.1s ease-out;
+      position: relative;
+      color: var(--text-primary) !important;
+      z-index: 1;
+
+      &:hover {
+        background: transparent !important;
+      }
+
+      &.selected {
+        background: transparent !important;
+      }
+      
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        background: var(--auto-background);
+        opacity: 0;
+        scale: 0.95;
+        transition: opacity 0.2s ease-out, scale 0.1s ease-out;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      &:hover::before {
+        opacity: 0.5;
+        scale: 1;
+      }
+
+      &.selected::before {
+        opacity: 1;
+        scale: 1;
+      }
+      
+    }
+  }
+}
+
+.pane {
+  .content:has(.programmeNavigator)  {
+    margin: 0;
+  }
+
+  .programmeNavigator .navigator {
+    .search {
+      border-radius: 8px;
+    }
+
+    &::before {
+      top: 83px;
+    }
+  }
+}
+
+.dark .programmeNavigator .navigator {
+  .search {
+    background: var(--background-secondary) !important;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 15px 0px rgba(0, 0, 0, 0.1) !important;
+  }
 }
 .dark #main > .course > .content > h1 {
   text-shadow: 0 0 10px black;
@@ -1693,7 +1815,6 @@ ul {
 .programmeNavigator {
   width: 400px;
   background: var(--background-primary);
-  border-top-right-radius: 16px;
   position: relative;
 }
 #userActions > .details > .code {
@@ -2471,21 +2592,17 @@ body {
 }
 [data-label="inbox"] > [class*="LabelList__name___"]::before {
   content: "\eb70";
-  /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
   margin-right: 8px;
-  /* Adjusted to margin-right for the icon to be on the left */
   font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="outbox"] > [class*="LabelList__name___"]::before {
   content: "\eca6";
-  /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
   margin-right: 8px;
-  /* Adjusted to margin-right for the icon to be on the left */
   font-family: "IconFamily";
   pointer-events: none;
 }
@@ -2494,17 +2611,14 @@ body {
   color: currentColor;
   font-size: 16px;
   margin-right: 8px;
-  /* Adjusted to margin-right for the icon to be on the left */
   font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="trash"] > [class*="LabelList__name___"]::before {
   content: "\ed2c";
-  /* Unicode for the search icon */
   color: currentColor;
   font-size: 16px;
   margin-right: 8px;
-  /* Adjusted to margin-right for the icon to be on the left */
   font-family: "IconFamily";
   pointer-events: none;
 }
