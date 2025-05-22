@@ -8,6 +8,7 @@ import browser from "webextension-polyfill";
 
 import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
+import { delay } from "./seqta/utils/delay";
 
 export let MenuOptionsOpen = false;
 
@@ -45,6 +46,8 @@ async function init() {
 
       if (typeof settingsState.onoff === "undefined") {
         await browser.runtime.sendMessage({ type: "setDefaultStorage" });
+
+        await delay(5);
       }
 
       await main();
