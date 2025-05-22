@@ -114,3 +114,10 @@ body {
     transition: text-shadow 0.5s;
   }
 }
+
+.cke_panel_listItem > a {
+  
+  &:hover {
+    background: #3d3d3e !important;
+  }
+}

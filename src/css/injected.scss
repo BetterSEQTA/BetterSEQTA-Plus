@@ -1608,6 +1608,13 @@ iframe.userHTML {
 [class*="Thermoscore__Thermoscore___"] {
   background-image: unset;
   background: var(--auto-background);
+  border-radius: 8px;
+}
+.dark [class*="Thermoscore__Thermoscore___"] {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+[class*="AssessmentItem__meta___"] {
+  padding-bottom: 8px;
 }
 #toolbar {
   color: var(--text-primary);
@@ -1691,6 +1698,14 @@ ul {
 }
 #userActions > .details > .code {
   text-transform: initial;
+}
+div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
+  padding: 4px;
+}
+
+[class*="SelectedAssessment__due___"] {
+  border-radius: 8px !important;
+  background: var(--background-primary) !important;
 }
 [class*="SelectedAssessment__SelectedAssessment___"] {
   color: var(--text-primary);
@@ -2055,6 +2070,10 @@ div.bar.flat {
   }
 }
 
+.dark .cke_combo_button {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M6.984 9.984h10.031l-5.016 5.016z"/></svg>') !important;
+}
+
 .quicktable {
   border-radius: 12px;
 }
@@ -2143,6 +2162,23 @@ body {
 }
 [class*="Viewer__Viewer___"] {
   background: unset;
+
+  [class*="ReadingPane__ReadingPane___"] {
+    > [class*="Message__unread___"] > header {
+      box-shadow: none !important;
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--better-main);
+      }
+    }
+  }
 }
 .weekend {
   display: none !important;
@@ -2290,6 +2326,8 @@ body {
   > li[class*="MessageList__selected___"] {
   background: rgb(228 225 225);
   color: var(--text-primary);
+  box-shadow: none !important;
+  position: relative;
 }
 .NewsArticle {
   border-radius: 16px !important;
