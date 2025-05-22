@@ -1,4 +1,7 @@
+import { waitForElm } from "@/seqta/utils/waitForElm";
 import type { IndexItem } from "./types";
+import ReactFiber from "@/seqta/utils/ReactFiber";
+import { delay } from "@/seqta/utils/delay";
 
 interface MessageMetadata {
   messageId: number;
@@ -26,13 +29,45 @@ interface AssessmentMetadata {
 type ActionHandler<T = any> = (item: IndexItem & { metadata: T }) => void;
 
 export const actionMap: Record<string, ActionHandler<any>> = {
-  message: ((item: IndexItem & { metadata: MessageMetadata }) => {
-    window.location.hash = `#?page=/messages&id=${item.metadata.messageId}`;
+  message: (async (item: IndexItem & { metadata: MessageMetadata }) => {
+    window.location.hash = `#?page=/messages`;
+
+    await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
+
+    // Select the specific direct message
+    ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
+      selected: new Set([item.metadata.messageId]),
+    });
+    
+    // send a network request to mark as read
+    fetch('/seqta/student/save/message', {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({
+        items: [item.metadata.messageId],
+        mode: 'x-read',
+        read: true,
+      }),
+    });
+
+    await delay(10);
+
+    const button = document.querySelector('[class*="MessageList__selected___"]');
+    if (button) {
+      (button as HTMLElement).click();
+    }
   }) as ActionHandler<any>,
 
-  assessment: ((item: IndexItem & { metadata: AssessmentMetadata }) => {
+  assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
     if (item.metadata.isMessageBased) {
-      window.location.hash = `#?page=/messages&id=${item.metadata.messageId}`;
+      window.location.hash = `#?page=/messages`;
+
+      await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
+
+      // Select the specific direct message
+      ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
+        selected: new Set([item.metadata.messageId]),
+      });
     } else {
       window.location.hash = `#?page=/assessments&id=${item.metadata.assessmentId}`;
     }
