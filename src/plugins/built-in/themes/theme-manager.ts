@@ -200,7 +200,10 @@ export class ThemeManager {
       if (!settingsState.selectedTheme) {
         console.debug("[ThemeManager] Storing original settings");
         settingsState.originalSelectedColor = settingsState.selectedColor;
-        settingsState.originalDarkMode = settingsState.DarkMode;
+
+        if (theme.forceDark) {
+          settingsState.originalDarkMode = settingsState.DarkMode;
+        }
       }
 
       // Use view transition for the theme change
