@@ -14,12 +14,14 @@
   let isDragging = $state(false);
   let tempTheme = $state(null);
 
-  const handleThemeClick = async (theme: CustomTheme) => {
+  const handleThemeClick = async (theme: CustomTheme, e: MouseEvent) => {
     if (isEditMode) return;
     if (theme.id === themes?.selectedTheme) {
+      themeManager.setTransitionPoint(e.clientX, e.clientY);
       await themeManager.disableTheme();
       themes.selectedTheme = '';
     } else {
+      themeManager.setTransitionPoint(e.clientX, e.clientY);
       await themeManager.setTheme(theme.id);
       if (!themes) return;
       themes.selectedTheme = theme.id;
@@ -127,7 +129,7 @@
       {#each themes.themes as theme (theme.id)}
         <button
           class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
-          onclick={() => handleThemeClick(theme)}
+          onclick={(e) => handleThemeClick(theme, e)}
         >
           {#if isEditMode}
             <div

@@ -12,6 +12,13 @@
   font-family: Rubik, sans-serif !important;
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  pointer-events: none;
+}
+
 .hidden {
   display: none;
 }

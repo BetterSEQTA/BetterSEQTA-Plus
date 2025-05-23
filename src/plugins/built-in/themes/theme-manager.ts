@@ -25,6 +25,7 @@ export class ThemeManager {
   private originalPreviewColor: string | null = null;
   private originalPreviewTheme: boolean | null = null;
   private imageUrlCache: Map<string, string> = new Map();
+  private lastTransitionPoint: { x: number; y: number } = { x: 0, y: 0 };
 
   private constructor() {
     console.debug("[ThemeManager] Initializing...");
@@ -63,6 +64,61 @@ export class ThemeManager {
    */
   public getSelectedThemeId(): string {
     return settingsState.selectedTheme;
+  }
+
+  /**
+   * Update the last transition point based on a click or event
+   */
+  public setTransitionPoint(x: number, y: number): void {
+    this.lastTransitionPoint = { x, y };
+  }
+
+  /**
+   * Apply a view transition animation
+   */
+  private async applyViewTransition(callback: () => void): Promise<void> {
+    if (
+      !document.startViewTransition || 
+      !settingsState.animations || 
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      // Just run the callback without animation if transitions not supported
+      callback();
+      return;
+    }
+    
+    // Use last known transition point or fallback to center
+    const x = this.lastTransitionPoint.x || window.innerWidth / 2;
+    const y = this.lastTransitionPoint.y || window.innerHeight / 2;
+    const right = window.innerWidth - x;
+    const bottom = window.innerHeight - y;
+    
+    const maxRadius = Math.hypot(
+      Math.max(x, right),
+      Math.max(y, bottom),
+    );
+    
+    await document.startViewTransition(() => {
+      callback();
+    }).ready;
+    
+    try {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 400,
+          easing: 'ease-in-out',
+          pseudoElement: '::view-transition-new(root)',
+        }
+      );
+    } catch (error) {
+      console.error("[ThemeManager] View Transition animation error:", error);
+    }
   }
 
   /**
@@ -107,7 +163,7 @@ export class ThemeManager {
           "[ThemeManager] Found selected theme, restoring:",
           settingsState.selectedTheme,
         );
-        await this.setTheme(settingsState.selectedTheme);
+        await this.setTheme(settingsState.selectedTheme, false);
       }
     } catch (error) {
       console.error("[ThemeManager] Error during initialization:", error);
@@ -131,7 +187,7 @@ export class ThemeManager {
   /**
    * Set and apply a theme by ID
    */
-  public async setTheme(themeId: string): Promise<void> {
+  public async setTheme(themeId: string, applyViewTransition: boolean = true): Promise<void> {
     console.debug("[ThemeManager] Setting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
@@ -147,17 +203,32 @@ export class ThemeManager {
         settingsState.originalDarkMode = settingsState.DarkMode;
       }
 
-      // Remove current theme if exists
-      if (this.currentTheme) {
-        console.debug("[ThemeManager] Removing current theme");
+      // Use view transition for the theme change
+      if (applyViewTransition) {
+        await this.applyViewTransition(async () => {
+          // Remove current theme if exists
+          if (this.currentTheme) {
+            console.debug("[ThemeManager] Removing current theme");
+            await this.removeThemeWithoutTransition(this.currentTheme);
+          }
 
-        await this.removeTheme(this.currentTheme);
+          // Apply new theme
+          await this.applyTheme(theme);
+          this.currentTheme = theme;
+          settingsState.selectedTheme = themeId;
+        });
+      } else {
+        // Remove current theme if exists
+        if (this.currentTheme) {
+          console.debug("[ThemeManager] Removing current theme");
+          await this.removeThemeWithoutTransition(this.currentTheme);
+        }
+
+        // Apply new theme
+        await this.applyTheme(theme);
+        this.currentTheme = theme;
+        settingsState.selectedTheme = themeId;
       }
-
-      // Apply new theme
-      await this.applyTheme(theme);
-      this.currentTheme = theme;
-      settingsState.selectedTheme = themeId;
     } catch (error) {
       console.error("[ThemeManager] Error setting theme:", error);
     }
@@ -213,9 +284,26 @@ export class ThemeManager {
   }
 
   /**
-   * Remove theme and restore original settings
+   * Remove theme and restore original settings with view transition
    */
   private async removeTheme(
+    theme: CustomTheme,
+    clearSelectedTheme: boolean = true,
+  ): Promise<void> {
+    console.debug("[ThemeManager] Removing theme with transition:", theme.name);
+    try {
+      await this.applyViewTransition(async () => {
+        await this.removeThemeWithoutTransition(theme, clearSelectedTheme);
+      });
+    } catch (error) {
+      console.error("[ThemeManager] Error removing theme with transition:", error);
+    }
+  }
+  
+  /**
+   * Remove theme without applying view transition animation
+   */
+  private async removeThemeWithoutTransition(
     theme: CustomTheme,
     clearSelectedTheme: boolean = true,
   ): Promise<void> {
