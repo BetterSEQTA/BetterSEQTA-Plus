@@ -8,5 +8,5 @@
   aria-label="Color Picker Swatch"
   onclick={onClick}
   style="background: {$settingsState.selectedColor}"
-  class="w-16 h-8 rounded-md"
+  class="w-16 h-8 rounded-md shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30"
 ></button>

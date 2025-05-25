@@ -8,7 +8,7 @@
   let select: HTMLSelectElement;
 </script>
 
-<div class="bg-gradient-to-tr dark:to-[#38373D]/80 dark:from-[#38373D]/90 from-[#DDDDDD] to-[#DDDDDD]/80 rounded-lg w-full overflow-clip">
+<div class="border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 shadow-2xl rounded-lg w-full overflow-clip">
   <select
     bind:this={select}
     value={state}

@@ -203,7 +203,7 @@
               <h2 class="flex gap-2 items-center text-sm font-bold">
                 Enable {plugin.name}
                 {#if plugin.beta}
-                  <span class="px-2 py-0.5 text-xs font-medium text-orange-800 bg-orange-100 rounded-full dark:bg-orange-900/30 dark:text-orange-300">
+                  <span class="px-2 py-0.5 text-xs font-medium text-orange-800 bg-orange-100 rounded-full border border-orange-300/30 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-900/30">
                     Beta
                   </span>
                 {/if}
@@ -292,25 +292,27 @@
   })}
 
   {#if $settingsState.devMode}
-    <div class="flex items-center justify-between px-4 py-3 mt-4 pt-[1.75rem]">
-      <div class="pr-4">
-        <h2 class="text-sm font-bold">Developer Mode</h2>
-        <p class="text-xs">Enables developer mode, allowing you to test new features and changes.</p>
+    <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Developer Mode</h2>
+          <p class="text-xs">Enables developer mode, allowing you to test new features and changes.</p>
+        </div>
+        <div>
+          <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
+        </div>
       </div>
-      <div>
-        <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
-      </div>
-    </div>
-    <div class="flex justify-between items-center px-4 py-3">
-      <div class="pr-4">
-        <h2 class="text-sm font-bold">Sensitive Hider</h2>
-        <p class="text-xs">Replace sensitive content with mock data</p>
-      </div>
-      <div>
-        <Button 
-          onClick={() => hideSensitiveContent()}
-          text="Hide"
-        />
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Sensitive Hider</h2>
+          <p class="text-xs">Replace sensitive content with mock data</p>
+        </div>
+        <div>
+          <Button 
+            onClick={() => hideSensitiveContent()}
+            text="Hide"
+          />
+        </div>
       </div>
     </div>
   {/if}
