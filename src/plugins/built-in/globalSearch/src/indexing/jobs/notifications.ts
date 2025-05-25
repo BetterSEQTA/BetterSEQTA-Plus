@@ -3,6 +3,10 @@ import { htmlToPlainText } from "../utils";
 import { fetchMessageContent } from "./messages";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
+import { loadDynamicItems } from "../../utils/dynamicItems";
+import { loadAllStoredItems } from "../indexer";
+import { renderComponentMap } from "../renderComponents";
+import { jobs } from "../jobs";
 
 const NOTIFICATIONS_RATE_LIMIT = {
   baseDelay: 150,
@@ -202,6 +206,7 @@ export const notificationsJob: Job = {
             );
           },
           NOTIFICATIONS_RATE_LIMIT.vectorBatchSize,
+          "notifications",
         );
         progress.streamingStarted = true;
         console.log(
@@ -366,6 +371,29 @@ export const notificationsJob: Job = {
       if (progressUpdateCounter >= 5) {
         await ctx.setProgress(progress);
         progressUpdateCounter = 0;
+        
+        if (items.length > 0) {
+          try {
+            const currentItems = await loadAllStoredItems();
+            currentItems.forEach(item => {
+              const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
+              if (jobDef) {
+                const renderComponent = renderComponentMap[jobDef.renderComponentId];
+                if (renderComponent) {
+                  item.renderComponent = renderComponent;
+                }
+              } else if (renderComponentMap[item.renderComponentId]) {
+                item.renderComponent = renderComponentMap[item.renderComponentId];
+              }
+            });
+            loadDynamicItems(currentItems);
+            window.dispatchEvent(new CustomEvent("dynamic-items-updated", { 
+              detail: { incremental: true, jobId: "notifications", newItemCount: items.length, streaming: true } 
+            }));
+          } catch (error) {
+            console.warn("[Notifications job] Failed to dispatch incremental search update:", error);
+          }
+        }
       }
     }
 

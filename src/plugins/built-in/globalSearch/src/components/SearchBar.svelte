@@ -122,7 +122,6 @@
     window.addEventListener('indexing-progress', progressHandler as EventListener);
     
     const itemsUpdatedHandler = () => {
-      console.log('Search Bar received items-updated event, re-indexing...');
       setupSearchIndexes();
       performSearch();
     };
@@ -387,7 +386,7 @@
         </ul>
         <div class="px-3 py-2 w-full border-t border-zinc-900/5 dark:border-zinc-100/5 bg-white/5">
           {#if combinedResults.length > 0 || calculatorResult}
-            <div class="flex justify-between items-center h-5 text-sm text-zinc-500 dark:text-zinc-400">
+            <div class="flex justify-between items-center h-7 text-sm text-zinc-500 dark:text-zinc-400">
               <div class="flex gap-4 items-center">
                 {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
                 {#if calculatorResult && selectedIndex === 0}
@@ -421,7 +420,7 @@
   <div class="flex gap-2 items-center">
     <div class="flex gap-1 items-center">
       {#each keybind as key}
-        <kbd class="px-1 py-0.5 text-[0.8rem] text-center align-middle rounded min-w-6 bg-zinc-100 dark:bg-zinc-100/10">{key}</kbd>
+        <kbd class="size-6 text-[0.9rem] flex justify-center items-center rounded bg-zinc-100 dark:bg-zinc-100/10">{key}</kbd>
       {/each}
     </div>
     <span>{text}</span>

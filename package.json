@@ -78,7 +78,7 @@
     "codemirror": "^6.0.1",
     "color": "^5.0.0",
     "dompurify": "^3.2.4",
-    "embeddia": "^1.1.4",
+    "embeddia": "^1.2.1",
     "embla-carousel-autoplay": "^8.5.2",
     "embla-carousel-svelte": "^8.5.2",
     "esbuild": "^0.25.3",

@@ -2,6 +2,10 @@ import type { Job, IndexItem } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
+import { loadDynamicItems } from "../../utils/dynamicItems";
+import { loadAllStoredItems } from "../indexer";
+import { renderComponentMap } from "../renderComponents";
+import { jobs } from "../jobs";
 
 const RATE_LIMIT_CONFIG = {
   minDelay: 50,
@@ -163,13 +167,27 @@ async function processMessagesInParallel(
   processedItems: IndexItem[];
   consecutiveExisting: number;
   updatedProgress: MessagesProgress;
+  shouldStop: boolean;
 }> {
   const processedItems: IndexItem[] = [];
   let consecutiveExisting = 0;
   const updatedProgress = { ...progress };
 
+  // Filter out messages older than 2 years
+  const twoYearsAgo = Date.now() - 2 * 365 * 24 * 60 * 60 * 1000;
+  let shouldStop = false;
+  
   const messagesToProcess = messages.filter((msg) => {
     const id = msg.id.toString();
+    const messageDate = new Date(msg.date).getTime();
+    
+    // If we encounter a message older than 2 years, we should stop processing
+    // since messages are sorted by date descending
+    if (messageDate < twoYearsAgo) {
+      shouldStop = true;
+      return false;
+    }
+    
     if (existingIds.has(id) || processedIdsSet.has(id)) {
       consecutiveExisting++;
       return false;
@@ -179,7 +197,7 @@ async function processMessagesInParallel(
   });
 
   if (messagesToProcess.length === 0) {
-    return { processedItems, consecutiveExisting, updatedProgress };
+    return { processedItems, consecutiveExisting, updatedProgress, shouldStop };
   }
 
   for (
@@ -281,7 +299,7 @@ async function processMessagesInParallel(
     );
   }
 
-  return { processedItems, consecutiveExisting, updatedProgress };
+  return { processedItems, consecutiveExisting, updatedProgress, shouldStop };
 }
 
 export const messagesJob: Job = {
@@ -323,6 +341,7 @@ export const messagesJob: Job = {
             );
           },
           RATE_LIMIT_CONFIG.vectorBatchSize,
+          "messages",
         );
         progress.streamingStarted = true;
         console.log(
@@ -472,6 +491,7 @@ export const messagesJob: Job = {
         processedItems,
         consecutiveExisting: newConsecutiveExisting,
         updatedProgress,
+        shouldStop,
       } = await processMessagesInParallel(
         list.payload.messages,
         existingIds,
@@ -487,11 +507,13 @@ export const messagesJob: Job = {
 
       itemsToStream.push(...processedItems);
 
+      // Update consecutive existing counter
       consecutiveExisting = newConsecutiveExisting;
       if (consecutiveExisting >= 20) {
         progress.done = true;
       }
 
+      // Stream items to vector worker if we have any
       if (itemsToStream.length > 0 && progress.streamingStarted) {
         try {
           await vectorWorker.streamItems(itemsToStream);
@@ -507,6 +529,30 @@ export const messagesJob: Job = {
         }
       }
 
+      // Dispatch incremental search update if we processed new items
+      if (processedItems.length > 0) {
+        try {
+          const currentItems = await loadAllStoredItems();
+          currentItems.forEach(item => {
+            const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
+            if (jobDef) {
+              const renderComponent = renderComponentMap[jobDef.renderComponentId];
+              if (renderComponent) {
+                item.renderComponent = renderComponent;
+              }
+            } else if (renderComponentMap[item.renderComponentId]) {
+              item.renderComponent = renderComponentMap[item.renderComponentId];
+            }
+          });
+          loadDynamicItems(currentItems);
+          window.dispatchEvent(new CustomEvent("dynamic-items-updated", { 
+            detail: { incremental: true, jobId: "messages", newItemCount: processedItems.length, streaming: true } 
+          }));
+        } catch (error) {
+          console.warn("[Messages job] Failed to dispatch incremental search update:", error);
+        }
+      }
+
       if (!list.payload.hasMore) progress.done = true;
       progress.offset += progress.currentBatchSize;
 
@@ -519,6 +565,11 @@ export const messagesJob: Job = {
         console.log(
           `[Messages job] Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
         );
+      }
+
+      if (shouldStop) {
+        progress.done = true;
+        break;
       }
     }
 
@@ -555,7 +606,7 @@ export const messagesJob: Job = {
   },
 
   purge: (items) => {
-    const fourYears = Date.now() - 4 * 365 * 24 * 60 * 60 * 1000;
-    return items.filter((i) => i.dateAdded >= fourYears);
+    const twoYears = Date.now() - 2 * 365 * 24 * 60 * 60 * 1000;
+    return items.filter((i) => i.dateAdded >= twoYears);
   },
 };
