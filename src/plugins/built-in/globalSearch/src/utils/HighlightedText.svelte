@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { FuseResultMatch } from '../../core/types';
+  import type { FuseResultMatch } from '../core/types';
 
   const { text, term, matches } = $props<{
     text: string;
