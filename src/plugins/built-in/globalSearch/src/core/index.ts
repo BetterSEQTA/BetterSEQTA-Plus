@@ -5,7 +5,7 @@ import {
   buttonSetting,
   defineSettings,
   Setting,
-  stringSetting,
+  hotkeySetting,
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -14,11 +14,17 @@ import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 
+// Platform-aware default hotkey
+const getDefaultHotkey = () => {
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  return isMac ? "cmd+k" : "ctrl+k";
+};
+
 const settings = defineSettings({
-  searchHotkey: stringSetting({
-    default: "ctrl+k",
+  searchHotkey: hotkeySetting({
+    default: getDefaultHotkey(),
     title: "Search Hotkey",
-    description: "Keyboard shortcut to open the search (cmd on Mac)",
+    description: "Keyboard shortcut to open the search",
   }),
   showRecentFirst: booleanSetting({
     default: true,
@@ -99,10 +105,15 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
-    await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
-      primaryKey: "id",
-      autoIncrement: false,
-    });
+    try {
+      await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
+        primaryKey: "id",
+        autoIncrement: false,
+      });
+    } catch (error) {
+      console.error("Failed to create IndexedDB:", error);
+      // Continue execution - the search might still work without persistence
+    }
 
     initVectorSearch();
 
@@ -117,8 +128,8 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     if (title) {
       mountSearchBar(title, api, appRef);
     } else {
-      await waitForElm("#title", true, 100, 60);
-      mountSearchBar(document.querySelector("#title") as Element, api, appRef);
+      const titleElement = await waitForElm("#title", true, 100, 60);
+      mountSearchBar(titleElement, api, appRef);
     }
 
     return () => {

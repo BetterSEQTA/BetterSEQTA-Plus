@@ -22,8 +22,6 @@ const staticCommands: StaticCommandItem[] = [
     icon: "\ueb4c",
     category: "navigation",
     text: "Home",
-    keybind: ["alt+h"],
-    keybindLabel: ["Alt", "H"],
     action: () => {
       window.location.hash = "?page=/home";
       loadHomePage();
@@ -35,8 +33,6 @@ const staticCommands: StaticCommandItem[] = [
     icon: "\uebfd",
     category: "navigation",
     text: "Direct Messages",
-    keybind: ["alt+m"],
-    keybindLabel: ["Alt", "M"],
     action: () => {
       window.location.hash = "?page=/messages";
     },
@@ -47,8 +43,6 @@ const staticCommands: StaticCommandItem[] = [
     icon: "\ue9cd",
     category: "navigation",
     text: "Timetable",
-    keybind: ["alt+t"],
-    keybindLabel: ["Alt", "T"],
     action: () => {
       window.location.hash = "?page=/timetable";
     },
@@ -59,10 +53,8 @@ const staticCommands: StaticCommandItem[] = [
     icon: "\ueac3",
     category: "navigation",
     text: "Assessments",
-    keybind: ["alt+a"],
-    keybindLabel: ["Alt", "A"],
     action: () => {
-      window.location.hash = "?page=/assessments";
+      window.location.hash = "?page=/assessments/upcoming";
     },
     priority: 4,
   },
