@@ -30,8 +30,7 @@
 </script>
 
 <div
-  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-gradient-to-tr dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD] switch select-none"
-  data-ison={state}
+  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-gradient-to-tr select-none shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30 {state ? 'to-[#30D259]/80 from-[#30D259] dark:from-[#30D259]/40 dark:to-[#30D259]' : 'dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD]'}"
   onclick={() => onChange(!state)}
   onkeydown={(e) => e.key === "Enter" && onChange(!state)}
   role="switch"
@@ -43,13 +42,3 @@
     class="w-6 h-6 bg-white dark:bg-[#FEFEFE] rounded-full drop-shadow-md"
   ></div>
 </div>
-
-<style>
-  .switch[data-ison="true"] {
-    @apply to-[#30D259]/80 from-[#30D259];
-  }
-
-  .dark .switch[data-ison="true"] {
-    @apply from-[#30D259]/40 to-[#30D259];
-  }
-</style>
