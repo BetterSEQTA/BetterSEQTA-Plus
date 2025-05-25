@@ -3,6 +3,7 @@
   import Button from "../../components/Button.svelte"
   import Slider from "../../components/Slider.svelte"
   import Select from "@/interface/components/Select.svelte"
+  import HotkeyInput from "@/interface/components/HotkeyInput.svelte"
 
   import browser from "webextension-polyfill"
 
@@ -12,7 +13,7 @@
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   import { getAllPluginSettings } from "@/plugins"
-  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting } from "@/plugins/core/types"
+  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
   type SettingType = 
@@ -26,6 +27,10 @@
     }) |
     (Omit<ButtonSetting, 'type'> & { 
       type: 'button', 
+      id: string 
+    }) |
+    (Omit<HotkeySetting, 'type'> & { 
+      type: 'hotkey', 
       id: string 
     });
 
@@ -195,10 +200,10 @@
         {#if (plugin as any).disableToggle}
           <div class="flex justify-between items-center px-4 py-3">
             <div class="pr-4">
-              <h2 class="text-sm font-bold flex items-center gap-2">
+              <h2 class="flex gap-2 items-center text-sm font-bold">
                 Enable {plugin.name}
                 {#if plugin.beta}
-                  <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-full">
+                  <span class="px-2 py-0.5 text-xs font-medium text-orange-800 bg-orange-100 rounded-full dark:bg-orange-900/30 dark:text-orange-300">
                     Beta
                   </span>
                 {/if}
@@ -257,6 +262,11 @@
                     <Button
                       onClick={() => setting.trigger?.()}
                       text={setting.title}
+                    />
+                  {:else if setting.type === 'hotkey'}
+                    <HotkeyInput
+                      value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     />
                   {/if}
                 </div>

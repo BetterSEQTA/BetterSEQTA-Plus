@@ -6,6 +6,7 @@ import type {
   SelectSetting,
   StringSetting,
   ButtonSetting,
+  HotkeySetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
@@ -193,7 +194,8 @@ export class PluginManager {
             id: string;
             options: Array<{ value: string; label: string }>;
           })
-        | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> });
+        | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> })
+        | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string });
     };
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {

@@ -41,12 +41,20 @@ export interface ButtonSetting {
   trigger?: () => void | Promise<void>;
 }
 
+export interface HotkeySetting {
+  type: "hotkey";
+  default: string;
+  title: string;
+  description?: string;
+}
+
 export type PluginSetting =
   | BooleanSetting
   | StringSetting
   | NumberSetting
   | SelectSetting<string>
-  | ButtonSetting;
+  | ButtonSetting
+  | HotkeySetting;
 
 export type PluginSettings = {
   [key: string]: PluginSetting;
@@ -61,7 +69,9 @@ export type SettingValue<T extends PluginSetting> = T extends BooleanSetting
       ? number
       : T extends SelectSetting<infer O>
         ? O
-        : never;
+        : T extends HotkeySetting
+          ? string
+          : never;
 
 export type SettingsAPI<T extends PluginSettings> = {
   [K in keyof T]: SettingValue<T[K]>;

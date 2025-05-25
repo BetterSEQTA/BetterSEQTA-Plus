@@ -13,14 +13,21 @@
   import debounce from 'lodash/debounce';
   import { renderComponentMap } from '../indexing/renderComponents';
   import HighlightedText from '../utils/HighlightedText.svelte';
+  import { matchesHotkey } from '../utils/hotkeyUtils';
+  import browser from 'webextension-polyfill';
 
   const { 
     transparencyEffects, 
-    showRecentFirst
+    showRecentFirst,
+    searchHotkey: initialSearchHotkey
   } = $props<{ 
     transparencyEffects: boolean, 
-    showRecentFirst: boolean 
+    showRecentFirst: boolean,
+    searchHotkey: string
   }>();
+
+  // Make searchHotkey reactive to setting changes
+  let currentSearchHotkey = $state(initialSearchHotkey);
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
   let dynamicContentFuse = $state<Fuse<IndexItem>>();
@@ -31,6 +38,78 @@
   let isIndexing = $state(false);
   let completedJobs = $state(0);
   let totalJobs = $state(0);
+
+  let commandPalleteOpen = $state(false);
+  let searchTerm = $state('');
+  let selectedIndex = $state(0);
+  let combinedResults = $state<CombinedResult[]>([]);
+  let searchbar = $state<HTMLInputElement>();
+
+  let isLoading = $state(false);
+  let calculatorResult = $state<string | null>(null);
+  let resultsList = $state<HTMLUListElement>();
+
+  const updateCalculatorState = (hasResult: string | null) => {
+    calculatorResult = hasResult;
+  };
+
+  let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+
+  // Listen for setting changes
+  $effect(() => {
+    const loadSettings = async () => {
+      const settings = await browser.storage.local.get('plugin.global-search.settings');
+      const pluginSettings = settings['plugin.global-search.settings'] as { searchHotkey?: string } | undefined;
+      if (pluginSettings?.searchHotkey) {
+        currentSearchHotkey = pluginSettings.searchHotkey;
+      }
+    };
+
+    loadSettings();
+
+    // Listen for storage changes
+    const handleStorageChange = (changes: any, area: string) => {
+      if (area === 'local' && changes['plugin.global-search.settings']) {
+        const newSettings = changes['plugin.global-search.settings'].newValue as { searchHotkey?: string } | undefined;
+        if (newSettings?.searchHotkey) {
+          currentSearchHotkey = newSettings.searchHotkey;
+        }
+      }
+    };
+
+    browser.storage.onChanged.addListener(handleStorageChange);
+    
+    return () => {
+      browser.storage.onChanged.removeListener(handleStorageChange);
+    };
+  });
+
+  // Update keydown handler when hotkey changes
+  $effect(() => {
+    if (keydownHandler) {
+      window.removeEventListener('keydown', keydownHandler);
+    }
+    
+    keydownHandler = (e: KeyboardEvent) => {
+      if (matchesHotkey(e, currentSearchHotkey)) {
+        e.preventDefault();
+        commandPalleteOpen = true;
+        tick().then(() => searchbar?.focus());
+      }
+      if (e.key === 'Escape') {
+        commandPalleteOpen = false;
+      }
+    };
+    
+    window.addEventListener('keydown', keydownHandler);
+    
+    return () => {
+      if (keydownHandler) {
+        window.removeEventListener('keydown', keydownHandler);
+        keydownHandler = null;
+      }
+    };
+  });
 
   onMount(() => {
     const progressHandler = (event: CustomEvent) => {
@@ -48,7 +127,14 @@
       performSearch();
     };
     window.addEventListener('dynamic-items-updated', itemsUpdatedHandler);
+
+    setupSearchIndexes();
     
+    // @ts-ignore - Intentionally adding to window
+    window.setCommandPalleteOpen = (open: boolean) => {
+      commandPalleteOpen = open;
+    };
+
     return () => {
       window.removeEventListener('indexing-progress', progressHandler as EventListener);
       window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
@@ -69,43 +155,6 @@
     
     console.debug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
   }
-  let commandPalleteOpen = $state(false);
-  let searchTerm = $state('');
-  let selectedIndex = $state(0);
-  let searchbar = $state<HTMLInputElement>();
-  let combinedResults = $state<CombinedResult[]>([]); 
-  let isLoading = $state(false);
-  let calculatorResult = $state<string | null>(null);
-  let resultsList = $state<HTMLUListElement>();
-
-  const updateCalculatorState = (hasResult: string | null) => {
-    calculatorResult = hasResult;
-  };
-
-  onMount(() => {
-    setupSearchIndexes();
-    
-    // @ts-ignore - Intentionally adding to window
-    window.setCommandPalleteOpen = (open: boolean) => {
-      commandPalleteOpen = open;
-    };
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        commandPalleteOpen = true;
-        tick().then(() => searchbar?.focus());
-      }
-      if (e.key === 'Escape') {
-        commandPalleteOpen = false;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  });
 
   const performSearch = async () => {
     isLoading = true;
@@ -201,6 +250,7 @@
   };
 
   const handleKeyNav = (e: KeyboardEvent) => {
+    // Handle regular navigation
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       selectNext();
@@ -281,11 +331,6 @@
                     <span class="ml-4 text-lg truncate">
                       <HighlightedText text={staticItem.text} term={searchTerm} matches={result.matches} />
                     </span>
-                    {#if staticItem.keybindLabel}
-                      <div class="flex-none ml-auto">
-                        {@render Shortcut({ text: '', keybind: staticItem.keybindLabel })}
-                      </div>
-                    {/if}
                   </button>
                 {:else if result.type === 'dynamic'}
                   {@const dynamicItem = item as IndexItem}
@@ -344,38 +389,26 @@
           {#if combinedResults.length > 0 || calculatorResult}
             <div class="flex justify-between items-center h-5 text-sm text-zinc-500 dark:text-zinc-400">
               <div class="flex gap-4 items-center">
-                {#if !calculatorResult}
-                  {#if selectedIndex >= 0 && selectedIndex < combinedResults.length}
-                    {@const item = combinedResults[selectedIndex].item}
-                    {#if 'keybind' in item && item.keybind}
-                      {@render Shortcut({ text: 'Shortcut', keybind: [ ...(item?.keybindLabel ?? []) ] })}
-                    {/if}
-                  {/if}
+                {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
+                {#if calculatorResult && selectedIndex === 0}
+                {@render Shortcut({ text: 'Copy result', keybind: ['↵']})}
+                {:else}
+                {@render Shortcut({ text: 'Select', keybind: ['↵']})}
                 {/if}
               </div>
-              <div>
-                <div class="flex gap-4 items-center">
-                  {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
-                  {#if calculatorResult && selectedIndex === 0}
-                  {@render Shortcut({ text: 'Copy result', keybind: ['↵']})}
-                  {:else}
-                  {@render Shortcut({ text: 'Select', keybind: ['↵']})}
-                  {/if}
-                </div>
-                {#if isIndexing}
-                  <div class="inset-x-0 top-0">
-                    <div class="absolute right-2 -bottom-4 text-[10px] text-zinc-500 dark:text-zinc-400">
-                      Indexing
-                    </div>
-                    <div class="overflow-hidden h-0.5 bg-zinc-200 dark:bg-zinc-700">
-                      <div 
-                        class="h-full bg-blue-500 transition-all duration-300 ease-out"
-                        style="width: {(completedJobs / totalJobs) * 100}%"
-                      ></div>
-                    </div>
+              {#if isIndexing}
+                <div class="inset-x-0 top-0">
+                  <div class="absolute right-2 -bottom-4 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    Indexing
                   </div>
-                {/if}
-              </div>
+                  <div class="overflow-hidden h-0.5 bg-zinc-200 dark:bg-zinc-700">
+                    <div 
+                      class="h-full bg-blue-500 transition-all duration-300 ease-out"
+                      style="width: {(completedJobs / totalJobs) * 100}%"
+                    ></div>
+                  </div>
+                </div>
+              {/if}
             </div>
           {/if}
         </div>

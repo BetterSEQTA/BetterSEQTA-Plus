@@ -4,6 +4,7 @@ import type {
   NumberSetting,
   SelectSetting,
   StringSetting,
+  HotkeySetting,
 } from "./types";
 
 export function numberSetting(
@@ -47,6 +48,15 @@ export function buttonSetting(
 ): ButtonSetting {
   return {
     type: "button",
+    ...options,
+  };
+}
+
+export function hotkeySetting(
+  options: Omit<HotkeySetting, "type">,
+): HotkeySetting {
+  return {
+    type: "hotkey",
     ...options,
   };
 }
