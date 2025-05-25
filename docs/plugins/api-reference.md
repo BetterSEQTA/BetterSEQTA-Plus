@@ -41,6 +41,7 @@ const myPlugin: Plugin<typeof settings> = {
   version: "1.0.0",
   settings: settingsInstance.settings,
   disableToggle: true,
+  beta: true,
 
   run: async (api) => {
     console.log("Plugin is running!");
@@ -61,6 +62,35 @@ const myPlugin: Plugin<typeof settings> = {
 
 export default myPlugin;
 ```
+
+## Plugin Metadata
+
+The plugin object supports several metadata fields and options:
+
+```typescript
+interface Plugin {
+  // Required fields
+  id: string;                    // Unique identifier (lowercase, dashes)
+  name: string;                  // Display name shown to users
+  description: string;           // Brief description of what the plugin does
+  version: string;               // Semantic version (e.g., "1.0.0")
+  settings: PluginSettings;      // Plugin settings object
+  run: (api: PluginAPI) => void; // Main plugin function
+
+  // Optional fields
+  styles?: string;               // CSS styles to inject
+  disableToggle?: boolean;       // Show enable/disable toggle in settings
+  defaultEnabled?: boolean;      // Start enabled/disabled (requires disableToggle)
+  beta?: boolean;               // Show "Beta" tag in settings UI
+}
+```
+
+### Metadata Options
+
+- **`disableToggle`**: When `true`, users can enable/disable your plugin in the settings page
+- **`defaultEnabled`**: When `false`, your plugin starts disabled by default (only works with `disableToggle: true`)
+- **`beta`**: When `true`, displays an orange "Beta" tag next to your plugin name in the settings UI
+- **`styles`**: CSS string that gets injected into the page when your plugin runs
 
 ## SEQTA API
 

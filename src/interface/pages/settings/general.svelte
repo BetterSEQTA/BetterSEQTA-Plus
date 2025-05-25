@@ -33,6 +33,7 @@
     pluginId: string;
     name: string;
     description: string;
+    beta?: boolean;
     settings: Record<string, SettingType>;
   }
 
@@ -194,7 +195,14 @@
         {#if (plugin as any).disableToggle}
           <div class="flex justify-between items-center px-4 py-3">
             <div class="pr-4">
-              <h2 class="text-sm font-bold">Enable {plugin.name}</h2>
+              <h2 class="text-sm font-bold flex items-center gap-2">
+                Enable {plugin.name}
+                {#if plugin.beta}
+                  <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-full">
+                    Beta
+                  </span>
+                {/if}
+              </h2>
               <p class="text-xs">{plugin.description}</p>
             </div>
             <div>

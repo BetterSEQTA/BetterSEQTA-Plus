@@ -31,6 +31,7 @@ const testPlugin: Plugin<typeof settings> = {
   version: "1.0.0",
   settings: settingsInstance.settings,
   disableToggle: true,
+  beta: true,
 
   run: async (api) => {
     console.log("Test plugin running");

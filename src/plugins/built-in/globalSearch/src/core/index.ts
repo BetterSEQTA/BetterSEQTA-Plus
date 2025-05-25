@@ -93,6 +93,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   settings: settingsInstance.settings,
   disableToggle: true,
   defaultEnabled: false,
+  beta: true,
   styles: styles,
 
   run: async (api) => {
