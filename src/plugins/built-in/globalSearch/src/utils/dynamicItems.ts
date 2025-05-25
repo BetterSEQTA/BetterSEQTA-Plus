@@ -1,5 +1,5 @@
 import type { SvelteComponent } from "svelte";
-import type { IndexItem } from "./indexing/types";
+import type { IndexItem } from "../indexing/types";
 
 export interface DynamicContentItem {
   id: string;
