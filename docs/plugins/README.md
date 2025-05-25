@@ -29,6 +29,9 @@ const myFirstPlugin: Plugin = {
   // This tells BetterSEQTA+ that users can turn our plugin on/off
   disableToggle: true,
 
+  // Optional: Mark your plugin as beta to show a "Beta" tag in settings
+  beta: true,
+
   // This is where the magic happens!
   run: async (api) => {
     // Wait for the homepage to load
@@ -65,10 +68,11 @@ Let's break down what's happening here:
    - `description`: Explain what your plugin does
    - `version`: Your plugin's version number
 3. We set `disableToggle: true` so users can turn our plugin on/off in settings
-4. The `run` function is where we put our plugin's code
-5. We use `api.seqta.onMount` to wait for the homepage to load
-6. We create and style a message element
-7. We return a cleanup function that removes our changes when the plugin is disabled
+4. We set `beta: true` to mark the plugin as beta
+5. The `run` function is where we put our plugin's code
+6. We use `api.seqta.onMount` to wait for the homepage to load
+7. We create and style a message element
+8. We return a cleanup function that removes our changes when the plugin is disabled
 
 ## The Plugin API
 
@@ -246,6 +250,32 @@ Here are some tips to make your plugin awesome:
    - Add clear settings with good descriptions
    - Use `disableToggle: true` so users can turn it off if needed
    - Add helpful error messages if something goes wrong
+   - Use `beta: true` for experimental features to let users know they're trying something new
+
+## Plugin Metadata Options
+
+Your plugin object supports several optional flags to customize how it appears and behaves:
+
+```typescript
+const myPlugin: Plugin = {
+  id: "my-plugin",
+  name: "My Plugin",
+  description: "What my plugin does",
+  version: "1.0.0",
+  
+  // Optional flags:
+  disableToggle: true,     // Show enable/disable toggle in settings
+  defaultEnabled: false,   // Start disabled by default (requires disableToggle: true)
+  beta: true,             // Show "Beta" tag in settings UI
+  
+  // Your plugin code...
+  run: async (api) => { /* ... */ },
+};
+```
+
+- **`disableToggle`**: When `true`, users can enable/disable your plugin in settings
+- **`defaultEnabled`**: When `false`, your plugin starts disabled (only works with `disableToggle: true`)
+- **`beta`**: When `true`, shows an orange "Beta" tag next to your plugin name in settings
 
 ## Examples
 

@@ -182,6 +182,7 @@ export class PluginManager {
     pluginId: string;
     name: string;
     description: string;
+    beta?: boolean;
     settings: {
       [key: string]:
         | (Omit<BooleanSetting, "type"> & { type: "boolean"; id: string })
@@ -235,6 +236,7 @@ export class PluginManager {
         pluginId: id,
         name: plugin.name,
         description: plugin.description,
+        beta: plugin.beta,
         settings: Object.fromEntries(settingsEntries),
         disableToggle: plugin.disableToggle,
       };
