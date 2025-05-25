@@ -4,6 +4,7 @@ import type { IndexItem } from "../types";
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
 let currentAbortController: AbortController | null = null;
+let loadedItemIds = new Set<string>(); // Track loaded items to prevent duplicates
 
 let streamingSession: {
   isActive: boolean;
@@ -25,11 +26,24 @@ async function initWorker() {
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
 
+    // Load existing items but track them to prevent duplicates
     const stored = await vectorIndex.getAllObjectsFromIndexedDB();
     if (stored.length > 0) {
-      stored.forEach((item) => vectorIndex!.add(item));
+      console.debug(`Found ${stored.length} existing items in IndexedDB`);
+      
+      // Clear any existing items from memory first
+      loadedItemIds.clear();
+      
+      // Add items and track their IDs
+      stored.forEach((item) => {
+        if (item.id && !loadedItemIds.has(item.id)) {
+          vectorIndex!.add(item);
+          loadedItemIds.add(item.id);
+        }
+      });
+      
       console.debug(
-        `Vector index loaded ${stored.length} items from IndexedDB.`,
+        `Vector index loaded ${loadedItemIds.size} unique items from IndexedDB.`,
       );
     } else {
       console.debug("No existing vector index found in IndexedDB.");
@@ -154,16 +168,14 @@ async function processStreamingItems() {
       streamingSession.batchSize,
     );
 
+    // Use our tracking set for more efficient deduplication
     const unprocessedItems = batchToProcess.filter((item) => {
-      try {
-        return !vectorIndex!.get({ id: item.id });
-      } catch (e) {
-        return true;
-      }
+      return item.id && !loadedItemIds.has(item.id);
     });
 
     if (unprocessedItems.length === 0) {
       streamingSession.totalProcessed += batchToProcess.length;
+      console.debug(`Skipped ${batchToProcess.length} already processed items`);
       continue;
     }
 
@@ -176,15 +188,18 @@ async function processStreamingItems() {
 
     if (successfullyVectorized.length > 0) {
       try {
-        successfullyVectorized.forEach((item) => vectorIndex!.add(item));
+        successfullyVectorized.forEach((item) => {
+          vectorIndex!.add(item);
+          loadedItemIds.add(item.id); // Track the added item
+        });
 
         if (
-          streamingSession.totalProcessed % (streamingSession.batchSize * 3) ===
+          streamingSession.totalProcessed % (streamingSession.batchSize * 15) ===
           0
         ) {
           await vectorIndex!.saveIndex("indexedDB");
           console.debug(
-            `Saved streaming index at ${streamingSession.totalProcessed} processed items`,
+            `Saved streaming index at ${streamingSession.totalProcessed} processed items (${loadedItemIds.size} total unique items)`,
           );
         }
       } catch (e) {
@@ -199,7 +214,7 @@ async function processStreamingItems() {
       data: {
         processed: streamingSession.totalProcessed,
         total: streamingSession.totalExpected,
-        message: `Processed ${streamingSession.totalProcessed}/${streamingSession.totalExpected} items`,
+        message: `Processed ${streamingSession.totalProcessed}/${streamingSession.totalExpected} items (${loadedItemIds.size} unique)`,
       },
     });
 
@@ -313,13 +328,10 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     }
   }
 
+  // Use our tracking set for more efficient deduplication
   const unprocessedItems = items.filter((item) => {
     if (signal.aborted) return false;
-    try {
-      return !vectorIndex!.get({ id: item.id });
-    } catch (e) {
-      return true;
-    }
+    return item.id && !loadedItemIds.has(item.id);
   });
 
   if (signal.aborted) {
@@ -335,15 +347,15 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
   }
 
   if (unprocessedItems.length === 0) {
-    console.debug("No new items to process.");
+    console.debug(`No new items to process. ${loadedItemIds.size} items already in index.`);
     self.postMessage({
       type: "progress",
-      data: { status: "complete", message: "No new items to process" },
+      data: { status: "complete", message: `No new items to process (${loadedItemIds.size} items already indexed)` },
     });
     return;
   }
 
-  console.debug(`Starting processing of ${unprocessedItems.length} items.`);
+  console.debug(`Starting processing of ${unprocessedItems.length} items (${items.length - unprocessedItems.length} already processed).`);
   self.postMessage({
     type: "progress",
     data: {
@@ -388,7 +400,10 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
 
     if (successfullyVectorized.length > 0) {
       try {
-        successfullyVectorized.forEach((item) => vectorIndex!.add(item));
+        successfullyVectorized.forEach((item) => {
+          vectorIndex!.add(item);
+          loadedItemIds.add(item.id); // Track the added item
+        });
       } catch (e) {
         console.error("Error adding batch to index:", e);
         self.postMessage({
@@ -412,7 +427,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
 
     try {
       await vectorIndex!.saveIndex("indexedDB");
-      console.debug(`Saved index after processing batch ${i / BATCH_SIZE + 1}`);
+      console.debug(`Saved index after processing batch ${i / BATCH_SIZE + 1} (${loadedItemIds.size} total unique items)`);
     } catch (e) {
       console.error("Error saving index batch:", e);
       self.postMessage({
@@ -421,29 +436,68 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
       });
     }
 
-    processedCount = Math.min(i + BATCH_SIZE, unprocessedItems.length);
-
+    processedCount += batch.length;
     self.postMessage({
       type: "progress",
       data: {
         status: "processing",
         total: unprocessedItems.length,
         processed: processedCount,
+        message: `Processed ${processedCount}/${unprocessedItems.length} items (${loadedItemIds.size} total unique)`,
       },
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  if (!signal.aborted) {
-    console.debug("Processing completed successfully.");
-    self.postMessage({
-      type: "progress",
-      data: { status: "complete", message: "All items processed successfully" },
-    });
-  } else {
-    console.debug("Processing completed, but was cancelled.");
+  console.debug(`Processing complete. Total unique items in index: ${loadedItemIds.size}`);
+  self.postMessage({
+    type: "progress",
+    data: {
+      status: "complete",
+      total: unprocessedItems.length,
+      processed: processedCount,
+      message: `Processing complete: ${processedCount} new items processed (${loadedItemIds.size} total unique items)`,
+    },
+  });
+}
+
+async function resetWorker() {
+  console.debug("Resetting vector worker state...");
+  
+  // Clear tracking
+  loadedItemIds.clear();
+  
+  // Reset streaming session
+  if (streamingSession?.isActive) {
+    streamingSession.isActive = false;
+    streamingSession = null;
   }
+  
+  // Reset vector index
+  if (vectorIndex) {
+    try {
+      // Save current state before reset
+      await vectorIndex.saveIndex("indexedDB");
+      console.debug("Saved index before reset");
+    } catch (e) {
+      console.warn("Error saving index before reset:", e);
+    }
+  }
+  
+  // Reinitialize
+  isInitialized = false;
+  vectorIndex = null;
+  
+  await initWorker();
+  
+  console.debug(`Vector worker reset complete. Loaded ${loadedItemIds.size} items.`);
+  
+  self.postMessage({
+    type: "progress",
+    data: {
+      status: "complete",
+      message: `Worker reset complete. ${loadedItemIds.size} items loaded.`,
+    },
+  });
 }
 
 self.addEventListener("message", async (e) => {
@@ -473,6 +527,10 @@ self.addEventListener("message", async (e) => {
 
     case "endStreaming":
       await endStreamingSession();
+      break;
+
+    case "reset":
+      await resetWorker();
       break;
 
     default:

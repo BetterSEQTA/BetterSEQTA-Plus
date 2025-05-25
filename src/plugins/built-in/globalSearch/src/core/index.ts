@@ -13,6 +13,7 @@ import { runIndexing } from "../indexing/indexer";
 import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
+import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
@@ -48,6 +49,15 @@ const settings = defineSettings({
       const confirmed = confirm("Are you sure you want to reset the search index and storage?");
 
       if (confirmed) {
+        try {
+          // Reset the vector worker first
+          const workerManager = VectorWorkerManager.getInstance();
+          await workerManager.resetWorker();
+          console.log("Vector worker reset successfully");
+        } catch (e) {
+          console.warn("Failed to reset vector worker:", e);
+        }
+
         // Delete both 'embeddiaDB' and 'betterseqta-index' using native IndexedDB APIs
         const deleteDb = (dbName: string) => {
           return new Promise<void>((resolve, reject) => {
@@ -115,6 +125,40 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     }
 
     initVectorSearch();
+
+    // Add debug helpers to window for troubleshooting
+    // @ts-ignore
+    window.globalSearchDebug = {
+      resetWorker: async () => {
+        const workerManager = VectorWorkerManager.getInstance();
+        await workerManager.resetWorker();
+        console.log("Vector worker reset via debug helper");
+      },
+      checkWorkerStatus: () => {
+        const workerManager = VectorWorkerManager.getInstance();
+        console.log("Streaming active:", workerManager.isStreamingActive());
+      },
+      checkIndexedDBSize: async () => {
+        try {
+          const estimate = await navigator.storage.estimate();
+          console.log("Storage estimate:", estimate);
+          
+          // Check embeddiaDB size
+          const dbRequest = indexedDB.open("embeddiaDB");
+          dbRequest.onsuccess = () => {
+            const db = dbRequest.result;
+            const transaction = db.transaction(["embeddiaObjectStore"], "readonly");
+            const store = transaction.objectStore("embeddiaObjectStore");
+            const countRequest = store.count();
+            countRequest.onsuccess = () => {
+              console.log("embeddiaDB item count:", countRequest.result);
+            };
+          };
+        } catch (e) {
+          console.error("Error checking storage:", e);
+        }
+      }
+    };
 
     if (api.settings.runIndexingOnLoad) {
       setTimeout(async () => {
