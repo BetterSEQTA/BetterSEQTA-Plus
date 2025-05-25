@@ -16,7 +16,10 @@ export const subjectsJob: Job = {
   id: "subjects",
   label: "Subjects",
   renderComponentId: "subject",
-  frequency: "pageLoad",
+  frequency: {
+    type: "expiry",
+    afterMs: 1000 * 60 * 60 * 24 * 30,
+  },
   boostCriteria: (item, searchTerm) => {
     if (searchTerm == "") {
       return -100;

@@ -171,15 +171,13 @@
     {#if isRecording}
       <!-- Recording state -->
       <div 
-        class="flex items-center justify-center px-3 py-2 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white border cursor-pointer text-nowrap"
+        class="flex items-center justify-center px-3 py-1.5 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white border cursor-pointer text-nowrap"
         onclick={startRecording}
         onkeydown={startRecording}
         role="button"
         tabindex="0"
       >
-        {#if hotkeyParts.length === 0}
-          <span class="text-gray-500 dark:text-gray-400">Press keys...</span>
-        {/if}
+        Press keys...
       </div>
     {:else if hotkeyParts.length > 0}
       <!-- Display current hotkey -->

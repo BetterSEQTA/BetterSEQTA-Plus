@@ -1,5 +1,35 @@
 import type { Job, IndexItem } from "../types";
 import { htmlToPlainText } from "../utils";
+import { delay } from "@/seqta/utils/delay";
+import { VectorWorkerManager } from "../worker/vectorWorkerManager";
+
+const RATE_LIMIT_CONFIG = {
+  minDelay: 50,
+  maxDelay: 5000,
+  baseDelay: 200,
+  backoffMultiplier: 1.5,
+  maxRetries: 3,
+  adaptiveBatchSize: true,
+  minBatchSize: 10,
+  maxBatchSize: 100,
+  baseBatchSize: 50,
+  vectorBatchSize: 5,
+  parallelRequests: 5,
+  parallelDelay: 100,
+};
+
+interface MessagesProgress {
+  offset: number;
+  done: boolean;
+  currentBatchSize: number;
+  currentDelay: number;
+  failedRequests: number;
+  lastSuccessTime: number;
+  retryQueue: number[];
+  processedIds: string[];
+  streamingStarted: boolean;
+  totalEstimated: number;
+}
 
 const fetchMessages = async (offset = 0, limit = 100) => {
   const res = await fetch(`${location.origin}/seqta/student/load/message`, {
@@ -23,22 +53,235 @@ const fetchMessages = async (offset = 0, limit = 100) => {
   }>;
 };
 
-export const fetchMessageContent = async (id: number) => {
-  const res = await fetch(`${location.origin}/seqta/student/load/message`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ action: "message", id }),
-  });
-  return res.json() as Promise<{
-    payload: { contents: string };
-    status: string;
-  }>;
+export const fetchMessageContent = async (
+  id: number,
+  retryCount = 0,
+): Promise<{
+  payload: { contents: string };
+  status: string;
+} | null> => {
+  try {
+    const res = await fetch(`${location.origin}/seqta/student/load/message`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ action: "message", id }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.warn(
+      `[Messages job] Failed to fetch content for message ${id} (attempt ${retryCount + 1}):`,
+      error,
+    );
+
+    if (retryCount < RATE_LIMIT_CONFIG.maxRetries) {
+      const retryDelay =
+        RATE_LIMIT_CONFIG.baseDelay *
+        Math.pow(RATE_LIMIT_CONFIG.backoffMultiplier, retryCount);
+      await delay(Math.min(retryDelay, RATE_LIMIT_CONFIG.maxDelay));
+      return fetchMessageContent(id, retryCount + 1);
+    }
+
+    return null;
+  }
 };
 
-interface MessagesProgress {
-  offset: number;
-  done: boolean;
+function calculateAdaptiveDelay(
+  progress: MessagesProgress,
+  responseTime: number,
+): number {
+  const { currentDelay, failedRequests, lastSuccessTime } = progress;
+  const timeSinceLastSuccess = Date.now() - lastSuccessTime;
+
+  if (failedRequests > 0 || responseTime > 2000) {
+    return Math.min(
+      currentDelay * RATE_LIMIT_CONFIG.backoffMultiplier,
+      RATE_LIMIT_CONFIG.maxDelay,
+    );
+  }
+
+  if (responseTime < 500 && timeSinceLastSuccess > 10000) {
+    return Math.max(currentDelay * 0.8, RATE_LIMIT_CONFIG.minDelay);
+  }
+
+  return currentDelay;
+}
+
+function calculateAdaptiveBatchSize(
+  progress: MessagesProgress,
+  responseTime: number,
+): number {
+  if (!RATE_LIMIT_CONFIG.adaptiveBatchSize) {
+    return progress.currentBatchSize;
+  }
+
+  const { currentBatchSize, failedRequests } = progress;
+
+  if (failedRequests > 2 || responseTime > 3000) {
+    return Math.max(
+      Math.floor(currentBatchSize * 0.7),
+      RATE_LIMIT_CONFIG.minBatchSize,
+    );
+  }
+
+  if (failedRequests === 0 && responseTime < 1000) {
+    return Math.min(
+      Math.floor(currentBatchSize * 1.2),
+      RATE_LIMIT_CONFIG.maxBatchSize,
+    );
+  }
+
+  return currentBatchSize;
+}
+
+async function estimateMessageCount(): Promise<number> {
+  try {
+    const firstBatch = await fetchMessages(0, 100);
+    if (firstBatch.status !== "200" || !firstBatch.payload.hasMore) {
+      return firstBatch.payload.messages.length;
+    }
+
+    return Math.min(firstBatch.payload.messages.length * 20, 2000);
+  } catch (error) {
+    console.warn("[Messages job] Failed to estimate message count:", error);
+    return 500;
+  }
+}
+
+async function processMessagesInParallel(
+  messages: any[],
+  existingIds: Set<string>,
+  processedIdsSet: Set<string>,
+  progress: MessagesProgress,
+  ctx: any,
+): Promise<{
+  processedItems: IndexItem[];
+  consecutiveExisting: number;
+  updatedProgress: MessagesProgress;
+}> {
+  const processedItems: IndexItem[] = [];
+  let consecutiveExisting = 0;
+  const updatedProgress = { ...progress };
+
+  const messagesToProcess = messages.filter((msg) => {
+    const id = msg.id.toString();
+    if (existingIds.has(id) || processedIdsSet.has(id)) {
+      consecutiveExisting++;
+      return false;
+    }
+    consecutiveExisting = 0;
+    return true;
+  });
+
+  if (messagesToProcess.length === 0) {
+    return { processedItems, consecutiveExisting, updatedProgress };
+  }
+
+  for (
+    let i = 0;
+    i < messagesToProcess.length;
+    i += RATE_LIMIT_CONFIG.parallelRequests
+  ) {
+    const batch = messagesToProcess.slice(
+      i,
+      i + RATE_LIMIT_CONFIG.parallelRequests,
+    );
+
+    if (i > 0) {
+      await delay(
+        Math.max(updatedProgress.currentDelay, RATE_LIMIT_CONFIG.parallelDelay),
+      );
+    }
+
+    const batchStartTime = Date.now();
+
+    const batchPromises = batch.map(async (msg) => {
+      const id = msg.id.toString();
+
+      try {
+        const full = await fetchMessageContent(msg.id);
+        const responseTime = Date.now() - batchStartTime;
+
+        if (full && full.status === "200") {
+          const item: IndexItem = {
+            id,
+            text: msg.subject,
+            category: "messages",
+            content: `${htmlToPlainText(full.payload.contents)}\nFrom: ${msg.sender}`,
+            dateAdded: new Date(msg.date).getTime(),
+            metadata: {
+              messageId: msg.id,
+              author: msg.sender,
+              senderId: msg.sender_id,
+              senderType: msg.sender_type,
+              timestamp: msg.date,
+              hasAttachments: msg.attachments,
+              attachmentCount: msg.attachmentCount,
+              read: msg.read === 1,
+            },
+            actionId: "message",
+            renderComponentId: "message",
+          };
+
+          return { success: true, item, id, responseTime };
+        } else {
+          return { success: false, id, messageId: msg.id, responseTime };
+        }
+      } catch (error) {
+        console.error(`[Messages job] content fetch failed (id ${id}):`, error);
+        return { success: false, id, messageId: msg.id, error };
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    const batchResponseTime = Date.now() - batchStartTime;
+
+    let batchSuccesses = 0;
+    let batchFailures = 0;
+
+    for (const result of batchResults) {
+      if (result.success && result.item) {
+        await ctx.addItem(result.item);
+        existingIds.add(result.id);
+        processedIdsSet.add(result.id);
+        processedItems.push(result.item);
+        batchSuccesses++;
+      } else {
+        if (updatedProgress.retryQueue.length < 50 && result.messageId) {
+          updatedProgress.retryQueue.push(result.messageId);
+        }
+        batchFailures++;
+      }
+    }
+
+    if (batchSuccesses > 0) {
+      updatedProgress.lastSuccessTime = Date.now();
+      updatedProgress.failedRequests = Math.max(
+        0,
+        updatedProgress.failedRequests - batchSuccesses,
+      );
+    }
+
+    if (batchFailures > 0) {
+      updatedProgress.failedRequests += batchFailures;
+    }
+
+    updatedProgress.currentDelay = calculateAdaptiveDelay(
+      updatedProgress,
+      batchResponseTime,
+    );
+
+    console.log(
+      `[Messages job] Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
+    );
+  }
+
+  return { processedItems, consecutiveExisting, updatedProgress };
 }
 
 export const messagesJob: Job = {
@@ -48,79 +291,265 @@ export const messagesJob: Job = {
   frequency: { type: "expiry", afterMs: 1000 * 60 * 60 * 24 },
 
   run: async (ctx) => {
-    const limit = 100;
     const progress = (await ctx.getProgress<MessagesProgress>()) ?? {
       offset: 0,
       done: false,
+      currentBatchSize: RATE_LIMIT_CONFIG.baseBatchSize,
+      currentDelay: RATE_LIMIT_CONFIG.baseDelay,
+      failedRequests: 0,
+      lastSuccessTime: Date.now(),
+      retryQueue: [],
+      processedIds: [],
+      streamingStarted: false,
+      totalEstimated: 0,
     };
 
     const existingIds = new Set((await ctx.getStoredItems()).map((i) => i.id));
 
+    const processedIdsSet = new Set(progress.processedIds);
+
+    existingIds.forEach((id) => processedIdsSet.add(id));
+
+    const vectorWorker = VectorWorkerManager.getInstance();
+    if (!progress.streamingStarted) {
+      progress.totalEstimated = await estimateMessageCount();
+
+      try {
+        await vectorWorker.startStreamingSession(
+          progress.totalEstimated,
+          (progressData) => {
+            console.log(
+              `[Messages job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
+            );
+          },
+          RATE_LIMIT_CONFIG.vectorBatchSize,
+        );
+        progress.streamingStarted = true;
+        console.log(
+          `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
+        );
+      } catch (error) {
+        console.warn(
+          "[Messages job] Failed to start streaming session:",
+          error,
+        );
+      }
+    }
+
     let consecutiveExisting = 0;
+    let requestStartTime = 0;
+    let progressUpdateCounter = 0;
+    let itemsStreamedToVector = 0;
+
+    if (progress.retryQueue.length > 0) {
+      console.log(
+        `[Messages job] Processing ${Math.min(progress.retryQueue.length, 10)} items from retry queue`,
+      );
+
+      const retryBatch = progress.retryQueue.slice(0, 10);
+      const retryBatches = [];
+
+      for (
+        let i = 0;
+        i < retryBatch.length;
+        i += RATE_LIMIT_CONFIG.parallelRequests
+      ) {
+        retryBatches.push(
+          retryBatch.slice(i, i + RATE_LIMIT_CONFIG.parallelRequests),
+        );
+      }
+
+      for (const batch of retryBatches) {
+        await delay(progress.currentDelay);
+        const batchStartTime = Date.now();
+
+        const retryPromises = batch.map(async (messageId) => {
+          const id = messageId.toString();
+
+          if (processedIdsSet.has(id)) {
+            return { success: true, messageId, alreadyProcessed: true };
+          }
+
+          try {
+            const full = await fetchMessageContent(messageId);
+            const responseTime = Date.now() - batchStartTime;
+
+            if (full && full.status === "200") {
+              return { success: true, messageId, responseTime };
+            } else {
+              return { success: false, messageId, responseTime };
+            }
+          } catch (error) {
+            console.error(
+              `[Messages job] Retry failed for message ${messageId}:`,
+              error,
+            );
+            return { success: false, messageId, error };
+          }
+        });
+
+        const retryResults = await Promise.all(retryPromises);
+        const batchResponseTime = Date.now() - batchStartTime;
+
+        let retrySuccesses = 0;
+        let retryFailures = 0;
+
+        for (const result of retryResults) {
+          if (result.success) {
+            if (!result.alreadyProcessed) {
+              processedIdsSet.add(result.messageId.toString());
+              retrySuccesses++;
+            }
+            progress.retryQueue = progress.retryQueue.filter(
+              (mid) => mid !== result.messageId,
+            );
+          } else {
+            retryFailures++;
+          }
+        }
+
+        if (retrySuccesses > 0) {
+          progress.lastSuccessTime = Date.now();
+          progress.failedRequests = Math.max(
+            0,
+            progress.failedRequests - retrySuccesses,
+          );
+        }
+
+        if (retryFailures > 0) {
+          progress.failedRequests += retryFailures;
+        }
+
+        progress.currentDelay = calculateAdaptiveDelay(
+          progress,
+          batchResponseTime,
+        );
+
+        console.log(
+          `[Messages job] Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
+        );
+      }
+    }
 
     while (!progress.done) {
+      await delay(progress.currentDelay);
+      requestStartTime = Date.now();
+
       let list;
       try {
-        list = await fetchMessages(progress.offset, limit);
+        list = await fetchMessages(progress.offset, progress.currentBatchSize);
+        const responseTime = Date.now() - requestStartTime;
+
+        progress.currentDelay = calculateAdaptiveDelay(progress, responseTime);
+        progress.currentBatchSize = calculateAdaptiveBatchSize(
+          progress,
+          responseTime,
+        );
       } catch (e) {
         console.error("[Messages job] list fetch failed:", e);
+        progress.failedRequests++;
+        progress.currentDelay = Math.min(
+          progress.currentDelay * RATE_LIMIT_CONFIG.backoffMultiplier,
+          RATE_LIMIT_CONFIG.maxDelay,
+        );
+
+        progress.processedIds = Array.from(processedIdsSet);
+        await ctx.setProgress(progress);
         break;
       }
 
-      if (list.status !== "200") break;
+      if (list.status !== "200") {
+        progress.failedRequests++;
 
-      for (const msg of list.payload.messages) {
-        const id = msg.id.toString();
+        progress.processedIds = Array.from(processedIdsSet);
+        await ctx.setProgress(progress);
+        break;
+      }
 
-        if (existingIds.has(id)) {
-          consecutiveExisting += 1;
-          if (consecutiveExisting >= 20) {
-            progress.done = true;
-            break;
-          }
-          continue;
-        }
-        consecutiveExisting = 0;
+      const itemsToStream: IndexItem[] = [];
 
-        let full;
+      const {
+        processedItems,
+        consecutiveExisting: newConsecutiveExisting,
+        updatedProgress,
+      } = await processMessagesInParallel(
+        list.payload.messages,
+        existingIds,
+        processedIdsSet,
+        progress,
+        ctx,
+      );
+
+      progress.currentDelay = updatedProgress.currentDelay;
+      progress.failedRequests = updatedProgress.failedRequests;
+      progress.lastSuccessTime = updatedProgress.lastSuccessTime;
+      progress.retryQueue = updatedProgress.retryQueue;
+
+      itemsToStream.push(...processedItems);
+
+      consecutiveExisting = newConsecutiveExisting;
+      if (consecutiveExisting >= 20) {
+        progress.done = true;
+      }
+
+      if (itemsToStream.length > 0 && progress.streamingStarted) {
         try {
-          full = await fetchMessageContent(msg.id);
-        } catch (e) {
-          console.error(`[Messages job] content fetch failed (id ${id}):`, e);
-          continue;
+          await vectorWorker.streamItems(itemsToStream);
+          itemsStreamedToVector += itemsToStream.length;
+          console.log(
+            `[Messages job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
+          );
+        } catch (error) {
+          console.warn(
+            "[Messages job] Failed to stream items to vector worker:",
+            error,
+          );
         }
-        if (full.status !== "200") continue;
-
-        const item: IndexItem = {
-          id,
-          text: msg.subject,
-          category: "messages",
-          content: `${htmlToPlainText(full.payload.contents)}\nFrom: ${msg.sender}`,
-          dateAdded: new Date(msg.date).getTime(),
-          metadata: {
-            messageId: msg.id,
-            author: msg.sender,
-            senderId: msg.sender_id,
-            senderType: msg.sender_type,
-            timestamp: msg.date,
-            hasAttachments: msg.attachments,
-            attachmentCount: msg.attachmentCount,
-            read: msg.read === 1,
-          },
-          actionId: "message",
-          renderComponentId: "message",
-        };
-
-        await ctx.addItem(item);
-        existingIds.add(id);
       }
 
       if (!list.payload.hasMore) progress.done = true;
-      progress.offset += limit;
-      await ctx.setProgress(progress);
+      progress.offset += progress.currentBatchSize;
+
+      progressUpdateCounter++;
+      if (progressUpdateCounter >= 10 || progress.done) {
+        progress.processedIds = Array.from(processedIdsSet);
+        await ctx.setProgress(progress);
+        progressUpdateCounter = 0;
+
+        console.log(
+          `[Messages job] Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
+        );
+      }
     }
 
-    if (progress.done) await ctx.setProgress({ offset: 0, done: false });
+    if (progress.streamingStarted) {
+      try {
+        await vectorWorker.endStreamingSession();
+        console.log(
+          `[Messages job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
+        );
+      } catch (error) {
+        console.warn("[Messages job] Failed to end streaming session:", error);
+      }
+    }
+
+    if (progress.done) {
+      await ctx.setProgress({
+        offset: 0,
+        done: false,
+        currentBatchSize: RATE_LIMIT_CONFIG.baseBatchSize,
+        currentDelay: RATE_LIMIT_CONFIG.baseDelay,
+        failedRequests: 0,
+        lastSuccessTime: Date.now(),
+        retryQueue: progress.retryQueue.slice(0, 20),
+        processedIds: [],
+        streamingStarted: false,
+        totalEstimated: 0,
+      });
+    } else {
+      progress.processedIds = Array.from(processedIdsSet);
+      await ctx.setProgress(progress);
+    }
 
     return [];
   },
