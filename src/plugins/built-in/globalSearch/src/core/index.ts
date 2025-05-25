@@ -55,8 +55,7 @@ const settings = defineSettings({
             req.onsuccess = () => resolve();
             req.onerror = () => reject(req.error);
             req.onblocked = () => {
-              alert(`Please close all other tabs using this app to reset the database: ${dbName}`);
-              reject(new Error('Delete blocked'));
+              reject(new Error(`One database is open, failed to remove: ${dbName}`));
             };
           });
         };
