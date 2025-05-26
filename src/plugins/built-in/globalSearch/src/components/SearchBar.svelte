@@ -421,17 +421,3 @@
     <span>{text}</span>
   </div>
 {/snippet}
-
-<style>
-  :global(.highlight) {
-    background-color: rgba(200, 200, 200, 0.3);
-    font-weight: 500;
-    border-radius: 2px;
-    padding: 0 2px;
-    margin: 0 -2px;
-  }
-
-  .dark :global(.highlight) {
-    background-color: rgba(79, 79, 79, 0.2);
-  }
-</style>

@@ -1660,6 +1660,10 @@ iframe.userHTML {
   background: var(--auto-background);
 }
 
+.pane .navigator::after {
+  content: unset !important;
+}
+
 .programmeNavigator {
   box-shadow: 0 0 40px 0px rgba(0,0,0,0.05);
 
