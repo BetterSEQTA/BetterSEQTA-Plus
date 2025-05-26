@@ -104,7 +104,7 @@ export const subjectsJob: Job = {
         
         const courseItem = {
           id: `${id}-course`,
-          text: `${subject.title} Course`,
+          text: `${subject.title}`,
           category: "subjects",
           content: `View course content for ${subject.title} (${semester.description})`,
           dateAdded: Date.now(),
