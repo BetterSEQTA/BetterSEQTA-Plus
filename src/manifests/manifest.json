@@ -32,7 +32,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["resources/icons/*", "seqta/utils/migration/migrate.html"],
+      "resources": ["resources/icons/*"],
       "matches": ["*://*/*"]
     }
   ]
