@@ -80,4 +80,8 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   subjectcourse: ((item: IndexItem) => {
     window.location.href = `/#?page=/courses/${item.metadata.programme}:${item.metadata.subjectId}`;
   }) as ActionHandler<any>,
+
+  forum: ((item: IndexItem) => {
+    window.location.href = `/#?page=/forums/${item.metadata.forumId}`;
+  }) as ActionHandler<any>,
 };

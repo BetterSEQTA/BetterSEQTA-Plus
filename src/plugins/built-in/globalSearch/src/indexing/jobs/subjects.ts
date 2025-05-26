@@ -27,7 +27,7 @@ export const subjectsJob: Job = {
 
     let score = 0;
     if (item.metadata.isActive) {
-      score += 1; // Boost for active subjects
+      score += 0.01; // Boost for active subjects
     } else {
       score -= 50; // Penalty for inactive subjects
     }

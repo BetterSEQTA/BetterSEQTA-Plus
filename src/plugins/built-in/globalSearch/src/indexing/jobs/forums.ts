@@ -51,6 +51,7 @@ export const forumsJob: Job = {
           forumId: forum.id,
           owner: forum.owner,
           title: forum.title,
+          closed: forum.closed,
         },
         actionId: "forum",
         renderComponentId: "forum",
@@ -60,9 +61,9 @@ export const forumsJob: Job = {
     return items;
   },
 
-  /** Keep only forums from the last 2 years. */
+  /** Keep only forums from the last year. */
   purge: (items) => {
-    const twoYearsAgo = Date.now() - 2 * 365 * 24 * 60 * 60 * 1000;
-    return items.filter((i) => i.dateAdded >= twoYearsAgo);
+    const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
+    return items.filter((i) => i.dateAdded >= oneYearAgo);
   },
 };
