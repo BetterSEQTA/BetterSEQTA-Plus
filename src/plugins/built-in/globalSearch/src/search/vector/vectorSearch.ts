@@ -34,7 +34,6 @@ export async function searchVectors(
 
   // filter results with a similarity below 0.81
   const filteredResults = results.filter((r) => r.similarity > 0.81);
-  console.log("Vector search results", filteredResults);
 
   return filteredResults as VectorSearchResult[];
 }
