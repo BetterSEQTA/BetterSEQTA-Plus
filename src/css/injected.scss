@@ -952,13 +952,19 @@ div > ol:has(.uiFileHandlerWrapper) {
 }
 
 #content:has(#main > .course) #toolbar {
-  position: absolute;
   top: 72px;
   left: 0px;
   z-index: 10;
   
-  @media (min-width: 1400px) {
+  @media (min-width: 1401px) {
+    position: absolute;
     left: 402px;
+  }
+}
+
+#main > .course .content {
+  @media (min-width: 1400px) {
+    padding-top: 2.5rem;
   }
 }
 
@@ -1533,7 +1539,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   background: var(--background-primary);
 }
 [class*="Input__Input___"]::before,
-.navigator::before,
+.navigator .bar.flat::before,
 .ais-btnSearch::before {
   content: "";
   transform: translateY(-50%);
@@ -1660,10 +1666,12 @@ iframe.userHTML {
   .navigator {
     padding: 6px !important;
 
-    &::before {
-      position: fixed;
+    .bar.flat::before {
       z-index: 10;
-      top: 95px;
+      left: 8px;
+      margin: 0;
+      position: absolute;
+      top: 50%;
     }
 
     &::after {
