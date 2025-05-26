@@ -18,7 +18,7 @@
   onclick={onclick}
   >
   <div class="flex items-center w-full">
-    <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white bg-gradient-to-br from-[#59aaf6] to-[#1b62c6] rounded-md">{item.metadata?.icon || '\uebe7'}</div>
+    <div class="flex-none scale-90 w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white bg-gradient-to-br from-[#59aaf6] to-[#1b62c6] rounded-md">{item.metadata?.icon || '\uebe7'}</div>
     <span class="ml-4 text-lg truncate">
       <HighlightedText text={item.text} term={searchTerm} matches={matches} />
     </span>

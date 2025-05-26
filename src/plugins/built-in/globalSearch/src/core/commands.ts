@@ -49,6 +49,18 @@ const staticCommands: StaticCommandItem[] = [
     priority: 4,
   },
   {
+    id: "assessments",
+    icon: "\ueac3",
+    category: "navigation",
+    text: "Assessments",
+    keybind: ["alt+a"],
+    keybindLabel: ["Alt", "A"],
+    action: () => {
+      window.location.hash = "?page=/assessments/upcoming";
+    },
+    priority: 4,
+  },
+  {
     id: "dashboard",
     icon: "\ueb87",
     category: "navigation",
@@ -81,6 +93,7 @@ const staticCommands: StaticCommandItem[] = [
         altKey: true
       }, "*");
     },
+    keywords: ["compose", "message", "dm", "direct message", "new message"],
     priority: 4,
   },
 ];
