@@ -358,7 +358,7 @@ export class ThemeManager {
           settingsState.originalDarkMode,
         );
         settingsState.DarkMode = settingsState.originalDarkMode;
-        settingsState.originalDarkMode = undefined;
+        delete settingsState.originalDarkMode;
       }
 
       this.currentTheme = null;
