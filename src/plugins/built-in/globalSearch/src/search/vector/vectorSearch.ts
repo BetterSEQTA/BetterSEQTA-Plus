@@ -20,7 +20,7 @@ export interface VectorSearchResult extends SearchResult {
 
 export async function searchVectors(
   query: string,
-  topK: number = 10,
+  topK: number = 20,
 ): Promise<VectorSearchResult[]> {
   if (!vectorIndex) await initVectorSearch();
 
@@ -32,7 +32,11 @@ export async function searchVectors(
     dedupeEntries: true,
   });
 
-  return results as VectorSearchResult[];
+  // filter results with a similarity below 0.81
+  const filteredResults = results.filter((r) => r.similarity > 0.81);
+  console.log("Vector search results", filteredResults);
+
+  return filteredResults as VectorSearchResult[];
 }
 
 export async function refreshVectorCache() {

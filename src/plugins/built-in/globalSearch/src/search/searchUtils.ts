@@ -130,10 +130,7 @@ export function searchDynamicItems(
 export async function performSearch(
   query: string,
   commandsFuse: Fuse<StaticCommandItem>,
-  dynamicContentFuse: Fuse<IndexItem>,
   commandIdToItemMap: Map<string, StaticCommandItem>,
-  dynamicIdToItemMap: Map<string, IndexItem>,
-  showRecentFirst: boolean,
 ): Promise<CombinedResult[]> {
   // Get all results first
   const commandResults = searchCommands(
@@ -141,18 +138,11 @@ export async function performSearch(
     query,
     commandIdToItemMap,
   );
-  const dynamicResults = searchDynamicItems(
-    dynamicContentFuse,
-    query,
-    dynamicIdToItemMap,
-    10,
-    showRecentFirst,
-  );
 
   // Get vector results in parallel
   let vectorResults: VectorSearchResult[] = [];
   try {
-    vectorResults = await searchVectors(query, 10);
+    vectorResults = await searchVectors(query);
   } catch (e) {}
 
   // Create a map to store our final results, using ID as key to avoid duplicates
@@ -164,35 +154,6 @@ export async function performSearch(
   // Process dynamic results and vector results together
   const seenIds = new Set<string>();
 
-  // Add dynamic results first
-  dynamicResults.forEach((r) => {
-    seenIds.add(r.id);
-    
-    if (r.type === "dynamic") {
-      const dynamicItem = r.item as IndexItem;
-      const job = jobs[dynamicItem.category];
-      if (job && typeof job.boostCriteria === 'function') {
-        const boost = job.boostCriteria(dynamicItem, query);
-        if (boost) {
-          r.score += boost; // Add the boost to the score
-        }
-      }
-    }
-    
-    const vectorMatch = vectorResults.find((v) => v.object.id === r.id);
-    if (vectorMatch) {
-      // If we found it in both searches, combine the scores
-      resultMap.set(r.id, {
-        ...r,
-        score: r.score + vectorMatch.similarity * 0.6, // Boost exact matches
-      });
-    } else {
-      // If only in Fuse results, keep as is
-      resultMap.set(r.id, r);
-    }
-  });
-
-  // Now add any vector results we haven't seen yet
   vectorResults.forEach((v) => {
     const id = v.object.id;
 

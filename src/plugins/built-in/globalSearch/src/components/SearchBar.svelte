@@ -18,11 +18,9 @@
 
   const { 
     transparencyEffects, 
-    showRecentFirst,
     searchHotkey: initialSearchHotkey
   } = $props<{ 
     transparencyEffects: boolean, 
-    showRecentFirst: boolean,
     searchHotkey: string
   }>();
 
@@ -170,10 +168,7 @@
       combinedResults = await doSearch(
         term, 
         commandsFuse, 
-        dynamicContentFuse, 
         commandIdToItemMap, 
-        dynamicIdToItemMap,
-        showRecentFirst
       );
     } else {
       combinedResults = [];
