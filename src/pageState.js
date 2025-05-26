@@ -204,5 +204,23 @@ window.addEventListener("message", (event) => {
       },
       "*",
     );
+  } else if (event.data.type === "triggerKeyboardEvent") {
+    // Handle keyboard event triggering from content script
+    const { key, code, altKey, ctrlKey, metaKey, shiftKey, keyCode } = event.data;
+    
+    const keyboardEvent = new KeyboardEvent('keydown', {
+      key,
+      code,
+      keyCode: keyCode || 0,
+      which: keyCode || 0,
+      altKey: altKey || false,
+      ctrlKey: ctrlKey || false,
+      metaKey: metaKey || false,
+      shiftKey: shiftKey || false,
+      bubbles: true,
+      cancelable: true
+    });
+    
+    document.dispatchEvent(keyboardEvent);
   }
 });

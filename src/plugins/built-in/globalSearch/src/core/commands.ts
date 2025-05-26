@@ -49,14 +49,14 @@ const staticCommands: StaticCommandItem[] = [
     priority: 4,
   },
   {
-    id: "assessments",
-    icon: "\ueac3",
+    id: "dashboard",
+    icon: "\ueb87",
     category: "navigation",
-    text: "Assessments",
-    action: () => {
-      window.location.hash = "?page=/assessments/upcoming";
-    },
+    text: "Dashboard",
     priority: 4,
+    action: () => {
+      window.location.hash = "?page=/dashboard";
+    },
   },
   {
     id: "toggle-dark-mode",
@@ -66,6 +66,22 @@ const staticCommands: StaticCommandItem[] = [
     action: () => (settingsState.DarkMode = !settingsState.DarkMode),
     priority: 2,
     keywords: ["theme", "appearance"],
+  },
+  {
+    id: "compose-message",
+    icon: "\ue924",
+    category: "action",
+    text: "Compose Message",
+    action: () => {
+      window.postMessage({
+        type: "triggerKeyboardEvent",
+        key: 'm',
+        code: 'KeyM',
+        keyCode: 77,
+        altKey: true
+      }, "*");
+    },
+    priority: 4,
   },
 ];
 

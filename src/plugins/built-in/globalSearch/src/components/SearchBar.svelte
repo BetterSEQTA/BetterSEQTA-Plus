@@ -326,7 +326,7 @@
                     {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px] dark:shadow' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                     onclick={() => executeItemAction(staticItem)}
                   >
-                    <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center bg-gradient-to-br from-[#FA5D5D] to-[#DC2F30] rounded-md text-white">{staticItem.icon}</div>
+                    <div class="flex-none w-8 h-8 text-xl font-IconFamily flex items-center justify-center bg-gradient-to-br {staticItem.category === 'navigation' ? 'from-[#FA5D5D] to-[#DC2F30]' : 'from-[#4FBBFE] to-[#2090F3]'} rounded-md text-white">{staticItem.icon}</div>
                     <span class="ml-4 text-lg truncate">
                       <HighlightedText text={staticItem.text} term={searchTerm} matches={result.matches} />
                     </span>
