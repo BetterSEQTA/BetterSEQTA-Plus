@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import { unitFullNames } from './unitMap';
-  import * as math from 'mathjs';
+  import { calculateExpression } from '../utils/calculator';
 
   let { searchTerm = '', isSelected = false } = $props<{ searchTerm: string, isSelected: boolean }>();
   
@@ -13,73 +12,32 @@
   let isCalculating = $state(false);
   let inputUnit = $state<string>('');
   let outputUnit = $state<string>('');
-
-  function detectUnit(expression: string): string {
-    try {
-      const unit = math.unit(expression);
-      if (unit) {
-        // Get the base unit name
-        const unitStr = unit.formatUnits();
-        return unitFullNames[unitStr] || unitStr;
-      }
-    } catch (e) {
-      // Not a unit or invalid expression
-    }
-    return '';
-  }
+  let isPartial = $state(false);
   
-  // Process the input with debounce to avoid unnecessary calculations
   const processInput = (input: string) => {
+    isCalculating = true;
+    
     try {
-      if (
-        !input.trim() || 
-        (input.trim().length <= 2 && !/\d/.test(input))
-      ) {
-        result = null;
-        inputUnit = '';
-        outputUnit = '';
-        dispatch('hasResult', null);
-        return;
-      }
+      const calcResult = calculateExpression(input);
       
-      isCalculating = true;
-      
-      // Let mathjs handle everything
-      const evaluated = math.evaluate(input.replace('**', '^'));
-      
-      // Format the result
-      if (evaluated !== undefined) {
-        if (math.typeOf(evaluated) === 'Unit') {
-          // Handle unit conversion results
-          result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
-          inputUnit = detectUnit(input);
-          outputUnit = detectUnit(result);
-        } else if (typeof evaluated === 'number') {
-          // Handle regular numbers
-          if (math.round(evaluated) === evaluated) {
-            result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
-          } else {
-            result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
-          }
-          inputUnit = '';
-          outputUnit = '';
-        } else {
-          result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
-          inputUnit = '';
-          outputUnit = '';
-        }
-        dispatch('hasResult', result);
+      if (calcResult.isValid) {
+        result = calcResult.result;
+        inputUnit = calcResult.inputUnit;
+        outputUnit = calcResult.outputUnit;
+        isPartial = calcResult.isPartial;
+        dispatch('hasResult', calcResult.result);
       } else {
         result = null;
         inputUnit = '';
         outputUnit = '';
+        isPartial = false;
         dispatch('hasResult', null);
       }
     } catch (e) {
-      // If mathjs throws an error, this isn't a valid expression
       result = null;
       inputUnit = '';
       outputUnit = '';
+      isPartial = false;
       dispatch('hasResult', null);
     } finally {
       isCalculating = false;
@@ -96,7 +54,7 @@
 </script>
 
 {#if result !== null}
-<div class="p-2">
+<div class="">
   <p class="text-[0.85rem] p-1 pb-0.5 pt-0 font-semibold text-zinc-500 dark:text-zinc-400">Calculator</p>
   <div class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5' : ''}">
     <div class="flex flex-col flex-1 items-center py-4 pl-4 min-w-0">
@@ -124,7 +82,7 @@
           {result}
         </div>
         <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
-          {outputUnit || 'Result'}
+          {outputUnit || (isPartial ? 'Partial' : 'Result')}
         </div>
       </div>
     {:else}

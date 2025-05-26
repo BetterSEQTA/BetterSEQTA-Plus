@@ -16,7 +16,10 @@
     "dependency-graph": "depcruise src --include-only \"^src\" --output-type dot | dot -T svg > dependency-graph.svg",
     "release": "gh release create $npm_package_name@$npm_package_version ./dist/*.zip --generate-notes",
     "publish": "bun lib/publish.js --b",
-    "zip": "bedframe zip"
+    "zip": "bedframe zip",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "targets": {
     "prod": {
@@ -37,6 +40,7 @@
     "@babel/runtime": "^7.26.9",
     "@bedframe/cli": "^0.0.91",
     "@crxjs/vite-plugin": "2.0.0-beta.32",
+    "@types/jest": "^29.5.14",
     "@types/mime-types": "^2.1.4",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
@@ -44,6 +48,7 @@
     "dependency-cruiser": "^16.10.0",
     "eslint": "9.22.0",
     "glob": "^11.0.1",
+    "jest": "^29.7.0",
     "mime-types": "^2.1.35",
     "prettier": "^3.5.3",
     "process": "^0.11.10",
@@ -52,6 +57,7 @@
     "sass-loader": "^16.0.5",
     "semver": "^7.7.1",
     "tailwindcss": "3",
+    "ts-jest": "^29.3.4",
     "url": "^0.11.4"
   },
   "dependencies": {
