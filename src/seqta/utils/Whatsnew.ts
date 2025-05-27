@@ -46,20 +46,22 @@ export function OpenWhatsNewPopup() {
 
   source.setAttribute(
     "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-image.webp",
   );
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.appendChild(source);
-  video.classList.add("whatsnewImg");
-  imagecont.appendChild(video);
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
 
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+      <h1>3.4.7 - Global Search</h1>
+      <li>Added a new global search bar (enable in settings)
+        <span class="beta">beta</span>
+      </li>
+      <li>Fixed news feed not loading</li>
+      <li>Style changes and improvements</li>
+      <li>Other bug fixes</li>
+    
       <h1>3.4.6.1 - Hot patch!</h1>
       <li>Fixed storage not updating and sometimes being replaced with default values</li>
 
