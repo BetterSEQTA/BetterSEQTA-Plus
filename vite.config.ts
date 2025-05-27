@@ -76,7 +76,7 @@ export default defineConfig(({ command }) => ({
   build: {
     outDir: resolve(__dirname, "dist", mode),
     emptyOutDir: false,
-    minify: false,
+    minify: true,
     //sourcemap: sourcemap,
     rollupOptions: {
       input: {
