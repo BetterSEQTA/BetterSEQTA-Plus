@@ -21,7 +21,7 @@ export function OpenAboutPage() {
   ).firstChild;
 
   let text = stringToHTML(/* html */ `
-      <div class="whatsnewTextContainer" style="overflow-y: auto;">
+      <div class="whatsnewTextContainer" style="overflow-y: hidden;">
         <img src="${settingsState.DarkMode ? "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg" : "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg"}" class="aboutImg" />
   
         <p>BetterSEQTA+ is a fork of BetterSEQTA (originally developed by Nulkem), which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
