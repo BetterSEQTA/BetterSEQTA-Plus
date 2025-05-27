@@ -41,7 +41,7 @@ export function OpenWhatsNewPopup() {
   let imagecont = document.createElement("div");
   imagecont.classList.add("whatsnewImgContainer");
 
-  let video = document.createElement("video");
+  /* let video = document.createElement("video");
   let source = document.createElement("source");
 
   source.setAttribute(
@@ -53,13 +53,27 @@ export function OpenWhatsNewPopup() {
   video.loop = true;
   video.appendChild(source);
   video.classList.add("whatsnewImg");
-  imagecont.appendChild(video);
+  imagecont.appendChild(video); */
+
+  let whatsnewimg = document.createElement("img");
+  //whatsnewimg.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-image.webp";
+  whatsnewimg.src = browser.runtime.getURL('../../resources/update-image.webp');
+  whatsnewimg.classList.add("whatsnewImg");
+  imagecont.appendChild(whatsnewimg);
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
 
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+      <h1>3.4.7 - Global Search</h1>
+      <li>Added a new global search bar (enable in settings)
+        <span class="beta">beta</span>
+      </li>
+      <li>Fixed news feed not loading</li>
+      <li>Style changes and improvements</li>
+      <li>Other bug fixes</li>
+
       <h1>3.4.6.1 - Hot patch!</h1>
       <li>Fixed storage not updating and sometimes being replaced with default values</li>
 
