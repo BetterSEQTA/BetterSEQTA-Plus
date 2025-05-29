@@ -25,7 +25,7 @@ import { delay } from "./seqta/utils/delay";
       konamiIndex++;
       if (konamiIndex === KONAMI_CODE.length) {
         // open a new tab with game link
-        window.open(browser.runtime.getURL('resources/mygame/index.html'), '_blank');
+        window.open(browser.runtime.getURL('resources/snake.html'), '_blank');
         konamiIndex = 0;
       }
     } else {
