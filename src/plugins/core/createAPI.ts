@@ -48,6 +48,40 @@ function createSEQTAAPI(): SEQTAAPI {
   };
 }
 
+/**
+ * Creates a reactive and persistent settings store for a given plugin.
+ * This store is a Svelte-like store, providing reactivity, persistence
+ * via `browser.storage.local`, and default value handling.
+ *
+ * @template T - Represents the structure of the plugin's settings, extending `PluginSettings`.
+ * @param {Plugin<T, any>} plugin The plugin instance for which the settings store is being created.
+ *                                `plugin.id` is used for namespacing the settings in storage,
+ *                                and `plugin.settings` provides the definitions and default values for each setting.
+ * @returns {SettingsAPI<T> & { loaded: Promise<void> }} An object that functions as a Svelte store,
+ *                                                       enhanced with specific methods for settings management.
+ *                                                       The object includes:
+ *    - Reactivity: Changes to settings can be subscribed to using Svelte's store subscription pattern
+ *                  (though not explicitly a Svelte store, it behaves similarly for direct property access and updates).
+ *                  The `onChange` method provides a more direct way to listen for specific key changes.
+ *    - Persistence: Settings are automatically loaded from `browser.storage.local` when the store is created
+ *                   and saved back whenever a setting is changed via the proxy's setter.
+ *    - Default Values: Uses default values from the `plugin.settings` definition if no stored value exists for a setting.
+ *    - `loaded`: A Promise that resolves when the settings have been successfully loaded from storage,
+ *                allowing operations to be deferred until settings are ready.
+ *    - Direct property access for getting values (e.g., `settingsStore.mySettingKey`).
+ *    - Direct property assignment for setting values (e.g., `settingsStore.mySettingKey = newValue`), which also persists the change.
+ *    - `onChange(key, callback)`: Method to listen for changes to a specific setting. (Note: The prompt mentioned `listen`, this is `onChange`).
+ *                                 Returns an object with an `unregister` method.
+ *    - `offChange(key, callback)`: Method to stop listening for changes to a specific setting.
+ *    The following methods are not explicitly present on the returned proxy from `createSettingsAPI` but are typically
+ *    expected in a full "Svelte store" settings manager. The current implementation relies on direct property
+ *    manipulation for get/set, and re-initialization for reset-like behavior or would require external implementation
+ *    of reset logic if needed:
+ *    - `get(key)`: (Achieved by direct property access: `settingsStore.key`)
+ *    - `set(key, value)`: (Achieved by direct property assignment: `settingsStore.key = value`)
+ *    - `reset(key)`: (Would require manual re-application of `plugin.settings[key].default` and then setting it)
+ *    - `resetAll()`: (Would require iterating through all `plugin.settings` and applying defaults, then setting them)
+ */
 function createSettingsAPI<T extends PluginSettings>(
   plugin: Plugin<T>,
 ): SettingsAPI<T> & { loaded: Promise<void> } {
@@ -293,6 +327,32 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
+/**
+ * Creates and returns a tailored API object for a specific plugin.
+ * This API object provides the plugin with various functionalities such as
+ * managing settings, accessing namespaced storage, interacting with SEQTA-specific features,
+ * and handling plugin-specific events.
+ *
+ * @template T - The type of the plugin's settings, extending `PluginSettings`.
+ * @template S - The type of the data the plugin will store in its namespaced storage.
+ * @param {Plugin<T, S>} plugin The plugin instance for which the API is being created.
+ *                              The plugin's `id` and `name` are used internally by the API
+ *                              for namespacing and identification but are accessed from the `plugin` object directly.
+ * @returns {PluginAPI<T, S>} An API object containing the following key properties:
+ *    - `seqta`: An API for interacting with SEQTA-specific functionalities, created by `createSEQTAAPI()`.
+ *               This includes methods like `onMount` for DOM element appearance, `getFiber` for React component inspection,
+ *               `getCurrentPage` for getting the current SEQTA page, and `onPageChange` for listening to page navigations.
+ *    - `settings`: An API for managing plugin-specific settings, created by `createSettingsAPI(plugin)`.
+ *                  It allows getting, setting, and listening to changes in the plugin's settings,
+ *                  which are stored persistently and namespaced to the plugin. Includes a `loaded` promise.
+ *    - `storage`: An API for providing namespaced storage for the plugin, created by `createStorageAPI<S>(plugin.id)`.
+ *                 It allows the plugin to store and retrieve arbitrary data, namespaced to prevent conflicts
+ *                 with other plugins or parts of the extension. Includes a `loaded` promise and `onChange` listeners.
+ *    - `events`: An API for allowing the plugin to dispatch and listen for custom events within its own scope,
+ *                created by `createEventsAPI(plugin.id)`. It provides `on(event, callback)` to listen for
+ *                plugin-specific events and `emit(event, ...args)` to dispatch them. These events are namespaced
+ *                to the plugin.
+ */
 export function createPluginAPI<T extends PluginSettings, S = any>(
   plugin: Plugin<T, S>,
 ): PluginAPI<T, S> {
