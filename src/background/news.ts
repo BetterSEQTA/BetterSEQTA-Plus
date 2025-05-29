@@ -1,5 +1,18 @@
 import Parser from "rss-parser";
 
+/**
+ * Fetches news articles specifically for Australia from the NewsAPI.
+ *
+ * This function handles a specific case for fetching Australian news. It includes a
+ * mechanism to retry the fetch operation by appending "%00" to the URL if a
+ * rate limit error (`response.code == "rateLimited"`) is encountered. This is
+ * likely a workaround for cache-busting or bypassing certain rate-limiting measures.
+ *
+ * @param {string} url The NewsAPI URL to fetch Australian news from.
+ * @param {any} sendResponse A callback function (likely from a browser extension message listener)
+ *                           to send the fetched news data back to the caller.
+ *                           It's called with an object like `{ news: responseData }`.
+ */
 const fetchAustraliaNews = async (url: string, sendResponse: any) => {
   fetch(url)
     .then((result) => result.json())
@@ -12,6 +25,12 @@ const fetchAustraliaNews = async (url: string, sendResponse: any) => {
     });
 };
 
+/**
+ * A record mapping lowercase country codes (e.g., "usa", "canada") to an array
+ * of RSS feed URLs for news sources in that country.
+ *
+ * @type {Record<string, string[]>}
+ */
 const rssFeedsByCountry: Record<string, string[]> = {
   usa: [
     "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
@@ -54,6 +73,25 @@ const rssFeedsByCountry: Record<string, string[]> = {
   netherlands: ["https://www.dutchnews.nl/feed/", "https://www.nrc.nl/rss/"],
 };
 
+/**
+ * Fetches news articles based on a specified source.
+ *
+ * The source can be:
+ * 1. The string "australia": Fetches news from Australian sources via NewsAPI,
+ *    handled by the `fetchAustraliaNews` function.
+ * 2. A lowercase country code (e.g., "usa", "canada"): Fetches news from a predefined
+ *    list of RSS feeds for that country, as specified in `rssFeedsByCountry`.
+ * 3. A direct RSS feed URL (starting with "http"): Fetches news directly from this URL.
+ *
+ * The fetched articles are then sent back to the caller using the `sendResponse` callback.
+ *
+ * @param {string} source The news source identifier. This can be "australia", a
+ *                        lowercase country code, or a direct RSS feed URL.
+ * @param {any} sendResponse A callback function (typically from a browser extension
+ *                           message listener, like `chrome.runtime.onMessage`)
+ *                           used to send the fetched news data back to the caller.
+ *                           It's called with an object like `{ news: { articles: [...] } }`.
+ */
 export async function fetchNews(source: string, sendResponse: any) {
   if (source === "australia") {
     const date = new Date();
