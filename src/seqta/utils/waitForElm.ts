@@ -1,6 +1,20 @@
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import { delay } from "@/seqta/utils/delay";
 
+/**
+ * Asynchronously waits for an element to be present in the DOM.
+ *
+ * This function can use either a polling mechanism (via `setTimeout`) or
+ * a `MutationObserver` (via `eventManager.register`) to detect the element.
+ * By default, it uses the `eventManager` which is more efficient.
+ *
+ * @param {string} selector The CSS selector for the target element.
+ * @param {boolean} [usePolling=false] If true, forces the use of `setTimeout` for polling.
+ * @param {number} [interval=100] The polling interval in milliseconds (only applicable if `usePolling` is true).
+ * @param {number} [maxIterations] Optional. The maximum number of polling attempts before rejecting (only applicable if `usePolling` is true).
+ * @returns {Promise<Element>} A Promise that resolves with the found DOM Element.
+ * If `usePolling` is true and `maxIterations` is reached, the Promise rejects with an Error.
+ */
 export async function waitForElm(
   selector: string,
   usePolling: boolean = false,
