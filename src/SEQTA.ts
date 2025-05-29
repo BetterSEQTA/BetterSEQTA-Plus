@@ -10,6 +10,31 @@ import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 
+// I wanted to add a easter egg
+(function () {
+  const KONAMI_CODE = [ // konami code is a classic old code from video games during olden days
+    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+    'b', 'a'
+  ];
+  let konamiIndex = 0;
+
+  window.addEventListener('keydown', function (e) {
+    const key = e.key;
+    if (key === KONAMI_CODE[konamiIndex]) {
+      konamiIndex++;
+      if (konamiIndex === KONAMI_CODE.length) {
+        // open a new tab with game link
+        window.open(browser.runtime.getURL('resources/mygame/index.html'), '_blank');
+        konamiIndex = 0;
+      }
+    } else {
+      // Reset if wrong key
+      konamiIndex = key === KONAMI_CODE[0] ? 1 : 0;
+    }
+  });
+})();
+
 export let MenuOptionsOpen = false;
 
 var IsSEQTAPage = false;
