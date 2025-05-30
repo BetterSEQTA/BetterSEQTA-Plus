@@ -18,6 +18,20 @@ function reloadSeqtaPages() {
 browser.runtime.onMessage.addListener(
   (request: any, _: any, sendResponse: (response?: any) => void) => {
     switch (request.type) {
+      case "GET_COOKIE":
+        console.log('Background script: Getting cookie for', request.url, 'name:', request.name);
+        browser.cookies.getAll({ 
+          url: request.url,
+          name: request.name 
+        }).then(cookies => {
+          console.log('Background script: Found cookies:', cookies);
+          sendResponse({ cookie: cookies[0] });
+        }).catch(error => {
+          console.error('Background script: Error getting cookie:', error);
+          sendResponse({ error: error.message });
+        });
+        return true;
+
       case "reloadTabs":
         reloadSeqtaPages();
         break;
