@@ -58,13 +58,13 @@ Don't worry- if you get stuck feel free to ask around in the [discord](https://d
 
 ## Getting started
 
-1. Clone the repository
+**1. Clone the repository**
 
 ```
 git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus
 ```
 
-2. Install dependencies
+**2. Install dependencies**
 
 You may install the dependencies like below:
 
@@ -80,7 +80,7 @@ npm install --legacy-peer-deps # Only NPM supported
 
 ### Running Development
 
-3. Run the dev script (it updates as you save files)
+**3. Run the dev script (it updates as you save files)**
 
 ```
 npm run dev # or use your preferred package manager
@@ -88,7 +88,7 @@ npm run dev # or use your preferred package manager
 
 ### Building for production
 
-4. Run the build script
+**4. Run the build script**
 
 ```
 npm run build # or use your preferred package manager
@@ -100,7 +100,7 @@ npm run build # or use your preferred package manager
 npm run zip # This REQUIRES 7-Zip to be installed in order to work. You can also use your preferred package manager
 ```
 
-5. Load the extension into chrome
+**5. Load the extension into chrome**
 
 - Go to `chrome://extensions`
 - Enable developer mode
