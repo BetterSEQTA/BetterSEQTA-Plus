@@ -13,14 +13,14 @@ export function OpenAboutPage() {
       background: rgba(0, 102, 255, 0.07) !important;
       border-radius: 0.3em !important;
       padding: 2px 10px !important;
-      color: #176bb2 !important;
+      color:rgb(56, 166, 255) !important;
       font-weight: 500 !important;
       transition: background 0.2s, color 0.2s !important;
       cursor: pointer !important;
     }
     .about-here-link:hover {
       background: rgba(0, 102, 255, 0.13) !important;
-      color: #124c87 !important;
+      color:rgb(80, 168, 255) !important;
     }
     `;
     document.head.appendChild(style);
