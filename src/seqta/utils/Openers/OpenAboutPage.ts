@@ -5,29 +5,6 @@ import { animate, stagger } from "motion";
 import { DeleteWhatsNew } from "../Whatsnew";
 
 export function OpenAboutPage() {
-  console.log("OpenAboutPage ran!"); // Debug log
-
- 
-  if (!document.getElementById('about-here-link-style')) {
-    const style = document.createElement('style');
-    style.id = 'about-here-link-style';
-    style.textContent = `
-      .about-here-link {
-      background: rgba(0, 102, 255, 0.07) !important;
-      border-radius: 0.3em !important;
-      padding: 2px 10px !important;
-      color: #176bb2 !important;
-      font-weight: 500 !important;
-      transition: background 0.2s, color 0.2s !important;
-      cursor: pointer !important;
-    }
-    .about-here-link:hover {
-      background: rgba(0, 102, 255, 0.13) !important;
-      color: #124c87 !important;
-    }
-    `;
-    document.head.appendChild(style);
-  }
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");
@@ -51,7 +28,15 @@ export function OpenAboutPage() {
         <p>We are currently working on fixing bugs and adding useful features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below). We are always looking for more contributors!</p>
         <h1>Credits:</h1>
         <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123, and other contributors.</p>
-        <p> Full contributors list <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus/graphs/contributors" class="about-here-link">here</a></p>
+        <div style="text-align:center; margin-top:1.5em;">
+  <h2 style="margin-bottom:0.5em;">All contributors:</h2>
+  <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus/graphs/contributors" target="_blank" rel="noopener">
+    <img src="https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/src/resources/image.svg" alt="Contributors" style="display:block; margin:auto; max-width:100%;" />
+  </a>
+  <div style="margin-top:0.5em; font-size:0.95em;">
+    Made with <a href="https://contrib.rocks" target="_blank" rel="noopener">contrib.rocks</a>.
+  </div>
+</div>
       </div>
     `).firstChild;
 
