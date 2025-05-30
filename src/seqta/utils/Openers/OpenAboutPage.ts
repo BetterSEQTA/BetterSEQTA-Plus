@@ -5,26 +5,6 @@ import { animate, stagger } from "motion";
 import { DeleteWhatsNew } from "../Whatsnew";
 
 export function OpenAboutPage() {
-  if (!document.getElementById('about-here-link-style')) {
-    const style = document.createElement('style');
-    style.id = 'about-here-link-style';
-    style.textContent = `
-      .about-here-link {
-      background: rgba(0, 102, 255, 0.07) !important;
-      border-radius: 0.3em !important;
-      padding: 2px 10px !important;
-      color: #176bb2 !important;
-      font-weight: 500 !important;
-      transition: background 0.2s, color 0.2s !important;
-      cursor: pointer !important;
-    }
-    .about-here-link:hover {
-      background: rgba(0, 102, 255, 0.13) !important;
-      color: #124c87 !important;
-    }
-    `;
-    document.head.appendChild(style);
-  }
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");
