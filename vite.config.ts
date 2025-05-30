@@ -78,6 +78,7 @@ export default defineConfig(({ command }) => ({
     emptyOutDir: false,
     minify: true,
     //sourcemap: sourcemap,
+    chunkSizeWarningLimit: 4000,
     rollupOptions: {
       input: {
         settings: join(__dirname, "src", "interface", "index.html"),
