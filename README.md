@@ -83,7 +83,7 @@ npm install --legacy-peer-deps # Only NPM supported
 2. Run the dev script (it updates as you save files)
 
 ```
-npm run dev # or use your perferred package manager
+npm run dev # or use your preferred package manager
 ```
 
 ### Building for production
@@ -91,13 +91,13 @@ npm run dev # or use your perferred package manager
 2. Run the build script
 
 ```
-npm run build # or use your perferred package manager
+npm run build # or use your preferred package manager
 ```
 
 2.1. Package it up (optional)
 
 ```
-npm run zip # This REQUIRES 7-Zip to be installed in order to work. You can also use your perferred package manager
+npm run zip # This REQUIRES 7-Zip to be installed in order to work. You can also use your preferred package manager
 ```
 
 3. Load the extension into chrome
