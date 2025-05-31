@@ -456,6 +456,9 @@ ul.magicDelete > li.deleting {
   text-transform: none;
   font-size: 16px;
 }
+#menu li {
+  transition: color 0.2s, background 0.2s;
+}
 #userActions {
   display: none;
 }
