@@ -224,14 +224,19 @@ function setupEventListeners() {
     }
   });
 
-  newsbutton?.addEventListener("click", function () {
-    if (
-      !newsbutton.classList.contains("draggable") &&
-      !newsbutton.classList.contains("active")
-    ) {
-      SendNewsPage();
-    }
-  });
+newsbutton?.addEventListener("click", function () {
+  if (
+    !newsbutton.classList.contains("draggable") &&
+    !newsbutton.classList.contains("active")
+  ) {
+    // Remove 'active' from all sidebar items
+    document.querySelectorAll("#menu li.active").forEach(li => li.classList.remove("active"));
+    // Instantly set 'active' on the news button
+    newsbutton.classList.add("active");
+    // Now load the news page
+    SendNewsPage();
+  }
+});
 
   menuCover?.addEventListener("click", function () {
     location.href = "../#?page=/home";
