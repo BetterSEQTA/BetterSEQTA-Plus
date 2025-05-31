@@ -229,11 +229,6 @@ newsbutton?.addEventListener("click", function () {
     !newsbutton.classList.contains("draggable") &&
     !newsbutton.classList.contains("active")
   ) {
-    // Remove 'active' from all sidebar items
-    document.querySelectorAll("#menu li.active").forEach(li => li.classList.remove("active"));
-    // Instantly set 'active' on the news button
-    newsbutton.classList.add("active");
-    // Now load the news page
     SendNewsPage();
   }
 });
