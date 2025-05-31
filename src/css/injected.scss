@@ -370,7 +370,7 @@ ul.magicDelete > li.deleting {
   margin-top: -2px;
 }
 #menu li {
-  transition: color 0.1s;
+  transition: color 0.1s, background 0.1s;
 }
 #menu section > label {
   align-items: center;
