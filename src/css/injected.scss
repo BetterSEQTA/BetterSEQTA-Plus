@@ -369,6 +369,9 @@ ul.magicDelete > li.deleting {
   top: 71.5px;
   margin-top: -2px;
 }
+#menu li {
+  transition: color 0.2s, background 0.2s;
+}
 #menu section > label {
   align-items: center;
   box-sizing: border-box;
