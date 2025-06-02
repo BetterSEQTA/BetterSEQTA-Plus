@@ -1,0 +1,14 @@
+🔧 Step-by-step in command prompt:
+Check the status of your changes:
+
+
+git add .
+This adds all the changed files. If you only want specific files, you can do git add filename.
+
+
+git commit -m "commit message here"
+Write something descriptive (but it doesn’t need to be Shakespeare).
+
+
+git push origin main
+Replace main with master if your branch is called that — check with git branch.
