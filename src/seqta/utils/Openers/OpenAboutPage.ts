@@ -35,8 +35,8 @@ export function OpenAboutPage() {
   </h1>
 <div style="max-width: 600px; margin: auto;">
   <img
-    src="https://contrib.rocks/image?repo=BetterSEQTA/BetterSEQTA-Plus&columns=7"
-    style="width: 100%; max-width: 450px; height: auto; object-fit: contain; display: block; margin: -62px auto 0;">
+    src="https://contrib.rocks/image?repo=BetterSEQTA/BetterSEQTA-Plus&columns=13"
+    style="width: 100%; max-width: 500px; height: auto; object-fit: contain; display: block; margin: -110px auto 0;">
 </div>
       </div>
     `).firstChild;
