@@ -30,10 +30,10 @@ export function OpenAboutPage() {
         <p style="margin: 0;">
   Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123, and other contributors.
 </p>
-<div style="max-width: 600px; margin: auto;">
-  <h1 style="text-align: center; font-weight: bold; margin: 0;">
+  <h1 style="text-align: left; font-weight: bold; margin: 0;">
     All Contributors:
   </h1>
+<div style="max-width: 600px; margin: auto;">
   <img
     src="https://contrib.rocks/image?repo=BetterSEQTA/BetterSEQTA-Plus&columns=7"
     style="width: 100%; max-width: 450px; height: auto; object-fit: contain; display: block; margin: -62px auto 0;">
