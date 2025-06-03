@@ -274,9 +274,8 @@ export function OpenWhatsNewPopup() {
             </svg>
           </a>
         </div>
-  
         <div>
-          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0;">
+          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0; display: flex; align-items: center;">
            <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
           </a>
         </div>
