@@ -27,8 +27,17 @@ export function OpenAboutPage() {
         <p>BetterSEQTA+ is a fork of BetterSEQTA (originally developed by Nulkem), which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
         <p>We are currently working on fixing bugs and adding useful features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below). We are always looking for more contributors!</p>
         <h1>Credits:</h1>
-        <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123, and other contributors.</p>
-        <p> Full contributors list <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus/graphs/contributors" class="AboutPageLink">HERE</a></p>
+        <p style="margin: 0;">
+  Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123, and other contributors.
+</p>
+<div style="max-width: 600px; margin: auto;">
+  <h1 style="text-align: center; font-weight: bold; margin: 0;">
+    All Contributors:
+  </h1>
+  <img
+    src="https://contrib.rocks/image?repo=BetterSEQTA/BetterSEQTA-Plus&columns=7"
+    style="width: 100%; max-width: 450px; height: auto; object-fit: contain; display: block; margin: -62px auto 0;">
+</div>
       </div>
     `).firstChild;
 
