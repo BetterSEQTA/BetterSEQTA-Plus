@@ -28,7 +28,7 @@ export function OpenAboutPage() {
         <p>We are currently working on fixing bugs and adding useful features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below). We are always looking for more contributors!</p>
         <h1>Credits:</h1>
         <p>Nulkem created the original extension, was ported to Manifest V3 by MEGA-Dawg68, and is under active development by Crazypersonalph, SethBurkart123, and other contributors.</p>
-        <p> Full contributors list <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus/graphs/contributors">here</a></p>
+        <p> Full contributors list <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus/graphs/contributors" class="AboutPageLink">HERE</a></p>
       </div>
     `).firstChild;
 
