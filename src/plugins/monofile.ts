@@ -503,7 +503,7 @@ export async function ObserveMenuItemPosition() {
         return;
       }
 
-      if (!node?.dataset?.checked && !MenuOptionsOpen) {
+      if (!MenuOptionsOpen) {
         const key =
           MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
         if (key) {
