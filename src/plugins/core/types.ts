@@ -48,13 +48,21 @@ export interface HotkeySetting {
   description?: string;
 }
 
+export interface ComponentSetting {
+  type: "component";
+  title: string;
+  description?: string;
+  component: any;
+}
+
 export type PluginSetting =
   | BooleanSetting
   | StringSetting
   | NumberSetting
   | SelectSetting<string>
   | ButtonSetting
-  | HotkeySetting;
+  | HotkeySetting
+  | ComponentSetting;
 
 export type PluginSettings = {
   [key: string]: PluginSetting;
@@ -71,7 +79,9 @@ export type SettingValue<T extends PluginSetting> = T extends BooleanSetting
         ? O
         : T extends HotkeySetting
           ? string
-          : never;
+          : T extends ComponentSetting
+            ? never
+            : never;
 
 export type SettingsAPI<T extends PluginSettings> = {
   [K in keyof T]: SettingValue<T[K]>;
