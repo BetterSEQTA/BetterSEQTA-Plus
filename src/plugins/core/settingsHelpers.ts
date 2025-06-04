@@ -5,6 +5,7 @@ import type {
   SelectSetting,
   StringSetting,
   HotkeySetting,
+  ComponentSetting,
 } from "./types";
 
 export function numberSetting(
@@ -48,6 +49,15 @@ export function buttonSetting(
 ): ButtonSetting {
   return {
     type: "button",
+    ...options,
+  };
+}
+
+export function componentSetting(
+  options: Omit<ComponentSetting, "type">,
+): ComponentSetting {
+  return {
+    type: "component",
     ...options,
   };
 }
