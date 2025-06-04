@@ -6,6 +6,7 @@ import type {
   StringSetting,
   HotkeySetting,
   PluginSettings,
+  ComponentSetting,
 } from "./types";
 
 /**
@@ -114,6 +115,16 @@ export function buttonSetting(
  *                                              excluding the `type` property (e.g., `title`, `default` hotkey string).
  * @returns {HotkeySetting} A complete hotkey setting object with `type: "hotkey"`.
  */
+
+export function componentSetting(
+  options: Omit<ComponentSetting, "type">,
+): ComponentSetting {
+  return {
+    type: "component",
+    ...options,
+  };
+}
+
 export function hotkeySetting(
   options: Omit<HotkeySetting, "type">,
 ): HotkeySetting {

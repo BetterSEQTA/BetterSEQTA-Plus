@@ -3,10 +3,10 @@ export function convertTo12HourFormat(
   noMinutes: boolean = false,
 ): string {
   let [hours, minutes] = time.split(":").map(Number);
-  let period = "AM";
+  let period = "am";
 
   if (hours >= 12) {
-    period = "PM";
+    period = "pm";
     if (hours > 12) hours -= 12;
   } else if (hours === 0) {
     hours = 12;
@@ -17,5 +17,5 @@ export function convertTo12HourFormat(
     hoursStr = hoursStr.substring(1);
   }
 
-  return `${hoursStr}${noMinutes ? "" : `:${minutes.toString().padStart(2, "0")}`} ${period}`;
+  return `${hoursStr}${noMinutes ? "" : `:${minutes.toString().padStart(2, "0")}`}${period}`;
 }
