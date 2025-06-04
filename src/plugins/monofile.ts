@@ -24,6 +24,9 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
+import {
+  updateTimetableTimes,
+} from "@/seqta/utils/updateTimetableTimes";
 
 // JSON content
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
@@ -241,14 +244,16 @@ async function LoadPageElements(): Promise<void> {
     handleReports,
   );
 
-  /* eventManager.register(
+  eventManager.register(
     "timetableAdded",
     {
       elementType: "div",
       className: "timetablepage",
     },
-    handleTimetable,
-  ) */
+    async () => {
+      await updateTimetableTimes();
+    },
+  );
 
   eventManager.register(
     "noticesAdded",
