@@ -69,11 +69,12 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     // Initial load
     await updateImageFromStore();
 
-    // Listen for storage changes (in case user updates from settings)
-    const interval = setInterval(updateImageFromStore, 1000);
+    // Listen for profile picture updates
+    const handler = () => { updateImageFromStore(); };
+    window.addEventListener('profile-picture-updated', handler);
 
     return () => {
-      clearInterval(interval);
+      window.removeEventListener('profile-picture-updated', handler);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);

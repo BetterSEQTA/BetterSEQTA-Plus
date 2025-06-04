@@ -43,6 +43,7 @@
     const newBlobUrl = URL.createObjectURL(file)
     value = newBlobUrl
     blobUrl = newBlobUrl
+    window.dispatchEvent(new Event('profile-picture-updated'))
   }
 
   function onFileChange() {
@@ -62,6 +63,7 @@
     }
     value = undefined
     await store.removeItem('profile-picture')
+    window.dispatchEvent(new Event('profile-picture-updated'))
   }
 </script>
 
