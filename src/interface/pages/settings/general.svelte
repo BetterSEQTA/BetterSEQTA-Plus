@@ -13,25 +13,30 @@
   import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   import { getAllPluginSettings } from "@/plugins"
-  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting } from "@/plugins/core/types"
+  import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
-  type SettingType = 
+  type SettingType =
     (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
     (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
     (Omit<NumberSetting, 'type'> & { type: 'number', id: string }) |
-    (Omit<SelectSetting<string>, 'type'> & { 
-      type: 'select', 
-      id: string, 
+    (Omit<SelectSetting<string>, 'type'> & {
+      type: 'select',
+      id: string,
       options: string[]
     }) |
-    (Omit<ButtonSetting, 'type'> & { 
-      type: 'button', 
-      id: string 
+    (Omit<ButtonSetting, 'type'> & {
+      type: 'button',
+      id: string
     }) |
-    (Omit<HotkeySetting, 'type'> & { 
-      type: 'hotkey', 
-      id: string 
+    (Omit<HotkeySetting, 'type'> & {
+      type: 'hotkey',
+      id: string
+    }) |
+    (Omit<ComponentSetting, 'type'> & {
+      type: 'component',
+      id: string,
+      component: any
     });
 
   interface Plugin {
@@ -55,7 +60,11 @@
       pluginSettingsValues[plugin.pluginId] = stored[storageKey] || {};
       
       for (const [key, setting] of Object.entries(plugin.settings)) {
-        if (pluginSettingsValues[plugin.pluginId][key] === undefined && setting.type !== 'button') {
+        if (
+          pluginSettingsValues[plugin.pluginId][key] === undefined &&
+          setting.type !== 'button' &&
+          setting.type !== 'component'
+        ) {
           pluginSettingsValues[plugin.pluginId][key] = setting.default;
         }
       }
@@ -268,6 +277,8 @@
                       value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
                       onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     />
+                  {:else if setting.type === 'component'}
+                    <svelte:component this={setting.component} />
                   {/if}
                 </div>
               </div>

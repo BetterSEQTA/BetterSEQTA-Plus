@@ -7,6 +7,7 @@ import type {
   StringSetting,
   ButtonSetting,
   HotkeySetting,
+  ComponentSetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
@@ -299,7 +300,8 @@ export class PluginManager {
             options: Array<{ value: string; label: string }>;
           })
         | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> })
-        | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string });
+        | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string })
+        | (Omit<ComponentSetting, "type"> & { type: "component"; id: string; component: any });
     };
     // Actual type is more complex, see original code, but this gives the gist for the JSDoc.
     // Array<{ pluginId: string; name: string; description: string; beta?: boolean; settings: Record<string, ProcessedSetting>; disableToggle?: boolean; }>
@@ -309,8 +311,8 @@ export class PluginManager {
         ([key, setting]) => {
           const settingObj = setting as any;
           let result: any;
-          if (settingObj.type === "button") {
-            // For button, keep the trigger function
+          if (settingObj.type === "button" || settingObj.type === "component") {
+            // For button or component, keep the functions
             result = { ...settingObj };
           } else {
             // For others, strip functions
