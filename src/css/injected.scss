@@ -1997,6 +1997,15 @@ div.entry.class[style*="width: 46.5%"] {
   min-width: 0;
   width: auto !important;
 }
+
+div.entry.tutorial {
+  border-radius: 4px;
+}
+
+div.entry.event {
+  border-radius: 4px;
+}
+
 .uiFileHandler .uiButton {
   border-radius: 32px !important;
   color: var(--text-primary) !important;
