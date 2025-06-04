@@ -7,4 +7,13 @@
   border-radius: 50%;
   object-fit: cover;
   z-index: 4;
+  box-shadow: 0 0 3px 3px #0000000a;
+}
+
+.dark .userInfoImg {
+  box-shadow: 0 0 0 3px #ffffff;
+  width: 70%;
+  height: 70%;
+  top: 15%;
+  left: 15%;
 }

@@ -86,7 +86,10 @@
     <img src={value} alt="Profile" class="object-cover rounded-full size-10" />
     <button
       class="flex justify-center items-center m-1 text-lg dark:text-white size-7"
-      onclick={removeImage}
+      onclick={(e) => {
+        e.stopPropagation()
+        removeImage()
+      }}
     >&#215;</button>
   {:else}
     <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300">
