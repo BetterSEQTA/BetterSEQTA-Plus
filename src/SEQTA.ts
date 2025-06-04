@@ -24,6 +24,19 @@ if (document.childNodes[1]) {
   init();
 }
 
+/**
+ * Initializes BetterSEQTA+ on a SEQTA page.
+ *
+ * This function performs the following steps:
+ * 1. Verifies that the current page is a SEQTA page.
+ * 2. Injects CSS styles for document loading.
+ * 3. Changes the page's favicon.
+ * 4. Initializes the extension's settings state.
+ * 5. Sets default storage if settings are not already defined.
+ * 6. Calls the main function to apply core BetterSEQTA+ modifications.
+ * 7. Initializes legacy and new plugins if the extension is enabled.
+ * 8. Logs success or error messages during initialization.
+ */
 async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA Learn");
 
