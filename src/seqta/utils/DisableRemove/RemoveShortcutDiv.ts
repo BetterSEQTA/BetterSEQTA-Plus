@@ -10,7 +10,7 @@ export function RemoveShortcutDiv(elements: any) {
       const textElement = shortcut.querySelector("p"); // <p> is a direct child of .shortcut
       const title = textElement ? textElement.textContent : "";
 
-      const elementName = links[element.name as keyof typeof links].DisplayName || element.name;
+      const elementName = links[element.name as keyof typeof links]?.DisplayName || element.name;
 
       let shouldRemove = title === elementName;
 

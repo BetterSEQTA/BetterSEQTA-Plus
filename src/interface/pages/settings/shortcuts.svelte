@@ -6,6 +6,7 @@
   import Shortcuts from "@/seqta/content/links.json"
 
   let isLoaded = $state(false);
+  let fileInput = $state<HTMLInputElement | null>(null);
 
   onMount(async () => {
     // Wait for settingsState to be initialized
@@ -35,6 +36,25 @@
   let isFormVisible = $state(false);
   let newTitle = $state("");
   let newURL = $state("");
+  let newIcon = $state<string | null>(null);
+
+  function handleIconChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file && file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = () => {
+        newIcon = reader.result as string;
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  const clearIcon = () => {
+    newIcon = null;
+    if (fileInput) {
+      fileInput.value = ""; // Clear the file input so the same file can be re-selected
+    }
+  };
 
   const toggleForm = () => {
     isFormVisible = !isFormVisible;
@@ -54,11 +74,13 @@
 
   const addNewCustomShortcut = () => {
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
-      const newShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon: newTitle[0] };
+      const icon = newIcon || newTitle[0];
+      const newShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon };
       settingsState.customshortcuts = [...settingsState.customshortcuts, newShortcut];
 
       newTitle = "";
       newURL = "";
+      newIcon = null;
       isFormVisible = false;
     } else {
       alert("Please enter a valid title and URL.");
@@ -101,14 +123,56 @@
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05, duration: 0.2 }}
-              class="w-full"
+              class="flex gap-2 w-full"
             >
-              <input
-                class="p-2 my-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
-                type="text"
-                placeholder="URL eg. https://google.com"
-                bind:value={newURL}
-              />
+                <input
+                  class="p-2 my-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
+                  type="text"
+                  placeholder="URL eg. https://google.com"
+                  bind:value={newURL}
+                />
+                <input
+                  bind:this={fileInput}
+                  class="p-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
+                  type="file"
+                  accept=".svg"
+                  onchange={handleIconChange}
+                  hidden
+                />
+                <button
+                  type="button"
+                  class="flex justify-between items-center p-2 my-2 text-left rounded-lg border border-dashed transition text-nowrap text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-700/50 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/30 focus:bg-zinc-200/50 dark:focus:bg-zinc-600/50 border-zinc-300 dark:border-zinc-600"
+                  onclick={() => fileInput?.click()}
+                >
+                  {#if newIcon}
+                    <div class="flex overflow-hidden items-center">
+                      <div class="flex-shrink-0 mr-2 w-6 h-6">
+                        <img src={`data:image/svg+xml;base64,${btoa(newIcon)}`} alt="Selected Icon" class="object-contain w-full h-full" />
+                      </div>
+                      <span class="truncate">Selected Icon</span>
+                    </div>
+                    <span
+                      class="p-1 ml-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+                      aria-label="Clear icon"
+                      role="button"
+                      tabindex="0"
+                      onclick={(event) => { event.stopPropagation(); clearIcon(); }}
+                      onkeydown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          clearIcon();
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </span>
+                  {:else}
+                    <span class="font-IconFamily">{ '\ued47' }</span>
+                    <span class="ml-2">SVG icon <span class="text-xs italic text-zinc-400 dark:text-zinc-500">(Optional)</span></span>
+                  {/if}
+                </button>
             </MotionDiv>
           </div>
         {/if}
