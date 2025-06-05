@@ -8,6 +8,7 @@ import animatedBackgroundPlugin from "./built-in/animatedBackground";
 import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
 import globalSearchPlugin from "./built-in/globalSearch/src/core";
 import profilePicturePlugin from "./built-in/profilePicture";
+import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 //import testPlugin from './built-in/test';
 
 // Initialize plugin manager
@@ -21,6 +22,7 @@ pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(globalSearchPlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
+pluginManager.registerPlugin(assessmentsOverviewPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
 export { init as Monofile } from "./monofile";
