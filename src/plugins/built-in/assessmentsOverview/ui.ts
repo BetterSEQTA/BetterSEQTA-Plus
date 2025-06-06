@@ -22,14 +22,14 @@ let currentFilters: FilterOptions = {
   sortBy: 'due'
 };
 
-export function renderGrid(container: HTMLElement, data: any, api?: any) {
+export function renderGrid(container: HTMLElement, data: any) {
   container.innerHTML = '';
   container.className = '';
   container.id = 'grid-view-container';
   
   const header = document.createElement('div');
   header.className = 'grid-view-header';
-  header.innerHTML = `
+  header.innerHTML = /* html */`
     <h1 class="grid-view-title">Assessments</h1>
     <div class="grid-view-filters">
       <select class="filter-select" id="subject-filter">
@@ -105,10 +105,10 @@ export function renderGrid(container: HTMLElement, data: any, api?: any) {
       return;
     }
 
-    renderKanbanBoard(contentArea, filteredAssessments, data, api);
+    renderKanbanBoard(contentArea, filteredAssessments, data);
   }
 
-  function renderKanbanBoard(container: HTMLElement, assessments: any[], data: any, api?: any) {
+  function renderKanbanBoard(container: HTMLElement, assessments: any[], data: any) {
     // Group assessments by status
     const statusGroups = {
       'UPCOMING': [] as any[],
@@ -184,7 +184,7 @@ export function renderGrid(container: HTMLElement, data: any, api?: any) {
         `;
       } else {
         assessmentList.forEach(assessment => {
-          cardsContainer.appendChild(createKanbanCard(assessment, data.colors[assessment.code] || '#6366f1', api));
+          cardsContainer.appendChild(createKanbanCard(assessment, data.colors[assessment.code] || '#6366f1'));
         });
       }
 
@@ -195,7 +195,7 @@ export function renderGrid(container: HTMLElement, data: any, api?: any) {
     container.appendChild(board);
   }
 
-  function createKanbanCard(assessment: any, color: string, api?: any): HTMLElement {
+  function createKanbanCard(assessment: any, color: string): HTMLElement {
     const status = determineStatus(assessment);
     const dueDateClass = getDueDateClass(assessment);
 
@@ -211,11 +211,13 @@ export function renderGrid(container: HTMLElement, data: any, api?: any) {
         ${assessment.submitted ? '<span class="card-label label-submitted" style="background: #10b981; color: white;">Submitted</span>' : ''}
       </div>
       <h3 class="assessment-title">${assessment.title}</h3>
+      ${!assessment.results ? `
       <div class="assessment-meta">
         <div class="due-date ${dueDateClass}">
           📅 ${formatDate(assessment.due, assessment.submitted)}
         </div>
       </div>
+      ` : ''}
       ${assessment.results
         ? /* html */`
         <div class="card-footer">
@@ -223,7 +225,7 @@ export function renderGrid(container: HTMLElement, data: any, api?: any) {
             <div style="width: ${assessment.results.percentage}%" class="Thermoscore__fill___ojxDI">
               <div title="${assessment.results.percentage}%" class="Thermoscore__text___XSR_M">
                 ${(() => {
-                  const allSettings = settingsState.getAll();
+                  const allSettings = settingsState.getAll() as unknown as any;
                   const letterGradeSetting = allSettings['plugin.assessments-average.settings']?.lettergrade;
                   return letterGradeSetting 
                     ? percentageToLetter(assessment.results.percentage)

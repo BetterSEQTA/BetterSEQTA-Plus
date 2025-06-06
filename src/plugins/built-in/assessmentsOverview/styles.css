@@ -325,22 +325,18 @@
 /* Column-specific styling */
 .column-upcoming .column-header {
   background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-  border-left: 4px solid #3b82f6;
 }
 
 .column-due-soon .column-header {
   background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
-  border-left: 4px solid #f59e0b;
 }
 
 .column-overdue .column-header {
   background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
-  border-left: 4px solid #ef4444;
 }
 
 .column-marked .column-header {
   background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-  border-left: 4px solid #10b981;
 }
 
 /* Dark mode column headers */
