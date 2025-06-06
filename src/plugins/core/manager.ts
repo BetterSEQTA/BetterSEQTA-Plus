@@ -11,6 +11,7 @@ import type {
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 interface PluginSettingsStorage {
   enabled?: boolean;
@@ -150,10 +151,8 @@ export class PluginManager {
 
       // Check if plugin is enabled before starting
       if (plugin.disableToggle) {
-        const settings = await browser.storage.local.get(
-          `plugin.${pluginId}.settings`,
-        );
-        const pluginSettings = settings[`plugin.${pluginId}.settings`] as
+        const all = settingsState.getAll() as unknown as Record<string, unknown>;
+        const pluginSettings = all[`plugin.${pluginId}.settings`] as
           | PluginSettingsStorage
           | undefined;
         const enabled =

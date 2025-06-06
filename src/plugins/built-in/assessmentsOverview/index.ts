@@ -5,8 +5,8 @@ import { renderSkeletonLoader, renderErrorState } from './ui';
 import styles from './styles.css?inline';
 import { delay } from '@/seqta/utils/delay';
 
-const gridViewPlugin: Plugin<{}> = {
-  id: 'assessments-grid-view',
+const assessmentsOverviewPlugin: Plugin<{}> = {
+  id: 'assessments-overview',
   name: 'Assessments Overview',
   description: 'Adds an overview option to the assessments page that organizes assessments by status',
   version: '1.0.0',
@@ -69,4 +69,4 @@ const gridViewPlugin: Plugin<{}> = {
   },
 };
 
-export default gridViewPlugin;
+export default assessmentsOverviewPlugin;
