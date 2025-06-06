@@ -2,6 +2,120 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { convertTo12HourFormat } from "./convertTo12HourFormat";
 import { waitForElm } from "./waitForElm";
 
+let timetableObserver: MutationObserver | null = null;
+let isOnTimetablePage = false;
+let urlCheckInterval: number | null = null;
+
+function updateTimeElements(): void {
+  if (!settingsState.timeFormat || settingsState.timeFormat !== "12") return;
+
+  const timetablePage = document.querySelector(".timetablepage");
+  if (!timetablePage) return;
+
+  const times = timetablePage.querySelectorAll<HTMLElement>(".content .times .time");
+  times.forEach((el) => {
+    if (!el.dataset.original) el.dataset.original = el.textContent || "";
+    const original = el.dataset.original;
+    if (!original) return;
+
+    el.textContent = convertTo12HourFormat(original, true)
+      .toLowerCase()
+      .replace(" ", "");
+  });
+
+  const entryTimes = timetablePage.querySelectorAll<HTMLElement>(".entry .times");
+  entryTimes.forEach((el) => {
+    if (!el.dataset.original) el.dataset.original = el.textContent || "";
+    const original = el.dataset.original || "";
+    if (!original.includes("–") && !original.includes("-")) return;
+
+    const [start, end] = original.split(/[-–]/).map((p) => p.trim());
+    if (!start || !end) return;
+
+    const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
+    const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
+    el.textContent = `${start12}–${end12}`;
+  });
+}
+
+function checkIfOnTimetablePage(): boolean {
+  return window.location.hash.includes("page=/timetable");
+}
+
+function startTimetableMonitoring(): void {
+  if (timetableObserver) return;
+
+  const timetablePage = document.querySelector(".timetablepage");
+  if (!timetablePage) return;
+
+  // Create observer for timetable content changes
+  timetableObserver = new MutationObserver((mutations) => {
+    let shouldUpdate = false;
+    
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList") {
+        // Check if any time elements were added or modified
+        const addedNodes = Array.from(mutation.addedNodes);
+        const hasTimeElements = addedNodes.some(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            return element.querySelector(".time, .times") || 
+                   element.classList.contains("time") || 
+                   element.classList.contains("times");
+          }
+          return false;
+        });
+        
+        if (hasTimeElements) {
+          shouldUpdate = true;
+        }
+      }
+    });
+
+    if (shouldUpdate) {
+      // Small delay to ensure DOM is fully updated
+      setTimeout(updateTimeElements, 10);
+    }
+  });
+
+  timetableObserver.observe(timetablePage, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+function stopTimetableMonitoring(): void {
+  if (timetableObserver) {
+    timetableObserver.disconnect();
+    timetableObserver = null;
+  }
+}
+
+function startUrlMonitoring(): void {
+  if (urlCheckInterval) return;
+
+  // Check URL every 100ms when on timetable page
+  urlCheckInterval = window.setInterval(() => {
+    const currentlyOnTimetable = checkIfOnTimetablePage();
+    
+    if (currentlyOnTimetable !== isOnTimetablePage) {
+      isOnTimetablePage = currentlyOnTimetable;
+      
+      if (isOnTimetablePage) {
+        // Wait a bit for the page to load, then start monitoring
+        setTimeout(() => {
+          updateTimeElements();
+          startTimetableMonitoring();
+        }, 100);
+      } else {
+        stopTimetableMonitoring();
+      }
+    } else if (isOnTimetablePage) {
+      // Even if we're still on timetable page, update times in case navigation happened
+      updateTimeElements();
+    }
+  }, 100);
+}
 
 export async function updateTimetableTimes(): Promise<void> {
   if (!settingsState.timeFormat) return;
@@ -16,36 +130,18 @@ export async function updateTimetableTimes(): Promise<void> {
     return;
   }
 
-  const times = timetablePage.querySelectorAll<HTMLElement>(".times .time");
-  times.forEach((el) => {
-    if (!el.dataset.original) el.dataset.original = el.textContent || "";
-    const original = el.dataset.original;
-    if (!original) return;
+  updateTimeElements();
+  
+  // Start continuous monitoring when this function is called
+  isOnTimetablePage = checkIfOnTimetablePage();
+  if (isOnTimetablePage) {
+    startTimetableMonitoring();
+    startUrlMonitoring();
+  }
+}
 
-    if (settingsState.timeFormat === "12") {
-      el.textContent = convertTo12HourFormat(original, true)
-        .toLowerCase()
-        .replace(" ", "");
-    } else {
-      el.textContent = original;
-    }
-  });
-
-  const entryTimes = timetablePage.querySelectorAll<HTMLElement>(".entry .times");
-  entryTimes.forEach((el) => {
-    if (!el.dataset.original) el.dataset.original = el.textContent || "";
-    const original = el.dataset.original || "";
-    if (!original.includes("–") && !original.includes("-")) return;
-
-    const [start, end] = original.split(/[-–]/).map((p) => p.trim());
-    if (!start || !end) return;
-
-    if (settingsState.timeFormat === "12") {
-      const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
-      const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
-      el.textContent = `${start12}–${end12}`;
-    } else {
-      el.textContent = original;
-    }
-  });
+// Initialize monitoring on page load
+if (typeof window !== "undefined") {
+  // Start URL monitoring immediately
+  startUrlMonitoring();
 }
