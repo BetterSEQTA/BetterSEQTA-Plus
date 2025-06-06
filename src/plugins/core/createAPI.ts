@@ -11,6 +11,7 @@ import type {
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import browser from "webextension-polyfill";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 function createSEQTAAPI(): SEQTAAPI {
   return {
@@ -115,16 +116,16 @@ function createSettingsAPI<T extends PluginSettings>(
 
   // Fill with defaults first
   for (const key in plugin.settings) {
-    settingsWithMeta[key] = plugin.settings[key].default;
+    if (plugin.settings[key].type !== 'component' && plugin.settings[key].type !== 'button') {
+      settingsWithMeta[key] = plugin.settings[key].default;
+    }
   }
 
   // Load stored settings and override defaults
   const loaded = (async () => {
     try {
-      const stored = await browser.storage.local.get(storageKey);
-      const storedSettings = stored[storageKey] as Partial<
-        Record<keyof T, any>
-      >;
+      const allSettings = settingsState.getAll() as unknown as Record<string, unknown>;
+      const storedSettings = allSettings[storageKey] as Partial<Record<keyof T, any>>;
       if (storedSettings) {
         for (const key in storedSettings) {
           if (key in settingsWithMeta) {
@@ -205,7 +206,7 @@ function createStorageAPI<T = any>(
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
     try {
-      const allStorage = await browser.storage.local.get(null);
+      const allStorage = settingsState.getAll();
 
       // Filter for this plugin's storage keys and populate cache
       Object.entries(allStorage).forEach(([key, value]) => {

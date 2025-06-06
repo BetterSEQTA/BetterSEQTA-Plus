@@ -34,7 +34,7 @@
 }
 
 .filter-select {
-  background: #ffffff;
+  background: #ffffff !important;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   color: #1a1a1a;
@@ -60,7 +60,7 @@
 
 /* Dark mode dropdowns */
 .dark .filter-select {
-  background: var(--background-primary);
+  background: var(--background-primary) !important;
   border-color: var(--background-secondary);
   color: var(--text-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
