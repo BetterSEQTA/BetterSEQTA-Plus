@@ -19,7 +19,9 @@ export function formatDate(dateStr: string, submitted?: boolean): string {
   
   // If it's within a week
   if (diffDays <= 7) {
-    return d.toLocaleDateString(undefined, { weekday: 'long' });
+    const weekdayName = d.toLocaleDateString(undefined, { weekday: 'long' });
+    // If it's in the past, add "Last" prefix
+    return diffDays < 0 ? `Last ${weekdayName}` : weekdayName;
   }
   
   // Otherwise show full date
