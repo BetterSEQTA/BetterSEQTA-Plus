@@ -114,6 +114,7 @@ export function renderGrid(container: HTMLElement, data: any) {
       'UPCOMING': [] as any[],
       'DUE_SOON': [] as any[],
       'OVERDUE': [] as any[],
+      'SUBMITTED': [] as any[],
       'MARKS_RELEASED': [] as any[]
     };
 
@@ -147,6 +148,12 @@ export function renderGrid(container: HTMLElement, data: any) {
         icon: '🚨'
       },
       {
+        key: 'SUBMITTED',
+        title: 'Submitted',
+        className: 'column-submitted',
+        icon: '📝'
+      },
+      {
         key: 'MARKS_RELEASED',
         title: 'Marked',
         className: 'column-marked',
@@ -155,13 +162,18 @@ export function renderGrid(container: HTMLElement, data: any) {
     ];
 
     columns.forEach(column => {
+      const assessmentList = statusGroups[column.key as keyof typeof statusGroups];
+      
+      // Skip SUBMITTED column if it's empty
+      if (column.key === 'SUBMITTED' && assessmentList.length === 0) {
+        return;
+      }
+      
       const columnParentEl = document.createElement('div');
       columnParentEl.className = 'kanban-column-parent';
 
       const columnEl = document.createElement('div');
       columnEl.className = `kanban-column ${column.className}`;
-      
-      const assessmentList = statusGroups[column.key as keyof typeof statusGroups];
       
       columnEl.innerHTML = /* html */`
         <div class="column-header">

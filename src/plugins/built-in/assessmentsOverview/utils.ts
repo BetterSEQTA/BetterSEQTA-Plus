@@ -41,19 +41,20 @@ export function determineStatus(item: any): string {
     return 'MARKS_RELEASED';
   }
   
+  // Check if submitted (awaiting marking)
+  if (item.submitted) {
+    return 'SUBMITTED';
+  }
+  
   const now = new Date();
   const due = new Date(item.due);
   
-  // Calculate the difference in days (more precise calculation)
+  // Calculate the difference in days (consistent with formatDate)
   const diffTime = due.getTime() - now.getTime();
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  // Check if overdue (more than 1 day past due)
-  if (diffDays < -1) {
-    // If it's submitted but still overdue, treat as DUE_SOON since it's awaiting marking
-    if (item.submitted) {
-      return 'DUE_SOON';
-    }
+  // Check if overdue (past due date, but not including today)
+  if (diffDays < 0) {
     return 'OVERDUE';
   }
   
