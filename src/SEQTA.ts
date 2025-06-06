@@ -64,12 +64,9 @@ async function init() {
       }
 
       await main();
+      plugins.Monofile();
 
       if (settingsState.onoff) {
-        // Initialize legacy plugins
-        plugins.Monofile();
-
-        // Initialize new plugin system
         await plugins.initializePlugins();
       }
 

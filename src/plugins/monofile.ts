@@ -631,6 +631,7 @@ export function init() {
     }, 1000);
   } else {
     handleDisabled();
+    InjectCustomIcons();
     window.addEventListener("load", handleDisabled);
   }
 }
