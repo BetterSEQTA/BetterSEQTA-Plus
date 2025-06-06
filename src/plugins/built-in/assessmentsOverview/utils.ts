@@ -1,11 +1,11 @@
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, submitted?: boolean): string {
   const d = new Date(dateStr);
   const now = new Date();
   const diffTime = d.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  // If it's overdue
-  if (diffDays < 0) {
+  // If it's overdue but don't show overdue text for submitted assessments
+  if (diffDays < 0 && !submitted) {
     const overdueDays = Math.abs(diffDays);
     if (overdueDays === 1) return '1 day overdue';
     return `${overdueDays} days overdue`;
@@ -42,19 +42,20 @@ export function determineStatus(item: any): string {
   const now = new Date();
   const due = new Date(item.due);
   
-  // Check if overdue, but only if not submitted
-  if (due.getTime() < now.getTime()) {
-    // If it's submitted, treat it as marks pending (upcoming) instead of overdue
+  // Calculate the difference in days (more precise calculation)
+  const diffTime = due.getTime() - now.getTime();
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  
+  // Check if overdue (more than 1 day past due)
+  if (diffDays < -1) {
+    // If it's submitted but still overdue, treat as DUE_SOON since it's awaiting marking
     if (item.submitted) {
-      return 'UPCOMING';
+      return 'DUE_SOON';
     }
     return 'OVERDUE';
   }
   
-  // Check if due soon (within 7 days)
-  const diffTime = due.getTime() - now.getTime();
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
-  
+  // Check if due soon (today through 7 days from now)
   if (diffDays <= 7) {
     return 'DUE_SOON';
   }

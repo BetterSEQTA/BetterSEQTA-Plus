@@ -1,4 +1,16 @@
 import { determineStatus, formatDate, getGradeValue } from './utils';
+import { settingsState } from '@/seqta/utils/listeners/SettingsState';
+
+function percentageToLetter(percentage: number): string {
+  const letterMap: Record<number, string> = {
+    100: 'A+', 95: 'A', 90: 'A-', 85: 'B+', 80: 'B', 75: 'B-',
+    70: 'C+', 65: 'C', 60: 'C-', 55: 'D+', 50: 'D', 45: 'D-',
+    40: 'E+', 35: 'E', 30: 'E-', 0: 'F'
+  };
+  
+  const rounded = Math.ceil(percentage / 5) * 5;
+  return letterMap[rounded] || 'F';
+}
 
 interface FilterOptions {
   subject: string;
@@ -10,7 +22,7 @@ let currentFilters: FilterOptions = {
   sortBy: 'due'
 };
 
-export function renderGrid(container: HTMLElement, data: any) {
+export function renderGrid(container: HTMLElement, data: any, api?: any) {
   container.innerHTML = '';
   container.className = '';
   container.id = 'grid-view-container';
@@ -93,10 +105,10 @@ export function renderGrid(container: HTMLElement, data: any) {
       return;
     }
 
-    renderKanbanBoard(contentArea, filteredAssessments, data);
+    renderKanbanBoard(contentArea, filteredAssessments, data, api);
   }
 
-  function renderKanbanBoard(container: HTMLElement, assessments: any[], data: any) {
+  function renderKanbanBoard(container: HTMLElement, assessments: any[], data: any, api?: any) {
     // Group assessments by status
     const statusGroups = {
       'UPCOMING': [] as any[],
@@ -172,7 +184,7 @@ export function renderGrid(container: HTMLElement, data: any) {
         `;
       } else {
         assessmentList.forEach(assessment => {
-          cardsContainer.appendChild(createKanbanCard(assessment, data.colors[assessment.code] || '#6366f1'));
+          cardsContainer.appendChild(createKanbanCard(assessment, data.colors[assessment.code] || '#6366f1', api));
         });
       }
 
@@ -183,7 +195,7 @@ export function renderGrid(container: HTMLElement, data: any) {
     container.appendChild(board);
   }
 
-  function createKanbanCard(assessment: any, color: string): HTMLElement {
+  function createKanbanCard(assessment: any, color: string, api?: any): HTMLElement {
     const status = determineStatus(assessment);
     const dueDateClass = getDueDateClass(assessment);
 
@@ -201,7 +213,7 @@ export function renderGrid(container: HTMLElement, data: any) {
       <h3 class="assessment-title">${assessment.title}</h3>
       <div class="assessment-meta">
         <div class="due-date ${dueDateClass}">
-          📅 ${formatDate(assessment.due)}
+          📅 ${formatDate(assessment.due, assessment.submitted)}
         </div>
       </div>
       ${assessment.results
@@ -209,7 +221,15 @@ export function renderGrid(container: HTMLElement, data: any) {
         <div class="card-footer">
           <div class="Thermoscore__Thermoscore___WFpL3" style="--fill-colour: ${color}">
             <div style="width: ${assessment.results.percentage}%" class="Thermoscore__fill___ojxDI">
-              <div title="${assessment.results.percentage}%" class="Thermoscore__text___XSR_M">${assessment.results.percentage}%</div>
+              <div title="${assessment.results.percentage}%" class="Thermoscore__text___XSR_M">
+                ${(() => {
+                  const allSettings = settingsState.getAll();
+                  const letterGradeSetting = allSettings['plugin.assessments-average.settings']?.lettergrade;
+                  return letterGradeSetting 
+                    ? percentageToLetter(assessment.results.percentage)
+                    : `${assessment.results.percentage}%`;
+                })()}
+              </div>
             </div>
           </div>
         </div>
