@@ -14,7 +14,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
   disableToggle: false,
   styles,
 
-  run: async () => {
+  run: async (api) => {
     const menu = (await waitForElm('[data-key="assessments"] > .sub > ul', true, 100, 60)) as HTMLElement;
     const gridItem = document.createElement('li');
     gridItem.className = 'item';
@@ -55,7 +55,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
       try {
         const data = await getAssessmentsData();
         const { renderGrid } = await import('./ui');
-        renderGrid(container, data);
+        renderGrid(container, data, api);
       } catch (err) {
         console.error('Failed to load assessments:', err);
         renderErrorState(container, err instanceof Error ? err.message : 'Unknown error');
