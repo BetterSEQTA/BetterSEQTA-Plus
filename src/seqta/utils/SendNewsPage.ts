@@ -9,7 +9,7 @@ import { animate, stagger } from "motion";
 export async function SendNewsPage() {
   console.info("[BetterSEQTA+] Started Loading News Page");
   document.title = "News ― SEQTA Learn";
-  await delay(100);
+  await delay(10);
 
   const element = document.querySelector("[data-key=news]");
   element!.classList.add("active");
