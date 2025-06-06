@@ -335,6 +335,10 @@
   background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
 }
 
+.column-submitted .column-header {
+  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+}
+
 .column-marked .column-header {
   background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
 }
@@ -350,6 +354,10 @@
 
 .dark .column-overdue .column-header {
   background: linear-gradient(135deg, var(--background-secondary) 0%, #991b1b 100%);
+}
+
+.dark .column-submitted .column-header {
+  background: linear-gradient(135deg, var(--background-secondary) 0%, #92400e 100%);
 }
 
 .dark .column-marked .column-header {
