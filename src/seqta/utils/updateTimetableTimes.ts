@@ -73,8 +73,7 @@ function startTimetableMonitoring(): void {
     });
 
     if (shouldUpdate) {
-      // Small delay to ensure DOM is fully updated
-      setTimeout(updateTimeElements, 10);
+      updateTimeElements();
     }
   });
 
