@@ -224,12 +224,125 @@
   background: var(--subject-color, #d41e3a);
 }
 
+.card-menu {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 20;
+}
+
+.menu-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  position: static !important;
+  transform: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.menu-button:hover {
+  background: #f1f5f9 !important;
+  color: #1a1a1a;
+}
+
+.menu-button svg {
+  width: 16px !important;
+  height: 16px !important;
+  fill: currentColor !important;
+  display: block !important;
+}
+
+.dark .menu-button {
+  color: var(--text-primary);
+  opacity: 0.7;
+}
+
+.dark .menu-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  opacity: 1;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  z-index: 30;
+  margin-top: 4px;
+}
+
+.dark .menu-dropdown {
+  background: var(--background-secondary);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #1a1a1a;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.menu-item:hover {
+  background: #f8fafc;
+}
+
+.dark .menu-item {
+  color: var(--text-primary);
+}
+
+.dark .menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item.mark-completed {
+  color: #059669;
+  font-weight: 500;
+}
+
+.dark .menu-item.mark-completed {
+  color: #10b981;
+}
+
+.menu-item.mark-not-completed {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.dark .menu-item.mark-not-completed {
+  color: #ef4444;
+}
+
 .assessment-title {
   font-size: 0.875rem;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 0.75rem 0;
   line-height: 1.4;
+  padding-right: 2rem; /* Make room for menu button */
 }
 
 .dark .assessment-title {
