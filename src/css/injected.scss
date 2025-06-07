@@ -1350,20 +1350,6 @@ div > ol:has(.uiFileHandlerWrapper) {
   font-size: 10px !important;
   font-weight: 500;
 }
-.day-empty {
-  font-size: 30px;
-  display: flex;
-  width: 100%;
-  border-radius: 16px 0;
-  align-items: center;
-}
-.day-empty img {
-  margin: 20px;
-  height: 50%;
-}
-.day-empty p {
-  margin: 0;
-}
 .waitWindow {
   background: var(--better-main);
 }
@@ -2749,9 +2735,11 @@ body {
   transform: translateY(-6px) rotate(-45deg);
 }
 .day-empty {
-  font-size: 30px;
   display: flex;
   align-items: center;
+  height: 15em;
+  width: 100%;
+  border-radius: 16px 0;
 
   img {
     margin: 20px;
@@ -2760,6 +2748,7 @@ body {
 
   p {
     margin: 0;
+    font-size: 30px;
   }
 }
 .upcoming-submittedtext {
@@ -2995,18 +2984,6 @@ body {
 }
 .dark .day h3 {
   color: #c1bcbc;
-}
-.day-empty {
-  font-size: 30px;
-  display: flex;
-  align-items: center;
-}
-.day-empty img {
-  margin: 20px;
-  height: 50%;
-}
-.day-empty p {
-  margin: 0;
 }
 
 .upcoming-items {
