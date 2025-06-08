@@ -12,6 +12,8 @@ import { delay } from "@/seqta/utils/delay";
 
 let cachedUserInfo: any = null;
 
+let LightDarkModeSnakeEggButton = 0;
+
 async function getUserInfo() {
   if (cachedUserInfo) return cachedUserInfo;
 
@@ -286,6 +288,14 @@ async function addDarkLightToggle() {
 
   lightDarkModeButtonElement.addEventListener("click", async () => {
     const darklightText = document.getElementById("darklighttooliptext");
+
+    LightDarkModeSnakeEggButton += 1;
+
+    if (LightDarkModeSnakeEggButton >= 10) {
+      window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "_blank");
+      LightDarkModeSnakeEggButton = 0;
+    }
+
 
     if (
       settingsState.originalDarkMode !== undefined &&
