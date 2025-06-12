@@ -4,7 +4,8 @@ import { waitForElm } from "./waitForElm";
 
 let timetableObserver: MutationObserver | null = null;
 let isOnTimetablePage = false;
-let urlCheckInterval: number | null = null;
+let isInitialized = false;
+let abortController: AbortController | null = null;
 
 function updateTimeElements(): void {
   if (!settingsState.timeFormat || settingsState.timeFormat !== "12") return;
@@ -90,30 +91,54 @@ function stopTimetableMonitoring(): void {
   }
 }
 
-function startUrlMonitoring(): void {
-  if (urlCheckInterval) return;
-
-  // Check URL every 100ms when on timetable page
-  urlCheckInterval = window.setInterval(() => {
-    const currentlyOnTimetable = checkIfOnTimetablePage();
+function handleUrlChange(): void {
+  const currentlyOnTimetable = checkIfOnTimetablePage();
+  
+  if (currentlyOnTimetable !== isOnTimetablePage) {
+    isOnTimetablePage = currentlyOnTimetable;
     
-    if (currentlyOnTimetable !== isOnTimetablePage) {
-      isOnTimetablePage = currentlyOnTimetable;
-      
-      if (isOnTimetablePage) {
-        // Wait a bit for the page to load, then start monitoring
-        setTimeout(() => {
-          updateTimeElements();
-          startTimetableMonitoring();
-        }, 100);
-      } else {
-        stopTimetableMonitoring();
-      }
-    } else if (isOnTimetablePage) {
-      // Even if we're still on timetable page, update times in case navigation happened
-      updateTimeElements();
+    if (isOnTimetablePage) {
+      // Wait a bit for the page to load, then start monitoring
+      setTimeout(() => {
+        updateTimeElements();
+        startTimetableMonitoring();
+      }, 100);
+    } else {
+      stopTimetableMonitoring();
     }
-  }, 100);
+  } else if (isOnTimetablePage) {
+    // Even if we're still on timetable page, update times in case navigation happened
+    updateTimeElements();
+  }
+}
+
+function startUrlMonitoring(): void {
+  if (isInitialized) return;
+  isInitialized = true;
+
+  // Create abort controller for cleanup
+  abortController = new AbortController();
+  const signal = abortController.signal;
+
+  // Listen for hash changes (more efficient than polling)
+  window.addEventListener('hashchange', handleUrlChange, { signal });
+  window.addEventListener('popstate', handleUrlChange, { signal });
+  
+  // Initial check
+  handleUrlChange();
+}
+
+function stopUrlMonitoring(): void {
+  if (!isInitialized) return;
+  isInitialized = false;
+
+  // Abort all event listeners at once
+  if (abortController) {
+    abortController.abort();
+    abortController = null;
+  }
+  
+  stopTimetableMonitoring();
 }
 
 export async function updateTimetableTimes(): Promise<void> {
@@ -143,4 +168,9 @@ export async function updateTimetableTimes(): Promise<void> {
 if (typeof window !== "undefined") {
   // Start URL monitoring immediately
   startUrlMonitoring();
+}
+
+// Cleanup function for when the module is unloaded
+export function cleanup(): void {
+  stopUrlMonitoring();
 }
