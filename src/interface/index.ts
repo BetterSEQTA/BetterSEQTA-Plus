@@ -3,6 +3,7 @@ import Settings from "./pages/settings.svelte";
 import IconFamily from "@/resources/fonts/IconFamily.woff";
 import browser from "webextension-polyfill";
 import renderSvelte from "./main";
+import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
 
 function InjectCustomIcons() {
   console.info("[BetterSEQTA+] Injecting Icons");
@@ -26,4 +27,5 @@ if (!mountPoint) {
 }
 
 InjectCustomIcons();
+await initializeSettingsState();
 renderSvelte(Settings, mountPoint, { standalone: true });

@@ -7,7 +7,7 @@
 
   import { standalone as StandaloneStore } from '../utils/standalone.svelte';
   import { onMount } from 'svelte'
-  import { initializeSettingsState, settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage"
@@ -52,13 +52,12 @@
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
 
-  onMount(() => {
+  onMount(async () => {
     settingsPopup.addListener(() => {
       showColourPicker = false;
     });
     
     if (!standalone) return;
-    initializeSettingsState();
     StandaloneStore.setStandalone(true);
   });
 </script>
