@@ -8,18 +8,20 @@ import { renderComponentMap } from "../renderComponents";
 import { jobs } from "../jobs";
 
 const RATE_LIMIT_CONFIG = {
-  minDelay: 50,
-  maxDelay: 5000,
-  baseDelay: 200,
-  backoffMultiplier: 1.5,
+  minDelay: 30,
+  maxDelay: 3000,
+  baseDelay: 150,
+  backoffMultiplier: 1.3,
   maxRetries: 3,
   adaptiveBatchSize: true,
-  minBatchSize: 10,
-  maxBatchSize: 100,
-  baseBatchSize: 50,
-  vectorBatchSize: 5,
-  parallelRequests: 5,
-  parallelDelay: 100,
+  minBatchSize: 15,
+  maxBatchSize: 150,
+  baseBatchSize: 75,
+  vectorBatchSize: 10,
+  parallelRequests: 8,
+  parallelDelay: 50,
+  circuitBreakerThreshold: 5,
+  circuitBreakerResetTime: 30000,
 };
 
 interface MessagesProgress {
@@ -33,6 +35,9 @@ interface MessagesProgress {
   processedIds: string[];
   streamingStarted: boolean;
   totalEstimated: number;
+  circuitBreakerOpen: boolean;
+  circuitBreakerOpenTime: number;
+  consecutiveFailures: number;
 }
 
 const fetchMessages = async (offset = 0, limit = 100) => {
@@ -99,48 +104,36 @@ function calculateAdaptiveDelay(
   progress: MessagesProgress,
   responseTime: number,
 ): number {
-  const { currentDelay, failedRequests, lastSuccessTime } = progress;
+  const {
+    currentDelay,
+    failedRequests,
+    lastSuccessTime,
+    circuitBreakerOpen,
+    consecutiveFailures,
+  } = progress;
   const timeSinceLastSuccess = Date.now() - lastSuccessTime;
 
-  if (failedRequests > 0 || responseTime > 2000) {
+  if (circuitBreakerOpen) {
+    return RATE_LIMIT_CONFIG.maxDelay;
+  }
+
+  if (consecutiveFailures > 2 || failedRequests > 3 || responseTime > 3000) {
     return Math.min(
-      currentDelay * RATE_LIMIT_CONFIG.backoffMultiplier,
+      currentDelay *
+        (RATE_LIMIT_CONFIG.backoffMultiplier + consecutiveFailures * 0.2),
       RATE_LIMIT_CONFIG.maxDelay,
     );
   }
 
-  if (responseTime < 500 && timeSinceLastSuccess > 10000) {
-    return Math.max(currentDelay * 0.8, RATE_LIMIT_CONFIG.minDelay);
+  if (
+    responseTime < 300 &&
+    timeSinceLastSuccess > 5000 &&
+    consecutiveFailures === 0
+  ) {
+    return Math.max(currentDelay * 0.7, RATE_LIMIT_CONFIG.minDelay);
   }
 
   return currentDelay;
-}
-
-function calculateAdaptiveBatchSize(
-  progress: MessagesProgress,
-  responseTime: number,
-): number {
-  if (!RATE_LIMIT_CONFIG.adaptiveBatchSize) {
-    return progress.currentBatchSize;
-  }
-
-  const { currentBatchSize, failedRequests } = progress;
-
-  if (failedRequests > 2 || responseTime > 3000) {
-    return Math.max(
-      Math.floor(currentBatchSize * 0.7),
-      RATE_LIMIT_CONFIG.minBatchSize,
-    );
-  }
-
-  if (failedRequests === 0 && responseTime < 1000) {
-    return Math.min(
-      Math.floor(currentBatchSize * 1.2),
-      RATE_LIMIT_CONFIG.maxBatchSize,
-    );
-  }
-
-  return currentBatchSize;
 }
 
 async function estimateMessageCount(): Promise<number> {
@@ -155,6 +148,73 @@ async function estimateMessageCount(): Promise<number> {
     console.warn("[Messages job] Failed to estimate message count:", error);
     return 500;
   }
+}
+
+function calculateAdaptiveBatchSize(
+  progress: MessagesProgress,
+  responseTime: number,
+): number {
+  if (!RATE_LIMIT_CONFIG.adaptiveBatchSize) {
+    return progress.currentBatchSize;
+  }
+
+  const {
+    currentBatchSize,
+    failedRequests,
+    circuitBreakerOpen,
+    consecutiveFailures,
+  } = progress;
+
+  if (circuitBreakerOpen) {
+    return RATE_LIMIT_CONFIG.minBatchSize;
+  }
+
+  if (consecutiveFailures > 1 || failedRequests > 2 || responseTime > 2500) {
+    return Math.max(
+      Math.floor(currentBatchSize * 0.6),
+      RATE_LIMIT_CONFIG.minBatchSize,
+    );
+  }
+
+  if (failedRequests === 0 && responseTime < 800 && consecutiveFailures === 0) {
+    return Math.min(
+      Math.floor(currentBatchSize * 1.4),
+      RATE_LIMIT_CONFIG.maxBatchSize,
+    );
+  }
+
+  return currentBatchSize;
+}
+
+function checkCircuitBreaker(progress: MessagesProgress): boolean {
+  const now = Date.now();
+
+  if (
+    !progress.circuitBreakerOpen &&
+    progress.consecutiveFailures >= RATE_LIMIT_CONFIG.circuitBreakerThreshold
+  ) {
+    progress.circuitBreakerOpen = true;
+    progress.circuitBreakerOpenTime = now;
+    console.warn(
+      `[Messages job] Circuit breaker opened due to ${progress.consecutiveFailures} consecutive failures`,
+    );
+    return true;
+  }
+
+  if (
+    progress.circuitBreakerOpen &&
+    now - progress.circuitBreakerOpenTime >
+      RATE_LIMIT_CONFIG.circuitBreakerResetTime
+  ) {
+    progress.circuitBreakerOpen = false;
+    progress.consecutiveFailures = 0;
+    console.info(
+      `[Messages job] Circuit breaker closed after ${RATE_LIMIT_CONFIG.circuitBreakerResetTime}ms`,
+    );
+    return false;
+  }
+
+  return progress.circuitBreakerOpen;
 }
 
 async function processMessagesInParallel(
@@ -173,21 +233,19 @@ async function processMessagesInParallel(
   let consecutiveExisting = 0;
   const updatedProgress = { ...progress };
 
-  // Filter out messages older than 2 years
   const twoYearsAgo = Date.now() - 2 * 365 * 24 * 60 * 60 * 1000;
   let shouldStop = false;
-  
+
   const messagesToProcess = messages.filter((msg) => {
     const id = msg.id.toString();
     const messageDate = new Date(msg.date).getTime();
-    
-    // If we encounter a message older than 2 years, we should stop processing
-    // since messages are sorted by date descending
+
     if (messageDate < twoYearsAgo) {
+      //! older than 2 years ago
       shouldStop = true;
       return false;
     }
-    
+
     if (existingIds.has(id) || processedIdsSet.has(id)) {
       consecutiveExisting++;
       return false;
@@ -320,6 +378,9 @@ export const messagesJob: Job = {
       processedIds: [],
       streamingStarted: false,
       totalEstimated: 0,
+      circuitBreakerOpen: false,
+      circuitBreakerOpenTime: 0,
+      consecutiveFailures: 0,
     };
 
     const existingIds = new Set((await ctx.getStoredItems()).map((i) => i.id));
@@ -451,6 +512,14 @@ export const messagesJob: Job = {
     }
 
     while (!progress.done) {
+      if (checkCircuitBreaker(progress)) {
+        console.warn(
+          "[Messages job] Circuit breaker is open, skipping processing",
+        );
+        await delay(RATE_LIMIT_CONFIG.maxDelay);
+        continue;
+      }
+
       await delay(progress.currentDelay);
       requestStartTime = Date.now();
 
@@ -458,6 +527,8 @@ export const messagesJob: Job = {
       try {
         list = await fetchMessages(progress.offset, progress.currentBatchSize);
         const responseTime = Date.now() - requestStartTime;
+
+        progress.consecutiveFailures = 0;
 
         progress.currentDelay = calculateAdaptiveDelay(progress, responseTime);
         progress.currentBatchSize = calculateAdaptiveBatchSize(
@@ -467,6 +538,7 @@ export const messagesJob: Job = {
       } catch (e) {
         console.error("[Messages job] list fetch failed:", e);
         progress.failedRequests++;
+        progress.consecutiveFailures++;
         progress.currentDelay = Math.min(
           progress.currentDelay * RATE_LIMIT_CONFIG.backoffMultiplier,
           RATE_LIMIT_CONFIG.maxDelay,
@@ -479,6 +551,7 @@ export const messagesJob: Job = {
 
       if (list.status !== "200") {
         progress.failedRequests++;
+        progress.consecutiveFailures++;
 
         progress.processedIds = Array.from(processedIdsSet);
         await ctx.setProgress(progress);
@@ -507,7 +580,6 @@ export const messagesJob: Job = {
 
       itemsToStream.push(...processedItems);
 
-      // Update consecutive existing counter
       consecutiveExisting = newConsecutiveExisting;
       if (consecutiveExisting >= 20) {
         progress.done = true;
@@ -529,14 +601,17 @@ export const messagesJob: Job = {
         }
       }
 
-      // Dispatch incremental search update if we processed new items
       if (processedItems.length > 0) {
         try {
           const currentItems = await loadAllStoredItems();
-          currentItems.forEach(item => {
-            const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
+          currentItems.forEach((item) => {
+            const jobDef =
+              jobs[item.category] ||
+              Object.values(jobs).find((j) => j.id === item.category) ||
+              jobs[item.renderComponentId];
             if (jobDef) {
-              const renderComponent = renderComponentMap[jobDef.renderComponentId];
+              const renderComponent =
+                renderComponentMap[jobDef.renderComponentId];
               if (renderComponent) {
                 item.renderComponent = renderComponent;
               }
@@ -545,11 +620,21 @@ export const messagesJob: Job = {
             }
           });
           loadDynamicItems(currentItems);
-          window.dispatchEvent(new CustomEvent("dynamic-items-updated", { 
-            detail: { incremental: true, jobId: "messages", newItemCount: processedItems.length, streaming: true } 
-          }));
+          window.dispatchEvent(
+            new CustomEvent("dynamic-items-updated", {
+              detail: {
+                incremental: true,
+                jobId: "messages",
+                newItemCount: processedItems.length,
+                streaming: true,
+              },
+            }),
+          );
         } catch (error) {
-          console.warn("[Messages job] Failed to dispatch incremental search update:", error);
+          console.warn(
+            "[Messages job] Failed to dispatch incremental search update:",
+            error,
+          );
         }
       }
 
@@ -596,6 +681,9 @@ export const messagesJob: Job = {
         processedIds: [],
         streamingStarted: false,
         totalEstimated: 0,
+        circuitBreakerOpen: false,
+        circuitBreakerOpenTime: 0,
+        consecutiveFailures: 0,
       });
     } else {
       progress.processedIds = Array.from(processedIdsSet);
