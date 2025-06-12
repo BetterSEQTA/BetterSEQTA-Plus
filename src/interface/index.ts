@@ -27,5 +27,8 @@ if (!mountPoint) {
 }
 
 InjectCustomIcons();
-await initializeSettingsState();
-renderSvelte(Settings, mountPoint, { standalone: true });
+
+(async () => {
+  await initializeSettingsState();
+  renderSvelte(Settings, mountPoint, { standalone: true });
+})();
