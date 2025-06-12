@@ -278,7 +278,10 @@
                       onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     />
                   {:else if setting.type === 'component'}
-                    <svelte:component this={setting.component} />
+                    {#if setting.component}
+                      {@const Component = setting.component}
+                      <Component />
+                    {/if}
                   {/if}
                 </div>
               </div>

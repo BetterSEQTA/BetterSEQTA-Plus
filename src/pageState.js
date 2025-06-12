@@ -168,7 +168,7 @@ window.addEventListener("message", (event) => {
       case "setState":
         // Handle both function and object updates
         if (payload.updateFn) {
-          const updateFn = eval(`(${payload.updateFn})`);
+          const updateFn = new Function('return ' + payload.updateFn)();
           fiberInstance.setState(updateFn);
         } else {
           fiberInstance.setState(payload.updateObject);
