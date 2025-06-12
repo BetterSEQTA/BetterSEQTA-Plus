@@ -129,11 +129,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     // Warm up vector worker in background to improve initial response time
     setTimeout(async () => {
       try {
-        const workerManager = VectorWorkerManager.getInstance();
-        console.debug("[Global Search] Warming up vector worker...");
-        // Just ensure the worker is ready, don't process anything yet
-        await workerManager.processItems([], () => {});
-        console.debug("[Global Search] Vector worker warmed up successfully");
+        VectorWorkerManager.getInstance();
       } catch (error) {
         console.warn("[Global Search] Vector worker warm-up failed:", error);
       }

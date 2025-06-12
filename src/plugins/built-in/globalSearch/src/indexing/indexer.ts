@@ -4,6 +4,7 @@ import { renderComponentMap } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
+import { getVectorizedItemIds } from "./utils";
 
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
@@ -280,14 +281,24 @@ export async function runIndexing(): Promise<void> {
 
   if (allItemsInPrimaryStores.length > 0) {
     console.debug(
-      `%c[Indexer] Sending ${allItemsInPrimaryStores.length} items from primary stores to worker for vectorization check...`,
+      `%c[Indexer] Checking ${allItemsInPrimaryStores.length} items for vectorization...`,
       "color: #4ea1ff",
     );
-    dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of stored items");
+    
+    // Pre-filter items to avoid initializing worker if nothing new
+    const vectorizedItemIds = await getVectorizedItemIds();
+    const newItemsToVectorize = allItemsInPrimaryStores.filter(item => !vectorizedItemIds.has(item.id));
+    
+    if (newItemsToVectorize.length > 0) {
+      console.debug(
+        `%c[Indexer] Sending ${newItemsToVectorize.length} new items to worker for vectorization (${allItemsInPrimaryStores.length - newItemsToVectorize.length} already vectorized)`,
+        "color: #4ea1ff",
+      );
+      dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of new items");
 
-    try {
-      const workerManager = VectorWorkerManager.getInstance();
-      await workerManager.processItems(allItemsInPrimaryStores, (progress) => {
+      try {
+        const workerManager = VectorWorkerManager.getInstance();
+        await workerManager.processItems(newItemsToVectorize, (progress) => {
         let detailMessage = progress.message || "";
         if (
           progress.status === "processing" &&
@@ -353,6 +364,19 @@ export async function runIndexing(): Promise<void> {
         false,
         "Vectorization failed",
         String(error),
+      );
+    }
+    } else {
+      console.debug(
+        `%c[Indexer] All ${allItemsInPrimaryStores.length} items are already vectorized, skipping worker initialization.`,
+        "color: gray",
+      );
+      completedJobs++;
+      dispatchProgress(
+        completedJobs,
+        totalSteps,
+        false,
+        "Indexing finished (all items already vectorized)",
       );
     }
   } else {
