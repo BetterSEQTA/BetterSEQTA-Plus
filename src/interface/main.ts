@@ -15,9 +15,11 @@ export default function renderSvelte(
     },
   });
 
-  const styleElement = document.createElement("style");
-  styleElement.textContent = style;
-  mountPoint.appendChild(styleElement);
+  if (mountPoint instanceof ShadowRoot) {
+    const styleElement = document.createElement("style");
+    styleElement.textContent = style;
+    mountPoint.appendChild(styleElement);
+  }
 
   return app;
 }
