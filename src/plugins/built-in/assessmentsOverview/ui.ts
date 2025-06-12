@@ -184,7 +184,8 @@ export function renderGrid(container: HTMLElement, data: any) {
       const assessmentList =
         statusGroups[column.key as keyof typeof statusGroups];
 
-      if (column.key === "SUBMITTED" && assessmentList.length === 0) {
+      // Skip rendering empty columns
+      if (assessmentList.length === 0) {
         return;
       }
 
@@ -208,23 +209,14 @@ export function renderGrid(container: HTMLElement, data: any) {
         `#${column.key.toLowerCase()}-cards`,
       ) as HTMLElement;
 
-      if (assessmentList.length === 0) {
-        cardsContainer.innerHTML = `
-          <div class="empty-column">
-            <div class="empty-icon">${column.icon}</div>
-            <p>No ${column.title.toLowerCase()} assessments</p>
-          </div>
-        `;
-      } else {
-        assessmentList.forEach((assessment) => {
-          cardsContainer.appendChild(
-            createKanbanCard(
-              assessment,
-              data.colors[assessment.code] || "#6366f1",
-            ),
-          );
-        });
-      }
+      assessmentList.forEach((assessment) => {
+        cardsContainer.appendChild(
+          createKanbanCard(
+            assessment,
+            data.colors[assessment.code] || "#6366f1",
+          ),
+        );
+      });
 
       columnParentEl.appendChild(columnEl);
       board.appendChild(columnParentEl);
