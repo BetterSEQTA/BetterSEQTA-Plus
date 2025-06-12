@@ -309,10 +309,7 @@ export const notificationsJob: Job = {
           await delay(NOTIFICATIONS_RATE_LIMIT.batchDelay);
         }
 
-        const { success, item } = await processNotification(
-          notif,
-          ctx,
-        );
+        const { success, item } = await processNotification(notif, ctx);
         if (!success) {
           if (progress.retryQueue.length < 10) {
             progress.retryQueue.push(notif.notificationID);
@@ -371,27 +368,42 @@ export const notificationsJob: Job = {
       if (progressUpdateCounter >= 5) {
         await ctx.setProgress(progress);
         progressUpdateCounter = 0;
-        
+
         if (items.length > 0) {
           try {
             const currentItems = await loadAllStoredItems();
-            currentItems.forEach(item => {
-              const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
+            currentItems.forEach((item) => {
+              const jobDef =
+                jobs[item.category] ||
+                Object.values(jobs).find((j) => j.id === item.category) ||
+                jobs[item.renderComponentId];
               if (jobDef) {
-                const renderComponent = renderComponentMap[jobDef.renderComponentId];
+                const renderComponent =
+                  renderComponentMap[jobDef.renderComponentId];
                 if (renderComponent) {
                   item.renderComponent = renderComponent;
                 }
               } else if (renderComponentMap[item.renderComponentId]) {
-                item.renderComponent = renderComponentMap[item.renderComponentId];
+                item.renderComponent =
+                  renderComponentMap[item.renderComponentId];
               }
             });
             loadDynamicItems(currentItems);
-            window.dispatchEvent(new CustomEvent("dynamic-items-updated", { 
-              detail: { incremental: true, jobId: "notifications", newItemCount: items.length, streaming: true } 
-            }));
+            window.dispatchEvent(
+              new CustomEvent("dynamic-items-updated", {
+                detail: {
+                  incremental: true,
+                  jobId: "notifications",
+                  newItemCount: items.length,
+                  streaming: true,
+                },
+              }),
+            );
           } catch (error) {
-            console.warn("[Notifications job] Failed to dispatch incremental search update:", error);
+            console.warn(
+              "[Notifications job] Failed to dispatch incremental search update:",
+              error,
+            );
           }
         }
       }

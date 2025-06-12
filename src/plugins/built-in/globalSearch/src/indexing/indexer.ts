@@ -276,116 +276,102 @@ export async function runIndexing(): Promise<void> {
     );
   }
 
-  if (!hasStreamingJobs) {
-    const allItemsInPrimaryStores = await loadAllStoredItems();
+  let allItemsInPrimaryStores = await loadAllStoredItems();
 
-    if (allItemsInPrimaryStores.length > 0) {
-      console.debug(
-        `%c[Indexer] Sending ${allItemsInPrimaryStores.length} items from primary stores to worker for vectorization check...`,
-        "color: #4ea1ff",
-      );
-      dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of stored items");
+  if (allItemsInPrimaryStores.length > 0) {
+    console.debug(
+      `%c[Indexer] Sending ${allItemsInPrimaryStores.length} items from primary stores to worker for vectorization check...`,
+      "color: #4ea1ff",
+    );
+    dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of stored items");
 
-      try {
-        const workerManager = VectorWorkerManager.getInstance();
-        await workerManager.processItems(allItemsInPrimaryStores, (progress) => {
-          let detailMessage = progress.message || "";
-          if (
-            progress.status === "processing" &&
-            progress.total &&
-            progress.processed !== undefined
-          ) {
-            detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
-          } else if (progress.status === "complete") {
-            detailMessage = "Vectorization complete";
-            completedJobs++;
+    try {
+      const workerManager = VectorWorkerManager.getInstance();
+      await workerManager.processItems(allItemsInPrimaryStores, (progress) => {
+        let detailMessage = progress.message || "";
+        if (
+          progress.status === "processing" &&
+          progress.total &&
+          progress.processed !== undefined
+        ) {
+          detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
+        } else if (progress.status === "complete") {
+          detailMessage = "Vectorization complete";
+          completedJobs++;
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            false,
+            "Indexing finished",
+            detailMessage
+          );
+        } else if (progress.status === "error") {
+          detailMessage = `Vectorization error: ${progress.message}`;
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            false,
+            "Vectorization failed",
+            detailMessage,
+          );
+        } else if (progress.status === "started") {
+          detailMessage = `Vectorization started for ${progress.total} items`;
+        } else if (progress.status === "cancelled") {
+          detailMessage = `Vectorization cancelled: ${progress.message}`;
+          dispatchProgress(
+            completedJobs,
+            totalSteps,
+            false,
+            "Vectorization cancelled",
+            detailMessage,
+          );
+        }
+
+        if (progress.status !== "complete" && progress.status !== "error" && progress.status !== "cancelled") {
             dispatchProgress(
               completedJobs,
               totalSteps,
-              false,
-              "Indexing finished",
-              detailMessage
-            );
-          } else if (progress.status === "error") {
-            detailMessage = `Vectorization error: ${progress.message}`;
-            dispatchProgress(
-              completedJobs,
-              totalSteps,
-              false,
-              "Vectorization failed",
+              true,
+              "Vectorization in progress",
               detailMessage,
             );
-          } else if (progress.status === "started") {
-            detailMessage = `Vectorization started for ${progress.total} items`;
-          } else if (progress.status === "cancelled") {
-            detailMessage = `Vectorization cancelled: ${progress.message}`;
-            dispatchProgress(
-              completedJobs,
-              totalSteps,
-              false,
-              "Vectorization cancelled",
-              detailMessage,
-            );
-          }
-
-          if (progress.status !== "complete" && progress.status !== "error" && progress.status !== "cancelled") {
-              dispatchProgress(
-                completedJobs,
-                totalSteps,
-                true,
-                "Vectorization in progress",
-                detailMessage,
-              );
-          }
-        });
-        console.debug(
-          "%c[Indexer] Vectorization task for stored items sent to worker.",
-          "color: green",
-        );
-      } catch (error) {
-        console.error(
-          `%c[Indexer] ❌ Failed to send items to vector worker:`,
-          "color: red",
-          error,
-        );
-        dispatchProgress(
-          completedJobs,
-          totalSteps,
-          false,
-          "Vectorization failed",
-          String(error),
-        );
-      }
-    } else {
+        }
+      });
       console.debug(
-        "%c[Indexer] No items found in primary stores to send for vectorization.",
-        "color: gray",
+        "%c[Indexer] Vectorization task for stored items sent to worker.",
+        "color: green",
       );
-      completedJobs++;
+    } catch (error) {
+      console.error(
+        `%c[Indexer] ❌ Failed to send items to vector worker:`,
+        "color: red",
+        error,
+      );
       dispatchProgress(
         completedJobs,
         totalSteps,
         false,
-        "Indexing finished (no items for vectorization)",
+        "Vectorization failed",
+        String(error),
       );
     }
   } else {
     console.debug(
-      "%c[Indexer] Skipping bulk vectorization - streaming jobs will handle vectorization",
-      "color: #4ea1ff",
+      "%c[Indexer] No items found in primary stores to send for vectorization.",
+      "color: gray",
     );
     completedJobs++;
     dispatchProgress(
       completedJobs,
       totalSteps,
       false,
-      "Indexing finished (streaming vectorization active)",
+      "Indexing finished (no items for vectorization)",
     );
   }
 
   stopHeartbeat();
 
-  const allItemsInPrimaryStores = await loadAllStoredItems();
+  allItemsInPrimaryStores = await loadAllStoredItems();
   allItemsInPrimaryStores.forEach(item => {
     const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
     if (jobDef) {

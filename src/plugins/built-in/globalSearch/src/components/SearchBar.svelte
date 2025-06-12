@@ -24,7 +24,6 @@
     searchHotkey: string
   }>();
 
-  // Make searchHotkey reactive to setting changes
   let currentSearchHotkey = $state(initialSearchHotkey);
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
@@ -177,7 +176,7 @@
     isLoading = false;
   };
 
-  const debouncedPerformSearch = debounce(performSearch, 10);
+  const debouncedPerformSearch = debounce(performSearch, 200);
 
   $effect(() => {
     if (commandPalleteOpen) {

@@ -15,6 +15,9 @@ export class VectorWorkerManager {
   private isInitialized = false;
   private readyPromise: Promise<void> | null = null;
   private progressCallback: ProgressCallback | null = null;
+  private initializationMutex = false;
+  private idleTimer: NodeJS.Timeout | null = null;
+  private lastActivityTime = 0;
 
   private streamingSession: {
     isActive: boolean;
@@ -23,7 +26,9 @@ export class VectorWorkerManager {
     batchBuffer: IndexItem[];
     batchSize: number;
     flushTimer: NodeJS.Timeout | null;
-    jobId?: string; // Track which job owns the session
+    jobId?: string;
+    inactivityTimer: NodeJS.Timeout | null;
+    lastActivityTime: number;
   } | null = null;
 
   private constructor() {}
@@ -43,13 +48,12 @@ export class VectorWorkerManager {
     console.debug("Lazy-loading vector worker...");
 
     return new Promise<void>((resolve, reject) => {
-      // Terminate any existing worker before creating a new one
       if (this.worker) {
         console.debug("Terminating existing worker before creating new one");
         this.worker.terminate();
         this.worker = null;
       }
-      
+
       console.debug("Creating new vector worker instance");
       this.worker = vectorWorker();
 
@@ -62,8 +66,7 @@ export class VectorWorkerManager {
           this.worker = null;
         }
         this.isInitialized = false;
-        // Don't reset readyPromise here to prevent race conditions
-        // It will be reset when a new initialization is attempted
+
         reject(new Error("Worker initialization timed out"));
       }, 10000);
 
@@ -75,6 +78,7 @@ export class VectorWorkerManager {
           case "ready":
             this.isInitialized = true;
             clearTimeout(timeout);
+            this.updateActivity(); // Start idle timer after initialization
             console.debug("Vector worker initialized and ready.");
             resolve();
             break;
@@ -89,11 +93,16 @@ export class VectorWorkerManager {
                 if (this.streamingSession?.isActive) {
                   this.endStreamingSession();
                 }
-                
-                // Dispatch search update when vectorization completes
-                window.dispatchEvent(new CustomEvent("dynamic-items-updated", { 
-                  detail: { incremental: true, jobId: "vectorization", vectorUpdate: true } 
-                }));
+
+                window.dispatchEvent(
+                  new CustomEvent("dynamic-items-updated", {
+                    detail: {
+                      incremental: true,
+                      jobId: "vectorization",
+                      vectorUpdate: true,
+                    },
+                  }),
+                );
               }
             }
             break;
@@ -128,35 +137,73 @@ export class VectorWorkerManager {
     this.isInitialized = false;
     this.readyPromise = null;
     this.progressCallback = null;
+    this.initializationMutex = false;
+    this.clearIdleTimer();
     if (this.streamingSession?.isActive) {
       this.endStreamingSession();
     }
   }
 
+  private startIdleTimer() {
+    this.clearIdleTimer();
+    this.idleTimer = setTimeout(() => {
+      if (!this.streamingSession?.isActive && this.isInitialized) {
+        console.debug("[VectorWorker] Auto-shutting down due to 2 minutes of inactivity");
+        this.resetWorkerState();
+      }
+    }, 120000); // 2 minutes
+  }
+
+  private clearIdleTimer() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = null;
+    }
+  }
+
+  private updateActivity() {
+    this.lastActivityTime = Date.now();
+    this.startIdleTimer();
+  }
+
   private async ensureReady() {
-    // If we already have a ready promise, wait for it regardless of outcome
+    if (this.initializationMutex) {
+      while (this.initializationMutex) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      if (this.isInitialized && this.worker) {
+        return;
+      }
+    }
+
     if (this.readyPromise) {
       try {
         await this.readyPromise;
       } catch (error) {
-        // If the previous initialization failed, reset state and try again
-        console.warn("Previous worker initialization failed, resetting state and retrying...", error);
+        console.warn(
+          "Previous worker initialization failed, resetting state and retrying...",
+          error,
+        );
         this.resetWorkerState();
       }
     }
-    
-    // Double-check if we're actually ready after waiting
+
     if (this.isInitialized && this.worker) {
       return;
     }
-    
-    // If we're not ready and there's no active promise, create one
-    if (!this.readyPromise) {
+
+    if (!this.readyPromise && !this.initializationMutex) {
       console.warn("Worker not initialized, attempting init...");
-      this.readyPromise = this.initWorker();
+      this.initializationMutex = true;
+      try {
+        this.readyPromise = this.initWorker();
+        await this.readyPromise;
+      } finally {
+        this.initializationMutex = false;
+      }
     }
-    
-    await this.readyPromise;
+
     if (!this.isInitialized || !this.worker) {
       throw new Error(
         "Vector Worker is not available after initialization attempt.",
@@ -165,27 +212,61 @@ export class VectorWorkerManager {
   }
 
   async processItems(items: IndexItem[], onProgress?: ProgressCallback) {
+    // Only initialize worker if we actually have items to process
+    if (items.length === 0) {
+      if (onProgress) {
+        onProgress({
+          status: "complete",
+          message: "No items to process"
+        });
+      }
+      return;
+    }
+
+    const uniqueItems = items.filter((item, index, arr) => {
+      return arr.findIndex((i) => i.id === item.id) === index;
+    });
+
+    if (uniqueItems.length !== items.length) {
+      console.debug(
+        `Filtered out ${items.length - uniqueItems.length} duplicate items before processing`,
+      );
+    }
+
+    // If after deduplication we have no items, don't initialize worker
+    if (uniqueItems.length === 0) {
+      if (onProgress) {
+        onProgress({
+          status: "complete",
+          message: "No unique items to process after deduplication"
+        });
+      }
+      return;
+    }
+
     await this.ensureReady();
 
-    // Don't allow regular processing if streaming is active
     if (this.streamingSession?.isActive) {
       console.warn("Cannot process items while streaming session is active");
       if (onProgress) {
         onProgress({
           status: "error",
-          message: "Cannot process items while streaming session is active"
+          message: "Cannot process items while streaming session is active",
         });
       }
       return;
     }
 
     this.progressCallback = onProgress || null;
+    this.updateActivity();
 
-    console.debug(`Sending ${items.length} items to worker for processing.`);
+    console.debug(
+      `Sending ${uniqueItems.length} unique items to worker for processing.`,
+    );
 
     this.worker!.postMessage({
       type: "process",
-      data: { items: items },
+      data: { items: uniqueItems },
     });
   }
 
@@ -195,19 +276,22 @@ export class VectorWorkerManager {
     batchSize: number = 10,
     jobId?: string,
   ): Promise<void> {
+    // Only initialize if we expect items to process
+    if (totalExpectedItems === 0) {
+      console.debug("[VectorWorker] No items expected, not starting streaming session");
+      return;
+    }
+
     await this.ensureReady();
 
-    // Check if another job already has an active streaming session
     if (this.streamingSession?.isActive) {
       if (this.streamingSession.jobId !== jobId) {
-        console.warn(`Cannot start streaming session for job ${jobId} - job ${this.streamingSession.jobId} already has an active session`);
-        if (onProgress) {
-          onProgress({
-            status: "error",
-            message: `Another job (${this.streamingSession.jobId}) already has an active streaming session`
-          });
-        }
-        return;
+        console.warn(
+          `Ending existing streaming session for job ${this.streamingSession.jobId} to start new session for job ${jobId}`,
+        );
+        await this.endStreamingSession();
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } else {
         console.debug(`Streaming session for job ${jobId} already active`);
         return;
@@ -215,6 +299,7 @@ export class VectorWorkerManager {
     }
 
     this.progressCallback = onProgress || null;
+    this.updateActivity();
 
     this.streamingSession = {
       isActive: true,
@@ -224,6 +309,8 @@ export class VectorWorkerManager {
       batchSize,
       flushTimer: null,
       jobId,
+      inactivityTimer: null,
+      lastActivityTime: Date.now(),
     };
 
     console.debug(
@@ -252,7 +339,34 @@ export class VectorWorkerManager {
       );
     }
 
-    this.streamingSession.batchBuffer.push(...items);
+    const uniqueItems = items.filter((item, index, arr) => {
+      return arr.findIndex((i) => i.id === item.id) === index;
+    });
+
+    if (uniqueItems.length !== items.length) {
+      console.debug(
+        `[Streaming] Filtered out ${items.length - uniqueItems.length} duplicate items before streaming`,
+      );
+    }
+
+    if (uniqueItems.length > 0) {
+      this.streamingSession.batchBuffer.push(...uniqueItems);
+      this.streamingSession.lastActivityTime = Date.now();
+      this.updateActivity(); // Update worker activity
+
+      if (this.streamingSession.inactivityTimer) {
+        clearTimeout(this.streamingSession.inactivityTimer);
+      }
+
+      this.streamingSession.inactivityTimer = setTimeout(() => {
+        if (this.streamingSession?.isActive) {
+          console.debug(
+            "[VectorWorker] Auto-ending streaming session due to inactivity",
+          );
+          this.endStreamingSession();
+        }
+      }, 30000);
+    }
 
     if (
       this.streamingSession.batchBuffer.length >=
@@ -313,6 +427,10 @@ export class VectorWorkerManager {
       clearTimeout(this.streamingSession.flushTimer);
     }
 
+    if (this.streamingSession.inactivityTimer) {
+      clearTimeout(this.streamingSession.inactivityTimer);
+    }
+
     this.streamingSession.isActive = false;
 
     this.worker!.postMessage({
@@ -336,6 +454,7 @@ export class VectorWorkerManager {
   async streamItem(item: IndexItem): Promise<void> {
     return this.streamItems([item]);
   }
+
 
   isStreamingActive(): boolean {
     return this.streamingSession?.isActive ?? false;
@@ -364,15 +483,15 @@ export class VectorWorkerManager {
 
   async resetWorker(): Promise<void> {
     console.debug("Resetting vector worker...");
-    
+
     if (this.streamingSession?.isActive) {
       await this.endStreamingSession();
     }
-    
+
     await this.ensureReady();
-    
+
     this.worker!.postMessage({ type: "reset" });
-    
+
     console.debug("Reset command sent to worker");
   }
 }

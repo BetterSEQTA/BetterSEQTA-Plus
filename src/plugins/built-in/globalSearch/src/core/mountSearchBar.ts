@@ -8,7 +8,7 @@ import browser from "webextension-polyfill";
 export function mountSearchBar(
   titleElement: Element,
   api: any,
-  appRef: { current: any },
+  appRef: { current: any; storageChangeHandler?: any },
 ) {
   if (titleElement.querySelector(".search-trigger")) {
     return;
@@ -49,6 +49,9 @@ export function mountSearchBar(
 
   browser.storage.onChanged.addListener(handleStorageChange);
 
+  // Store reference to cleanup function for proper removal
+  appRef.storageChangeHandler = handleStorageChange;
+
   const searchRoot = document.createElement("div");
   document.body.appendChild(searchRoot);
   const searchRootShadow = searchRoot.attachShadow({ mode: "open" });
@@ -69,7 +72,7 @@ export function mountSearchBar(
   }
 }
 
-export function cleanupSearchBar(appRef: { current: any }) {
+export function cleanupSearchBar(appRef: { current: any; storageChangeHandler?: any }) {
   if (appRef.current) {
     try {
       unmount(appRef.current);
@@ -94,6 +97,8 @@ export function cleanupSearchBar(appRef: { current: any }) {
   // Clean up vector worker
   VectorWorkerManager.getInstance().terminate();
 
-  // Remove storage listener
-  browser.storage.onChanged.removeListener(() => {});
+  if (appRef.storageChangeHandler) {
+    browser.storage.onChanged.removeListener(appRef.storageChangeHandler);
+    appRef.storageChangeHandler = null;
+  }
 }

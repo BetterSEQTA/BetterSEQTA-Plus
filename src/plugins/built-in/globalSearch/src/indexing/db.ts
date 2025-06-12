@@ -3,19 +3,22 @@ const META_STORE = "meta";
 const VERSION_KEY = "betterseqta-index-version";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+let cachedDb: IDBDatabase | null = null;
 
-// Get the current version from localStorage or start at 1
 function getCurrentVersion(): number {
   const storedVersion = localStorage.getItem(VERSION_KEY);
   return storedVersion ? parseInt(storedVersion, 10) : 1;
 }
 
-// Update the version in localStorage
 function updateVersion(version: number) {
   localStorage.setItem(VERSION_KEY, version.toString());
 }
 
 function openDB(): Promise<IDBDatabase> {
+  if (cachedDb && cachedDb.version >= getCurrentVersion()) {
+    return Promise.resolve(cachedDb);
+  }
+
   if (dbPromise) return dbPromise;
 
   const currentVersion = getCurrentVersion();
@@ -26,8 +29,11 @@ function openDB(): Promise<IDBDatabase> {
     try {
       request = indexedDB.open(DB_NAME, currentVersion);
     } catch (e) {
-      // If there's a version error, try to delete the database and start fresh
       console.warn("Database version conflict, recreating database...");
+      if (cachedDb) {
+        cachedDb.close();
+        cachedDb = null;
+      }
       indexedDB.deleteDatabase(DB_NAME);
       localStorage.removeItem(VERSION_KEY);
       request = indexedDB.open(DB_NAME, 1);
@@ -38,22 +44,37 @@ function openDB(): Promise<IDBDatabase> {
       const db = request.result;
       const existingStores = Array.from(db.objectStoreNames);
 
-      // Always ensure META_STORE exists
       if (!existingStores.includes(META_STORE)) {
         db.createObjectStore(META_STORE);
       }
 
-      // Update version in localStorage to match the database
       updateVersion(event.newVersion || 1);
     };
 
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      if (cachedDb && cachedDb !== request.result) {
+        cachedDb.close();
+      }
+      cachedDb = request.result;
+
+      cachedDb.onclose = () => {
+        cachedDb = null;
+        dbPromise = null;
+      };
+
+      resolve(request.result);
+    };
 
     request.onerror = () => {
       console.error("Error opening database:", request.error);
-      // If there's an error, try to recover by deleting and recreating
+
+      if (cachedDb) {
+        cachedDb.close();
+        cachedDb = null;
+      }
       indexedDB.deleteDatabase(DB_NAME);
       localStorage.removeItem(VERSION_KEY);
+      dbPromise = null;
       reject(request.error);
     };
   });
@@ -64,11 +85,12 @@ function openDB(): Promise<IDBDatabase> {
 async function getStore(store: string, mode: IDBTransactionMode = "readonly") {
   const db = await openDB();
 
-  // Create store dynamically if needed
   if (!db.objectStoreNames.contains(store)) {
-    db.close();
     await upgradeDB(store);
-    return getStore(store, mode);
+
+    const upgradedDb = await openDB();
+    const tx = upgradedDb.transaction(store, mode);
+    return tx.objectStore(store);
   }
 
   const tx = db.transaction(store, mode);
@@ -80,11 +102,11 @@ function upgradeDB(newStore: string): Promise<void> {
     const currentVersion = getCurrentVersion();
     const newVersion = currentVersion + 1;
 
-    // Close any existing connections
-    if (dbPromise) {
-      dbPromise.then((db) => db.close());
-      dbPromise = null;
+    if (cachedDb) {
+      cachedDb.close();
+      cachedDb = null;
     }
+    dbPromise = null;
 
     const request = indexedDB.open(DB_NAME, newVersion);
 
@@ -93,11 +115,18 @@ function upgradeDB(newStore: string): Promise<void> {
       if (!db.objectStoreNames.contains(newStore)) {
         db.createObjectStore(newStore);
       }
-      // Update version in localStorage
+
       updateVersion(event.newVersion || newVersion);
     };
 
     request.onsuccess = () => {
+      cachedDb = request.result;
+
+      cachedDb.onclose = () => {
+        cachedDb = null;
+        dbPromise = null;
+      };
+
       dbPromise = Promise.resolve(request.result);
       resolve();
     };
@@ -183,11 +212,17 @@ export async function clear(store: string): Promise<void> {
   }
 }
 
-// Helper function to reset the database if needed
 export async function resetDatabase(): Promise<void> {
+  if (cachedDb) {
+    cachedDb.close();
+    cachedDb = null;
+  }
+
   if (dbPromise) {
-    const db = await dbPromise;
-    db.close();
+    try {
+      const db = await dbPromise;
+      db.close();
+    } catch (e) {}
     dbPromise = null;
   }
 
