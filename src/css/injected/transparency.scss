@@ -21,6 +21,9 @@ html.transparencyEffects {
   }
 
   /* Blurs */
+  .search,
+  .document,
+  .border,
   .draggable,
   .notice,
   [class*="BasicPanel__BasicPanel___"],
@@ -42,27 +45,20 @@ html.transparencyEffects {
     backdrop-filter: blur(80px);
   }
 
+  .filter-select,
   .report {
     backdrop-filter: blur(10px) !important;
   }
 
+  #menu,
+  .kanban-column,
   .whatsnewContainer,
   [class*="Message__Message___"] {
     backdrop-filter: blur(50px);
   }
 
-  #menu {
-    backdrop-filter: blur(20px);
-  }
-
   .title > a {
     backdrop-filter: blur(0px) !important;
-  }
-
-  .search,
-  .document,
-  .border {
-    backdrop-filter: blur(80px);
   }
 
   #main > .dashboard {
