@@ -3,6 +3,7 @@ import type { Plugin } from "../../core/types";
 interface NotificationCollectorStorage {
   lastNotificationCount: number;
   lastCheckedTime: string;
+  consecutiveErrors: number;
 }
 
 const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
@@ -15,13 +16,24 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
 
   run: async (api) => {
     let pollInterval: number | null = null;
+    let isVisible = !document.hidden;
+    let baseInterval = 30000; // 30 seconds
+    const maxInterval = 300000; // 5 minutes max
 
     // Store last notification count in storage
     if (!api.storage.lastNotificationCount) {
       api.storage.lastNotificationCount = 0;
     }
+    if (!api.storage.consecutiveErrors) {
+      api.storage.consecutiveErrors = 0;
+    }
 
     const checkNotifications = async () => {
+      // Skip if tab is not visible to save battery
+      if (!isVisible) {
+        return;
+      }
+
       try {
         const alertDiv = document.querySelector(
           "[class*='notifications__bubble___']",
@@ -51,6 +63,9 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
         const notificationCount = data.payload.notifications.length;
         api.storage.lastNotificationCount = notificationCount;
         api.storage.lastCheckedTime = new Date().toISOString();
+        
+        // Reset error count on success
+        api.storage.consecutiveErrors = 0;
 
         if (alertDiv) {
           alertDiv.textContent = notificationCount.toString();
@@ -59,18 +74,37 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
         }
       } catch (error) {
         console.error("[BetterSEQTA+] Error fetching notifications:", error);
+        api.storage.consecutiveErrors = (api.storage.consecutiveErrors || 0) + 1;
       }
+    };
+
+    const getNextInterval = () => {
+      // Exponential backoff on errors, max 5 minutes
+      const errorMultiplier = Math.min(Math.pow(2, api.storage.consecutiveErrors || 0), 10);
+      return Math.min(baseInterval * errorMultiplier, maxInterval);
     };
 
     const startPolling = () => {
       if (pollInterval) return; // Already polling
       checkNotifications();
-      pollInterval = window.setInterval(checkNotifications, 30000);
+      
+      const scheduleNext = () => {
+        const interval = getNextInterval();
+        pollInterval = window.setTimeout(() => {
+          checkNotifications().then(() => {
+            if (pollInterval) { // Only continue if not stopped
+              scheduleNext();
+            }
+          });
+        }, interval);
+      };
+      
+      scheduleNext();
     };
 
     const stopPolling = () => {
       if (pollInterval) {
-        window.clearInterval(pollInterval);
+        window.clearTimeout(pollInterval);
         pollInterval = null;
         const alertDiv = document.querySelector(
           "[class*='notifications__bubble___']",
@@ -85,12 +119,27 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
       }
     };
 
+    // Listen for visibility changes to pause/resume polling
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible && !pollInterval) {
+        // Resume polling when tab becomes visible
+        const alertDiv = document.querySelector("[class*='notifications__bubble___']");
+        if (alertDiv) {
+          startPolling();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     api.seqta.onMount("[class*='notifications__bubble___']", (_) => {
       startPolling();
     });
 
     return () => {
       stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   },
 };
