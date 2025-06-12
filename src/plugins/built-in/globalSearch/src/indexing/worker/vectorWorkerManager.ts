@@ -17,7 +17,6 @@ export class VectorWorkerManager {
   private progressCallback: ProgressCallback | null = null;
   private initializationMutex = false;
   private idleTimer: NodeJS.Timeout | null = null;
-  private lastActivityTime = 0;
   private unloadTimer: NodeJS.Timeout | null = null;
 
   private streamingSession: {
@@ -185,7 +184,6 @@ export class VectorWorkerManager {
   }
 
   private updateActivity() {
-    this.lastActivityTime = Date.now();
     this.clearUnloadTimer();
     this.startIdleTimer();
   }
