@@ -20,6 +20,8 @@ export async function appendBackgroundToUI() {
   return;
 }
 
+let lastLoadedId: string | null = null;
+
 export async function loadBackground() {
   if (!isIndexedDBSupported()) {
     console.error("IndexedDB is not supported. Unable to load background.");
@@ -33,11 +35,20 @@ export async function loadBackground() {
       if (backgroundContainer) {
         backgroundContainer.remove();
       }
+      lastLoadedId = null;
       return;
     }
 
     const background = await getDataById(selectedBackgroundId);
     if (!background) return;
+
+    // Skip reload if background hasn't changed and media element already exists
+    if (
+      selectedBackgroundId === lastLoadedId &&
+      document.querySelector("#media-container > .background")
+    ) {
+      return;
+    }
 
     let backgroundContainer = document.querySelector(".imageBackground");
     if (!backgroundContainer) {
@@ -77,6 +88,7 @@ export async function loadBackground() {
     }
 
     mediaContainer.appendChild(mediaElement);
+    lastLoadedId = selectedBackgroundId;
   } catch (error) {
     console.error("Error loading background:", error);
   }
