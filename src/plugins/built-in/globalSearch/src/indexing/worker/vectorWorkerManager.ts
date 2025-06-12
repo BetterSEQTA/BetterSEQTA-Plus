@@ -18,6 +18,7 @@ export class VectorWorkerManager {
   private initializationMutex = false;
   private idleTimer: NodeJS.Timeout | null = null;
   private lastActivityTime = 0;
+  private unloadTimer: NodeJS.Timeout | null = null;
 
   private streamingSession: {
     isActive: boolean;
@@ -104,6 +105,10 @@ export class VectorWorkerManager {
                   }),
                 );
               }
+
+              if (data.status === "complete" || data.status === "cancelled" || data.status === "error") {
+                this.scheduleUnload();
+              }
             }
             break;
 
@@ -139,6 +144,7 @@ export class VectorWorkerManager {
     this.progressCallback = null;
     this.initializationMutex = false;
     this.clearIdleTimer();
+    this.clearUnloadTimer();
     if (this.streamingSession?.isActive) {
       this.endStreamingSession();
     }
@@ -161,8 +167,26 @@ export class VectorWorkerManager {
     }
   }
 
+  private clearUnloadTimer() {
+    if (this.unloadTimer) {
+      clearTimeout(this.unloadTimer);
+      this.unloadTimer = null;
+    }
+  }
+
+  private scheduleUnload(delay: number = 10000) {
+    this.clearUnloadTimer();
+    this.unloadTimer = setTimeout(() => {
+      if (!this.streamingSession?.isActive && this.isInitialized) {
+        console.debug("[VectorWorker] Auto-unloading after processing complete");
+        this.resetWorkerState();
+      }
+    }, delay);
+  }
+
   private updateActivity() {
     this.lastActivityTime = Date.now();
+    this.clearUnloadTimer();
     this.startIdleTimer();
   }
 
@@ -449,6 +473,7 @@ export class VectorWorkerManager {
     }
 
     this.streamingSession = null;
+    this.scheduleUnload();
   }
 
   async streamItem(item: IndexItem): Promise<void> {
