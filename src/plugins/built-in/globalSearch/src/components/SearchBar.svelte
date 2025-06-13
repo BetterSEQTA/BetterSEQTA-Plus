@@ -176,7 +176,7 @@
     isLoading = false;
   };
 
-  const debouncedPerformSearch = debounce(performSearch, 200);
+  const debouncedPerformSearch = debounce(performSearch, 20);
 
   $effect(() => {
     if (commandPalleteOpen) {
