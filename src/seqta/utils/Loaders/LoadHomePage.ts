@@ -25,6 +25,9 @@ let currentSelectedDate = new Date();
 export async function loadHomePage() {
   console.info("[BetterSEQTA+] Started Loading Home Page");
 
+  // Reset currentSelectedDate to today when remounting the home page
+  currentSelectedDate = new Date();
+
   // Wait for the DOM to finish clearing
   await delay(10);
 

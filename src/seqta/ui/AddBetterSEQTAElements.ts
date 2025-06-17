@@ -81,7 +81,7 @@ function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
   container.append(div);
 
   const NewButton = stringToHTML(
-    '<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>',
+    /* html */`<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>`
   );
   if (NewButton.firstChild) {
     fragment.appendChild(NewButton.firstChild);
