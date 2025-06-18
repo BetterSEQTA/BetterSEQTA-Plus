@@ -926,6 +926,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 .notices-container {
   input {
     border: none;
+    color: var(--text-color) !important;
 
     &:hover {
       border: none;
@@ -3643,8 +3644,11 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.dark .notice-unified-content {
+  color: white;
+}
+
 .notice-unified-content {
-  // Override any conflicting .notice styles - unified for both states
   h1, h2, h3, h4, h5, h6 {
     margin: 0 !important;
     padding: 0 !important;
@@ -3763,15 +3767,16 @@ body {
   flex: 1;
 }
 
-.notice-close-btn {
+button.notice-close-btn {
   position: absolute !important;
+  font-size: 20px !important;
   top: 12px;
   right: 12px;
   background: var(--background-secondary);
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 50% !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3934,4 +3939,10 @@ body {
   .notice-preview {
     font-size: 13px;
   }
+}
+
+h2.home-subtitle {
+  margin: 20px;
+  font-size: 20px;
+  font-weight: 400;
 }
