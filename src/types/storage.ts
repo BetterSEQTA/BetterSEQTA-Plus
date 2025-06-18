@@ -36,6 +36,7 @@ export interface SettingsState {
   devMode?: boolean;
   originalDarkMode?: boolean;
   newsSource?: string;
+  mockNotices?: boolean;
 
   // depreciated keys
   animatedbk: boolean;
