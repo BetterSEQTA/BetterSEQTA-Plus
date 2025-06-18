@@ -328,6 +328,18 @@
           />
         </div>
       </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Mock Notices</h2>
+          <p class="text-xs">Use fake notice data on homepage instead of real data</p>
+        </div>
+        <div>
+          <Switch 
+            state={$settingsState.mockNotices ?? false} 
+            onChange={(isOn: boolean) => settingsState.mockNotices = isOn} 
+          />
+        </div>
+      </div>
     </div>
   {/if}
 </div>
