@@ -1,26 +1,21 @@
-import { delay } from "../delay";
-import stringToHTML from "../stringToHTML";
 import { animate, stagger } from "motion";
-import { settingsState } from "../listeners/SettingsState";
-
-import { addShortcuts } from "../Adders/AddShortcuts";
-
 import browser from "webextension-polyfill";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
-import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
-
 import assessmentsicon from "@/seqta/icons/assessmentsIcon";
 import coursesicon from "@/seqta/icons/coursesIcon";
-
-import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
-
-import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
-
+import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { addShortcuts } from "../Adders/AddShortcuts";
 import { convertTo12HourFormat } from "../convertTo12HourFormat";
+import { delay } from "../delay";
+import { settingsState } from "../listeners/SettingsState";
+import stringToHTML from "../stringToHTML";
+import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
+import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
+import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
+let loadingTimeout: any;
 
 export async function loadHomePage() {
   console.info("[BetterSEQTA+] Started Loading Home Page");
@@ -276,6 +271,20 @@ function setupTimetableListeners() {
   const timetableForward = document.getElementById("home-timetable-forward");
 
   function changeTimetable(value: number) {
+    // Clear any existing loading timeout
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+    }
+    
+    // Only show loading state after 200ms to avoid flicker on fast connections
+    loadingTimeout = setTimeout(() => {
+      const dayContainer = document.getElementById("day-container");
+      if (dayContainer) {
+        dayContainer.classList.add("loading");
+        dayContainer.innerHTML = "";
+      }
+    }, 200);
+    
     currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
     const formattedDate = formatDate(currentSelectedDate);
     callHomeTimetable(formattedDate, true);
@@ -455,9 +464,17 @@ function callHomeTimetable(date: string, change?: any) {
   xhr.onreadystatechange = function () {
     // Once the response is ready
     if (xhr.readyState === 4) {
-      var serverResponse = JSON.parse(xhr.response);
-      let lessonArray: Array<any> = [];
+      // Clear the loading timeout since we got a response
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
+      
       const DayContainer = document.getElementById("day-container")!;
+      
+      try {
+        var serverResponse = JSON.parse(xhr.response);
+        let lessonArray: Array<any> = [];
       // If items in response:
       if (serverResponse.payload.items.length > 0) {
         if (DayContainer.innerText || change) {
@@ -518,6 +535,9 @@ function callHomeTimetable(date: string, change?: any) {
               DayContainer.append(div.firstChild as HTMLElement);
             }
 
+            // Remove loading state after lessons are loaded
+            DayContainer.classList.remove("loading");
+
             const today = new Date();
             if (currentSelectedDate.getDate() == today.getDate()) {
               for (let i = 0; i < lessonArray.length; i++) {
@@ -539,6 +559,24 @@ function callHomeTimetable(date: string, change?: any) {
         dummyDay.append(img);
         dummyDay.append(text);
         DayContainer.append(dummyDay);
+        
+        // Remove loading state when no lessons available
+        DayContainer.classList.remove("loading");
+      }
+      } catch (error) {
+        console.error("Error loading timetable data:", error);
+        // Remove loading state even if there's an error
+        DayContainer.classList.remove("loading");
+        
+        // Show error message
+        DayContainer.innerHTML = "";
+        const errorDiv = document.createElement("div");
+        errorDiv.classList.add("day-empty");
+        errorDiv.innerHTML = `
+          <img src="${browser.runtime.getURL(LogoLight)}" />
+          <p>Error loading lessons. Please try again.</p>
+        `;
+        DayContainer.append(errorDiv);
       }
     }
   };
