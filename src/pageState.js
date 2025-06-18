@@ -222,5 +222,23 @@ window.addEventListener("message", (event) => {
     });
     
     document.dispatchEvent(keyboardEvent);
+  } else if (event.data.type === "ckeditorSetData") {
+    // Handle CKEditor data setting
+    const { editorId, content } = event.data;
+    
+    if (window.CKEDITOR && window.CKEDITOR.instances && window.CKEDITOR.instances[editorId]) {
+      window.CKEDITOR.instances[editorId].setData(content);
+    } else {
+      console.warn(`[pageState] CKEditor instance '${editorId}' not found`);
+    }
+  } else if (event.data.type === "ckeditorGetData") {
+    const { editorId } = event.data;
+    if (window.CKEDITOR && window.CKEDITOR.instances && window.CKEDITOR.instances[editorId]) {
+      const data = window.CKEDITOR.instances[editorId].getData();
+      window.postMessage({
+        type: "ckeditorGetDataResponse",
+        data,
+      }, "*");
+    }
   }
 });

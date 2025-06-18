@@ -1,0 +1,256 @@
+/* Editor-specific styles (animations, transitions, editor-only features) - !these are not applied to sent messages! */
+
+/* Nested content styling with animated borders */
+.editor-prose li > *:not(:first-child) {
+  position: relative;
+  margin-left: -0.5rem;
+}
+
+.editor-prose li:not(:has(> label)) > *:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: -0.75rem;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background-color: #e5e7eb7e;
+  transform-origin: top;
+  animation: expandDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .editor-prose li > *:not(:first-child)::before {
+  background-color: #4b55637b;
+}
+
+/* Special handling for nested lists to extend the line properly */
+.editor-prose li > ul,
+.editor-prose li > ol {
+  margin-left: -0.5rem;
+}
+
+.editor-prose li > ul::before,
+.editor-prose li > ol::before {
+  bottom: -0.25rem; /* Extend slightly below for better visual connection */
+}
+
+@keyframes expandDown {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Placeholders for editor-only */
+.editor-prose p::before,
+.editor-prose h1::before,
+.editor-prose h2::before,
+.editor-prose h3::before,
+.editor-prose h4::before,
+.editor-prose h5::before,
+.editor-prose h6::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  float: left;
+  height: 0;
+}
+
+.dark .editor-prose p::before,
+.dark .editor-prose h1::before,
+.dark .editor-prose h2::before,
+.dark .editor-prose h3::before,
+.dark .editor-prose h4::before,
+.dark .editor-prose h5::before,
+.dark .editor-prose h6::before {
+  color: #6b7280;
+}
+
+.bnEditor {
+  outline: none;
+  padding-inline: 50px;
+  border-radius: 8px;
+
+  /* Define a set of colors to be used throughout the app for consistency
+  see https://atlassian.design/foundations/color for more info */
+  --N800: #172b4d; /* Dark neutral used for tooltips and text on light background */
+  --N40: #dfe1e6; /* Light neutral used for subtle borders and text on dark background */
+}
+
+/*
+bnRoot should be applied to all top-level elements
+
+This includes the Prosemirror editor, but also <div> element such as 
+Tippy popups that are appended to document.body directly
+*/
+.bnRoot {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.bnRoot *,
+.bnRoot *::before,
+.bnRoot *::after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+/* reset styles, they will be set on blockContent */
+.defaultStyles p,
+.defaultStyles h1,
+.defaultStyles h2,
+.defaultStyles h3,
+.defaultStyles li {
+  all: unset !important;
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  /* min width to make sure cursor is always visible */
+  min-width: 2px !important;
+}
+
+.defaultStyles {
+  font-size: 16px;
+  font-weight: normal;
+  font-family:
+    'Inter',
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Open Sans',
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dragPreview {
+  position: absolute;
+  top: -1000px;
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animate headers only */
+.editor-prose h1,
+.editor-prose h2,
+.editor-prose h3,
+.editor-prose h4,
+.editor-prose h5,
+.editor-prose h6 {
+  animation: fadeInScale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
+}
+
+/* Smooth transitions for all interactive elements */
+.editor-prose {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Bold and italic transitions */
+.editor-prose strong,
+.editor-prose em {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Selected node styling (Notion-like) */
+.ProseMirror-selectednode {
+  box-shadow: 0 0 0 4px #3b82f6;
+  border-radius: 4px;
+  background-color: rgba(59, 130, 246, 0.05);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.dark .ProseMirror-selectednode {
+  box-shadow: 0 0 0 2px #3a3e44;
+  background-color: rgba(96, 165, 250, 0.08);
+}
+
+/* Ensure selected nodes have proper spacing */
+.ProseMirror-selectednode {
+  margin: 2px;
+}
+
+/* Drag and drop containment */
+.editor-prose {
+  position: relative;
+  overflow: hidden;
+  contain: layout style;
+}
+
+/* Image drag styling */
+.editor-prose img.tiptap-image {
+  cursor: grab;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+}
+
+.editor-prose img.tiptap-image:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.editor-prose img.tiptap-image:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+/* Dropcursor styling */
+.tiptap-dropcursor {
+  pointer-events: none;
+  border-radius: 2px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Prevent drag operations outside editor */
+.editor-prose * {
+  -webkit-user-drag: auto;
+  -moz-user-drag: auto;
+  user-drag: auto;
+}
+
+/* Ensure only images within editor are draggable */
+.editor-prose img {
+  -webkit-user-drag: element;
+  -moz-user-drag: element;
+  user-drag: element;
+}
+
+/* Prevent text selection during drag */
+.editor-prose.ProseMirror-dragover * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}

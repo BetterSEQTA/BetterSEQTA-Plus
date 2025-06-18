@@ -1,0 +1,238 @@
+/* SEQTA Applied styles on DMs (applied to ensure consistency) */
+
+.editor-prose {
+  font-family: 'Roboto', sans-serif;
+  border: 0;
+  padding: 0 8px;
+  margin: 0;
+  line-height: 1.2;
+  /* Removed font size because drag and drop text content within the editor insert html span with font sizing */
+
+  font-size: 10pt;
+
+  /* Macro: Image  */
+
+  /* Macro: Image gallery (display) */
+
+  /* Fake macro element from plugin "seqta-macro" */
+  img[data-macro],
+  a[data-macro] {
+    border: 2px dashed #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  img[data-macro].selected,
+  a[data-macro].selected {
+    border: 2px solid #204a87;
+    box-shadow: inset 0 0 4px #204a87;
+  }
+
+  img[data-macro='Resource'] {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0) 12px,
+      rgba(0, 0, 0, 0.05) 12px,
+      rgba(0, 0, 0, 0.05) 24px
+    );
+  }
+
+  img[data-macro='Embed'] {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0) 12px,
+      rgba(0, 0, 0, 0.05) 12px,
+      rgba(0, 0, 0, 0.05) 24px
+    );
+  }
+
+  img[data-macro='Embed'][data-full] {
+    width: 100%;
+  }
+
+  img[data-macro='Gallery'] {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  /* Direqt message-specific styling */
+  blockquote.forward {
+    margin: 0;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  blockquote.forward > .preamble {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 8px;
+  }
+
+  blockquote.forward > .preamble > .date > .label,
+  blockquote.forward > .preamble > .sender > .label {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  blockquote.forward > .preamble > .date > .value,
+  blockquote.forward > .preamble > .sender > .value {
+    color: rgba(0, 0, 0, 0.9);
+  }
+
+  blockquote.forward > .body {
+    padding: 8px;
+  }
+
+  /** Assessment display **/
+
+  .assessmentWrapper {
+    position: relative;
+    display: inline-block;
+    bottom: -15px;
+  }
+
+  .macro-assessment {
+    padding: 8px 16px;
+    margin: 0 8px;
+    border: 4px solid rgba(0, 0, 0, 0.25);
+    display: inline-block;
+    width: 256px;
+    background-color: #fff;
+    overflow: hidden;
+    text-shadow: none;
+    position: relative;
+    word-wrap: break-word;
+    min-height: 30px;
+  }
+
+  .macro-assessment > .title {
+    font-size: 150%;
+    max-width: 230px;
+  }
+
+  .macro-assessment > .due > span.weight {
+    padding-left: 24px;
+  }
+
+  .macro-assessment > .due > span.marked {
+    padding-left: 24px;
+    font-weight: bold;
+  }
+
+  .macro-assessment > .hidden,
+  .macro-assessment > .deleted {
+    font-style: italic;
+    max-width: 230px;
+  }
+
+  /** Syllabus display **/
+
+  .macro-syllabus {
+    padding: 8px;
+    margin: 0 8px;
+    border: 4px solid #eee;
+    display: inline-block;
+    max-width: 200px;
+    background-color: #fff;
+    overflow: hidden;
+    color: #444;
+    text-shadow: none;
+    position: relative;
+    bottom: -15px;
+  }
+
+  .macro-syllabus > .label {
+    font-weight: bold;
+  }
+
+  .macro-syllabus > .extra {
+    font-style: italic;
+  }
+
+  .macro-syllabus > .meta {
+    text-transform: uppercase;
+    font-size: var(--small-text);
+    color: #999;
+  }
+
+  /* Drop-down menu for plugins like "seqta-macro" */
+  .cke_panel_block > h1 {
+    display: none;
+  }
+
+  .cke_panel_block > .cke_panel_list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .cke_panel_block > .cke_panel_list > li {
+    color: #888;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .cke_panel_block > .cke_panel_list > li:hover {
+    color: white;
+    background: #1b315e;
+  }
+
+  .cke_panel_block > .cke_panel_list > li > a {
+    display: block;
+    color: inherit;
+    text-decoration: inherit;
+    text-transform: uppercase;
+    font-size: 90%;
+    padding: 8px; /* Padding on the <a>, not the <li>, so our click target is full size. */
+    text-shadow: none;
+  }
+
+  .cke_panel_block > .cke_panel_list > li > a > p,
+  .cke_panel_block > .cke_panel_list > li > a > h1,
+  .cke_panel_block > .cke_panel_list > li > a > h2,
+  .cke_panel_block > .cke_panel_list > li > a > h3,
+  .cke_panel_block > .cke_panel_list > li > a > pre {
+    margin: 0;
+    color: inherit;
+    padding: 0;
+  }
+
+  .moodleFrame > .userHTML {
+    width: 100%;
+    height: 600px;
+    margin: 16px 0 16px 0;
+  }
+
+  .application.restricted {
+    display: block;
+    max-width: 320px;
+    margin: 32px auto;
+    border: 1px dashed #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    background: #f8f8f8;
+    background-image: -webkit-linear-gradient(315deg, #fff, #f8f8f8);
+    background-image: linear-gradient(135deg, #fff, #f8f8f8);
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .application.restricted > .title {
+    margin: 0;
+    padding: 0;
+    font-size: 100%;
+    font-weight: bold;
+    color: #666;
+  }
+
+  .application.restricted > .message {
+    margin: 0;
+    padding: 0;
+    font-size: var(--small-text);
+  }
+}
