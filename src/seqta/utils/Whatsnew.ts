@@ -66,6 +66,20 @@ export function OpenWhatsNewPopup() {
 
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+      <h1>3.4.8 - Improvements!</h1>
+      <li>Added new assessments kanban overview</li>
+      <li>Added custom pictures</li>
+      <li>Added custom shortcut icons</li>
+      <li>Added modern and animated notices on homepage</li>
+      <li>Improved global search performance and bug fixes</li>
+      <li>Fixed sidebar icons reverting to old style after reload</li>
+      <li>Fixed settings popup not appearing on disabled pages</li>
+      <li>Fixed 12-hour time not applying correctly in timetable</li>
+      <li>Fixed background flickering on page load</li>
+      <li>Fixed homepage lessons not properly changing days</li>
+      <li>Performance improvements across the extension</li>
+      <li>Other bug fixes and improvements</li>
+
       <h1>3.4.7 - Global Search</h1>
       <li>Added a new global search bar (enable in settings)
         <span class="beta">beta</span>
