@@ -9,6 +9,9 @@ interface PrefItem {
   value: string;
 }
 
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
+
 let cache: { time: number; data: any } | null = null;
 const CACHE_MS = 10 * 60 * 1000;
 const student = 69;
@@ -102,6 +105,10 @@ async function loadSubmissions(student: number, assessments: any[]) {
 }
 
 export async function getAssessmentsData() {
+  if (settingsState.mockNotices) {
+    return getMockAssessmentsData();
+  }
+
   if (cache && Date.now() - cache.time < CACHE_MS) return cache.data;
   const [subjects, colors, upcoming] = await Promise.all([
     loadSubjects(),

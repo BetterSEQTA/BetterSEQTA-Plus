@@ -9,6 +9,7 @@ import browser from "webextension-polyfill";
 import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
+import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
 
 export let MenuOptionsOpen = false;
 
@@ -69,6 +70,8 @@ async function init() {
       if (settingsState.onoff) {
         await plugins.initializePlugins();
       }
+
+      initializeHideSensitiveToggle();
 
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",

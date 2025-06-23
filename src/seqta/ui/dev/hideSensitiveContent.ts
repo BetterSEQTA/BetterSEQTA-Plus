@@ -7,6 +7,21 @@ interface ContentConfig {
   [key: string]: ElementConfig;
 }
 
+// Track processed elements to avoid re-randomizing
+const processedElements = new WeakSet<Element>();
+
+function debounce(func: Function, wait: number): Function {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 function getRandomElement(array: string[]): string {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -164,9 +179,32 @@ const contentConfig: ContentConfig = {
     },
   },
   forumTopics: {
-    selector: "#menu .sub ul li label",
+    selector: "#menu .sub ul li:not([data-colour]):not(.hasChildren) label",
     action: (element) => {
-      element.textContent = "Forum Topic Redacted";
+      // Only redact if not in assessments section
+      const assessmentsSection = element.closest('[data-key="assessments"]');
+      if (!assessmentsSection) {
+        element.textContent = "Forum Topic Redacted";
+      }
+    },
+  },
+  assessmentSubjects: {
+    selector: '[data-key="assessments"] .sub ul li[data-colour] label',
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.subjects);
+    },
+  },
+  assessmentYearGroups: {
+    selector: '[data-key="assessments"] .sub ul li.hasChildren:not([data-colour]) label',
+    action: (element) => {
+      const yearGroup = Math.floor(Math.random() * 5) + 8; // Years 8-12
+      element.textContent = `Year ${yearGroup}`;
+    },
+  },
+  assessmentSubYearGroups: {
+    selector: '[data-key="assessments"] .sub .sub ul li[data-colour] label',
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.subjects);
     },
   },
   courseNames: {
@@ -541,11 +579,168 @@ export function getMockNotices() {
   };
 }
 
-export default function hideSensitiveContent() {
+export function getMockAssessmentsData() {
+  const subjects = mockData.subjects.slice(0, 5).map((title, i) => ({
+    code: `SUBJ${i + 1}`,
+    programme: i + 1,
+    metaclass: i + 1,
+    title,
+  }));
+
+  const colors: Record<string, string> = {};
+  subjects.forEach((s) => {
+    colors[s.code] = `hsl(${Math.floor(Math.random() * 360)},70%,60%)`;
+  });
+
+  const statusTemplates = [
+    // Marked with scores (70-90%) - goes to MARKS_RELEASED
+    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -30) - 7 }, // Past due, marked with score
+    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -14) - 1 }, // Recently marked with score
+    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -7) }, // Very recently marked with score
+    
+    // Submitted but unmarked - goes to SUBMITTED
+    { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -5) - 1 }, // Recently submitted, awaiting marking
+    { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -3) }, // Very recently submitted, awaiting marking
+    { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -2) }, // Just submitted, awaiting marking
+    
+    // Due soon (not submitted) - only a couple
+    { submitted: false, score: null, dayOffset: () => 0 }, // Due today
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 3) + 2 }, // Due in next few days
+    
+    // Due later (not submitted) - most assessments
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 7) + 8 }, // Due in 1-2 weeks
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 14) + 14 }, // Due in 2-4 weeks
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 21) + 21 }, // Due in 3-6 weeks
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 14) + 35 }, // Due in 5-7 weeks
+    
+    // Few overdue (not submitted) - less common
+    { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * -3) - 1 }, // Recently overdue
+  ];
+
+  const assessments = Array.from({ length: 12 }, (_, i) => {
+    const subj = subjects[i % subjects.length];
+    const template = statusTemplates[i % statusTemplates.length];
+    const due = new Date();
+    due.setDate(due.getDate() + template.dayOffset());
+    
+    const assessment: any = {
+      id: i + 1,
+      title: mockData.assessmentTitles[i % mockData.assessmentTitles.length],
+      code: subj.code,
+      programmeID: subj.programme,
+      metaclassID: subj.metaclass,
+      due: due.toISOString(),
+      submitted: template.submitted,
+    };
+
+    if (template.score && typeof template.score === 'function') {
+      assessment.percentage = template.score(); // This triggers MARKS_RELEASED
+      assessment.results = {
+        percentage: template.score() // This displays the thermometer
+      };
+    }
+
+    return assessment;
+  });
+
+  return { assessments, subjects, colors };
+}
+
+// Create a debounced processing function
+const debouncedProcessElements = debounce(processNewElements, 1);
+
+function processNewElements() {
   Object.entries(contentConfig).forEach(([_, { selector, action }]) => {
     const elements = document.querySelectorAll(selector);
     elements.forEach((element: Element) => {
-      action(element);
+      // Only process elements that haven't been processed before
+      if (!processedElements.has(element)) {
+        action(element);
+        processedElements.add(element);
+      }
     });
   });
+}
+
+let observer: MutationObserver | null = null;
+let intervalId: NodeJS.Timeout | null = null;
+
+export default function hideSensitiveContent() {
+  // Initial processing of existing elements
+  processNewElements();
+
+  // Set up MutationObserver if not already created
+  if (!observer) {
+    observer = new MutationObserver((mutations) => {
+      let shouldProcess = false;
+      
+      mutations.forEach((mutation) => {
+        // Check for both childList and subtree changes
+        if (mutation.type === 'childList') {
+          // Check added nodes
+          if (mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as Element;
+                // Check if the added element or its children match any of our selectors
+                for (const config of Object.values(contentConfig)) {
+                  if (element.matches?.(config.selector) || element.querySelector?.(config.selector)) {
+                    shouldProcess = true;
+                    break;
+                  }
+                }
+              }
+            });
+          }
+          
+          // Also trigger on large DOM replacements (like page navigation)
+          if (mutation.addedNodes.length > 5 || mutation.removedNodes.length > 5) {
+            shouldProcess = true;
+          }
+        }
+        
+        // Check for attribute changes that might affect our selectors
+        if (mutation.type === 'attributes') {
+          const target = mutation.target as Element;
+          for (const config of Object.values(contentConfig)) {
+            if (target.matches?.(config.selector)) {
+              shouldProcess = true;
+              break;
+            }
+          }
+        }
+      });
+
+      if (shouldProcess) {
+        debouncedProcessElements();
+      }
+    });
+
+    // Start observing with more comprehensive options
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'id'] // Watch for class/id changes that might affect our selectors
+    });
+  }
+  
+  // Fallback: periodic check for new elements (especially useful for SPA navigation)
+  if (!intervalId) {
+    intervalId = setInterval(() => {
+      debouncedProcessElements();
+    }, 500); // Check every 500ms as a fallback
+  }
+}
+
+// Function to stop observing (useful for cleanup)
+export function stopHidingSensitiveContent() {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
 }
