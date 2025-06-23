@@ -1256,6 +1256,9 @@ div > ol:has(.uiFileHandlerWrapper) {
   word-wrap: break-word;
   line-height: 20px;
 }
+.customshortcut > svg {
+  border-radius: 0;
+}
 .colourbar {
   width: 100%;
   height: 3px;
