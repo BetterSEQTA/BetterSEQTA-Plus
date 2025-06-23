@@ -21,7 +21,7 @@ If you're interested in creating plugins for BetterSEQTA+, check out our plugin 
 ## Pull Request Process
 
 1. It is recommended to start by opening an issue to discuss the change you wish to make. This will allow us to discuss the change and ensure it is a good fit for the project.
-2. Fork the repo and create your branch from `master`.
+2. Fork the repo and create your branch from `main`.
 3. When writing your pull request, make sure to use the pull request template.
 
 ### Pull Request Template
