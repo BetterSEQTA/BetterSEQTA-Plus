@@ -10,7 +10,6 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
-  import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent"
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
@@ -322,9 +321,9 @@
           <p class="text-xs">Replace sensitive content with mock data</p>
         </div>
         <div>
-          <Button 
-            onClick={() => hideSensitiveContent()}
-            text="Hide"
+          <Switch
+            state={$settingsState.hideSensitiveContent ?? false}
+            onChange={(isOn: boolean) => settingsState.hideSensitiveContent = isOn}
           />
         </div>
       </div>
