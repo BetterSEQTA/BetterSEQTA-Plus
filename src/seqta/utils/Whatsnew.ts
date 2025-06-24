@@ -41,7 +41,7 @@ export function OpenWhatsNewPopup() {
   let imagecont = document.createElement("div");
   imagecont.classList.add("whatsnewImgContainer");
 
-  /* let video = document.createElement("video");
+  let video = document.createElement("video");
   let source = document.createElement("source");
 
   source.setAttribute(
@@ -53,13 +53,13 @@ export function OpenWhatsNewPopup() {
   video.loop = true;
   video.appendChild(source);
   video.classList.add("whatsnewImg");
-  imagecont.appendChild(video); */
+  imagecont.appendChild(video);
 
-  let whatsnewimg = document.createElement("img");
+  /* let whatsnewimg = document.createElement("img");
   //whatsnewimg.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-image.webp";
   whatsnewimg.src = browser.runtime.getURL('../../resources/update-image.webp');
   whatsnewimg.classList.add("whatsnewImg");
-  imagecont.appendChild(whatsnewimg);
+  imagecont.appendChild(whatsnewimg); */
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
