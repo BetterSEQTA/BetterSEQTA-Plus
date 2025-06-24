@@ -77,6 +77,7 @@ export function OpenWhatsNewPopup() {
       <li>Fixed 12-hour time not applying correctly in timetable</li>
       <li>Fixed background flickering on page load</li>
       <li>Fixed homepage lessons not properly changing days</li>
+      <li>Performance improvements for global search</li>
       <li>Performance improvements across the extension</li>
       <li>Other bug fixes and improvements</li>
 
