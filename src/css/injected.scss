@@ -2733,12 +2733,13 @@ body {
 .menuShown #menuToggle .hamburger-line:nth-child(3) {
   transform: translateY(-6px) rotate(-45deg);
 }
-.day-empty {
+div.day-empty {
   display: flex;
   align-items: center;
   height: 15em;
   width: 100%;
   border-radius: 16px 0;
+  padding: 0 !important;
 
   img {
     margin: 20px;
