@@ -94,3 +94,57 @@ body:has(.outside-container:not(.hide))
   background: var(--text-primary) !important;
   color: var(--theme-primary) !important;
 }
+.fixed-tooltip {
+  display: inline-block;
+  z-index: 5 !important;
+  width: 28px;
+  background: none;
+  box-shadow: none;
+  padding: 2px;
+  position: absolute;
+}
+.fixed-tooltip svg {
+  fill: var(--theme-primary);
+}
+.tooltiptext-fixed {
+  width: 120px;
+  transform: scale(0);
+  transition: transform 0.2s;
+  transform-origin: top;
+  background: var(--background-primary);
+  color: var(--text-primary);
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  margin-left: -62px;
+}
+.tooltiptext-fixed::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--text-primary) transparent;
+}
+.tooltiptext-fixed.show {
+  transform: scale(1);
+  transform-origin: top;
+  transition: transform 0.2s;
+}
+.tooltiptext-fixed p:hover {
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3) !important;
+  transition: 200ms;
+}
+.tooltiptext-fixed p {
+  border-radius: 8px !important;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin: 2px;
+}
