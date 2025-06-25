@@ -68,7 +68,7 @@ export function OpenWhatsNewPopup() {
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
       <h1>3.4.8 - Improvements!</h1>
       <li>Added new assessments kanban overview</li>
-      <li>Added custom pictures</li>
+      <li>Added custom profile pictures</li>
       <li>Added custom shortcut icons</li>
       <li>Added modern and animated notices on homepage</li>
       <li>Improved global search performance and bug fixes</li>
