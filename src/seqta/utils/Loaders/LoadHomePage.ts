@@ -13,6 +13,7 @@ import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustom
 import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
+import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
@@ -628,12 +629,13 @@ function openNoticeModal(
     // Get the current scale applied to the source element and compensate for it
     const computedStyle = getComputedStyle(sourceElement);
     const transform = computedStyle.transform;
-    let scaleX = 1, scaleY = 1;
-    
-    if (transform && transform !== 'none') {
+    let scaleX = 1,
+      scaleY = 1;
+
+    if (transform && transform !== "none") {
       const matrix = transform.match(/matrix.*\((.+)\)/);
       if (matrix) {
-        const values = matrix[1].split(', ');
+        const values = matrix[1].split(", ");
         scaleX = parseFloat(values[0]);
         scaleY = parseFloat(values[3]);
       }
@@ -642,11 +644,11 @@ function openNoticeModal(
     // Apply inverse scale to get true original dimensions and positions
     const newSourceWidth = newSourceRect.width / scaleX;
     const newSourceHeight = newSourceRect.height / scaleY;
-    
+
     // Calculate position shift due to center-based scaling
     const deltaX = (newSourceWidth - newSourceRect.width) / 2;
     const deltaY = (newSourceHeight - newSourceRect.height) / 2;
-    
+
     const newSourceLeft = newSourceRect.left - deltaX;
     const newSourceTop = newSourceRect.top - deltaY;
 
@@ -965,7 +967,7 @@ function makeLessonDiv(lesson: any, num: number) {
       .join("");
 
     lessonString += `
-        <div class="tooltip assessmenttooltip">
+        <div class="fixed-tooltip assessmenttooltip">
           <svg style="width:28px;height:28px;border-radius:0;" viewBox="0 0 24 24">
             <path fill="#ed3939" d="M16 2H4C2.9 2 2 2.9 2 4V20C2 21.11 2.9 22 4 22H16C17.11 22 18 21.11 18 20V4C18 2.9 17.11 2 16 2M16 20H4V4H6V12L8.5 9.75L11 12V4H16V20M20 15H22V17H20V15M22 7V13H20V7H22Z" />
           </svg>
@@ -975,8 +977,9 @@ function makeLessonDiv(lesson: any, num: number) {
   }
 
   lessonString += "</div>";
-
-  return stringToHTML(lessonString);
+  const element = stringToHTML(lessonString);
+  setupFixedTooltips(element);
+  return element;
 }
 
 function buildAssessmentURL(programmeID: any, metaID: any, itemID = "") {
