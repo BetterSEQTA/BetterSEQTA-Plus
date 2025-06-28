@@ -10,7 +10,10 @@ Welcome to the BetterSEQTA+ documentation! This documentation will help you unde
 
 - [Project Overview](./README.md) - This file
 - [Installation Guide](./installation.md) - How to install and set up BetterSEQTA+
-- [Contributing Guide](../CONTRIBUTING.md) - How to contribute to BetterSEQTA+
+- [Getting Started Contributing](./GETTING_STARTED_CONTRIBUTING.md) - **Start here!** Complete beginner-friendly guide
+- [Architecture Guide](./ARCHITECTURE.md) - How BetterSEQTA+ works under the hood
+- [Contributing Guide](../CONTRIBUTING.md) - Official contribution guidelines
+- [Troubleshooting](./TROUBLESHOOTING.md) - Common issues and solutions
 
 ### Plugin System
 

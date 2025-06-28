@@ -1,13 +1,31 @@
-# Contributing
+# Contributing to BetterSEQTA+
 
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change.
+Hey there! 👋 Thanks for your interest in contributing to BetterSEQTA+! We're excited to have you join our community of contributors.
+
+## 🚀 New Contributors Start Here!
+
+**Never contributed to an open source project before?** No worries! We've made it super easy to get started:
+
+- **📖 Read our [Getting Started Guide](./docs/GETTING_STARTED_CONTRIBUTING.md)** - This walks you through everything step-by-step, from setting up your development environment to making your first pull request.
+- **🏗️ Understand the codebase** with our [Architecture Guide](./docs/ARCHITECTURE.md)
+- **🔧 Having issues?** Check our [Troubleshooting Guide](./docs/TROUBLESHOOTING.md)
+
+We have lots of [`good first issue`](https://github.com/BetterSEQTA/BetterSEQTA-plus/labels/good%20first%20issue) labels that are perfect for beginners!
+
+## Discussion Before Contributing
+
+For significant changes, please first discuss what you'd like to change via:
+- Opening an issue
+- Joining our Discord server
+- Emailing the maintainers
+
+This helps ensure your contribution aligns with the project's goals and saves you time!
 
 ## Community
 
 Join our community channels to discuss the project, get help, and connect with other contributors:
 
-- **Discord Server**: [Join our Discord](https://discord.gg/betterseqta)
+- **Discord Server**: [Join our Discord](https://discord.gg/YzmbnCDkat)
 - **GitHub Discussions**: For longer-form conversations
 - **GitHub Issues**: For bug reports and feature requests
 

@@ -56,58 +56,46 @@ If you are looking to create custom themes, I would recommend you start at the o
 
 Don't worry- if you get stuck feel free to ask around in the [discord](https://discord.gg/YzmbnCDkat). We're open and happy to help out! Happy creating :)
 
-## Getting started
+## 🚀 Want to Contribute?
 
-&nbsp;&nbsp;&nbsp; **1. Clone the repository**
+**New contributors welcome!** 🎉 We've made it easy to get started:
 
-```
-git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus
-```
+- **👋 New to the project?** Start with our [Getting Started Guide](./docs/GETTING_STARTED_CONTRIBUTING.md)
+- **🏗️ Want to understand the code?** Check out our [Architecture Guide](./docs/ARCHITECTURE.md)
+- **🧩 Interested in plugins?** Read our [Plugin Development Guide](./docs/plugins/README.md)
+- **🐛 Found a bug?** Open an [issue](https://github.com/BetterSEQTA/BetterSEQTA-plus/issues) or fix it yourself!
+- **💬 Need help?** Join our [Discord community](https://discord.gg/YzmbnCDkat)
 
-&nbsp;&nbsp;&nbsp; **2. Install dependencies**
+We have lots of [`good first issue`](https://github.com/BetterSEQTA/BetterSEQTA-plus/labels/good%20first%20issue) labels perfect for beginners!
 
-You may install the dependencies like below:
+## Quick Development Setup
 
-```
-npm install # or your preferred package manager like pnpm or yarn
-```
-
-But it is recommended to do it like this:
-
-```
-npm install --legacy-peer-deps # Only NPM supported
+&nbsp;&nbsp;&nbsp; **1. Fork & Clone**
+```bash
+git clone https://github.com/YOUR_USERNAME/BetterSEQTA-Plus
+cd BetterSEQTA-Plus
 ```
 
-### Running Development
-
-&nbsp;&nbsp;&nbsp; **3. Run the dev script (it updates as you save files)**
-
-```
-npm run dev # or use your preferred package manager
+&nbsp;&nbsp;&nbsp; **2. Install & Run**
+```bash
+npm install --legacy-peer-deps
+npm run dev
 ```
 
-### Building for production
+&nbsp;&nbsp;&nbsp; **3. Load in Browser**
+1. Go to `chrome://extensions`
+2. Enable "Developer mode"
+3. Click "Load unpacked" → Select `dist` folder
+4. Visit a SEQTA page to see it work! 🎉
 
-&nbsp;&nbsp;&nbsp; **4. Run the build script**
+📚 **Need more details?** Check our [detailed setup guide](./docs/GETTING_STARTED_CONTRIBUTING.md#your-first-30-minutes)
 
+### Building for Production
+
+```bash
+npm run build     # Build for all browsers
+npm run zip       # Package for distribution (requires 7-Zip)
 ```
-npm run build # or use your preferred package manager
-```
-
-&nbsp;&nbsp;&nbsp; **4.1. Package it up (optional)**
-
-```
-npm run zip # This REQUIRES 7-Zip to be installed in order to work. You can also use your preferred package manager
-```
-
-&nbsp;&nbsp;&nbsp; **5. Load the extension into chrome**
-
-- Go to `chrome://extensions`
-- Enable developer mode
-- Click `Load unpacked`
-- Select the `dist` folder
-
-Just remember, in order to update changes to the extension if you are running in developer mode, you need to click the refresh button on the extension in `chrome://extensions` whenever anything's changed.
 
 ## Folder Structure
 
