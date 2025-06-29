@@ -13,3 +13,7 @@
 .dark .userInfoImg {
   box-shadow: 0 0 0 3px #ffffff;
 }
+
+.userInfosvgdiv {
+  filter: invert(0) !important;
+}
