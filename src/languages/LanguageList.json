@@ -1,0 +1,19 @@
+[
+  { "code": "eng", "name": "English", "nativeName": "English" },
+  { "code": "zho", "name": "Mandarin Chinese", "nativeName": "中文 (普通话)" },
+  { "code": "hin", "name": "Hindi", "nativeName": "हिन्दी" },
+  { "code": "spa", "name": "Spanish", "nativeName": "Español" },
+  { "code": "fra", "name": "French", "nativeName": "Français" },
+  { "code": "por", "name": "Portuguese", "nativeName": "Português" },
+  { "code": "rus", "name": "Russian", "nativeName": "Русский" },
+  { "code": "deu", "name": "German", "nativeName": "Deutsch" },
+  { "code": "jpn", "name": "Japanese", "nativeName": "日本語" },
+  { "code": "ita", "name": "Italian", "nativeName": "Italiano" },
+  { "code": "kor", "name": "Korean", "nativeName": "한국어" },
+  { "code": "tur", "name": "Turkish", "nativeName": "Türkçe" },
+  { "code": "nld", "name": "Dutch", "nativeName": "Nederlands" },
+  { "code": "pol", "name": "Polish", "nativeName": "Polski" },
+  { "code": "ukr", "name": "Ukrainian", "nativeName": "Українська" },
+  { "code": "ron", "name": "Romanian", "nativeName": "Română" },
+  { "code": "fil", "name": "Filipino", "nativeName": "Filipino" }
+]
