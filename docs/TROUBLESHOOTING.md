@@ -318,7 +318,7 @@ If none of these solutions work:
    - Steps to reproduce
    - What you've already tried
 
-4. **📧 Email us**: betterseqta@betterseqta.com for urgent issues
+4. **📧 Email us**: betterseqta.plus@gmail.com for urgent issues
 
 ## Getting More Debug Info
 
