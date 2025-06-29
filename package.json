@@ -1,6 +1,6 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.4.8",
+  "version": "3.4.8.1",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -28,7 +28,7 @@
   "keywords": [],
   "author": {
     "name": "SethBurkart123",
-    "email": "betterseqta@betterseqta.com",
+    "email": "betterseqta.plus@gmail.com",
     "url": "https://github.com/BetterSEQTA/BetterSEQTA-plus"
   },
   "license": "MIT",
