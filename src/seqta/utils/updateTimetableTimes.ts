@@ -37,6 +37,20 @@ function updateTimeElements(): void {
     const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
     el.textContent = `${start12}–${end12}`;
   });
+
+    const quickbarTimes = document.querySelectorAll<HTMLElement>(".quickbar .meta .times");
+  quickbarTimes.forEach((el) => {
+    if (!el.dataset.original) el.dataset.original = el.textContent || "";
+    const original = el.dataset.original || "";
+
+    if (!original.includes("–") && !original.includes("-")) return;
+    const [start, end] = original.split(/[-–]/).map((p) => p.trim());
+    
+    if (!start || !end) return;
+    const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
+    const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
+    el.textContent = `${start12}–${end12}`;
+  });
 }
 
 function checkIfOnTimetablePage(): boolean {
