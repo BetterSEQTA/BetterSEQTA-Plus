@@ -17,7 +17,7 @@ const handleNotificationClick = async (target: HTMLElement) => {
   if (!buttonId) return;
 
   const matchingNotification =
-    notificationList.storeState.notifications.items.find(
+    notificationList.items.find(
       (item: any) => item.notificationID === parseInt(buttonId),
     );
 
