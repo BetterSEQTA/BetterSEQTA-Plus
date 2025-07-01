@@ -1,5 +1,6 @@
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import ReactFiber from "../ReactFiber";
+import { delay } from "../delay";
 
 const handleNotificationClick = async (target: HTMLElement) => {
   const notificationItem = target.closest(
@@ -33,6 +34,24 @@ const handleNotificationClick = async (target: HTMLElement) => {
     '[class*="notifications__notifications___"] > button',
   ) as HTMLButtonElement | null;
   notificationButton?.click();
+
+  await delay(10);
+
+  const button = document.querySelector('[class*="MessageList__selected___"]');
+  if (button) {
+    (button as HTMLElement).click();
+  }
+  
+  // send a network request to mark as read
+  fetch('/seqta/student/save/message', {
+    method: "POST",
+    credentials: "include",
+    body: JSON.stringify({
+      items: [matchingNotification.message.messageID],
+      mode: 'x-read',
+      read: true,
+    }),
+  });
 };
 
 const clickListeners = [
