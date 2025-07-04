@@ -1666,17 +1666,6 @@ iframe.userHTML {
       top: 50%;
     }
 
-    &::after {
-      content: "";
-      position: fixed;
-      z-index: 1;
-      top: 70px;
-      width: 390px;
-      height: 60px;
-      background: linear-gradient(to bottom, var(--background-primary) 50%, rgba(0, 0, 0, 0));
-      pointer-events: none;
-    }
-
     .search {
       padding: 10px;
       padding-left: 30px;
