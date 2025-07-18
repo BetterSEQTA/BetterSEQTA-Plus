@@ -250,10 +250,6 @@ html {
   grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
   background: unset;
 
-section.message {
-  display: none !important;
-}
-
   // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
   > section {
     border-radius: 16px !important;
