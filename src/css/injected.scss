@@ -1987,6 +1987,10 @@ div.entry.new {
   border-radius: 4px;
 }
 
+div.liveEntry {
+  border-radius: 4px;
+} 
+
 .uiFileHandler .uiButton {
   border-radius: 32px !important;
   color: var(--text-primary) !important;
@@ -2098,10 +2102,33 @@ div.bar.flat {
     background: var(--background-secondary) !important;
   }
 
-  .dashlet-motd {
-    .message {
-      font-size: 24px !important;
-    }
+.dashlet-motd {
+  padding: 7px !important;
+  .message {
+    font-size: 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    padding: 16px !important;
+    margin: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    overflow: hidden !important;
+  }
+}
+
+
+  .cke_toolbox > .cke_toolbar > .cke_toolgroup > .cke_button {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .cke_toolbox > .cke_toolbar > .cke_combo > .cke_combo_button {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
   }
 }
 
