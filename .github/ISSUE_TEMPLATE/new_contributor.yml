@@ -1,0 +1,114 @@
+name: 🙋 New Contributor - Need Help Getting Started
+description: Perfect for first-time contributors who need guidance
+labels: ["help wanted", "documentation"]
+title: "[NEW CONTRIBUTOR] "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Hi there! 👋
+        Welcome to BetterSEQTA+! We're excited to have you join our community.
+
+  - type: checkboxes
+    attributes:
+      label: Tell us about yourself (check all that apply)
+      options:
+        - label: "This is my first time contributing to open source"
+          required: false
+        - label: "I'm new to browser extensions"
+          required: false
+        - label: "I'm new to TypeScript/JavaScript"
+          required: false
+        - label: "I have some coding experience but new to this project"
+          required: false
+          
+  - type: checkboxes
+    attributes:
+      label: What would you like to work on? (check all that apply)
+      options:
+        - label: "Fix a bug 🐛"
+          required: false
+        - label: "Add a new feature ✨"
+          required: false
+        - label: "Improve documentation 📚"
+          required: false
+        - label: "Create a plugin 🧩"
+          required: false        
+        - label: "Improve the UI/design 🎨"
+          required: false
+        - label: "Write tests 🧪"
+          required: false
+        - label: "Not sure - I want to help but need guidance!"
+          required: false
+
+  - type: checkboxes
+    attributes:
+      label: Have you read our guides?
+      options:
+        - label: "Getting Started Guide (see docs/GETTING_STARTED_CONTRIBUTING.md)"
+          required: true
+        - label: "Architecture Guide (see docs/ARCHITECTURE.md)"
+          required: true
+        - label: "Plugin Development Guide (see docs/plugins/README.md)"
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Have you set up the development environment yet?
+      options:
+        - label: Yes, everything works! 🎉
+          required: false
+        - label: Partially - I can run `npm run dev` but having some issues
+          required: false
+        - label: No, I need help with setup
+          required: false
+        - label: I tried but ran into errors (please describe below)
+          required: false
+
+  - type: input
+    attributes:
+      label: Errors
+      description: "Please list any encountered errors here:"
+      placeholder: "I am encountering issues with..."
+    validations:
+      required: false
+
+  - type: input
+    attributes:
+      label: Questions or Issues
+      description: "Tell us:
+                    1. What specifically would you like help with?
+                    2. Are you stuck on anything?
+                    3. Do you have any questions about the codebase?
+                    4. Is there anything in our documentation that's unclear?"
+      placeholder: "I want help with..."
+    validations:
+      required: false
+      
+  - type: input
+    attributes:
+      label: Ideas or Suggestions
+      description: "If you have any ideas for features, improvements, or just want to share your thoughts:"
+      placeholder: "It would be cool if I could help add..."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## What happens next?
+
+        A maintainer will respond within 24-48 hours to:
+        - Answer your questions
+        - Suggest some good issues to work on
+        - Help you with setup if needed
+        - Point you to relevant documentation
+        
+        Don't worry if you're new to this - we're here to help! Every expert was once a beginner. 🚀
+        
+        **Join our [Discord server](https://discord.gg/YzmbnCDkat) for real-time help and community chat!** 
+      
+      
+                    
+        
