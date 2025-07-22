@@ -86,7 +86,7 @@ body:
     validations:
       required: false
       
-` - type: input
+  - type: input
     attributes:
       label: Ideas or Suggestions
       description: "If you have any ideas for features, improvements, or just want to share your thoughts:"
