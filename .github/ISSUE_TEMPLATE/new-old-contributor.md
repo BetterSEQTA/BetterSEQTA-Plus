@@ -1,5 +1,5 @@
 ---
-name: 🙋 New Contributor - Need Help Getting Started
+name: 🙋 New Contributor - NHelp Getting Started
 about: Perfect for first-time contributors who need guidance
 title: "[NEW CONTRIBUTOR] "
 labels: ["good first issue", "help wanted", "documentation"]
