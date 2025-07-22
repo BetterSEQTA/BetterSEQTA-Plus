@@ -46,11 +46,11 @@ body:
     attributes:
       label: Have you read our guides?
       options:
-        - label: [Getting Started Guide](https://github.com/BetterSEQTA/BetterSEQTA-plus/blob/main/docs/GETTING_STARTED_CONTRIBUTING.md)
+        - label: "Getting Started Guide (see docs/GETTING_STARTED_CONTRIBUTING.md)"
           required: true
-        - label: [Architecture Guide](https://github.com/BetterSEQTA/BetterSEQTA-plus/blob/main/docs/ARCHITECTURE.md)
+        - label: "Architecture Guide (see docs/ARCHITECTURE.md)"
           required: true
-        - label: [Plugin Development Guide](https://github.com/BetterSEQTA/BetterSEQTA-plus/blob/main/docs/plugins/README.md)
+        - label: "Plugin Development Guide (see docs/plugins/README.md)"
           required: true
 
   - type: checkboxes
