@@ -1,5 +1,4 @@
 import stringToHTML from "../stringToHTML";
-import browser from "webextension-polyfill";
 import { settingsState } from "../listeners/SettingsState";
 import { animate, stagger } from "motion";
 import { DeleteWhatsNew } from "../Whatsnew";
@@ -16,7 +15,7 @@ export function OpenAboutPage() {
     /* html */
     `<div class="whatsnewHeader">
         <h1>About</h1>
-        <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
+        <p>About the extension</p>
       </div>`,
   ).firstChild;
 
