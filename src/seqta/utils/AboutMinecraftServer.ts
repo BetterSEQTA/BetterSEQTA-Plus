@@ -90,8 +90,8 @@ export function OpenMinecraftServerPopup() {
   container.append(header);
   container.append(imagecont);
   container.append(textcontainer);
-  container.append(text as ChildNode);
-  container.append(footer as ChildNode);
+  container.append(text as HTMLElement);
+  container.append(footer as HTMLElement);
   container.append(exitbutton);
 
   background.append(container);
