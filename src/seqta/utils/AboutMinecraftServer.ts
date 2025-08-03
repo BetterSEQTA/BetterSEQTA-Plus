@@ -1,8 +1,6 @@
 import { settingsState } from "./listeners/SettingsState";
 import { animate, stagger } from "motion";
 import stringToHTML from "./stringToHTML";
-import browser from "webextension-polyfill";
-import kofi from "@/resources/kofi.png?base64";
 
 export async function DeleteWhatsNew() {
   const bkelement = document.getElementById("whatsnewbk");
@@ -33,8 +31,8 @@ export function OpenMinecraftServerPopup() {
   var header: any = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
-        <h1>What's New</h1>
-        <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
+        <h1>Minecraft Server</h1>
+        <p>The official BetterSEQTA+ Minecraft Server</p>
       </div>`,
   ).firstChild;
 
@@ -67,185 +65,7 @@ export function OpenMinecraftServerPopup() {
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
       <h1>3.4.8 - Improvements!</h1>
-      <li>Added new assessments kanban overview</li>
-      <li>Added custom profile pictures</li>
-      <li>Added custom shortcut icons</li>
-      <li>Added modern and animated notices on homepage</li>
-      <li>Improved global search performance and bug fixes</li>
-      <li>Fixed sidebar icons reverting to old style after reload</li>
-      <li>Fixed settings popup not appearing on disabled pages</li>
-      <li>Fixed 12-hour time not applying correctly in timetable</li>
-      <li>Fixed background flickering on page load</li>
-      <li>Fixed homepage lessons not properly changing days</li>
-      <li>Performance improvements for global search</li>
-      <li>Performance improvements across the extension</li>
-      <li>Other bug fixes and improvements</li>
-
-      <h1>3.4.7 - Global Search</h1>
-      <li>Added a new global search bar (enable in settings)
-        <span class="beta">beta</span>
-      </li>
-      <li>Fixed news feed not loading</li>
-      <li>Style changes and improvements</li>
-      <li>Other bug fixes</li>
-
-      <h1>3.4.6.1 - Hot patch!</h1>
-      <li>Fixed storage not updating and sometimes being replaced with default values</li>
-
-      <h1>3.4.6 - Massive internal reworks!</h1>
-      <li>Fix SEQTA classes not being applied correctly causing a totally broken experience</li>
-      <li>Reworked internals to function as a plugin system (more on this soon)</li>
-      <li>Rebuilt theme system that is significantly less buggy</li>
-      <li>Performance improvements</li>
-      <li>Other minor bug fixes</li>
-
-      <h1>3.4.5 - News, Bug Fixes, and improvements!</h1>
-      <li>Added alternative news sources</li>
-      <li>Notifications now open direct messages</li>
-      <li>Added Toggle for Letter/Percent Grades</li>
-      <li>Added fullscreen to the theme creator CSS editor</li>
-      <li>Added warning if BetterSEQTA is installed</li>
-      <li>Removed max width from theme creator</li>
-      <li>Fixed discord icon colour in light mode</li>
-      <li>Fixed subject averages not showing up with letter grades</li>
-      <li>Tweaked compose UI</li>
-  
-      <h1>3.4.4 - Bug Fixes and Improvements</h1>
-      <li>Added vertical zoom to the timetable</li>
-      <li>Fixed theme importing failing when images were included</li>
-      <li>Removed broken gradients on the backgrounds of certain buttons</li>
-      <li>Fixed timetable quickbar arrow receiving the wrong colour</li>
-      <li>Auto-applied selected theme after saving in theme creator</li>
-      <li>Fixed a bug where timetable was clipped at certain times</li>
-      <li>Fixed custom sidebar layouts not applying on page load</li>
-      <li>Improved spacing of the message editor buttons</li>
-      <li>Added HEX colour input to the theme creator</li>
-      <li>Fixed theme application in the creator</li>
-      <li>Performance improvements</li>
-      <li>Other minor bug fixes</li>
-  
-      <h1>3.4.3 - Minor Bug Fixes</h1>
-      <li>Fixed a bug where timetable colours couldn't be changed</li>
-      <li>Other minor bug fixes</li>
-  
-      <h1>3.4.2 - Minor Bug Fixes</h1>
-      <li>Fixed a bug where Assessment Average wasn't enabled by default</li>
-      <li>Fixed floating menus would sometimes be placed behind other elements</li>
-  
-      <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
-      <li>Added a new "Subject Average" section to the assessments page</li>
-      <li>Fixed a bug where animations wouldn't play correctly</li>
-      <li>Added loading animations to the home page</li>
-      <li>Under the hood performance improvements</li>
-      <li>Improved animation performance</li>
-      <li>Better Animations!</li>
-      <li>Minor style tweaks</li>
-  
-      <h1>3.4.0 - Major Performance Update</h1>
-      <li>Completely rebuilt the extension popup using Svelte for dramatically improved performance</li>
-      <li>Added a brand new background store with search functionality and downloadable backgrounds</li>
-      <li>Significant code cleanup and optimization across the extension</li>
-      <li>Improved overall responsiveness and load times</li>
-      <li>Smoother animations and improved scrolling</li>
-      <li>Fixed Firefox compatibility issues</li>
-      <li>Other minor bug fixes and under the hood improvements</li>
-  
-      <h1>3.3.1 - Hot Fix</h1>
-      <li>Fixed assessments not loading when no notices are available</li>
-  
-      <h1>3.3.0 - Overhauled Theming System</h1>
-      <li>Added a theme store!</li>
-      <li>Added the new theme creator!</li>
-      <li>Fixed Notices not working on home page</li>
-      <li>Fixed dark/light button labels inverted</li>
-      <li>Switched to GitHub for hosting the update video</li>
-      <li>Fixed an issue where the settings menu wouldn't change theme</li>
-      <li>Fixed custom shortcuts not allowing ports to be used</li>
-      <li>Fixed occasional flashing when using animations</li>
-      <li>Fixed loading of the tab icon</li>
-      <li>Made animations toggle apply to settings</li>
-      <li>Small styling improvements</li>
-      <li>Other minor bug fixes</li>
-  
-  
-      <h1>3.2.7 - Minor Improvements</h1>
-      <li>Improved performance!</li>
-      <li>Fixed a bug where the icon wasn't showing up</li>
-  
-      <h1>3.2.6 - Bug fixes and performance improvements</h1>
-      <li>Improved contrast for notifications</li>
-      <li>Added 12-hour time format toggle</li>
-      <li>Using external update video to ensure smaller package size</li>
-      <li>Refactored underlying code to improve performance</li>
-      <li>Removed old theme system <span style="font-style: italic;">*revamp coming soon*</span></li>
-      <li>Improved notices contrast</li>
-      <li>Remove Telemetry completely - as we weren't using it too much</li>
-      <li>Added Error handling to settings interface</li>
-      <li>Fixed HTML message editor cursor becoming misaligned</li>
-      <li>Enabled spellcheck inside of direct messages</li>
-      <li>Fixed timetable dates being misaligned</li>
-      <li>Other minor bug fixes and under the hood improvements</li>
-  
-      <h1>3.2.5 - More Bug Fixes</h1>
-      <li>New direct message scroll animations</li>
-      <li>Added error message for brave browser shields breaking backgrounds</li>
-      <li>Fixed homepage assessment tooltips being cut off</li>
-      <li>Improved direct message styling</li>
-      <li>Made settings panel auto size to height of screen</li>
-      <li>Fixed timetable dates not visible</li>
-      <li>Other minor bug fixes</li>
-  
-      <h1>3.2.4 - Bug Fixes</h1>
-      <li>Added an open changelog button to settings</li>
-      <li>Fixed a memory overflow bug with Education Perfect</li>
-      <li>Fixed a bug where the background wouldn't change instantly</li>
-      <li>Fixed news feed not loading</li>
-      <li>Fixed home items duplicating</li>
-      <li>Fixed Upcoming assessments not showing</li>
-  
-      <h1>3.2.2 - Minor Improvements</h1>
-      <li>Added Settings open-close animation</li>
-      <li>Minor Bug Fixes</li>
-  
-      <h1>3.2.0 - Custom Themes</h1>
-      <li>Added transparency (blur) effects</li>
-      <li>Added custom themes</li>
-      <li>Added colour picker history</li>
-      <li>Heaps of bug fixes</li>
-  
-      <h1>3.1.3 - Custom Backgrounds</h1>
-      <li>Added custom backgrounds with support for images and videos</li>
-      <li>Overhauled topbar</li>
-      <li>New animated hamburger icon</li>
-      <li>Minor bug fixes</li>
-  
-      <h1>3.1.2 - New settings menu!</h1>
-      <li>Overhauled the settings menu</li>
-      <li>Added custom gradients</li>
-      <li>Added HEAPS of animations</li>
-      <li>Fixed a bug where shortcuts don't show up</li>
-      <li>Other minor bugs fixed</li>
-  
-      <h1>3.1.1 - Minor Bug fixes</h1>
-      <li>Fixed assessments overlapping</li>
-      <li>Fixed houses not displaying if they aren't a specific color</li>
-      <li>Fixed Chrome Webstore Link</li>
-  
-      <h1>3.1.0 - Design Improvements</h1>
-      <li>Minor UI improvements</li>
-      <li>Added Animation Speed Slider</li>
-      <li>Animation now enables and disables without reloading SEQTA</li>
-      <li>Changed logo</li>
-  
-      <h1>3.0.0 - BetterSEQTA+ *Complete Overhaul*</h1>
-      <li>Redesigned appearance</li>
-      <li>Upgraded to manifest V3 (longer support)</li>
-      <li>Fixed transitional glitches</li>
-      <li>Under the hood improvements</li>
-      <li>Fixed News Feed</li>
-  
-      <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1>
-      <li>Fixed BetterSEQTA+ not loading on some pages</li>
+      <li>Added new assessments kanban overview</li>>
       <li>Fixed text colour of notices being unreadable</li>
       <li>Fixed pages not reloading when saving changes</li>
   
@@ -295,9 +115,6 @@ export function OpenMinecraftServerPopup() {
           </a>
         </div>
         <div>
-          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0; display: flex; align-items: center;">
-           <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
-          </a>
         </div>
       </div>
     `).firstChild;
