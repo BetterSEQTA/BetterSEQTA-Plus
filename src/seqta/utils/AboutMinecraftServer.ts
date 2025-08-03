@@ -39,53 +39,18 @@ export function OpenMinecraftServerPopup() {
   let imagecont = document.createElement("div");
   imagecont.classList.add("whatsnewImgContainer");
 
-  let video = document.createElement("video");
-  let source = document.createElement("source");
+  let img = document.createElement("img");
+  img.src = "https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/server-image.png";
+  img.classList.add("whatsnewImg");
 
-  source.setAttribute(
-    "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
-  );
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.appendChild(source);
-  video.classList.add("whatsnewImg");
-  imagecont.appendChild(video);
-
-  /* let whatsnewimg = document.createElement("img");
-  //whatsnewimg.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-image.webp";
-  whatsnewimg.src = browser.runtime.getURL('../../resources/update-image.webp');
-  whatsnewimg.classList.add("whatsnewImg");
-  imagecont.appendChild(whatsnewimg); */
+  imagecont.appendChild(img);
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
 
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-      <h1>3.4.8 - Improvements!</h1>
-      <li>Added new assessments kanban overview</li>>
-      <li>Fixed text colour of notices being unreadable</li>
-      <li>Fixed pages not reloading when saving changes</li>
-  
-      <h1>2.0.2 - Minor bug fixes</h1>
-      <li>Fixed indicator for current lesson</li>
-      <li>Fixed text colour for DM messages list in Light mode</li>
-      <li>Fixed user info text colour</li>
-  
-      <h1>Sleek New Layout</h1>
-      <li>Updated with a new font and presentation, BetterSEQTA+ has never looked better.</li>
-  
-      <h1>New Updated Sidebar</h1>
-      <li>Condensed appearance with new updated icons.</li>
-  
-      <h1>Independent Light Mode and Dark Mode</h1>
-      <li>Dark mode and Light mode are now available to pick alongside your chosen Theme Colour. Your Theme Colour will now become an accent colour for the page.
-      Light/Dark mode can be toggled with the new button, found in the top-right of the menu bar.</li>
-  
-      <h1>Create Custom Shortcuts</h1>
-      <li>Found in the BetterSEQTA+ Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
+      <h1>Text to be here....</h1>
     </div>
     `).firstChild;
 
