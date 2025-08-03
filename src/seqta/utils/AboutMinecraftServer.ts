@@ -50,10 +50,8 @@ export function OpenMinecraftServerPopup() {
 
   let text = stringToHTML(/* html */ `
   <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
-    <h1>Join our community in Minecraft!</h1>
-    <ul>
-      <li>Join the official BetterSEQTA+ Minecraft Server community now!</li>
-    </ul>
+<h1>Join our community in Minecraft!</h1>
+<p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
 
     <h1>Server Features</h1>
     <ul>
@@ -63,11 +61,6 @@ export function OpenMinecraftServerPopup() {
       <li>Regular updates and maintenance</li>
       <li>The End dimension will be enabled during an upcoming live event</li>
     </ul>
-
-    <div style="text-align: center; margin-top: 10px;">
-      <img src="https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/ip-adress.png" alt="IP Address" />
-    </div>
-  </div>
 `).firstChild;
 
   let footer = stringToHTML(/* html */ `
