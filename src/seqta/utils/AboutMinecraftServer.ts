@@ -49,10 +49,26 @@ export function OpenMinecraftServerPopup() {
   textcontainer.classList.add("whatsnewTextContainer");
 
   let text = stringToHTML(/* html */ `
-    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
-      <h1>Text to be here....</h1>
+  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
+    <h1>Join our community in Minecraft!</h1>
+    <ul>
+      <li>Join the official BetterSEQTA+ Minecraft Server community now!</li>
+    </ul>
+
+    <h1>Server Features</h1>
+    <ul>
+      <li>SMP as our first release gamemode</li>
+      <li>Community events and competitions</li>
+      <li>Custom world generation</li>
+      <li>Regular updates and maintenance</li>
+      <li>The End dimension will be enabled during an upcoming live event</li>
+    </ul>
+
+    <div style="text-align: center; margin-top: 10px;">
+      <img src="https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/ip-adress.png" alt="IP Address" />
     </div>
-    `).firstChild;
+  </div>
+`).firstChild;
 
   let footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
