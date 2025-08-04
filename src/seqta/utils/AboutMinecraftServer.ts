@@ -48,7 +48,7 @@ export function OpenMinecraftServerPopup() {
   imagecont.classList.add("whatsnewImgContainer");
 
   let img = document.createElement("img");
-  img.src = "https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/server-image.png";
+  img.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-image.png";
   img.classList.add("whatsnewImg");
 
   imagecont.appendChild(img);
