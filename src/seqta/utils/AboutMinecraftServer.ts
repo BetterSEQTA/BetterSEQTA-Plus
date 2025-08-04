@@ -21,6 +21,14 @@ export async function DeleteWhatsNew() {
 }
 
 export function OpenMinecraftServerPopup() {
+
+  if (!document.querySelector('link[href*="minecraftia"]')) {
+    const fontLink = document.createElement("link");
+    fontLink.href = "https://fonts.cdnfonts.com/css/minecraftia";
+    fontLink.rel = "stylesheet";
+    document.head.appendChild(fontLink);
+  }
+
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");
@@ -50,8 +58,8 @@ export function OpenMinecraftServerPopup() {
 
   let text = stringToHTML(/* html */ `
   <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
-<h1>Join our community in Minecraft!</h1>
-<p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
+    <h1>Join our community in Minecraft!</h1>
+    <p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
 
     <h1>Server Features</h1>
     <ul>
@@ -61,6 +69,34 @@ export function OpenMinecraftServerPopup() {
       <li>Regular updates and maintenance</li>
       <li>The End dimension will be enabled during an upcoming live event</li>
     </ul>
+
+ <p style="
+      font-family: 'Minecraftia', sans-serif;
+      color: white;
+      font-weight: bold;
+      font-size: 28px;
+      text-align: center;
+      margin-top: 1.5em;
+      text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+    ">
+      mc.betterseqta.org
+    </p>
+
+    <!-- Version Info -->
+    <p style="
+      font-family: sans-serif;
+      color: #ccc;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 0.25em;
+    ">
+      Version: 1.21.4
+    </p>
+  </div>
 `).firstChild;
 
   let footer = stringToHTML(/* html */ `
