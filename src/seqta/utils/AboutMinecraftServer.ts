@@ -74,9 +74,9 @@ export function OpenMinecraftServerPopup() {
       font-family: 'Minecraftia', sans-serif;
       color: white;
       font-weight: bold;
-      font-size: 28px;
+      font-size: 34px;
       text-align: center;
-      margin-top: 1.5em;
+      margin-top: 0.8em;
       text-shadow:
         -1px -1px 0 #000,
          1px -1px 0 #000,
@@ -84,17 +84,6 @@ export function OpenMinecraftServerPopup() {
          1px  1px 0 #000;
     ">
       mc.betterseqta.org
-    </p>
-
-    <!-- Version Info -->
-    <p style="
-      font-family: sans-serif;
-      color: #ccc;
-      font-size: 13px;
-      text-align: center;
-      margin-top: 0.25em;
-    ">
-      Version: 1.21.4
     </p>
   </div>
 `).firstChild;
