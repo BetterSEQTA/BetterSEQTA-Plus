@@ -4,7 +4,7 @@ import stringToHTML from "./stringToHTML";
 
 export async function DeleteWhatsNew() {
   const bkelement = document.getElementById("whatsnewbk");
-  const popup = document.getElementsByClassName("whatsnewContainer")[0];
+  const popup = document.querySelector(".whatsnewContainer") as HTMLElement;
 
   if (!settingsState.animations) {
     bkelement?.remove();
@@ -121,12 +121,7 @@ export function OpenMinecraftServerPopup() {
   let exitbutton = document.createElement("div");
   exitbutton.id = "whatsnewclosebutton";
 
-  container.append(header);
-  container.append(imagecont);
-  container.append(textcontainer);
-  container.append(text as HTMLElement);
-  container.append(footer as HTMLElement);
-  container.append(exitbutton);
+  container.append(header, imagecont, text as HTMLElement, footer as HTMLElement, exitbutton);
 
   background.append(container);
 
