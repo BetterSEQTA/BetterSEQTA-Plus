@@ -66,6 +66,7 @@ export function OpenMinecraftServerPopup() {
       <li>SMP as our first release gamemode</li>
       <li>Community events and competitions</li>
       <li>Custom world generation</li>
+      <li>Shop system with buying and selling</li>
       <li>Regular updates and maintenance</li>
       <li>The End dimension will be enabled during an upcoming live event</li>
     </ul>
