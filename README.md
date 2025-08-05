@@ -91,7 +91,7 @@ npm install
 3. Click "Load unpacked" → Select `dist` folder
 4. Visit a SEQTA page to see it work! 🎉
 > [!WARNING]
-> Whenever you update the extension, you will need to redo steps 3 and 4.
+> Whenever you update the extension while not in dev mode, you will need to redo steps 3 and 4.
 
 📚 **Need more details?** Check our [detailed setup guide](./docs/GETTING_STARTED_CONTRIBUTING.md#your-first-30-minutes)
 
