@@ -21,7 +21,6 @@ export async function DeleteWhatsNew() {
 }
 
 export function OpenMinecraftServerPopup() {
-
   if (!document.querySelector('link[href*="minecraftia"]')) {
     const fontLink = document.createElement("link");
     fontLink.href = "https://fonts.cdnfonts.com/css/minecraftia";
@@ -48,7 +47,8 @@ export function OpenMinecraftServerPopup() {
   imagecont.classList.add("whatsnewImgContainer");
 
   let img = document.createElement("img");
-  img.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-image.png";
+  img.src =
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-image.png";
   img.classList.add("whatsnewImg");
 
   imagecont.appendChild(img);
@@ -71,21 +71,37 @@ export function OpenMinecraftServerPopup() {
       <li>The End dimension will be enabled during an upcoming live event</li>
     </ul>
 
- <p style="
-      font-family: 'Minecraftia', sans-serif;
-      color: white;
-      font-weight: bold;
-      font-size: 34px;
-      text-align: center;
-      margin-top: 0.8em;
-      text-shadow:
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000;
-    ">
-      mc.betterseqta.org
-    </p>
+<p style="
+  font-family: 'Minecraftia', sans-serif;
+  color: white;
+  font-weight: bold;
+  font-size: 34px;
+  text-align: center;
+  margin-top: 0.5em;
+  margin-bottom: 0.1em;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+">
+  mc.betterseqta.org
+</p>
+<p style="
+  font-family: 'Minecraftia', sans-serif;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 0;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
+">
+  Version: 1.21.4
+</p>
   </div>
 `).firstChild;
 
@@ -121,7 +137,13 @@ export function OpenMinecraftServerPopup() {
   let exitbutton = document.createElement("div");
   exitbutton.id = "whatsnewclosebutton";
 
-  container.append(header, imagecont, text as HTMLElement, footer as HTMLElement, exitbutton);
+  container.append(
+    header,
+    imagecont,
+    text as HTMLElement,
+    footer as HTMLElement,
+    exitbutton,
+  );
 
   background.append(container);
 
