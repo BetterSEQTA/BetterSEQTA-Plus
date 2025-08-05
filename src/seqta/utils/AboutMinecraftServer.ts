@@ -51,7 +51,7 @@ export function OpenMinecraftServerPopup() {
 
   source.setAttribute(
     "src",
-    "https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/server-video.mp4",
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-video.mp4",
   );
   video.autoplay = true;
   video.muted = true;
