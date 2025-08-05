@@ -46,12 +46,19 @@ export function OpenMinecraftServerPopup() {
   let imagecont = document.createElement("div");
   imagecont.classList.add("whatsnewImgContainer");
 
-  let img = document.createElement("img");
-  img.src =
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-image.png";
-  img.classList.add("whatsnewImg");
+  let video = document.createElement("video");
+  let source = document.createElement("source");
 
-  imagecont.appendChild(img);
+  source.setAttribute(
+    "src",
+    "https://raw.githubusercontent.com/Jones8683/BetterSEQTA-Plus/main/src/resources/server-video.mp4",
+  );
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.appendChild(source);
+  video.classList.add("whatsnewImg");
+  imagecont.appendChild(video);
 
   let textcontainer = document.createElement("div");
   textcontainer.classList.add("whatsnewTextContainer");
