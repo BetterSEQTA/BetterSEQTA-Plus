@@ -5,6 +5,8 @@ import {
 } from "./Closers/closeExtensionPopup";
 import { animate } from "motion";
 import { settingsState } from "./listeners/SettingsState";
+import { renderSettingsIfNeeded } from "./Adders/AddExtensionSettings";
+import { delay } from "./delay";
 
 export function setupSettingsButton() {
   var AddedSettings = document.getElementById("AddedSettings");
@@ -14,6 +16,10 @@ export function setupSettingsButton() {
     if (SettingsClicked) {
       closeExtensionPopup(extensionPopup as HTMLElement);
     } else {
+      renderSettingsIfNeeded();
+
+      await delay(30);
+      
       if (settingsState.animations) {
         animate(0, 1, {
           onUpdate: (progress) => {

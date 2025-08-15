@@ -7,6 +7,8 @@ import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 import Settings from "@/interface/pages/settings.svelte";
 
+let isSettingsRendered = false;
+
 export function addExtensionSettings() {
   const extensionPopup = document.createElement("div");
   extensionPopup.classList.add("outside-container", "hide");
@@ -16,14 +18,6 @@ export function addExtensionSettings() {
     "#container",
   ) as HTMLDivElement;
   if (extensionContainer) extensionContainer.appendChild(extensionPopup);
-
-  // create shadow dom and render svelte app
-  try {
-    const shadow = extensionPopup.attachShadow({ mode: "open" });
-    requestIdleCallback(() => renderSvelte(Settings, shadow));
-  } catch (err) {
-    console.error(err);
-  }
 
   const container = document.getElementById("container");
 
@@ -37,4 +31,19 @@ export function addExtensionSettings() {
       changeSettingsClicked(closeExtensionPopup());
     }
   };
+}
+
+export function renderSettingsIfNeeded() {
+  if (isSettingsRendered) return;
+  
+  const extensionPopup = document.getElementById("ExtensionPopup");
+  if (!extensionPopup) return;
+
+  try {
+    const shadow = extensionPopup.attachShadow({ mode: "open" });
+    requestIdleCallback(() => renderSvelte(Settings, shadow));
+    isSettingsRendered = true;
+  } catch (err) {
+    console.error(err);
+  }
 }
