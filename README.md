@@ -76,7 +76,7 @@ cd BetterSEQTA-Plus
 
 &nbsp;&nbsp;&nbsp; **2. Install & Run**
 > [!CAUTION]
-> Running `npm run dev` does not work right now; use `npm run build`. 
+> Running `npm run dev` does not work right now on Windows; use `npm run build`. 
 ```bash
 npm install --legacy-peer-deps
 npm run dev
@@ -91,7 +91,7 @@ npm install
 3. Click "Load unpacked" → Select `dist` folder
 4. Visit a SEQTA page to see it work! 🎉
 > [!WARNING]
-> Whenever you update the extension while not in dev mode, you will need to redo steps 3 and 4.
+> Whenever you update the extension while not in dev mode, you will need to use the reload button on the extension page.
 
 📚 **Need more details?** Check our [detailed setup guide](./docs/GETTING_STARTED_CONTRIBUTING.md#your-first-30-minutes)
 
