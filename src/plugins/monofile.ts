@@ -36,6 +36,7 @@ import IconFamily from "@/resources/fonts/IconFamily.woff";
 
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw";
+import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
 
 function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
@@ -95,7 +96,8 @@ export async function finishLoad() {
   }
 
   if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
-    OpenWhatsNewPopup();
+    OpenMinecraftServerPopup();
+    //OpenWhatsNewPopup();
   }
 }
 
