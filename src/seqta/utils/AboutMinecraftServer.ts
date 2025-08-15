@@ -47,6 +47,8 @@ export function OpenMinecraftServerPopup() {
   imagecont.classList.add("whatsnewImgContainer");
 
   let video = document.createElement("video");
+  video.style.aspectRatio = "16/9";
+  video.style.background = "black";
   let source = document.createElement("source");
 
   source.setAttribute(
