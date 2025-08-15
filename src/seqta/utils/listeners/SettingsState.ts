@@ -8,15 +8,18 @@ type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 class StorageManager {
   private static instance: StorageManager;
   private data: SettingsState;
-  private listeners: { [key: string]: ChangeListener[] };
-  private globalListeners: GlobalChangeListener[];
+  private listeners: Map<string, Set<ChangeListener>>;
+  private globalListeners: Set<GlobalChangeListener>;
   private subscribers: Set<Subscriber<SettingsState>> = new Set();
+  private saveTimeout: NodeJS.Timeout | null = null;
+  private pendingSave = false;
+  private initialized = false;
 
   private constructor() {
     this.data = {} as SettingsState;
-    this.listeners = {};
-    this.globalListeners = [];
-    this.loadFromStorage();
+    this.listeners = new Map();
+    this.globalListeners = new Set();
+    // Don't call async loadFromStorage in constructor
 
     const handler: ProxyHandler<StorageManager> = {
       get: (target, prop: keyof SettingsState | "register" | "initialize") => {
@@ -26,8 +29,21 @@ class StorageManager {
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
-        Reflect.set(target.data, prop, value);
-        target.saveToStorage();
+        const oldValue = target.data[prop];
+        
+        // Only save if the value actually changed
+        if (oldValue !== value) {
+          Reflect.set(target.data, prop, value);
+          target.saveToStorage();
+          
+          // Notify listeners immediately for responsiveness
+          const listeners = target.listeners.get(prop as string);
+          if (listeners) {
+            for (const listener of listeners) {
+              listener(value, oldValue);
+            }
+          }
+        }
         return true;
       },
       deleteProperty: (target, prop: keyof SettingsState) => {
@@ -35,8 +51,9 @@ class StorageManager {
         if (oldValue !== undefined) {
           delete target.data[prop];
           target.removeFromStorage(prop);
-          if (target.listeners[prop]) {
-            for (const listener of target.listeners[prop]) {
+          const listeners = target.listeners.get(prop as string);
+          if (listeners) {
+            for (const listener of listeners) {
               listener(undefined, oldValue);
             }
           }
@@ -59,7 +76,10 @@ class StorageManager {
 
   public static async initialize(): Promise<StorageManager & SettingsState> {
     const instance = StorageManager.getInstance();
-    await instance.loadFromStorage();
+    if (!instance.initialized) {
+      await instance.loadFromStorage();
+      instance.initialized = true;
+    }
     return instance;
   }
 
@@ -67,8 +87,19 @@ class StorageManager {
     key: K,
     value: SettingsState[K],
   ): void {
-    this.data[key] = value;
-    this.saveToStorage();
+    const oldValue = this.data[key];
+    if (oldValue !== value) {
+      this.data[key] = value;
+      this.saveToStorage();
+      
+      // Notify listeners
+      const listeners = this.listeners.get(key as string);
+      if (listeners) {
+        for (const listener of listeners) {
+          listener(value, oldValue);
+        }
+      }
+    }
   }
 
   private async loadFromStorage(): Promise<void> {
@@ -79,9 +110,34 @@ class StorageManager {
   }
 
   private async saveToStorage(): Promise<void> {
+    // Clear any existing timeout
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    
+    // Set a new timeout to batch changes
+    this.saveTimeout = setTimeout(async () => {
+      if (this.pendingSave) {
+        // @ts-expect-error
+        await browser.storage.local.set(this.data);
+        this.notifySubscribers();
+        this.pendingSave = false;
+      }
+    }, 100); // Adjust delay as needed
+    
+    this.pendingSave = true;
+  }
+  
+  // Add immediate save method for critical updates
+  public async saveImmediately(): Promise<void> {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+    }
     // @ts-expect-error
     await browser.storage.local.set(this.data);
     this.notifySubscribers();
+    this.pendingSave = false;
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -91,19 +147,35 @@ class StorageManager {
   private initStorageListener(): void {
     browser.storage.onChanged.addListener((changes, areaName) => {
       if (areaName === "local") {
+        const actualChanges: string[] = [];
+        
         for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-          if (newValue !== undefined) {
-            (this.data as any)[key] = newValue;
-          } else {
-            delete (this.data as any)[key];
-          }
-          if (this.listeners[key]) {
-            for (const listener of this.listeners[key]) {
-              listener(newValue, oldValue);
+          // Only process if value actually changed
+          if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+            if (newValue !== undefined) {
+              (this.data as any)[key] = newValue;
+            } else {
+              delete (this.data as any)[key];
+            }
+            actualChanges.push(key);
+            
+            // Notify specific listeners
+            const listeners = this.listeners.get(key);
+            if (listeners) {
+              for (const listener of listeners) {
+                listener(newValue, oldValue);
+              }
             }
           }
+        }
+        
+        // Only notify global listeners if there were actual changes
+        if (actualChanges.length > 0 && this.globalListeners.size > 0) {
           for (const listener of this.globalListeners) {
-            listener(newValue, oldValue, key);
+            for (const key of actualChanges) {
+              const { oldValue, newValue } = changes[key];
+              listener(newValue, oldValue, key);
+            }
           }
         }
       }
@@ -116,18 +188,36 @@ class StorageManager {
    * @param listener The listener to call when the setting changes -> takes two arguments, (newValue, oldValue)
    */
   public register(prop: keyof SettingsState, listener: ChangeListener): void {
-    if (!this.listeners[prop]) {
-      this.listeners[prop] = [];
+    const key = prop as string;
+    if (!this.listeners.has(key)) {
+      this.listeners.set(key, new Set());
     }
-    this.listeners[prop].push(listener);
+    this.listeners.get(key)!.add(listener);
+  }
+  
+  /**
+   * Unregister a listener for a setting.
+   * @param prop The setting to stop listening to.
+   * @param listener The listener to remove.
+   */
+  public unregister(prop: keyof SettingsState, listener: ChangeListener): void {
+    this.listeners.get(prop as string)?.delete(listener);
   }
 
   /**
    * Register a listener for any setting.
-   * @param listener The listener to call when any setting changes -> takes two arguments, (newValue, oldValue)
+   * @param listener The listener to call when any setting changes -> takes three arguments, (newValue, oldValue, key)
    */
   public registerGlobal(listener: GlobalChangeListener): void {
-    this.globalListeners.push(listener);
+    this.globalListeners.add(listener);
+  }
+  
+  /**
+   * Unregister a global listener.
+   * @param listener The listener to remove.
+   */
+  public unregisterGlobal(listener: GlobalChangeListener): void {
+    this.globalListeners.delete(listener);
   }
 
   /**
