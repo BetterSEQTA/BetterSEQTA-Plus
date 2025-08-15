@@ -230,6 +230,6 @@ Ready to contribute? Here's what to do next:
 Still confused about something? That's totally normal! Here are your options:
 - 💬 Ask in our [Discord server](https://discord.gg/YzmbnCDkat)
 - 🐛 Open an issue on GitHub
-- 📧 Email us at betterseqta@betterseqta.com
+- 📧 Email us at betterseqta.plus@gmail.com
 
 Remember: **Every expert was once a beginner!** We're here to help you learn and contribute. 🚀 
