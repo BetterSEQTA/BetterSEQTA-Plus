@@ -12,7 +12,6 @@ class StorageManager {
   private globalListeners: Set<GlobalChangeListener>;
   private subscribers: Set<Subscriber<SettingsState>> = new Set();
   private saveTimeout: NodeJS.Timeout | null = null;
-  private pendingSave = false;
   private initialized = false;
 
   private constructor() {
@@ -91,7 +90,7 @@ class StorageManager {
     if (oldValue !== value) {
       this.data[key] = value;
       this.saveToStorage();
-      
+
       // Notify listeners
       const listeners = this.listeners.get(key as string);
       if (listeners) {
@@ -108,28 +107,8 @@ class StorageManager {
       Reflect.set(this.data, key, value);
     });
   }
-
-  private async saveToStorage(): Promise<void> {
-    // Clear any existing timeout
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    
-    // Set a new timeout to batch changes
-    this.saveTimeout = setTimeout(async () => {
-      if (this.pendingSave) {
-        // @ts-expect-error
-        await browser.storage.local.set(this.data);
-        this.notifySubscribers();
-        this.pendingSave = false;
-      }
-    }, 100); // Adjust delay as needed
-    
-    this.pendingSave = true;
-  }
   
-  // Add immediate save method for critical updates
-  public async saveImmediately(): Promise<void> {
+  public async saveToStorage(): Promise<void> {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
       this.saveTimeout = null;
@@ -137,7 +116,6 @@ class StorageManager {
     // @ts-expect-error
     await browser.storage.local.set(this.data);
     this.notifySubscribers();
-    this.pendingSave = false;
   }
 
   private async removeFromStorage(key: string): Promise<void> {
