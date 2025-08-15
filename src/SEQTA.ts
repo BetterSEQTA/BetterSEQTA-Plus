@@ -71,7 +71,9 @@ async function init() {
         await plugins.initializePlugins();
       }
 
-      initializeHideSensitiveToggle();
+      if (settingsState.devMode) {
+        initializeHideSensitiveToggle();
+      }
 
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
