@@ -46,21 +46,20 @@ export class StorageChangeHandler {
     newValue: CustomShortcut[],
     oldValue: CustomShortcut[],
   ) {
-    if (newValue) {
-      if (newValue.length > oldValue.length) {
-        CreateCustomShortcutDiv(newValue[oldValue.length]);
-      } else if (newValue.length < oldValue.length) {
-        const removedElement = oldValue.find(
-          (oldItem: any) =>
-            !newValue.some(
-              (newItem: any) =>
-                JSON.stringify(oldItem) === JSON.stringify(newItem),
-            ),
-        );
+    if (!newValue || !oldValue) return;
+    
+    if (newValue.length > oldValue.length) {
+      // New shortcut added - add the last one
+      CreateCustomShortcutDiv(newValue[oldValue.length]);
+    } else if (newValue.length < oldValue.length) {
+      // Shortcut removed - find which one was removed
+      const newSet = new Set(newValue.map(item => JSON.stringify(item)));
+      const removedElement = oldValue.find(
+        (oldItem) => !newSet.has(JSON.stringify(oldItem))
+      );
 
-        if (removedElement) {
-          RemoveShortcutDiv([removedElement]);
-        }
+      if (removedElement) {
+        RemoveShortcutDiv([removedElement]);
       }
     }
   }
@@ -69,29 +68,35 @@ export class StorageChangeHandler {
     newValue: { enabled: boolean; name: string }[],
     oldValue: { enabled: boolean; name: string }[],
   ) {
-    const addedShortcuts = newValue.filter((newItem: any) => {
-      const wasDisabledAndNowEnabled = oldValue.some((oldItem: any) => {
-        return oldItem.name === newItem.name && !oldItem.enabled && newItem.enabled;
-      });
+    if (!newValue || !oldValue) return;
+    
+    // Create map for faster lookup
+    const oldMap = new Map(oldValue.map(item => [item.name, item.enabled]));
+    
+    const addedShortcuts: { enabled: boolean; name: string }[] = [];
+    const removedShortcuts: { enabled: boolean; name: string }[] = [];
+    
+    // Check for changes in shortcuts
+    for (const newItem of newValue) {
+      const oldEnabled = oldMap.get(newItem.name);
+      
+      // Newly enabled shortcuts
+      if (newItem.enabled && (oldEnabled === undefined || !oldEnabled)) {
+        addedShortcuts.push(newItem);
+      }
+      
+      // Newly disabled shortcuts
+      if (!newItem.enabled && oldEnabled === true) {
+        removedShortcuts.push(newItem);
+      }
+    }
 
-      const isNewShortcut = !oldValue.some((oldItem: any) => oldItem.name === newItem.name);
-
-      return (wasDisabledAndNowEnabled || isNewShortcut) && newItem.enabled;
-    });
-
-    const removedShortcuts = newValue.filter((newItem: any) => {
-      const isRemoved = oldValue.some((oldItem: any) => {
-        const match = oldItem.name === newItem.name;
-        const wasEnabled = oldItem.enabled;
-        const isDisabled = !newItem.enabled;
-        return match && wasEnabled && isDisabled;
-      });
-
-      return isRemoved;
-    });
-
-    addShortcuts(addedShortcuts);
-    RemoveShortcutDiv(removedShortcuts);
+    if (addedShortcuts.length > 0) {
+      addShortcuts(addedShortcuts);
+    }
+    if (removedShortcuts.length > 0) {
+      RemoveShortcutDiv(removedShortcuts);
+    }
   }
 
   private handleTransparencyEffectsChange(newValue: boolean) {
