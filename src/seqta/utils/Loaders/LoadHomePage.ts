@@ -44,7 +44,7 @@ export async function loadHomePage() {
   const homeContainer = document.getElementById("home-root");
   if (!homeContainer) return;
 
-  const skeletonStructure = stringToHTML(`
+  const skeletonStructure = stringToHTML(/* html */`
       <div class="home-container" id="home-container">
         <div class="border shortcut-container">
           <div class="border shortcuts" id="shortcuts"></div>
@@ -420,9 +420,14 @@ function processNoticeColor(colour: string): string | undefined {
 }
 
 function createNoticeElement(notice: any, colour: string | undefined): Node {
-  const cleanContent = notice.contents
+  const textPreview = notice.contents
+    .replace(/<[^>]*>/g, "")
     .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/ +/, " ");
+    .replace(/\s+/g, " ")
+    .trim()
+    .substring(0, 150)
+    + (notice.contents.length > 150 ? "..." : "");
+  
   const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const htmlContent = `
@@ -437,7 +442,7 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
         <button class="notice-close-btn" style="opacity: 0; pointer-events: none;">&times;</button>
       </div>
       <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${cleanContent}</div>
+      <div class="notice-content-body">${textPreview}</div>
     </div>`;
 
   const element = stringToHTML(htmlContent).firstChild as HTMLElement;
