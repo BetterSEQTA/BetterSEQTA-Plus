@@ -24,6 +24,8 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
+//import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
+
 import {
   updateTimetableTimes,
 } from "@/seqta/utils/updateTimetableTimes";
@@ -36,7 +38,6 @@ import IconFamily from "@/resources/fonts/IconFamily.woff";
 
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw";
-import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
 
 function SetDisplayNone(ElementName: string) {
   return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
@@ -96,8 +97,7 @@ export async function finishLoad() {
   }
 
   if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
-    OpenMinecraftServerPopup();
-    //OpenWhatsNewPopup();
+    OpenWhatsNewPopup();
   }
 }
 
