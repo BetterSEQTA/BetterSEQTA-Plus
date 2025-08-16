@@ -5,6 +5,8 @@ import {
   defineSettings,
   hotkeySetting,
 } from "../../core/settingsHelpers";
+import styles from "./src/core/styles.css?inline";
+
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -82,6 +84,7 @@ export default defineLazyPlugin({
   disableToggle: true,
   defaultEnabled: false,
   beta: true,
+  styles: styles,
   
   // Lazy loader - only imports the heavy plugin when actually needed
   loader: () => import("./src/core/index")
