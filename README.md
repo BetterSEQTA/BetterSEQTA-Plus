@@ -64,7 +64,7 @@ Don't worry- if you get stuck feel free to ask around in the [discord](https://d
 - **🐛 Found a bug?** Open an [issue](https://github.com/BetterSEQTA/BetterSEQTA-plus/issues) or fix it yourself!
 - **💬 Need help?** Join our [Discord community](https://discord.gg/YzmbnCDkat)
 
-We have lots of [`good first issue`](https://github.com/BetterSEQTA/BetterSEQTA-plus/labels/good%20first%20issue) labels perfect for beginners!
+We have lots of https://github.com/BetterSEQTA/BetterSEQTA-Plus/labels/good%20first%20issue labels perfect for beginners!
 
 ## Quick Development Setup
 
@@ -85,6 +85,8 @@ npm run dev
 2. Enable "Developer mode"
 3. Click "Load unpacked" → Select `dist` folder
 4. Visit a SEQTA page to see it work! 🎉
+> [!WARNING]
+> Whenever you update the extension while not in dev mode, you will need to use the reload button on the extension page.
 
 📚 **Need more details?** Check our [detailed setup guide](./docs/GETTING_STARTED_CONTRIBUTING.md#your-first-30-minutes)
 
