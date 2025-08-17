@@ -66,6 +66,15 @@ export function OpenWhatsNewPopup() {
 
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+
+      <h1>3.4.10 - Minor bug fixes</h1>
+      <li>Fixed UI file styling incorrectly applying to documents</li>
+      <li>Fixed missing styles in global search</li>
+      <li>Added icons for image files in file viewer</li>
+      <li>Added rounded corners when dragging calendar events</li>
+      <li>Improved performance of element scanning</li>
+      <li>Other minor improvements</li>
+
       <h1>3.4.9 - Bug Fixes and Performance Improvements</h1>
       <li>Fixed performance issues with large notices on the homepage</li>
       <li>Improved performance when global search is disabled</li>
