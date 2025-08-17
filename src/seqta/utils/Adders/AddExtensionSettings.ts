@@ -41,7 +41,11 @@ export function renderSettingsIfNeeded() {
 
   try {
     const shadow = extensionPopup.attachShadow({ mode: "open" });
-    requestIdleCallback(() => renderSvelte(Settings, shadow));
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => renderSvelte(Settings, shadow));
+    } else {
+      renderSvelte(Settings, shadow);
+    }
     isSettingsRendered = true;
   } catch (err) {
     console.error(err);
