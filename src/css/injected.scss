@@ -2001,7 +2001,7 @@ div.dailycalMarker {
   margin-top: 4px !important;
 }
 
-a.uiFile {
+a.uiFile:not(.rows) {
   display: flex !important;
   height: auto !important;
   width: 200px !important;
