@@ -57,13 +57,37 @@ class EventManager {
     return { unregister };
   }
 
+  private buildSelector(options: EventListenerOptions): string | null {
+    if (options.textContent || options.customCheck) return null;
+
+    let selector = options.elementType || "";
+    if (options.id) {
+      selector += `#${CSS.escape(options.id)}`;
+    }
+    if (options.className) {
+      selector += `.${CSS.escape(options.className)}`;
+    }
+
+    return selector.trim() || null;
+  }
+
   private async scanExistingElements(
     options: EventListenerOptions,
     callback: (element: Element) => void,
   ): Promise<void> {
     const root = options.parentElement || document.documentElement;
-    const elements = Array.from(root.getElementsByTagName("*"));
-    elements.unshift(root);
+    const selector = this.buildSelector(options);
+    let elements: Element[] = [];
+
+    if (selector) {
+      elements = Array.from(root.querySelectorAll(selector));
+      if (selector && root.matches && root.matches(selector)) {
+        elements.unshift(root);
+      }
+    } else {
+      elements = Array.from(root.getElementsByTagName("*"));
+      elements.unshift(root);
+    }
 
     for (let i = 0; i < elements.length; i += this.chunkSize) {
       const chunk = elements.slice(i, i + this.chunkSize);
