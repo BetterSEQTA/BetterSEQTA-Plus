@@ -35,7 +35,7 @@
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.26.9",
     "@babel/runtime": "^7.26.9",
-    "@bedframe/cli": "^0.0.91",
+    "@bedframe/cli": "^0.0.95",
     "@crxjs/vite-plugin": "^2.2.0",
     "@types/mime-types": "^2.1.4",
     "@types/react": "^19.0.10",
