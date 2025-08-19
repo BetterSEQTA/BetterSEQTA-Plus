@@ -18,12 +18,27 @@ export async function SendNewsPage() {
   const main = document.getElementById("main");
   main!.innerHTML = "";
 
+  const displayCountry = (() => {
+    switch (settingsState.newsSource?.toLowerCase()) {
+      case "usa": return "the USA";
+      case "uk": return "the UK";
+      case "netherlands": return "the Netherlands";
+      default:
+        return settingsState.newsSource
+          ? settingsState.newsSource
+            .split("_")
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ")
+          : "Australia";
+    }
+  })();
+
   const html = stringToHTML(/* html */ `
-    <div class="home-root">
-      <div class="home-container" id="news-container">
-      <h1 class="border">Latest Headlines in ${settingsState.newsSource ? settingsState.newsSource.charAt(0).toUpperCase() + settingsState.newsSource.slice(1) : "Australia"}</h1>
-      </div>
-    </div>`);
+  <div class="home-root">
+    <div class="home-container" id="news-container">
+      <h1 class="border">Latest Headlines in ${displayCountry}</h1>
+    </div>
+  </div>`);
 
   main!.append(html.firstChild!);
 
