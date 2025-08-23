@@ -84,6 +84,10 @@ export default defineConfig(({ command }) => ({
         settings: join(__dirname, "src", "interface", "index.html"),
         pageState: join(__dirname, "src", "pageState.js"),
       },
+      onwarn(warning, warn) {
+        if (warning.code === "FILE_NAME_CONFLICT") return;
+        warn(warning);
+      },
     },
   },
 }));
