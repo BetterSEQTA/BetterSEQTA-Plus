@@ -183,18 +183,19 @@
       props: {
         state: $settingsState.newsSource,
         onChange: (value: string) => settingsState.newsSource = value,
-        options: [
-          { value: "australia", label: "Australia" },
-          { value: "usa", label: "USA" },
-          { value: "taiwan", label: "Taiwan" },
-          { value: "hong_kong", label: "Hong Kong" },
-          { value: "panama", label: "Panama" },
-          { value: "canada", label: "Canada" },
-          { value: "singapore", label: "Singapore" },
-          { value: "uk", label: "UK" },
-          { value: "japan", label: "Japan" },
-          { value: "netherlands", label: "Netherlands" }
+          options: [
+           { value: "australia", label: "Australia" },
+           { value: "usa", label: "USA" },
+           { value: "uk", label: "UK" },
+           { value: "taiwan", label: "Taiwan" },
+           { value: "hong_kong", label: "Hong Kong" },
+           { value: "panama", label: "Panama" },
+           { value: "canada", label: "Canada" },
+           { value: "singapore", label: "Singapore" },
+           { value: "japan", label: "Japan" },
+           { value: "netherlands", label: "Netherlands" }
         ]
+
       }
     }
   ] as option}
