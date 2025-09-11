@@ -26,6 +26,9 @@ export function addShortcuts(shortcuts: any) {
 
 function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   // Creates the stucture and element information for each seperate shortcut
+  const container = document.getElementById("shortcuts");
+  if (!container) return;
+
   let shortcut = document.createElement("a");
   shortcut.setAttribute("href", link);
   shortcut.setAttribute("target", "_blank");
@@ -42,5 +45,5 @@ function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById("shortcuts")!.appendChild(shortcut);
+  container.appendChild(shortcut);
 }

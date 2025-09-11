@@ -23,13 +23,19 @@
     });
   });
 
-  const switchChange = (shortcut: any) => {    
-    const value = $settingsState.shortcuts.find(s => s.name === shortcut);
-    if (value) {
-      value.enabled = !value.enabled;
-      settingsState.shortcuts = settingsState.shortcuts;
+  const switchChange = (shortcut: any) => {
+    const idx = $settingsState.shortcuts.findIndex(s => s.name === shortcut);
+    if (idx !== -1) {
+      // Create a new array with the toggled value to ensure reactivity
+      const updated = settingsState.shortcuts.map(s =>
+        s.name === shortcut ? { ...s, enabled: !s.enabled } : s
+      );
+      settingsState.shortcuts = updated;
     } else {
-      settingsState.shortcuts = [...settingsState.shortcuts, { name: shortcut, enabled: true }];
+      settingsState.shortcuts = [
+        ...settingsState.shortcuts,
+        { name: shortcut, enabled: true }
+      ];
     }
   }
 

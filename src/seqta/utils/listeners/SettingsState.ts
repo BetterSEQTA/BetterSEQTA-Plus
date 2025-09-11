@@ -29,19 +29,11 @@ class StorageManager {
       },
       set: (target, prop: keyof SettingsState, value) => {
         const oldValue = target.data[prop];
-        
-        // Only save if the value actually changed
+
+        // Only save if the reference actually changed
         if (oldValue !== value) {
           Reflect.set(target.data, prop, value);
           target.saveToStorage();
-          
-          // Notify listeners immediately for responsiveness
-          const listeners = target.listeners.get(prop as string);
-          if (listeners) {
-            for (const listener of listeners) {
-              listener(value, oldValue);
-            }
-          }
         }
         return true;
       },
