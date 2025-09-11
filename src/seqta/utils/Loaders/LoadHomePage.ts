@@ -4,12 +4,11 @@ import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import assessmentsicon from "@/seqta/icons/assessmentsIcon";
 import coursesicon from "@/seqta/icons/coursesIcon";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
-import { addShortcuts } from "../Adders/AddShortcuts";
 import { convertTo12HourFormat } from "../convertTo12HourFormat";
 import { delay } from "../delay";
 import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
-import { CreateCustomShortcutDiv } from "@/seqta/utils/CreateEnable/CreateCustomShortcutDiv";
+import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
@@ -100,12 +99,7 @@ export async function loadHomePage() {
 
   const cleanup = setupTimetableListeners();
 
-  try {
-    addShortcuts(settingsState.shortcuts);
-  } catch (err: any) {
-    console.error("[BetterSEQTA+] Error adding shortcuts:", err.message || err);
-  }
-  AddCustomShortcutsToPage();
+  renderShortcuts();
 
   const date = new Date();
   const TodayFormatted = formatDate(date);
@@ -367,15 +361,6 @@ function comparedate(obj1: any, obj2: any) {
   return 0;
 }
 
-async function AddCustomShortcutsToPage() {
-  let customshortcuts: any = settingsState.customshortcuts;
-  if (customshortcuts.length > 0) {
-    for (let i = 0; i < customshortcuts.length; i++) {
-      const element = customshortcuts[i];
-      CreateCustomShortcutDiv(element);
-    }
-  }
-}
 
 function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");

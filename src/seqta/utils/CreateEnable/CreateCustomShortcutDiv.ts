@@ -2,6 +2,9 @@ import stringToHTML from "../stringToHTML";
 
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
+  const container = document.getElementById("shortcuts");
+  if (!container) return;
+
   var shortcut = document.createElement("a");
   shortcut.setAttribute("href", element.url);
   shortcut.setAttribute("target", "_blank");
@@ -45,5 +48,5 @@ export function CreateCustomShortcutDiv(element: any) {
   shortcutdiv.append(text);
   shortcut.append(shortcutdiv);
 
-  document.getElementById("shortcuts")!.append(shortcut);
+  container.append(shortcut);
 }
