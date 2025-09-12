@@ -38,6 +38,21 @@ body,
 html {
   font-family: Rubik, sans-serif !important;
 }
+
+/* Ensure native select dropdowns are readable on Windows */
+select option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+.dark select option {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+}
+
+/* Consistent rounded corners for selects */
+select {
+  border-radius: 8px !important;
+}
 #container {
   transition: 200ms;
   background: var(--auto-background) !important;
