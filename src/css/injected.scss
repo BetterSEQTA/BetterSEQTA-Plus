@@ -379,6 +379,16 @@ ul.magicDelete > li.deleting {
   padding: 0;
   white-space: nowrap;
 }
+
+/* Allow long course/assessment names in the sidebar to wrap and break safely */
+#menu li > label,
+#menu section > label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+  line-height: 1.2;
+}
 #menu {
   width: 270px;
   z-index: 19;
@@ -1325,7 +1335,16 @@ html.transparencyEffects [class*="ResourceList__ResourceItem___voTSd"] [class*="
   font-size: 20px !important;
   font-weight: 500;
   min-height: 46px;
-  height: 36%;
+  /* Let the title expand naturally but clamp to 2 lines to avoid overlap */
+  height: auto;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 .day h3 {
   padding: 0px 5px;
