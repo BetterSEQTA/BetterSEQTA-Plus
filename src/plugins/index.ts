@@ -8,6 +8,7 @@ import animatedBackgroundPlugin from "./built-in/animatedBackground";
 import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
 import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
+import backgroundMusicPlugin from "./built-in/backgroundMusic";
 //import testPlugin from './built-in/test';
 
 // Heavy plugins (lazy-loaded only when enabled)
@@ -24,6 +25,7 @@ pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
+pluginManager.registerPlugin(backgroundMusicPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
 // Register heavy plugins with lazy loading
