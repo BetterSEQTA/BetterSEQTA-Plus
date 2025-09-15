@@ -386,6 +386,8 @@ ul.magicDelete > li.deleting {
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
+  text-transform: none;
+  font-size: 16px;
   hyphens: auto;
   line-height: 1.2;
 }
@@ -461,11 +463,6 @@ ul.magicDelete > li.deleting {
   }
 }
 
-#menu li > label,
-#menu section > label {
-  text-transform: none;
-  font-size: 16px;
-}
 #userActions {
   display: none;
 }
