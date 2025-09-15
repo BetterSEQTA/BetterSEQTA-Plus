@@ -34,16 +34,6 @@
     color: #ffffff;
   }
 
-  /* Add a dropdown arrow without relying on platform UI */
-  div::after {
-    content: "\25BE"; /* ▼ */
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: rgba(0, 0, 0, 0.5);
-  }
   :global(.dark) div::after {
     color: rgba(255, 255, 255, 0.6);
   }
