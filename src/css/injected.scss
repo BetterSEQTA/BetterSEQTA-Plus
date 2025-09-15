@@ -1659,6 +1659,8 @@ iframe.userHTML {
 
 .programmeNavigator {
   box-shadow: 0 0 40px 0px rgba(0,0,0,0.05);
+  overflow-y: scroll;
+  height: 100%;
 
   .navigator {
     padding: 6px !important;
