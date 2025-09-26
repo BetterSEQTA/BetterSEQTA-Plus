@@ -584,7 +584,8 @@ export function showConflictPopup() {
 
   background.append(container);
 
-  document.getElementById("container")?.append(background);
+  const containerElement = document.getElementById("container") || document.body;
+  containerElement.append(background);
 
   if (settingsState.animations) {
     animate([background as HTMLElement], { opacity: [0, 1] });
