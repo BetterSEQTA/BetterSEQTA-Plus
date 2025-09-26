@@ -5,6 +5,19 @@
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
 
+// Platform-specific styling mixins
+@mixin learn-only {
+  body[data-seqta-platform="learn"] & {
+    @content;
+  }
+}
+
+@mixin teach-only {
+  body[data-seqta-platform="teach"] & {
+    @content;
+  }
+}
+
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
@@ -4046,4 +4059,740 @@ h2.home-subtitle {
   margin: 20px;
   font-size: 20px;
   font-weight: 400;
+}
+
+/* ========================================
+   SEQTA TEACH SPECIFIC STYLES
+   ======================================== */
+
+// SEQTA Teach main layout improvements
+body[data-seqta-platform="teach"] {
+  
+  // Student Information Panel (SIP) styling
+  .SIP__SIP___gclvX {
+    background: var(--better-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    
+    .SIP__content___RZMhx {
+      background: transparent !important;
+      
+      // Header section
+      .Header__Header___HcPDg {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 16px !important;
+        
+        .Header__selector___IR4b4 {
+          .FindAsYouType__FindAsYouType___j4Emb {
+            .Button__Button___kQRWg {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              border-radius: 8px !important;
+              padding: 12px 16px !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                border-color: var(--theme-primary) !important;
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-1px) !important;
+              }
+              
+              .FindAsYouType__value___lzuOB {
+                color: white !important;
+                font-weight: 500 !important;
+              }
+              
+              svg {
+                fill: rgba(255, 255, 255, 0.8) !important;
+              }
+            }
+          }
+        }
+        
+        .MenuButton__Menu___FMwps,
+        .Header__menu____UnAT {
+          .Button__Button___kQRWg {
+            background: var(--theme-primary) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: var(--theme-primary) !important;
+              transform: scale(1.05) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            }
+            
+            svg {
+              fill: white !important;
+            }
+          }
+        }
+        
+        .Header__clear___Qn4Ke {
+          background: rgba(255, 59, 48, 0.8) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 8px !important;
+          
+          &:hover {
+            background: rgba(255, 59, 48, 1) !important;
+            transform: scale(1.05) !important;
+          }
+          
+          svg {
+            fill: white !important;
+          }
+        }
+      }
+      
+      // Student Info section
+      .StudentInfo__StudentInfo___N7Vot {
+        background: transparent !important;
+        padding: 20px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        
+        .StudentInfo__details___OtsXW {
+          .StudentInfo__name___QQKfR {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            margin-bottom: 8px !important;
+            
+            .StudentInfo__firstname___L_cNo,
+            .StudentInfo__surname___md4KV {
+              color: white !important;
+              font-weight: 600 !important;
+              font-size: 18px !important;
+            }
+            
+            .StudentInfo__prefname___tgoHc {
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-weight: 400 !important;
+            }
+          }
+          
+          .StudentInfo__demographics___xPeEe,
+          .StudentInfo__age___XHJEu,
+          .StudentInfo__sex___IApQ0 {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            margin: 4px 0 !important;
+          }
+          
+          ul {
+            li {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              
+              a {
+                color: var(--theme-primary) !important;
+                text-decoration: none !important;
+                
+                &:hover {
+                  color: white !important;
+                  text-decoration: underline !important;
+                }
+              }
+            }
+          }
+        }
+        
+        .StudentInfo__glance___PyW1p {
+          .Avatar__Avatar___j4ZSp {
+            background: var(--theme-primary) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50% !important;
+            
+            svg text {
+              fill: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+          
+          .StudentInfo__alerts___OWpwd {
+            svg {
+              filter: brightness(1.1) contrast(1.2) !important;
+            }
+          }
+        }
+        
+        .StudentInfo__extraDetails___nYX7X {
+          li {
+            border-bottom: 1px solid var(--border-secondary) !important;
+            padding: 8px 0 !important;
+            
+            &:last-child {
+              border-bottom: none !important;
+            }
+            
+            .StudentInfo__label___orOpd {
+              color: var(--text-muted) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+            }
+            
+            .StudentInfo__value___l4aY_ {
+              color: var(--text-primary) !important;
+              font-family: Rubik, sans-serif !important;
+              font-weight: 500 !important;
+              
+              a {
+                color: var(--accent-bg) !important;
+                text-decoration: none !important;
+                
+                &:hover {
+                  color: var(--accent-hover) !important;
+                }
+              }
+            }
+          }
+        }
+        
+        .StudentInfo__toggle___AuBnh {
+          background: var(--background-secondary) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          border-radius: 50% !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            transform: scale(1.1) !important;
+          }
+          
+          svg {
+            fill: currentColor !important;
+          }
+        }
+      }
+      
+      // General notes and content sections
+      .General__General___W0EVC {
+        background: transparent !important;
+        
+        .BasicPanel__BasicPanel___q92_U {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-radius: 8px !important;
+          margin: 16px !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          
+          header {
+            background: var(--theme-primary) !important;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            
+            h2 {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 16px !important;
+              font-weight: 600 !important;
+              margin: 0 !important;
+            }
+          }
+          
+          // Notes content
+          .BasicPanel__numbered___m3sE4 {
+            background: transparent !important;
+            padding: 16px !important;
+            
+            li {
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              padding: 12px 0 !important;
+              
+              &:last-child {
+                border-bottom: none !important;
+              }
+              
+              &.add {
+                background: rgba(40, 167, 69, 0.2) !important;
+                border: 1px solid rgba(40, 167, 69, 0.4) !important;
+                border-radius: 6px !important;
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+                
+                div {
+                  color: rgba(40, 167, 69, 1) !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-weight: 500 !important;
+                }
+                
+                .Button__Button___kQRWg {
+                  background: rgba(40, 167, 69, 1) !important;
+                  color: white !important;
+                  border-radius: 50% !important;
+                  
+                  &:hover {
+                    transform: scale(1.1) !important;
+                  }
+                  
+                  svg {
+                    fill: white !important;
+                  }
+                }
+              }
+              
+              .General__noteContents___P6vtn {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                line-height: 1.5 !important;
+                margin-bottom: 4px !important;
+              }
+              
+              .MenuButton__Menu___FMwps,
+              .General__menu___jGCdg {
+                .Button__Button___kQRWg {
+                  background: var(--background-secondary) !important;
+                  border: 1px solid var(--border-primary) !important;
+                  color: var(--text-muted) !important;
+                  
+                  &:hover {
+                    background: var(--accent-bg) !important;
+                    color: var(--text-on-accent) !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Contacts section
+        .General__contacts___DLenQ {
+          .General__contact___g3L9u {
+            background: var(--background-secondary) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 8px !important;
+            margin: 16px !important;
+            
+            header {
+              background: var(--accent-bg) !important;
+              border-radius: 8px 8px 0 0 !important;
+              padding: 12px 16px !important;
+              
+              h2 {
+                color: var(--text-on-accent) !important;
+                font-family: Rubik, sans-serif !important;
+                margin: 0 !important;
+                
+                .General__salutation___EXRuD {
+                  font-weight: 600 !important;
+                  font-size: 16px !important;
+                }
+                
+                .General__type___D6HTb {
+                  font-weight: 400 !important;
+                  font-size: 14px !important;
+                  opacity: 0.9 !important;
+                  margin-left: 8px !important;
+                }
+              }
+            }
+            
+            article {
+              padding: 16px !important;
+              background: var(--background-primary) !important;
+              
+              .General__flags___LX3Gb {
+                margin-bottom: 12px !important;
+                
+                .InfoPill__InfoPill___CQ6X_ {
+                  background: var(--info-bg) !important;
+                  color: var(--info-text) !important;
+                  border-radius: 12px !important;
+                  padding: 4px 8px !important;
+                  font-size: 12px !important;
+                  font-weight: 500 !important;
+                  margin-right: 8px !important;
+                }
+                
+                .Button__Button___kQRWg {
+                  background: var(--success-bg) !important;
+                  color: var(--success-text) !important;
+                  border: none !important;
+                  border-radius: 6px !important;
+                  padding: 6px 12px !important;
+                  font-size: 12px !important;
+                  
+                  &:hover {
+                    background: var(--success-hover) !important;
+                  }
+                }
+              }
+              
+              ul {
+                li {
+                  display: flex !important;
+                  justify-content: space-between !important;
+                  padding: 8px 0 !important;
+                  border-bottom: 1px solid var(--border-secondary) !important;
+                  
+                  &:last-child {
+                    border-bottom: none !important;
+                  }
+                  
+                  .General__label___luZk3 {
+                    color: var(--text-muted) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                  }
+                  
+                  .General__value___NCG1V {
+                    color: var(--text-primary) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 500 !important;
+                    text-align: right !important;
+                    
+                    a {
+                      color: var(--accent-bg) !important;
+                      text-decoration: none !important;
+                      
+                      &:hover {
+                        color: var(--accent-hover) !important;
+                        text-decoration: underline !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              .General__footer___ARMHi {
+                margin-top: 12px !important;
+                padding-top: 12px !important;
+                border-top: 1px solid var(--border-secondary) !important;
+                
+                .General__address___wJ8AX {
+                  div {
+                    color: var(--text-muted) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 14px !important;
+                    line-height: 1.4 !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Standardised tests button
+        .General__stdTest___J_ua6 {
+          padding: 16px !important;
+          
+          .Button__Button___kQRWg {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: var(--accent-hover) !important;
+              transform: translateY(-2px) !important;
+              box-shadow: var(--shadow-md) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+              margin-left: 8px !important;
+            }
+          }
+        }
+      }
+    }
+    
+    // Navigation tabs
+    .SIP__nav___tsK53 {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 0 0 12px 12px !important;
+      padding: 12px !important;
+      display: flex !important;
+      gap: 8px !important;
+      
+      a {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: var(--theme-primary) !important;
+          color: white !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        &.SIP__active___l7g0m {
+          background: var(--theme-primary) !important;
+          color: white !important;
+          border-color: var(--theme-primary) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+        }
+      }
+    }
+    
+    // Toggle button
+    .SIP__toggle___D06YZ {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      position: absolute !important;
+      right: -12px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      border-radius: 50% !important;
+      width: 32px !important;
+      height: 32px !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      
+      &:hover {
+        background: var(--theme-primary) !important;
+        color: white !important;
+        transform: translateY(-50%) scale(1.1) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+  // Marksbook/Gradebook styling
+  .marksbookHeader {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-md) !important;
+    margin: 16px !important;
+    
+    > .body {
+      background: var(--background-secondary) !important;
+      border-radius: 6px !important;
+      padding: 16px !important;
+      
+      > .sets, > .types {
+        background: var(--background-primary) !important;
+        border-radius: 4px !important;
+        margin: 8px 0 !important;
+        
+        h2 {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+        
+        .setsWrapper, .typesWrapper {
+          > .header {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            
+            > thead > tr > td {
+              border-color: var(--border-primary) !important;
+              font-weight: 600 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Timetable improvements for teachers
+  table.timetable {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+    
+    > tbody > tr > td {
+      border-color: var(--border-primary) !important;
+      
+      .item {
+        background: var(--accent-bg) !important;
+        border-radius: 6px !important;
+        color: var(--text-on-accent) !important;
+        font-family: Rubik, sans-serif !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: var(--shadow-md) !important;
+        }
+        
+        &.relief {
+          background: var(--warning-bg) !important;
+          color: var(--warning-text) !important;
+        }
+        
+        &.relieved {
+          opacity: 0.7 !important;
+          background: var(--muted-bg) !important;
+        }
+      }
+    }
+  }
+
+  // Correspondence/messaging improvements
+  .correspondence {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    margin: 16px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-md) !important;
+    
+    > .data {
+      background: var(--background-secondary) !important;
+      border-right: 1px solid var(--border-primary) !important;
+      
+      > .filterBox {
+        input {
+          background: var(--input-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          
+          &:focus {
+            border-color: var(--accent-bg) !important;
+            box-shadow: 0 0 0 2px var(--accent-ring) !important;
+          }
+        }
+      }
+      
+      > .mergeOptions {
+        background: var(--background-primary) !important;
+        border-color: var(--border-primary) !important;
+        border-radius: 6px !important;
+        box-shadow: var(--shadow-lg) !important;
+        
+        > .mode, > .preset, > .studentContact {
+          > label {
+            color: var(--text-muted) !important;
+            font-family: Rubik, sans-serif !important;
+          }
+          
+          > input {
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border-primary) !important;
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Academic reports styling
+  .academicReportsWrapper {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    margin: 16px !important;
+    box-shadow: var(--shadow-md) !important;
+    
+    > .tabPage {
+      background: var(--background-secondary) !important;
+      
+      .filterBox {
+        background: var(--background-primary) !important;
+        border-radius: 6px !important;
+        padding: 12px !important;
+        margin: 8px !important;
+        
+        .supplementary > input {
+          background: var(--input-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+    }
+  }
+
+  // Student plans content
+  .studentPlansContent > .tabPage {
+    > .detailTable {
+      background: var(--background-primary) !important;
+      border-radius: 8px !important;
+      box-shadow: var(--shadow-sm) !important;
+      overflow: hidden !important;
+      
+      > .headerWrapper,
+      .header {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        
+        td > div {
+          font-family: Rubik, sans-serif !important;
+          font-weight: 600 !important;
+        }
+      }
+    }
+  }
+
+  // General form improvements
+  input, textarea, select {
+    @include teach-only {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--border-primary) !important;
+      border-radius: 4px !important;
+      color: var(--text-primary) !important;
+      font-family: Rubik, sans-serif !important;
+      padding: 8px 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:focus {
+        border-color: var(--accent-bg) !important;
+        box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        outline: none !important;
+      }
+    }
+  }
+
+  // Button improvements
+  button {
+    @include teach-only {
+      background: var(--accent-bg) !important;
+      border: none !important;
+      border-radius: 6px !important;
+      color: var(--text-on-accent) !important;
+      cursor: pointer !important;
+      font-family: Rubik, sans-serif !important;
+      font-weight: 500 !important;
+      padding: 8px 16px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: var(--accent-hover) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: var(--shadow-sm) !important;
+      }
+      
+      &:active {
+        transform: translateY(0) !important;
+      }
+    }
+  }
 }

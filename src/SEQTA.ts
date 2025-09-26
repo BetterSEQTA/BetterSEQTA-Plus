@@ -39,7 +39,7 @@ if (document.childNodes[1]) {
  * 8. Logs success or error messages during initialization.
  */
 async function init() {
-  const hasSEQTATitle = document.title.includes("SEQTA Learn");
+  const hasSEQTATitle = document.title.includes("SEQTA Learn") || document.title.includes("SEQTA Teach");
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     // Verify we are on a SEQTA page
