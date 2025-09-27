@@ -5,6 +5,19 @@
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
 
+// Platform-specific styling mixins
+@mixin learn-only {
+  body[data-seqta-platform="learn"] & {
+    @content;
+  }
+}
+
+@mixin teach-only {
+  body[data-seqta-platform="teach"] & {
+    @content;
+  }
+}
+
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
@@ -3399,7 +3412,6 @@ div.day-empty {
   font-size: 0.75rem;
   font-weight: 500;
   color: #9a3412;
-  background-color: #ffedd569;
   border-radius: 9999px;
   border: 1px solid rgba(253, 186, 140, 0.3);
   background-color: #ffedd5;
@@ -3771,7 +3783,7 @@ div.day-empty {
     font-size: 20px !important; // Nice middle ground - not too big, not too small
     font-weight: 600 !important;
     color: var(--text-primary) !important;
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 12px !important;
     line-height: 1.3 !important;
     flex-shrink: 0;
   }
@@ -3882,7 +3894,6 @@ button.notice-close-btn {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
   color: var(--text-primary);
   transition: all 0.2s ease !important;
   flex-shrink: 0;
@@ -3940,13 +3951,13 @@ button.notice-close-btn {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 16px 20px 20px 20px;
+  margin: 16px 20px 20px;
   line-height: 1.3;
   flex-shrink: 0;
 }
 
 .notice-modal-body {
-  padding: 0 20px 20px 20px;
+  padding: 0 20px 20px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -4026,11 +4037,11 @@ button.notice-close-btn {
 
   .notice-modal-title {
     font-size: 20px;
-    margin: 12px 16px 16px 16px;
+    margin: 12px 16px 16px;
   }
 
   .notice-modal-body {
-    padding: 0 16px 16px 16px;
+    padding: 0 16px 16px;
   }
 
   .notice-card {
@@ -4046,4 +4057,3232 @@ h2.home-subtitle {
   margin: 20px;
   font-size: 20px;
   font-weight: 400;
+}
+
+/* ========================================
+   SEQTA TEACH SPECIFIC STYLES
+   ======================================== */
+
+// SEQTA Teach main layout improvements
+body[data-seqta-platform="teach"] {
+  
+  // Override SEQTA Teach CSS variables to use BetterSEQTA theming
+  :root,
+  html {
+    --theme-bg-parts: var(--better-main-rgb, 22, 22, 22) !important;
+    --theme-fg-parts: 255, 255, 255 !important;
+    --theme-bg-alt-parts: var(--background-secondary-rgb, 30, 30, 30) !important;
+    
+    // Navigation colors integration
+    --nav-level-zero: var(--theme-primary) !important;
+    --nav-level-zero-fg: #fff !important;
+    --nav-level-one: rgba(255, 255, 255, 0.05) !important;
+    --nav-level-one-fg: #fff !important;
+    --nav-level-two: rgba(255, 255, 255, 0.02) !important;
+    --nav-level-two-fg: #fff !important;
+    --nav-level-three: rgba(255, 255, 255, 0.08) !important;
+    --nav-level-three-opaque: rgba(255, 255, 255, 0.08) !important;
+    --nav-level-three-fg: #fff !important;
+    
+    // Button theming
+    --theme-button-bg: rgba(255, 255, 255, 0.1) !important;
+    --theme-button-fg: rgba(255, 255, 255, 0.9) !important;
+    --theme-button-border: rgba(255, 255, 255, 0.2) !important;
+    
+    // Offset backgrounds
+    --theme-offset-bg: rgba(255, 255, 255, 0.05) !important;
+    --theme-offset-bg-more: rgba(255, 255, 255, 0.1) !important;
+    --theme-table-headers: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  // Welcome page specific styling
+  .defaultWelcomeWrapper {
+    background: var(--better-main) !important;
+    
+    .defaultWelcome {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(10px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      color: white !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      
+      // Override the complex clip-path with simple rounded corners
+      clip-path: none !important;
+      
+      > header {
+        background: var(--theme-primary) !important;
+        background-image: none !important;
+        border-radius: 12px 12px 0 0 !important;
+        clip-path: none !important;
+        color: white !important;
+        padding: 3rem 2rem !important;
+        
+        h1 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 700 !important;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        p.byline {
+          color: rgba(255, 255, 255, 0.9) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+      
+      > section {
+        background: transparent !important;
+        color: white !important;
+        
+        &.sip,
+        &.help {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-radius: 8px !important;
+          margin: 1rem !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        > header > h2 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 600 !important;
+        }
+      }
+      
+      ul {
+        li {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          &:last-child {
+            border-bottom: none !important;
+          }
+          
+          > p {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            
+            &.detail {
+              color: rgba(255, 255, 255, 0.7) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // General content area styling
+  main,
+  .main-content,
+  .content-area {
+    background: transparent !important;
+    color: white !important;
+  }
+  
+  // Form elements integration
+  input,
+  textarea,
+  select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    &:focus {
+      border-color: var(--theme-primary) !important;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+      outline: none !important;
+    }
+  }
+  
+  // Table styling
+  table {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    
+    thead {
+      background: rgba(255, 255, 255, 0.08) !important;
+      
+      th {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+    
+    tbody {
+      tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        td {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+    }
+  }
+  
+  // Card/Panel styling
+  .card,
+  .panel,
+  .widget {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: white !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  // Dashboard specific styling
+  .dashboard {
+    background: transparent !important;
+    color: white !important;
+    
+    .dashlet {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      color: white !important;
+      backdrop-filter: blur(10px) !important;
+      margin: 16px !important;
+      overflow: hidden !important;
+      
+      .header {
+        background: var(--theme-primary) !important;
+        color: white !important;
+        padding: 16px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        
+        .title {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin: 0 !important;
+        }
+        
+        .actions {
+          display: flex !important;
+          gap: 8px !important;
+          align-items: center !important;
+          
+          .uiButton,
+          button {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.3) !important;
+              transform: scale(1.05) !important;
+            }
+            
+            svg {
+              fill: white !important;
+              width: 16px !important;
+              height: 16px !important;
+            }
+          }
+          
+          // Pillbox button groups
+          .pillbox {
+            display: flex !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 6px !important;
+            overflow: hidden !important;
+            
+            button {
+              background: transparent !important;
+              border: none !important;
+              border-radius: 0 !important;
+              color: rgba(255, 255, 255, 0.8) !important;
+              padding: 6px 12px !important;
+              font-size: 12px !important;
+              font-family: Rubik, sans-serif !important;
+              
+              &.depressed {
+                background: rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+              }
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                color: white !important;
+                transform: none !important;
+              }
+              
+              &.first {
+                border-radius: 6px 0 0 6px !important;
+              }
+              
+              &.last {
+                border-radius: 0 6px 6px 0 !important;
+              }
+            }
+          }
+        }
+      }
+      
+      .content {
+        background: transparent !important;
+        color: white !important;
+        padding: 20px !important;
+        
+        .message {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          line-height: 1.6 !important;
+          
+          h1, h2, h3, h4, h5, h6 {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            margin: 16px 0 8px !important;
+          }
+          
+          p {
+            color: white !important;
+            margin: 8px 0 !important;
+          }
+          
+          strong, b {
+            color: white !important;
+            font-weight: 600 !important;
+          }
+          
+          em, i {
+            color: rgba(255, 255, 255, 0.9) !important;
+          }
+          
+          u {
+            color: white !important;
+            text-decoration: underline !important;
+          }
+          
+          sub, sup {
+            color: rgba(255, 255, 255, 0.8) !important;
+          }
+          
+          pre {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 4px !important;
+            color: white !important;
+            font-family: 'Courier New', monospace !important;
+            padding: 12px !important;
+          }
+          
+          table {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 6px !important;
+            width: 100% !important;
+          }
+        }
+        
+        // Notes and tasks specific
+        .dashlet-notes,
+        .dashlet-tasks {
+          ul.magicDelete {
+            li {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              margin: 8px 0 !important;
+              padding: 12px !important;
+            }
+          }
+          
+          .editor {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 6px !important;
+            color: white !important;
+            min-height: 100px !important;
+            padding: 12px !important;
+          }
+        }
+        
+        // Message of the day specific
+        .dashlet-motd {
+          .message {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 8px !important;
+            padding: 20px !important;
+            margin-bottom: 16px !important;
+            text-align: center !important;
+          }
+          
+          .favour {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            justify-content: center !important;
+            
+            .uiButton {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 50% !important;
+              color: rgba(255, 255, 255, 0.7) !important;
+              padding: 8px !important;
+              
+              &.unfavourable:hover {
+                background: rgba(255, 59, 48, 0.2) !important;
+                color: #ff3b30 !important;
+              }
+              
+              &.favourable:hover {
+                background: rgba(40, 167, 69, 0.2) !important;
+                color: #28a745 !important;
+              }
+              
+              svg {
+                fill: currentColor !important;
+                width: 20px !important;
+                height: 20px !important;
+              }
+            }
+            
+            .graph {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border-radius: 4px !important;
+              height: 8px !important;
+              overflow: hidden !important;
+              position: relative !important;
+              width: 100px !important;
+              
+              .unfavourable {
+                background: #ff3b30 !important;
+                height: 100% !important;
+              }
+            }
+          }
+        }
+        
+        // Profile preferences specific
+        .dashlet-profile {
+          .details {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 8px !important;
+            margin-bottom: 16px !important;
+            padding: 20px !important;
+            
+            h2 {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 18px !important;
+              font-weight: 600 !important;
+              margin: 0 0 16px !important;
+            }
+            
+            .field {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              margin-bottom: 12px !important;
+              
+              label {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-weight: 500 !important;
+              }
+              
+              .value {
+                color: rgba(255, 255, 255, 0.8) !important;
+                font-family: Rubik, sans-serif !important;
+              }
+              
+              .uiShortText,
+              input {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+                
+                &::placeholder {
+                  color: rgba(255, 255, 255, 0.5) !important;
+                }
+              }
+              
+              .colourButton {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+                
+                .preview {
+                  border-radius: 3px !important;
+                  width: 20px !important;
+                  height: 20px !important;
+                }
+              }
+            }
+            
+            .passwordContainer {
+              .uiButton {
+                background: var(--theme-primary) !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                
+                &:hover {
+                  background: var(--theme-primary) !important;
+                  filter: brightness(1.1) !important;
+                }
+              }
+            }
+            
+            .InlineHelp__InlineHelp___NTYcB {
+              .Button__Button___kQRWg {
+                background: rgba(255, 193, 7, 0.2) !important;
+                color: #ffc107 !important;
+                border: 1px solid rgba(255, 193, 7, 0.3) !important;
+                
+                svg {
+                  fill: currentColor !important;
+                }
+              }
+            }
+          }
+        }
+        
+        // Sentence generator specific
+        .dashlet-sentence {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          padding: 20px !important;
+          text-align: center !important;
+        }
+      }
+      
+      // Message outside content (for sentence generator)
+      > .message {
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        padding: 16px 20px !important;
+      }
+    }
+  }
+
+  // Timetable page styling
+  .legacy-root,
+  .LegacyPage__LegacyPage___t2gIt {
+    background: transparent !important;
+    color: white !important;
+    
+    .LegacyPage__toolbar___xRVAN,
+    .Toolbar__Toolbar___ecArT {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(10px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+      padding: 16px 20px !important;
+      
+      .Button__Button___kQRWg,
+      .uiButton,
+      button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.2) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &:disabled {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: rgba(255, 255, 255, 0.5) !important;
+          cursor: not-allowed !important;
+        }
+        
+        &.myTT {
+          background: var(--theme-primary) !important;
+          border-color: var(--theme-primary) !important;
+          
+          &:disabled {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+          }
+        }
+      }
+      
+      .singleSelect,
+      .uiShortText,
+      input {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important;
+        font-family: Rubik, sans-serif !important;
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        &:focus {
+          border-color: var(--theme-primary) !important;
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+          outline: none !important;
+        }
+      }
+      
+      .spacer {
+        flex: 1 !important;
+      }
+    }
+    
+    .LegacyPage__body___IxT9e {
+      background: transparent !important;
+      color: white !important;
+      padding: 20px !important;
+      
+      .timetable {
+        background: transparent !important;
+        
+        .tabPage {
+          background: transparent !important;
+          
+          .ptMyDay {
+            background: transparent !important;
+            
+            .Myday__Myday___WuhC_ {
+              background: transparent !important;
+              display: flex !important;
+              gap: 20px !important;
+              
+              // Left sidebar menu
+              .MydayMenu__MydayMenu___T5I1E {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                overflow: hidden !important;
+                
+                .MydayMenu__header___UWKQp {
+                  background: var(--theme-primary) !important;
+                  color: white !important;
+                  padding: 16px !important;
+                  position: relative !important;
+                  
+                  .DayNavigator__DayNavigator___G4kt7,
+                  .MydayMenu__navigator___rV3nZ {
+                    margin-right: 50px !important; // Make space for toggle button
+                    
+                    .DayNavigator__row___faS_z {
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: space-between !important;
+                      margin-bottom: 12px !important;
+                      
+                      &:last-child {
+                        margin-bottom: 0 !important;
+                        justify-content: center !important;
+                        gap: 4px !important;
+                      }
+                      
+                      button {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 6px !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          transform: scale(1.05) !important;
+                        }
+                        
+                        svg {
+                          fill: white !important;
+                          width: 16px !important;
+                          height: 16px !important;
+                        }
+                        
+                        &.DayNavigator__dayButton___Hdq8G {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 50% !important;
+                          color: rgba(255, 255, 255, 0.8) !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-size: 12px !important;
+                          font-weight: 500 !important;
+                          height: 32px !important;
+                          padding: 0 !important;
+                          width: 32px !important;
+                          
+                          &.DayNavigator__selected___Iatdm {
+                            background: rgba(255, 255, 255, 0.3) !important;
+                            color: white !important;
+                            font-weight: 600 !important;
+                          }
+                        }
+                      }
+                      
+                      input {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        padding: 6px 8px !important;
+                        text-align: center !important;
+                        
+                        &:focus {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          outline: none !important;
+                        }
+                      }
+                    }
+                  }
+                  
+                  .MydayMenu__toggle___gsNsa {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    border-radius: 6px !important;
+                    color: white !important;
+                    padding: 8px !important;
+                    position: absolute !important;
+                    right: 16px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.3) !important;
+                    }
+                    
+                    svg,
+                    div svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    div {
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: center !important;
+                    }
+                  }
+                }
+                
+                .MydayMenu__list___wlbW_ {
+                  background: transparent !important;
+                  color: white !important;
+                  padding: 20px !important;
+                  
+                  .MydayMenu__noClasses___JKqLK {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-style: italic !important;
+                    text-align: center !important;
+                  }
+                }
+                
+                .MydayMenu__buttons___ET0LY {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  gap: 8px !important;
+                  padding: 16px !important;
+                  
+                  button {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 6px !important;
+                    color: white !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    font-family: Rubik, sans-serif !important;
+                    padding: 12px 16px !important;
+                    text-align: left !important;
+                    transition: all 0.2s ease !important;
+                    width: 100% !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.15) !important;
+                      transform: translateY(-1px) !important;
+                    }
+                    
+                    svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    &.MydayMenu__notes___sdb3O {
+                      &:hover {
+                        border-color: #007AFF !important;
+                      }
+                    }
+                    
+                    &.MydayMenu__tasks___U1AOT {
+                      &:hover {
+                        border-color: #28a745 !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Main content area
+              .MydayContent__noClasses___LJ3Hr {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 16px !important;
+                font-style: italic !important;
+                flex: 1 !important;
+                min-height: 400px !important;
+                padding: 40px !important;
+                text-align: center !important;
+              }
+              
+              // Saved indicator
+              .Myday__saved___kvTsO {
+                background: rgba(40, 167, 69, 0.2) !important;
+                border: 1px solid rgba(40, 167, 69, 0.4) !important;
+                border-radius: 6px !important;
+                color: #28a745 !important;
+                font-family: Rubik, sans-serif !important;
+                font-weight: 500 !important;
+                padding: 8px 16px !important;
+                position: fixed !important;
+                right: 20px !important;
+                top: 80px !important;
+                z-index: 1000 !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Attendance page styling
+  .attendance.container {
+    background: transparent !important;
+    color: white !important;
+    
+    .contentWrapper {
+      background: transparent !important;
+      
+      .content {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 20px !important;
+        margin: 20px !important;
+        
+        .note.attendance {
+          background: transparent !important;
+          color: rgba(255, 255, 255, 0.8) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          text-align: center !important;
+          padding: 40px 20px !important;
+          border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+          border-radius: 8px !important;
+          margin: 0 !important;
+          
+          &::before {
+            content: "📋" !important;
+            display: block !important;
+            font-size: 48px !important;
+            margin-bottom: 16px !important;
+            opacity: 0.6 !important;
+          }
+        }
+        
+        // Attendance table styling
+        table.attendance.students {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          color: white !important;
+          overflow: hidden !important;
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
+          width: 100% !important;
+          
+          // Header styling
+          thead {
+            tr {
+              background: rgba(255, 255, 255, 0.05) !important;
+              
+              td, th {
+                background: rgba(255, 255, 255, 0.05) !important;
+                color: white !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 12px 8px !important;
+                font-weight: 600 !important;
+                font-family: Rubik, sans-serif !important;
+                
+                // Meta column (class info)
+                &.meta {
+                  background: var(--theme-primary) !important;
+                  
+                  .wrap {
+                    h2 {
+                      color: white !important;
+                      font-size: 18px !important;
+                      margin: 0 0 8px !important;
+                      font-weight: 700 !important;
+                    }
+                    
+                    .details {
+                      .count {
+                        color: rgba(255, 255, 255, 0.9) !important;
+                        font-size: 14px !important;
+                        margin-bottom: 12px !important;
+                      }
+                    }
+                    
+                    .actions {
+                      display: flex !important;
+                      gap: 8px !important;
+                      
+                      .uiButton {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        color: white !important;
+                        font-size: 12px !important;
+                        padding: 6px 12px !important;
+                        border-radius: 6px !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          transform: translateY(-1px) !important;
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                // Date columns
+                &.fillDown {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  text-align: center !important;
+                  min-width: 80px !important;
+                  
+                  .day {
+                    font-weight: 700 !important;
+                    font-size: 12px !important;
+                    color: var(--theme-primary) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .period {
+                    font-size: 10px !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .date {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .count {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 12px !important;
+                    padding: 2px 8px !important;
+                    font-size: 11px !important;
+                    color: white !important;
+                    display: inline-block !important;
+                    min-width: 20px !important;
+                  }
+                }
+                
+                // Attendance header
+                &.attendance.header {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  text-align: center !important;
+                  
+                  svg {
+                    fill: var(--theme-primary) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .percent {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                  }
+                }
+                
+                // Trait columns
+                &.trait.summary {
+                  background: rgba(255, 255, 255, 0.06) !important;
+                  text-align: center !important;
+                  
+                  .title {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .symbol {
+                    font-size: 14px !important;
+                    color: var(--theme-primary) !important;
+                    font-weight: 700 !important;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Body styling
+          tbody {
+            tr {
+              background: rgba(255, 255, 255, 0.02) !important;
+              transition: background 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.05) !important;
+              }
+              
+              &:nth-child(even) {
+                background: rgba(255, 255, 255, 0.01) !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                }
+              }
+              
+              td {
+                color: white !important;
+                border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                padding: 8px !important;
+                vertical-align: middle !important;
+                
+                // Student meta column
+                &.meta {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  
+                  .name {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    
+                    .stdTest {
+                      fill: #4CAF50 !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    .avatarWrapper {
+                      .Avatar__Avatar___j4ZSp {
+                        width: 32px !important;
+                        height: 32px !important;
+                        border-radius: 50% !important;
+                        background: var(--theme-primary) !important;
+                        
+                        svg text {
+                          fill: white !important;
+                          font-size: 14px !important;
+                          font-weight: 700 !important;
+                        }
+                      }
+                    }
+                    
+                    .surname {
+                      color: white !important;
+                      font-weight: 600 !important;
+                      font-size: 14px !important;
+                    }
+                    
+                    .comma {
+                      color: rgba(255, 255, 255, 0.7) !important;
+                    }
+                    
+                    .firstname {
+                      color: rgba(255, 255, 255, 0.9) !important;
+                      font-size: 14px !important;
+                    }
+                    
+                    .prefname {
+                      color: rgba(255, 255, 255, 0.7) !important;
+                      font-size: 12px !important;
+                      font-style: italic !important;
+                    }
+                  }
+                  
+                  .lights {
+                    display: flex !important;
+                    gap: 4px !important;
+                    margin-top: 4px !important;
+                    
+                    .light {
+                      width: 16px !important;
+                      height: 16px !important;
+                      opacity: 0.8 !important;
+                    }
+                  }
+                }
+                
+                // Demographics column
+                &.demographics {
+                  background: rgba(255, 255, 255, 0.02) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                }
+                
+                // Code column
+                &.code {
+                  background: rgba(255, 255, 255, 0.02) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                  font-family: monospace !important;
+                }
+                
+                // Attendance columns
+                &.attendance {
+                  background: rgba(255, 255, 255, 0.01) !important;
+                  text-align: center !important;
+                  cursor: pointer !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    transform: scale(1.05) !important;
+                  }
+                  
+                  svg {
+                    width: 20px !important;
+                    height: 20px !important;
+                    
+                    &:not(.printOnly) {
+                      fill: rgba(255, 255, 255, 0.3) !important;
+                    }
+                    
+                    // Checked attendance
+                    path[fill="#25b3fd"] {
+                      fill: #4CAF50 !important;
+                    }
+                  }
+                  
+                  // Fixed attendance summary
+                  &.fixed {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    font-weight: 600 !important;
+                    color: var(--theme-primary) !important;
+                    font-size: 14px !important;
+                  }
+                }
+                
+                // Trait columns
+                &.trait {
+                  background: rgba(255, 255, 255, 0.01) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                  
+                  &.fixed {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    font-weight: 600 !important;
+                    color: var(--theme-primary) !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // General attendance components (fallback)
+        .attendance-table,
+        .attendance-list,
+        .attendance-item {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          
+          th, td {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+          }
+          
+          th {
+            background: rgba(255, 255, 255, 0.05) !important;
+            font-weight: 600 !important;
+          }
+        }
+        
+        // Buttons and controls
+        .uiButton,
+        button {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 6px !important;
+          padding: 8px 16px !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: var(--theme-primary) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+          }
+        }
+        
+        // Form inputs
+        input, select, textarea {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 6px !important;
+          padding: 8px 12px !important;
+          
+          &:focus {
+            border-color: var(--theme-primary) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Forums page styling
+  .listContainer {
+    background: transparent !important;
+    color: white !important;
+    
+    .forum.forumList {
+      background: transparent !important;
+      
+      .forums {
+        background: transparent !important;
+        
+        .item {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          margin-bottom: 8px !important;
+          padding: 16px !important;
+          backdrop-filter: blur(5px) !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &.selected {
+            background: rgba(var(--theme-primary-rgb), 0.2) !important;
+            border-color: var(--theme-primary) !important;
+          }
+          
+          &.closed {
+            opacity: 0.7 !important;
+            
+            .name {
+              text-decoration: line-through !important;
+              color: rgba(255, 255, 255, 0.6) !important;
+            }
+          }
+          
+          .name {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .meta {
+            display: flex !important;
+            gap: 16px !important;
+            margin-bottom: 8px !important;
+            
+            .stat {
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-size: 14px !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+          
+          .actions {
+            display: flex !important;
+            gap: 8px !important;
+            
+            .uiButton {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                border-color: rgba(255, 255, 255, 0.3) !important;
+                transform: scale(1.05) !important;
+              }
+              
+              &:active {
+                transform: scale(0.95) !important;
+              }
+              
+              svg {
+                fill: white !important;
+                width: 16px !important;
+                height: 16px !important;
+              }
+              
+              &.edit svg {
+                fill: #60a5fa !important;
+              }
+              
+              &.close svg {
+                fill: #f87171 !important;
+              }
+              
+              &.reopen svg {
+                fill: #34d399 !important;
+              }
+            }
+          }
+        }
+        
+        .divider {
+          margin: 24px 0 16px !important;
+          
+          .name {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 12px 16px !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            backdrop-filter: blur(5px) !important;
+          }
+        }
+        
+        .closedToggle {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          padding: 12px 20px !important;
+          margin-top: 16px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+          backdrop-filter: blur(5px) !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:active {
+            transform: translateY(0) !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Academic Summary page styling
+  .AcademicSummary__pageArea___znOUo {
+    background: transparent !important;
+    color: white !important;
+    padding: 20px !important;
+    
+    // Actions bar
+    .Actions__Actions___hbdy8 {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      backdrop-filter: blur(10px) !important;
+      padding: 16px 20px !important;
+      margin-bottom: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      
+      .Button__Button___kQRWg {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: var(--theme-primary) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &.Button__dropdown___jmEEr {
+          span svg {
+            fill: white !important;
+            margin-left: 8px !important;
+          }
+        }
+      }
+      
+      // Search input
+      .Label__Label___D7Qid {
+        .Input__Input___KL0p5,
+        input {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 8px !important;
+          padding: 10px 16px !important;
+          font-family: Rubik, sans-serif !important;
+          min-width: 200px !important;
+          
+          &:focus {
+            border-color: var(--theme-primary) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+          }
+        }
+      }
+      
+      .Actions__spacer___BB56c {
+        flex: 1 !important;
+      }
+    }
+    
+    // Main body area
+    .AcademicSummary__body___spQSl {
+      background: transparent !important;
+      
+      // Subject blocks container
+      > div {
+        margin-bottom: 24px !important;
+        
+        // Individual subject panels
+        .BasicPanel__BasicPanel___q92_U.SubjectBlock__Subject___vPjHg {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 16px !important;
+          backdrop-filter: blur(10px) !important;
+          overflow: hidden !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+          
+          // Subject header
+          header.BasicPanel__clickable___Dx1xo {
+            background: var(--container-accent, var(--theme-primary)) !important;
+            color: var(--container-accent-contrast, white) !important;
+            padding: 20px 24px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: color-mix(in srgb, var(--container-accent, var(--theme-primary)) 90%, white 10%) !important;
+            }
+            
+            h2 {
+              color: var(--container-accent-contrast, white) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 20px !important;
+              font-weight: 600 !important;
+              margin: 0 !important;
+            }
+            
+            // Color picker button
+            .SubjectBlock__colourPicker___B6jud {
+              background: rgba(255, 255, 255, 0.2) !important;
+              border: 1px solid rgba(255, 255, 255, 0.3) !important;
+              color: var(--container-accent-contrast, white) !important;
+              width: 40px !important;
+              height: 40px !important;
+              border-radius: 50% !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.3) !important;
+                transform: scale(1.1) !important;
+              }
+              
+              svg {
+                fill: var(--container-accent-contrast, white) !important;
+              }
+            }
+          }
+          
+          // Subject content
+          article {
+            background: rgba(255, 255, 255, 0.02) !important;
+            padding: 24px !important;
+            
+            // Current/Live score section
+            .SubjectBlock__result___zw0Kb.SubjectBlock__current___Zbcj1 {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 12px !important;
+              padding: 20px !important;
+              margin-bottom: 20px !important;
+              
+              .SubjectBlock__primary___ZG85m {
+                h3 {
+                  color: white !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 18px !important;
+                  font-weight: 600 !important;
+                  margin: 0 0 16px !important;
+                }
+                
+                .SubjectBlock__achievement___pIstq {
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 16px !important;
+                  
+                  // Thermometer score
+                  .Thermoscore__Thermoscore___WFpL3 {
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 20px !important;
+                    height: 40px !important;
+                    position: relative !important;
+                    overflow: hidden !important;
+                    
+                    .Thermoscore__fill___ojxDI {
+                      background: var(--container-accent, var(--theme-primary)) !important;
+                      height: 100% !important;
+                      border-radius: 20px !important;
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: center !important;
+                      transition: width 0.3s ease !important;
+                      
+                      .Thermoscore__text___XSR_M {
+                        color: white !important;
+                        font-weight: 700 !important;
+                        font-size: 16px !important;
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+                      }
+                    }
+                    
+                    // Markers (avg, min, max)
+                    .Thermoscore__marker___wb8r5 {
+                      position: absolute !important;
+                      top: -4px !important;
+                      width: 2px !important;
+                      height: 48px !important;
+                      border-radius: 1px !important;
+                      
+                      &.Thermoscore__avg___HzNZq {
+                        background: #FFC107 !important;
+                        box-shadow: 0 0 4px rgba(255, 193, 7, 0.6) !important;
+                      }
+                      
+                      &.Thermoscore__min___ixQTv {
+                        background: #F44336 !important;
+                        box-shadow: 0 0 4px rgba(244, 67, 54, 0.6) !important;
+                      }
+                      
+                      &.Thermoscore__max___L9otd {
+                        background: #4CAF50 !important;
+                        box-shadow: 0 0 4px rgba(76, 175, 80, 0.6) !important;
+                      }
+                    }
+                  }
+                  
+                  // Grade display
+                  .SimpleGrade__SimpleGrade___X5tWC {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    color: white !important;
+                    border: 2px solid var(--container-accent, var(--theme-primary)) !important;
+                    border-radius: 12px !important;
+                    padding: 12px 20px !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 24px !important;
+                    font-weight: 700 !important;
+                    min-width: 60px !important;
+                    text-align: center !important;
+                    
+                    &.SimpleGrade__accented___FSO77 {
+                      background: var(--container-accent, var(--theme-primary)) !important;
+                      color: var(--container-accent-contrast, white) !important;
+                    }
+                  }
+                }
+              }
+              
+              // Cohort statistics
+              .SubjectBlock__cohort___RGEk9 {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-top: 16px !important;
+                padding: 16px !important;
+                background: rgba(255, 255, 255, 0.03) !important;
+                border-radius: 8px !important;
+                
+                li {
+                  text-align: center !important;
+                  flex: 1 !important;
+                  
+                  .SubjectBlock__label___IWaYn {
+                    display: block !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-size: 12px !important;
+                    font-weight: 500 !important;
+                    margin-bottom: 4px !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                  }
+                  
+                  .SubjectBlock__value___MiWNZ {
+                    display: block !important;
+                    color: white !important;
+                    font-size: 16px !important;
+                    font-weight: 600 !important;
+                    font-family: Rubik, sans-serif !important;
+                  }
+                  
+                  &.SubjectBlock__minimum___cvpkf .SubjectBlock__value___MiWNZ {
+                    color: #F44336 !important;
+                  }
+                  
+                  &.SubjectBlock__average____h9Gr .SubjectBlock__value___MiWNZ {
+                    color: #FFC107 !important;
+                  }
+                  
+                  &.SubjectBlock__maximum___FuVWI .SubjectBlock__value___MiWNZ {
+                    color: #4CAF50 !important;
+                  }
+                }
+              }
+            }
+            
+            // Assessment groups
+            .SubjectBlock__groups___x0p6h {
+              .SubjectBlock__group___lgrQR {
+                h3 {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  color: white !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 16px !important;
+                  font-weight: 600 !important;
+                  margin: 0 0 16px !important;
+                  padding: 12px 16px !important;
+                  border-radius: 8px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 8px !important;
+                  backdrop-filter: blur(5px) !important;
+                  
+                  svg {
+                    fill: var(--theme-primary) !important;
+                    width: 20px !important;
+                    height: 20px !important;
+                  }
+                  
+                  span {
+                    color: white !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                    font-weight: 700 !important;
+                  }
+                }
+                
+                // Individual assessment results
+                .SubjectBlock__result___zw0Kb.SubjectBlock__assessment___epE3d {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                  border-radius: 10px !important;
+                  padding: 16px !important;
+                  margin-bottom: 12px !important;
+                  position: relative !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-color: rgba(255, 255, 255, 0.15) !important;
+                    transform: translateY(-1px) !important;
+                  }
+                  
+                  .SubjectBlock__primary___ZG85m {
+                    h3 {
+                      color: white !important;
+                      font-size: 16px !important;
+                      font-weight: 600 !important;
+                      margin: 0 0 12px !important;
+                    }
+                    
+                    .SubjectBlock__achievement___pIstq {
+                      display: flex !important;
+                      align-items: center !important;
+                      gap: 12px !important;
+                      
+                      .Thermoscore__Thermoscore___WFpL3 {
+                        flex: 1 !important;
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border-radius: 16px !important;
+                        height: 32px !important;
+                        
+                        .Thermoscore__fill___ojxDI {
+                          background: var(--container-accent, var(--theme-primary)) !important;
+                          
+                          .Thermoscore__text___XSR_M {
+                            font-size: 14px !important;
+                          }
+                        }
+                      }
+                      
+                      .SimpleGrade__SimpleGrade___X5tWC {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        color: white !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 8px !important;
+                        padding: 8px 12px !important;
+                        font-size: 16px !important;
+                        font-weight: 600 !important;
+                        min-width: 40px !important;
+                      }
+                    }
+                  }
+                  
+                  // Cohort stats for assessments
+                  .SubjectBlock__cohort___RGEk9 {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    margin-top: 12px !important;
+                    padding: 12px !important;
+                    background: rgba(255, 255, 255, 0.02) !important;
+                    border-radius: 6px !important;
+                    
+                    li {
+                      text-align: center !important;
+                      flex: 1 !important;
+                      
+                      .SubjectBlock__label___IWaYn {
+                        font-size: 10px !important;
+                        color: rgba(255, 255, 255, 0.6) !important;
+                      }
+                      
+                      .SubjectBlock__value___MiWNZ {
+                        font-size: 14px !important;
+                        color: white !important;
+                      }
+                    }
+                  }
+                  
+                  // Popup button
+                  .SubjectBlock__popup___cmgQa {
+                    position: absolute !important;
+                    top: 12px !important;
+                    right: 12px !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                    width: 32px !important;
+                    height: 32px !important;
+                    border-radius: 50% !important;
+                    transition: all 0.2s ease !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.2) !important;
+                      transform: scale(1.1) !important;
+                    }
+                    
+                    svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Folios page styling
+  .pane {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    color: white !important;
+    overflow: hidden !important;
+    
+    // Filters section
+    .filters {
+      background: rgba(255, 255, 255, 0.08) !important;
+      padding: 20px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      
+      // Search input
+      .uiShortText.search {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        width: 100% !important;
+        margin-bottom: 16px !important;
+        transition: all 0.2s ease !important;
+        
+        &:focus {
+          border-color: var(--theme-primary) !important;
+          outline: none !important;
+          box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+      
+      // Tags section
+      .tags {
+        margin: 0 !important;
+        padding: 0 !important;
+        list-style: none !important;
+        
+        .note {
+          color: rgba(255, 255, 255, 0.7) !important;
+          font-size: 12px !important;
+          font-style: italic !important;
+          font-family: Rubik, sans-serif !important;
+          line-height: 1.4 !important;
+        }
+      }
+      
+      .author {
+        margin-top: 12px !important;
+      }
+    }
+    
+    // List section
+    .list {
+      background: transparent !important;
+      max-height: calc(100vh - 200px) !important;
+      overflow-y: auto !important;
+      
+      // Individual folio items
+      .item {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        padding: 16px 20px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.06) !important;
+          border-left: 4px solid var(--theme-primary) !important;
+          padding-left: 16px !important;
+          transform: translateX(4px) !important;
+        }
+        
+        &.current {
+          background: rgba(var(--theme-primary-rgb), 0.1) !important;
+          border-left: 4px solid var(--theme-primary) !important;
+          padding-left: 16px !important;
+          
+          .title {
+            color: var(--theme-primary) !important;
+            font-weight: 600 !important;
+          }
+          
+          &:hover {
+            background: rgba(var(--theme-primary-rgb), 0.15) !important;
+          }
+        }
+        
+        &:last-child {
+          border-bottom: none !important;
+        }
+        
+        // Folio title
+        .title {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          font-weight: 500 !important;
+          margin: 0 0 8px !important;
+          line-height: 1.3 !important;
+          
+          // Truncate long titles
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+        
+        // Author name
+        .author {
+          color: rgba(255, 255, 255, 0.8) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 400 !important;
+          margin: 0 0 4px !important;
+        }
+        
+        // Timestamp
+        .time {
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 12px !important;
+          font-weight: 400 !important;
+          margin: 0 !important;
+        }
+      }
+      
+      // Custom scrollbar for the list
+      &::-webkit-scrollbar {
+        width: 6px !important;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 3px !important;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 3px !important;
+        transition: background 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+    }
+  }
+
+  // Override any remaining white backgrounds
+  div[style*="background: white"],
+  div[style*="background-color: white"],
+  div[style*="background: #fff"],
+  div[style*="background-color: #fff"],
+  .MydayMenu__MydayMenu___T5I1E[style*="background"],
+  .MydayMenu__MydayMenu___T5I1E * {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+  }
+  
+  // Force override for timetable sidebar components
+  .MydayMenu__MydayMenu___T5I1E {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+    
+    * {
+      color: white !important;
+    }
+    
+    .MydayMenu__header___UWKQp {
+      background: var(--theme-primary) !important;
+    }
+    
+    .MydayMenu__list___wlbW_ {
+      background: transparent !important;
+    }
+    
+    .MydayMenu__buttons___ET0LY {
+      background: rgba(255, 255, 255, 0.03) !important;
+    }
+  }
+
+  // Untimetabled classes styling
+  .untimetabledItems {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: white !important;
+    backdrop-filter: blur(10px) !important;
+    margin: 20px !important;
+    overflow: hidden !important;
+    
+    &.visible {
+      display: block !important;
+    }
+    
+    .handleContainer {
+      background: var(--theme-primary) !important;
+      color: white !important;
+      padding: 16px 20px !important;
+      
+      .handle {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        
+        &:hover {
+          opacity: 0.9 !important;
+        }
+      }
+    }
+    
+    .list {
+      background: transparent !important;
+      color: white !important;
+      padding: 20px !important;
+      
+      .add {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+        border-radius: 8px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-bottom: 16px !important;
+        padding: 40px 20px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+          color: white !important;
+          transform: translateY(-2px) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 32px !important;
+          height: 32px !important;
+        }
+      }
+      
+      .note {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        padding: 16px !important;
+        
+        &::before {
+          content: "💡" !important;
+          margin-right: 8px !important;
+          opacity: 0.7 !important;
+        }
+      }
+    }
+  }
+  
+  // Student Information Panel (SIP) styling
+  .SIP__SIP___gclvX {
+    background: var(--better-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    
+    .SIP__content___RZMhx {
+      background: transparent !important;
+      
+      // Header section
+      .Header__Header___HcPDg {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 16px !important;
+        
+        .Header__selector___IR4b4 {
+          .FindAsYouType__FindAsYouType___j4Emb {
+            .Button__Button___kQRWg {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              border-radius: 8px !important;
+              padding: 12px 16px !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                border-color: var(--theme-primary) !important;
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-1px) !important;
+              }
+              
+              .FindAsYouType__value___lzuOB {
+                color: white !important;
+                font-weight: 500 !important;
+              }
+              
+              svg {
+                fill: rgba(255, 255, 255, 0.8) !important;
+              }
+            }
+          }
+        }
+        
+        .MenuButton__Menu___FMwps,
+        .Header__menu____UnAT {
+          .Button__Button___kQRWg {
+            background: var(--theme-primary) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: var(--theme-primary) !important;
+              transform: scale(1.05) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            }
+            
+            svg {
+              fill: white !important;
+            }
+          }
+        }
+        
+        .Header__clear___Qn4Ke {
+          background: rgba(255, 59, 48, 0.8) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 8px !important;
+          
+          &:hover {
+            background: rgba(255, 59, 48, 1) !important;
+            transform: scale(1.05) !important;
+          }
+          
+          svg {
+            fill: white !important;
+          }
+        }
+      }
+      
+      // Student Info section
+      .StudentInfo__StudentInfo___N7Vot {
+        background: transparent !important;
+        padding: 20px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        
+        .StudentInfo__details___OtsXW {
+          .StudentInfo__name___QQKfR {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            margin-bottom: 8px !important;
+            
+            .StudentInfo__firstname___L_cNo,
+            .StudentInfo__surname___md4KV {
+              color: white !important;
+              font-weight: 600 !important;
+              font-size: 18px !important;
+            }
+            
+            .StudentInfo__prefname___tgoHc {
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-weight: 400 !important;
+            }
+          }
+          
+          .StudentInfo__demographics___xPeEe,
+          .StudentInfo__age___XHJEu,
+          .StudentInfo__sex___IApQ0 {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            margin: 4px 0 !important;
+          }
+          
+          ul {
+            li {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              
+              a {
+                color: var(--theme-primary) !important;
+                text-decoration: none !important;
+                
+                &:hover {
+                  color: white !important;
+                  text-decoration: underline !important;
+                }
+              }
+            }
+          }
+        }
+        
+        .StudentInfo__glance___PyW1p {
+          .Avatar__Avatar___j4ZSp {
+            background: var(--theme-primary) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50% !important;
+            
+            svg text {
+              fill: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+          
+          .StudentInfo__alerts___OWpwd {
+            svg {
+              filter: brightness(1.1) contrast(1.2) !important;
+            }
+          }
+        }
+        
+        .StudentInfo__extraDetails___nYX7X {
+          li {
+            border-bottom: 1px solid var(--border-secondary) !important;
+            padding: 8px 0 !important;
+            
+            &:last-child {
+              border-bottom: none !important;
+            }
+            
+            .StudentInfo__label___orOpd {
+              color: var(--text-muted) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+            }
+            
+            .StudentInfo__value___l4aY_ {
+              color: var(--text-primary) !important;
+              font-family: Rubik, sans-serif !important;
+              font-weight: 500 !important;
+              
+              a {
+                color: var(--accent-bg) !important;
+                text-decoration: none !important;
+                
+                &:hover {
+                  color: var(--accent-hover) !important;
+                }
+              }
+            }
+          }
+        }
+        
+        .StudentInfo__toggle___AuBnh {
+          background: var(--background-secondary) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          border-radius: 50% !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            transform: scale(1.1) !important;
+          }
+          
+          svg {
+            fill: currentColor !important;
+          }
+        }
+      }
+      
+      // General notes and content sections
+      .General__General___W0EVC {
+        background: transparent !important;
+        
+        .BasicPanel__BasicPanel___q92_U {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-radius: 8px !important;
+          margin: 16px !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          
+          header {
+            background: var(--theme-primary) !important;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            
+            h2 {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 16px !important;
+              font-weight: 600 !important;
+              margin: 0 !important;
+            }
+          }
+          
+          // Notes content
+          .BasicPanel__numbered___m3sE4 {
+            background: transparent !important;
+            padding: 16px !important;
+            
+            li {
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              padding: 12px 0 !important;
+              
+              &:last-child {
+                border-bottom: none !important;
+              }
+              
+              &.add {
+                background: rgba(40, 167, 69, 0.2) !important;
+                border: 1px solid rgba(40, 167, 69, 0.4) !important;
+                border-radius: 6px !important;
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+                
+                div {
+                  color: rgba(40, 167, 69, 1) !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-weight: 500 !important;
+                }
+                
+                .Button__Button___kQRWg {
+                  background: rgba(40, 167, 69, 1) !important;
+                  color: white !important;
+                  border-radius: 50% !important;
+                  
+                  &:hover {
+                    transform: scale(1.1) !important;
+                  }
+                  
+                  svg {
+                    fill: white !important;
+                  }
+                }
+              }
+              
+              .General__noteContents___P6vtn {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                line-height: 1.5 !important;
+                margin-bottom: 4px !important;
+              }
+              
+              .MenuButton__Menu___FMwps,
+              .General__menu___jGCdg {
+                .Button__Button___kQRWg {
+                  background: var(--background-secondary) !important;
+                  border: 1px solid var(--border-primary) !important;
+                  color: var(--text-muted) !important;
+                  
+                  &:hover {
+                    background: var(--accent-bg) !important;
+                    color: var(--text-on-accent) !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Contacts section
+        .General__contacts___DLenQ {
+          .General__contact___g3L9u {
+            background: var(--background-secondary) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 8px !important;
+            margin: 16px !important;
+            
+            header {
+              background: var(--accent-bg) !important;
+              border-radius: 8px 8px 0 0 !important;
+              padding: 12px 16px !important;
+              
+              h2 {
+                color: var(--text-on-accent) !important;
+                font-family: Rubik, sans-serif !important;
+                margin: 0 !important;
+                
+                .General__salutation___EXRuD {
+                  font-weight: 600 !important;
+                  font-size: 16px !important;
+                }
+                
+                .General__type___D6HTb {
+                  font-weight: 400 !important;
+                  font-size: 14px !important;
+                  opacity: 0.9 !important;
+                  margin-left: 8px !important;
+                }
+              }
+            }
+            
+            article {
+              padding: 16px !important;
+              background: var(--background-primary) !important;
+              
+              .General__flags___LX3Gb {
+                margin-bottom: 12px !important;
+                
+                .InfoPill__InfoPill___CQ6X_ {
+                  background: var(--info-bg) !important;
+                  color: var(--info-text) !important;
+                  border-radius: 12px !important;
+                  padding: 4px 8px !important;
+                  font-size: 12px !important;
+                  font-weight: 500 !important;
+                  margin-right: 8px !important;
+                }
+                
+                .Button__Button___kQRWg {
+                  background: var(--success-bg) !important;
+                  color: var(--success-text) !important;
+                  border: none !important;
+                  border-radius: 6px !important;
+                  padding: 6px 12px !important;
+                  font-size: 12px !important;
+                  
+                  &:hover {
+                    background: var(--success-hover) !important;
+                  }
+                }
+              }
+              
+              ul {
+                li {
+                  display: flex !important;
+                  justify-content: space-between !important;
+                  padding: 8px 0 !important;
+                  border-bottom: 1px solid var(--border-secondary) !important;
+                  
+                  &:last-child {
+                    border-bottom: none !important;
+                  }
+                  
+                  .General__label___luZk3 {
+                    color: var(--text-muted) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                  }
+                  
+                  .General__value___NCG1V {
+                    color: var(--text-primary) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 500 !important;
+                    text-align: right !important;
+                    
+                    a {
+                      color: var(--accent-bg) !important;
+                      text-decoration: none !important;
+                      
+                      &:hover {
+                        color: var(--accent-hover) !important;
+                        text-decoration: underline !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              .General__footer___ARMHi {
+                margin-top: 12px !important;
+                padding-top: 12px !important;
+                border-top: 1px solid var(--border-secondary) !important;
+                
+                .General__address___wJ8AX {
+                  div {
+                    color: var(--text-muted) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 14px !important;
+                    line-height: 1.4 !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Standardised tests button
+        .General__stdTest___J_ua6 {
+          padding: 16px !important;
+          
+          .Button__Button___kQRWg {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: var(--accent-hover) !important;
+              transform: translateY(-2px) !important;
+              box-shadow: var(--shadow-md) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+              margin-left: 8px !important;
+            }
+          }
+        }
+      }
+    }
+    
+    // Navigation tabs
+    .SIP__nav___tsK53 {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 0 0 12px 12px !important;
+      padding: 12px !important;
+      display: flex !important;
+      gap: 8px !important;
+      
+      a {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: var(--theme-primary) !important;
+          color: white !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        &.SIP__active___l7g0m {
+          background: var(--theme-primary) !important;
+          color: white !important;
+          border-color: var(--theme-primary) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+        }
+      }
+    }
+    
+    // Toggle button
+    .SIP__toggle___D06YZ {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      position: absolute !important;
+      right: -12px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      border-radius: 50% !important;
+      width: 32px !important;
+      height: 32px !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      
+      &:hover {
+        background: var(--theme-primary) !important;
+        color: white !important;
+        transform: translateY(-50%) scale(1.1) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+
+  // SEQTA Teach Navigation Styling (3-tier spine system)
+  
+  // Tier 1: Main Spine (darkest shade)
+  .Spine__Spine___zYUJ6 {
+    background: var(--theme-primary) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    .Spine__q___vhZqf,
+    .Spine__workspace___p5Sul {
+      color: rgba(255, 255, 255, 0.8) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        transform: translateX(2px) !important;
+      }
+      
+      &.Spine__active___yLSqc,
+      &.active {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        box-shadow: inset 3px 0 0 white !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+    
+    .Spine__spacer___gzJ7V {
+      background: rgba(255, 255, 255, 0.1) !important;
+      height: 1px !important;
+      margin: 8px 12px !important;
+    }
+    
+    .Spine__logout___oeVyd {
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 59, 48, 0.2) !important;
+        color: rgba(255, 59, 48, 1) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+    
+    .Spine__help___ibEy2 {
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+  }
+  
+  // Tier 2: Page List (medium shade)
+  .PageList__PageList___ZCu9s {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    .PageList__pageContainer___tGHa4 {
+      padding: 8px !important;
+      
+      a {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        background: transparent !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: white !important;
+          transform: translateX(4px) !important;
+        }
+        
+        &.active {
+          background: rgba(255, 255, 255, 0.15) !important;
+          color: white !important;
+          box-shadow: inset 3px 0 0 white !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+          flex-shrink: 0 !important;
+        }
+        
+        span {
+          font-size: 14px !important;
+          white-space: nowrap !important;
+        }
+      }
+    }
+    
+    .PageList__toggle___zfEVA {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      margin: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        transform: scale(1.1) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+  
+  // Tier 3: Subpage List (lightest shade)
+  .SubpageList__SubpageList___Z9OKg {
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(5px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 8px !important;
+    
+    .SubpageList__menuToggle___g0Mri {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      margin-bottom: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        transform: scale(1.05) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 14px !important;
+        height: 14px !important;
+        
+        &.SubpageList__spinLeft___O93TZ {
+          transition: transform 0.2s ease !important;
+        }
+      }
+    }
+    
+    a {
+      display: block !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 6px !important;
+      padding: 10px 12px !important;
+      text-decoration: none !important;
+      transition: all 0.2s ease !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 400 !important;
+      margin-bottom: 2px !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: white !important;
+        transform: translateX(2px) !important;
+      }
+      
+      &.active {
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: white !important;
+        font-weight: 500 !important;
+        box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.8) !important;
+      }
+    }
+  }
+
+  // SEQTA Teach Header and Toolbar Styling
+  header {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(15px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 16px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    
+    h1 {
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 24px !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+    }
+    
+    .spacer {
+      flex: 1 !important;
+    }
+    
+    // Quick Links and Action Buttons
+    .QuickLinks__QuickLinks___Bf9xQ,
+    a,
+    .ProfileMenu__ProfileMenu___d4v98 {
+      .Button__Button___kQRWg,
+      button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50% !important;
+        padding: 10px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          transform: scale(1.05) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        &.Chrome__actionButton___vk0PF {
+          width: 44px !important;
+          height: 44px !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+        }
+        
+        // Profile avatar styling
+        .Avatar__Avatar___j4ZSp {
+          background: var(--theme-primary) !important;
+          border: 2px solid rgba(255, 255, 255, 0.3) !important;
+          border-radius: 50% !important;
+          width: 36px !important;
+          height: 36px !important;
+          
+          svg text {
+            fill: white !important;
+            font-family: Rubik, sans-serif !important;
+          }
+        }
+      }
+    }
+    
+    // Badge styling for notifications
+    .BadgedButton__BadgedButton___q10Fl {
+      position: relative !important;
+      
+      &::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 2px !important;
+        right: 2px !important;
+        width: 8px !important;
+        height: 8px !important;
+        background: #ff3b30 !important;
+        border-radius: 50% !important;
+        border: 2px solid var(--better-main) !important;
+      }
+    }
+  }
+
+  // Toolbar styling (under header)
+  .Toolbar__Toolbar___ecArT {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(5px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 12px 24px !important;
+    
+    &.LegacyPage__toolbar___xRVAN {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+    
+    .Button__Button___kQRWg,
+    button {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 6px !important;
+      padding: 8px 16px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+      }
+      
+      &:active {
+        transform: translateY(0) !important;
+      }
+    }
+  }
+
+  // BetterSEQTA Settings Button Integration for SEQTA Teach
+  #AddedSettings {
+    position: fixed !important;
+    top: 16px !important;
+    right: 280px !important;
+    z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 10px !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    svg {
+      fill: currentColor !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    .tooltiptext {
+      background: var(--better-main) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 6px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 12px !important;
+      padding: 6px 8px !important;
+      white-space: nowrap !important;
+    }
+  }
+
+  // Dark/Light Mode Toggle Integration for SEQTA Teach  
+  #LightDarkModeButton {
+    position: fixed !important;
+    top: 16px !important;
+    right: 330px !important;
+    z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 10px !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    svg {
+      fill: currentColor !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    .tooltiptext {
+      background: var(--better-main) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 6px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 12px !important;
+      padding: 6px 8px !important;
+      white-space: nowrap !important;
+    }
+  }
+
+  // Marksbook/Gradebook styling
+  .marksbookHeader {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-md) !important;
+    margin: 16px !important;
+    
+    > .body {
+      background: var(--background-secondary) !important;
+      border-radius: 6px !important;
+      padding: 16px !important;
+      
+      > .sets, > .types {
+        background: var(--background-primary) !important;
+        border-radius: 4px !important;
+        margin: 8px 0 !important;
+        
+        h2 {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+        
+        .setsWrapper, .typesWrapper {
+          > .header {
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
+            
+            > thead > tr > td {
+              border-color: var(--border-primary) !important;
+              font-weight: 600 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Timetable improvements for teachers
+  table.timetable {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+    
+    > tbody > tr > td {
+      border-color: var(--border-primary) !important;
+      
+      .item {
+        background: var(--accent-bg) !important;
+        border-radius: 6px !important;
+        color: var(--text-on-accent) !important;
+        font-family: Rubik, sans-serif !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: var(--shadow-md) !important;
+        }
+        
+        &.relief {
+          background: var(--warning-bg) !important;
+          color: var(--warning-text) !important;
+        }
+        
+        &.relieved {
+          opacity: 0.7 !important;
+          background: var(--muted-bg) !important;
+        }
+      }
+    }
+  }
+
+  // Correspondence/messaging improvements
+  .correspondence {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    margin: 16px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-md) !important;
+    
+    > .data {
+      background: var(--background-secondary) !important;
+      border-right: 1px solid var(--border-primary) !important;
+      
+      > .filterBox {
+        input {
+          background: var(--input-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          
+          &:focus {
+            border-color: var(--accent-bg) !important;
+            box-shadow: 0 0 0 2px var(--accent-ring) !important;
+          }
+        }
+      }
+      
+      > .mergeOptions {
+        background: var(--background-primary) !important;
+        border-color: var(--border-primary) !important;
+        border-radius: 6px !important;
+        box-shadow: var(--shadow-lg) !important;
+        
+        > .mode, > .preset, > .studentContact {
+          > label {
+            color: var(--text-muted) !important;
+            font-family: Rubik, sans-serif !important;
+          }
+          
+          > input {
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border-primary) !important;
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Academic reports styling
+  .academicReportsWrapper {
+    background: var(--background-primary) !important;
+    border-radius: 8px !important;
+    margin: 16px !important;
+    box-shadow: var(--shadow-md) !important;
+    
+    > .tabPage {
+      background: var(--background-secondary) !important;
+      
+      .filterBox {
+        background: var(--background-primary) !important;
+        border-radius: 6px !important;
+        padding: 12px !important;
+        margin: 8px !important;
+        
+        .supplementary > input {
+          background: var(--input-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+    }
+  }
+
+  // Student plans content
+  .studentPlansContent > .tabPage {
+    > .detailTable {
+      background: var(--background-primary) !important;
+      border-radius: 8px !important;
+      box-shadow: var(--shadow-sm) !important;
+      overflow: hidden !important;
+      
+      > .headerWrapper,
+      .header {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        
+        td > div {
+          font-family: Rubik, sans-serif !important;
+          font-weight: 600 !important;
+        }
+      }
+    }
+  }
+
+  // General form improvements
+  input, textarea, select {
+    @include teach-only {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--border-primary) !important;
+      border-radius: 4px !important;
+      color: var(--text-primary) !important;
+      font-family: Rubik, sans-serif !important;
+      padding: 8px 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:focus {
+        border-color: var(--accent-bg) !important;
+        box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        outline: none !important;
+      }
+    }
+  }
+
+  // Button improvements
+  button {
+    @include teach-only {
+      background: var(--accent-bg) !important;
+      border: none !important;
+      border-radius: 6px !important;
+      color: var(--text-on-accent) !important;
+      cursor: pointer !important;
+      font-family: Rubik, sans-serif !important;
+      font-weight: 500 !important;
+      padding: 8px 16px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: var(--accent-hover) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: var(--shadow-sm) !important;
+      }
+      
+      &:active {
+        transform: translateY(0) !important;
+      }
+    }
+  }
 }

@@ -331,7 +331,8 @@ export function OpenWhatsNewPopup() {
 
   background.append(container);
 
-  document.getElementById("container")!.append(background);
+  const containerElement = document.getElementById("container") || document.body;
+  containerElement.append(background);
 
   let bkelement = document.getElementById("whatsnewbk");
   let popup = document.getElementsByClassName("whatsnewContainer")[0];
