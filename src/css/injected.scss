@@ -5291,6 +5291,155 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Forums page styling
+  .listContainer {
+    background: transparent !important;
+    color: white !important;
+    
+    .forum.forumList {
+      background: transparent !important;
+      
+      .forums {
+        background: transparent !important;
+        
+        .item {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          margin-bottom: 8px !important;
+          padding: 16px !important;
+          backdrop-filter: blur(5px) !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &.selected {
+            background: rgba(var(--theme-primary-rgb), 0.2) !important;
+            border-color: var(--theme-primary) !important;
+          }
+          
+          &.closed {
+            opacity: 0.7 !important;
+            
+            .name {
+              text-decoration: line-through !important;
+              color: rgba(255, 255, 255, 0.6) !important;
+            }
+          }
+          
+          .name {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .meta {
+            display: flex !important;
+            gap: 16px !important;
+            margin-bottom: 8px !important;
+            
+            .stat {
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-size: 14px !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+          
+          .actions {
+            display: flex !important;
+            gap: 8px !important;
+            
+            .uiButton {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                border-color: rgba(255, 255, 255, 0.3) !important;
+                transform: scale(1.05) !important;
+              }
+              
+              &:active {
+                transform: scale(0.95) !important;
+              }
+              
+              svg {
+                fill: white !important;
+                width: 16px !important;
+                height: 16px !important;
+              }
+              
+              &.edit svg {
+                fill: #60a5fa !important;
+              }
+              
+              &.close svg {
+                fill: #f87171 !important;
+              }
+              
+              &.reopen svg {
+                fill: #34d399 !important;
+              }
+            }
+          }
+        }
+        
+        .divider {
+          margin: 24px 0 16px 0 !important;
+          
+          .name {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 12px 16px !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            backdrop-filter: blur(5px) !important;
+          }
+        }
+        
+        .closedToggle {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          padding: 12px 20px !important;
+          margin-top: 16px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+          backdrop-filter: blur(5px) !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:active {
+            transform: translateY(0) !important;
+          }
+        }
+      }
+    }
+  }
+
   // Academic Summary page styling
   .AcademicSummary__pageArea___znOUo {
     background: transparent !important;
