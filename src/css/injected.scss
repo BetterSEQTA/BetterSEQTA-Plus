@@ -5291,6 +5291,430 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Academic Summary page styling
+  .AcademicSummary__pageArea___znOUo {
+    background: transparent !important;
+    color: white !important;
+    padding: 20px !important;
+    
+    // Actions bar
+    .Actions__Actions___hbdy8 {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      backdrop-filter: blur(10px) !important;
+      padding: 16px 20px !important;
+      margin-bottom: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      
+      .Button__Button___kQRWg {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: var(--theme-primary) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &.Button__dropdown___jmEEr {
+          span svg {
+            fill: white !important;
+            margin-left: 8px !important;
+          }
+        }
+      }
+      
+      // Search input
+      .Label__Label___D7Qid {
+        .Input__Input___KL0p5,
+        input {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 8px !important;
+          padding: 10px 16px !important;
+          font-family: Rubik, sans-serif !important;
+          min-width: 200px !important;
+          
+          &:focus {
+            border-color: var(--theme-primary) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+          }
+        }
+      }
+      
+      .Actions__spacer___BB56c {
+        flex: 1 !important;
+      }
+    }
+    
+    // Main body area
+    .AcademicSummary__body___spQSl {
+      background: transparent !important;
+      
+      // Subject blocks container
+      > div {
+        margin-bottom: 24px !important;
+        
+        // Individual subject panels
+        .BasicPanel__BasicPanel___q92_U.SubjectBlock__Subject___vPjHg {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 16px !important;
+          backdrop-filter: blur(10px) !important;
+          overflow: hidden !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+          
+          // Subject header
+          header.BasicPanel__clickable___Dx1xo {
+            background: var(--container-accent, var(--theme-primary)) !important;
+            color: var(--container-accent-contrast, white) !important;
+            padding: 20px 24px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: color-mix(in srgb, var(--container-accent, var(--theme-primary)) 90%, white 10%) !important;
+            }
+            
+            h2 {
+              color: var(--container-accent-contrast, white) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 20px !important;
+              font-weight: 600 !important;
+              margin: 0 !important;
+            }
+            
+            // Color picker button
+            .SubjectBlock__colourPicker___B6jud {
+              background: rgba(255, 255, 255, 0.2) !important;
+              border: 1px solid rgba(255, 255, 255, 0.3) !important;
+              color: var(--container-accent-contrast, white) !important;
+              width: 40px !important;
+              height: 40px !important;
+              border-radius: 50% !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.3) !important;
+                transform: scale(1.1) !important;
+              }
+              
+              svg {
+                fill: var(--container-accent-contrast, white) !important;
+              }
+            }
+          }
+          
+          // Subject content
+          article {
+            background: rgba(255, 255, 255, 0.02) !important;
+            padding: 24px !important;
+            
+            // Current/Live score section
+            .SubjectBlock__result___zw0Kb.SubjectBlock__current___Zbcj1 {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 12px !important;
+              padding: 20px !important;
+              margin-bottom: 20px !important;
+              
+              .SubjectBlock__primary___ZG85m {
+                h3 {
+                  color: white !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 18px !important;
+                  font-weight: 600 !important;
+                  margin: 0 0 16px 0 !important;
+                }
+                
+                .SubjectBlock__achievement___pIstq {
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 16px !important;
+                  
+                  // Thermometer score
+                  .Thermoscore__Thermoscore___WFpL3 {
+                    flex: 1 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 20px !important;
+                    height: 40px !important;
+                    position: relative !important;
+                    overflow: hidden !important;
+                    
+                    .Thermoscore__fill___ojxDI {
+                      background: var(--container-accent, var(--theme-primary)) !important;
+                      height: 100% !important;
+                      border-radius: 20px !important;
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: center !important;
+                      transition: width 0.3s ease !important;
+                      
+                      .Thermoscore__text___XSR_M {
+                        color: white !important;
+                        font-weight: 700 !important;
+                        font-size: 16px !important;
+                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+                      }
+                    }
+                    
+                    // Markers (avg, min, max)
+                    .Thermoscore__marker___wb8r5 {
+                      position: absolute !important;
+                      top: -4px !important;
+                      width: 2px !important;
+                      height: 48px !important;
+                      border-radius: 1px !important;
+                      
+                      &.Thermoscore__avg___HzNZq {
+                        background: #FFC107 !important;
+                        box-shadow: 0 0 4px rgba(255, 193, 7, 0.6) !important;
+                      }
+                      
+                      &.Thermoscore__min___ixQTv {
+                        background: #F44336 !important;
+                        box-shadow: 0 0 4px rgba(244, 67, 54, 0.6) !important;
+                      }
+                      
+                      &.Thermoscore__max___L9otd {
+                        background: #4CAF50 !important;
+                        box-shadow: 0 0 4px rgba(76, 175, 80, 0.6) !important;
+                      }
+                    }
+                  }
+                  
+                  // Grade display
+                  .SimpleGrade__SimpleGrade___X5tWC {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    color: white !important;
+                    border: 2px solid var(--container-accent, var(--theme-primary)) !important;
+                    border-radius: 12px !important;
+                    padding: 12px 20px !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 24px !important;
+                    font-weight: 700 !important;
+                    min-width: 60px !important;
+                    text-align: center !important;
+                    
+                    &.SimpleGrade__accented___FSO77 {
+                      background: var(--container-accent, var(--theme-primary)) !important;
+                      color: var(--container-accent-contrast, white) !important;
+                    }
+                  }
+                }
+              }
+              
+              // Cohort statistics
+              .SubjectBlock__cohort___RGEk9 {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-top: 16px !important;
+                padding: 16px !important;
+                background: rgba(255, 255, 255, 0.03) !important;
+                border-radius: 8px !important;
+                
+                li {
+                  text-align: center !important;
+                  flex: 1 !important;
+                  
+                  .SubjectBlock__label___IWaYn {
+                    display: block !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-size: 12px !important;
+                    font-weight: 500 !important;
+                    margin-bottom: 4px !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                  }
+                  
+                  .SubjectBlock__value___MiWNZ {
+                    display: block !important;
+                    color: white !important;
+                    font-size: 16px !important;
+                    font-weight: 600 !important;
+                    font-family: Rubik, sans-serif !important;
+                  }
+                  
+                  &.SubjectBlock__minimum___cvpkf .SubjectBlock__value___MiWNZ {
+                    color: #F44336 !important;
+                  }
+                  
+                  &.SubjectBlock__average____h9Gr .SubjectBlock__value___MiWNZ {
+                    color: #FFC107 !important;
+                  }
+                  
+                  &.SubjectBlock__maximum___FuVWI .SubjectBlock__value___MiWNZ {
+                    color: #4CAF50 !important;
+                  }
+                }
+              }
+            }
+            
+            // Assessment groups
+            .SubjectBlock__groups___x0p6h {
+              .SubjectBlock__group___lgrQR {
+                h3 {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  color: white !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 16px !important;
+                  font-weight: 600 !important;
+                  margin: 0 0 16px 0 !important;
+                  padding: 12px 16px !important;
+                  border-radius: 8px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 8px !important;
+                  backdrop-filter: blur(5px) !important;
+                  
+                  svg {
+                    fill: var(--theme-primary) !important;
+                    width: 20px !important;
+                    height: 20px !important;
+                  }
+                  
+                  span {
+                    color: white !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.5px !important;
+                    font-weight: 700 !important;
+                  }
+                }
+                
+                // Individual assessment results
+                .SubjectBlock__result___zw0Kb.SubjectBlock__assessment___epE3d {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                  border-radius: 10px !important;
+                  padding: 16px !important;
+                  margin-bottom: 12px !important;
+                  position: relative !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-color: rgba(255, 255, 255, 0.15) !important;
+                    transform: translateY(-1px) !important;
+                  }
+                  
+                  .SubjectBlock__primary___ZG85m {
+                    h3 {
+                      color: white !important;
+                      font-size: 16px !important;
+                      font-weight: 600 !important;
+                      margin: 0 0 12px 0 !important;
+                    }
+                    
+                    .SubjectBlock__achievement___pIstq {
+                      display: flex !important;
+                      align-items: center !important;
+                      gap: 12px !important;
+                      
+                      .Thermoscore__Thermoscore___WFpL3 {
+                        flex: 1 !important;
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border-radius: 16px !important;
+                        height: 32px !important;
+                        
+                        .Thermoscore__fill___ojxDI {
+                          background: var(--container-accent, var(--theme-primary)) !important;
+                          
+                          .Thermoscore__text___XSR_M {
+                            font-size: 14px !important;
+                          }
+                        }
+                      }
+                      
+                      .SimpleGrade__SimpleGrade___X5tWC {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        color: white !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 8px !important;
+                        padding: 8px 12px !important;
+                        font-size: 16px !important;
+                        font-weight: 600 !important;
+                        min-width: 40px !important;
+                      }
+                    }
+                  }
+                  
+                  // Cohort stats for assessments
+                  .SubjectBlock__cohort___RGEk9 {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    margin-top: 12px !important;
+                    padding: 12px !important;
+                    background: rgba(255, 255, 255, 0.02) !important;
+                    border-radius: 6px !important;
+                    
+                    li {
+                      text-align: center !important;
+                      flex: 1 !important;
+                      
+                      .SubjectBlock__label___IWaYn {
+                        font-size: 10px !important;
+                        color: rgba(255, 255, 255, 0.6) !important;
+                      }
+                      
+                      .SubjectBlock__value___MiWNZ {
+                        font-size: 14px !important;
+                        color: white !important;
+                      }
+                    }
+                  }
+                  
+                  // Popup button
+                  .SubjectBlock__popup___cmgQa {
+                    position: absolute !important;
+                    top: 12px !important;
+                    right: 12px !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                    width: 32px !important;
+                    height: 32px !important;
+                    border-radius: 50% !important;
+                    transition: all 0.2s ease !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.2) !important;
+                      transform: scale(1.1) !important;
+                    }
+                    
+                    svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Override any remaining white backgrounds
   div[style*="background: white"],
   div[style*="background-color: white"],
