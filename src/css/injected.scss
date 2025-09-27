@@ -4888,6 +4888,409 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Attendance page styling
+  .attendance.container {
+    background: transparent !important;
+    color: white !important;
+    
+    .contentWrapper {
+      background: transparent !important;
+      
+      .content {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 20px !important;
+        margin: 20px !important;
+        
+        .note.attendance {
+          background: transparent !important;
+          color: rgba(255, 255, 255, 0.8) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          text-align: center !important;
+          padding: 40px 20px !important;
+          border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+          border-radius: 8px !important;
+          margin: 0 !important;
+          
+          &::before {
+            content: "📋" !important;
+            display: block !important;
+            font-size: 48px !important;
+            margin-bottom: 16px !important;
+            opacity: 0.6 !important;
+          }
+        }
+        
+        // Attendance table styling
+        table.attendance.students {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          color: white !important;
+          overflow: hidden !important;
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
+          width: 100% !important;
+          
+          // Header styling
+          thead {
+            tr {
+              background: rgba(255, 255, 255, 0.05) !important;
+              
+              td, th {
+                background: rgba(255, 255, 255, 0.05) !important;
+                color: white !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                padding: 12px 8px !important;
+                font-weight: 600 !important;
+                font-family: Rubik, sans-serif !important;
+                
+                // Meta column (class info)
+                &.meta {
+                  background: var(--theme-primary) !important;
+                  
+                  .wrap {
+                    h2 {
+                      color: white !important;
+                      font-size: 18px !important;
+                      margin: 0 0 8px 0 !important;
+                      font-weight: 700 !important;
+                    }
+                    
+                    .details {
+                      .count {
+                        color: rgba(255, 255, 255, 0.9) !important;
+                        font-size: 14px !important;
+                        margin-bottom: 12px !important;
+                      }
+                    }
+                    
+                    .actions {
+                      display: flex !important;
+                      gap: 8px !important;
+                      
+                      .uiButton {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        color: white !important;
+                        font-size: 12px !important;
+                        padding: 6px 12px !important;
+                        border-radius: 6px !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          transform: translateY(-1px) !important;
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                // Date columns
+                &.fillDown {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  text-align: center !important;
+                  min-width: 80px !important;
+                  
+                  .day {
+                    font-weight: 700 !important;
+                    font-size: 12px !important;
+                    color: var(--theme-primary) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .period {
+                    font-size: 10px !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .date {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .count {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 12px !important;
+                    padding: 2px 8px !important;
+                    font-size: 11px !important;
+                    color: white !important;
+                    display: inline-block !important;
+                    min-width: 20px !important;
+                  }
+                }
+                
+                // Attendance header
+                &.attendance.header {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  text-align: center !important;
+                  
+                  svg {
+                    fill: var(--theme-primary) !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .percent {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                  }
+                }
+                
+                // Trait columns
+                &.trait.summary {
+                  background: rgba(255, 255, 255, 0.06) !important;
+                  text-align: center !important;
+                  
+                  .title {
+                    font-size: 11px !important;
+                    color: white !important;
+                    font-weight: 600 !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  .symbol {
+                    font-size: 14px !important;
+                    color: var(--theme-primary) !important;
+                    font-weight: 700 !important;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Body styling
+          tbody {
+            tr {
+              background: rgba(255, 255, 255, 0.02) !important;
+              transition: background 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.05) !important;
+              }
+              
+              &:nth-child(even) {
+                background: rgba(255, 255, 255, 0.01) !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                }
+              }
+              
+              td {
+                color: white !important;
+                border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                padding: 8px !important;
+                vertical-align: middle !important;
+                
+                // Student meta column
+                &.meta {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  
+                  .name {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    
+                    .stdTest {
+                      fill: #4CAF50 !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    .avatarWrapper {
+                      .Avatar__Avatar___j4ZSp {
+                        width: 32px !important;
+                        height: 32px !important;
+                        border-radius: 50% !important;
+                        background: var(--theme-primary) !important;
+                        
+                        svg text {
+                          fill: white !important;
+                          font-size: 14px !important;
+                          font-weight: 700 !important;
+                        }
+                      }
+                    }
+                    
+                    .surname {
+                      color: white !important;
+                      font-weight: 600 !important;
+                      font-size: 14px !important;
+                    }
+                    
+                    .comma {
+                      color: rgba(255, 255, 255, 0.7) !important;
+                    }
+                    
+                    .firstname {
+                      color: rgba(255, 255, 255, 0.9) !important;
+                      font-size: 14px !important;
+                    }
+                    
+                    .prefname {
+                      color: rgba(255, 255, 255, 0.7) !important;
+                      font-size: 12px !important;
+                      font-style: italic !important;
+                    }
+                  }
+                  
+                  .lights {
+                    display: flex !important;
+                    gap: 4px !important;
+                    margin-top: 4px !important;
+                    
+                    .light {
+                      width: 16px !important;
+                      height: 16px !important;
+                      opacity: 0.8 !important;
+                    }
+                  }
+                }
+                
+                // Demographics column
+                &.demographics {
+                  background: rgba(255, 255, 255, 0.02) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                }
+                
+                // Code column
+                &.code {
+                  background: rgba(255, 255, 255, 0.02) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                  font-family: monospace !important;
+                }
+                
+                // Attendance columns
+                &.attendance {
+                  background: rgba(255, 255, 255, 0.01) !important;
+                  text-align: center !important;
+                  cursor: pointer !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    transform: scale(1.05) !important;
+                  }
+                  
+                  svg {
+                    width: 20px !important;
+                    height: 20px !important;
+                    
+                    &:not(.printOnly) {
+                      fill: rgba(255, 255, 255, 0.3) !important;
+                    }
+                    
+                    // Checked attendance
+                    path[fill="#25b3fd"] {
+                      fill: #4CAF50 !important;
+                    }
+                  }
+                  
+                  // Fixed attendance summary
+                  &.fixed {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    font-weight: 600 !important;
+                    color: var(--theme-primary) !important;
+                    font-size: 14px !important;
+                  }
+                }
+                
+                // Trait columns
+                &.trait {
+                  background: rgba(255, 255, 255, 0.01) !important;
+                  text-align: center !important;
+                  font-size: 12px !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                  
+                  &.fixed {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    font-weight: 600 !important;
+                    color: var(--theme-primary) !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // General attendance components (fallback)
+        .attendance-table,
+        .attendance-list,
+        .attendance-item {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          
+          th, td {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+          }
+          
+          th {
+            background: rgba(255, 255, 255, 0.05) !important;
+            font-weight: 600 !important;
+          }
+        }
+        
+        // Buttons and controls
+        .uiButton,
+        button {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 6px !important;
+          padding: 8px 16px !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: var(--theme-primary) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+          }
+        }
+        
+        // Form inputs
+        input, select, textarea {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-radius: 6px !important;
+          padding: 8px 12px !important;
+          
+          &:focus {
+            border-color: var(--theme-primary) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+          }
+        }
+      }
+    }
+  }
+
   // Override any remaining white backgrounds
   div[style*="background: white"],
   div[style*="background-color: white"],
