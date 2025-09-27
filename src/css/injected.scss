@@ -4584,6 +4584,425 @@ body[data-seqta-platform="teach"] {
       }
     }
   }
+
+  // SEQTA Teach Navigation Styling (3-tier spine system)
+  
+  // Tier 1: Main Spine (darkest shade)
+  .Spine__Spine___zYUJ6 {
+    background: var(--theme-primary) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    .Spine__q___vhZqf,
+    .Spine__workspace___p5Sul {
+      color: rgba(255, 255, 255, 0.8) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        transform: translateX(2px) !important;
+      }
+      
+      &.Spine__active___yLSqc,
+      &.active {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        box-shadow: inset 3px 0 0 white !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+    
+    .Spine__spacer___gzJ7V {
+      background: rgba(255, 255, 255, 0.1) !important;
+      height: 1px !important;
+      margin: 8px 12px !important;
+    }
+    
+    .Spine__logout___oeVyd {
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 59, 48, 0.2) !important;
+        color: rgba(255, 59, 48, 1) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+    
+    .Spine__help___ibEy2 {
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+      }
+    }
+  }
+  
+  // Tier 2: Page List (medium shade)
+  .PageList__PageList___ZCu9s {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    .PageList__pageContainer___tGHa4 {
+      padding: 8px !important;
+      
+      a {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        background: transparent !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: white !important;
+          transform: translateX(4px) !important;
+        }
+        
+        &.active {
+          background: rgba(255, 255, 255, 0.15) !important;
+          color: white !important;
+          box-shadow: inset 3px 0 0 white !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+          flex-shrink: 0 !important;
+        }
+        
+        span {
+          font-size: 14px !important;
+          white-space: nowrap !important;
+        }
+      }
+    }
+    
+    .PageList__toggle___zfEVA {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      margin: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        transform: scale(1.1) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+  
+  // Tier 3: Subpage List (lightest shade)
+  .SubpageList__SubpageList___Z9OKg {
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(5px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 8px !important;
+    
+    .SubpageList__menuToggle___g0Mri {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      margin-bottom: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        transform: scale(1.05) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 14px !important;
+        height: 14px !important;
+        
+        &.SubpageList__spinLeft___O93TZ {
+          transition: transform 0.2s ease !important;
+        }
+      }
+    }
+    
+    a {
+      display: block !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      background: transparent !important;
+      border-radius: 6px !important;
+      padding: 10px 12px !important;
+      text-decoration: none !important;
+      transition: all 0.2s ease !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 400 !important;
+      margin-bottom: 2px !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: white !important;
+        transform: translateX(2px) !important;
+      }
+      
+      &.active {
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: white !important;
+        font-weight: 500 !important;
+        box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.8) !important;
+      }
+    }
+  }
+
+  // SEQTA Teach Header and Toolbar Styling
+  header {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(15px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 16px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    
+    h1 {
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 24px !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+    }
+    
+    .spacer {
+      flex: 1 !important;
+    }
+    
+    // Quick Links and Action Buttons
+    .QuickLinks__QuickLinks___Bf9xQ,
+    a,
+    .ProfileMenu__ProfileMenu___d4v98 {
+      .Button__Button___kQRWg,
+      button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50% !important;
+        padding: 10px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          transform: scale(1.05) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        &.Chrome__actionButton___vk0PF {
+          width: 44px !important;
+          height: 44px !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+        }
+        
+        // Profile avatar styling
+        .Avatar__Avatar___j4ZSp {
+          background: var(--theme-primary) !important;
+          border: 2px solid rgba(255, 255, 255, 0.3) !important;
+          border-radius: 50% !important;
+          width: 36px !important;
+          height: 36px !important;
+          
+          svg text {
+            fill: white !important;
+            font-family: Rubik, sans-serif !important;
+          }
+        }
+      }
+    }
+    
+    // Badge styling for notifications
+    .BadgedButton__BadgedButton___q10Fl {
+      position: relative !important;
+      
+      &::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 2px !important;
+        right: 2px !important;
+        width: 8px !important;
+        height: 8px !important;
+        background: #ff3b30 !important;
+        border-radius: 50% !important;
+        border: 2px solid var(--better-main) !important;
+      }
+    }
+  }
+
+  // Toolbar styling (under header)
+  .Toolbar__Toolbar___ecArT {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(5px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 12px 24px !important;
+    
+    &.LegacyPage__toolbar___xRVAN {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+    
+    .Button__Button___kQRWg,
+    button {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 6px !important;
+      padding: 8px 16px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+      }
+      
+      &:active {
+        transform: translateY(0) !important;
+      }
+    }
+  }
+
+  // BetterSEQTA Settings Button Integration for SEQTA Teach
+  #AddedSettings {
+    position: fixed !important;
+    top: 16px !important;
+    right: 280px !important;
+    z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 10px !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    svg {
+      fill: currentColor !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    .tooltiptext {
+      background: var(--better-main) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 6px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 12px !important;
+      padding: 6px 8px !important;
+      white-space: nowrap !important;
+    }
+  }
+
+  // Dark/Light Mode Toggle Integration for SEQTA Teach  
+  #LightDarkModeButton {
+    position: fixed !important;
+    top: 16px !important;
+    right: 330px !important;
+    z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 10px !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    svg {
+      fill: currentColor !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    .tooltiptext {
+      background: var(--better-main) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 6px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 12px !important;
+      padding: 6px 8px !important;
+      white-space: nowrap !important;
+    }
+  }
+
   // Marksbook/Gradebook styling
   .marksbookHeader {
     background: var(--background-primary) !important;
