@@ -4068,6 +4068,946 @@ h2.home-subtitle {
 // SEQTA Teach main layout improvements
 body[data-seqta-platform="teach"] {
   
+  // Override SEQTA Teach CSS variables to use BetterSEQTA theming
+  :root,
+  html {
+    --theme-bg-parts: var(--better-main-rgb, 22, 22, 22) !important;
+    --theme-fg-parts: 255, 255, 255 !important;
+    --theme-bg-alt-parts: var(--background-secondary-rgb, 30, 30, 30) !important;
+    
+    // Navigation colors integration
+    --nav-level-zero: var(--theme-primary) !important;
+    --nav-level-zero-fg: #fff !important;
+    --nav-level-one: rgba(255, 255, 255, 0.05) !important;
+    --nav-level-one-fg: #fff !important;
+    --nav-level-two: rgba(255, 255, 255, 0.02) !important;
+    --nav-level-two-fg: #fff !important;
+    --nav-level-three: rgba(255, 255, 255, 0.08) !important;
+    --nav-level-three-opaque: rgba(255, 255, 255, 0.08) !important;
+    --nav-level-three-fg: #fff !important;
+    
+    // Button theming
+    --theme-button-bg: rgba(255, 255, 255, 0.1) !important;
+    --theme-button-fg: rgba(255, 255, 255, 0.9) !important;
+    --theme-button-border: rgba(255, 255, 255, 0.2) !important;
+    
+    // Offset backgrounds
+    --theme-offset-bg: rgba(255, 255, 255, 0.05) !important;
+    --theme-offset-bg-more: rgba(255, 255, 255, 0.1) !important;
+    --theme-table-headers: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  // Welcome page specific styling
+  .defaultWelcomeWrapper {
+    background: var(--better-main) !important;
+    
+    .defaultWelcome {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(10px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      color: white !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      
+      // Override the complex clip-path with simple rounded corners
+      clip-path: none !important;
+      
+      > header {
+        background: var(--theme-primary) !important;
+        background-image: none !important;
+        border-radius: 12px 12px 0 0 !important;
+        clip-path: none !important;
+        color: white !important;
+        padding: 3rem 2rem !important;
+        
+        h1 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 700 !important;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        p.byline {
+          color: rgba(255, 255, 255, 0.9) !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+      
+      > section {
+        background: transparent !important;
+        color: white !important;
+        
+        &.sip,
+        &.help {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-radius: 8px !important;
+          margin: 1rem !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        > header > h2 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 600 !important;
+        }
+      }
+      
+      ul {
+        li {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          &:last-child {
+            border-bottom: none !important;
+          }
+          
+          > p {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            
+            &.detail {
+              color: rgba(255, 255, 255, 0.7) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // General content area styling
+  main,
+  .main-content,
+  .content-area {
+    background: transparent !important;
+    color: white !important;
+  }
+  
+  // Form elements integration
+  input,
+  textarea,
+  select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    &:focus {
+      border-color: var(--theme-primary) !important;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+      outline: none !important;
+    }
+  }
+  
+  // Table styling
+  table {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    
+    thead {
+      background: rgba(255, 255, 255, 0.08) !important;
+      
+      th {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+    
+    tbody {
+      tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        td {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+        }
+      }
+    }
+  }
+  
+  // Card/Panel styling
+  .card,
+  .panel,
+  .widget {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: white !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  // Dashboard specific styling
+  .dashboard {
+    background: transparent !important;
+    color: white !important;
+    
+    .dashlet {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      color: white !important;
+      backdrop-filter: blur(10px) !important;
+      margin: 16px !important;
+      overflow: hidden !important;
+      
+      .header {
+        background: var(--theme-primary) !important;
+        color: white !important;
+        padding: 16px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        
+        .title {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin: 0 !important;
+        }
+        
+        .actions {
+          display: flex !important;
+          gap: 8px !important;
+          align-items: center !important;
+          
+          .uiButton,
+          button {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.3) !important;
+              transform: scale(1.05) !important;
+            }
+            
+            svg {
+              fill: white !important;
+              width: 16px !important;
+              height: 16px !important;
+            }
+          }
+          
+          // Pillbox button groups
+          .pillbox {
+            display: flex !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 6px !important;
+            overflow: hidden !important;
+            
+            button {
+              background: transparent !important;
+              border: none !important;
+              border-radius: 0 !important;
+              color: rgba(255, 255, 255, 0.8) !important;
+              padding: 6px 12px !important;
+              font-size: 12px !important;
+              font-family: Rubik, sans-serif !important;
+              
+              &.depressed {
+                background: rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+              }
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                color: white !important;
+                transform: none !important;
+              }
+              
+              &.first {
+                border-radius: 6px 0 0 6px !important;
+              }
+              
+              &.last {
+                border-radius: 0 6px 6px 0 !important;
+              }
+            }
+          }
+        }
+      }
+      
+      .content {
+        background: transparent !important;
+        color: white !important;
+        padding: 20px !important;
+        
+        .message {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          line-height: 1.6 !important;
+          
+          h1, h2, h3, h4, h5, h6 {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            margin: 16px 0 8px 0 !important;
+          }
+          
+          p {
+            color: white !important;
+            margin: 8px 0 !important;
+          }
+          
+          strong, b {
+            color: white !important;
+            font-weight: 600 !important;
+          }
+          
+          em, i {
+            color: rgba(255, 255, 255, 0.9) !important;
+          }
+          
+          u {
+            color: white !important;
+            text-decoration: underline !important;
+          }
+          
+          sub, sup {
+            color: rgba(255, 255, 255, 0.8) !important;
+          }
+          
+          pre {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 4px !important;
+            color: white !important;
+            font-family: 'Courier New', monospace !important;
+            padding: 12px !important;
+          }
+          
+          table {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 6px !important;
+            width: 100% !important;
+          }
+        }
+        
+        // Notes and tasks specific
+        .dashlet-notes,
+        .dashlet-tasks {
+          ul.magicDelete {
+            li {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              margin: 8px 0 !important;
+              padding: 12px !important;
+            }
+          }
+          
+          .editor {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 6px !important;
+            color: white !important;
+            min-height: 100px !important;
+            padding: 12px !important;
+          }
+        }
+        
+        // Message of the day specific
+        .dashlet-motd {
+          .message {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 8px !important;
+            padding: 20px !important;
+            margin-bottom: 16px !important;
+            text-align: center !important;
+          }
+          
+          .favour {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            justify-content: center !important;
+            
+            .uiButton {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 50% !important;
+              color: rgba(255, 255, 255, 0.7) !important;
+              padding: 8px !important;
+              
+              &.unfavourable:hover {
+                background: rgba(255, 59, 48, 0.2) !important;
+                color: #ff3b30 !important;
+              }
+              
+              &.favourable:hover {
+                background: rgba(40, 167, 69, 0.2) !important;
+                color: #28a745 !important;
+              }
+              
+              svg {
+                fill: currentColor !important;
+                width: 20px !important;
+                height: 20px !important;
+              }
+            }
+            
+            .graph {
+              background: rgba(255, 255, 255, 0.1) !important;
+              border-radius: 4px !important;
+              height: 8px !important;
+              overflow: hidden !important;
+              position: relative !important;
+              width: 100px !important;
+              
+              .unfavourable {
+                background: #ff3b30 !important;
+                height: 100% !important;
+              }
+            }
+          }
+        }
+        
+        // Profile preferences specific
+        .dashlet-profile {
+          .details {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 8px !important;
+            margin-bottom: 16px !important;
+            padding: 20px !important;
+            
+            h2 {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 18px !important;
+              font-weight: 600 !important;
+              margin: 0 0 16px 0 !important;
+            }
+            
+            .field {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              margin-bottom: 12px !important;
+              
+              label {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-weight: 500 !important;
+              }
+              
+              .value {
+                color: rgba(255, 255, 255, 0.8) !important;
+                font-family: Rubik, sans-serif !important;
+              }
+              
+              .uiShortText,
+              input {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+                
+                &::placeholder {
+                  color: rgba(255, 255, 255, 0.5) !important;
+                }
+              }
+              
+              .colourButton {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+                
+                .preview {
+                  border-radius: 3px !important;
+                  width: 20px !important;
+                  height: 20px !important;
+                }
+              }
+            }
+            
+            .passwordContainer {
+              .uiButton {
+                background: var(--theme-primary) !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                
+                &:hover {
+                  background: var(--theme-primary) !important;
+                  filter: brightness(1.1) !important;
+                }
+              }
+            }
+            
+            .InlineHelp__InlineHelp___NTYcB {
+              .Button__Button___kQRWg {
+                background: rgba(255, 193, 7, 0.2) !important;
+                color: #ffc107 !important;
+                border: 1px solid rgba(255, 193, 7, 0.3) !important;
+                
+                svg {
+                  fill: currentColor !important;
+                }
+              }
+            }
+          }
+        }
+        
+        // Sentence generator specific
+        .dashlet-sentence {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          padding: 20px !important;
+          text-align: center !important;
+        }
+      }
+      
+      // Message outside content (for sentence generator)
+      > .message {
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        padding: 16px 20px !important;
+      }
+    }
+  }
+
+  // Timetable page styling
+  .legacy-root,
+  .LegacyPage__LegacyPage___t2gIt {
+    background: transparent !important;
+    color: white !important;
+    
+    .LegacyPage__toolbar___xRVAN,
+    .Toolbar__Toolbar___ecArT {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(10px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+      padding: 16px 20px !important;
+      
+      .Button__Button___kQRWg,
+      .uiButton,
+      button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.2) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &:disabled {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: rgba(255, 255, 255, 0.5) !important;
+          cursor: not-allowed !important;
+        }
+        
+        &.myTT {
+          background: var(--theme-primary) !important;
+          border-color: var(--theme-primary) !important;
+          
+          &:disabled {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+          }
+        }
+      }
+      
+      .singleSelect,
+      .uiShortText,
+      input {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 8px 12px !important;
+        font-family: Rubik, sans-serif !important;
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        &:focus {
+          border-color: var(--theme-primary) !important;
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+          outline: none !important;
+        }
+      }
+      
+      .spacer {
+        flex: 1 !important;
+      }
+    }
+    
+    .LegacyPage__body___IxT9e {
+      background: transparent !important;
+      color: white !important;
+      padding: 20px !important;
+      
+      .timetable {
+        background: transparent !important;
+        
+        .tabPage {
+          background: transparent !important;
+          
+          .ptMyDay {
+            background: transparent !important;
+            
+            .Myday__Myday___WuhC_ {
+              background: transparent !important;
+              display: flex !important;
+              gap: 20px !important;
+              
+              // Left sidebar menu
+              .MydayMenu__MydayMenu___T5I1E {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                overflow: hidden !important;
+                
+                .MydayMenu__header___UWKQp {
+                  background: var(--theme-primary) !important;
+                  color: white !important;
+                  padding: 16px !important;
+                  position: relative !important;
+                  
+                  .DayNavigator__DayNavigator___G4kt7,
+                  .MydayMenu__navigator___rV3nZ {
+                    margin-right: 50px !important; // Make space for toggle button
+                    
+                    .DayNavigator__row___faS_z {
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: space-between !important;
+                      margin-bottom: 12px !important;
+                      
+                      &:last-child {
+                        margin-bottom: 0 !important;
+                        justify-content: center !important;
+                        gap: 4px !important;
+                      }
+                      
+                      button {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 6px !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          transform: scale(1.05) !important;
+                        }
+                        
+                        svg {
+                          fill: white !important;
+                          width: 16px !important;
+                          height: 16px !important;
+                        }
+                        
+                        &.DayNavigator__dayButton___Hdq8G {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 50% !important;
+                          color: rgba(255, 255, 255, 0.8) !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-size: 12px !important;
+                          font-weight: 500 !important;
+                          height: 32px !important;
+                          padding: 0 !important;
+                          width: 32px !important;
+                          
+                          &.DayNavigator__selected___Iatdm {
+                            background: rgba(255, 255, 255, 0.3) !important;
+                            color: white !important;
+                            font-weight: 600 !important;
+                          }
+                        }
+                      }
+                      
+                      input {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        padding: 6px 8px !important;
+                        text-align: center !important;
+                        
+                        &:focus {
+                          background: rgba(255, 255, 255, 0.3) !important;
+                          outline: none !important;
+                        }
+                      }
+                    }
+                  }
+                  
+                  .MydayMenu__toggle___gsNsa {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    border-radius: 6px !important;
+                    color: white !important;
+                    padding: 8px !important;
+                    position: absolute !important;
+                    right: 16px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.3) !important;
+                    }
+                    
+                    svg,
+                    div svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    div {
+                      display: flex !important;
+                      align-items: center !important;
+                      justify-content: center !important;
+                    }
+                  }
+                }
+                
+                .MydayMenu__list___wlbW_ {
+                  background: transparent !important;
+                  color: white !important;
+                  padding: 20px !important;
+                  
+                  .MydayMenu__noClasses___JKqLK {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-style: italic !important;
+                    text-align: center !important;
+                  }
+                }
+                
+                .MydayMenu__buttons___ET0LY {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  gap: 8px !important;
+                  padding: 16px !important;
+                  
+                  button {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 6px !important;
+                    color: white !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    font-family: Rubik, sans-serif !important;
+                    padding: 12px 16px !important;
+                    text-align: left !important;
+                    transition: all 0.2s ease !important;
+                    width: 100% !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.15) !important;
+                      transform: translateY(-1px) !important;
+                    }
+                    
+                    svg {
+                      fill: white !important;
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    
+                    &.MydayMenu__notes___sdb3O {
+                      &:hover {
+                        border-color: #007AFF !important;
+                      }
+                    }
+                    
+                    &.MydayMenu__tasks___U1AOT {
+                      &:hover {
+                        border-color: #28a745 !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Main content area
+              .MydayContent__noClasses___LJ3Hr {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 16px !important;
+                font-style: italic !important;
+                flex: 1 !important;
+                min-height: 400px !important;
+                padding: 40px !important;
+                text-align: center !important;
+              }
+              
+              // Saved indicator
+              .Myday__saved___kvTsO {
+                background: rgba(40, 167, 69, 0.2) !important;
+                border: 1px solid rgba(40, 167, 69, 0.4) !important;
+                border-radius: 6px !important;
+                color: #28a745 !important;
+                font-family: Rubik, sans-serif !important;
+                font-weight: 500 !important;
+                padding: 8px 16px !important;
+                position: fixed !important;
+                right: 20px !important;
+                top: 80px !important;
+                z-index: 1000 !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Override any remaining white backgrounds
+  div[style*="background: white"],
+  div[style*="background-color: white"],
+  div[style*="background: #fff"],
+  div[style*="background-color: #fff"],
+  .MydayMenu__MydayMenu___T5I1E[style*="background"],
+  .MydayMenu__MydayMenu___T5I1E * {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+  }
+  
+  // Force override for timetable sidebar components
+  .MydayMenu__MydayMenu___T5I1E {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+    
+    * {
+      color: white !important;
+    }
+    
+    .MydayMenu__header___UWKQp {
+      background: var(--theme-primary) !important;
+    }
+    
+    .MydayMenu__list___wlbW_ {
+      background: transparent !important;
+    }
+    
+    .MydayMenu__buttons___ET0LY {
+      background: rgba(255, 255, 255, 0.03) !important;
+    }
+  }
+
+  // Untimetabled classes styling
+  .untimetabledItems {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: white !important;
+    backdrop-filter: blur(10px) !important;
+    margin: 20px !important;
+    overflow: hidden !important;
+    
+    &.visible {
+      display: block !important;
+    }
+    
+    .handleContainer {
+      background: var(--theme-primary) !important;
+      color: white !important;
+      padding: 16px 20px !important;
+      
+      .handle {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        
+        &:hover {
+          opacity: 0.9 !important;
+        }
+      }
+    }
+    
+    .list {
+      background: transparent !important;
+      color: white !important;
+      padding: 20px !important;
+      
+      .add {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+        border-radius: 8px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-bottom: 16px !important;
+        padding: 40px 20px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+          color: white !important;
+          transform: translateY(-2px) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 32px !important;
+          height: 32px !important;
+        }
+      }
+      
+      .note {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        padding: 16px !important;
+        
+        &::before {
+          content: "💡" !important;
+          margin-right: 8px !important;
+          opacity: 0.7 !important;
+        }
+      }
+    }
+  }
+  
   // Student Information Panel (SIP) styling
   .SIP__SIP___gclvX {
     background: var(--better-main) !important;
