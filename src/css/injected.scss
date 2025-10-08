@@ -8705,4 +8705,580 @@ body[data-seqta-platform="teach"] {
       }
     }
   }
+
+  // Graduation Tracker Styling
+  [class*="GraduationTracker__container"] {
+    background: transparent !important;
+    color: white !important;
+    padding: 20px !important;
+    
+    // Filters Section
+    [class*="Filters__Filters"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      backdrop-filter: blur(10px) !important;
+      padding: 20px !important;
+      margin-bottom: 20px !important;
+      display: flex !important;
+      align-items: flex-end !important;
+      gap: 16px !important;
+      flex-wrap: wrap !important;
+      
+      // Student selector (Anyone Select)
+      .uiAnyoneSelectWrapper {
+        flex: 1 !important;
+        min-width: 280px !important;
+        max-width: 400px !important;
+        
+        .anyoneSelect.filterBox {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          padding: 8px !important;
+          
+          .selector.students {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            margin-bottom: 8px !important;
+            
+            input.singleSelect {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px 12px !important;
+              font-size: 14px !important;
+              flex: 1 !important;
+              min-width: 200px !important;
+              transition: all 0.2s ease !important;
+              
+              &:focus {
+                border-color: var(--accent-bg) !important;
+                outline: none !important;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+              }
+              
+              &::placeholder {
+                color: rgba(255, 255, 255, 0.5) !important;
+              }
+            }
+            
+            button.uiButton {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px 10px !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+              font-size: 14px !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border-color: var(--accent-bg) !important;
+              }
+            }
+          }
+          
+          .listWrapper {
+            .list {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border-radius: 6px !important;
+              max-height: 150px !important;
+              overflow-y: auto !important;
+              
+              .item.student {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 8px 12px !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                }
+                
+                &:last-child {
+                  border-bottom: none !important;
+                }
+                
+                .details {
+                  flex: 1 !important;
+                  
+                  .name {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 13px !important;
+                    font-weight: 600 !important;
+                    margin-bottom: 2px !important;
+                  }
+                  
+                  .extra {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 11px !important;
+                  }
+                }
+                
+                button.uiButton {
+                  background: rgba(255, 59, 48, 0.2) !important;
+                  border: 1px solid rgba(255, 59, 48, 0.4) !important;
+                  border-radius: 50% !important;
+                  color: #ff3b30 !important;
+                  padding: 6px !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 59, 48, 0.3) !important;
+                    transform: scale(1.1) !important;
+                  }
+                  
+                  svg {
+                    fill: currentColor !important;
+                    width: 14px !important;
+                    height: 14px !important;
+                  }
+                }
+              }
+            }
+          }
+          
+          .userCount {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 11px !important;
+            padding: 4px 8px !important;
+            text-align: center !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 4px !important;
+            margin-top: 4px !important;
+          }
+        }
+      }
+      
+      // Filter fields
+      [class*="Filters__field"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        min-width: 150px !important;
+        
+        label {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
+        }
+        
+        .uiButtonChecklist {
+          button.uiButton.buttonChecklist {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 6px !important;
+            color: white !important;
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            white-space: nowrap !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              transform: translateY(-1px) !important;
+            }
+            
+            span {
+              color: white !important;
+            }
+          }
+        }
+      }
+      
+      // Load/Run button - Make it more visible
+      [class*="Filters__load"] {
+        background: var(--accent-bg, #3b82f6) !important;
+        border: 2px solid var(--accent-bg, #3b82f6) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        padding: 12px 16px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        
+        &:hover {
+          background: var(--accent-hover, #2563eb) !important;
+          border-color: var(--accent-hover, #2563eb) !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4) !important;
+        }
+        
+        &:active {
+          transform: translateY(0) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
+        }
+      }
+    }
+    
+    // Main body section
+    [class*="GraduationTracker__body"] {
+      display: flex !important;
+      gap: 20px !important;
+      align-items: flex-start !important;
+      
+      // Student List Selector
+      [class*="StudentListSelector__StudentListSelector"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px) !important;
+        min-width: 280px !important;
+        transition: all 0.3s ease !important;
+        
+        &[class*="StudentListSelector__expanded"] {
+          min-width: 320px !important;
+        }
+        
+        // Header section
+        [class*="StudentListSelector__header"] {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          padding: 16px !important;
+          border-radius: 12px 12px 0 0 !important;
+          position: relative !important;
+          
+          [class*="StudentListSelector__count"] {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            margin-bottom: 12px !important;
+          }
+          
+          // Graduation graph
+          [class*="StudentListSelector__graph"] {
+            display: flex !important;
+            gap: 8px !important;
+            
+            [class*="GraduationGraph__GraphItem"] {
+              flex: 1 !important;
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+              gap: 4px !important;
+              padding: 8px 4px !important;
+              border-radius: 6px !important;
+              transition: all 0.2s ease !important;
+              
+              &[class*="GraduationGraph__enabled"] {
+                &:hover {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  transform: translateY(-1px) !important;
+                }
+              }
+              
+              [class*="GraduationGraph__code"] {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+              }
+              
+              [class*="GraduationGraph__barSpace"] {
+                width: 100% !important;
+                height: 8px !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+                border-radius: 4px !important;
+                overflow: hidden !important;
+                
+                [class*="GraduationGraph__bar"] {
+                  height: 100% !important;
+                  border-radius: 4px !important;
+                  transition: width 0.3s ease !important;
+                }
+              }
+              
+              [class*="GraduationGraph__count"] {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+              }
+            }
+          }
+          
+          // Toggle button
+          [class*="StudentListSelector__toggle"] {
+            position: absolute !important;
+            right: -12px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 50% !important;
+            color: white !important;
+            padding: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: var(--accent-bg) !important;
+              border-color: var(--accent-bg) !important;
+              transform: translateY(-50%) scale(1.1) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+              width: 16px !important;
+              height: 16px !important;
+            }
+          }
+        }
+        
+        // Student list
+        ul {
+          padding: 0 !important;
+          margin: 0 !important;
+          list-style: none !important;
+          
+          [class*="StudentListSelector__StudentListItem"] {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.05) !important;
+            }
+            
+            &[class*="StudentListSelector__selected"] {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border-left: 3px solid var(--accent-bg) !important;
+            }
+            
+            &:last-child {
+              border-bottom: none !important;
+            }
+            
+            // Status indicator
+            [class*="StudentListSelector__status"] {
+              width: 40px !important;
+              height: 24px !important;
+              border-radius: 12px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              
+              span {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+              }
+            }
+            
+            // Avatar
+            [class*="Avatar__Avatar"] {
+              border: 2px solid rgba(255, 255, 255, 0.2) !important;
+              
+              [class*="Avatar__name"] {
+                font-family: Rubik, sans-serif !important;
+                font-weight: 700 !important;
+                color: white !important;
+              }
+            }
+            
+            // Student details
+            [class*="StudentListSelector__details"] {
+              flex: 1 !important;
+              
+              [class*="StudentListSelector__name"] {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                margin-bottom: 4px !important;
+              }
+              
+              [class*="StudentListSelector__demographics"] {
+                display: flex !important;
+                gap: 8px !important;
+                
+                span {
+                  color: rgba(255, 255, 255, 0.7) !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 12px !important;
+                  background: rgba(255, 255, 255, 0.1) !important;
+                  padding: 2px 6px !important;
+                  border-radius: 4px !important;
+                }
+              }
+            }
+            
+            // Remove button
+            button {
+              background: rgba(255, 59, 48, 0.2) !important;
+              border: 1px solid rgba(255, 59, 48, 0.4) !important;
+              border-radius: 50% !important;
+              color: #ff3b30 !important;
+              padding: 6px !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 59, 48, 0.3) !important;
+                transform: scale(1.1) !important;
+              }
+              
+              svg {
+                fill: currentColor !important;
+                width: 14px !important;
+                height: 14px !important;
+              }
+            }
+          }
+        }
+        
+        // Functions section
+        [class*="StudentListSelector__functions"] {
+          padding: 12px 16px !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          button {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 6px !important;
+            color: white !important;
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              transform: translateY(-1px) !important;
+            }
+            
+            span {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+        }
+      }
+      
+      // Dashboard section
+      [class*="GraduationTracker__dashboard"] {
+        flex: 1 !important;
+        
+        // Disclaimer
+        [class*="GraduationTracker__disclaimer"] {
+          background: rgba(255, 193, 7, 0.1) !important;
+          border: 1px solid rgba(255, 193, 7, 0.3) !important;
+          border-radius: 8px !important;
+          color: #ffc107 !important;
+          padding: 12px 16px !important;
+          margin-bottom: 20px !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-style: italic !important;
+        }
+        
+        // Student Summary
+        [class*="StudentSummary__StudentSummary"] {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          backdrop-filter: blur(10px) !important;
+          padding: 20px !important;
+          margin-bottom: 20px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 16px !important;
+          position: relative !important;
+          overflow: hidden !important;
+          
+          // Background color overlay
+          &::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: inherit !important;
+            opacity: 0.1 !important;
+            z-index: -1 !important;
+          }
+          
+          // Avatar
+          [class*="Avatar__Avatar"] {
+            border: 3px solid rgba(255, 255, 255, 0.3) !important;
+            
+            [class*="Avatar__name"] {
+              font-family: Rubik, sans-serif !important;
+              font-weight: 700 !important;
+              color: white !important;
+            }
+          }
+          
+          // Student details
+          [class*="StudentSummary__details"] {
+            flex: 1 !important;
+            
+            [class*="StudentSummary__name"] {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 20px !important;
+              font-weight: 700 !important;
+              margin-bottom: 8px !important;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            }
+            
+            [class*="StudentSummary__demographics"] {
+              display: flex !important;
+              gap: 12px !important;
+              
+              span {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                background: rgba(255, 255, 255, 0.15) !important;
+                padding: 4px 8px !important;
+                border-radius: 6px !important;
+                font-weight: 500 !important;
+              }
+            }
+          }
+          
+          // Status
+          [class*="StudentSummary__status"] {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+          }
+        }
+      }
+    }
+  }
 }
