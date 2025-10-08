@@ -5780,9 +5780,9 @@ body[data-seqta-platform="teach"] {
   }
 
   // Class list table styling
-  .classlist__blankRow___iCvlM,
-  .classlist__interHeader___Z8tGJ,
-  .classlist__classRow___mNBJN {
+  [class*="classlist__blankRow"],
+  [class*="classlist__interHeader"],
+  [class*="classlist__classRow"] {
     background: rgba(255, 255, 255, 0.03) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     
@@ -5796,7 +5796,7 @@ body[data-seqta-platform="teach"] {
       padding: 12px 16px !important;
       border: none !important;
       
-      &.classlist__header___xChZj {
+      &[class*="classlist__header"] {
         background: rgba(255, 255, 255, 0.08) !important;
         color: white !important;
         font-weight: 600 !important;
@@ -5804,27 +5804,27 @@ body[data-seqta-platform="teach"] {
         letter-spacing: 0.5px !important;
       }
       
-      &.classlist__colour___ISgK1 {
+      &[class*="classlist__colour"] {
         width: 8px !important;
         padding: 0 !important;
         border-radius: 4px 0 0 4px !important;
       }
       
-      &.classlist__classname___Szmjj {
+      &[class*="classlist__classname"] {
         font-weight: 600 !important;
         color: var(--theme-primary) !important;
       }
       
-      &.classlist__subject___g7bE8 {
+      &[class*="classlist__subject"] {
         color: rgba(255, 255, 255, 0.9) !important;
       }
       
-      &.classlist__students___jLUw5 {
+      &[class*="classlist__students"] {
         color: rgba(255, 255, 255, 0.8) !important;
         font-size: 14px !important;
       }
       
-      &.classlist__programme___u7DRj {
+      &[class*="classlist__programme"] {
         color: rgba(255, 255, 255, 0.8) !important;
         font-size: 14px !important;
         
@@ -5834,7 +5834,7 @@ body[data-seqta-platform="teach"] {
         }
       }
       
-      &.classlist__actions___XtVu7 {
+      &[class*="classlist__actions"] {
         .uiButton,
         a,
         button {
@@ -6456,13 +6456,13 @@ body[data-seqta-platform="teach"] {
   }
 
   // Academic Summary page styling
-  .AcademicSummary__pageArea___znOUo {
+  [class*="AcademicSummary__pageArea"] {
     background: transparent !important;
     color: white !important;
     padding: 20px !important;
     
     // Actions bar
-    .Actions__Actions___hbdy8 {
+    [class*="Actions__Actions"] {
       background: rgba(255, 255, 255, 0.05) !important;
       border: 1px solid rgba(255, 255, 255, 0.1) !important;
       border-radius: 12px !important;
@@ -6473,7 +6473,7 @@ body[data-seqta-platform="teach"] {
       align-items: center !important;
       gap: 16px !important;
       
-      .Button__Button___kQRWg {
+      [class*="Button__Button"] {
         background: rgba(255, 255, 255, 0.1) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         color: white !important;
@@ -6489,7 +6489,7 @@ body[data-seqta-platform="teach"] {
           transform: translateY(-1px) !important;
         }
         
-        &.Button__dropdown___jmEEr {
+        &[class*="Button__dropdown"] {
           span svg {
             fill: white !important;
             margin-left: 8px !important;
@@ -6498,8 +6498,8 @@ body[data-seqta-platform="teach"] {
       }
       
       // Search input
-      .Label__Label___D7Qid {
-        .Input__Input___KL0p5,
+      [class*="Label__Label"] {
+        [class*="Input__Input"],
         input {
           background: rgba(255, 255, 255, 0.05) !important;
           border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -6521,13 +6521,13 @@ body[data-seqta-platform="teach"] {
         }
       }
       
-      .Actions__spacer___BB56c {
+      [class*="Actions__spacer"] {
         flex: 1 !important;
       }
     }
     
     // Main body area
-    .AcademicSummary__body___spQSl {
+    [class*="AcademicSummary__body"] {
       background: transparent !important;
       
       // Subject blocks container
@@ -6535,7 +6535,7 @@ body[data-seqta-platform="teach"] {
         margin-bottom: 24px !important;
         
         // Individual subject panels
-        .BasicPanel__BasicPanel___q92_U.SubjectBlock__Subject___vPjHg {
+        [class*="BasicPanel__BasicPanel"][class*="SubjectBlock__Subject"] {
           background: rgba(255, 255, 255, 0.05) !important;
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           border-radius: 16px !important;
@@ -6544,7 +6544,7 @@ body[data-seqta-platform="teach"] {
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
           
           // Subject header
-          header.BasicPanel__clickable___Dx1xo {
+          header[class*="BasicPanel__clickable"] {
             background: var(--container-accent, var(--theme-primary)) !important;
             color: var(--container-accent-contrast, white) !important;
             padding: 20px 24px !important;
@@ -6567,7 +6567,7 @@ body[data-seqta-platform="teach"] {
             }
             
             // Color picker button
-            .SubjectBlock__colourPicker___B6jud {
+            [class*="SubjectBlock__colourPicker"] {
               background: rgba(255, 255, 255, 0.2) !important;
               border: 1px solid rgba(255, 255, 255, 0.3) !important;
               color: var(--container-accent-contrast, white) !important;
@@ -6593,14 +6593,14 @@ body[data-seqta-platform="teach"] {
             padding: 24px !important;
             
             // Current/Live score section
-            .SubjectBlock__result___zw0Kb.SubjectBlock__current___Zbcj1 {
+            [class*="SubjectBlock__result"][class*="SubjectBlock__current"] {
               background: rgba(255, 255, 255, 0.05) !important;
               border: 1px solid rgba(255, 255, 255, 0.1) !important;
               border-radius: 12px !important;
               padding: 20px !important;
               margin-bottom: 20px !important;
               
-              .SubjectBlock__primary___ZG85m {
+              [class*="SubjectBlock__primary"] {
                 h3 {
                   color: white !important;
                   font-family: Rubik, sans-serif !important;
@@ -6609,13 +6609,13 @@ body[data-seqta-platform="teach"] {
                   margin: 0 0 16px !important;
                 }
                 
-                .SubjectBlock__achievement___pIstq {
+                [class*="SubjectBlock__achievement"] {
                   display: flex !important;
                   align-items: center !important;
                   gap: 16px !important;
                   
                   // Thermometer score
-                  .Thermoscore__Thermoscore___WFpL3 {
+                  [class*="Thermoscore__Thermoscore"] {
                     flex: 1 !important;
                     background: rgba(255, 255, 255, 0.1) !important;
                     border-radius: 20px !important;
@@ -6623,7 +6623,7 @@ body[data-seqta-platform="teach"] {
                     position: relative !important;
                     overflow: hidden !important;
                     
-                    .Thermoscore__fill___ojxDI {
+                    [class*="Thermoscore__fill"] {
                       background: var(--container-accent, var(--theme-primary)) !important;
                       height: 100% !important;
                       border-radius: 20px !important;
@@ -6632,7 +6632,7 @@ body[data-seqta-platform="teach"] {
                       justify-content: center !important;
                       transition: width 0.3s ease !important;
                       
-                      .Thermoscore__text___XSR_M {
+                      [class*="Thermoscore__text"] {
                         color: white !important;
                         font-weight: 700 !important;
                         font-size: 16px !important;
@@ -6641,24 +6641,24 @@ body[data-seqta-platform="teach"] {
                     }
                     
                     // Markers (avg, min, max)
-                    .Thermoscore__marker___wb8r5 {
+                    [class*="Thermoscore__marker"] {
                       position: absolute !important;
                       top: -4px !important;
                       width: 2px !important;
                       height: 48px !important;
                       border-radius: 1px !important;
                       
-                      &.Thermoscore__avg___HzNZq {
+                      &[class*="Thermoscore__avg"] {
                         background: #FFC107 !important;
                         box-shadow: 0 0 4px rgba(255, 193, 7, 0.6) !important;
                       }
                       
-                      &.Thermoscore__min___ixQTv {
+                      &[class*="Thermoscore__min"] {
                         background: #F44336 !important;
                         box-shadow: 0 0 4px rgba(244, 67, 54, 0.6) !important;
                       }
                       
-                      &.Thermoscore__max___L9otd {
+                      &[class*="Thermoscore__max"] {
                         background: #4CAF50 !important;
                         box-shadow: 0 0 4px rgba(76, 175, 80, 0.6) !important;
                       }
@@ -6666,7 +6666,7 @@ body[data-seqta-platform="teach"] {
                   }
                   
                   // Grade display
-                  .SimpleGrade__SimpleGrade___X5tWC {
+                  [class*="SimpleGrade__SimpleGrade"] {
                     background: rgba(255, 255, 255, 0.1) !important;
                     color: white !important;
                     border: 2px solid var(--container-accent, var(--theme-primary)) !important;
@@ -6678,7 +6678,7 @@ body[data-seqta-platform="teach"] {
                     min-width: 60px !important;
                     text-align: center !important;
                     
-                    &.SimpleGrade__accented___FSO77 {
+                    &[class*="SimpleGrade__accented"] {
                       background: var(--container-accent, var(--theme-primary)) !important;
                       color: var(--container-accent-contrast, white) !important;
                     }
@@ -6687,7 +6687,7 @@ body[data-seqta-platform="teach"] {
               }
               
               // Cohort statistics
-              .SubjectBlock__cohort___RGEk9 {
+              [class*="SubjectBlock__cohort"] {
                 display: flex !important;
                 justify-content: space-between !important;
                 margin-top: 16px !important;
@@ -6699,7 +6699,7 @@ body[data-seqta-platform="teach"] {
                   text-align: center !important;
                   flex: 1 !important;
                   
-                  .SubjectBlock__label___IWaYn {
+                  [class*="SubjectBlock__label"] {
                     display: block !important;
                     color: rgba(255, 255, 255, 0.7) !important;
                     font-size: 12px !important;
@@ -6709,7 +6709,7 @@ body[data-seqta-platform="teach"] {
                     letter-spacing: 0.5px !important;
                   }
                   
-                  .SubjectBlock__value___MiWNZ {
+                  [class*="SubjectBlock__value"] {
                     display: block !important;
                     color: white !important;
                     font-size: 16px !important;
@@ -6717,15 +6717,15 @@ body[data-seqta-platform="teach"] {
                     font-family: Rubik, sans-serif !important;
                   }
                   
-                  &.SubjectBlock__minimum___cvpkf .SubjectBlock__value___MiWNZ {
+                  &[class*="SubjectBlock__minimum"] [class*="SubjectBlock__value"] {
                     color: #F44336 !important;
                   }
                   
-                  &.SubjectBlock__average____h9Gr .SubjectBlock__value___MiWNZ {
+                  &[class*="SubjectBlock__average"] [class*="SubjectBlock__value"] {
                     color: #FFC107 !important;
                   }
                   
-                  &.SubjectBlock__maximum___FuVWI .SubjectBlock__value___MiWNZ {
+                  &[class*="SubjectBlock__maximum"] [class*="SubjectBlock__value"] {
                     color: #4CAF50 !important;
                   }
                 }
@@ -6733,8 +6733,8 @@ body[data-seqta-platform="teach"] {
             }
             
             // Assessment groups
-            .SubjectBlock__groups___x0p6h {
-              .SubjectBlock__group___lgrQR {
+            [class*="SubjectBlock__groups"] {
+              [class*="SubjectBlock__group"] {
                 h3 {
                   background: rgba(255, 255, 255, 0.08) !important;
                   color: white !important;
@@ -6765,7 +6765,7 @@ body[data-seqta-platform="teach"] {
                 }
                 
                 // Individual assessment results
-                .SubjectBlock__result___zw0Kb.SubjectBlock__assessment___epE3d {
+                [class*="SubjectBlock__result"][class*="SubjectBlock__assessment"] {
                   background: rgba(255, 255, 255, 0.03) !important;
                   border: 1px solid rgba(255, 255, 255, 0.08) !important;
                   border-radius: 10px !important;
@@ -6780,7 +6780,7 @@ body[data-seqta-platform="teach"] {
                     transform: translateY(-1px) !important;
                   }
                   
-                  .SubjectBlock__primary___ZG85m {
+                  [class*="SubjectBlock__primary"] {
                     h3 {
                       color: white !important;
                       font-size: 16px !important;
@@ -6788,27 +6788,27 @@ body[data-seqta-platform="teach"] {
                       margin: 0 0 12px !important;
                     }
                     
-                    .SubjectBlock__achievement___pIstq {
+                    [class*="SubjectBlock__achievement"] {
                       display: flex !important;
                       align-items: center !important;
                       gap: 12px !important;
                       
-                      .Thermoscore__Thermoscore___WFpL3 {
+                      [class*="Thermoscore__Thermoscore"] {
                         flex: 1 !important;
                         background: rgba(255, 255, 255, 0.1) !important;
                         border-radius: 16px !important;
                         height: 32px !important;
                         
-                        .Thermoscore__fill___ojxDI {
+                        [class*="Thermoscore__fill"] {
                           background: var(--container-accent, var(--theme-primary)) !important;
                           
-                          .Thermoscore__text___XSR_M {
+                          [class*="Thermoscore__text"] {
                             font-size: 14px !important;
                           }
                         }
                       }
                       
-                      .SimpleGrade__SimpleGrade___X5tWC {
+                      [class*="SimpleGrade__SimpleGrade"] {
                         background: rgba(255, 255, 255, 0.1) !important;
                         color: white !important;
                         border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -6822,7 +6822,7 @@ body[data-seqta-platform="teach"] {
                   }
                   
                   // Cohort stats for assessments
-                  .SubjectBlock__cohort___RGEk9 {
+                  [class*="SubjectBlock__cohort"] {
                     display: flex !important;
                     justify-content: space-between !important;
                     margin-top: 12px !important;
@@ -6834,12 +6834,12 @@ body[data-seqta-platform="teach"] {
                       text-align: center !important;
                       flex: 1 !important;
                       
-                      .SubjectBlock__label___IWaYn {
+                      [class*="SubjectBlock__label"] {
                         font-size: 10px !important;
                         color: rgba(255, 255, 255, 0.6) !important;
                       }
                       
-                      .SubjectBlock__value___MiWNZ {
+                      [class*="SubjectBlock__value"] {
                         font-size: 14px !important;
                         color: white !important;
                       }
@@ -6847,7 +6847,7 @@ body[data-seqta-platform="teach"] {
                   }
                   
                   // Popup button
-                  .SubjectBlock__popup___cmgQa {
+                  [class*="SubjectBlock__popup"] {
                     position: absolute !important;
                     top: 12px !important;
                     right: 12px !important;
@@ -7155,25 +7155,25 @@ body[data-seqta-platform="teach"] {
   }
   
   // Student Information Panel (SIP) styling
-  .SIP__SIP___gclvX {
+  [class*="SIP__SIP"] {
     background: #000000 !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
     
-    .SIP__content___RZMhx {
+    [class*="SIP__content"] {
       background: transparent !important;
       
         // Header section
-        .Header__Header___HcPDg {
+        [class*="Header__Header"] {
           background: #1a1a1a !important;
           border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
           border-radius: 12px 12px 0 0 !important;
           padding: 16px !important;
         
-        .Header__selector___IR4b4 {
-          .FindAsYouType__FindAsYouType___j4Emb {
-            .Button__Button___kQRWg {
+        [class*="Header__selector"] {
+          [class*="FindAsYouType__FindAsYouType"] {
+            [class*="Button__Button"] {
               background: #2a2a2a !important;
               border: 1px solid rgba(255, 255, 255, 0.3) !important;
               color: white !important;
@@ -7188,7 +7188,7 @@ body[data-seqta-platform="teach"] {
                 transform: translateY(-1px) !important;
               }
               
-              .FindAsYouType__value___lzuOB {
+              [class*="FindAsYouType__value"] {
                 color: white !important;
                 font-weight: 500 !important;
               }
@@ -7200,9 +7200,9 @@ body[data-seqta-platform="teach"] {
           }
         }
         
-        .MenuButton__Menu___FMwps,
-        .Header__menu____UnAT {
-          .Button__Button___kQRWg {
+        [class*="MenuButton__Menu"],
+        [class*="Header__menu"] {
+          [class*="Button__Button"] {
             background: var(--theme-primary) !important;
             color: white !important;
             border: none !important;
@@ -7221,7 +7221,7 @@ body[data-seqta-platform="teach"] {
           }
         }
         
-        .Header__clear___Qn4Ke {
+        [class*="Header__clear"] {
           background: rgba(255, 59, 48, 0.8) !important;
           color: white !important;
           border: none !important;
@@ -7239,33 +7239,33 @@ body[data-seqta-platform="teach"] {
       }
       
       // Student Info section
-      .StudentInfo__StudentInfo___N7Vot {
+      [class*="StudentInfo__StudentInfo"] {
         background: transparent !important;
         padding: 20px !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
         
-        .StudentInfo__details___OtsXW {
-          .StudentInfo__name___QQKfR {
+        [class*="StudentInfo__details"] {
+          [class*="StudentInfo__name"] {
             color: white !important;
             font-family: Rubik, sans-serif !important;
             margin-bottom: 8px !important;
             
-            .StudentInfo__firstname___L_cNo,
-            .StudentInfo__surname___md4KV {
+            [class*="StudentInfo__firstname"],
+            [class*="StudentInfo__surname"] {
               color: white !important;
               font-weight: 600 !important;
               font-size: 18px !important;
             }
             
-            .StudentInfo__prefname___tgoHc {
+            [class*="StudentInfo__prefname"] {
               color: rgba(255, 255, 255, 0.7) !important;
               font-weight: 400 !important;
             }
           }
           
-          .StudentInfo__demographics___xPeEe,
-          .StudentInfo__age___XHJEu,
-          .StudentInfo__sex___IApQ0 {
+          [class*="StudentInfo__demographics"],
+          [class*="StudentInfo__age"],
+          [class*="StudentInfo__sex"] {
             color: rgba(255, 255, 255, 0.8) !important;
             font-family: Rubik, sans-serif !important;
             font-size: 14px !important;
@@ -7290,8 +7290,8 @@ body[data-seqta-platform="teach"] {
           }
         }
         
-        .StudentInfo__glance___PyW1p {
-          .Avatar__Avatar___j4ZSp {
+        [class*="StudentInfo__glance"] {
+          [class*="Avatar__Avatar"] {
             background: var(--theme-primary) !important;
             border: 2px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 50% !important;
@@ -7302,14 +7302,14 @@ body[data-seqta-platform="teach"] {
             }
           }
           
-          .StudentInfo__alerts___OWpwd {
+          [class*="StudentInfo__alerts"] {
             svg {
               filter: brightness(1.1) contrast(1.2) !important;
             }
           }
         }
         
-        .StudentInfo__extraDetails___nYX7X {
+        [class*="StudentInfo__extraDetails"] {
           li {
             border-bottom: 1px solid var(--border-secondary) !important;
             padding: 8px 0 !important;
@@ -7318,7 +7318,7 @@ body[data-seqta-platform="teach"] {
               border-bottom: none !important;
             }
             
-            .StudentInfo__label___orOpd {
+            [class*="StudentInfo__label"] {
               color: rgba(255, 255, 255, 0.6) !important;
               font-family: Rubik, sans-serif !important;
               font-size: 12px !important;
@@ -7327,7 +7327,7 @@ body[data-seqta-platform="teach"] {
               letter-spacing: 0.5px !important;
             }
             
-            .StudentInfo__value___l4aY_ {
+            [class*="StudentInfo__value"] {
               color: white !important;
               font-family: Rubik, sans-serif !important;
               font-weight: 500 !important;
@@ -7345,7 +7345,7 @@ body[data-seqta-platform="teach"] {
           }
         }
         
-        .StudentInfo__toggle___AuBnh {
+        [class*="StudentInfo__toggle"] {
           background: #2a2a2a !important;
           border: 1px solid rgba(255, 255, 255, 0.3) !important;
           color: white !important;
@@ -7365,10 +7365,10 @@ body[data-seqta-platform="teach"] {
       }
       
       // General notes and content sections
-      .General__General___W0EVC {
+      [class*="General__General"] {
         background: transparent !important;
         
-        .BasicPanel__BasicPanel___q92_U {
+        [class*="BasicPanel__BasicPanel"] {
           background: #1a1a1a !important;
           border-radius: 8px !important;
           margin: 16px !important;
@@ -7390,7 +7390,7 @@ body[data-seqta-platform="teach"] {
           }
           
           // Notes content
-          .BasicPanel__numbered___m3sE4 {
+          [class*="BasicPanel__numbered"] {
             background: transparent !important;
             padding: 16px !important;
             
@@ -7415,7 +7415,7 @@ body[data-seqta-platform="teach"] {
                   font-weight: 500 !important;
                 }
                 
-                .Button__Button___kQRWg {
+                [class*="Button__Button"] {
                   background: rgba(40, 167, 69, 1) !important;
                   color: white !important;
                   border-radius: 50% !important;
@@ -7430,16 +7430,16 @@ body[data-seqta-platform="teach"] {
                 }
               }
               
-              .General__noteContents___P6vtn {
+              [class*="General__noteContents"] {
                 color: white !important;
                 font-family: Rubik, sans-serif !important;
                 line-height: 1.5 !important;
                 margin-bottom: 4px !important;
               }
               
-              .MenuButton__Menu___FMwps,
-              .General__menu___jGCdg {
-                .Button__Button___kQRWg {
+              [class*="MenuButton__Menu"],
+              [class*="General__menu"] {
+                [class*="Button__Button"] {
                   background: var(--background-secondary) !important;
                   border: 1px solid var(--border-primary) !important;
                   color: var(--text-muted) !important;
@@ -7455,8 +7455,8 @@ body[data-seqta-platform="teach"] {
         }
         
         // Contacts section
-        .General__contacts___DLenQ {
-          .General__contact___g3L9u {
+        [class*="General__contacts"] {
+          [class*="General__contact"] {
             background: var(--background-secondary) !important;
             border: 1px solid var(--border-primary) !important;
             border-radius: 8px !important;
@@ -7472,12 +7472,12 @@ body[data-seqta-platform="teach"] {
                 font-family: Rubik, sans-serif !important;
                 margin: 0 !important;
                 
-                .General__salutation___EXRuD {
+                [class*="General__salutation"] {
                   font-weight: 600 !important;
                   font-size: 16px !important;
                 }
                 
-                .General__type___D6HTb {
+                [class*="General__type"] {
                   font-weight: 400 !important;
                   font-size: 14px !important;
                   opacity: 0.9 !important;
@@ -7490,10 +7490,10 @@ body[data-seqta-platform="teach"] {
               padding: 16px !important;
               background: #0a0a0a !important;
               
-              .General__flags___LX3Gb {
+              [class*="General__flags"] {
                 margin-bottom: 12px !important;
                 
-                .InfoPill__InfoPill___CQ6X_ {
+                [class*="InfoPill__InfoPill"] {
                   background: rgba(59, 130, 246, 0.2) !important;
                   color: #60a5fa !important;
                   border: 1px solid rgba(59, 130, 246, 0.3) !important;
@@ -7504,7 +7504,7 @@ body[data-seqta-platform="teach"] {
                   margin-right: 8px !important;
                 }
                 
-                .Button__Button___kQRWg {
+                [class*="Button__Button"] {
                   background: rgba(34, 197, 94, 0.2) !important;
                   color: #4ade80 !important;
                   border: 1px solid rgba(34, 197, 94, 0.3) !important;
@@ -7530,7 +7530,7 @@ body[data-seqta-platform="teach"] {
                     border-bottom: none !important;
                   }
                   
-                  .General__label___luZk3 {
+                  [class*="General__label"] {
                     color: rgba(255, 255, 255, 0.6) !important;
                     font-family: Rubik, sans-serif !important;
                     font-size: 12px !important;
@@ -7539,7 +7539,7 @@ body[data-seqta-platform="teach"] {
                     letter-spacing: 0.5px !important;
                   }
                   
-                  .General__value___NCG1V {
+                  [class*="General__value"] {
                     color: white !important;
                     font-family: Rubik, sans-serif !important;
                     font-weight: 500 !important;
@@ -7558,12 +7558,12 @@ body[data-seqta-platform="teach"] {
                 }
               }
               
-              .General__footer___ARMHi {
+              [class*="General__footer"] {
                 margin-top: 12px !important;
                 padding-top: 12px !important;
                 border-top: 1px solid var(--border-secondary) !important;
                 
-                .General__address___wJ8AX {
+                [class*="General__address"] {
                   div {
                     color: var(--text-muted) !important;
                     font-family: Rubik, sans-serif !important;
@@ -7577,10 +7577,10 @@ body[data-seqta-platform="teach"] {
         }
         
         // Standardised tests button
-        .General__stdTest___J_ua6 {
+        [class*="General__stdTest"] {
           padding: 16px !important;
           
-          .Button__Button___kQRWg {
+          [class*="Button__Button"] {
             background: var(--accent-bg) !important;
             color: var(--text-on-accent) !important;
             border: none !important;
@@ -7606,7 +7606,7 @@ body[data-seqta-platform="teach"] {
     }
     
     // Navigation tabs
-    .SIP__nav___tsK53 {
+    [class*="SIP__nav"] {
       background: #1a1a1a !important;
       border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
       border-radius: 0 0 12px 12px !important;
@@ -7629,7 +7629,7 @@ body[data-seqta-platform="teach"] {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
         
-        &.SIP__active___l7g0m {
+        &[class*="SIP__active"] {
           background: var(--theme-primary) !important;
           color: white !important;
           border-color: var(--theme-primary) !important;
@@ -7644,7 +7644,7 @@ body[data-seqta-platform="teach"] {
     }
     
     // Toggle button
-    .SIP__toggle___D06YZ {
+    [class*="SIP__toggle"] {
       background: #2a2a2a !important;
       border: 1px solid rgba(255, 255, 255, 0.3) !important;
       color: white !important;
@@ -7676,12 +7676,12 @@ body[data-seqta-platform="teach"] {
   // SEQTA Teach Navigation Styling (3-tier spine system)
   
   // Tier 1: Main Spine (darkest shade)
-  .Spine__Spine___zYUJ6 {
+  [class*="Spine__Spine"] {
     background: var(--theme-primary) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     
-    .Spine__q___vhZqf,
-    .Spine__workspace___p5Sul {
+    [class*="Spine__q"],
+    [class*="Spine__workspace"] {
       color: rgba(255, 255, 255, 0.8) !important;
       background: transparent !important;
       border-radius: 8px !important;
@@ -7695,7 +7695,7 @@ body[data-seqta-platform="teach"] {
         transform: translateX(2px) !important;
       }
       
-      &.Spine__active___yLSqc,
+      &[class*="Spine__active"],
       &.active {
         background: rgba(255, 255, 255, 0.15) !important;
         color: white !important;
@@ -7709,13 +7709,13 @@ body[data-seqta-platform="teach"] {
       }
     }
     
-    .Spine__spacer___gzJ7V {
+    [class*="Spine__spacer"] {
       background: rgba(255, 255, 255, 0.1) !important;
       height: 1px !important;
       margin: 8px 12px !important;
     }
     
-    .Spine__logout___oeVyd {
+    [class*="Spine__logout"] {
       color: rgba(255, 255, 255, 0.7) !important;
       background: transparent !important;
       border-radius: 8px !important;
@@ -7735,7 +7735,7 @@ body[data-seqta-platform="teach"] {
       }
     }
     
-    .Spine__help___ibEy2 {
+    [class*="Spine__help"] {
       color: rgba(255, 255, 255, 0.7) !important;
       background: transparent !important;
       border-radius: 8px !important;
@@ -7757,12 +7757,12 @@ body[data-seqta-platform="teach"] {
   }
   
   // Tier 2: Page List (medium shade)
-  .PageList__PageList___ZCu9s {
+  [class*="PageList__PageList"] {
     background: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: blur(10px) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     
-    .PageList__pageContainer___tGHa4 {
+    [class*="PageList__pageContainer"] {
       padding: 8px !important;
       
       a {
@@ -7804,7 +7804,7 @@ body[data-seqta-platform="teach"] {
       }
     }
     
-    .PageList__toggle___zfEVA {
+    [class*="PageList__toggle"] {
       background: rgba(255, 255, 255, 0.1) !important;
       color: rgba(255, 255, 255, 0.8) !important;
       border: none !important;
@@ -7827,13 +7827,13 @@ body[data-seqta-platform="teach"] {
   }
   
   // Tier 3: Subpage List (lightest shade)
-  .SubpageList__SubpageList___Z9OKg {
+  [class*="SubpageList__SubpageList"] {
     background: rgba(255, 255, 255, 0.02) !important;
     backdrop-filter: blur(5px) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
     padding: 8px !important;
     
-    .SubpageList__menuToggle___g0Mri {
+    [class*="SubpageList__menuToggle"] {
       background: rgba(255, 255, 255, 0.05) !important;
       color: rgba(255, 255, 255, 0.7) !important;
       border: none !important;
@@ -7852,7 +7852,7 @@ body[data-seqta-platform="teach"] {
         width: 14px !important;
         height: 14px !important;
         
-        &.SubpageList__spinLeft___O93TZ {
+        &[class*="SubpageList__spinLeft"] {
           transition: transform 0.2s ease !important;
         }
       }
@@ -7909,10 +7909,10 @@ body[data-seqta-platform="teach"] {
     }
     
     // Quick Links and Action Buttons
-    .QuickLinks__QuickLinks___Bf9xQ,
+    [class*="QuickLinks__QuickLinks"],
     a,
-    .ProfileMenu__ProfileMenu___d4v98 {
-      .Button__Button___kQRWg,
+    [class*="ProfileMenu__ProfileMenu"] {
+      [class*="Button__Button"],
       button {
         background: rgba(255, 255, 255, 0.1) !important;
         color: rgba(255, 255, 255, 0.8) !important;
@@ -7928,7 +7928,7 @@ body[data-seqta-platform="teach"] {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
         
-        &.Chrome__actionButton___vk0PF {
+        &[class*="Chrome__actionButton"] {
           width: 44px !important;
           height: 44px !important;
         }
@@ -7940,7 +7940,7 @@ body[data-seqta-platform="teach"] {
         }
         
         // Profile avatar styling
-        .Avatar__Avatar___j4ZSp {
+        [class*="Avatar__Avatar"] {
           background: var(--theme-primary) !important;
           border: 2px solid rgba(255, 255, 255, 0.3) !important;
           border-radius: 50% !important;
@@ -7956,7 +7956,7 @@ body[data-seqta-platform="teach"] {
     }
     
     // Badge styling for notifications
-    .BadgedButton__BadgedButton___q10Fl {
+    [class*="BadgedButton__BadgedButton"] {
       position: relative !important;
       
       &::after {
@@ -7974,19 +7974,19 @@ body[data-seqta-platform="teach"] {
   }
 
   // Toolbar styling (under header)
-  .Toolbar__Toolbar___ecArT {
+  [class*="Toolbar__Toolbar"] {
     background: rgba(255, 255, 255, 0.03) !important;
     backdrop-filter: blur(5px) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     padding: 12px 24px !important;
     
-    &.LegacyPage__toolbar___xRVAN {
+    &[class*="LegacyPage__toolbar"] {
       display: flex !important;
       align-items: center !important;
       gap: 12px !important;
     }
     
-    .Button__Button___kQRWg,
+    [class*="Button__Button"],
     button {
       background: rgba(255, 255, 255, 0.08) !important;
       color: rgba(255, 255, 255, 0.9) !important;
