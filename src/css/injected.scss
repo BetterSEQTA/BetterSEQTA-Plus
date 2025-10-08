@@ -8302,4 +8302,407 @@ body[data-seqta-platform="teach"] {
       }
     }
   }
+
+  // Add/Edit Notice Screen Styling
+  .notices-edit {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    margin: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+
+    // Form Fields
+    .field {
+      margin-bottom: 20px !important;
+
+      label {
+        color: white !important;
+        font-weight: 500 !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+      }
+
+      // Title field
+      &.title input.uiShortText {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+
+        &:focus {
+          background: rgba(255, 255, 255, 0.12) !important;
+          border-color: var(--accent-bg) !important;
+          outline: none !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+
+      // Label/Color field
+      &.colour .options {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+
+        span {
+          position: relative !important;
+          flex: 1 !important;
+
+          input.singleSelect {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 12px 16px !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+
+            &:focus {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              outline: none !important;
+              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+            }
+
+            &::placeholder {
+              color: rgba(255, 255, 255, 0.5) !important;
+            }
+          }
+
+          .singleSelect.overlay {
+            background: transparent !important;
+            border: none !important;
+          }
+        }
+
+        button.uiButton {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          padding: 12px 16px !important;
+          font-size: 14px !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          white-space: nowrap !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: var(--accent-bg) !important;
+            transform: translateY(-1px) !important;
+          }
+
+          &:active {
+            transform: translateY(0) !important;
+          }
+        }
+      }
+
+      // Dates field
+      &.dates {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+
+        button.uiButton.buttonChecklist {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          padding: 12px 16px !important;
+          font-size: 14px !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: var(--accent-bg) !important;
+            transform: translateY(-1px) !important;
+          }
+
+          span {
+            color: white !important;
+          }
+        }
+
+        .interstitial {
+          color: rgba(255, 255, 255, 0.7) !important;
+          font-size: 14px !important;
+        }
+
+        .daterange {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+
+          input.uiShortText.calendar {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 12px 16px !important;
+            font-size: 14px !important;
+            transition: all 0.2s ease !important;
+            min-width: 120px !important;
+
+            &:focus {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              outline: none !important;
+              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+            }
+
+            &::placeholder {
+              color: rgba(255, 255, 255, 0.5) !important;
+            }
+          }
+
+          .interstitial {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-size: 14px !important;
+          }
+        }
+      }
+    }
+
+    // Radio Group (Visibility Options)
+    fieldset.radioGroup {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px !important;
+      padding: 16px !important;
+      margin: 20px 0 !important;
+
+      .radioGroupItem {
+        display: flex !important;
+        align-items: center !important;
+        padding: 8px 0 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-radius: 6px !important;
+        }
+
+        &.selected {
+          background: rgba(59, 130, 246, 0.1) !important;
+          border-radius: 6px !important;
+        }
+
+        input[type="radio"] {
+          margin-right: 12px !important;
+          accent-color: var(--accent-bg) !important;
+        }
+
+        label {
+          color: white !important;
+          font-size: 14px !important;
+          cursor: pointer !important;
+          margin: 0 !important;
+          flex: 1 !important;
+        }
+      }
+    }
+
+    // Rich Text Editor Container
+    .contents {
+      margin-top: 20px !important;
+
+      .lexicalEditor {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+
+        .LexicalEditor__editor-container___RCCFr {
+          background: transparent !important;
+
+          // Toolbar
+          .LexicalEditor__toolbar___kprF1 {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 12px 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            flex-wrap: wrap !important;
+
+            // Dropdown Menu Button
+            .MenuButton__Menu___FMwps {
+              .Button__Button___kQRWg {
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 6px !important;
+                color: white !important;
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+
+                &:hover {
+                  background: rgba(255, 255, 255, 0.12) !important;
+                  border-color: var(--accent-bg) !important;
+                }
+              }
+            }
+
+            // Dividers
+            .LexicalEditor__divider___xunJd {
+              width: 1px !important;
+              height: 20px !important;
+              background: rgba(255, 255, 255, 0.2) !important;
+              margin: 0 4px !important;
+
+              &.LexicalEditor__auto-hide___x9WCG {
+                opacity: 0.5 !important;
+              }
+            }
+
+            // Toolbar Groups
+            .LexicalEditor__toolbar-group___cCQ3d {
+              display: flex !important;
+              align-items: center !important;
+              gap: 4px !important;
+
+              // Toolbar Buttons
+              .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid transparent !important;
+                border-radius: 6px !important;
+                color: rgba(255, 255, 255, 0.8) !important;
+                padding: 8px !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                min-width: 32px !important;
+                height: 32px !important;
+
+                &:hover:not(:disabled) {
+                  background: rgba(255, 255, 255, 0.12) !important;
+                  border-color: rgba(255, 255, 255, 0.2) !important;
+                  color: white !important;
+                  transform: translateY(-1px) !important;
+                }
+
+                &:active:not(:disabled) {
+                  transform: translateY(0) !important;
+                }
+
+                &.LexicalEditor__active___P1nSu {
+                  background: var(--accent-bg) !important;
+                  border-color: var(--accent-bg) !important;
+                  color: white !important;
+                }
+
+                &:disabled {
+                  opacity: 0.4 !important;
+                  cursor: not-allowed !important;
+                }
+
+                // Icon styling
+                svg.LexicalEditor__format___mlo_D {
+                  width: 16px !important;
+                  height: 16px !important;
+                  fill: currentColor !important;
+                }
+
+                &.LexicalEditor__spaced___LHB2C {
+                  margin-right: 2px !important;
+                }
+
+                &.LexicalEditor__toolbarEnd___qZQjB {
+                  margin-left: auto !important;
+                }
+              }
+            }
+          }
+
+          // Editor Inner Container
+          .LexicalEditor__editor-inner___mk5R5 {
+            position: relative !important;
+
+            // Editor Input Area
+            .LexicalEditor__editor-input___QZkn7 {
+              background: rgba(0, 0, 0, 0.3) !important;
+              color: white !important;
+              padding: 20px !important;
+              min-height: 200px !important;
+              font-size: 14px !important;
+              line-height: 1.6 !important;
+              border: none !important;
+              outline: none !important;
+              border-radius: 0 0 12px 12px !important;
+
+              // Override any inline styles that might set white background
+              &[style*="background"] {
+                background: rgba(0, 0, 0, 0.3) !important;
+              }
+
+              // Paragraph styling
+              p.editor-paragraph.LexicalEditor__editor-paragraph___Ibuzb {
+                color: white !important;
+                margin: 0 0 16px 0 !important;
+
+                &:last-child {
+                  margin-bottom: 0 !important;
+                }
+              }
+
+              // Ensure all text content is white
+              * {
+                color: white !important;
+              }
+
+              // Handle any spans or other text elements
+              span, div, strong, em, u, s {
+                color: white !important;
+              }
+
+              // Lists styling
+              ul, ol {
+                color: white !important;
+                
+                li {
+                  color: white !important;
+                }
+              }
+
+              // Links styling
+              a {
+                color: var(--accent-bg) !important;
+                
+                &:hover {
+                  color: white !important;
+                }
+              }
+            }
+
+            // Table Action Menu
+            .TableActionMenuPlugin__table-cell-action-button-container___ZU3iX {
+              background: rgba(0, 0, 0, 0.8) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+
+              &.TableActionMenuPlugin__table-cell-action-button-container--inactive___HiSE_ {
+                display: none !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
