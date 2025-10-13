@@ -2477,6 +2477,66 @@ ul.legacy-root.singleSelect {
     }
   }
 }
+
+// Button checklist dropdowns - ensure they have proper background
+ul.buttonChecklist.legacy-root,
+ul.legacy-root.buttonChecklist {
+  background: var(--background-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  
+  li.item {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    margin: 2px 0 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    &.checked {
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .label {
+      color: var(--text-primary) !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+    }
+  }
+  
+  // Custom scrollbar for dropdown
+  &::-webkit-scrollbar {
+    width: 8px !important;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 4px !important;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 4px !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+}
+
 .legacy-root input,
 .legacy-root textarea,
 .legacy-root select,
