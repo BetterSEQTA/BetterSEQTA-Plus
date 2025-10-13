@@ -4129,6 +4129,18 @@ h2.home-subtitle {
 // SEQTA Teach main layout improvements
 body[data-seqta-platform="teach"] {
   
+  // Global button SVG sizing fix
+  button,
+  [class*="Button__Button"] {
+    svg {
+      width: 20px !important;
+      height: 20px !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+      fill: currentColor !important;
+    }
+  }
+  
   // Override SEQTA Teach CSS variables to use BetterSEQTA theming
   :root,
   html {
