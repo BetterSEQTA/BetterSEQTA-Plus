@@ -2553,6 +2553,121 @@ ul.legacy-root.buttonChecklist {
   }
 }
 
+// Calendar date picker
+.calendar.container.legacy-root {
+  background: var(--background-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  padding: 16px !important;
+  color: var(--text-primary) !important;
+  
+  .header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    
+    .title {
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+    }
+    
+    .navigation {
+      display: flex !important;
+      gap: 8px !important;
+      
+      button.uiButton {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        padding: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.12) !important;
+          border-color: var(--accent-bg) !important;
+        }
+        
+        svg {
+          width: 20px !important;
+          height: 20px !important;
+          fill: currentColor !important;
+        }
+      }
+    }
+  }
+  
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    
+    thead {
+      tr {
+        th {
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          text-transform: uppercase !important;
+          padding: 8px !important;
+          text-align: center !important;
+        }
+      }
+    }
+    
+    tbody {
+      tr {
+        td {
+          padding: 4px !important;
+          text-align: center !important;
+          
+          &.external {
+            opacity: 0.3 !important;
+          }
+          
+          &.today {
+            div {
+              background: rgba(59, 130, 246, 0.2) !important;
+              border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            }
+          }
+          
+          &.selected {
+            div {
+              background: var(--accent-bg) !important;
+              color: white !important;
+              border-color: var(--accent-bg) !important;
+            }
+          }
+          
+          div {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            padding: 8px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            border: 1px solid transparent !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.1) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 .legacy-root input,
 .legacy-root textarea,
 .legacy-root select,
