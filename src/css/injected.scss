@@ -2345,6 +2345,22 @@ div.bar.flat {
   }
 }
 
+// Application settings page
+.category {
+  h2.header {
+    background: var(--accent-bg, #3b82f6) !important;
+    color: white !important;
+    font-family: Rubik, sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    margin: 0 0 20px 0 !important;
+    border-radius: 8px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+  }
+}
+
 // Reporting page form fields
 .field {
   background: rgba(255, 255, 255, 0.05) !important;
