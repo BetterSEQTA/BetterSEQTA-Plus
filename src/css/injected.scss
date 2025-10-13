@@ -6615,11 +6615,33 @@ body[data-seqta-platform="teach"] {
         
         [class*="TwinPane__left"],
         [class*="TwinPane__right"] {
-          flex: 1 !important;
+          flex: 1 1 50% !important;
+          min-width: 0 !important;
+          max-width: 50% !important;
           background: rgba(255, 255, 255, 0.03) !important;
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           border-radius: 12px !important;
           padding: 20px !important;
+          overflow-y: auto !important;
+          
+          // Custom scrollbar
+          &::-webkit-scrollbar {
+            width: 8px !important;
+          }
+          
+          &::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 4px !important;
+          }
+          
+          &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 4px !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.3) !important;
+            }
+          }
         }
       }
       
@@ -6644,14 +6666,52 @@ body[data-seqta-platform="teach"] {
       
       // Overall Result
       [class*="OverallResult__OverallResult"] {
-        margin-bottom: 24px !important;
+        margin-bottom: 16px !important;
         
-        ol {
-          display: flex !important;
-          flex-direction: column !important;
+        [class*="OverallResult__overall"] {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
           gap: 8px !important;
           padding: 0 !important;
           list-style: none !important;
+          margin-bottom: 12px !important;
+          
+          li {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+            padding: 8px !important;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 6px !important;
+            
+            [class*="OverallResult__label"] {
+              color: rgba(255, 255, 255, 0.6) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 11px !important;
+              font-weight: 500 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+            }
+            
+            [class*="OverallResult__value"] {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 18px !important;
+              font-weight: 700 !important;
+            }
+            
+            [class*="SimpleGrade__SimpleGrade"] {
+              font-size: 18px !important;
+              font-weight: 700 !important;
+            }
+          }
+        }
+        
+        [class*="Thermoscore__Thermoscore"] {
+          height: 32px !important;
+          border-radius: 16px !important;
+          overflow: hidden !important;
+          background: rgba(255, 255, 255, 0.1) !important;
         }
       }
       
