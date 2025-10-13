@@ -67,6 +67,15 @@ export function OpenWhatsNewPopup() {
   let text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
 
+      <h1>3.4.11 - New Features & Bug Fixes</h1>
+      <li>Added Background Music plugin</li>
+      <li>Added empty state for assessments on homepage</li>
+      <li>Added Colour Picker hex/rgba controls</li>
+      <li>Fixed custom shortcuts positioning (moved above regular shortcuts)</li>
+      <li>Fixed Go to popup not scrolling properly</li>
+      <li>Made theme edit mode more plain</li>
+      <li>Other minor bug fixes and improvements</li>
+
       <h1>3.4.10 - Minor bug fixes</h1>
       <li>Fixed UI file styling incorrectly applying to documents</li>
       <li>Fixed missing styles in global search</li>
