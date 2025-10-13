@@ -2345,6 +2345,53 @@ div.bar.flat {
   }
 }
 
+// Reporting page form fields
+.field {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  
+  label {
+    color: var(--text-primary) !important;
+    font-family: Rubik, sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+  }
+  
+  .filter.term,
+  .filter {
+    background: transparent !important;
+    
+    input.singleSelect {
+      background: var(--background-primary) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 8px !important;
+      color: var(--text-primary) !important;
+      padding: 10px 12px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+      transition: all 0.2s ease !important;
+      width: 100% !important;
+      
+      &:focus {
+        background: var(--background-secondary) !important;
+        border-color: var(--accent-bg) !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+      }
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4) !important;
+      }
+    }
+  }
+}
+
 button.buttonMenu.depressed:hover {
   border-radius: 100px;
   border-bottom-left-radius: 100px !important;
