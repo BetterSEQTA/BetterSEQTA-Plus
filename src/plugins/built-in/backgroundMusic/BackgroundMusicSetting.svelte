@@ -24,10 +24,11 @@
   async function handleFiles(files: FileList | null) {
     const file = files?.[0]
     if (!file) return
-    // Restrict to WAV only for best responsiveness
-    const isWav = file.type === 'audio/wav' || file.name.toLowerCase().endsWith('.wav')
-    if (!isWav) {
-      alert('Please select a .wav audio file')
+    // Accept WAV and MP3 files
+    const isSupported = file.type === 'audio/wav' || file.type === 'audio/mpeg' || 
+                       file.name.toLowerCase().endsWith('.wav') || file.name.toLowerCase().endsWith('.mp3')
+    if (!isSupported) {
+      alert('Please select a .wav or .mp3 audio file')
       return
     }
 
@@ -76,7 +77,7 @@
 </script>
 
 <div
-  class="flex relative justify-between items-center rounded-lg px-3 py-2 cursor-pointer select-none border border-zinc-300 dark:border-zinc-600 bg-white/20 dark:bg-zinc-800/30"
+  class="relative cursor-pointer select-none"
   onclick={() => triggerSelect()}
   ondragover={(e) => { e.stopPropagation(); dragging = true }}
   ondragleave={() => dragging = false}
@@ -90,25 +91,27 @@
   role="button"
   tabindex="0"
 >
-  <div class="flex items-center gap-3">
-    <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300">
-      <span class="text-lg font-IconFamily">{'\ued47'}</span>
-      <span>{filename ? 'Change audio' : 'Upload audio'}</span>
-    </div>
+  <div class="flex gap-3 items-center">
     {#if filename}
-      <div class="text-xs text-zinc-600 dark:text-zinc-300">
-        {filename}{#if durationText} • {durationText}{/if}
+      <div class="flex items-center px-3 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-800">
+        <div class="text-xs text-zinc-600 dark:text-zinc-300">
+          {filename}
+          <p>{durationText}</p>
+        </div>
+        <button
+          class="flex justify-center items-center m-1 text-lg dark:text-white size-7"
+          onclick={(e) => { e.stopPropagation(); removeAudio() }}
+          aria-label="Remove audio"
+        >&#215;</button>
+      </div>
+    {:else}
+      <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap">
+        <span class="text-lg font-IconFamily">{'\ued47'}</span>
+        <span>Upload audio</span>
       </div>
     {/if}
   </div>
-  {#if filename}
-    <button
-      class="flex justify-center items-center m-1 text-lg dark:text-white size-7"
-      onclick={(e) => { e.stopPropagation(); removeAudio() }}
-      aria-label="Remove audio"
-    >&#215;</button>
-  {/if}
-  <input type="file" accept="audio/wav" class="hidden" bind:this={fileInput} onchange={onFileChange} />
+  <input type="file" accept="audio/wav,audio/mpeg" class="hidden" bind:this={fileInput} onchange={onFileChange} />
   {#if dragging}
     <div class="absolute inset-0 rounded-lg bg-zinc-200/40 dark:bg-zinc-700/40"></div>
   {/if}
