@@ -2367,6 +2367,69 @@ ul.buttonMenu,
   border: solid 4px var(--background-primary);
   color: var(--text-primary);
 }
+
+// Student selector dropdowns - ensure they have proper background
+ul.singleSelect.legacy-root,
+ul.legacy-root.singleSelect {
+  background: var(--background-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  
+  li {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    margin: 2px 0 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    &.selected {
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .extra {
+      color: rgba(255, 255, 255, 0.6) !important;
+      font-size: 12px !important;
+      margin-bottom: 4px !important;
+      
+      .coloured {
+        border-radius: 4px !important;
+        padding: 2px 6px !important;
+        font-weight: 600 !important;
+        margin: 0 2px !important;
+      }
+    }
+  }
+  
+  // Custom scrollbar for dropdown
+  &::-webkit-scrollbar {
+    width: 8px !important;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 4px !important;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 4px !important;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+}
 .legacy-root input,
 .legacy-root textarea,
 .legacy-root select,
