@@ -2668,6 +2668,345 @@ ul.legacy-root.buttonChecklist {
   }
 }
 
+// Data Management Admin Page
+.adminPage {
+  background: var(--background-primary, #0a0a0a) !important;
+  display: flex !important;
+  gap: 20px !important;
+  padding: 20px !important;
+  height: calc(100vh - 120px) !important;
+  
+  .adminList.filterBox {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    width: 280px !important;
+    min-width: 280px !important;
+    overflow: hidden !important;
+    
+    .list {
+      padding: 8px !important;
+      max-height: 100% !important;
+      overflow-y: auto !important;
+      
+      .item {
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        padding: 12px 16px !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        margin-bottom: 4px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: white !important;
+          transform: translateX(2px) !important;
+        }
+        
+        &.selected {
+          background: var(--accent-bg) !important;
+          color: white !important;
+          font-weight: 600 !important;
+        }
+      }
+      
+      // Custom scrollbar
+      &::-webkit-scrollbar {
+        width: 8px !important;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 4px !important;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 4px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+    }
+  }
+  
+  .resultsPane.filterBox {
+    flex: 1 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    
+    .uiResultsTable {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      
+      .chromeBugWrapper {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        
+        table.header {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          thead tr th.tableHeader {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 16px !important;
+            text-align: left !important;
+            
+            &.message {
+              flex: 1 !important;
+            }
+          }
+        }
+        
+        .tableWrapper {
+          flex: 1 !important;
+          overflow-y: auto !important;
+          
+          table.body {
+            width: 100% !important;
+            
+            tbody {
+              tr.selectableRow {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+                transition: all 0.2s ease !important;
+                cursor: pointer !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                }
+                
+                td {
+                  color: rgba(255, 255, 255, 0.9) !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-size: 14px !important;
+                  padding: 12px 16px !important;
+                }
+              }
+            }
+          }
+          
+          // Custom scrollbar
+          &::-webkit-scrollbar {
+            width: 8px !important;
+          }
+          
+          &::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 4px !important;
+          }
+          
+          &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 4px !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.3) !important;
+            }
+          }
+        }
+        
+        .footer {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+          padding: 12px 16px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 16px !important;
+          
+          .selected,
+          .found {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 13px !important;
+            
+            .limit,
+            .count {
+              color: white !important;
+              font-weight: 600 !important;
+            }
+          }
+          
+          button.uiButton {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 8px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 13px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            margin-left: auto !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              transform: translateY(-1px) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  [class*="manage__editor"] {
+    width: 400px !important;
+    min-width: 400px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    
+    [class*="manage__editorToolbar"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 12px 16px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      
+      &:last-child {
+        border-bottom: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+      
+      [class*="manage__spacer"] {
+        flex: 1 !important;
+      }
+      
+      button {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        padding: 8px 12px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.12) !important;
+          border-color: var(--accent-bg) !important;
+        }
+        
+        &[class*="manage__saveButton"] {
+          background: var(--accent-bg) !important;
+          border-color: var(--accent-bg) !important;
+          
+          &:hover {
+            background: var(--accent-hover) !important;
+            border-color: var(--accent-hover) !important;
+          }
+        }
+        
+        svg {
+          width: 20px !important;
+          height: 20px !important;
+          fill: currentColor !important;
+        }
+      }
+    }
+    
+    [class*="manage__editorBody"] {
+      flex: 1 !important;
+      padding: 20px !important;
+      overflow-y: auto !important;
+      
+      [class*="manage__message"] {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        padding: 40px 20px !important;
+      }
+      
+      [class*="manage__field"] {
+        margin-bottom: 20px !important;
+        
+        label {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          margin-bottom: 8px !important;
+          display: block !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
+        }
+        
+        input.uiShortText,
+        input[type="text"],
+        textarea {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          padding: 10px 12px !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+          
+          &:focus {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: var(--accent-bg) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+          }
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+          }
+        }
+        
+        textarea {
+          min-height: 120px !important;
+          resize: vertical !important;
+        }
+      }
+      
+      // Custom scrollbar
+      &::-webkit-scrollbar {
+        width: 8px !important;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 4px !important;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 4px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+    }
+  }
+}
+
 .legacy-root input,
 .legacy-root textarea,
 .legacy-root select,
