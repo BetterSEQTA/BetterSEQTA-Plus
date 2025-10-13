@@ -21,13 +21,16 @@
     <div class="relative w-full">
       <button
         onclick={() => editMode = !editMode}
-        class="absolute top-0 right-0 z-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700">{editMode ? '\ue9e4' : '\uec38'}</button>
+        class="absolute top-0 right-0 z-10 px-2 h-8 text-lg rounded-xl bg-zinc-100 dark:bg-zinc-700">
+        <span class="mr-2">{editMode ? 'Done' : 'Edit'}</span>
+        <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
+      </button>
 
       <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       <ThemeSelector isEditMode={editMode} />
     </div>
   {:else}
-    <div class="flex items-center justify-center w-full h-full">
+    <div class="flex justify-center items-center w-full h-full">
       <div class="text-lg">
         Open SEQTA and use the embedded settings to access theme settings. 🫠
       </div>
