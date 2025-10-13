@@ -7679,6 +7679,8 @@ body[data-seqta-platform="teach"] {
   [class*="Spine__Spine"] {
     background: var(--theme-primary) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    min-width: 72px !important;
+    width: 72px !important;
     
     [class*="Spine__q"],
     [class*="Spine__workspace"] {
@@ -7710,9 +7712,10 @@ body[data-seqta-platform="teach"] {
     }
     
     [class*="Spine__spacer"] {
-      background: rgba(255, 255, 255, 0.1) !important;
+      background: transparent !important;
       height: 1px !important;
       margin: 8px 12px !important;
+      flex: 1 !important;
     }
     
     [class*="Spine__logout"] {
