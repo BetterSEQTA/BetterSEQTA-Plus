@@ -6518,6 +6518,343 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Popup Dialog (Assessment Details, etc.)
+  [class*="PopupDialog__dialog"] {
+    background: var(--background-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
+    z-index: 10000 !important;
+    
+    [class*="PopupDialog__header"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 20px 24px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      
+      [class*="PopupDialog__alpha"] {
+        flex: 0 !important;
+      }
+      
+      [class*="PopupDialog__title"] {
+        flex: 1 !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+      }
+      
+      [class*="PopupDialog__beta"] {
+        flex: 0 !important;
+        
+        button {
+          background: rgba(255, 59, 48, 0.2) !important;
+          border: 1px solid rgba(255, 59, 48, 0.4) !important;
+          border-radius: 8px !important;
+          color: #ff3b30 !important;
+          padding: 8px 16px !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 59, 48, 0.3) !important;
+            transform: translateY(-1px) !important;
+          }
+        }
+      }
+    }
+    
+    [class*="PopupDialog__content"] {
+      background: transparent !important;
+      padding: 24px !important;
+      overflow-y: auto !important;
+      max-height: calc(90vh - 100px) !important;
+      
+      // Custom scrollbar
+      &::-webkit-scrollbar {
+        width: 8px !important;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 4px !important;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 4px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+      
+      // TwinPane layout
+      [class*="TwinPane__TwinPane"] {
+        display: flex !important;
+        gap: 24px !important;
+        
+        [class*="TwinPane__left"],
+        [class*="TwinPane__right"] {
+          flex: 1 !important;
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          padding: 20px !important;
+        }
+      }
+      
+      // Assessment Details
+      [class*="FocusedAssessmentDetails__FocusedAssessmentDetails"] {
+        h2, h3 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          margin-bottom: 16px !important;
+        }
+        
+        h2 {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+        }
+        
+        h3 {
+          font-size: 16px !important;
+          font-weight: 500 !important;
+        }
+      }
+      
+      // Overall Result
+      [class*="OverallResult__OverallResult"] {
+        margin-bottom: 24px !important;
+        
+        ol {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 8px !important;
+          padding: 0 !important;
+          list-style: none !important;
+        }
+      }
+      
+      // Assessable Criterion
+      [class*="AssessableCriterion__AssessableCriterion"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 16px !important;
+        margin-bottom: 12px !important;
+        
+        [class*="AssessableCriterion__header"] {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          margin-bottom: 12px !important;
+          
+          h3 {
+            flex: 1 !important;
+            margin: 0 !important;
+          }
+          
+          [class*="AssessableCriterion__score"] {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            
+            [class*="AssessableCriterion__max"] {
+              color: rgba(255, 255, 255, 0.5) !important;
+            }
+          }
+          
+          [class*="InfoPill__InfoPill"] {
+            background: rgba(59, 130, 246, 0.2) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            border-radius: 12px !important;
+            color: #3b82f6 !important;
+            padding: 4px 8px !important;
+            font-size: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            
+            svg {
+              width: 16px !important;
+              height: 16px !important;
+              fill: currentColor !important;
+            }
+          }
+        }
+      }
+      
+      // TabSet
+      [class*="TabSet__TabSet"] {
+        background: transparent !important;
+        
+        [class*="TabSet__tabs"] {
+          display: flex !important;
+          gap: 8px !important;
+          padding: 0 !important;
+          margin-bottom: 20px !important;
+          list-style: none !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          li {
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 2px solid transparent !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            padding: 12px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              color: rgba(255, 255, 255, 0.8) !important;
+              background: rgba(255, 255, 255, 0.05) !important;
+            }
+            
+            &[class*="TabSet__selected"] {
+              color: white !important;
+              border-bottom-color: var(--accent-bg) !important;
+            }
+          }
+        }
+        
+        [class*="TabSet__tabContainer"] {
+          [class*="TabSet__tabsheet"] {
+            &[class*="TabSet__hidden"],
+            &[class*="TabSet__vanished"] {
+              display: none !important;
+            }
+          }
+        }
+      }
+      
+      // Overview
+      [class*="Overview__Overview"] {
+        h1 {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 20px !important;
+          font-weight: 600 !important;
+          margin: 24px 0 16px 0 !important;
+          
+          &:first-child {
+            margin-top: 0 !important;
+          }
+        }
+        
+        [class*="Overview__details"] {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          padding: 16px !important;
+          
+          iframe {
+            background: transparent !important;
+          }
+        }
+      }
+      
+      // Availability Slider
+      [class*="AvailabilitySlider__AvailabilitySlider"] {
+        position: relative !important;
+        padding: 20px 0 !important;
+        margin: 20px 0 !important;
+        
+        [class*="AvailabilitySlider__travelled"],
+        [class*="AvailabilitySlider__untravelled"] {
+          position: absolute !important;
+          top: 50% !important;
+          height: 4px !important;
+          background: rgba(255, 255, 255, 0.2) !important;
+          border-radius: 2px !important;
+          transform: translateY(-50%) !important;
+        }
+        
+        [class*="AvailabilitySlider__travelled"] {
+          background: var(--accent-bg) !important;
+        }
+        
+        label {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          padding: 8px 12px !important;
+          margin-bottom: 8px !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            color: rgba(255, 255, 255, 0.8) !important;
+          }
+          
+          &[class*="AvailabilitySlider__active"] {
+            color: white !important;
+            font-weight: 600 !important;
+          }
+          
+          &[class*="AvailabilitySlider__superceded"] {
+            color: rgba(255, 255, 255, 0.4) !important;
+          }
+          
+          input[type="radio"] {
+            appearance: none !important;
+            width: 16px !important;
+            height: 16px !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50% !important;
+            background: transparent !important;
+            cursor: pointer !important;
+            
+            &:checked {
+              border-color: var(--accent-bg) !important;
+              background: var(--accent-bg) !important;
+            }
+          }
+        }
+      }
+      
+      // WISP Submission
+      [class*="WispSubmission__WispSubmission"] {
+        [class*="WispSubmission__content"] {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 8px !important;
+          padding: 16px !important;
+          margin-bottom: 16px !important;
+          
+          iframe {
+            background: transparent !important;
+          }
+        }
+        
+        [class*="WispSubmission__controller"] {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          color: rgba(255, 255, 255, 0.7) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 13px !important;
+          padding: 12px !important;
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-radius: 6px !important;
+        }
+      }
+    }
+  }
+
   // Academic Summary page styling
   [class*="AcademicSummary__pageArea"] {
     background: transparent !important;
