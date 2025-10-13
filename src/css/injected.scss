@@ -8031,6 +8031,118 @@ body[data-seqta-platform="teach"] {
       }
     }
     
+    // Profile Menu Panel (dropdown)
+    [class*="ProfileMenu__panel"] {
+      background: var(--background-primary) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      backdrop-filter: blur(10px) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+      padding: 0 !important;
+      min-width: 320px !important;
+      overflow: hidden !important;
+      z-index: 9999 !important;
+      position: absolute !important;
+      
+      [class*="ProfileMenu__meta"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 16px 20px !important;
+        
+        a {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          text-decoration: none !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            color: var(--accent-bg) !important;
+          }
+        }
+      }
+      
+      [class*="NotificationList__NotificationList"] {
+        padding: 16px 20px !important;
+        max-height: 400px !important;
+        overflow-y: auto !important;
+        
+        [class*="Empty__Empty"] {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 24px !important;
+          
+          svg {
+            width: 48px !important;
+            height: 48px !important;
+            fill: rgba(255, 255, 255, 0.3) !important;
+          }
+          
+          [class*="Empty__message"] {
+            color: rgba(255, 255, 255, 0.6) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            text-align: center !important;
+          }
+        }
+        
+        // Custom scrollbar
+        &::-webkit-scrollbar {
+          width: 8px !important;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-radius: 4px !important;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2) !important;
+          border-radius: 4px !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+          }
+        }
+      }
+      
+      [class*="ProfileMenu__actions"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 12px 16px !important;
+        display: flex !important;
+        gap: 8px !important;
+        
+        button {
+          flex: 1 !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 8px !important;
+          color: white !important;
+          padding: 10px 16px !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: var(--accent-bg) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+          }
+        }
+      }
+    }
+    
     // Badge styling for notifications
     [class*="BadgedButton__BadgedButton"] {
       position: relative !important;
