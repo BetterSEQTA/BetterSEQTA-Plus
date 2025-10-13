@@ -7366,7 +7366,15 @@ body[data-seqta-platform="teach"] {
           }
           
           [class*="StudentInfo__alerts"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            
             svg {
+              width: 32px !important;
+              height: 32px !important;
+              min-width: 32px !important;
+              min-height: 32px !important;
               filter: brightness(1.1) contrast(1.2) !important;
             }
           }
@@ -7700,8 +7708,10 @@ body[data-seqta-platform="teach"] {
         
         svg {
           fill: currentColor !important;
-          width: 20px !important;
-          height: 20px !important;
+          width: 28px !important;
+          height: 28px !important;
+          min-width: 28px !important;
+          min-height: 28px !important;
         }
       }
     }
