@@ -2,6 +2,16 @@ div:has(> #rbgcp-wrapper) {
   background: transparent !important;
 }
 
+#rbgcp-inputs-wrap {
+  padding-top: 4px !important;
+  margin-bottom: -8px;
+
+  #rbgcp-hex-input,
+  #rbgcp-input {
+    height: 28px !important;
+  }
+}
+
 .dark {
   #rbgcp-wrapper {
     div[style="padding-top: 11px; position: relative;"] div {
