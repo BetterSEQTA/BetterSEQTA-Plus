@@ -202,16 +202,6 @@
       </MotionDiv>
     </div>
 
-    {#each Object.entries(Shortcuts) as shortcut}
-      <div class="flex justify-between items-center px-4 py-3">
-        <div class="pr-4">
-          <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
-          <h2 class="text-sm">{shortcut[1].DisplayName || shortcut[0]}</h2>
-        </div>
-        <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
-      </div>
-    {/each}
-
     <!-- Custom Shortcuts Section -->
     {#each $settingsState.customshortcuts as shortcut, index}
       <div class="flex justify-between items-center px-4 py-3">
@@ -221,6 +211,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+      </div>
+    {/each}
+
+    {#each Object.entries(Shortcuts) as shortcut}
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
+          <h2 class="text-sm">{shortcut[1].DisplayName || shortcut[0]}</h2>
+        </div>
+        <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
       </div>
     {/each}
   {:else}
