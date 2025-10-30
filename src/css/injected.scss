@@ -344,8 +344,9 @@ select {
 .dashlet-summary-homework > .summary > .subject > .item {
   color: var(--text-primary) !important;
 }
-.dashlet-notes > ul {
-  background: var(--background-primary);
+.dashlet-notes > ul,
+.dashlet-tasks > ul {
+  background: transparent !important;
 }
 .dashlet-notes > ul > li {
   color: var(--text-primary);
@@ -5049,6 +5050,8 @@ body[data-seqta-platform="teach"] {
         .dashlet-notes,
         .dashlet-tasks {
           ul.magicDelete {
+            background: transparent !important;
+            
             li {
               background: rgba(255, 255, 255, 0.05) !important;
               border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -5229,6 +5232,460 @@ body[data-seqta-platform="teach"] {
         font-family: Rubik, sans-serif !important;
         font-weight: 500 !important;
         padding: 16px 20px !important;
+      }
+    }
+  }
+
+  // Programme cover page styling
+  // Main content area accordion items
+  [class*="Accordion__item"] {
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 12px !important;
+    
+    [class*="Accordion__header"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px !important;
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      padding: 16px 20px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover:not([class*="disabled"]) {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--theme-primary) !important;
+      }
+      
+      &[class*="disabled"] {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+      }
+      
+      // Titles and descriptions within header
+      > div {
+        color: white !important;
+        
+        &:first-child {
+          font-weight: 600 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
+          margin-bottom: 4px !important;
+        }
+        
+        &:nth-child(2) {
+          font-size: 13px !important;
+          color: rgba(255, 255, 255, 0.7) !important;
+        }
+      }
+      
+      // Action buttons in header (Create quests, Unlink, Link, etc)
+      button,
+      a {
+        background: var(--theme-primary) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        padding: 8px 16px !important;
+        transition: all 0.2s ease !important;
+        margin-left: 8px !important;
+        
+        &:hover {
+          background: var(--theme-primary) !important;
+          opacity: 0.9 !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+      
+      // Toggle/expand buttons
+      button[class*="toggle"] {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 50% !important;
+        padding: 8px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: scale(1.1) !important;
+        }
+      }
+    }
+    
+    [class*="Accordion__content"] {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-top: none !important;
+      border-radius: 0 0 8px 8px !important;
+      color: white !important;
+      padding: 20px !important;
+      
+      * {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+      }
+    }
+  }
+  
+  // Rich text editor styling (SEQTA Editor & CKEditor)
+  [class*="SEQTAEditor__SEQTAEditor"] {
+    background: transparent !important;
+    color: white !important;
+    
+    // Toolbar styling
+    [class*="Toolbar__Toolbar"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px 8px 0 0 !important;
+      padding: 8px !important;
+      
+      // Dropdown buttons (Normal, Heading 1, etc)
+      [class*="ToolbarDropdownButton"],
+      [class*="BlockStyleDropdown"] {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 6px 12px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.12) !important;
+          border-color: var(--theme-primary) !important;
+        }
+        
+        [class*="echelon"] {
+          border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+      }
+      
+      // Style buttons (Bold, Italic, etc)
+      [class*="StyleButton"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        padding: 8px !important;
+        transition: all 0.2s ease !important;
+        margin: 0 2px !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border-color: var(--theme-primary) !important;
+        }
+        
+        &[class*="active"] {
+          background: var(--theme-primary) !important;
+          border-color: var(--theme-primary) !important;
+          color: white !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+      
+      // Color button
+      [class*="ColourButton"] {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        padding: 6px 12px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.12) !important;
+          border-color: var(--theme-primary) !important;
+        }
+      }
+    }
+    
+    // Editor content area
+    [class*="editor-content"],
+    [class*="EditorContent"] {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-top: none !important;
+      border-radius: 0 0 8px 8px !important;
+      color: white !important;
+      padding: 16px !important;
+      min-height: 200px !important;
+      
+      * {
+        color: white !important;
+      }
+    }
+  }
+  
+  // CKEditor styling (Legacy editor)
+  .cke {
+    background: transparent !important;
+    border: none !important;
+    
+    .cke_top {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-bottom: none !important;
+      border-radius: 8px 8px 0 0 !important;
+      padding: 8px !important;
+      
+      .cke_toolbar {
+        background: transparent !important;
+        border: none !important;
+        margin: 2px !important;
+        
+        .cke_toolgroup {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 6px !important;
+          margin: 0 4px !important;
+          padding: 2px !important;
+          
+          .cke_button {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 4px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.1) !important;
+            }
+            
+            &.cke_button_on {
+              background: var(--theme-primary) !important;
+              
+              .cke_button_icon {
+                filter: brightness(0) invert(1) !important;
+              }
+            }
+            
+            .cke_button_icon {
+              filter: brightness(0) invert(1) opacity(0.8) !important;
+            }
+            
+            .cke_button_label {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+          }
+          
+          .cke_combo {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 6px !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--theme-primary) !important;
+            }
+            
+            .cke_combo_text {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+            
+            .cke_combo_arrow {
+              border-top-color: white !important;
+            }
+          }
+        }
+      }
+    }
+    
+    .cke_contents {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-top: none !important;
+      
+      iframe {
+        background: rgba(255, 255, 255, 0.03) !important;
+      }
+    }
+    
+    .cke_bottom {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-top: none !important;
+      border-radius: 0 0 8px 8px !important;
+      padding: 8px !important;
+      
+      .cke_path_item,
+      .cke_path_empty {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-family: Rubik, sans-serif !important;
+      }
+    }
+  }
+  
+  // Module controls in accordion content
+  [class*="Module__header"],
+  [class*="module-header"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    color: white !important;
+    padding: 12px !important;
+    margin-bottom: 8px !important;
+    
+    button {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 4px !important;
+      color: white !important;
+      padding: 6px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: var(--theme-primary) !important;
+      }
+      
+      &:disabled {
+        opacity: 0.4 !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+      }
+    }
+  }
+  
+  [class*="ProgrammeCoverPage__aside"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    color: white !important;
+    
+    // Toggle button
+    button[class*="ProgrammeCoverPage__toggle"] {
+      background: #2a2a2a !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      color: white !important;
+      border-radius: 50% !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: var(--theme-primary) !important;
+        transform: scale(1.1) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+      }
+    }
+    
+    // Form sections
+    [class*="ProgrammeCoverPage__section"] {
+      background: transparent !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 20px !important;
+      
+      label {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 8px !important;
+      }
+      
+      input[type="text"],
+      input[type="email"],
+      textarea,
+      .singleSelect,
+      .undefined {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 12px 16px !important;
+        
+        &:focus {
+          border-color: var(--theme-primary) !important;
+          outline: none !important;
+          box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+        }
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+      
+      // Radio and checkbox lists
+      ul {
+        li {
+          color: white !important;
+          font-family: Rubik, sans-serif !important;
+          padding: 8px 0 !important;
+          
+          input[type="checkbox"],
+          input[type="radio"] {
+            accent-color: var(--theme-primary) !important;
+            margin-right: 8px !important;
+          }
+          
+          label {
+            color: white !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+          }
+        }
+      }
+    }
+    
+    // Accordion headers
+    [class*="Accordion__header"] {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 8px !important;
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      font-weight: 600 !important;
+      padding: 12px 16px !important;
+      margin-bottom: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: var(--theme-primary) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+      }
+    }
+    
+    // Action buttons in aside
+    .uiButton,
+    button:not([class*="toggle"]) {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 8px !important;
+      color: white !important;
+      font-family: Rubik, sans-serif !important;
+      padding: 12px 16px !important;
+      transition: all 0.2s ease !important;
+      
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: var(--theme-primary) !important;
+        transform: translateY(-1px) !important;
+      }
+      
+      &:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
       }
     }
   }
@@ -6586,6 +7043,32 @@ body[data-seqta-platform="teach"] {
           font-family: Rubik, sans-serif !important;
           padding: 12px 16px !important;
           border: none !important;
+          
+          &.selection {
+            background: transparent !important;
+            width: 50px !important;
+            text-align: center !important;
+            
+            .uiCheckbox {
+              width: 16px !important;
+              height: 16px !important;
+              accent-color: var(--theme-primary) !important;
+            }
+          }
+          
+          // Iframe wrapper for course outlines
+          .iframeWrapper.outline {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            min-height: 150px !important;
+            
+            iframe.userHTML {
+              background: transparent !important;
+              border: none !important;
+            }
+          }
         }
       }
     }
