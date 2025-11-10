@@ -1,24 +1,7 @@
+import stringToHTML from "./stringToHTML";
 import { settingsState } from "./listeners/SettingsState";
 import { animate, stagger } from "motion";
-import stringToHTML from "./stringToHTML";
-
-export async function DeleteWhatsNew() {
-  const bkelement = document.getElementById("whatsnewbk");
-  const popup = document.querySelector(".whatsnewContainer") as HTMLElement;
-
-  if (!settingsState.animations) {
-    bkelement?.remove();
-    return;
-  }
-
-  animate(
-    [popup, bkelement!],
-    { opacity: [1, 0], scale: [1, 0] },
-    { ease: [0.22, 0.03, 0.26, 1] },
-  ).then(() => {
-    bkelement?.remove();
-  });
-}
+import { DeleteWhatsNew } from "@/seqta/utils/Whatsnew";
 
 export function OpenMinecraftServerPopup() {
   if (!document.querySelector('link[href*="minecraftia"]')) {
