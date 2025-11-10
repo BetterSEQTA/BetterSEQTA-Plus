@@ -4,22 +4,36 @@ import stringToHTML from "./stringToHTML";
 import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
 
-export async function DeleteWhatsNew() {
-  const bkelement = document.getElementById("whatsnewbk");
-  const popup = document.getElementsByClassName("whatsnewContainer")[0];
+let isClosing = false;
 
-  if (!settingsState.animations) {
-    bkelement?.remove();
+export async function DeleteWhatsNew() {
+  if (isClosing) return;
+  isClosing = true;
+
+  const bkelement = document.getElementById("whatsnewbk");
+  const popup = document.getElementsByClassName(
+    "whatsnewContainer",
+  )[0] as HTMLElement;
+
+  if (!bkelement || !popup) {
+    isClosing = false;
     return;
   }
 
-  animate(
-    [popup, bkelement!],
-    { opacity: [1, 0], scale: [1, 0] },
-    { ease: [0.22, 0.03, 0.26, 1] },
-  ).then(() => {
-    bkelement?.remove();
-  });
+  if (!settingsState.animations) {
+    bkelement.remove();
+    isClosing = false;
+    return;
+  }
+
+  await animate(
+    [popup, bkelement as HTMLElement],
+    { opacity: [1, 0], scale: [1, 0.95] } as any,
+    { duration: 0.25, ease: [0.22, 0.03, 0.26, 1] },
+  );
+
+  bkelement.remove();
+  isClosing = false;
 }
 
 export function OpenWhatsNewPopup() {
