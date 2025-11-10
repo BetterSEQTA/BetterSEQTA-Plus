@@ -11,8 +11,8 @@
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
-  import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
+  import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+  import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
