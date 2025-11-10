@@ -1,25 +1,17 @@
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
-import { animate, stagger } from "motion";
-import { DeleteWhatsNew } from "../Whatsnew";
+import { openPopup } from "./PopupManager";
 
 export function OpenAboutPage() {
-  const background = document.createElement("div");
-  background.id = "whatsnewbk";
-  background.classList.add("whatsnewBackground");
-
-  const container = document.createElement("div");
-  container.classList.add("whatsnewContainer");
-
-  var header: any = stringToHTML(
+  const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
         <h1>About</h1>
         <p>About the extension</p>
       </div>`,
-  ).firstChild;
+  ).firstChild as HTMLElement;
 
-  let text = stringToHTML(/* html */ `
+  const text = stringToHTML(/* html */ `
       <div class="whatsnewTextContainer" style="overflow-y: hidden;">
         <img src="${settingsState.DarkMode ? "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg" : "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg"}" class="aboutImg" />
         <p>BetterSEQTA+ is a fork of BetterSEQTA (originally developed by Nulkem), which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
@@ -37,9 +29,9 @@ export function OpenAboutPage() {
     style="width: 100%; max-width: 500px; height: auto; object-fit: contain; display: block; margin: -110px auto 0;">
 </div>
       </div>
-    `).firstChild;
+    `).firstChild as HTMLElement;
 
-  let footer = stringToHTML(/* html */ `
+  const footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
         Resources and Feedback:
@@ -67,56 +59,10 @@ export function OpenAboutPage() {
           </a>
         </div>
       </div>
-    `).firstChild;
+    `).firstChild as HTMLElement;
 
-  let exitbutton = document.createElement("div");
-  exitbutton.id = "whatsnewclosebutton";
-
-  container.append(header);
-  container.append(text as ChildNode);
-  container.append(footer as ChildNode);
-  container.append(exitbutton);
-
-  background.append(container);
-
-  document.getElementById("container")!.append(background);
-
-  let bkelement = document.getElementById("whatsnewbk");
-  let popup = document.getElementsByClassName("whatsnewContainer")[0];
-
-  if (settingsState.animations) {
-    animate(
-      [popup, bkelement as HTMLElement],
-      { scale: [0, 1] },
-      {
-        type: "spring",
-        stiffness: 220,
-        damping: 18,
-      },
-    );
-
-    animate(
-      ".whatsnewTextContainer *",
-      { opacity: [0, 1], y: [10, 0] },
-      {
-        delay: stagger(0.05, { startDelay: 0.1 }),
-        duration: 0.5,
-        ease: [0.22, 0.03, 0.26, 1],
-      },
-    );
-  }
-
-  delete settingsState.justupdated;
-
-  bkelement!.addEventListener("click", function (event) {
-    // Check if the click event originated from the element itself and not any of its children
-    if (event.target === bkelement) {
-      DeleteWhatsNew();
-    }
-  });
-
-  var closeelement = document.getElementById("whatsnewclosebutton");
-  closeelement!.addEventListener("click", function () {
-    DeleteWhatsNew();
+  openPopup({
+    header,
+    content: [text, footer],
   });
 }
