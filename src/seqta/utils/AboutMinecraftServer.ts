@@ -66,7 +66,7 @@ export function OpenMinecraftServerPopup() {
   textcontainer.classList.add("whatsnewTextContainer");
 
   let text = stringToHTML(/* html */ `
-  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
+  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: hidden;">
     <h1>Join our community in Minecraft!</h1>
     <p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
 
