@@ -115,8 +115,6 @@ The folder structure is as follows:
   <img src="https://contrib.rocks/image?repo=betterseqta/betterseqta-plus" />
 </a>
 
-Want to contribute? [Click Here!](https://github.com/BetterSEQTA/BetterSEQTA-Plus/blob/main/CONTRIBUTING.md)
-
 ## Credits
 
 This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development from lead developers [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph) with help from other volunteers.
