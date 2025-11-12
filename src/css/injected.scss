@@ -158,6 +158,16 @@ select {
   color: var(--text-primary);
   position: relative;
 }
+#main {
+  > .timetablepage {
+    > .quickbar {
+      .gutter {
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+      }
+    }
+  }
+}
 .forums {
   color: var(--text-color);
 }
