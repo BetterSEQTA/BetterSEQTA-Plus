@@ -55,6 +55,11 @@
     closeExtensionPopup();
   };
 
+  const openPrivacyStatement = () => {
+    window.open("https://betterseqta.org/privacy", "_blank");
+    closeExtensionPopup();
+  };
+
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
 
@@ -101,25 +106,34 @@
       />
 
       {#if !standalone}
-        <button
-          onclick={openAbout}
-          class="absolute top-1 right-[62px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
-        >
-          {"\ueb73"}
-        </button>
+        <div class="absolute top-1 right-1 flex items-center gap-2">
+          <button
+            onclick={openAbout}
+            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+          >
+            {"\ueb73"}
+          </button>
 
-        <button
-          onclick={openChangelog}
-          class="absolute top-1 right-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
-        >
-          {"\ue929"}
-        </button>
+          <button
+            onclick={openPrivacyStatement}
+            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+            aria-label="Privacy Statement"
+          >
+            {"\uecba"}
+          </button>
 
-        <button
-          onclick={openMinecraftServer}
-          class="absolute top-1 right-1 w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-xl p-1"
-          aria-label="Open Minecraft Server"
-        >
+          <button
+            onclick={openChangelog}
+            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+          >
+            {"\ue929"}
+          </button>
+
+          <button
+            onclick={openMinecraftServer}
+            class="w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-xl p-1 flex items-center justify-center"
+            aria-label="Open Minecraft Server"
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 64 70"
@@ -248,6 +262,7 @@
             />
           </svg>
         </button>
+        </div>
       {/if}
     </div>
 
