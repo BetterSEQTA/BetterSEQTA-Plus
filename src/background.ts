@@ -60,7 +60,7 @@ browser.runtime.onMessage.addListener(
         console.log("Unknown request type");
     }
 
-    return false;
+    // Don't return false - just return undefined for synchronous handling
   },
 );
 
