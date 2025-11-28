@@ -96,7 +96,13 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
+  // Show privacy statement notification on first open of this version (before what's new)
+  if (!settingsState.privacyStatementShown && !document.getElementById("privacy-notification")) {
+    showPrivacyNotification();
+    settingsState.privacyStatementShown = true;
+  }
+
+  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
     OpenWhatsNewPopup();
   }
 }
@@ -599,6 +605,86 @@ export function showConflictPopup() {
   exitButton.addEventListener("click", () => {
     background.remove();
   });
+}
+
+export function showPrivacyNotification() {
+  if (document.getElementById("privacy-notification")) return;
+
+  const background = document.createElement("div");
+  background.id = "privacy-notification";
+  background.classList.add("whatsnewBackground");
+  background.style.zIndex = "10000001";
+
+  const container = document.createElement("div");
+  container.classList.add("whatsnewContainer");
+  container.style.height = "auto";
+  container.style.maxWidth = "800px";
+  container.style.width = "90%";
+
+  const headerHTML = /* html */ `
+    <div class="whatsnewHeader">
+      <h1>Privacy Statement</h1>
+      <p>Important Information</p>
+    </div>
+  `;
+  const header = stringToHTML(headerHTML).firstChild;
+
+  const textHTML = /* html */ `
+    <div class="whatsnewTextContainer" style="overflow-y: auto; font-size: 1.3rem; line-height: 1.6;">
+      <p>
+        It has come to our attention that several schools have expressed concerns about BetterSEQTA+. As security is at the core of everything we do, this is an issue we take very seriously, which is why we have decided to release a statement on the situation.
+      </p>
+      <p>
+        To view our privacy policy, please click the <strong>shield icon</strong> in the settings&nbsp;menu, or<a href="https://betterseqta.org/privacy" target="_blank" rel="noopener noreferrer" id="privacy-link" style="color: inherit; text-decoration: underline; cursor: pointer; white-space: nowrap;">&nbsp;click here</a>.
+      </p>
+      <p style="font-weight: bold; margin-top: 15px;">
+        We never collect any information from you, and aim to provide the best features possible.
+      </p>
+    </div>
+  `;
+  const text = stringToHTML(textHTML).firstChild;
+
+  const exitButton = document.createElement("div");
+  exitButton.id = "whatsnewclosebutton";
+
+  if (header) container.append(header);
+  if (text) container.append(text);
+  container.append(exitButton);
+
+  background.append(container);
+
+  document.getElementById("container")?.append(background);
+
+  if (settingsState.animations) {
+    animate([background as HTMLElement], { opacity: [0, 1] });
+  }
+
+  background.addEventListener("click", (event) => {
+    if (event.target === background) {
+      background.remove();
+      // Show what's new if it was waiting
+      if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
+        OpenWhatsNewPopup();
+      }
+    }
+  });
+
+  exitButton.addEventListener("click", () => {
+    background.remove();
+    // Show what's new if it was waiting
+    if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
+      OpenWhatsNewPopup();
+    }
+  });
+
+  // Handle privacy link click - ensure it opens in new tab
+  const privacyLink = document.getElementById("privacy-link");
+  if (privacyLink) {
+    privacyLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open("https://betterseqta.org/privacy", "_blank", "noopener,noreferrer");
+    });
+  }
 }
 
 export function init() {
