@@ -632,13 +632,13 @@ export function showPrivacyNotification() {
   const textHTML = /* html */ `
     <div class="whatsnewTextContainer" style="overflow-y: auto; font-size: 1.3rem; line-height: 1.6;">
       <p>
-        It has come to our attention that several schools have expressed concerns about BetterSEQTA+. As security is at the core of everything we do, this is an issue we take very seriously, which is why we have decided to release a statement on the situation.
+        Several schools have expressed concerns about BetterSEQTA+. Security is at the core of what we do, and we would like to clarify any misinformation. As a Free, Libre, and Open Source software application, we ask you to thoroughly read our privacy policy and vet our code. We specifically want you to hold us accountable.
       </p>
       <p>
         To view our privacy policy, please click the <strong>shield icon</strong> in the settings&nbsp;menu, or<a href="https://betterseqta.org/privacy" target="_blank" rel="noopener noreferrer" id="privacy-link" style="color: inherit; text-decoration: underline; cursor: pointer; white-space: nowrap;">&nbsp;click here</a>.
       </p>
       <p style="font-weight: bold; margin-top: 15px;">
-        We never collect any information from you, and aim to provide the best features possible.
+        We have never, are not, and will never collect any information about any user. That is a guarantee.
       </p>
     </div>
   `;
