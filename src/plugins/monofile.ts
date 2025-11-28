@@ -638,7 +638,7 @@ export function showPrivacyNotification() {
         To view our privacy policy, please click the <strong>shield icon</strong> in the settings&nbsp;menu, or<a href="https://betterseqta.org/privacy" target="_blank" rel="noopener noreferrer" id="privacy-link" style="color: inherit; text-decoration: underline; cursor: pointer; white-space: nowrap;">&nbsp;click here</a>.
       </p>
       <p style="font-weight: bold; margin-top: 15px;">
-        We have never, are not, and will never collect any information about any user. That is a guarantee.
+        We have never collected, are not collecting, and will never collect any personal information about any user. That is a guarantee.
       </p>
     </div>
   `;
