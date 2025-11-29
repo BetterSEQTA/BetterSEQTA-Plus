@@ -1,24 +1,5 @@
-import { settingsState } from "./listeners/SettingsState";
-import { animate, stagger } from "motion";
-import stringToHTML from "./stringToHTML";
-
-export async function DeleteWhatsNew() {
-  const bkelement = document.getElementById("whatsnewbk");
-  const popup = document.querySelector(".whatsnewContainer") as HTMLElement;
-
-  if (!settingsState.animations) {
-    bkelement?.remove();
-    return;
-  }
-
-  animate(
-    [popup, bkelement!],
-    { opacity: [1, 0], scale: [1, 0] },
-    { ease: [0.22, 0.03, 0.26, 1] },
-  ).then(() => {
-    bkelement?.remove();
-  });
-}
+import stringToHTML from "../stringToHTML";
+import { openPopup } from "./PopupManager";
 
 export function OpenMinecraftServerPopup() {
   if (!document.querySelector('link[href*="minecraftia"]')) {
@@ -28,45 +9,36 @@ export function OpenMinecraftServerPopup() {
     document.head.appendChild(fontLink);
   }
 
-  const background = document.createElement("div");
-  background.id = "whatsnewbk";
-  background.classList.add("whatsnewBackground");
-
-  const container = document.createElement("div");
-  container.classList.add("whatsnewContainer");
-
-  var header: any = stringToHTML(
+  const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
         <h1>Minecraft Server</h1>
         <p>The official BetterSEQTA+ Minecraft Server</p>
       </div>`,
-  ).firstChild;
+  ).firstChild as HTMLElement;
 
-  let imagecont = document.createElement("div");
-  imagecont.classList.add("whatsnewImgContainer");
+  const imageContainer = document.createElement("div");
+  imageContainer.classList.add("whatsnewImgContainer");
 
-  let video = document.createElement("video");
+  const video = document.createElement("video");
   video.style.aspectRatio = "16/9";
   video.style.background = "black";
-  let source = document.createElement("source");
 
+  const source = document.createElement("source");
   source.setAttribute(
     "src",
     "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-video.mp4",
   );
+
   video.autoplay = true;
   video.muted = true;
   video.loop = true;
   video.appendChild(source);
   video.classList.add("whatsnewImg");
-  imagecont.appendChild(video);
+  imageContainer.appendChild(video);
 
-  let textcontainer = document.createElement("div");
-  textcontainer.classList.add("whatsnewTextContainer");
-
-  let text = stringToHTML(/* html */ `
-  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: scroll;">
+  const text = stringToHTML(/* html */ `
+  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: hidden;">
     <h1>Join our community in Minecraft!</h1>
     <p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
 
@@ -92,8 +64,7 @@ export function OpenMinecraftServerPopup() {
     -1px -1px 0 #000,
      1px -1px 0 #000,
     -1px  1px 0 #000,
-     1px  1px 0 #000;
-">
+     1px  1px 0 #000;">
   mc.betterseqta.org
 </p>
 <p style="
@@ -107,14 +78,13 @@ export function OpenMinecraftServerPopup() {
     -1px -1px 0 #000,
      1px -1px 0 #000,
     -1px  1px 0 #000,
-     1px  1px 0 #000;
-">
+     1px  1px 0 #000;">
   Version: 1.21.4
 </p>
   </div>
-`).firstChild;
+`).firstChild as HTMLElement;
 
-  let footer = stringToHTML(/* html */ `
+  const footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
          Resources and Feedback:
@@ -144,59 +114,10 @@ export function OpenMinecraftServerPopup() {
         <div>
         </div>
       </div>
-    `).firstChild;
+    `).firstChild as HTMLElement;
 
-  let exitbutton = document.createElement("div");
-  exitbutton.id = "whatsnewclosebutton";
-
-  container.append(
+  openPopup({
     header,
-    imagecont,
-    text as HTMLElement,
-    footer as HTMLElement,
-    exitbutton,
-  );
-
-  background.append(container);
-
-  document.getElementById("container")!.append(background);
-
-  let bkelement = document.getElementById("whatsnewbk");
-  let popup = document.getElementsByClassName("whatsnewContainer")[0];
-
-  if (settingsState.animations) {
-    animate(
-      [popup, bkelement as HTMLElement],
-      { scale: [0, 1] },
-      {
-        type: "spring",
-        stiffness: 220,
-        damping: 18,
-      },
-    );
-
-    animate(
-      ".whatsnewTextContainer *",
-      { opacity: [0, 1], y: [10, 0] },
-      {
-        delay: stagger(0.05, { startDelay: 0.1 }),
-        duration: 0.5,
-        ease: [0.22, 0.03, 0.26, 1],
-      },
-    );
-  }
-
-  delete settingsState.justupdated;
-
-  bkelement!.addEventListener("click", function (event) {
-    // Check if the click event originated from the element itself and not any of its children
-    if (event.target === bkelement) {
-      DeleteWhatsNew();
-    }
-  });
-
-  var closeelement = document.getElementById("whatsnewclosebutton");
-  closeelement!.addEventListener("click", function () {
-    DeleteWhatsNew();
+    content: [imageContainer, text, footer],
   });
 }
