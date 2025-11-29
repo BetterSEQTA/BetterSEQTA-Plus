@@ -30,7 +30,7 @@ export function OpenWhatsNewPopup() {
   imageContainer.appendChild(video);
 
   const text = stringToHTML(/* html */ `
-    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: hidden;">
+    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
       <h1>3.4.11 - New Features & Bug Fixes</h1>
       <li>Added Background Music plugin</li>
