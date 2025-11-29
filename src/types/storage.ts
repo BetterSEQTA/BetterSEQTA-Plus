@@ -31,6 +31,7 @@ export interface SettingsState {
   transparencyEffects: boolean;
   justupdated?: boolean;
   privacyStatementShown?: boolean;
+  privacyStatementLastUpdated?: string;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;

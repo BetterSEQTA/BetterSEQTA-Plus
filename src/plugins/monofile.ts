@@ -24,7 +24,7 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+import { checkAndShowPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -94,10 +94,10 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Show privacy statement notification on first open of this version (before what's new)
-  if (!settingsState.privacyStatementShown && !document.getElementById("whatsnewbk")) {
-    showPrivacyNotification();
-    settingsState.privacyStatementShown = true;
+  // Check and show privacy statement notification (before what's new)
+  // This will check the API and compare timestamps
+  if (!document.getElementById("privacy-notification")) {
+    await checkAndShowPrivacyNotification();
   }
 
   if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
