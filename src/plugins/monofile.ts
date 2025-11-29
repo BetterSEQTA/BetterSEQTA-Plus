@@ -96,13 +96,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Show privacy statement notification on first open of this version (before what's new)
-  if (!settingsState.privacyStatementShown && !document.getElementById("privacy-notification")) {
-    showPrivacyNotification();
-    settingsState.privacyStatementShown = true;
-  }
-
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
+  if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
     OpenWhatsNewPopup();
   }
 }
@@ -605,86 +599,6 @@ export function showConflictPopup() {
   exitButton.addEventListener("click", () => {
     background.remove();
   });
-}
-
-export function showPrivacyNotification() {
-  if (document.getElementById("privacy-notification")) return;
-
-  const background = document.createElement("div");
-  background.id = "privacy-notification";
-  background.classList.add("whatsnewBackground");
-  background.style.zIndex = "10000001";
-
-  const container = document.createElement("div");
-  container.classList.add("whatsnewContainer");
-  container.style.height = "auto";
-  container.style.maxWidth = "800px";
-  container.style.width = "90%";
-
-  const headerHTML = /* html */ `
-    <div class="whatsnewHeader">
-      <h1>Privacy Statement</h1>
-      <p>Important Information</p>
-    </div>
-  `;
-  const header = stringToHTML(headerHTML).firstChild;
-
-  const textHTML = /* html */ `
-    <div class="whatsnewTextContainer" style="overflow-y: auto; font-size: 1.3rem; line-height: 1.6;">
-      <p>
-        Several schools have expressed concerns about BetterSEQTA+. Security is at the core of what we do, and we would like to clarify any misinformation. As a Free, Libre, and Open Source software application, we ask you to thoroughly read our privacy policy and vet our code. We specifically want you to hold us accountable.
-      </p>
-      <p>
-        To view our privacy policy, please click the <strong>shield icon</strong> in the settings&nbsp;menu, or<a href="https://betterseqta.org/privacy" target="_blank" rel="noopener noreferrer" id="privacy-link" style="color: inherit; text-decoration: underline; cursor: pointer; white-space: nowrap;">&nbsp;click here</a>.
-      </p>
-      <p style="font-weight: bold; margin-top: 15px;">
-        We have never collected, are not collecting, and will never collect any personal information about any user. That is a guarantee.
-      </p>
-    </div>
-  `;
-  const text = stringToHTML(textHTML).firstChild;
-
-  const exitButton = document.createElement("div");
-  exitButton.id = "whatsnewclosebutton";
-
-  if (header) container.append(header);
-  if (text) container.append(text);
-  container.append(exitButton);
-
-  background.append(container);
-
-  document.getElementById("container")?.append(background);
-
-  if (settingsState.animations) {
-    animate([background as HTMLElement], { opacity: [0, 1] });
-  }
-
-  background.addEventListener("click", (event) => {
-    if (event.target === background) {
-      background.remove();
-      // Show what's new if it was waiting
-      if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
-        OpenWhatsNewPopup();
-      }
-    }
-  });
-
-  exitButton.addEventListener("click", () => {
-    background.remove();
-    // Show what's new if it was waiting
-    if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
-      OpenWhatsNewPopup();
-    }
-  });
-
-  // Handle privacy link click - ensure it opens in new tab
-  const privacyLink = document.getElementById("privacy-link");
-  if (privacyLink) {
-    privacyLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.open("https://betterseqta.org/privacy", "_blank", "noopener,noreferrer");
-    });
-  }
 }
 
 export function init() {
