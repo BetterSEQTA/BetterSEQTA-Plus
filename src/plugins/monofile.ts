@@ -24,11 +24,8 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-//import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
-import {
-  updateTimetableTimes,
-} from "@/seqta/utils/updateTimetableTimes";
+import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
 // JSON content
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
