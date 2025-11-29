@@ -1,48 +1,22 @@
-import { settingsState } from "./listeners/SettingsState";
-import { animate, stagger } from "motion";
-import stringToHTML from "./stringToHTML";
+import stringToHTML from "../stringToHTML";
 import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
-
-export async function DeleteWhatsNew() {
-  const bkelement = document.getElementById("whatsnewbk");
-  const popup = document.getElementsByClassName("whatsnewContainer")[0];
-
-  if (!settingsState.animations) {
-    bkelement?.remove();
-    return;
-  }
-
-  animate(
-    [popup, bkelement!],
-    { opacity: [1, 0], scale: [1, 0] },
-    { ease: [0.22, 0.03, 0.26, 1] },
-  ).then(() => {
-    bkelement?.remove();
-  });
-}
+import { openPopup } from "./PopupManager";
 
 export function OpenWhatsNewPopup() {
-  const background = document.createElement("div");
-  background.id = "whatsnewbk";
-  background.classList.add("whatsnewBackground");
-
-  const container = document.createElement("div");
-  container.classList.add("whatsnewContainer");
-
-  var header: any = stringToHTML(
+  const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
         <h1>What's New</h1>
         <p>BetterSEQTA+ V${browser.runtime.getManifest().version}</p>
       </div>`,
-  ).firstChild;
+  ).firstChild as HTMLElement;
 
-  let imagecont = document.createElement("div");
-  imagecont.classList.add("whatsnewImgContainer");
+  const imageContainer = document.createElement("div");
+  imageContainer.classList.add("whatsnewImgContainer");
 
-  let video = document.createElement("video");
-  let source = document.createElement("source");
+  const video = document.createElement("video");
+  const source = document.createElement("source");
 
   source.setAttribute(
     "src",
@@ -53,19 +27,10 @@ export function OpenWhatsNewPopup() {
   video.loop = true;
   video.appendChild(source);
   video.classList.add("whatsnewImg");
-  imagecont.appendChild(video);
+  imageContainer.appendChild(video);
 
-  /* let whatsnewimg = document.createElement("img");
-  //whatsnewimg.src = "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-image.webp";
-  whatsnewimg.src = browser.runtime.getURL('../../resources/update-image.webp');
-  whatsnewimg.classList.add("whatsnewImg");
-  imagecont.appendChild(whatsnewimg); */
-
-  let textcontainer = document.createElement("div");
-  textcontainer.classList.add("whatsnewTextContainer");
-
-  let text = stringToHTML(/* html */ `
-    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: scroll;">
+  const text = stringToHTML(/* html */ `
+    <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
       <h1>3.4.11 - New Features & Bug Fixes</h1>
       <li>Added Background Music plugin</li>
@@ -133,7 +98,7 @@ export function OpenWhatsNewPopup() {
       <li>Fixed discord icon colour in light mode</li>
       <li>Fixed subject averages not showing up with letter grades</li>
       <li>Tweaked compose UI</li>
-  
+
       <h1>3.4.4 - Bug Fixes and Improvements</h1>
       <li>Added vertical zoom to the timetable</li>
       <li>Fixed theme importing failing when images were included</li>
@@ -147,15 +112,15 @@ export function OpenWhatsNewPopup() {
       <li>Fixed theme application in the creator</li>
       <li>Performance improvements</li>
       <li>Other minor bug fixes</li>
-  
+
       <h1>3.4.3 - Minor Bug Fixes</h1>
       <li>Fixed a bug where timetable colours couldn't be changed</li>
       <li>Other minor bug fixes</li>
-  
+
       <h1>3.4.2 - Minor Bug Fixes</h1>
       <li>Fixed a bug where Assessment Average wasn't enabled by default</li>
       <li>Fixed floating menus would sometimes be placed behind other elements</li>
-  
+
       <h1>3.4.1 - Bug Fixes and Performance Improvements</h1>
       <li>Added a new "Subject Average" section to the assessments page</li>
       <li>Fixed a bug where animations wouldn't play correctly</li>
@@ -164,7 +129,7 @@ export function OpenWhatsNewPopup() {
       <li>Improved animation performance</li>
       <li>Better Animations!</li>
       <li>Minor style tweaks</li>
-  
+
       <h1>3.4.0 - Major Performance Update</h1>
       <li>Completely rebuilt the extension popup using Svelte for dramatically improved performance</li>
       <li>Added a brand new background store with search functionality and downloadable backgrounds</li>
@@ -173,10 +138,10 @@ export function OpenWhatsNewPopup() {
       <li>Smoother animations and improved scrolling</li>
       <li>Fixed Firefox compatibility issues</li>
       <li>Other minor bug fixes and under the hood improvements</li>
-  
+
       <h1>3.3.1 - Hot Fix</h1>
       <li>Fixed assessments not loading when no notices are available</li>
-  
+
       <h1>3.3.0 - Overhauled Theming System</h1>
       <li>Added a theme store!</li>
       <li>Added the new theme creator!</li>
@@ -190,12 +155,12 @@ export function OpenWhatsNewPopup() {
       <li>Made animations toggle apply to settings</li>
       <li>Small styling improvements</li>
       <li>Other minor bug fixes</li>
-  
-  
+
+
       <h1>3.2.7 - Minor Improvements</h1>
       <li>Improved performance!</li>
       <li>Fixed a bug where the icon wasn't showing up</li>
-  
+
       <h1>3.2.6 - Bug fixes and performance improvements</h1>
       <li>Improved contrast for notifications</li>
       <li>Added 12-hour time format toggle</li>
@@ -209,7 +174,7 @@ export function OpenWhatsNewPopup() {
       <li>Enabled spellcheck inside of direct messages</li>
       <li>Fixed timetable dates being misaligned</li>
       <li>Other minor bug fixes and under the hood improvements</li>
-  
+
       <h1>3.2.5 - More Bug Fixes</h1>
       <li>New direct message scroll animations</li>
       <li>Added error message for brave browser shields breaking backgrounds</li>
@@ -218,7 +183,7 @@ export function OpenWhatsNewPopup() {
       <li>Made settings panel auto size to height of screen</li>
       <li>Fixed timetable dates not visible</li>
       <li>Other minor bug fixes</li>
-  
+
       <h1>3.2.4 - Bug Fixes</h1>
       <li>Added an open changelog button to settings</li>
       <li>Fixed a memory overflow bug with Education Perfect</li>
@@ -226,74 +191,74 @@ export function OpenWhatsNewPopup() {
       <li>Fixed news feed not loading</li>
       <li>Fixed home items duplicating</li>
       <li>Fixed Upcoming assessments not showing</li>
-  
+
       <h1>3.2.2 - Minor Improvements</h1>
       <li>Added Settings open-close animation</li>
       <li>Minor Bug Fixes</li>
-  
+
       <h1>3.2.0 - Custom Themes</h1>
       <li>Added transparency (blur) effects</li>
       <li>Added custom themes</li>
       <li>Added colour picker history</li>
       <li>Heaps of bug fixes</li>
-  
+
       <h1>3.1.3 - Custom Backgrounds</h1>
       <li>Added custom backgrounds with support for images and videos</li>
       <li>Overhauled topbar</li>
       <li>New animated hamburger icon</li>
       <li>Minor bug fixes</li>
-  
+
       <h1>3.1.2 - New settings menu!</h1>
       <li>Overhauled the settings menu</li>
       <li>Added custom gradients</li>
       <li>Added HEAPS of animations</li>
       <li>Fixed a bug where shortcuts don't show up</li>
       <li>Other minor bugs fixed</li>
-  
+
       <h1>3.1.1 - Minor Bug fixes</h1>
       <li>Fixed assessments overlapping</li>
       <li>Fixed houses not displaying if they aren't a specific color</li>
       <li>Fixed Chrome Webstore Link</li>
-  
+
       <h1>3.1.0 - Design Improvements</h1>
       <li>Minor UI improvements</li>
       <li>Added Animation Speed Slider</li>
       <li>Animation now enables and disables without reloading SEQTA</li>
       <li>Changed logo</li>
-  
+
       <h1>3.0.0 - BetterSEQTA+ *Complete Overhaul*</h1>
       <li>Redesigned appearance</li>
       <li>Upgraded to manifest V3 (longer support)</li>
       <li>Fixed transitional glitches</li>
       <li>Under the hood improvements</li>
       <li>Fixed News Feed</li>
-  
+
       <h1>2.0.7 - Added support to other domains + Minor bug fixes</h1>
       <li>Fixed BetterSEQTA+ not loading on some pages</li>
       <li>Fixed text colour of notices being unreadable</li>
       <li>Fixed pages not reloading when saving changes</li>
-  
+
       <h1>2.0.2 - Minor bug fixes</h1>
       <li>Fixed indicator for current lesson</li>
       <li>Fixed text colour for DM messages list in Light mode</li>
       <li>Fixed user info text colour</li>
-  
+
       <h1>Sleek New Layout</h1>
       <li>Updated with a new font and presentation, BetterSEQTA+ has never looked better.</li>
-  
+
       <h1>New Updated Sidebar</h1>
       <li>Condensed appearance with new updated icons.</li>
-  
+
       <h1>Independent Light Mode and Dark Mode</h1>
       <li>Dark mode and Light mode are now available to pick alongside your chosen Theme Colour. Your Theme Colour will now become an accent colour for the page.
       Light/Dark mode can be toggled with the new button, found in the top-right of the menu bar.</li>
-  
+
       <h1>Create Custom Shortcuts</h1>
       <li>Found in the BetterSEQTA+ Settings menu, custom shortcuts can now be created with a name and URL of your choice.</li>
     </div>
-    `).firstChild;
+    `).firstChild as HTMLElement;
 
-  let footer = stringToHTML(/* html */ `
+  const footer = stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
          Resources and Feedback:
@@ -321,63 +286,15 @@ export function OpenWhatsNewPopup() {
           </a>
         </div>
         <div>
-          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px; padding:0; display: flex; align-items: center;">
+          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px;padding:0; display: flex; align-items: center;">
            <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
           </a>
         </div>
       </div>
-    `).firstChild;
+    `).firstChild as HTMLElement;
 
-  let exitbutton = document.createElement("div");
-  exitbutton.id = "whatsnewclosebutton";
-
-  container.append(header);
-  container.append(imagecont);
-  container.append(textcontainer);
-  container.append(text as ChildNode);
-  container.append(footer as ChildNode);
-  container.append(exitbutton);
-
-  background.append(container);
-
-  document.getElementById("container")!.append(background);
-
-  let bkelement = document.getElementById("whatsnewbk");
-  let popup = document.getElementsByClassName("whatsnewContainer")[0];
-
-  if (settingsState.animations) {
-    animate(
-      [popup, bkelement as HTMLElement],
-      { scale: [0, 1] },
-      {
-        type: "spring",
-        stiffness: 220,
-        damping: 18,
-      },
-    );
-
-    animate(
-      ".whatsnewTextContainer *",
-      { opacity: [0, 1], y: [10, 0] },
-      {
-        delay: stagger(0.05, { startDelay: 0.1 }),
-        duration: 0.5,
-        ease: [0.22, 0.03, 0.26, 1],
-      },
-    );
-  }
-
-  delete settingsState.justupdated;
-
-  bkelement!.addEventListener("click", function (event) {
-    // Check if the click event originated from the element itself and not any of its children
-    if (event.target === bkelement) {
-      DeleteWhatsNew();
-    }
-  });
-
-  var closeelement = document.getElementById("whatsnewclosebutton");
-  closeelement!.addEventListener("click", function () {
-    DeleteWhatsNew();
+  openPopup({
+    header,
+    content: [imageContainer, text, footer],
   });
 }
