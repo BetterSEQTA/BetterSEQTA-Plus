@@ -24,6 +24,7 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -93,7 +94,13 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
+  // Show privacy statement notification on first open of this version (before what's new)
+  if (!settingsState.privacyStatementShown && !document.getElementById("whatsnewbk")) {
+    showPrivacyNotification();
+    settingsState.privacyStatementShown = true;
+  }
+
+  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
     OpenWhatsNewPopup();
   }
 }
