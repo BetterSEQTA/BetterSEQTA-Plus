@@ -30,6 +30,8 @@ export interface SettingsState {
   subjectfilters: Record<string, any>;
   transparencyEffects: boolean;
   justupdated?: boolean;
+  privacyStatementShown?: boolean;
+  privacyStatementLastUpdated?: string;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
