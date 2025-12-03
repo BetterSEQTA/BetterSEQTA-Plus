@@ -2,6 +2,34 @@ import browser from "webextension-polyfill";
 import type { SettingsState } from "@/types/storage";
 import { fetchNews } from "./background/news";
 
+interface PrivacyPolicyResponse {
+  last_updated: string;
+  whatsnew_html: string;
+}
+
+async function fetchPrivacyPolicy(sendResponse: (response?: any) => void) {
+  try {
+    const response = await fetch("https://betterseqta.org/api/policy/privacy", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("[BetterSEQTA+] Failed to fetch privacy policy:", response.status);
+      sendResponse({ error: `HTTP ${response.status}`, data: null });
+      return;
+    }
+
+    const data = await response.json() as PrivacyPolicyResponse;
+    sendResponse({ error: null, data });
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error fetching privacy policy:", error);
+    sendResponse({ error: String(error), data: null });
+  }
+}
+
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
   function open(tabs: any) {
@@ -54,6 +82,10 @@ browser.runtime.onMessage.addListener(
 
       case "sendNews":
         fetchNews(request.source ?? "australia", sendResponse);
+        return true;
+
+      case "fetchPrivacyPolicy":
+        fetchPrivacyPolicy(sendResponse);
         return true;
 
       default:

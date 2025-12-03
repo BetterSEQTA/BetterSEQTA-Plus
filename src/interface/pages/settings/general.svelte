@@ -10,6 +10,8 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
+  import { checkAndShowPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
+  import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
@@ -337,6 +339,25 @@
           <Switch 
             state={$settingsState.mockNotices ?? false} 
             onChange={(isOn: boolean) => settingsState.mockNotices = isOn} 
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Show Privacy Notification</h2>
+          <p class="text-xs">Show the privacy notification popup on next page load</p>
+        </div>
+        <div>
+          <Button
+            onClick={async () => {
+              settingsState.privacyStatementShown = false;
+              settingsState.privacyStatementLastUpdated = undefined;
+              closeExtensionPopup();
+              // Small delay to ensure popup is closed before showing notification
+              await new Promise(resolve => setTimeout(resolve, 100));
+              await checkAndShowPrivacyNotification();
+            }}
+            text="Show Now"
           />
         </div>
       </div>
