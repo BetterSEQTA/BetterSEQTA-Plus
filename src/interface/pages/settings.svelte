@@ -106,7 +106,7 @@
       />
 
       {#if !standalone}
-        <div class="absolute top-1 right-1 flex items-center gap-2">
+        <div class="absolute top-1 right-1 flex items-center gap-1">
           <button
             onclick={openAbout}
             class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
@@ -115,18 +115,18 @@
           </button>
 
           <button
+            onclick={openChangelog}
+            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+          >
+            {"\ue929"}
+          </button>
+
+          <button
             onclick={openPrivacyStatement}
             class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
             aria-label="Privacy Statement"
           >
             {"\uecba"}
-          </button>
-
-          <button
-            onclick={openChangelog}
-            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
-          >
-            {"\ue929"}
           </button>
 
           <button
