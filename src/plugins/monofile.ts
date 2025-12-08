@@ -446,21 +446,42 @@ function CheckNoticeTextColour(notice: any) {
 }
 
 export function tryLoad() {
+  let loadFinished = false;
+  
+  const finishLoadOnce = () => {
+    if (!loadFinished) {
+      loadFinished = true;
+      finishLoad();
+    }
+  };
+  
   waitForElm(".login").then(() => {
-    finishLoad();
-  });
+    finishLoadOnce();
+  }).catch(() => {});
 
   waitForElm(".day-container").then(() => {
-    finishLoad();
-  });
+    finishLoadOnce();
+  }).catch(() => {});
 
   waitForElm("[data-key=welcome]").then((elm: any) => {
     elm.classList.remove("active");
-  });
+  }).catch(() => {});
 
   waitForElm(".code", true, 50).then((elm: any) => {
     if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
-  });
+  }).catch(() => {});
+  
+  // Fallback: Check for common elements that indicate page has loaded
+  waitForElm("#main, .legacy-root, main, [class*='Chrome__content']", true, 30).then(() => {
+    finishLoadOnce();
+  }).catch(() => {});
+  
+  // Fallback timeout: If none of the above elements appear, finish loading after 3 seconds
+  setTimeout(() => {
+    if (!loadFinished) {
+      finishLoadOnce();
+    }
+  }, 3000);
 
   updateIframesWithDarkMode();
   // Waits for page to call on load, run scripts

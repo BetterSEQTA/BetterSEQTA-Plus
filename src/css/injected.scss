@@ -2867,6 +2867,85 @@ ul.legacy-root.buttonChecklist {
     }
   }
   
+  // Connected Apps page styling
+  .connectedApps {
+    .appManagement {
+      .uiResultsTable {
+        .chromeBugWrapper {
+          table.header {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            
+            thead tr th.tableHeader {
+              color: white !important;
+              background: transparent !important;
+              background-color: transparent !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 13px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+              padding: 16px !important;
+              text-align: left !important;
+              
+              div {
+                color: white !important;
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+            }
+            
+            thead tr th.tableHeader.name {
+              background: transparent !important;
+              background-color: transparent !important;
+              
+              div {
+                color: white !important;
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+            }
+          }
+          
+          // Direct selector for th.name to ensure it overrides everything
+          th.name,
+          th.tableHeader.name {
+            background: transparent !important;
+            background-color: transparent !important;
+            
+            div {
+              background: transparent !important;
+              background-color: transparent !important;
+            }
+          }
+          
+          .footer {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 12px 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            
+            .selected,
+            .found {
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 13px !important;
+              
+              .limit,
+              .count {
+                color: white !important;
+                font-weight: 600 !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
   [class*="manage__editor"] {
     width: 400px !important;
     min-width: 400px !important;
@@ -10355,6 +10434,177 @@ body[data-seqta-platform="teach"] {
 
               &.TableActionMenuPlugin__table-cell-action-button-container--inactive___HiSE_ {
                 display: none !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Specific styling for lexical editor in filterBox.editor.lexical path
+  .filterBox.editor.lexical {
+    .lexicalEditor {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      overflow: hidden !important;
+
+      .LexicalEditor__editor-container___RCCFr {
+        background: transparent !important;
+
+        // Toolbar - ensure dark background
+        .LexicalEditor__toolbar___kprF1 {
+          background: rgba(255, 255, 255, 0.08) !important;
+          background-color: rgba(255, 255, 255, 0.08) !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          padding: 12px 16px !important;
+          color: white !important;
+
+          // Dropdown Menu Button
+          .MenuButton__Menu___FMwps {
+            .Button__Button___kQRWg {
+              background: rgba(255, 255, 255, 0.08) !important;
+              background-color: rgba(255, 255, 255, 0.08) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px 12px !important;
+              font-size: 13px !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+
+              &:hover {
+                background: rgba(255, 255, 255, 0.12) !important;
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                border-color: var(--accent-bg) !important;
+              }
+            }
+          }
+
+          // Dividers
+          .LexicalEditor__divider___xunJd {
+            width: 1px !important;
+            height: 20px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            margin: 0 4px !important;
+
+            &.LexicalEditor__auto-hide___x9WCG {
+              opacity: 0.5 !important;
+            }
+          }
+
+          // Toolbar Groups
+          .LexicalEditor__toolbar-group___cCQ3d {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+
+            // Toolbar Buttons
+            .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
+              background: rgba(255, 255, 255, 0.05) !important;
+              background-color: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid transparent !important;
+              border-radius: 6px !important;
+              color: rgba(255, 255, 255, 0.8) !important;
+              padding: 8px !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              min-width: 32px !important;
+              height: 32px !important;
+
+              &:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 0.12) !important;
+                background-color: rgba(255, 255, 255, 0.12) !important;
+                border-color: rgba(255, 255, 255, 0.2) !important;
+                color: white !important;
+                transform: translateY(-1px) !important;
+              }
+
+              &:active:not(:disabled) {
+                transform: translateY(0) !important;
+              }
+
+              &.LexicalEditor__active___P1nSu {
+                background: var(--accent-bg) !important;
+                background-color: var(--accent-bg) !important;
+                border-color: var(--accent-bg) !important;
+                color: white !important;
+              }
+
+              &:disabled {
+                opacity: 0.4 !important;
+                cursor: not-allowed !important;
+              }
+
+              // Icon styling
+              svg.LexicalEditor__format___mlo_D {
+                width: 16px !important;
+                height: 16px !important;
+                fill: currentColor !important;
+                color: currentColor !important;
+              }
+
+              &.LexicalEditor__spaced___LHB2C {
+                margin-right: 2px !important;
+              }
+            }
+          }
+        }
+
+        // Editor Inner Container
+        .LexicalEditor__editor-inner___mk5R5 {
+          position: relative !important;
+
+          // Editor Input Area
+          .LexicalEditor__editor-input___QZkn7 {
+            background: rgba(0, 0, 0, 0.3) !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            color: white !important;
+            padding: 20px !important;
+            min-height: 200px !important;
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+            border: none !important;
+            outline: none !important;
+            border-radius: 0 0 12px 12px !important;
+
+            // Override any inline styles that might set white background
+            &[style*="background"] {
+              background: rgba(0, 0, 0, 0.3) !important;
+              background-color: rgba(0, 0, 0, 0.3) !important;
+            }
+
+            // Paragraph styling
+            p.editor-paragraph.LexicalEditor__editor-paragraph___Ibuzb {
+              color: white !important;
+              margin: 0 0 16px !important;
+
+              &:last-child {
+                margin-bottom: 0 !important;
+              }
+            }
+
+            // Ensure all text content is white
+            * {
+              color: white !important;
+            }
+
+            // Handle any spans or other text elements
+            span, div, strong, em, u, s {
+              color: white !important;
+            }
+
+            // Lists styling
+            ul, ol {
+              color: white !important;
+              
+              li {
+                color: white !important;
               }
             }
           }

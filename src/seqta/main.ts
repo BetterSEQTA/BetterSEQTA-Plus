@@ -15,8 +15,36 @@ export async function main() {
   return new Promise(async (resolve, reject) => {
     try {
       if (settingsState.onoff) {
+        // Wait for body to be available if it doesn't exist yet
+        let bodyWaitAttempts = 0;
+        const maxBodyWaitAttempts = 50; // 5 seconds max
+        while (!document.body && bodyWaitAttempts < maxBodyWaitAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          bodyWaitAttempts++;
+        }
+        
+        if (!document.body) {
+          console.error('[BetterSEQTA+] document.body is still null after waiting, cannot set platform attribute');
+          reject(new Error('document.body is null'));
+          return;
+        }
+        
         // Add platform detection to body for CSS targeting
-        const platform = detectSEQTAPlatform();
+        // Try to detect platform, and retry if it returns unknown (title might not be set yet)
+        let platform = detectSEQTAPlatform();
+        
+        // If platform is unknown, wait a bit for title to be set and retry
+        if (platform === 'unknown') {
+          // Wait for title to be set (max 2 seconds)
+          let attempts = 0;
+          const maxAttempts = 20;
+          while (platform === 'unknown' && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            platform = detectSEQTAPlatform();
+            attempts++;
+          }
+        }
+        
         document.body.setAttribute('data-seqta-platform', platform);
         console.info(`[BetterSEQTA+] Detected platform: ${platform}`);
 
