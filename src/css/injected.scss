@@ -73,6 +73,17 @@ select {
 * {
   --theme-fg-parts: white;
 }
+
+// Global text selection styles for dark mode
+::selection {
+  background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
+  color: white !important;
+}
+
+::-moz-selection {
+  background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
+  color: white !important;
+}
 .extension-editor {
   background: var(--background-primary);
   border-radius: 16px;
@@ -6073,6 +6084,2320 @@ body[data-seqta-platform="teach"] {
           }
         }
       }
+      
+      // Counter Bullying List styling
+      .counterBullyingList {
+        background: rgba(255, 255, 255, 0.05) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        color: white !important;
+        
+        .add {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          flex-wrap: wrap !important;
+          margin-bottom: 16px !important;
+          
+          .container {
+            position: relative !important;
+            
+            input.singleSelect {
+              background: rgba(255, 255, 255, 0.1) !important;
+              background-color: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 8px !important;
+              color: white !important;
+              padding: 10px 12px !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 14px !important;
+              
+              &::placeholder {
+                color: rgba(255, 255, 255, 0.5) !important;
+              }
+            }
+            
+            .singleSelect.overlay {
+              background: transparent !important;
+              background-color: transparent !important;
+              border: none !important;
+            }
+          }
+          
+          input.singleSelect {
+            background: rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 10px 12px !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            
+            &::placeholder {
+              color: rgba(255, 255, 255, 0.5) !important;
+            }
+          }
+          
+          select.uiCombobox {
+            background: rgba(255, 255, 255, 0.1) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 10px 12px !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            
+            option {
+              background: rgba(31, 41, 55, 0.95) !important;
+              background-color: rgba(31, 41, 55, 0.95) !important;
+              color: white !important;
+            }
+          }
+          
+          button.uiButton {
+            background: rgba(255, 255, 255, 0.08) !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 10px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.12) !important;
+              background-color: rgba(255, 255, 255, 0.12) !important;
+              border-color: var(--accent-bg) !important;
+              transform: translateY(-1px) !important;
+            }
+            
+            &:active {
+              transform: translateY(0) !important;
+            }
+          }
+        }
+        
+        .list {
+          background: transparent !important;
+          color: white !important;
+        }
+      }
+      
+      // Notices grid styling
+      .notices.grid {
+        background: transparent !important;
+        display: grid !important;
+        gap: 20px !important;
+        color: white !important;
+        
+        .notice {
+          background: rgba(255, 255, 255, 0.05) !important;
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 12px !important;
+          backdrop-filter: blur(10px) !important;
+          padding: 20px !important;
+          color: white !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+          }
+          
+          // Notice title
+          h2 {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 20px !important;
+            margin-bottom: 12px !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+          }
+          
+          // Meta information (labels, visibility)
+          .meta {
+            background: transparent !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 13px !important;
+            margin-bottom: 12px !important;
+            
+            &.student {
+              .vis {
+                background: rgba(255, 255, 255, 0.15) !important;
+                border-radius: 6px !important;
+                padding: 4px 8px !important;
+                display: inline-block !important;
+                margin-right: 8px !important;
+                color: white !important;
+                font-weight: 500 !important;
+              }
+              
+              .label {
+                color: rgba(255, 255, 255, 0.7) !important;
+                display: inline-block !important;
+              }
+            }
+          }
+          
+          // Staff name
+          .staff {
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 13px !important;
+            margin-bottom: 12px !important;
+          }
+          
+          // Iframe wrapper (notice content)
+          .iframeWrapper.contents {
+            background: rgba(0, 0, 0, 0.3) !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            margin-bottom: 12px !important;
+            color: white !important;
+            
+            iframe.userHTML {
+              background: transparent !important;
+              border: none !important;
+            }
+          }
+          
+          // Action buttons (edit, delete)
+          .actions {
+            display: flex !important;
+            gap: 8px !important;
+            margin-top: 12px !important;
+            
+            button.uiButton {
+              background: rgba(255, 255, 255, 0.1) !important;
+              background-color: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 6px !important;
+              color: white !important;
+              padding: 8px !important;
+              cursor: pointer !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.2) !important;
+                background-color: rgba(255, 255, 255, 0.2) !important;
+                transform: scale(1.1) !important;
+              }
+              
+              svg {
+                fill: currentColor !important;
+                width: 20px !important;
+                height: 20px !important;
+              }
+            }
+          }
+        }
+      }
+      
+      // Programme Cover Page Accordion styling
+      .programmeWrapper {
+        .ProgrammeCoverPage__wrapper___DaWdf {
+          .ProgrammeCoverPage__body____SjuK {
+            .Accordion__Accordion___DVllU {
+              .Accordion__item___EVqcR {
+                background: transparent !important;
+                border: none !important;
+                margin-bottom: 12px !important;
+                
+                .Accordion__header___tx7qC {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  padding: 16px !important;
+                  color: white !important;
+                  
+                  .Accordion__label___SH_Bj {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 16px !important;
+                  }
+                  
+                  .Accordion__caption___eJU7p {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 13px !important;
+                  }
+                  
+                  .Accordion__actions___pzQ1h {
+                    button.Accordion__expand___rR2vm {
+                      background: rgba(255, 255, 255, 0.1) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 6px !important;
+                      color: white !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        transform: scale(1.1) !important;
+                      }
+                      
+                      svg {
+                        fill: currentColor !important;
+                      }
+                    }
+                  }
+                }
+                
+                .Accordion__body___Zvir8 {
+                  background: transparent !important;
+                  padding: 20px 0 !important;
+                  
+                  .Body__body___LzxsL {
+                    background: transparent !important;
+                    
+                    .Container__container___Ob9l6 {
+                      background: transparent !important;
+                      
+                      .Document__document___ipJah {
+                        background: transparent !important;
+                        
+                        // Canvas styling - override inline styles
+                        .Canvas__canvas___dqrem {
+                          background-color: rgba(0, 0, 0, 0.3) !important;
+                          background: rgba(0, 0, 0, 0.3) !important;
+                          color: white !important;
+                          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 12px !important;
+                          padding: 20px !important;
+                          
+                          // Empty canvas hint
+                          .EmptyCanvasHint__no-module___J2tA2 {
+                            .EmptyCanvasHint__heading___zPvNn {
+                              color: white !important;
+                              font-family: Rubik, sans-serif !important;
+                              font-weight: 600 !important;
+                            }
+                            
+                            .EmptyCanvasHint__message___Q8b51 {
+                              color: rgba(255, 255, 255, 0.8) !important;
+                              font-family: Rubik, sans-serif !important;
+                              
+                              strong {
+                                color: white !important;
+                                font-weight: 600 !important;
+                              }
+                            }
+                          }
+                        }
+                        
+                        // Palette styling
+                        .Palette__palette___mixtX {
+                          background: rgba(255, 255, 255, 0.05) !important;
+                          background-color: rgba(255, 255, 255, 0.05) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 12px !important;
+                          backdrop-filter: blur(10px) !important;
+                          color: white !important;
+                          
+                          &.Palette__open___xlWHY {
+                            background: rgba(255, 255, 255, 0.08) !important;
+                            background-color: rgba(255, 255, 255, 0.08) !important;
+                          }
+                          
+                          .Palette__palette__toggle___xdHCT {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            background-color: rgba(255, 255, 255, 0.1) !important;
+                            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                            border-radius: 6px !important;
+                            color: white !important;
+                            transition: all 0.2s ease !important;
+                            
+                            &:hover {
+                              background: rgba(255, 255, 255, 0.2) !important;
+                              background-color: rgba(255, 255, 255, 0.2) !important;
+                              transform: scale(1.1) !important;
+                            }
+                            
+                            svg {
+                              fill: currentColor !important;
+                            }
+                          }
+                          
+                          .Palette__palette__menu___plWW7 {
+                            background: transparent !important;
+                            color: white !important;
+                            
+                            .SearchBar__SearchBar___xLyRx {
+                              button {
+                                background: rgba(0, 0, 0, 0.3) !important;
+                                background-color: rgba(0, 0, 0, 0.3) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                                border-radius: 6px !important;
+                                color: white !important;
+                                font-family: Rubik, sans-serif !important;
+                                padding: 8px 16px !important;
+                                transition: all 0.2s ease !important;
+                                
+                                &:hover {
+                                  background: rgba(255, 255, 255, 0.1) !important;
+                                  background-color: rgba(255, 255, 255, 0.1) !important;
+                                  transform: translateY(-1px) !important;
+                                }
+                              }
+                            }
+                            
+                            .Palette__hint___mRmtw {
+                              color: rgba(255, 255, 255, 0.7) !important;
+                              font-family: Rubik, sans-serif !important;
+                              
+                              a {
+                                color: var(--theme-primary) !important;
+                                text-decoration: none !important;
+                                
+                                &:hover {
+                                  text-decoration: underline !important;
+                                }
+                              }
+                            }
+                            
+                            // Palette sections (General, Structure, Media, etc.)
+                            > div {
+                              color: white !important;
+                              
+                              h2 {
+                                color: white !important;
+                                font-family: Rubik, sans-serif !important;
+                                font-weight: 600 !important;
+                                font-size: 14px !important;
+                                text-transform: uppercase !important;
+                                letter-spacing: 0.5px !important;
+                                margin-bottom: 8px !important;
+                              }
+                              
+                              ul {
+                                li {
+                                  background: rgba(255, 255, 255, 0.05) !important;
+                                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                                  border-radius: 8px !important;
+                                  color: white !important;
+                                  transition: all 0.2s ease !important;
+                                  
+                                  &:hover {
+                                    background: rgba(255, 255, 255, 0.1) !important;
+                                    transform: translateY(-1px) !important;
+                                  }
+                                  
+                                  div {
+                                    color: white !important;
+                                    font-family: Rubik, sans-serif !important;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        
+                        // Module wrapper styling - override inline styles
+                        .Module__wrapper___mC00E {
+                          background: rgba(255, 255, 255, 0.05) !important;
+                          background-color: rgba(255, 255, 255, 0.05) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 16px !important;
+                          backdrop-filter: blur(10px) !important;
+                          padding: 0 !important;
+                          margin-bottom: 16px !important;
+                          color: white !important;
+                          
+                          // Module title bar
+                          .ModuleTitle__ModuleTitle___bZIue {
+                            background: rgba(255, 255, 255, 0.08) !important;
+                            background-color: rgba(255, 255, 255, 0.08) !important;
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                            padding: 12px 16px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: space-between !important;
+                            color: white !important;
+                            
+                            .ModuleTitle__title___W7l4S {
+                              color: white !important;
+                              font-family: Rubik, sans-serif !important;
+                              font-weight: 600 !important;
+                              font-size: 14px !important;
+                            }
+                            
+                            .ModuleTitle__buttons___qTLIh {
+                              display: flex !important;
+                              gap: 4px !important;
+                              
+                              button {
+                                background: rgba(255, 255, 255, 0.1) !important;
+                                background-color: rgba(255, 255, 255, 0.1) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                                border-radius: 50% !important;
+                                color: white !important;
+                                padding: 4px !important;
+                                width: 28px !important;
+                                height: 28px !important;
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                transition: all 0.2s ease !important;
+                                cursor: pointer !important;
+                                
+                                &:hover:not(:disabled) {
+                                  background: rgba(255, 255, 255, 0.2) !important;
+                                  background-color: rgba(255, 255, 255, 0.2) !important;
+                                  transform: scale(1.1) !important;
+                                }
+                                
+                                &:disabled {
+                                  opacity: 0.5 !important;
+                                  cursor: not-allowed !important;
+                                }
+                                
+                                svg {
+                                  fill: currentColor !important;
+                                  width: 16px !important;
+                                  height: 16px !important;
+                                }
+                                
+                                &.ModuleTitle__delete___thPvS {
+                                  &:hover:not(:disabled) {
+                                    background: rgba(255, 59, 48, 0.3) !important;
+                                    background-color: rgba(255, 59, 48, 0.3) !important;
+                                    border-color: rgba(255, 59, 48, 0.5) !important;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          
+                          // Module content
+                          .Module__content___sbur8 {
+                            background: transparent !important;
+                            color: white !important;
+                            padding: 16px !important;
+                          }
+                          
+                          // HTML Module specific styling
+                          .HtmlModule__htmlModuleContainer___Tn6vi {
+                            background: transparent !important;
+                            color: white !important;
+                            
+                            .HtmlModule__pillboxContainer___FoIW2 {
+                              background: rgba(255, 255, 255, 0.05) !important;
+                              background-color: rgba(255, 255, 255, 0.05) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                              border-radius: 8px !important;
+                              padding: 8px !important;
+                              margin-bottom: 12px !important;
+                              
+                              .wxPillbox__Pillbox___ta4lp {
+                                background: transparent !important;
+                                color: white !important;
+                                
+                                .wxPillboxButton__PillboxButton___LUbyH {
+                                  background: rgba(255, 255, 255, 0.1) !important;
+                                  background-color: rgba(255, 255, 255, 0.1) !important;
+                                  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                                  border-radius: 6px !important;
+                                  color: white !important;
+                                  font-family: Rubik, sans-serif !important;
+                                  font-size: 13px !important;
+                                  padding: 6px 12px !important;
+                                  transition: all 0.2s ease !important;
+                                  
+                                  &:hover {
+                                    background: rgba(255, 255, 255, 0.2) !important;
+                                    background-color: rgba(255, 255, 255, 0.2) !important;
+                                  }
+                                  
+                                  &.wxPillboxButton__depressed___lV4lI {
+                                    background: var(--theme-primary) !important;
+                                    background-color: var(--theme-primary) !important;
+                                    border-color: var(--theme-primary) !important;
+                                    color: white !important;
+                                  }
+                                }
+                              }
+                            }
+                            
+                            .HtmlModule__htmlWrapper___TUFr2 {
+                              background: transparent !important;
+                              color: white !important;
+                              
+                              .HtmlEditor__htmlEditorWrapper___HS2mV {
+                                background: rgba(0, 0, 0, 0.3) !important;
+                                background-color: rgba(0, 0, 0, 0.3) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                                border-radius: 8px !important;
+                                overflow: hidden !important;
+                                
+                                .ace_editor {
+                                  background: rgba(0, 0, 0, 0.5) !important;
+                                  color: white !important;
+                                  
+                                  .ace_gutter {
+                                    background: rgba(0, 0, 0, 0.3) !important;
+                                    color: rgba(255, 255, 255, 0.6) !important;
+                                  }
+                                  
+                                  .ace_content {
+                                    color: white !important;
+                                  }
+                                }
+                              }
+                              
+                              .HtmlModule__viewWrapper___seRhH {
+                                background: rgba(0, 0, 0, 0.2) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                                border-radius: 8px !important;
+                                
+                                .HtmlModule__iframeContainer___Zb0CW {
+                                  background: white !important;
+                                  border-radius: 8px !important;
+                                  overflow: hidden !important;
+                                  
+                                  iframe {
+                                    background: white !important;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          
+                          // Text Module styling
+                          .TextModule__textModuleContainer___,
+                          [class*="TextModule"] {
+                            background: transparent !important;
+                            color: white !important;
+                            
+                            // Text editor toolbar
+                            [class*="Toolbar"],
+                            [class*="toolbar"] {
+                              background: rgba(255, 255, 255, 0.05) !important;
+                              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                              padding: 8px !important;
+                              display: flex !important;
+                              gap: 4px !important;
+                              flex-wrap: wrap !important;
+                              
+                              button,
+                              [class*="Button"] {
+                                background: rgba(255, 255, 255, 0.1) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                                border-radius: 4px !important;
+                                color: white !important;
+                                padding: 6px !important;
+                                transition: all 0.2s ease !important;
+                                
+                                &:hover:not(:disabled) {
+                                  background: rgba(255, 255, 255, 0.2) !important;
+                                  transform: scale(1.05) !important;
+                                }
+                                
+                                svg {
+                                  fill: currentColor !important;
+                                }
+                              }
+                            }
+                            
+                            // Text editor content area
+                            textarea,
+                            [class*="Editor"],
+                            [class*="editor"],
+                            [contenteditable="true"] {
+                              background: rgba(0, 0, 0, 0.3) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                              border-radius: 8px !important;
+                              color: white !important;
+                              padding: 12px !important;
+                              font-family: Rubik, sans-serif !important;
+                              
+                              &::placeholder {
+                                color: rgba(255, 255, 255, 0.5) !important;
+                              }
+                            }
+                          }
+                          
+                          // Assessment Module styling
+                          [class*="AssessmentModule"] {
+                            background: transparent !important;
+                            color: white !important;
+                            
+                            [class*="AssessmentModule__noAssessment"] {
+                              color: rgba(255, 255, 255, 0.7) !important;
+                              font-family: Rubik, sans-serif !important;
+                              font-style: italic !important;
+                            }
+                            
+                            [class*="AssessmentModule__list"] {
+                              background: rgba(255, 255, 255, 0.05) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                              border-radius: 8px !important;
+                              padding: 12px !important;
+                              
+                              li {
+                                background: rgba(255, 255, 255, 0.05) !important;
+                                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                                border-radius: 6px !important;
+                                padding: 12px !important;
+                                margin-bottom: 8px !important;
+                                color: white !important;
+                                cursor: pointer !important;
+                                transition: all 0.2s ease !important;
+                                
+                                &:hover {
+                                  background: rgba(255, 255, 255, 0.1) !important;
+                                  transform: translateY(-1px) !important;
+                                }
+                                
+                                h2 {
+                                  color: white !important;
+                                  font-family: Rubik, sans-serif !important;
+                                  font-weight: 600 !important;
+                                }
+                                
+                                div {
+                                  color: rgba(255, 255, 255, 0.7) !important;
+                                  font-family: Rubik, sans-serif !important;
+                                }
+                              }
+                            }
+                            
+                            button {
+                              background: rgba(255, 255, 255, 0.1) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                              border-radius: 6px !important;
+                              color: white !important;
+                              padding: 8px 16px !important;
+                              font-family: Rubik, sans-serif !important;
+                              transition: all 0.2s ease !important;
+                              
+                              &:hover {
+                                background: rgba(255, 255, 255, 0.2) !important;
+                                transform: translateY(-1px) !important;
+                              }
+                            }
+                          }
+                          
+                          // Title Module styling
+                          [class*="TitleModule"] {
+                            background: transparent !important;
+                            color: white !important;
+                            
+                            input {
+                              background: rgba(255, 255, 255, 0.1) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                              border-radius: 6px !important;
+                              color: white !important;
+                              padding: 8px 12px !important;
+                              font-family: Rubik, sans-serif !important;
+                              
+                              &::placeholder {
+                                color: rgba(255, 255, 255, 0.5) !important;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Unit Planner styling
+      .programmeWrapper {
+        background: transparent !important;
+        color: white !important;
+        
+        .programme.tabPage {
+          background: transparent !important;
+          color: white !important;
+          
+          .ptUnitPlanner {
+            background: transparent !important;
+            color: white !important;
+            
+            .unitPlanner__unitplanner___a4O8_ {
+              background: transparent !important;
+              color: white !important;
+              display: flex !important;
+              gap: 20px !important;
+              
+              // Side pane (unit list)
+              .unitPlanner__sidePane___Gyo6k {
+                background: rgba(255, 255, 255, 0.05) !important;
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                padding: 16px !important;
+                color: white !important;
+                min-width: 200px !important;
+                
+                .ItemList__ItemList___h6ECV {
+                  background: transparent !important;
+                  color: white !important;
+                  
+                  .list {
+                    background: transparent !important;
+                    
+                    .ItemList__Item___EXrYD {
+                      background: rgba(255, 255, 255, 0.05) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                      border-radius: 8px !important;
+                      padding: 12px !important;
+                      margin-bottom: 8px !important;
+                      color: white !important;
+                      cursor: pointer !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        transform: translateY(-1px) !important;
+                      }
+                      
+                      &.ItemList__selected___DudiO {
+                        background: rgba(255, 255, 255, 0.15) !important;
+                        border-color: var(--theme-primary) !important;
+                        box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                      }
+                      
+                      .ItemList__column___Jp5hg {
+                        .ItemList__label___deRjp {
+                          color: white !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-weight: 500 !important;
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                // Minimap
+                .unitPlanner__minimap___Geou3 {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border-radius: 8px !important;
+                  padding: 8px !important;
+                  margin-top: 16px !important;
+                  
+                  .unitPlanner__row___kF3N7 {
+                    .unitPlanner__item___CKP1e {
+                      border-radius: 4px !important;
+                      margin-bottom: 4px !important;
+                      
+                      .unitPlanner__title___lgBP1 {
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-weight: 500 !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Content area
+              .unitPlanner__content___PLcHE {
+                background: transparent !important;
+                color: white !important;
+                flex: 1 !important;
+                
+                // Meta section (title, pathway, template, etc.)
+                .unitPlanner__meta___Lni21 {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  background-color: rgba(255, 255, 255, 0.05) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 12px !important;
+                  backdrop-filter: blur(10px) !important;
+                  padding: 20px !important;
+                  margin-bottom: 20px !important;
+                  color: white !important;
+                  
+                  .unitPlanner__alpha___uNcX_ {
+                    background: transparent !important;
+                    color: white !important;
+                    
+                    .unitPlanner__title___lgBP1 {
+                      background: transparent !important;
+                      color: white !important;
+                      
+                      .unitPlanner__label___IRyst {
+                        color: rgba(255, 255, 255, 0.8) !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-size: 12px !important;
+                        font-weight: 600 !important;
+                        text-transform: uppercase !important;
+                        letter-spacing: 0.5px !important;
+                        margin-bottom: 8px !important;
+                      }
+                      
+                      input.unitPlanner__uiShortText___Ebb3k,
+                      .uiShortText {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 8px 12px !important;
+                        font-family: Rubik, sans-serif !important;
+                        
+                        &::placeholder {
+                          color: rgba(255, 255, 255, 0.5) !important;
+                        }
+                        
+                        &:focus {
+                          border-color: var(--theme-primary) !important;
+                          box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                          outline: none !important;
+                        }
+                      }
+                    }
+                    
+                    // Form fields
+                    > div {
+                      margin-bottom: 16px !important;
+                      
+                      label,
+                      .unitPlanner__label___IRyst {
+                        color: rgba(255, 255, 255, 0.8) !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-size: 12px !important;
+                        font-weight: 600 !important;
+                        text-transform: uppercase !important;
+                        letter-spacing: 0.5px !important;
+                        margin-bottom: 8px !important;
+                      }
+                      
+                      button,
+                      .uiButton,
+                      .uiCombobox {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 8px 12px !important;
+                        font-family: Rubik, sans-serif !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.2) !important;
+                          transform: translateY(-1px) !important;
+                        }
+                      }
+                      
+                      input[type="text"],
+                      input[type="number"] {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 8px 12px !important;
+                        font-family: Rubik, sans-serif !important;
+                        
+                        &::placeholder {
+                          color: rgba(255, 255, 255, 0.5) !important;
+                        }
+                      }
+                      
+                      button[class*="button"] {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 6px 10px !important;
+                        min-width: 32px !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                      }
+                    }
+                  }
+                }
+                
+                // Sections (Concepts, Objectives, Statement of inquiry, etc.)
+                > div {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 12px !important;
+                  backdrop-filter: blur(10px) !important;
+                  padding: 20px !important;
+                  margin-bottom: 20px !important;
+                  color: white !important;
+                  
+                  // Section headers
+                  > div:first-child {
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
+                    margin-bottom: 16px !important;
+                    
+                    h3,
+                    div[class*="title"],
+                    div[class*="header"] {
+                      color: white !important;
+                      font-family: Rubik, sans-serif !important;
+                      font-weight: 600 !important;
+                      font-size: 16px !important;
+                    }
+                    
+                    button {
+                      background: rgba(255, 255, 255, 0.1) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 6px !important;
+                      color: white !important;
+                      padding: 6px !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        transform: scale(1.1) !important;
+                      }
+                      
+                      svg {
+                        fill: currentColor !important;
+                      }
+                    }
+                  }
+                  
+                  // Text editor toolbars
+                  [class*="toolbar"],
+                  [class*="Toolbar"] {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    padding: 8px !important;
+                    display: flex !important;
+                    gap: 4px !important;
+                    flex-wrap: wrap !important;
+                    margin-bottom: 12px !important;
+                    
+                    button {
+                      background: rgba(255, 255, 255, 0.1) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 4px !important;
+                      color: white !important;
+                      padding: 6px !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover:not(:disabled) {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        transform: scale(1.05) !important;
+                      }
+                      
+                      svg {
+                        fill: currentColor !important;
+                      }
+                    }
+                  }
+                  
+                  // Text editor content areas
+                  textarea,
+                  [class*="Editor"],
+                  [class*="editor"],
+                  [contenteditable="true"],
+                  iframe {
+                    background: rgba(0, 0, 0, 0.3) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 8px !important;
+                    color: white !important;
+                    padding: 12px !important;
+                    font-family: Rubik, sans-serif !important;
+                    
+                    &::placeholder {
+                      color: rgba(255, 255, 255, 0.5) !important;
+                    }
+                  }
+                  
+                  // Lists
+                  ul,
+                  ol {
+                    background: transparent !important;
+                    color: white !important;
+                    
+                    li {
+                      background: rgba(255, 255, 255, 0.05) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                      border-radius: 6px !important;
+                      padding: 12px !important;
+                      margin-bottom: 8px !important;
+                      color: white !important;
+                      
+                      button {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 6px !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                      }
+                    }
+                  }
+                  
+                  // Components section
+                  [class*="component"] {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 8px !important;
+                    padding: 16px !important;
+                    margin-bottom: 12px !important;
+                    color: white !important;
+                    
+                    // CKEditor iframe
+                    iframe {
+                      background: white !important;
+                      border-radius: 8px !important;
+                    }
+                  }
+                  
+                  // File upload area
+                  [class*="upload"],
+                  [class*="drop"] {
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+                    border-radius: 8px !important;
+                    padding: 40px 20px !important;
+                    text-align: center !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    
+                    button {
+                      background: rgba(255, 255, 255, 0.1) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 6px !important;
+                      color: white !important;
+                      padding: 8px 16px !important;
+                      margin-top: 12px !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        transform: translateY(-1px) !important;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          
+          // Planner page styling (weekly lesson planner)
+          .programmeEditWrapper {
+            background: transparent !important;
+            color: white !important;
+            
+            .weeks {
+              background: transparent !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 16px !important;
+              
+              .week {
+                background: rgba(255, 255, 255, 0.05) !important;
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                padding: 16px !important;
+                color: white !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                  transform: translateY(-1px) !important;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                }
+                
+                // Week meta header (number, term, week)
+                .meta {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  padding: 12px 16px !important;
+                  margin-bottom: 12px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 12px !important;
+                  color: white !important;
+                  
+                  .number,
+                  .term,
+                  .week {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                  }
+                  
+                  button.uiButton.collapse {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 6px !important;
+                    color: white !important;
+                    padding: 6px !important;
+                    margin-left: auto !important;
+                    transition: all 0.2s ease !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.2) !important;
+                      transform: scale(1.1) !important;
+                    }
+                    
+                    svg {
+                      fill: currentColor !important;
+                    }
+                  }
+                }
+                
+                // Lessons container
+                .lessons {
+                  background: transparent !important;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  gap: 12px !important;
+                  
+                  // Individual lesson
+                  .programmeEdit.lesson {
+                    background: rgba(255, 255, 255, 0.03) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 8px !important;
+                    padding: 16px !important;
+                    color: white !important;
+                    transition: all 0.2s ease !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.06) !important;
+                      border-color: rgba(255, 255, 255, 0.2) !important;
+                    }
+                    
+                    // Lesson header
+                    .head {
+                      background: transparent !important;
+                      display: flex !important;
+                      align-items: center !important;
+                      gap: 12px !important;
+                      margin-bottom: 12px !important;
+                      flex-wrap: wrap !important;
+                      
+                      .number,
+                      .period,
+                      .date {
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-weight: 500 !important;
+                        font-size: 13px !important;
+                      }
+                      
+                      .topic {
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 8px !important;
+                        
+                        label {
+                          color: rgba(255, 255, 255, 0.8) !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-size: 12px !important;
+                          font-weight: 600 !important;
+                        }
+                        
+                        input.uiShortText {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                          border-radius: 6px !important;
+                          color: white !important;
+                          padding: 6px 10px !important;
+                          font-family: Rubik, sans-serif !important;
+                          
+                          &::placeholder {
+                            color: rgba(255, 255, 255, 0.5) !important;
+                          }
+                          
+                          &:focus {
+                            border-color: var(--theme-primary) !important;
+                            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                            outline: none !important;
+                          }
+                        }
+                      }
+                      
+                      .pathways {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        padding: 4px 8px !important;
+                        color: white !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 4px !important;
+                        
+                        svg {
+                          fill: currentColor !important;
+                        }
+                        
+                        span {
+                          color: white !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-size: 12px !important;
+                          font-weight: 500 !important;
+                        }
+                      }
+                      
+                      .actions {
+                        display: flex !important;
+                        gap: 4px !important;
+                        margin-left: auto !important;
+                        
+                        button.uiButton {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                          border-radius: 6px !important;
+                          color: white !important;
+                          padding: 6px !important;
+                          transition: all 0.2s ease !important;
+                          
+                          &:hover:not(:disabled) {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            transform: scale(1.1) !important;
+                          }
+                          
+                          &:disabled {
+                            opacity: 0.5 !important;
+                            cursor: not-allowed !important;
+                          }
+                          
+                          svg {
+                            fill: currentColor !important;
+                          }
+                          
+                          &.assessments {
+                            &.assessed {
+                              background: rgba(40, 167, 69, 0.2) !important;
+                              border-color: rgba(40, 167, 69, 0.4) !important;
+                              
+                              &:hover {
+                                background: rgba(40, 167, 69, 0.3) !important;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                    
+                    // Lesson content sections
+                    > div {
+                      background: transparent !important;
+                      color: white !important;
+                      margin-bottom: 12px !important;
+                      
+                      h1 {
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-weight: 600 !important;
+                        font-size: 14px !important;
+                        margin-bottom: 8px !important;
+                      }
+                      
+                      input.uiShortText {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 8px 12px !important;
+                        font-family: Rubik, sans-serif !important;
+                        width: 100% !important;
+                        
+                        &::placeholder {
+                          color: rgba(255, 255, 255, 0.5) !important;
+                        }
+                        
+                        &:focus {
+                          border-color: var(--theme-primary) !important;
+                          box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                          outline: none !important;
+                        }
+                      }
+                      
+                      // Text editor toolbars
+                      [class*="toolbar"],
+                      [class*="Toolbar"] {
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        padding: 8px !important;
+                        display: flex !important;
+                        gap: 4px !important;
+                        flex-wrap: wrap !important;
+                        margin-bottom: 12px !important;
+                        
+                        button {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                          border-radius: 4px !important;
+                          color: white !important;
+                          padding: 6px !important;
+                          transition: all 0.2s ease !important;
+                          
+                          &:hover:not(:disabled) {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            transform: scale(1.05) !important;
+                          }
+                          
+                          svg {
+                            fill: currentColor !important;
+                          }
+                        }
+                      }
+                      
+                      // Text editor content areas
+                      textarea,
+                      [class*="Editor"],
+                      [class*="editor"],
+                      [contenteditable="true"],
+                      iframe {
+                        background: rgba(0, 0, 0, 0.3) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        border-radius: 8px !important;
+                        color: white !important;
+                        padding: 12px !important;
+                        font-family: Rubik, sans-serif !important;
+                        
+                        &::placeholder {
+                          color: rgba(255, 255, 255, 0.5) !important;
+                        }
+                      }
+                      
+                      // Checkbox styling
+                      input[type="checkbox"] {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 4px !important;
+                        
+                        &:checked {
+                          background: var(--theme-primary) !important;
+                          border-color: var(--theme-primary) !important;
+                        }
+                      }
+                      
+                      label {
+                        color: white !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-size: 13px !important;
+                      }
+                      
+                      // Buttons
+                      button {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        border-radius: 6px !important;
+                        color: white !important;
+                        padding: 8px 16px !important;
+                        font-family: Rubik, sans-serif !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover:not(:disabled) {
+                          background: rgba(255, 255, 255, 0.2) !important;
+                          transform: translateY(-1px) !important;
+                        }
+                        
+                        svg {
+                          fill: currentColor !important;
+                        }
+                      }
+                    }
+                  }
+                  
+                  // Add lesson button
+                  button[type="button"] {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 8px !important;
+                    color: white !important;
+                    padding: 12px 20px !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 500 !important;
+                    transition: all 0.2s ease !important;
+                    width: 100% !important;
+                    margin-top: 8px !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.2) !important;
+                      transform: translateY(-1px) !important;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          
+          // Lesson Organiser page styling (shuffle board)
+          .shuffle.shuffleBoard {
+            background: transparent !important;
+            color: white !important;
+            
+            .programmeShuffle {
+              background: transparent !important;
+              list-style: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              
+              // Week items
+              li.programmeShuffle.week {
+                background: rgba(255, 255, 255, 0.05) !important;
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                padding: 16px !important;
+                margin-bottom: 16px !important;
+                color: white !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                  transform: translateY(-1px) !important;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                }
+                
+                // Week meta header (handle)
+                .meta.handle {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  padding: 12px 16px !important;
+                  margin-bottom: 12px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  gap: 12px !important;
+                  color: white !important;
+                  cursor: move !important;
+                  
+                  .number,
+                  .term,
+                  .week {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                  }
+                }
+                
+                // Lessons list within week
+                ul.lessons {
+                  background: transparent !important;
+                  list-style: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
+                  
+                  // Individual lesson items
+                  li.programmeShuffle.lesson {
+                    background: rgba(255, 255, 255, 0.03) !important;
+                    background-color: rgba(255, 255, 255, 0.03) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 8px !important;
+                    padding: 12px 16px !important;
+                    margin-bottom: 8px !important;
+                    color: white !important;
+                    transition: all 0.2s ease !important;
+                    cursor: move !important;
+                    
+                    &:hover {
+                      background: rgba(255, 255, 255, 0.06) !important;
+                      background-color: rgba(255, 255, 255, 0.06) !important;
+                      border-color: rgba(255, 255, 255, 0.2) !important;
+                      transform: translateX(4px) !important;
+                    }
+                    
+                    // Lesson meta
+                    .meta {
+                      background: transparent !important;
+                      display: flex !important;
+                      align-items: center !important;
+                      gap: 12px !important;
+                      color: white !important;
+                      
+                      .sequence {
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 8px !important;
+                        
+                        .number,
+                        .period,
+                        .date {
+                          color: white !important;
+                          font-family: Rubik, sans-serif !important;
+                          font-weight: 500 !important;
+                          font-size: 13px !important;
+                        }
+                      }
+                      
+                      .topic {
+                        color: rgba(255, 255, 255, 0.8) !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-size: 13px !important;
+                        flex: 1 !important;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Unused lessons section
+            > div {
+              background: rgba(255, 255, 255, 0.05) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 12px !important;
+              padding: 16px !important;
+              margin-top: 20px !important;
+              color: white !important;
+              
+              button {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 6px !important;
+                color: white !important;
+                padding: 8px 16px !important;
+                font-family: Rubik, sans-serif !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.2) !important;
+                  transform: translateY(-1px) !important;
+                }
+                
+                svg {
+                  fill: currentColor !important;
+                }
+              }
+              
+              // Search input
+              input[type="text"] {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 6px !important;
+                color: white !important;
+                padding: 8px 12px !important;
+                font-family: Rubik, sans-serif !important;
+                width: 100% !important;
+                margin-top: 12px !important;
+                
+                &::placeholder {
+                  color: rgba(255, 255, 255, 0.5) !important;
+                }
+                
+                &:focus {
+                  border-color: var(--theme-primary) !important;
+                  box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                  outline: none !important;
+                }
+              }
+              
+              // Unused lessons list
+              ul {
+                background: transparent !important;
+                list-style: none !important;
+                padding: 0 !important;
+                margin-top: 12px !important;
+                
+                li {
+                  background: rgba(255, 255, 255, 0.03) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  padding: 12px 16px !important;
+                  margin-bottom: 8px !important;
+                  color: white !important;
+                  cursor: move !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.06) !important;
+                    border-color: rgba(255, 255, 255, 0.2) !important;
+                    transform: translateX(4px) !important;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Online lesson editor - Palette styling (for editArea context)
+      .editArea {
+        .editorContainer {
+          .Body__body___LzxsL {
+            .Container__container___Ob9l6 {
+              .Palette__palette___mixtX {
+                background: rgba(255, 255, 255, 0.05) !important;
+                background-color: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 12px !important;
+                backdrop-filter: blur(10px) !important;
+                color: white !important;
+                
+                &.Palette__open___xlWHY {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                
+                .Palette__palette__toggle___xdHCT {
+                  background: rgba(255, 255, 255, 0.1) !important;
+                  background-color: rgba(255, 255, 255, 0.1) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                  border-radius: 6px !important;
+                  color: white !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    background-color: rgba(255, 255, 255, 0.2) !important;
+                    transform: scale(1.1) !important;
+                  }
+                  
+                  svg {
+                    fill: currentColor !important;
+                  }
+                }
+                
+                .Palette__palette__menu___plWW7 {
+                  background: transparent !important;
+                  color: white !important;
+                  
+                  .SearchBar__SearchBar___xLyRx {
+                    button {
+                      background: rgba(0, 0, 0, 0.3) !important;
+                      background-color: rgba(0, 0, 0, 0.3) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 6px !important;
+                      color: white !important;
+                      font-family: Rubik, sans-serif !important;
+                      padding: 8px 16px !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        background-color: rgba(255, 255, 255, 0.1) !important;
+                        transform: translateY(-1px) !important;
+                      }
+                    }
+                  }
+                  
+                  .Palette__hint___mRmtw {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    
+                    a {
+                      color: var(--theme-primary) !important;
+                      text-decoration: none !important;
+                      
+                      &:hover {
+                        text-decoration: underline !important;
+                      }
+                    }
+                  }
+                  
+                  // AdvancedOptions (Themes section)
+                  .AdvancedOptions__AdvancedOptions___vePhG {
+                    background: transparent !important;
+                    color: white !important;
+                    
+                    .AdvancedOptions__title___r91sB {
+                      color: white !important;
+                      font-family: Rubik, sans-serif !important;
+                      font-weight: 600 !important;
+                      font-size: 14px !important;
+                      padding: 12px !important;
+                      cursor: pointer !important;
+                      border-radius: 6px !important;
+                      transition: all 0.2s ease !important;
+                      
+                      &:hover {
+                        background: rgba(255, 255, 255, 0.05) !important;
+                      }
+                      
+                      .AdvancedOptions__arrow___o4kON {
+                        color: white !important;
+                        margin-right: 8px !important;
+                      }
+                    }
+                    
+                    .AdvancedOptions__body___DYrdW {
+                      background: transparent !important;
+                      padding: 8px 0 !important;
+                      
+                      .ThemeBrowser__ThemeBrowser___q95Ye {
+                        background: transparent !important;
+                        
+                        .ThemeBrowser__toolbar___GMybb {
+                          background: rgba(255, 255, 255, 0.05) !important;
+                          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                          border-radius: 8px !important;
+                          padding: 12px !important;
+                          margin-bottom: 12px !important;
+                          
+                          input[type="text"] {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                            border-radius: 6px !important;
+                            color: white !important;
+                            padding: 8px 12px !important;
+                            font-family: Rubik, sans-serif !important;
+                            
+                            &::placeholder {
+                              color: rgba(255, 255, 255, 0.5) !important;
+                            }
+                            
+                            &:focus {
+                              border-color: var(--theme-primary) !important;
+                              box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+                              outline: none !important;
+                            }
+                          }
+                          
+                          .ThemeBrowser__filters___SkJCG {
+                            display: flex !important;
+                            gap: 8px !important;
+                            
+                            button {
+                              background: rgba(255, 255, 255, 0.1) !important;
+                              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                              border-radius: 6px !important;
+                              color: white !important;
+                              padding: 6px 12px !important;
+                              font-family: Rubik, sans-serif !important;
+                              transition: all 0.2s ease !important;
+                              
+                              &.ThemeBrowser__selected___EF9Qj {
+                                background: var(--theme-primary) !important;
+                                border-color: var(--theme-primary) !important;
+                                color: white !important;
+                              }
+                              
+                              &:hover:not(.ThemeBrowser__selected___EF9Qj) {
+                                background: rgba(255, 255, 255, 0.15) !important;
+                              }
+                              
+                              svg {
+                                fill: currentColor !important;
+                              }
+                            }
+                          }
+                        }
+                        
+                        .ThemeBrowser__body___CHk7h {
+                          background: transparent !important;
+                          
+                          .ThemeCard__ThemeCard___le8Yv {
+                            background: rgba(255, 255, 255, 0.05) !important;
+                            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                            border-radius: 8px !important;
+                            padding: 12px !important;
+                            margin-bottom: 12px !important;
+                            transition: all 0.2s ease !important;
+                            
+                            &:hover {
+                              background: rgba(255, 255, 255, 0.08) !important;
+                              border-color: rgba(255, 255, 255, 0.2) !important;
+                              transform: translateY(-2px) !important;
+                            }
+                            
+                            .ThemeCard__miniPreview___AncqW {
+                              background-color: rgba(0, 0, 0, 0.3) !important;
+                              color: white !important;
+                              border-radius: 6px !important;
+                              
+                              .ThemeCard__alpha___PGc4h {
+                                background: rgba(255, 255, 255, 0.1) !important;
+                                color: white !important;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  
+                  // Palette sections (General, Structure, Media, etc.)
+                  > div {
+                    color: white !important;
+                    
+                    h2 {
+                      color: white !important;
+                      font-family: Rubik, sans-serif !important;
+                      font-weight: 600 !important;
+                      font-size: 14px !important;
+                      text-transform: uppercase !important;
+                      letter-spacing: 0.5px !important;
+                      margin-bottom: 8px !important;
+                    }
+                    
+                    ul {
+                      li {
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        border-radius: 8px !important;
+                        color: white !important;
+                        transition: all 0.2s ease !important;
+                        
+                        &:hover {
+                          background: rgba(255, 255, 255, 0.1) !important;
+                          transform: translateY(-1px) !important;
+                        }
+                        
+                        div {
+                          color: white !important;
+                          font-family: Rubik, sans-serif !important;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Assessment Manager (Overview of assessments page)
+    .AssessmentManager__AssessmentManager___F_zDS {
+      background: transparent !important;
+      color: white !important;
+      
+      // Toolbar
+      .Toolbar__Toolbar___ecArT {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 12px 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: white !important;
+        
+        button {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 6px !important;
+          color: white !important;
+          padding: 8px 16px !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 500 !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+          }
+          
+          &:disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+          }
+          
+          svg {
+            fill: currentColor !important;
+          }
+        }
+      }
+      
+      // SidebarPage layout
+      .SidebarPage__SidebarPage___HEWl3 {
+        background: transparent !important;
+        color: white !important;
+        
+        // Left sidebar
+        &.SidebarPage__sidebar-left___QVo3S {
+          .SidebarPage__sidebar___fG08i {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            
+            // SelectionList (assessment list)
+            .SelectionList__SelectionList___oaomc {
+              background: transparent !important;
+              color: white !important;
+              
+              // Header with search
+              .SelectionList__header___jwVkB {
+                background: transparent !important;
+                padding: 16px !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                
+                // Search input
+                label.Input__Input___KL0p5 {
+                  background: rgba(255, 255, 255, 0.1) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                  border-radius: 8px !important;
+                  padding: 8px 12px !important;
+                  color: white !important;
+                  font-family: Rubik, sans-serif !important;
+                  width: 100% !important;
+                  margin-bottom: 12px !important;
+                  
+                  input {
+                    background: transparent !important;
+                    border: none !important;
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    width: 100% !important;
+                    
+                    &::placeholder {
+                      color: rgba(255, 255, 255, 0.5) !important;
+                    }
+                    
+                    &:focus {
+                      outline: none !important;
+                    }
+                    
+                    // Ensure text selection is visible
+                    &::selection {
+                      background-color: rgba(var(--theme-primary-rgb), 0.4) !important;
+                      color: white !important;
+                    }
+                    
+                    &::-moz-selection {
+                      background-color: rgba(var(--theme-primary-rgb), 0.4) !important;
+                      color: white !important;
+                    }
+                  }
+                }
+                
+                // Add button
+                button.AssessmentManagerMenu__add___kikNU {
+                  background: var(--theme-primary) !important;
+                  border: none !important;
+                  border-radius: 50% !important;
+                  color: white !important;
+                  width: 40px !important;
+                  height: 40px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: color-mix(in srgb, var(--theme-primary) 90%, white 10%) !important;
+                    transform: scale(1.1) !important;
+                  }
+                  
+                  svg {
+                    fill: currentColor !important;
+                  }
+                }
+              }
+              
+              // Assessment list
+              .SelectionList__list___QE5YK {
+                background: transparent !important;
+                list-style: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                
+                // Individual assessment items
+                li.SelectionList__SelectionListItem___D5Tzw {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  padding: 12px 16px !important;
+                  margin: 8px 16px !important;
+                  color: white !important;
+                  cursor: pointer !important;
+                  transition: all 0.2s ease !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-color: rgba(255, 255, 255, 0.2) !important;
+                    transform: translateX(4px) !important;
+                  }
+                  
+                  // Selected state
+                  &.SelectionList__selected___D5Tzw {
+                    background: rgba(var(--theme-primary-rgb), 0.2) !important;
+                    border-color: var(--theme-primary) !important;
+                  }
+                  
+                  // Assessment title
+                  .SelectionList__title___pg0Uj {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    margin-bottom: 4px !important;
+                  }
+                  
+                  // Assessment details (due date, weight)
+                  > div:not(.SelectionList__title___pg0Uj) {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 12px !important;
+                    margin-top: 4px !important;
+                  }
+                  
+                  // Delete button
+                  button {
+                    background: transparent !important;
+                    border: none !important;
+                    color: rgba(255, 255, 255, 0.5) !important;
+                    transition: all 0.2s ease !important;
+                    
+                    &:hover:not(:disabled) {
+                      color: rgba(255, 0, 0, 0.8) !important;
+                      transform: scale(1.1) !important;
+                    }
+                    
+                    &:disabled {
+                      opacity: 0.3 !important;
+                      cursor: not-allowed !important;
+                    }
+                    
+                    svg {
+                      fill: currentColor !important;
+                    }
+                  }
+                  
+                  // Selection marker (colored indicator)
+                  .SelectionList__marker___KylpB {
+                    border-top-color: inherit !important;
+                    border-left-color: inherit !important;
+                    opacity: 0.8 !important;
+                  }
+                }
+              }
+              
+              // Footer (Marks book settings button)
+              .SelectionList__footer___JKarl {
+                background: transparent !important;
+                padding: 16px !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                
+                button {
+                  background: rgba(255, 255, 255, 0.05) !important;
+                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  border-radius: 8px !important;
+                  color: white !important;
+                  padding: 12px 16px !important;
+                  margin: 0 !important;
+                  font-family: Rubik, sans-serif !important;
+                  font-weight: 500 !important;
+                  transition: all 0.2s ease !important;
+                  width: 100% !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  gap: 8px !important;
+                  
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-color: rgba(255, 255, 255, 0.2) !important;
+                    transform: translateY(-1px) !important;
+                  }
+                  
+                  svg {
+                    fill: currentColor !important;
+                  }
+                }
+              }
+              
+              // Marks book settings button (alternative selector)
+              button[aria-label*="settings"] {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 8px !important;
+                color: white !important;
+                padding: 12px 16px !important;
+                margin: 16px !important;
+                font-family: Rubik, sans-serif !important;
+                font-weight: 500 !important;
+                transition: all 0.2s ease !important;
+                width: calc(100% - 32px) !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.1) !important;
+                  border-color: rgba(255, 255, 255, 0.2) !important;
+                  transform: translateY(-1px) !important;
+                }
+                
+                svg {
+                  fill: currentColor !important;
+                }
+              }
+            }
+          }
+        }
+        
+        // Main content area
+        .SidebarPage__content___fG08i {
+          background: transparent !important;
+          color: white !important;
+          
+          // Empty state
+          > div {
+            background: transparent !important;
+            color: white !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 60px 20px !important;
+            text-align: center !important;
+            
+            img {
+              opacity: 0.5 !important;
+              margin-bottom: 20px !important;
+            }
+            
+            > div {
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              
+              &:first-of-type {
+                font-size: 18px !important;
+                font-weight: 600 !important;
+                margin-bottom: 8px !important;
+              }
+              
+              &:last-of-type {
+                font-size: 14px !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Timetable - My classes page styling
+    .classlist {
+      background: transparent !important;
+      color: white !important;
+      
+      table {
+        background: transparent !important;
+        border-collapse: collapse !important;
+        
+        thead {
+          tr {
+            background: transparent !important;
+            
+            th.tableHeader {
+              background: rgba(255, 255, 255, 0.08) !important;
+              background-color: rgba(255, 255, 255, 0.08) !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 13px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+              padding: 12px 16px !important;
+              text-align: left !important;
+              
+              &.classlist__colour___ISgK1 {
+                background: transparent !important;
+                background-color: transparent !important;
+                width: 4px !important;
+                padding: 0 !important;
+                border: none !important;
+              }
+              
+              &.scrollSpacer {
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+            }
+          }
+        }
+        
+        tbody {
+          tr {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            transition: background-color 0.2s ease !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.03) !important;
+            }
+            
+            td {
+              background: transparent !important;
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+              padding: 12px 16px !important;
+              border: none !important;
+              
+              // Section headers (like "Timetabled classes", "Other classes")
+              &[colspan] {
+                background: rgba(255, 255, 255, 0.05) !important;
+                font-weight: 600 !important;
+                font-size: 14px !important;
+                color: white !important;
+                padding: 16px !important;
+              }
+              
+              // Action links and buttons
+              a,
+              button {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 6px !important;
+                color: white !important;
+                padding: 8px 12px !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 13px !important;
+                transition: all 0.2s ease !important;
+                text-decoration: none !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                
+                &:hover:not(:disabled) {
+                  background: rgba(255, 255, 255, 0.2) !important;
+                  border-color: rgba(255, 255, 255, 0.3) !important;
+                  transform: translateY(-1px) !important;
+                }
+                
+                &:disabled {
+                  opacity: 0.5 !important;
+                  cursor: not-allowed !important;
+                }
+                
+                svg {
+                  fill: currentColor !important;
+                  width: 16px !important;
+                  height: 16px !important;
+                }
+              }
+              
+              // "New untimetabled class" button
+              button:has(img + text) {
+                background: var(--theme-primary) !important;
+                border-color: var(--theme-primary) !important;
+                
+                &:hover {
+                  background: color-mix(in srgb, var(--theme-primary) 90%, white 10%) !important;
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -9969,6 +12294,409 @@ body[data-seqta-platform="teach"] {
           border: 1px solid var(--border-primary) !important;
           color: var(--text-primary) !important;
           font-family: Rubik, sans-serif !important;
+        }
+      }
+    }
+  }
+  
+  // Custom Reports page styling
+  .CustomReports__CustomReports___yllyO {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: white !important;
+    
+    .Toolbar__Toolbar___ecArT {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 12px 16px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      color: white !important;
+      
+      button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        padding: 8px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+      }
+    }
+    
+    .CustomReports__main___Oevjs {
+      background: transparent !important;
+      color: white !important;
+      
+      .CustomReportsMenu__CustomReportsMenu___vwNm0 {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px) !important;
+        padding: 20px !important;
+        color: white !important;
+        
+        .CustomReportsMenu__header___oCxza {
+          margin-bottom: 16px !important;
+          
+          .Input__Input___KL0p5 {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 12px 16px !important;
+            font-family: Rubik, sans-serif !important;
+            
+            input {
+              background: transparent !important;
+              border: none !important;
+              color: white !important;
+              
+              &::placeholder {
+                color: rgba(255, 255, 255, 0.5) !important;
+              }
+            }
+            
+            &:focus-within {
+              border-color: var(--theme-primary) !important;
+              box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+            }
+          }
+          
+          button {
+            background: var(--theme-primary) !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 50% !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              background: color-mix(in srgb, var(--theme-primary) 90%, white 10%) !important;
+              transform: scale(1.05) !important;
+            }
+            
+            svg {
+              fill: white !important;
+            }
+          }
+        }
+        
+        .CustomReportsMenu__list___LQL2B {
+          background: transparent !important;
+          
+          .CustomReportsMenu__MenuItem___mHSNY {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            margin-bottom: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            color: white !important;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border-color: rgba(255, 255, 255, 0.2) !important;
+              transform: translateX(4px) !important;
+            }
+            
+            .CustomReportsMenu__container___yjfsU {
+              color: white !important;
+              
+              div {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+              }
+              
+              .InfoPill__InfoPill___CQ6X_ {
+                background: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 12px !important;
+                padding: 4px 12px !important;
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 12px !important;
+                font-weight: 500 !important;
+                
+                &.InfoPill__enabled___bnC99 {
+                  background: rgba(34, 197, 94, 0.2) !important;
+                  border-color: rgba(34, 197, 94, 0.4) !important;
+                  color: #4ade80 !important;
+                }
+              }
+            }
+            
+            button {
+              background: transparent !important;
+              border: none !important;
+              color: rgba(255, 255, 255, 0.7) !important;
+              border-radius: 50% !important;
+              width: 32px !important;
+              height: 32px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              transition: all 0.2s ease !important;
+              
+              &:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                color: white !important;
+                transform: scale(1.1) !important;
+              }
+              
+              svg {
+                fill: currentColor !important;
+              }
+            }
+          }
+        }
+      }
+      
+      // Empty state message
+      > div {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        padding: 40px 20px !important;
+      }
+      
+      // CustomReportsOptions component
+      .CustomReportsOptions__CustomReportsOptions___O6Swm {
+        background: transparent !important;
+        color: white !important;
+        
+        .CustomReportsOptions__header___eLBei {
+          background: transparent !important;
+          color: white !important;
+          margin-bottom: 16px !important;
+          
+          .CustomReportsOptions__title___KjOap {
+            color: white !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            margin-bottom: 12px !important;
+          }
+          
+          .Input__Input___KL0p5 {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            color: white !important;
+            
+            input {
+              background: transparent !important;
+              border: none !important;
+              color: white !important;
+              
+              &::placeholder {
+                color: rgba(255, 255, 255, 0.5) !important;
+              }
+            }
+            
+            &:focus-within {
+              border-color: var(--theme-primary) !important;
+              box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+            }
+          }
+        }
+        
+        .CustomReportsOptions__container___LOoKm {
+          background: transparent !important;
+          color: white !important;
+          
+          // BasicPanel styling within CustomReportsOptions
+          .BasicPanel__BasicPanel___q92_U {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            margin-bottom: 12px !important;
+            overflow: hidden !important;
+            
+            header {
+              background: rgba(255, 255, 255, 0.08) !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              padding: 12px 16px !important;
+              color: white !important;
+              
+              h2 {
+                color: white !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                margin: 0 !important;
+              }
+              
+              button {
+                background: transparent !important;
+                border: none !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+                border-radius: 50% !important;
+                width: 32px !important;
+                height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.1) !important;
+                  color: white !important;
+                }
+                
+                svg {
+                  fill: currentColor !important;
+                }
+              }
+            }
+            
+            article {
+              background: transparent !important;
+              padding: 16px !important;
+              color: white !important;
+              
+              .CustomReportsOptions__options___dZgKw {
+                background: transparent !important;
+                
+                .CustomReportsOptions__option___aYJ4q {
+                  background: transparent !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: space-between !important;
+                  padding: 12px 0 !important;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+                  
+                  &:last-child {
+                    border-bottom: none !important;
+                  }
+                  
+                  .CustomReportsOptions__title___KjOap {
+                    color: white !important;
+                    font-family: Rubik, sans-serif !important;
+                    font-size: 14px !important;
+                    font-weight: 500 !important;
+                    
+                    .Label__Label___D7Qid {
+                      color: white !important;
+                      
+                      .Label__innerText___HVhy6 {
+                        color: white !important;
+                      }
+                    }
+                  }
+                  
+                  .FancyCheckbox__FancyCheckbox___OjfVq {
+                    background: transparent !important;
+                    
+                    .FancyCheckbox__wrapper___doLbf {
+                      background: rgba(255, 255, 255, 0.1) !important;
+                      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                      border-radius: 6px !important;
+                      padding: 4px 8px !important;
+                      color: white !important;
+                      transition: all 0.2s ease !important;
+                      
+                      input[type="checkbox"] {
+                        accent-color: var(--theme-primary) !important;
+                      }
+                      
+                      .FancyCheckbox__activeText___eri8w {
+                        background: rgba(34, 197, 94, 0.2) !important;
+                        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+                        color: #4ade80 !important;
+                        font-family: Rubik, sans-serif !important;
+                        font-size: 11px !important;
+                        font-weight: 600 !important;
+                        border-radius: 4px !important;
+                        padding: 2px 6px !important;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // SelectionList styling
+              .SelectionList__SelectionListItem___D5Tzw {
+                background: rgba(255, 255, 255, 0.03) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 6px !important;
+                padding: 8px 12px !important;
+                margin-bottom: 4px !important;
+                color: white !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  border-color: rgba(255, 255, 255, 0.2) !important;
+                }
+              }
+              
+              // MultiSelect buttons
+              .MultiSelect__button___sWWJ7 {
+                background: rgba(255, 255, 255, 0.1) !important;
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 6px !important;
+                color: white !important;
+                padding: 6px 12px !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.15) !important;
+                  background-color: rgba(255, 255, 255, 0.15) !important;
+                  transform: translateY(-1px) !important;
+                }
+              }
+              
+              // Circular buttons
+              button.Button__circular___iAiv2 {
+                background: rgba(255, 255, 255, 0.1) !important;
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border-radius: 50% !important;
+                color: white !important;
+                width: 32px !important;
+                height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                transition: all 0.2s ease !important;
+                
+                &:hover {
+                  background: rgba(255, 255, 255, 0.15) !important;
+                  background-color: rgba(255, 255, 255, 0.15) !important;
+                  transform: scale(1.05) !important;
+                }
+                
+                svg {
+                  fill: white !important;
+                }
+              }
+            }
+          }
         }
       }
     }
