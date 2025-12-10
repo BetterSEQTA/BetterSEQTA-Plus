@@ -23,6 +23,7 @@ import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { isSEQTATeach } from "@/seqta/utils/platformDetection";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
 //import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
 
@@ -469,10 +470,27 @@ export function tryLoad() {
 
   waitForElm(".code", true, 50).then((elm: any) => {
     if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
-  }).catch(() => {});
+  }).catch(() => {
+    // On Teach, .code might not exist, so call LoadPageElements directly
+    if (isSEQTATeach()) {
+      LoadPageElements().catch((err) => {
+        console.error("[BetterSEQTA+] Error loading page elements:", err);
+      });
+    }
+  });
   
   // Fallback: Check for common elements that indicate page has loaded
-  waitForElm("#main, .legacy-root, main, [class*='Chrome__content']", true, 30).then(() => {
+  waitForElm("#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header", true, 30).then(() => {
+    // On Teach, ensure LoadPageElements is called if it hasn't been already
+    if (isSEQTATeach()) {
+      const codeElement = document.querySelector(".code");
+      // Only call if .code doesn't exist (meaning the first waitForElm failed)
+      if (!codeElement) {
+        LoadPageElements().catch((err) => {
+          console.error("[BetterSEQTA+] Error loading page elements:", err);
+        });
+      }
+    }
     finishLoadOnce();
   }).catch(() => {});
   

@@ -6,31 +6,53 @@ import {
 import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 import Settings from "@/interface/pages/settings.svelte";
+import { isSEQTATeach } from "../platformDetection";
 
 let isSettingsRendered = false;
 
 export function addExtensionSettings() {
+  // Check if ExtensionPopup already exists
+  if (document.getElementById("ExtensionPopup")) {
+    return;
+  }
+  
   const extensionPopup = document.createElement("div");
   extensionPopup.classList.add("outside-container", "hide");
   extensionPopup.id = "ExtensionPopup";
 
-  const extensionContainer = document.querySelector(
-    "#container",
-  ) as HTMLDivElement;
-  if (extensionContainer) extensionContainer.appendChild(extensionPopup);
-
-  const container = document.getElementById("container");
+  let extensionContainer: HTMLElement | null = null;
+  
+  if (isSEQTATeach()) {
+    // For Teach, append to body or root
+    extensionContainer = document.body;
+  } else {
+    // For Learn, use the original container
+    extensionContainer = document.querySelector("#container") as HTMLDivElement;
+  }
+  
+  if (extensionContainer) {
+    extensionContainer.appendChild(extensionPopup);
+  } else {
+    console.error("[BetterSEQTA+] Could not find container for ExtensionPopup");
+  }
 
   new SettingsResizer();
 
-  container!.onclick = (event) => {
-    if (!SettingsClicked) return;
+  // Set up click handler on the appropriate container
+  const clickContainer = isSEQTATeach() ? document.body : document.getElementById("container");
+  
+  if (clickContainer) {
+    clickContainer.onclick = (event) => {
+      if (!SettingsClicked) return;
 
-    if (!(event.target as HTMLElement).closest("#AddedSettings")) {
-      if (event.target == extensionPopup) return;
-      changeSettingsClicked(closeExtensionPopup());
-    }
-  };
+      if (!(event.target as HTMLElement).closest("#AddedSettings")) {
+        if (event.target == extensionPopup) return;
+        changeSettingsClicked(closeExtensionPopup());
+      }
+    };
+  } else {
+    console.error("[BetterSEQTA+] Could not find container for click handler");
+  }
 }
 
 export function renderSettingsIfNeeded() {

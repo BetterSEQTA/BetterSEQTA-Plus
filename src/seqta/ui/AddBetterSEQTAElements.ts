@@ -9,6 +9,7 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
+import { isSEQTATeach } from "@/seqta/utils/platformDetection";
 
 let cachedUserInfo: any = null;
 
@@ -40,19 +41,32 @@ async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
+  // Always create settings button and popup, regardless of onoff state
+  addExtensionSettings();
+  await createSettingsButton();
+  
+  // Wait a bit for the button to be inserted before setting up event listener
+  await delay(50);
+  setupSettingsButton();
+
   if (settingsState.onoff) {
     if (settingsState.DarkMode) {
       document.documentElement.classList.add("dark");
     }
 
-    const fragment = document.createDocumentFragment();
-    const menu = document.getElementById("menu")!;
-    const menuList = menu.firstChild as HTMLElement;
-
-    createHomeButton(fragment, menuList);
-    createNewsButton(fragment, menu);
-
-    menuList.insertBefore(fragment, menuList.firstChild);
+    // Only create Learn-specific elements if not on Teach
+    if (!isSEQTATeach()) {
+      const fragment = document.createDocumentFragment();
+      const menu = document.getElementById("menu");
+      if (menu) {
+        const menuList = menu.firstChild as HTMLElement;
+        if (menuList) {
+          createHomeButton(fragment, menuList);
+          createNewsButton(fragment, menu);
+          menuList.insertBefore(fragment, menuList.firstChild);
+        }
+      }
+    }
 
     try {
       await Promise.all([
@@ -68,10 +82,6 @@ export async function AddBetterSEQTAElements() {
     await addDarkLightToggle();
     customizeMenuToggle();
   }
-
-  addExtensionSettings();
-  await createSettingsButton();
-  setupSettingsButton();
 }
 
 function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
@@ -245,6 +255,11 @@ function setupEventListeners() {
 }
 
 async function createSettingsButton() {
+  // Check if button already exists
+  if (document.getElementById("AddedSettings")) {
+    return; // Button already exists, don't create another one
+  }
+
   let SettingsButton = stringToHTML(/* html */ `
     <button class="addedButton tooltip" id="AddedSettings">
       <svg width="24" height="24" viewBox="0 0 24 24">
@@ -253,8 +268,50 @@ async function createSettingsButton() {
       ${settingsState.onoff ? '<div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div>' : ""}
     </button>
   `);
-  let ContentDiv = document.getElementById("content");
-  ContentDiv!.append(SettingsButton.firstChild!);
+  
+  if (!SettingsButton.firstChild) {
+    console.error("[BetterSEQTA+] Failed to create SettingsButton element");
+    return;
+  }
+  
+  if (isSEQTATeach()) {
+    // For Teach, wait for header to exist and append to it
+    let header = document.querySelector("#root > div > main > header");
+    let attempts = 0;
+    const maxAttempts = 50; // Wait up to 5 seconds
+    
+    while (!header && attempts < maxAttempts) {
+      await delay(100);
+      header = document.querySelector("#root > div > main > header");
+      attempts++;
+    }
+    
+    if (header && SettingsButton.firstChild) {
+      // Insert before the profile menu (last child) or after the spacer
+      const spacer = header.querySelector(".spacer");
+      if (spacer && spacer.nextSibling) {
+        header.insertBefore(SettingsButton.firstChild, spacer.nextSibling);
+      } else {
+        // Fallback: append before the profile menu
+        const profileMenu = header.querySelector(".ProfileMenu__ProfileMenu___d4v98");
+        if (profileMenu) {
+          header.insertBefore(SettingsButton.firstChild, profileMenu);
+        } else {
+          header.appendChild(SettingsButton.firstChild);
+        }
+      }
+    } else {
+      console.error("[BetterSEQTA+] Could not find header element for Teach platform");
+    }
+  } else {
+    // For Learn, use the original logic
+    let ContentDiv = document.getElementById("content");
+    if (ContentDiv && SettingsButton.firstChild) {
+      ContentDiv.append(SettingsButton.firstChild);
+    } else {
+      console.error("[BetterSEQTA+] Could not find content div for Learn platform");
+    }
+  }
 }
 
 function GetLightDarkModeString() {
