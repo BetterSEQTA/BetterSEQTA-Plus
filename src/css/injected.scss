@@ -392,6 +392,70 @@ ul.magicDelete > li.deleting {
   height: 100%;
   object-fit: cover;
 }
+
+// Background image container styling
+.imageBackground {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  
+  #media-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    
+    video.background,
+    img.background {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center !important;
+    }
+  }
+}
+
+// Teach-specific background positioning
+body[data-seqta-platform="teach"] {
+  .imageBackground {
+    // Ensure background is behind all Teach content
+    z-index: -999 !important;
+    
+    // For Teach, the background should cover the entire viewport
+    // including behind the navigation spine
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    
+    #media-container {
+      video.background,
+      img.background {
+        // Ensure full coverage
+        min-width: 100% !important;
+        min-height: 100% !important;
+      }
+    }
+  }
+  
+  // Ensure main content areas have proper z-index to appear above background
+  #root,
+  main,
+  [class*="Chrome__Chrome"],
+  [class*="Spine__Spine"],
+  [class*="PageList__PageList"],
+  [class*="SubpageList__SubpageList"] {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+}
 #menu li,
 #menu section {
   margin: 8px auto !important;
@@ -4818,24 +4882,24 @@ body[data-seqta-platform="teach"] {
     
     // Navigation colors integration
     --nav-level-zero: var(--theme-primary) !important;
-    --nav-level-zero-fg: #fff !important;
-    --nav-level-one: rgba(255, 255, 255, 0.05) !important;
-    --nav-level-one-fg: #fff !important;
-    --nav-level-two: rgba(255, 255, 255, 0.02) !important;
-    --nav-level-two-fg: #fff !important;
-    --nav-level-three: rgba(255, 255, 255, 0.08) !important;
-    --nav-level-three-opaque: rgba(255, 255, 255, 0.08) !important;
-    --nav-level-three-fg: #fff !important;
+    --nav-level-zero-fg: var(--text-primary) !important;
+    --nav-level-one: var(--theme-offset-bg) !important;
+    --nav-level-one-fg: var(--text-primary) !important;
+    --nav-level-two: var(--theme-offset-bg) !important;
+    --nav-level-two-fg: var(--text-primary) !important;
+    --nav-level-three: var(--theme-offset-bg-more) !important;
+    --nav-level-three-opaque: var(--theme-offset-bg-more) !important;
+    --nav-level-three-fg: var(--text-primary) !important;
     
     // Button theming
-    --theme-button-bg: rgba(255, 255, 255, 0.1) !important;
-    --theme-button-fg: rgba(255, 255, 255, 0.9) !important;
-    --theme-button-border: rgba(255, 255, 255, 0.2) !important;
+    --theme-button-bg: var(--button-bg) !important;
+    --theme-button-fg: var(--text-primary) !important;
+    --theme-button-border: var(--border-primary) !important;
     
     // Offset backgrounds
-    --theme-offset-bg: rgba(255, 255, 255, 0.05) !important;
-    --theme-offset-bg-more: rgba(255, 255, 255, 0.1) !important;
-    --theme-table-headers: rgba(255, 255, 255, 0.08) !important;
+    --theme-offset-bg: var(--theme-offset-bg) !important;
+    --theme-offset-bg-more: var(--theme-offset-bg-more) !important;
+    --theme-table-headers: var(--theme-table-headers) !important;
   }
   
   // Welcome page specific styling
@@ -4843,51 +4907,52 @@ body[data-seqta-platform="teach"] {
     background: var(--better-main) !important;
     
     .defaultWelcome {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: var(--card-bg) !important;
       backdrop-filter: blur(10px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid var(--card-border) !important;
       border-radius: 12px !important;
-      color: white !important;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      color: var(--text-primary) !important;
+      box-shadow: var(--shadow-lg) !important;
       
       // Override the complex clip-path with simple rounded corners
       clip-path: none !important;
       
       > header {
-        background: var(--theme-primary) !important;
+        background: var(--accent-bg) !important;
         background-image: none !important;
         border-radius: 12px 12px 0 0 !important;
         clip-path: none !important;
-        color: white !important;
+        color: var(--text-on-accent) !important;
         padding: 3rem 2rem !important;
         
         h1 {
-          color: white !important;
+          color: var(--text-on-accent) !important;
           font-family: Rubik, sans-serif !important;
           font-weight: 700 !important;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+          text-shadow: var(--shadow-sm) !important;
         }
         
         p.byline {
-          color: rgba(255, 255, 255, 0.9) !important;
+          color: var(--text-on-accent) !important;
+          opacity: 0.9 !important;
           font-family: Rubik, sans-serif !important;
         }
       }
       
       > section {
         background: transparent !important;
-        color: white !important;
+        color: var(--text-primary) !important;
         
         &.sip,
         &.help {
-          background: rgba(255, 255, 255, 0.03) !important;
+          background: var(--theme-offset-bg) !important;
           border-radius: 8px !important;
           margin: 1rem !important;
-          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid var(--border-tertiary) !important;
         }
         
         > header > h2 {
-          color: white !important;
+          color: var(--text-primary) !important;
           font-family: Rubik, sans-serif !important;
           font-weight: 600 !important;
         }
@@ -4895,18 +4960,18 @@ body[data-seqta-platform="teach"] {
       
       ul {
         li {
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-bottom: 1px solid var(--border-secondary) !important;
           
           &:last-child {
             border-bottom: none !important;
           }
           
           > p {
-            color: white !important;
+            color: var(--text-primary) !important;
             font-family: Rubik, sans-serif !important;
             
             &.detail {
-              color: rgba(255, 255, 255, 0.7) !important;
+              color: var(--text-muted) !important;
             }
           }
         }
@@ -4919,55 +4984,55 @@ body[data-seqta-platform="teach"] {
   .main-content,
   .content-area {
     background: transparent !important;
-    color: white !important;
+    color: var(--text-primary) !important;
   }
   
   // Form elements integration
   input,
   textarea,
   select {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
+    background: var(--button-bg) !important;
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-primary) !important;
     border-radius: 6px !important;
     
     &::placeholder {
-      color: rgba(255, 255, 255, 0.5) !important;
+      color: var(--text-muted) !important;
     }
     
     &:focus {
-      border-color: var(--theme-primary) !important;
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+      border-color: var(--accent-bg) !important;
+      box-shadow: 0 0 0 2px var(--accent-ring) !important;
       outline: none !important;
     }
   }
   
   // Table styling
   table {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: var(--theme-offset-bg) !important;
     border-radius: 8px !important;
     overflow: hidden !important;
     
     thead {
-      background: rgba(255, 255, 255, 0.08) !important;
+      background: var(--theme-table-headers) !important;
       
       th {
-        color: white !important;
+        color: var(--text-primary) !important;
         font-family: Rubik, sans-serif !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
       }
     }
     
     tbody {
       tr {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-bottom: 1px solid var(--border-tertiary) !important;
         
         &:hover {
-          background: rgba(255, 255, 255, 0.05) !important;
+          background: var(--button-bg) !important;
         }
         
         td {
-          color: white !important;
+          color: var(--text-primary) !important;
           font-family: Rubik, sans-serif !important;
         }
       }
@@ -4978,10 +5043,10 @@ body[data-seqta-platform="teach"] {
   .card,
   .panel,
   .widget {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
     border-radius: 8px !important;
-    color: white !important;
+    color: var(--text-primary) !important;
     backdrop-filter: blur(10px) !important;
   }
 
@@ -5784,45 +5849,47 @@ body[data-seqta-platform="teach"] {
   .legacy-root,
   .LegacyPage__LegacyPage___t2gIt {
     background: transparent !important;
-    color: white !important;
+    color: var(--text-primary) !important;
     
     .LegacyPage__toolbar___xRVAN,
     .Toolbar__Toolbar___ecArT {
-      background: rgba(255, 255, 255, 0.05) !important;
+      background: var(--theme-offset-bg) !important;
       backdrop-filter: blur(10px) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-      color: white !important;
+      border-bottom: 1px solid var(--border-secondary) !important;
+      color: var(--text-primary) !important;
       padding: 16px 20px !important;
       
       .Button__Button___kQRWg,
       .uiButton,
       button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        color: var(--text-primary) !important;
         border-radius: 6px !important;
         padding: 8px 16px !important;
         font-family: Rubik, sans-serif !important;
         transition: all 0.2s ease !important;
         
         &:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.2) !important;
+          background: var(--button-hover) !important;
           transform: translateY(-1px) !important;
         }
         
         &:disabled {
-          background: rgba(255, 255, 255, 0.05) !important;
-          color: rgba(255, 255, 255, 0.5) !important;
+          background: var(--theme-offset-bg) !important;
+          color: var(--text-muted) !important;
           cursor: not-allowed !important;
         }
         
         &.myTT {
-          background: var(--theme-primary) !important;
-          border-color: var(--theme-primary) !important;
+          background: var(--accent-bg) !important;
+          border-color: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
           
           &:disabled {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.2) !important;
+            background: var(--button-bg) !important;
+            border-color: var(--border-primary) !important;
+            color: var(--text-muted) !important;
           }
         }
       }
@@ -5830,20 +5897,20 @@ body[data-seqta-platform="teach"] {
       .singleSelect,
       .uiShortText,
       input {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        color: var(--text-primary) !important;
         border-radius: 6px !important;
         padding: 8px 12px !important;
         font-family: Rubik, sans-serif !important;
         
         &::placeholder {
-          color: rgba(255, 255, 255, 0.5) !important;
+          color: var(--text-muted) !important;
         }
         
         &:focus {
-          border-color: var(--theme-primary) !important;
-          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+          border-color: var(--accent-bg) !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
           outline: none !important;
         }
       }
@@ -5855,7 +5922,7 @@ body[data-seqta-platform="teach"] {
     
     .LegacyPage__body___IxT9e {
       background: transparent !important;
-      color: white !important;
+      color: var(--text-primary) !important;
       padding: 20px !important;
       
       .timetable {
@@ -5874,14 +5941,14 @@ body[data-seqta-platform="teach"] {
               
               // Left sidebar menu
               .MydayMenu__MydayMenu___T5I1E {
-                background: rgba(255, 255, 255, 0.05) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                background: var(--card-bg) !important;
+                border: 1px solid var(--card-border) !important;
                 border-radius: 12px !important;
                 backdrop-filter: blur(10px) !important;
                 overflow: hidden !important;
                 
                 .MydayMenu__header___UWKQp {
-                  background: var(--theme-primary) !important;
+                  background: var(--accent-bg) !important;
                   color: white !important;
                   padding: 16px !important;
                   position: relative !important;
@@ -8020,33 +8087,33 @@ body[data-seqta-platform="teach"] {
       // SidebarPage layout
       .SidebarPage__SidebarPage___HEWl3 {
         background: transparent !important;
-        color: white !important;
+        color: var(--text-primary) !important;
         
         // Left sidebar
         &.SidebarPage__sidebar-left___QVo3S {
           .SidebarPage__sidebar___fG08i {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
+            background: var(--theme-offset-bg) !important;
+            border-right: 1px solid var(--border-secondary) !important;
+            color: var(--text-primary) !important;
             
             // SelectionList (assessment list)
             .SelectionList__SelectionList___oaomc {
               background: transparent !important;
-              color: white !important;
+              color: var(--text-primary) !important;
               
               // Header with search
               .SelectionList__header___jwVkB {
                 background: transparent !important;
                 padding: 16px !important;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-bottom: 1px solid var(--border-secondary) !important;
                 
                 // Search input
                 label.Input__Input___KL0p5 {
-                  background: rgba(255, 255, 255, 0.1) !important;
-                  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                  background: var(--button-bg) !important;
+                  border: 1px solid var(--border-primary) !important;
                   border-radius: 8px !important;
                   padding: 8px 12px !important;
-                  color: white !important;
+                  color: var(--text-primary) !important;
                   font-family: Rubik, sans-serif !important;
                   width: 100% !important;
                   margin-bottom: 12px !important;
@@ -8054,12 +8121,12 @@ body[data-seqta-platform="teach"] {
                   input {
                     background: transparent !important;
                     border: none !important;
-                    color: white !important;
+                    color: var(--text-primary) !important;
                     font-family: Rubik, sans-serif !important;
                     width: 100% !important;
                     
                     &::placeholder {
-                      color: rgba(255, 255, 255, 0.5) !important;
+                      color: var(--text-muted) !important;
                     }
                     
                     &:focus {
@@ -8068,23 +8135,23 @@ body[data-seqta-platform="teach"] {
                     
                     // Ensure text selection is visible
                     &::selection {
-                      background-color: rgba(var(--theme-primary-rgb), 0.4) !important;
-                      color: white !important;
+                      background-color: var(--accent-ring) !important;
+                      color: var(--text-on-accent) !important;
                     }
                     
                     &::-moz-selection {
-                      background-color: rgba(var(--theme-primary-rgb), 0.4) !important;
-                      color: white !important;
+                      background-color: var(--accent-ring) !important;
+                      color: var(--text-on-accent) !important;
                     }
                   }
                 }
                 
                 // Add button
                 button.AssessmentManagerMenu__add___kikNU {
-                  background: var(--theme-primary) !important;
+                  background: var(--accent-bg) !important;
                   border: none !important;
                   border-radius: 50% !important;
-                  color: white !important;
+                  color: var(--text-on-accent) !important;
                   width: 40px !important;
                   height: 40px !important;
                   display: flex !important;
@@ -8093,7 +8160,7 @@ body[data-seqta-platform="teach"] {
                   transition: all 0.2s ease !important;
                   
                   &:hover {
-                    background: color-mix(in srgb, var(--theme-primary) 90%, white 10%) !important;
+                    background: var(--accent-hover) !important;
                     transform: scale(1.1) !important;
                   }
                   
@@ -8112,30 +8179,30 @@ body[data-seqta-platform="teach"] {
                 
                 // Individual assessment items
                 li.SelectionList__SelectionListItem___D5Tzw {
-                  background: rgba(255, 255, 255, 0.05) !important;
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  background: var(--button-bg) !important;
+                  border: 1px solid var(--border-secondary) !important;
                   border-radius: 8px !important;
                   padding: 12px 16px !important;
                   margin: 8px 16px !important;
-                  color: white !important;
+                  color: var(--text-primary) !important;
                   cursor: pointer !important;
                   transition: all 0.2s ease !important;
                   
                   &:hover {
-                    background: rgba(255, 255, 255, 0.1) !important;
-                    border-color: rgba(255, 255, 255, 0.2) !important;
+                    background: var(--button-hover) !important;
+                    border-color: var(--border-primary) !important;
                     transform: translateX(4px) !important;
                   }
                   
                   // Selected state
                   &.SelectionList__selected___D5Tzw {
-                    background: rgba(var(--theme-primary-rgb), 0.2) !important;
-                    border-color: var(--theme-primary) !important;
+                    background: var(--accent-ring) !important;
+                    border-color: var(--accent-bg) !important;
                   }
                   
                   // Assessment title
                   .SelectionList__title___pg0Uj {
-                    color: white !important;
+                    color: var(--text-primary) !important;
                     font-family: Rubik, sans-serif !important;
                     font-weight: 600 !important;
                     font-size: 14px !important;
@@ -8144,7 +8211,7 @@ body[data-seqta-platform="teach"] {
                   
                   // Assessment details (due date, weight)
                   > div:not(.SelectionList__title___pg0Uj) {
-                    color: rgba(255, 255, 255, 0.7) !important;
+                    color: var(--text-muted) !important;
                     font-family: Rubik, sans-serif !important;
                     font-size: 12px !important;
                     margin-top: 4px !important;
@@ -8154,7 +8221,7 @@ body[data-seqta-platform="teach"] {
                   button {
                     background: transparent !important;
                     border: none !important;
-                    color: rgba(255, 255, 255, 0.5) !important;
+                    color: var(--text-muted) !important;
                     transition: all 0.2s ease !important;
                     
                     &:hover:not(:disabled) {
@@ -8185,13 +8252,13 @@ body[data-seqta-platform="teach"] {
               .SelectionList__footer___JKarl {
                 background: transparent !important;
                 padding: 16px !important;
-                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-top: 1px solid var(--border-secondary) !important;
                 
                 button {
-                  background: rgba(255, 255, 255, 0.05) !important;
-                  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                  background: var(--button-bg) !important;
+                  border: 1px solid var(--border-secondary) !important;
                   border-radius: 8px !important;
-                  color: white !important;
+                  color: var(--text-primary) !important;
                   padding: 12px 16px !important;
                   margin: 0 !important;
                   font-family: Rubik, sans-serif !important;
@@ -8204,8 +8271,8 @@ body[data-seqta-platform="teach"] {
                   gap: 8px !important;
                   
                   &:hover {
-                    background: rgba(255, 255, 255, 0.1) !important;
-                    border-color: rgba(255, 255, 255, 0.2) !important;
+                    background: var(--button-hover) !important;
+                    border-color: var(--border-primary) !important;
                     transform: translateY(-1px) !important;
                   }
                   
@@ -8217,10 +8284,10 @@ body[data-seqta-platform="teach"] {
               
               // Marks book settings button (alternative selector)
               button[aria-label*="settings"] {
-                background: rgba(255, 255, 255, 0.05) !important;
-                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                background: var(--button-bg) !important;
+                border: 1px solid var(--border-secondary) !important;
                 border-radius: 8px !important;
-                color: white !important;
+                color: var(--text-primary) !important;
                 padding: 12px 16px !important;
                 margin: 16px !important;
                 font-family: Rubik, sans-serif !important;
@@ -8229,8 +8296,8 @@ body[data-seqta-platform="teach"] {
                 width: calc(100% - 32px) !important;
                 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.1) !important;
-                  border-color: rgba(255, 255, 255, 0.2) !important;
+                  background: var(--button-hover) !important;
+                  border-color: var(--border-primary) !important;
                   transform: translateY(-1px) !important;
                 }
                 
@@ -8245,12 +8312,12 @@ body[data-seqta-platform="teach"] {
         // Main content area
         .SidebarPage__content___fG08i {
           background: transparent !important;
-          color: white !important;
+          color: var(--text-primary) !important;
           
           // Empty state
           > div {
             background: transparent !important;
-            color: white !important;
+            color: var(--text-primary) !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
@@ -11092,45 +11159,46 @@ body[data-seqta-platform="teach"] {
   
   // Student Information Panel (SIP) styling
   [class*="SIP__SIP"] {
-    background: #000000 !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: var(--background-primary) !important;
+    border: 1px solid var(--border-primary) !important;
     border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: var(--shadow-lg) !important;
     
     [class*="SIP__content"] {
       background: transparent !important;
+      color: var(--text-primary) !important;
       
         // Header section
         [class*="Header__Header"] {
-          background: #1a1a1a !important;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+          background: var(--background-secondary) !important;
+          border-bottom: 1px solid var(--border-secondary) !important;
           border-radius: 12px 12px 0 0 !important;
           padding: 16px !important;
         
         [class*="Header__selector"] {
           [class*="FindAsYouType__FindAsYouType"] {
             [class*="Button__Button"] {
-              background: #2a2a2a !important;
-              border: 1px solid rgba(255, 255, 255, 0.3) !important;
-              color: white !important;
+              background: var(--button-bg) !important;
+              border: 1px solid var(--border-primary) !important;
+              color: var(--text-primary) !important;
               font-family: Rubik, sans-serif !important;
               border-radius: 8px !important;
               padding: 12px 16px !important;
               transition: all 0.2s ease !important;
               
               &:hover {
-                border-color: var(--theme-primary) !important;
-                background: #3a3a3a !important;
+                border-color: var(--accent-bg) !important;
+                background: var(--button-hover) !important;
                 transform: translateY(-1px) !important;
               }
               
               [class*="FindAsYouType__value"] {
-                color: white !important;
+                color: var(--text-primary) !important;
                 font-weight: 500 !important;
               }
               
               svg {
-                fill: rgba(255, 255, 255, 0.8) !important;
+                fill: var(--text-secondary) !important;
               }
             }
           }
@@ -11139,20 +11207,20 @@ body[data-seqta-platform="teach"] {
         [class*="MenuButton__Menu"],
         [class*="Header__menu"] {
           [class*="Button__Button"] {
-            background: var(--theme-primary) !important;
-            color: white !important;
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
             border: none !important;
             border-radius: 8px !important;
             transition: all 0.2s ease !important;
             
             &:hover {
-              background: var(--theme-primary) !important;
+              background: var(--accent-hover) !important;
               transform: scale(1.05) !important;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+              box-shadow: var(--shadow-md) !important;
             }
             
             svg {
-              fill: white !important;
+              fill: var(--text-on-accent) !important;
             }
           }
         }
@@ -11178,23 +11246,35 @@ body[data-seqta-platform="teach"] {
       [class*="StudentInfo__StudentInfo"] {
         background: transparent !important;
         padding: 20px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
+        color: var(--text-primary) !important;
+        
+        // Override dark blue text (rgb(27, 49, 94)) - target top-level elements only
+        > div:not([class*="StudentInfo__"]),
+        > div > div:not([class*="StudentInfo__"]):not([class*="Avatar__"]):not([class*="Button__"]),
+        > div > span:not([class*="StudentInfo__"]),
+        p:not([class*="StudentInfo__"]),
+        h1:not([class*="StudentInfo__"]), h2:not([class*="StudentInfo__"]), h3:not([class*="StudentInfo__"]), 
+        h4:not([class*="StudentInfo__"]), h5:not([class*="StudentInfo__"]), h6:not([class*="StudentInfo__"]) {
+          color: var(--text-primary) !important;
+        }
         
         [class*="StudentInfo__details"] {
+          color: var(--text-primary) !important;
           [class*="StudentInfo__name"] {
-            color: white !important;
+            color: var(--text-primary) !important;
             font-family: Rubik, sans-serif !important;
             margin-bottom: 8px !important;
             
             [class*="StudentInfo__firstname"],
             [class*="StudentInfo__surname"] {
-              color: white !important;
+              color: var(--text-primary) !important;
               font-weight: 600 !important;
               font-size: 18px !important;
             }
             
             [class*="StudentInfo__prefname"] {
-              color: rgba(255, 255, 255, 0.7) !important;
+              color: var(--text-muted) !important;
               font-weight: 400 !important;
             }
           }
@@ -11202,7 +11282,7 @@ body[data-seqta-platform="teach"] {
           [class*="StudentInfo__demographics"],
           [class*="StudentInfo__age"],
           [class*="StudentInfo__sex"] {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: var(--text-secondary) !important;
             font-family: Rubik, sans-serif !important;
             font-size: 14px !important;
             margin: 4px 0 !important;
@@ -11210,15 +11290,15 @@ body[data-seqta-platform="teach"] {
           
           ul {
             li {
-              color: white !important;
+              color: var(--text-primary) !important;
               font-family: Rubik, sans-serif !important;
               
               a {
-                color: var(--theme-primary) !important;
+                color: var(--accent-bg) !important;
                 text-decoration: none !important;
                 
                 &:hover {
-                  color: white !important;
+                  color: var(--accent-hover) !important;
                   text-decoration: underline !important;
                 }
               }
@@ -11227,13 +11307,15 @@ body[data-seqta-platform="teach"] {
         }
         
         [class*="StudentInfo__glance"] {
+          color: var(--text-primary) !important;
+          
           [class*="Avatar__Avatar"] {
-            background: var(--theme-primary) !important;
-            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            background: var(--accent-bg) !important;
+            border: 2px solid var(--border-primary) !important;
             border-radius: 50% !important;
             
             svg text {
-              fill: white !important;
+              fill: var(--text-on-accent) !important;
               font-family: Rubik, sans-serif !important;
             }
           }
@@ -11254,6 +11336,8 @@ body[data-seqta-platform="teach"] {
         }
         
         [class*="StudentInfo__extraDetails"] {
+          color: var(--text-primary) !important;
+          
           li {
             border-bottom: 1px solid var(--border-secondary) !important;
             padding: 8px 0 !important;
@@ -11263,7 +11347,7 @@ body[data-seqta-platform="teach"] {
             }
             
             [class*="StudentInfo__label"] {
-              color: rgba(255, 255, 255, 0.6) !important;
+              color: var(--text-muted) !important;
               font-family: Rubik, sans-serif !important;
               font-size: 12px !important;
               font-weight: 600 !important;
@@ -11272,16 +11356,16 @@ body[data-seqta-platform="teach"] {
             }
             
             [class*="StudentInfo__value"] {
-              color: white !important;
+              color: var(--text-primary) !important;
               font-family: Rubik, sans-serif !important;
               font-weight: 500 !important;
               
               a {
-                color: var(--theme-primary) !important;
+                color: var(--accent-bg) !important;
                 text-decoration: none !important;
                 
                 &:hover {
-                  color: white !important;
+                  color: var(--accent-hover) !important;
                   text-decoration: underline !important;
                 }
               }
@@ -11290,15 +11374,15 @@ body[data-seqta-platform="teach"] {
         }
         
         [class*="StudentInfo__toggle"] {
-          background: #2a2a2a !important;
-          border: 1px solid rgba(255, 255, 255, 0.3) !important;
-          color: white !important;
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          color: var(--text-primary) !important;
           border-radius: 50% !important;
           transition: all 0.2s ease !important;
           
           &:hover {
-            background: var(--theme-primary) !important;
-            color: white !important;
+            background: var(--accent-bg) !important;
+            color: var(--text-on-accent) !important;
             transform: scale(1.1) !important;
           }
           
@@ -11313,19 +11397,19 @@ body[data-seqta-platform="teach"] {
         background: transparent !important;
         
         [class*="BasicPanel__BasicPanel"] {
-          background: #1a1a1a !important;
+          background: var(--card-bg) !important;
           border-radius: 8px !important;
           margin: 16px !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border: 1px solid var(--card-border) !important;
           
           header {
-            background: var(--theme-primary) !important;
+            background: var(--accent-bg) !important;
             border-radius: 8px 8px 0 0 !important;
             padding: 12px 16px !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-bottom: 1px solid var(--border-secondary) !important;
             
             h2 {
-              color: white !important;
+              color: var(--text-on-accent) !important;
               font-family: Rubik, sans-serif !important;
               font-size: 16px !important;
               font-weight: 600 !important;
@@ -11339,7 +11423,7 @@ body[data-seqta-platform="teach"] {
             padding: 16px !important;
             
             li {
-              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-bottom: 1px solid var(--border-secondary) !important;
               padding: 12px 0 !important;
               
               &:last-child {
@@ -11375,7 +11459,7 @@ body[data-seqta-platform="teach"] {
               }
               
               [class*="General__noteContents"] {
-                color: white !important;
+                color: var(--text-primary) !important;
                 font-family: Rubik, sans-serif !important;
                 line-height: 1.5 !important;
                 margin-bottom: 4px !important;
@@ -11384,7 +11468,7 @@ body[data-seqta-platform="teach"] {
               [class*="MenuButton__Menu"],
               [class*="General__menu"] {
                 [class*="Button__Button"] {
-                  background: var(--background-secondary) !important;
+                  background: var(--button-bg) !important;
                   border: 1px solid var(--border-primary) !important;
                   color: var(--text-muted) !important;
                   
@@ -11432,7 +11516,7 @@ body[data-seqta-platform="teach"] {
             
             article {
               padding: 16px !important;
-              background: #0a0a0a !important;
+              background: var(--background-tertiary) !important;
               
               [class*="General__flags"] {
                 margin-bottom: 12px !important;
@@ -11475,7 +11559,7 @@ body[data-seqta-platform="teach"] {
                   }
                   
                   [class*="General__label"] {
-                    color: rgba(255, 255, 255, 0.6) !important;
+                    color: var(--text-muted) !important;
                     font-family: Rubik, sans-serif !important;
                     font-size: 12px !important;
                     font-weight: 600 !important;
@@ -11484,17 +11568,17 @@ body[data-seqta-platform="teach"] {
                   }
                   
                   [class*="General__value"] {
-                    color: white !important;
+                    color: var(--text-primary) !important;
                     font-family: Rubik, sans-serif !important;
                     font-weight: 500 !important;
                     text-align: right !important;
                     
                     a {
-                      color: var(--theme-primary) !important;
+                      color: var(--accent-bg) !important;
                       text-decoration: none !important;
                       
                       &:hover {
-                        color: white !important;
+                        color: var(--accent-hover) !important;
                         text-decoration: underline !important;
                       }
                     }
@@ -11551,32 +11635,32 @@ body[data-seqta-platform="teach"] {
     
     // Navigation tabs
     [class*="SIP__nav"] {
-      background: #1a1a1a !important;
-      border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+      background: var(--background-secondary) !important;
+      border-top: 1px solid var(--border-secondary) !important;
       border-radius: 0 0 12px 12px !important;
       padding: 12px !important;
       display: flex !important;
       gap: 8px !important;
       
       a {
-        background: #2a2a2a !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
         border-radius: 8px !important;
         padding: 12px !important;
-        color: rgba(255, 255, 255, 0.7) !important;
+        color: var(--text-secondary) !important;
         transition: all 0.2s ease !important;
         
         &:hover {
-          background: var(--theme-primary) !important;
-          color: white !important;
+          background: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+          box-shadow: var(--shadow-md) !important;
         }
         
         &[class*="SIP__active"] {
-          background: var(--theme-primary) !important;
-          color: white !important;
-          border-color: var(--theme-primary) !important;
+          background: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
+          border-color: var(--accent-bg) !important;
         }
         
         svg {
@@ -11591,9 +11675,9 @@ body[data-seqta-platform="teach"] {
     
     // Toggle button
     [class*="SIP__toggle"] {
-      background: #2a2a2a !important;
-      border: 1px solid rgba(255, 255, 255, 0.3) !important;
-      color: white !important;
+      background: var(--button-bg) !important;
+      border: 1px solid var(--border-primary) !important;
+      color: var(--text-primary) !important;
       position: absolute !important;
       right: -12px !important;
       top: 50% !important;
@@ -11602,13 +11686,13 @@ body[data-seqta-platform="teach"] {
       width: 32px !important;
       height: 32px !important;
       transition: all 0.2s ease !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      box-shadow: var(--shadow-md) !important;
       
       &:hover {
-        background: var(--theme-primary) !important;
-        color: white !important;
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
         transform: translateY(-50%) scale(1.1) !important;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: var(--shadow-lg) !important;
       }
       
       svg {
@@ -11624,13 +11708,13 @@ body[data-seqta-platform="teach"] {
   // Tier 1: Main Spine (darkest shade)
   [class*="Spine__Spine"] {
     background: var(--theme-primary) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-right: 1px solid var(--border-secondary) !important;
     min-width: 72px !important;
     width: 72px !important;
     
     [class*="Spine__q"],
     [class*="Spine__workspace"] {
-      color: rgba(255, 255, 255, 0.8) !important;
+      color: var(--text-secondary) !important;
       background: transparent !important;
       border-radius: 8px !important;
       margin: 4px !important;
@@ -11638,16 +11722,16 @@ body[data-seqta-platform="teach"] {
       transition: all 0.2s ease !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
         transform: translateX(2px) !important;
       }
       
       &[class*="Spine__active"],
       &.active {
-        background: rgba(255, 255, 255, 0.15) !important;
-        color: white !important;
-        box-shadow: inset 3px 0 0 white !important;
+        background: var(--button-active) !important;
+        color: var(--text-primary) !important;
+        box-shadow: inset 3px 0 0 var(--accent-bg) !important;
       }
       
       svg {
@@ -11665,7 +11749,7 @@ body[data-seqta-platform="teach"] {
     }
     
     [class*="Spine__logout"] {
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: var(--text-muted) !important;
       background: transparent !important;
       border-radius: 8px !important;
       margin: 4px !important;
@@ -11685,7 +11769,7 @@ body[data-seqta-platform="teach"] {
     }
     
     [class*="Spine__help"] {
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: var(--text-muted) !important;
       background: transparent !important;
       border-radius: 8px !important;
       margin: 4px !important;
@@ -11693,8 +11777,8 @@ body[data-seqta-platform="teach"] {
       transition: all 0.2s ease !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
       }
       
       svg {
@@ -11707,9 +11791,9 @@ body[data-seqta-platform="teach"] {
   
   // Tier 2: Page List (medium shade)
   [class*="PageList__PageList"] {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: var(--theme-offset-bg) !important;
     backdrop-filter: blur(10px) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-right: 1px solid var(--border-secondary) !important;
     
     [class*="PageList__pageContainer"] {
       padding: 8px !important;
@@ -11718,7 +11802,7 @@ body[data-seqta-platform="teach"] {
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        color: rgba(255, 255, 255, 0.8) !important;
+        color: var(--text-secondary) !important;
         background: transparent !important;
         border-radius: 8px !important;
         padding: 12px 16px !important;
@@ -11728,15 +11812,15 @@ body[data-seqta-platform="teach"] {
         font-weight: 500 !important;
         
         &:hover {
-          background: rgba(255, 255, 255, 0.1) !important;
-          color: white !important;
+          background: var(--button-hover) !important;
+          color: var(--text-primary) !important;
           transform: translateX(4px) !important;
         }
         
         &.active {
-          background: rgba(255, 255, 255, 0.15) !important;
-          color: white !important;
-          box-shadow: inset 3px 0 0 white !important;
+          background: var(--button-active) !important;
+          color: var(--text-primary) !important;
+          box-shadow: inset 3px 0 0 var(--accent-bg) !important;
         }
         
         svg {
@@ -11754,16 +11838,16 @@ body[data-seqta-platform="teach"] {
     }
     
     [class*="PageList__toggle"] {
-      background: rgba(255, 255, 255, 0.1) !important;
-      color: rgba(255, 255, 255, 0.8) !important;
+      background: var(--button-bg) !important;
+      color: var(--text-secondary) !important;
       border: none !important;
       border-radius: 50% !important;
       margin: 8px !important;
       transition: all 0.2s ease !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
         transform: scale(1.1) !important;
       }
       
@@ -11777,22 +11861,22 @@ body[data-seqta-platform="teach"] {
   
   // Tier 3: Subpage List (lightest shade)
   [class*="SubpageList__SubpageList"] {
-    background: rgba(255, 255, 255, 0.02) !important;
+    background: var(--theme-offset-bg) !important;
     backdrop-filter: blur(5px) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-right: 1px solid var(--border-tertiary) !important;
     padding: 8px !important;
     
     [class*="SubpageList__menuToggle"] {
-      background: rgba(255, 255, 255, 0.05) !important;
-      color: rgba(255, 255, 255, 0.7) !important;
+      background: var(--button-bg) !important;
+      color: var(--text-muted) !important;
       border: none !important;
       border-radius: 50% !important;
       margin-bottom: 8px !important;
       transition: all 0.2s ease !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
         transform: scale(1.05) !important;
       }
       
@@ -11809,7 +11893,7 @@ body[data-seqta-platform="teach"] {
     
     a {
       display: block !important;
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: var(--text-muted) !important;
       background: transparent !important;
       border-radius: 6px !important;
       padding: 10px 12px !important;
@@ -11821,32 +11905,32 @@ body[data-seqta-platform="teach"] {
       margin-bottom: 2px !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-        color: white !important;
+        background: var(--button-bg) !important;
+        color: var(--text-primary) !important;
         transform: translateX(2px) !important;
       }
       
       &.active {
-        background: rgba(255, 255, 255, 0.12) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
         font-weight: 500 !important;
-        box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.8) !important;
+        box-shadow: inset 2px 0 0 var(--accent-bg) !important;
       }
     }
   }
 
   // SEQTA Teach Header and Toolbar Styling
   header {
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: var(--theme-offset-bg-more) !important;
     backdrop-filter: blur(15px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid var(--border-secondary) !important;
     padding: 16px 24px !important;
     display: flex !important;
     align-items: center !important;
     gap: 16px !important;
     
     h1 {
-      color: white !important;
+      color: var(--text-primary) !important;
       font-family: Rubik, sans-serif !important;
       font-size: 24px !important;
       font-weight: 600 !important;
@@ -11863,18 +11947,18 @@ body[data-seqta-platform="teach"] {
     [class*="ProfileMenu__ProfileMenu"] {
       [class*="Button__Button"],
       button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: var(--button-bg) !important;
+        color: var(--text-secondary) !important;
+        border: 1px solid var(--border-primary) !important;
         border-radius: 50% !important;
         padding: 10px !important;
         transition: all 0.2s ease !important;
         
         &:hover {
-          background: rgba(255, 255, 255, 0.2) !important;
-          color: white !important;
+          background: var(--button-hover) !important;
+          color: var(--text-primary) !important;
           transform: scale(1.05) !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+          box-shadow: var(--shadow-md) !important;
         }
         
         &[class*="Chrome__actionButton"] {
@@ -11890,14 +11974,14 @@ body[data-seqta-platform="teach"] {
         
         // Profile avatar styling
         [class*="Avatar__Avatar"] {
-          background: var(--theme-primary) !important;
-          border: 2px solid rgba(255, 255, 255, 0.3) !important;
+          background: var(--accent-bg) !important;
+          border: 2px solid var(--border-primary) !important;
           border-radius: 50% !important;
           width: 36px !important;
           height: 36px !important;
           
           svg text {
-            fill: white !important;
+            fill: var(--text-on-accent) !important;
             font-family: Rubik, sans-serif !important;
           }
         }
@@ -11906,11 +11990,11 @@ body[data-seqta-platform="teach"] {
     
     // Profile Menu Panel (dropdown)
     [class*="ProfileMenu__panel"] {
-      background: var(--background-primary) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--card-bg) !important;
+      border: 1px solid var(--card-border) !important;
       border-radius: 12px !important;
       backdrop-filter: blur(10px) !important;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: var(--shadow-lg) !important;
       padding: 0 !important;
       min-width: 320px !important;
       overflow: hidden !important;
@@ -11918,12 +12002,12 @@ body[data-seqta-platform="teach"] {
       position: absolute !important;
       
       [class*="ProfileMenu__meta"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--theme-offset-bg) !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
         padding: 16px 20px !important;
         
         a {
-          color: white !important;
+          color: var(--text-primary) !important;
           font-family: Rubik, sans-serif !important;
           font-size: 16px !important;
           font-weight: 600 !important;
@@ -11951,11 +12035,11 @@ body[data-seqta-platform="teach"] {
           svg {
             width: 48px !important;
             height: 48px !important;
-            fill: rgba(255, 255, 255, 0.3) !important;
+            fill: var(--text-muted) !important;
           }
           
           [class*="Empty__message"] {
-            color: rgba(255, 255, 255, 0.6) !important;
+            color: var(--text-muted) !important;
             font-family: Rubik, sans-serif !important;
             font-size: 14px !important;
             text-align: center !important;
@@ -11968,33 +12052,33 @@ body[data-seqta-platform="teach"] {
         }
         
         &::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05) !important;
+          background: var(--theme-offset-bg) !important;
           border-radius: 4px !important;
         }
         
         &::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2) !important;
+          background: var(--border-primary) !important;
           border-radius: 4px !important;
           
           &:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
+            background: var(--border-secondary) !important;
           }
         }
       }
       
       [class*="ProfileMenu__actions"] {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--theme-offset-bg) !important;
+        border-top: 1px solid var(--border-secondary) !important;
         padding: 12px 16px !important;
         display: flex !important;
         gap: 8px !important;
         
         button {
           flex: 1 !important;
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-primary) !important;
           border-radius: 8px !important;
-          color: white !important;
+          color: var(--text-primary) !important;
           padding: 10px 16px !important;
           font-family: Rubik, sans-serif !important;
           font-size: 14px !important;
@@ -12003,7 +12087,7 @@ body[data-seqta-platform="teach"] {
           transition: all 0.2s ease !important;
           
           &:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.12) !important;
+            background: var(--button-hover) !important;
             border-color: var(--accent-bg) !important;
             transform: translateY(-1px) !important;
           }
@@ -12036,9 +12120,9 @@ body[data-seqta-platform="teach"] {
 
   // Toolbar styling (under header)
   [class*="Toolbar__Toolbar"] {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: var(--theme-offset-bg) !important;
     backdrop-filter: blur(5px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid var(--border-tertiary) !important;
     padding: 12px 24px !important;
     
     &[class*="LegacyPage__toolbar"] {
@@ -12049,9 +12133,9 @@ body[data-seqta-platform="teach"] {
     
     [class*="Button__Button"],
     button {
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      background: var(--button-bg) !important;
+      color: var(--text-secondary) !important;
+      border: 1px solid var(--border-primary) !important;
       border-radius: 6px !important;
       padding: 8px 16px !important;
       font-family: Rubik, sans-serif !important;
@@ -12060,10 +12144,10 @@ body[data-seqta-platform="teach"] {
       transition: all 0.2s ease !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        color: white !important;
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: var(--shadow-sm) !important;
       }
       
       &:active {
@@ -12078,9 +12162,9 @@ body[data-seqta-platform="teach"] {
     top: 16px !important;
     right: 280px !important;
     z-index: 1000 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: var(--button-bg) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-primary) !important;
     border-radius: 50% !important;
     width: 44px !important;
     height: 44px !important;
@@ -12088,10 +12172,10 @@ body[data-seqta-platform="teach"] {
     transition: all 0.2s ease !important;
     
     &:hover {
-      background: rgba(255, 255, 255, 0.2) !important;
-      color: white !important;
+      background: var(--button-hover) !important;
+      color: var(--text-primary) !important;
       transform: scale(1.05) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: var(--shadow-md) !important;
     }
     
     svg {
@@ -12101,9 +12185,9 @@ body[data-seqta-platform="teach"] {
     }
     
     .tooltiptext {
-      background: var(--better-main) !important;
-      color: white !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+      border: 1px solid var(--border-primary) !important;
       border-radius: 6px !important;
       font-family: Rubik, sans-serif !important;
       font-size: 12px !important;
@@ -12118,9 +12202,9 @@ body[data-seqta-platform="teach"] {
     top: 16px !important;
     right: 330px !important;
     z-index: 1000 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: var(--button-bg) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-primary) !important;
     border-radius: 50% !important;
     width: 44px !important;
     height: 44px !important;
@@ -12128,10 +12212,10 @@ body[data-seqta-platform="teach"] {
     transition: all 0.2s ease !important;
     
     &:hover {
-      background: rgba(255, 255, 255, 0.2) !important;
-      color: white !important;
+      background: var(--button-hover) !important;
+      color: var(--text-primary) !important;
       transform: scale(1.05) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: var(--shadow-md) !important;
     }
     
     svg {
@@ -12141,9 +12225,9 @@ body[data-seqta-platform="teach"] {
     }
     
     .tooltiptext {
-      background: var(--better-main) !important;
-      color: white !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+      border: 1px solid var(--border-primary) !important;
       border-radius: 6px !important;
       font-family: Rubik, sans-serif !important;
       font-size: 12px !important;
@@ -12769,20 +12853,20 @@ body[data-seqta-platform="teach"] {
 
   // Add/Edit Notice Screen Styling
   .notices-edit {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: var(--card-bg) !important;
     backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid var(--card-border) !important;
     border-radius: 12px !important;
     padding: 24px !important;
     margin: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: var(--shadow-lg) !important;
 
     // Form Fields
     .field {
       margin-bottom: 20px !important;
 
       label {
-        color: white !important;
+        color: var(--text-primary) !important;
         font-weight: 500 !important;
         margin-bottom: 8px !important;
         display: block !important;
@@ -12790,24 +12874,24 @@ body[data-seqta-platform="teach"] {
 
       // Title field
       &.title input.uiShortText {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
         border-radius: 8px !important;
-        color: white !important;
+        color: var(--text-primary) !important;
         padding: 12px 16px !important;
         font-size: 14px !important;
         transition: all 0.2s ease !important;
         width: 100% !important;
 
         &:focus {
-          background: rgba(255, 255, 255, 0.12) !important;
+          background: var(--button-hover) !important;
           border-color: var(--accent-bg) !important;
           outline: none !important;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
         }
 
         &::placeholder {
-          color: rgba(255, 255, 255, 0.5) !important;
+          color: var(--text-muted) !important;
         }
       }
 
@@ -12822,23 +12906,23 @@ body[data-seqta-platform="teach"] {
           flex: 1 !important;
 
           input.singleSelect {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            background: var(--button-bg) !important;
+            border: 1px solid var(--border-primary) !important;
             border-radius: 8px !important;
-            color: white !important;
+            color: var(--text-primary) !important;
             padding: 12px 16px !important;
             transition: all 0.2s ease !important;
             width: 100% !important;
 
             &:focus {
-              background: rgba(255, 255, 255, 0.12) !important;
+              background: var(--button-hover) !important;
               border-color: var(--accent-bg) !important;
               outline: none !important;
-              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+              box-shadow: 0 0 0 2px var(--accent-ring) !important;
             }
 
             &::placeholder {
-              color: rgba(255, 255, 255, 0.5) !important;
+              color: var(--text-muted) !important;
             }
           }
 
@@ -12849,10 +12933,10 @@ body[data-seqta-platform="teach"] {
         }
 
         button.uiButton {
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-primary) !important;
           border-radius: 8px !important;
-          color: white !important;
+          color: var(--text-primary) !important;
           padding: 12px 16px !important;
           font-size: 14px !important;
           cursor: pointer !important;
@@ -12860,7 +12944,7 @@ body[data-seqta-platform="teach"] {
           white-space: nowrap !important;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.12) !important;
+            background: var(--button-hover) !important;
             border-color: var(--accent-bg) !important;
             transform: translateY(-1px) !important;
           }
@@ -12879,28 +12963,28 @@ body[data-seqta-platform="teach"] {
         flex-wrap: wrap !important;
 
         button.uiButton.buttonChecklist {
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-primary) !important;
           border-radius: 8px !important;
-          color: white !important;
+          color: var(--text-primary) !important;
           padding: 12px 16px !important;
           font-size: 14px !important;
           cursor: pointer !important;
           transition: all 0.2s ease !important;
 
           &:hover {
-            background: rgba(255, 255, 255, 0.12) !important;
+            background: var(--button-hover) !important;
             border-color: var(--accent-bg) !important;
             transform: translateY(-1px) !important;
           }
 
           span {
-            color: white !important;
+            color: var(--text-primary) !important;
           }
         }
 
         .interstitial {
-          color: rgba(255, 255, 255, 0.7) !important;
+          color: var(--text-muted) !important;
           font-size: 14px !important;
         }
 
@@ -12910,29 +12994,29 @@ body[data-seqta-platform="teach"] {
           gap: 12px !important;
 
           input.uiShortText.calendar {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            background: var(--button-bg) !important;
+            border: 1px solid var(--border-primary) !important;
             border-radius: 8px !important;
-            color: white !important;
+            color: var(--text-primary) !important;
             padding: 12px 16px !important;
             font-size: 14px !important;
             transition: all 0.2s ease !important;
             min-width: 120px !important;
 
             &:focus {
-              background: rgba(255, 255, 255, 0.12) !important;
+              background: var(--button-hover) !important;
               border-color: var(--accent-bg) !important;
               outline: none !important;
-              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+              box-shadow: 0 0 0 2px var(--accent-ring) !important;
             }
 
             &::placeholder {
-              color: rgba(255, 255, 255, 0.5) !important;
+              color: var(--text-muted) !important;
             }
           }
 
           .interstitial {
-            color: rgba(255, 255, 255, 0.7) !important;
+            color: var(--text-muted) !important;
             font-size: 14px !important;
           }
         }
@@ -12941,8 +13025,8 @@ body[data-seqta-platform="teach"] {
 
     // Radio Group (Visibility Options)
     fieldset.radioGroup {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--theme-offset-bg) !important;
+      border: 1px solid var(--border-secondary) !important;
       border-radius: 8px !important;
       padding: 16px !important;
       margin: 20px 0 !important;
@@ -12955,12 +13039,12 @@ body[data-seqta-platform="teach"] {
         transition: all 0.2s ease !important;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.05) !important;
+          background: var(--button-bg) !important;
           border-radius: 6px !important;
         }
 
         &.selected {
-          background: rgba(59, 130, 246, 0.1) !important;
+          background: var(--accent-ring) !important;
           border-radius: 6px !important;
         }
 
@@ -12970,7 +13054,7 @@ body[data-seqta-platform="teach"] {
         }
 
         label {
-          color: white !important;
+          color: var(--text-primary) !important;
           font-size: 14px !important;
           cursor: pointer !important;
           margin: 0 !important;
@@ -12984,8 +13068,8 @@ body[data-seqta-platform="teach"] {
       margin-top: 20px !important;
 
       .lexicalEditor {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--card-bg) !important;
+        border: 1px solid var(--card-border) !important;
         border-radius: 12px !important;
         overflow: hidden !important;
 
@@ -12994,8 +13078,8 @@ body[data-seqta-platform="teach"] {
 
           // Toolbar
           .LexicalEditor__toolbar___kprF1 {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: var(--theme-offset-bg-more) !important;
+            border-bottom: 1px solid var(--border-secondary) !important;
             padding: 12px 16px !important;
             display: flex !important;
             align-items: center !important;
@@ -13005,17 +13089,17 @@ body[data-seqta-platform="teach"] {
             // Dropdown Menu Button
             .MenuButton__Menu___FMwps {
               .Button__Button___kQRWg {
-                background: rgba(255, 255, 255, 0.08) !important;
-                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                background: var(--button-bg) !important;
+                border: 1px solid var(--border-primary) !important;
                 border-radius: 6px !important;
-                color: white !important;
+                color: var(--text-primary) !important;
                 padding: 8px 12px !important;
                 font-size: 13px !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
 
                 &:hover {
-                  background: rgba(255, 255, 255, 0.12) !important;
+                  background: var(--button-hover) !important;
                   border-color: var(--accent-bg) !important;
                 }
               }
@@ -13025,7 +13109,7 @@ body[data-seqta-platform="teach"] {
             .LexicalEditor__divider___xunJd {
               width: 1px !important;
               height: 20px !important;
-              background: rgba(255, 255, 255, 0.2) !important;
+              background: var(--border-primary) !important;
               margin: 0 4px !important;
 
               &.LexicalEditor__auto-hide___x9WCG {
@@ -13041,10 +13125,10 @@ body[data-seqta-platform="teach"] {
 
               // Toolbar Buttons
               .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
-                background: rgba(255, 255, 255, 0.05) !important;
+                background: var(--button-bg) !important;
                 border: 1px solid transparent !important;
                 border-radius: 6px !important;
-                color: rgba(255, 255, 255, 0.8) !important;
+                color: var(--text-secondary) !important;
                 padding: 8px !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
@@ -13055,9 +13139,9 @@ body[data-seqta-platform="teach"] {
                 height: 32px !important;
 
                 &:hover:not(:disabled) {
-                  background: rgba(255, 255, 255, 0.12) !important;
-                  border-color: rgba(255, 255, 255, 0.2) !important;
-                  color: white !important;
+                  background: var(--button-hover) !important;
+                  border-color: var(--border-primary) !important;
+                  color: var(--text-primary) !important;
                   transform: translateY(-1px) !important;
                 }
 
@@ -13068,7 +13152,7 @@ body[data-seqta-platform="teach"] {
                 &.LexicalEditor__active___P1nSu {
                   background: var(--accent-bg) !important;
                   border-color: var(--accent-bg) !important;
-                  color: white !important;
+                  color: var(--text-on-accent) !important;
                 }
 
                 &:disabled {
@@ -13100,8 +13184,8 @@ body[data-seqta-platform="teach"] {
 
             // Editor Input Area
             .LexicalEditor__editor-input___QZkn7 {
-              background: rgba(0, 0, 0, 0.3) !important;
-              color: white !important;
+              background: var(--background-tertiary) !important;
+              color: var(--text-primary) !important;
               padding: 20px !important;
               min-height: 200px !important;
               font-size: 14px !important;
@@ -13112,12 +13196,12 @@ body[data-seqta-platform="teach"] {
 
               // Override any inline styles that might set white background
               &[style*="background"] {
-                background: rgba(0, 0, 0, 0.3) !important;
+                background: var(--background-tertiary) !important;
               }
 
               // Paragraph styling
               p.editor-paragraph.LexicalEditor__editor-paragraph___Ibuzb {
-                color: white !important;
+                color: var(--text-primary) !important;
                 margin: 0 0 16px !important;
 
                 &:last-child {
@@ -13125,22 +13209,22 @@ body[data-seqta-platform="teach"] {
                 }
               }
 
-              // Ensure all text content is white
+              // Ensure all text content uses theme color
               * {
-                color: white !important;
+                color: var(--text-primary) !important;
               }
 
               // Handle any spans or other text elements
               span, div, strong, em, u, s {
-                color: white !important;
+                color: var(--text-primary) !important;
               }
 
               // Lists styling
               ul, ol {
-                color: white !important;
+                color: var(--text-primary) !important;
                 
                 li {
-                  color: white !important;
+                  color: var(--text-primary) !important;
                 }
               }
 
@@ -13149,15 +13233,15 @@ body[data-seqta-platform="teach"] {
                 color: var(--accent-bg) !important;
                 
                 &:hover {
-                  color: white !important;
+                  color: var(--accent-hover) !important;
                 }
               }
             }
 
             // Table Action Menu
             .TableActionMenuPlugin__table-cell-action-button-container___ZU3iX {
-              background: rgba(0, 0, 0, 0.8) !important;
-              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              background: var(--card-bg) !important;
+              border: 1px solid var(--card-border) !important;
               border-radius: 6px !important;
 
               &.TableActionMenuPlugin__table-cell-action-button-container--inactive___HiSE_ {
@@ -13173,8 +13257,8 @@ body[data-seqta-platform="teach"] {
   // Specific styling for lexical editor in filterBox.editor.lexical path
   .filterBox.editor.lexical {
     .lexicalEditor {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--card-bg) !important;
+      border: 1px solid var(--card-border) !important;
       border-radius: 12px !important;
       overflow: hidden !important;
 
@@ -13183,28 +13267,28 @@ body[data-seqta-platform="teach"] {
 
         // Toolbar - ensure dark background
         .LexicalEditor__toolbar___kprF1 {
-          background: rgba(255, 255, 255, 0.08) !important;
-          background-color: rgba(255, 255, 255, 0.08) !important;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+          background: var(--theme-offset-bg-more) !important;
+          background-color: var(--theme-offset-bg-more) !important;
+          border-bottom: 1px solid var(--border-secondary) !important;
           padding: 12px 16px !important;
-          color: white !important;
+          color: var(--text-primary) !important;
 
           // Dropdown Menu Button
           .MenuButton__Menu___FMwps {
             .Button__Button___kQRWg {
-              background: rgba(255, 255, 255, 0.08) !important;
-              background-color: rgba(255, 255, 255, 0.08) !important;
-              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              background: var(--button-bg) !important;
+              background-color: var(--button-bg) !important;
+              border: 1px solid var(--border-primary) !important;
               border-radius: 6px !important;
-              color: white !important;
+              color: var(--text-primary) !important;
               padding: 8px 12px !important;
               font-size: 13px !important;
               cursor: pointer !important;
               transition: all 0.2s ease !important;
 
               &:hover {
-                background: rgba(255, 255, 255, 0.12) !important;
-                background-color: rgba(255, 255, 255, 0.12) !important;
+                background: var(--button-hover) !important;
+                background-color: var(--button-hover) !important;
                 border-color: var(--accent-bg) !important;
               }
             }
@@ -13214,8 +13298,8 @@ body[data-seqta-platform="teach"] {
           .LexicalEditor__divider___xunJd {
             width: 1px !important;
             height: 20px !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            background-color: rgba(255, 255, 255, 0.2) !important;
+            background: var(--border-primary) !important;
+            background-color: var(--border-primary) !important;
             margin: 0 4px !important;
 
             &.LexicalEditor__auto-hide___x9WCG {
@@ -13231,11 +13315,11 @@ body[data-seqta-platform="teach"] {
 
             // Toolbar Buttons
             .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
-              background: rgba(255, 255, 255, 0.05) !important;
-              background-color: rgba(255, 255, 255, 0.05) !important;
+              background: var(--button-bg) !important;
+              background-color: var(--button-bg) !important;
               border: 1px solid transparent !important;
               border-radius: 6px !important;
-              color: rgba(255, 255, 255, 0.8) !important;
+              color: var(--text-secondary) !important;
               padding: 8px !important;
               cursor: pointer !important;
               transition: all 0.2s ease !important;
@@ -13246,10 +13330,10 @@ body[data-seqta-platform="teach"] {
               height: 32px !important;
 
               &:hover:not(:disabled) {
-                background: rgba(255, 255, 255, 0.12) !important;
-                background-color: rgba(255, 255, 255, 0.12) !important;
-                border-color: rgba(255, 255, 255, 0.2) !important;
-                color: white !important;
+                background: var(--button-hover) !important;
+                background-color: var(--button-hover) !important;
+                border-color: var(--border-primary) !important;
+                color: var(--text-primary) !important;
                 transform: translateY(-1px) !important;
               }
 

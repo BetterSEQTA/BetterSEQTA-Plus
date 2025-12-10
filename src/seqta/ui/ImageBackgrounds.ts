@@ -2,9 +2,19 @@ import {
   getDataById,
   isIndexedDBSupported,
 } from "@/interface/hooks/BackgroundDataLoader";
+import { isSEQTATeach } from "@/seqta/utils/platformDetection";
 
 export async function appendBackgroundToUI() {
-  const parent = document.getElementById("container");
+  // For Learn, use #container; for Teach, use #root or body
+  let parent: HTMLElement | null = null;
+  
+  if (isSEQTATeach()) {
+    // Try #root first, then fall back to body
+    parent = document.getElementById("root") || document.body;
+  } else {
+    parent = document.getElementById("container");
+  }
+  
   if (!parent) return;
 
   const backgroundContainer = document.createElement("div");
@@ -55,7 +65,15 @@ export async function loadBackground() {
       backgroundContainer = document.createElement("div");
       backgroundContainer.classList.add("imageBackground");
       backgroundContainer.setAttribute("excludeDarkCheck", "true");
-      const parent = document.getElementById("container");
+      
+      // For Learn, use #container; for Teach, use #root or body
+      let parent: HTMLElement | null = null;
+      if (isSEQTATeach()) {
+        parent = document.getElementById("root") || document.body;
+      } else {
+        parent = document.getElementById("container");
+      }
+      
       if (parent) {
         parent.appendChild(backgroundContainer);
       }
