@@ -24,6 +24,7 @@ import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSEQTATeach } from "@/seqta/utils/platformDetection";
+import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
 //import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
 
@@ -200,6 +201,12 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
+  
+  // Set up route listener for Teach homepage early
+  if (isSEQTATeach()) {
+    setupRouteListener();
+  }
+  
   const sublink: string | undefined = window.location.href.split("/")[4];
 
   eventManager.register(
@@ -299,10 +306,25 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       await handleNewsPage();
       break;
     case undefined:
-      window.location.replace(
-        `${location.origin}/#?page=/${settingsState.defaultPage}`,
-      );
-      if (settingsState.defaultPage === "home") loadHomePage();
+      // Use platform-specific navigation for home page
+      if (settingsState.defaultPage === "home") {
+        if (isSEQTATeach()) {
+          // Navigate to BetterSEQTA+ homepage (not welcome page)
+          if (!window.location.pathname.includes('/betterseqta-home')) {
+            window.location.replace(`${location.origin}/betterseqta-home`);
+            // Wait a bit for navigation, then load homepage
+            await delay(300);
+          }
+          loadHomePage();
+        } else {
+          window.location.replace(`${location.origin}/#?page=/home`);
+          loadHomePage();
+        }
+      } else {
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+      }
       if (settingsState.defaultPage === "documents")
         handleDocuments(document.querySelector(".documents")!);
       if (settingsState.defaultPage === "reports")
@@ -313,9 +335,32 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       finishLoad();
       break;
     case "home":
-      window.location.replace(`${location.origin}/#?page=/home`);
-      console.info("[BetterSEQTA+] Started Init");
-      if (settingsState.onoff) loadHomePage();
+    case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
+      // Use platform-specific navigation
+      if (isSEQTATeach()) {
+        // Check if homepage is already loaded
+        const existingHome = document.getElementById("betterseqta-teach-home");
+        const isOnHomePage = window.location.pathname.includes('/betterseqta-home');
+        
+        // Only navigate and load if not already done
+        if (!isOnHomePage) {
+          window.location.replace(`${location.origin}/betterseqta-home`);
+          // Wait a bit for navigation, then load homepage
+          await delay(300);
+          console.info("[BetterSEQTA+] Started Init");
+          if (settingsState.onoff) loadHomePage();
+        } else if (!existingHome && settingsState.onoff) {
+          // On BetterSEQTA+ homepage but content not loaded yet
+          console.info("[BetterSEQTA+] On BetterSEQTA+ homepage, loading content");
+          loadHomePage();
+        } else {
+          console.info("[BetterSEQTA+] Homepage already loaded");
+        }
+      } else {
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init");
+        if (settingsState.onoff) loadHomePage();
+      }
       finishLoad();
       break;
 

@@ -139,7 +139,11 @@ const staticCommands: StaticCommandItem[] = [
     category: "navigation",
     text: "Home",
     action: () => {
-      window.location.hash = "?page=/home";
+      if (isSEQTATeach()) {
+        window.location.href = "/betterseqta-home";
+      } else {
+        window.location.hash = "?page=/home";
+      }
       loadHomePage();
     },
     priority: 4,

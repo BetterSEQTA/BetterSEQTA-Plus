@@ -250,8 +250,21 @@ function setupEventListeners() {
   });
 
   menuCover?.addEventListener("click", function () {
-    location.href = "../#?page=/home";
-    loadHomePage();
+    // Only navigate on Learn, not Teach (to avoid cross-origin security errors)
+    if (!isSEQTATeach()) {
+      try {
+        location.href = "../#?page=/home";
+        loadHomePage();
+      } catch (error) {
+        // Fallback: just load homepage without navigation
+        console.warn("[BetterSEQTA+] Navigation failed, loading homepage directly");
+        loadHomePage();
+      }
+    } else {
+      // For Teach, navigate to BetterSEQTA+ homepage
+      window.location.href = "/betterseqta-home";
+      loadHomePage();
+    }
     (
       document.getElementById("menu")!.firstChild! as HTMLElement
     ).classList.remove("noscroll");
