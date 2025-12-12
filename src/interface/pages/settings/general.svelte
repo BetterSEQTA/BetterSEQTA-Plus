@@ -262,13 +262,14 @@
                     />                
                   {:else if setting.type === 'select'}
                     <Select
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                    onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                    options={(setting.options as string[]).map(opt => ({
-                      value: opt,
-                      label: opt.charAt(0).toUpperCase() + opt.slice(1)
+                      state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                      options={(setting.options as { value: string; label: string }[]).map(opt => ({
+                        value: opt.value,
+                        label: opt.label
                       }))}
                     />
+
                   {:else if setting.type === 'button'}
                     <Button
                       onClick={() => setting.trigger?.()}
