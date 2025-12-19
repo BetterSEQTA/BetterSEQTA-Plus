@@ -10,7 +10,7 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
-  import { checkAndShowPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
+  import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 
   import { getAllPluginSettings } from "@/plugins"
@@ -355,7 +355,7 @@
               closeExtensionPopup();
               // Small delay to ensure popup is closed before showing notification
               await new Promise(resolve => setTimeout(resolve, 100));
-              await checkAndShowPrivacyNotification();
+              await showPrivacyNotification();
             }}
             text="Show Now"
           />
