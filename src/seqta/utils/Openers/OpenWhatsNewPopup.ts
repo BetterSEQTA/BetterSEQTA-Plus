@@ -32,6 +32,12 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.4.12 - Privacy Updates & Bug Fixes</h1>
+      <li>Added privacy statement</li>
+      <li>Added disclaimer modal to assessment averages switch</li>
+      <li>Improved popup management system</li>
+      <li>Other minor bug fixes and improvements</li>
+
       <h1>3.4.11 - New Features & Bug Fixes</h1>
       <li>Added Background Music plugin</li>
       <li>Added empty state for assessments on homepage</li>
