@@ -92,7 +92,10 @@
     loadPluginSettings();
   })
 
-  const { showColourPicker } = $props<{ showColourPicker: () => void }>();
+  const { showColourPicker, showDisclaimer } = $props<{ 
+    showColourPicker: () => void;
+    showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
+  }>();
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -224,7 +227,20 @@
             <div>
               <Switch
                 state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
-                onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
+                onChange={async (value) => {
+                  if (plugin.pluginId === 'assessments-average' && value === true) {
+                    showDisclaimer(
+                      async () => {
+                        await updatePluginSetting(plugin.pluginId, 'enabled', true);
+                      },
+                      () => {
+                        // Do nothing on cancel
+                      }
+                    );
+                    return;
+                  }
+                  await updatePluginSetting(plugin.pluginId, 'enabled', value);
+                }}
               />
             </div>
           </div>

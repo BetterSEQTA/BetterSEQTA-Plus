@@ -15,9 +15,12 @@
   //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
+  import DisclaimerModal from "../components/DisclaimerModal.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
 
   let devModeSequence = "";
+  let showDisclaimerModal = $state(false);
+  let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
 
   const handleDevModeToggle = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -62,6 +65,11 @@
 
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
+
+  const showDisclaimer = (onConfirm: () => void, onCancel: () => void) => {
+    disclaimerCallbacks = { onConfirm, onCancel };
+    showDisclaimerModal = true;
+  };
 
   onMount(async () => {
     settingsPopup.addListener(() => {
@@ -271,7 +279,7 @@
         {
           title: "Settings",
           Content: Settings,
-          props: { showColourPicker: openColourPicker },
+          props: { showColourPicker: openColourPicker, showDisclaimer },
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
@@ -287,3 +295,27 @@
     />
   {/if}
 </div>
+
+{#if showDisclaimerModal && disclaimerCallbacks}
+  <DisclaimerModal
+    title="Assessment Averages Disclaimer"
+    message="This feature calculates a simple average of your assessment grades. It does not take into account:
+• Assessment weightings
+• Different grading scales
+• Other factors used in official reports
+
+The displayed average may be inaccurate compared to your actual marks found in reports.
+
+Do you want to enable this feature?"
+    onConfirm={() => {
+      disclaimerCallbacks?.onConfirm();
+      showDisclaimerModal = false;
+      disclaimerCallbacks = null;
+    }}
+    onCancel={() => {
+      disclaimerCallbacks?.onCancel();
+      showDisclaimerModal = false;
+      disclaimerCallbacks = null;
+    }}
+  />
+{/if}
