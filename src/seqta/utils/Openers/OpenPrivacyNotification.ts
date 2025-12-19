@@ -6,8 +6,8 @@ export function showPrivacyNotification() {
   const lastUpdated = "2025-12-19";
 
   if (document.getElementById("whatsnewbk")) return;
-  //if (settingsState.privacyStatementShown) return;
-  //if (settingsState.privacyStatementLastUpdated && new Date(settingsState.privacyStatementLastUpdated) > new Date(lastUpdated)) return;
+  if (settingsState.privacyStatementShown) return;
+  if (settingsState.privacyStatementLastUpdated && new Date(settingsState.privacyStatementLastUpdated) > new Date(lastUpdated)) return;
 
   const header = stringToHTML(
     /* html */
