@@ -108,7 +108,7 @@ function getDefaultValues(): SettingsState {
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
-    assessmentsAverage: true,
+    assessmentsAverage: false,
     defaultPage: "home",
     shortcuts: [
       {

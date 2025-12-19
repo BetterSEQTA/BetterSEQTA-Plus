@@ -14,7 +14,7 @@ const updatedFirefoxManifest = {
   },
   browser_specific_settings: {
     gecko: {
-      id: pkg.author.email,
+      id: "betterseqta@betterseqta.com",
     },
   },
 };
