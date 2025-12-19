@@ -12,7 +12,7 @@
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
   import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-  import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
+  //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
@@ -50,10 +50,10 @@
     closeExtensionPopup();
   };
 
-  const openMinecraftServer = () => {
+  /* const openMinecraftServer = () => {
     OpenMinecraftServerPopup();
     closeExtensionPopup();
-  };
+  }; */
 
   const openPrivacyStatement = () => {
     window.open("https://betterseqta.org/privacy", "_blank");
@@ -106,32 +106,32 @@
       />
 
       {#if !standalone}
-        <div class="absolute top-1 right-1 flex items-center gap-1">
+        <div class="flex absolute top-1 right-1 gap-1 items-center">
           <button
             onclick={openAbout}
-            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
           >
             {"\ueb73"}
           </button>
 
           <button
             onclick={openChangelog}
-            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
           >
             {"\ue929"}
           </button>
 
           <button
             onclick={openPrivacyStatement}
-            class="w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center"
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
             aria-label="Privacy Statement"
           >
             {"\uecba"}
           </button>
 
-          <button
+          <!-- <button
             onclick={openMinecraftServer}
-            class="w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-xl p-1 flex items-center justify-center"
+            class="flex justify-center items-center p-1 w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-700"
             aria-label="Open Minecraft Server"
           >
           <svg
@@ -261,7 +261,7 @@
               transform="translate(18,10)"
             />
           </svg>
-        </button>
+        </button> -->
         </div>
       {/if}
     </div>
