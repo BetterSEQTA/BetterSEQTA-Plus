@@ -1,117 +1,16 @@
 import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
 import { defineSettings, selectSetting, Setting, stringSetting } from "@/plugins/core/settingsHelpers";
-
-type ApiStandard = "openai" | "ollama" | "gemini";
-
-
-// Helper Functions
-
-// Ensures leniency in what the user can input (so they don't have to type the endpoint in a very specific manner)
-function validateEndpoint(raw: string): URL | null {
-  if (!raw) return null;
-
-  let value = raw.trim();
-  if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(value)) {
-    value = `http://${value}`;
-  }
-
-  try {
-    const url = new URL(value);
-    if (!["http:", "https:"].includes(url.protocol)) return null;
-    url.pathname = url.pathname.replace(/\/+$/, "") + "/";
-    return url;
-  } catch {
-    return null;
-  }
-}
-
-// Builds the request url based on standard selected and endpoint inputted.
-function buildRequestUrl(
-  standard: ApiStandard,
-  endpoint: URL,
-  model: string,
-): URL {
-  switch (standard) {
-    case "openai":
-      return new URL("v1/chat/completions", endpoint);
-    case "gemini":
-      return new URL(`models/${model}:generateContent`, endpoint);
-    case "ollama":
-      return new URL("generate", endpoint);
-  }
-}
-
-// Builds the headers based on standard selected (Google, why do you have to try to be different?)
-function buildHeaders(standard: ApiStandard, apiKey: string): HeadersInit {
-  return {
-    "Content-Type": "application/json",
-    ...(standard === "gemini"
-      ? { "X-Goog-Api-Key": apiKey }
-      : { Authorization: `Bearer ${apiKey}` }),
-  };
-}
-
-// Builds the payload based on various factors. (Google, just why? What kinda structure is that...)
-function buildPayload(
-  standard: ApiStandard,
-  model: string,
-  systemPrompt: string,
-  prompt: string,
-) {
-  switch (standard) {
-    case "openai":
-      return {
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt },
-        ],
-      };
-
-    case "gemini":
-      return {
-        system_instruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
-      };
-
-    case "ollama":
-      return {
-        model,
-        system: systemPrompt,
-        prompt,
-        stream: false,
-      };
-  }
-}
-
-// Extracts the response text via the method corresponding to the selected standard.
-function extractResponseText(standard: ApiStandard, data: any): string | null {
-  try {
-    switch (standard) {
-      case "openai":
-        return data?.choices?.[0]?.message?.content ?? null;
-
-      case "gemini":
-        return (
-          data?.candidates?.[0]?.content?.parts
-            ?.map((p: any) => p.text)
-            .join("") ?? null
-        );
-
-      case "ollama":
-        return data?.response ?? null;
-    }
-  } catch {
-    return null;
-  }
-}
+import {
+  type ApiStandard,
+  cloneChildNodes,
+  autosizeIframe,
+  buildSummaryContainer,
+  onIframeReady,
+  ask,
+  createSummaryBar,
+  extractAttachmentLinks
+} from "@/plugins/built-in/AI/utils";
 
 // API standard, base endpoint, API key, model, and system prompt.
 const settings = defineSettings({
@@ -141,7 +40,7 @@ const settings = defineSettings({
     description: "LLM Model to be used.",
   }),
   systemPrompt: stringSetting({
-    default: "Your response should consist ONLY of summarising CONCISE bullets. NO FORMATTING.",
+    default: "Respond ONLY with a CONCISE bullet summary. NO FORMATTING.",
     title: "System Prompt",
     description: "Controls the behaviour of the AI.",
   }),
@@ -177,100 +76,165 @@ const AIPlugin: Plugin<typeof settings> = {
 
   run: async (api) => {
 
-    // Carries out the process of prompting the model, utilising all the helpers.
-    async function ask(prompt: string, systemPrompt: string): Promise<string | null> {
-      const standard = api.settings.apiStandard;
-      const endpoint = validateEndpoint(api.settings.apiEndpoint);
-      const apiKey = api.settings.apiKey;
-      const model = api.settings.model;
-
-      // checks if all required variables exist.
-      if (!endpoint || !apiKey || !model) {
-        console.warn("[AI Plugin] Missing or invalid configuration");
-        return null;
-      }
-
-      const url = buildRequestUrl(standard, endpoint, model);
-
-      // Sends API request, and sets res to the response data.
-      const res = await fetch(url, {
-        method: "POST",
-        headers: buildHeaders(standard, apiKey),
-        body: JSON.stringify(
-          buildPayload(standard, model, systemPrompt, prompt),
-        ),
-      });
-
-      // if response code is NOT ok, report that the request failed.
-      if (!res.ok) {
-        throw new Error(
-          `[AI Plugin] Request failed (${res.status}): ${await res.text()}`,
-        );
-      }
-
-      const data = await res.json();
-      const text = extractResponseText(standard, data);
-
-      if (!text) {
-        throw new Error("[AI Plugin] Empty or unparseable response");
-      }
-
-      // return summary
-      return text.trim();
-    }
-
     // Finds summarisable text, summarises it, formats the summary into bullets, and replaces the original text.
-    const { unregister: pageUnregister } = api.seqta.onMount('.userHTML', async (iframeEl) => {
-      if (!(iframeEl instanceof HTMLIFrameElement)) return;
+    const { unregister: pageUnregister } = api.seqta.onMount(".userHTML", async (el) => {
+      if (!(el instanceof HTMLIFrameElement)) return;
+      const iframeEl = el;
 
       // Wait for iframe to fully load
-      const handleLoad = async () => {
+      const initialiseSummaryUI = async () => {
         const doc = iframeEl.contentDocument;
         if (!doc) return;
 
+        // ...iframe(class=userHTML) . #document . body(class=userHTML)
         const innerEl = doc.querySelector(".userHTML");
         if (!innerEl) return;
 
-        const targetDiv = innerEl.querySelector("div");
+        // ...iframe(class=userHTML) . #document . body(class=userHTML) . div
+        const targetDiv = innerEl.querySelector("div") as HTMLDivElement;
         if (!targetDiv) return;
 
         // Normalize whitespace and get text.
-        const text = targetDiv.textContent?.trim() || null;
+        const text = targetDiv.textContent?.trim();
         if (!text) return;
 
-        // Generate summary
-        const summary = await ask(
-          text,
-          api.settings.systemPrompt,
-        );
-        if (!summary) return;
+        // Save original nodes, so that they can be swapped upon toggleBtn press.
+        const originalNodes = cloneChildNodes(targetDiv);
 
-        // split summary by newlines, add bullets.
-        const formatted = summary
-          .split(/\r?\n/)
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
-          .map((line) => line.replace(/^[-*]+\s*/, ""))
-          .map((line) => `• ${line}`)
-          .join("\n");
+        // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
+        const attachmentLinks = extractAttachmentLinks(targetDiv);
 
-        // insert formatted summary into the target div, in place of the previous text.
-        targetDiv.replaceChildren(
-          ...formatted
-            .split("\n")
-            .flatMap((line, i) =>
-              i === 0
-                ? [document.createTextNode(line)]
-                : [document.createElement("br"), document.createTextNode(line)],
-            ),
-        );
+        // Save summary nodes, so that they can be swapped upon toggleBtn press.
+        let summaryNodes: ChildNode[] | null = null;
+
+        // Possible states.
+        const state = {
+          hasSummary: false,
+          isShowingSummary: false,
+          isLoading: false,
+        };
+
+        // Bar with same parent as iframe. Contains buttons for controlling the plugin.
+        const buttonBar = createSummaryBar();
+
+        // Button that only shows when a summary does NOT exist. Creates a summary.
+        const summariseBtn = document.createElement("button");
+        summariseBtn.textContent = "Summarise";
+
+        // Toggles between viewing the summarised text and original text. Only shows if a summary already exists.
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "Show original";
+        toggleBtn.style.display = "none";
+
+        // Scrap the current summary, and generate a new one. Only shows if a summary already exists.
+        const resummariseBtn = document.createElement("button");
+        resummariseBtn.textContent = "Re-summarise";
+        resummariseBtn.style.display = "flex";
+
+        // Updates button states (text, disabled/enabled, etc)
+        function updateUI() {
+          summariseBtn.style.display = state.hasSummary ? "none" : "";
+          toggleBtn.style.display = state.hasSummary ? "" : "none";
+          resummariseBtn.style.display = state.hasSummary ? "" : "none";
+
+          toggleBtn.textContent = state.isShowingSummary
+            ? "Show original"
+            : "Show summary";
+
+          summariseBtn.disabled = state.isLoading;
+          resummariseBtn.disabled = state.isLoading;
+
+          if (state.isLoading) {
+            resummariseBtn.textContent = "Summarising…";
+          } else {
+            resummariseBtn.textContent = "Re-summarise";
+          }
+        }
+
+        // Executed upon pressing the 'Show Original' button. Replaces summary text with the original text.
+        function showOriginal() {
+          targetDiv.replaceChildren(
+            ...originalNodes.map((n) => n.cloneNode(true)),
+          );
+          state.isShowingSummary = false;
+          updateUI();
+          autosizeIframe(iframeEl);
+        }
+
+        // Executed upon pressing the 'Show Summary' button. Replaces original text with the summary text.
+        function showSummary() {
+          if (!summaryNodes) return;
+          targetDiv.replaceChildren(
+            ...summaryNodes.map((n) => n.cloneNode(true)),
+          );
+          state.isShowingSummary = true;
+          updateUI();
+          autosizeIframe(iframeEl);
+        }
+
+        // Generates a summary, saves it's nodes, and shows it.
+        async function generateSummary() {
+          if (state.isLoading) return;
+          state.isLoading = true;
+          updateUI();
+
+          const summary = await ask({
+            standard: api.settings.apiStandard,
+            rawEndpoint: api.settings.apiEndpoint,
+            apiKey: api.settings.apiKey,
+            model: api.settings.model,
+            systemPrompt: api.settings.systemPrompt,
+            prompt: text,
+          });
+
+          if (!summary) {
+            state.isLoading = false;
+            updateUI();
+            return;
+          }
+
+          summaryNodes = [buildSummaryContainer(summary)];
+
+          // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
+          if (attachmentLinks.length) {
+            const attachmentsContainer = document.createElement("div");
+            attachmentsContainer.style.marginTop = "8px";
+
+            attachmentLinks.forEach((link) => {
+              attachmentsContainer.appendChild(link.cloneNode(true));
+              attachmentsContainer.appendChild(document.createElement("br"));
+            });
+
+            summaryNodes.push(attachmentsContainer);
+          }
+
+          state.hasSummary = true;
+          state.isLoading = false;
+          showSummary();
+        }
+
+        // Upon click, generate summary.
+        summariseBtn.onclick = generateSummary;
+        resummariseBtn.onclick = generateSummary;
+
+        // Upon click, toggle between showing the summary and showing the original text.
+        toggleBtn.onclick = () => {
+          state.isShowingSummary ? showOriginal() : showSummary();
+        };
+
+        // Appends buttons to the button bar
+        buttonBar.append(summariseBtn, toggleBtn, resummariseBtn);
+
+        // Prepends button bar to the iframe's parent.
+        const host = iframeEl.parentElement;
+        if (host && !host.querySelector(".ai-summary-bar")) {
+          host.prepend(buttonBar);
+        }
+
+        updateUI();
       };
 
-      if (iframeEl.contentDocument?.readyState === 'complete') {
-        handleLoad();
-      } else {
-        iframeEl.addEventListener('load', handleLoad, { once: true });
-      }
+      onIframeReady(iframeEl, initialiseSummaryUI);
     });
 
     return () => {
