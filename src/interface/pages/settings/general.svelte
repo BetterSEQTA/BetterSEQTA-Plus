@@ -10,7 +10,7 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
-  import { checkAndShowPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
+  import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 
   import { getAllPluginSettings } from "@/plugins"
@@ -92,7 +92,10 @@
     loadPluginSettings();
   })
 
-  const { showColourPicker } = $props<{ showColourPicker: () => void }>();
+  const { showColourPicker, showDisclaimer } = $props<{ 
+    showColourPicker: () => void;
+    showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
+  }>();
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -224,7 +227,20 @@
             <div>
               <Switch
                 state={pluginSettingsValues[plugin.pluginId]?.enabled ?? true}
-                onChange={(value) => updatePluginSetting(plugin.pluginId, 'enabled', value)}
+                onChange={async (value) => {
+                  if (plugin.pluginId === 'assessments-average' && value === true) {
+                    showDisclaimer(
+                      async () => {
+                        await updatePluginSetting(plugin.pluginId, 'enabled', true);
+                      },
+                      () => {
+                        // Do nothing on cancel
+                      }
+                    );
+                    return;
+                  }
+                  await updatePluginSetting(plugin.pluginId, 'enabled', value);
+                }}
               />
             </div>
           </div>
@@ -356,7 +372,7 @@
               closeExtensionPopup();
               // Small delay to ensure popup is closed before showing notification
               await new Promise(resolve => setTimeout(resolve, 100));
-              await checkAndShowPrivacyNotification();
+              await showPrivacyNotification();
             }}
             text="Show Now"
           />

@@ -3357,6 +3357,23 @@ div.day-empty {
   flex-direction: column;
   color: var(--text-primary);
   transform-origin: center center;
+
+}
+.whatsnewTextContainer.privacyStatement p {
+  margin-bottom: 1.5ex;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+.whatsnewTextContainer.privacyStatement a {
+  background: rgba(184, 184, 184, 0.1); 
+  border-radius: 0.5rem;
+  margin-left: 0.25rem;
+  padding: 2px 4px;
+}
+.dark .whatsnewTextContainer.privacyStatement a {
+  background: rgba(7, 7, 7, 0.1);
 }
 .whatsnewHeader {
   margin: 20px;
@@ -3392,6 +3409,7 @@ div.day-empty {
 .whatsnewImg {
   margin: 0 auto;
   width: 90%;
+  aspect-ratio: 16 / 10;
   border-radius: 16px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.3);
 }
