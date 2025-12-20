@@ -105,7 +105,7 @@ const AIPlugin: Plugin<typeof settings> = {
         const attachmentLinks = extractAttachmentLinks(targetDiv);
 
         // Save summary nodes, so that they can be swapped upon toggleBtn press.
-        let summaryNodes: ChildNode[] | null = null;
+        let summaryNodes: Node[] | null = null;
 
         // Possible states.
         const state = {

@@ -239,9 +239,9 @@ export function extractAttachmentLinks(el: Element): HTMLAnchorElement[] {
 
 //-----// MINOR FUNCTIONS. Just makes index look nice and clean. //-----//
 
-export function cloneChildNodes(el: Element): ChildNode[] {
+export function cloneChildNodes(el: Element): Node[] {
   return Array.from(el.childNodes).map(
-    (n) => n.cloneNode(true) as ChildNode
+    (n) => n.cloneNode(true) as Node
   );
 }
 
