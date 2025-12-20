@@ -3,13 +3,13 @@ import { BasePlugin } from "@/plugins/core/settings";
 import { defineSettings, selectSetting, Setting, stringSetting } from "@/plugins/core/settingsHelpers";
 import {
   type ApiStandard,
-  cloneChildNodes,
+  ask,
   autosizeIframe,
   buildSummaryContainer,
-  onIframeReady,
-  ask,
+  cloneChildNodes,
   createSummaryBar,
-  extractAttachmentLinks
+  extractAttachmentLinks,
+  onIframeReady
 } from "@/plugins/built-in/AI/utils";
 
 // API standard, base endpoint, API key, model, and system prompt.
