@@ -1,18 +1,28 @@
 import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
-import { defineSettings, selectSetting, Setting, stringSetting } from "@/plugins/core/settingsHelpers";
+
+import {
+  defineSettings,
+  selectSetting,
+  Setting,
+  stringSetting,
+} from "@/plugins/core/settingsHelpers";
 
 import {
   type ApiStandard,
   ask,
   autosizeIframe,
   buildSummaryContainer,
-  cloneChildNodes,
   createSummaryBar,
   extractAttachmentLinks,
-  onIframeReady
+  onIframeReady,
+  hashText,
 } from "@/plugins/built-in/AI/utils";
 
+// Storage
+interface AIPluginStorage {
+  summaries: Record<string, string>;
+}
 
 // API standard, base endpoint, API key, model, and system prompt.
 const settings = defineSettings({
@@ -68,7 +78,7 @@ class AIPluginClass extends BasePlugin<typeof settings> {
 
 const settingsInstance = new AIPluginClass();
 
-const AIPlugin: Plugin<typeof settings> = {
+const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
   id: "ai",
   name: "AI",
   description: "Adds AI Functionality throughout SEQTA",
@@ -78,6 +88,11 @@ const AIPlugin: Plugin<typeof settings> = {
   beta: true,
 
   run: async (api) => {
+    await api.storage.loaded;
+
+    if (!api.storage.summaries) {
+      api.storage.summaries = {};
+    }
 
     // Disposer. Handles all elements, listeners, and observers after return.
     let disposed = false;
@@ -107,8 +122,10 @@ const AIPlugin: Plugin<typeof settings> = {
     ) {
       if (disposed) return;
 
-      // Save original nodes, so that they can be swapped upon toggleBtn press.
-      const originalNodes = cloneChildNodes(targetDiv);
+      const originalNodes = Array.from(targetDiv.childNodes).map((n) =>
+        n.cloneNode(true),
+      );
+      const originalText = targetDiv.textContent?.trim() ?? "";
 
       // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
       const attachmentLinks = extractAttachmentLinks(targetDiv);
@@ -148,7 +165,7 @@ const AIPlugin: Plugin<typeof settings> = {
       // Scrap the current summary, and generate a new one. Only shows if a summary already exists.
       const resummariseBtn = document.createElement("button");
       resummariseBtn.textContent = "Re-summarise";
-      resummariseBtn.style.borderRadius = '16px'
+      resummariseBtn.style.borderRadius = "16px";
       resummariseBtn.style.display = "none";
 
       // Updates button states (text, disabled/enabled, etc)
@@ -178,20 +195,62 @@ const AIPlugin: Plugin<typeof settings> = {
       // Executed upon pressing the 'Show Summary' button. Replaces original text with the summary text.
       function showSummary() {
         if (!summaryNodes) return;
-        targetDiv.replaceChildren(
-          ...summaryNodes.map((n) => n.cloneNode(true)),
-        );
+        targetDiv.innerHTML = "";
+        for (const node of summaryNodes) {
+          targetDiv.append(node.cloneNode(true));
+        }
         state.isShowingSummary = true;
         updateUI();
         opts?.resize?.();
       }
 
+      function buildSummaryNodes(summary: string): Node[] {
+        const container = buildSummaryContainer(summary);
+
+        const nodes: Node[] = Array.from(container.childNodes).map((n) =>
+          n.cloneNode(true),
+        );
+
+        if (attachmentLinks.length) {
+          const attachments = document.createElement("div");
+          attachments.style.marginTop = "8px";
+
+          for (const link of attachmentLinks) {
+            attachments.append(
+              link.cloneNode(true),
+              document.createElement("br"),
+            );
+          }
+
+          nodes.push(attachments);
+        }
+
+        return nodes;
+      }
+
+      async function loadSummaryFromStorage() {
+        if (disposed || !originalText) return;
+
+        try {
+          const hash = await hashText(originalText);
+
+          const cached = api.storage.summaries[hash];
+          if (!cached) return;
+
+          summaryNodes = buildSummaryNodes(cached);
+          state.hasSummary = true;
+
+          showSummary();
+        } catch (err) {
+          console.error("[AI Plugin] Failed to load summary from storage", err);
+        }
+      }
+
       // Generates a summary, saves it's nodes, and shows it.
       async function generateSummary() {
-        if (disposed || state.isLoading) return;
+        if (disposed || state.isLoading || !originalText) return;
 
-        const text = targetDiv.textContent?.trim();
-        if (!text) return;
+        const hash = await hashText(originalText);
 
         state.isLoading = true;
         updateUI();
@@ -203,28 +262,18 @@ const AIPlugin: Plugin<typeof settings> = {
             apiKey: api.settings.apiKey,
             model: api.settings.model,
             systemPrompt: api.settings.systemPrompt,
-            prompt: text,
+            prompt: originalText,
           });
 
           // Bail if disposed while awaiting
           if (!summary || disposed) return;
 
-          summaryNodes = [buildSummaryContainer(summary)];
+          api.storage.summaries = {
+            ...api.storage.summaries,
+            [hash]: summary,
+          };
 
-          // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
-          if (attachmentLinks.length) {
-            const attachments = document.createElement("div");
-            attachments.style.marginTop = "8px";
-
-            for (const link of attachmentLinks) {
-              attachments.append(
-                link.cloneNode(true),
-                document.createElement("br"),
-              );
-            }
-
-            summaryNodes.push(attachments);
-          }
+          summaryNodes = buildSummaryNodes(summary);
 
           state.hasSummary = true;
           showSummary();
@@ -238,7 +287,6 @@ const AIPlugin: Plugin<typeof settings> = {
           }
         }
       }
-
 
       // Upon click, generate summary.
       summariseBtn.onclick = generateSummary;
@@ -257,8 +305,9 @@ const AIPlugin: Plugin<typeof settings> = {
       }
 
       updateUI();
-    }
 
+      loadSummaryFromStorage();
+    }
 
     function handleIframe(iframe: HTMLIFrameElement) {
       if (disposed) return;
@@ -278,7 +327,6 @@ const AIPlugin: Plugin<typeof settings> = {
         });
       });
     }
-
 
     const { unregister: unregisterUserHTML } = api.seqta.onMount(
       ".userHTML",
@@ -300,7 +348,6 @@ const AIPlugin: Plugin<typeof settings> = {
       },
     );
     disposables.push(unregisterNotices);
-
 
     function tryHandleDraftEditor(root: HTMLElement) {
       if (disposed) return;
@@ -326,7 +373,6 @@ const AIPlugin: Plugin<typeof settings> = {
     const { unregister: unregisterCourses } = api.seqta.onMount(
       ".content",
       (contentEl) => {
-
         // Initial
         tryHandleDraftEditor(contentEl as HTMLElement);
 
@@ -348,10 +394,8 @@ const AIPlugin: Plugin<typeof settings> = {
 
     disposables.push(unregisterCourses);
 
-
-
     return () => {
-      dispose()
+      dispose();
     };
   },
 };

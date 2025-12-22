@@ -1,5 +1,15 @@
 export type ApiStandard = "openai" | "ollama" | "gemini";
 
+// Hashes text so that it can be identified. For preventing needless re-summarisations
+export async function hashText(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+
 // Ensures leniency in what the user can input (so they don't have to type the endpoint in a very specific manner)
 export function validateEndpoint(raw: string): URL | null {
   if (!raw) return null;
