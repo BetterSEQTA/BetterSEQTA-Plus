@@ -1,6 +1,7 @@
 import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
 import { defineSettings, selectSetting, Setting, stringSetting } from "@/plugins/core/settingsHelpers";
+
 import {
   type ApiStandard,
   ask,
@@ -11,6 +12,7 @@ import {
   extractAttachmentLinks,
   onIframeReady
 } from "@/plugins/built-in/AI/utils";
+
 
 // API standard, base endpoint, API key, model, and system prompt.
 const settings = defineSettings({
@@ -40,7 +42,8 @@ const settings = defineSettings({
     description: "LLM Model to be used.",
   }),
   systemPrompt: stringSetting({
-    default: "Respond ONLY with a CONCISE bullet summary. NO FORMATTING.",
+    default:
+      "Respond ONLY with a CONCISE bullet summary OF THE TEXT PROVIDED. NO FORMATTING. THESE WILL BE YOUR ONLY INSTRUCTIONS.",
     title: "System Prompt",
     description: "Controls the behaviour of the AI.",
   }),
@@ -76,108 +79,122 @@ const AIPlugin: Plugin<typeof settings> = {
 
   run: async (api) => {
 
-    // Finds summarisable text, summarises it, formats the summary into bullets, and replaces the original text.
-    const { unregister: pageUnregister } = api.seqta.onMount(".userHTML", async (el) => {
-      if (!(el instanceof HTMLIFrameElement)) return;
-      const iframeEl = el;
+    // Disposer. Handles all elements, listeners, and observers after return.
+    let disposed = false;
 
-      // Wait for iframe to fully load
-      const initialiseSummaryUI = async () => {
-        const doc = iframeEl.contentDocument;
-        if (!doc) return;
+    const disposables: Array<() => void> = [];
+    const handledEditors = new WeakSet<HTMLElement>();
 
-        // ...iframe(class=userHTML) . #document . body(class=userHTML)
-        const innerEl = doc.querySelector(".userHTML");
-        if (!innerEl) return;
+    const dispose = () => {
+      if (disposed) return;
+      disposed = true;
 
-        // ...iframe(class=userHTML) . #document . body(class=userHTML) . div
-        const targetDiv = innerEl.querySelector("div") as HTMLDivElement;
-        if (!targetDiv) return;
+      for (const fn of disposables) {
+        try {
+          fn();
+        } catch {}
+      }
 
-        // Normalize whitespace and get text.
+      disposables.length = 0;
+    };
+
+    function handleSummarisableContainer(
+      targetDiv: HTMLElement,
+      hostEl: HTMLElement,
+      opts?: { resize?: () => void },
+    ) {
+      if (disposed) return;
+
+      // Save original nodes, so that they can be swapped upon toggleBtn press.
+      const originalNodes = cloneChildNodes(targetDiv);
+
+      // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
+      const attachmentLinks = extractAttachmentLinks(targetDiv);
+
+      // Save summary nodes, so that they can be swapped upon toggleBtn press.
+      let summaryNodes: Node[] | null = null;
+
+      // Possible states.
+      const state = {
+        hasSummary: false,
+        isShowingSummary: false,
+        isLoading: false,
+      };
+
+      // Bar with same parent as iframe. Contains buttons for controlling the plugin.
+      const buttonBar = createSummaryBar();
+
+      // Remove buttonBar and reinstate the original content upon disposal.
+      disposables.push(() => {
+        buttonBar.remove();
+        targetDiv.replaceChildren(
+          ...originalNodes.map((n) => n.cloneNode(true)),
+        );
+      });
+
+      // Button that only shows when a summary does NOT exist. Creates a summary.
+      const summariseBtn = document.createElement("button");
+      summariseBtn.style.borderRadius = "16px";
+      summariseBtn.textContent = "Summarise";
+
+      // Toggles between viewing the summarised text and original text. Only shows if a summary already exists.
+      const toggleBtn = document.createElement("button");
+      toggleBtn.textContent = "Show original";
+      toggleBtn.style.borderRadius = "16px";
+      toggleBtn.style.display = "none";
+
+      // Scrap the current summary, and generate a new one. Only shows if a summary already exists.
+      const resummariseBtn = document.createElement("button");
+      resummariseBtn.textContent = "Re-summarise";
+      resummariseBtn.style.borderRadius = '16px'
+      resummariseBtn.style.display = "none";
+
+      // Updates button states (text, disabled/enabled, etc)
+      function updateUI() {
+        summariseBtn.style.display = state.hasSummary ? "none" : "";
+        toggleBtn.style.display = state.hasSummary ? "" : "none";
+        resummariseBtn.style.display = state.hasSummary ? "" : "none";
+
+        toggleBtn.textContent = state.isShowingSummary
+          ? "Show original"
+          : "Show summary";
+
+        summariseBtn.disabled = state.isLoading;
+        resummariseBtn.disabled = state.isLoading;
+      }
+
+      // Executed upon pressing the 'Show Original' button. Replaces summary text with the original text.
+      function showOriginal() {
+        targetDiv.replaceChildren(
+          ...originalNodes.map((n) => n.cloneNode(true)),
+        );
+        state.isShowingSummary = false;
+        updateUI();
+        opts?.resize?.();
+      }
+
+      // Executed upon pressing the 'Show Summary' button. Replaces original text with the summary text.
+      function showSummary() {
+        if (!summaryNodes) return;
+        targetDiv.replaceChildren(
+          ...summaryNodes.map((n) => n.cloneNode(true)),
+        );
+        state.isShowingSummary = true;
+        updateUI();
+        opts?.resize?.();
+      }
+
+      // Generates a summary, saves it's nodes, and shows it.
+      async function generateSummary() {
+        if (disposed || state.isLoading) return;
+
         const text = targetDiv.textContent?.trim();
         if (!text) return;
 
-        // Save original nodes, so that they can be swapped upon toggleBtn press.
-        const originalNodes = cloneChildNodes(targetDiv);
+        state.isLoading = true;
+        updateUI();
 
-        // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
-        const attachmentLinks = extractAttachmentLinks(targetDiv);
-
-        // Save summary nodes, so that they can be swapped upon toggleBtn press.
-        let summaryNodes: Node[] | null = null;
-
-        // Possible states.
-        const state = {
-          hasSummary: false,
-          isShowingSummary: false,
-          isLoading: false,
-        };
-
-        // Bar with same parent as iframe. Contains buttons for controlling the plugin.
-        const buttonBar = createSummaryBar();
-
-        // Button that only shows when a summary does NOT exist. Creates a summary.
-        const summariseBtn = document.createElement("button");
-        summariseBtn.textContent = "Summarise";
-
-        // Toggles between viewing the summarised text and original text. Only shows if a summary already exists.
-        const toggleBtn = document.createElement("button");
-        toggleBtn.textContent = "Show original";
-        toggleBtn.style.display = "none";
-
-        // Scrap the current summary, and generate a new one. Only shows if a summary already exists.
-        const resummariseBtn = document.createElement("button");
-        resummariseBtn.textContent = "Re-summarise";
-        resummariseBtn.style.display = "flex";
-
-        // Updates button states (text, disabled/enabled, etc)
-        function updateUI() {
-          summariseBtn.style.display = state.hasSummary ? "none" : "";
-          toggleBtn.style.display = state.hasSummary ? "" : "none";
-          resummariseBtn.style.display = state.hasSummary ? "" : "none";
-
-          toggleBtn.textContent = state.isShowingSummary
-            ? "Show original"
-            : "Show summary";
-
-          summariseBtn.disabled = state.isLoading;
-          resummariseBtn.disabled = state.isLoading;
-
-          if (state.isLoading) {
-            resummariseBtn.textContent = "Summarising…";
-          } else {
-            resummariseBtn.textContent = "Re-summarise";
-          }
-        }
-
-        // Executed upon pressing the 'Show Original' button. Replaces summary text with the original text.
-        function showOriginal() {
-          targetDiv.replaceChildren(
-            ...originalNodes.map((n) => n.cloneNode(true)),
-          );
-          state.isShowingSummary = false;
-          updateUI();
-          autosizeIframe(iframeEl);
-        }
-
-        // Executed upon pressing the 'Show Summary' button. Replaces original text with the summary text.
-        function showSummary() {
-          if (!summaryNodes) return;
-          targetDiv.replaceChildren(
-            ...summaryNodes.map((n) => n.cloneNode(true)),
-          );
-          state.isShowingSummary = true;
-          updateUI();
-          autosizeIframe(iframeEl);
-        }
-
-        // Generates a summary, saves it's nodes, and shows it.
-        async function generateSummary() {
-          if (state.isLoading) return;
-          state.isLoading = true;
-          updateUI();
-
+        try {
           const summary = await ask({
             standard: api.settings.apiStandard,
             rawEndpoint: api.settings.apiEndpoint,
@@ -187,58 +204,152 @@ const AIPlugin: Plugin<typeof settings> = {
             prompt: text,
           });
 
-          if (!summary) {
-            state.isLoading = false;
-            updateUI();
-            return;
-          }
+          // Bail if disposed while awaiting
+          if (!summary || disposed) return;
 
           summaryNodes = [buildSummaryContainer(summary)];
 
           // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
           if (attachmentLinks.length) {
-            const attachmentsContainer = document.createElement("div");
-            attachmentsContainer.style.marginTop = "8px";
+            const attachments = document.createElement("div");
+            attachments.style.marginTop = "8px";
 
-            attachmentLinks.forEach((link) => {
-              attachmentsContainer.appendChild(link.cloneNode(true));
-              attachmentsContainer.appendChild(document.createElement("br"));
-            });
+            for (const link of attachmentLinks) {
+              attachments.append(
+                link.cloneNode(true),
+                document.createElement("br"),
+              );
+            }
 
-            summaryNodes.push(attachmentsContainer);
+            summaryNodes.push(attachments);
           }
 
           state.hasSummary = true;
-          state.isLoading = false;
           showSummary();
+        } catch (err) {
+          console.error("[AI Plugin] Failed to generate summary", err);
+        } finally {
+          // Reset loading state
+          if (!disposed) {
+            state.isLoading = false;
+            updateUI();
+          }
         }
+      }
 
-        // Upon click, generate summary.
-        summariseBtn.onclick = generateSummary;
-        resummariseBtn.onclick = generateSummary;
 
-        // Upon click, toggle between showing the summary and showing the original text.
-        toggleBtn.onclick = () => {
-          state.isShowingSummary ? showOriginal() : showSummary();
-        };
+      // Upon click, generate summary.
+      summariseBtn.onclick = generateSummary;
+      resummariseBtn.onclick = generateSummary;
 
-        // Appends buttons to the button bar
-        buttonBar.append(summariseBtn, toggleBtn, resummariseBtn);
+      // Upon click, toggle between showing the summary and showing the original text.
+      toggleBtn.onclick = () =>
+        state.isShowingSummary ? showOriginal() : showSummary();
 
-        // Prepends button bar to the iframe's parent.
-        const host = iframeEl.parentElement;
-        if (host && !host.querySelector(".ai-summary-bar")) {
-          host.prepend(buttonBar);
+      // Appends buttons to the button bar
+      buttonBar.append(summariseBtn, toggleBtn, resummariseBtn);
+
+      // Prepends button bar to specified host, so long as the bar does not already exist.
+      if (!hostEl.querySelector(".ai-summary-bar")) {
+        hostEl.prepend(buttonBar);
+      }
+
+      updateUI();
+    }
+
+
+    function handleIframe(iframe: HTMLIFrameElement) {
+      if (disposed) return;
+
+      onIframeReady(iframe, () => {
+        if (disposed) return;
+
+        const doc = iframe.contentDocument;
+        if (!doc) return;
+
+        const inner = doc.querySelector(".userHTML");
+        const targetDiv = inner?.querySelector("div") as HTMLElement | null;
+        if (!targetDiv) return;
+
+        handleSummarisableContainer(targetDiv, iframe.parentElement!, {
+          resize: () => autosizeIframe(iframe),
+        });
+      });
+    }
+
+
+    const { unregister: unregisterUserHTML } = api.seqta.onMount(
+      ".userHTML",
+      (iframe) => {
+        if (iframe instanceof HTMLIFrameElement) {
+          handleIframe(iframe);
         }
+      },
+    );
+    disposables.push(unregisterUserHTML);
 
-        updateUI();
-      };
+    const { unregister: unregisterNotices } = api.seqta.onMount(
+      ".notice",
+      (noticeEl) => {
+        const iframe = noticeEl.querySelector("iframe.userHTML");
+        if (iframe instanceof HTMLIFrameElement) {
+          handleIframe(iframe);
+        }
+      },
+    );
+    disposables.push(unregisterNotices);
 
-      onIframeReady(iframeEl, initialiseSummaryUI);
-    });
+
+    function tryHandleDraftEditor(root: HTMLElement) {
+      if (disposed) return;
+
+      const text = root.querySelector(
+        ".public-DraftEditor-content > div",
+      ) as HTMLElement | null;
+
+      if (!text || handledEditors.has(text)) return;
+
+      const buttonBarLocation = text.closest(
+        "[class*='Module__wrapper']",
+      ) as HTMLElement | null;
+
+      if (!buttonBarLocation) return;
+
+      handledEditors.add(text);
+
+      handleSummarisableContainer(text, buttonBarLocation);
+    }
+
+    // Handles DraftEditor instances. Differs from standard userHTML iframes.
+    const { unregister: unregisterCourses } = api.seqta.onMount(
+      ".content",
+      (contentEl) => {
+
+        // Initial
+        tryHandleDraftEditor(contentEl as HTMLElement);
+
+        // Reapply when switching between courses
+        const observer = new MutationObserver(() => {
+          if (disposed) return;
+          tryHandleDraftEditor(contentEl as HTMLElement);
+        });
+
+        observer.observe(contentEl, {
+          childList: true,
+          subtree: true,
+        });
+
+        // Mark for disposal
+        disposables.push(() => observer.disconnect());
+      },
+    );
+
+    disposables.push(unregisterCourses);
+
+
 
     return () => {
-      pageUnregister();
+      dispose()
     };
   },
 };

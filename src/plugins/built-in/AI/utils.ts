@@ -259,8 +259,15 @@ export function onIframeReady(
 export function createSummaryBar(): HTMLDivElement {
   const bar = document.createElement("div");
   bar.className = "ai-summary-bar";
-  bar.style.display = "flex";
+  bar.style.display = "inline-flex";
   bar.style.gap = "8px";
-  bar.style.marginBottom = "8px";
+  bar.style.margin = "8px 8px 8px 8px";
+  bar.style.padding = "6px";
+  bar.style.background = "rgba(0, 0, 0, 0.25)";
+  bar.style.borderRadius = "16px";
+  bar.style.alignItems = "center";
+  bar.style.alignSelf = "flex-start";
+  bar.style.boxSizing = "border-box";
+
   return bar;
 }
