@@ -92,7 +92,9 @@ const AIPlugin: Plugin<typeof settings> = {
       for (const fn of disposables) {
         try {
           fn();
-        } catch {}
+        } catch (err) {
+          console.error("[AI Plugin] Cleanup failed", err);
+        }
       }
 
       disposables.length = 0;
