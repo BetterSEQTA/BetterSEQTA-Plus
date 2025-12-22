@@ -15,8 +15,8 @@ import {
   buildSummaryContainer,
   createSummaryBar,
   extractAttachmentLinks,
-  onIframeReady,
   hashText,
+  onIframeReady,
 } from "@/plugins/built-in/AI/utils";
 
 // Storage
