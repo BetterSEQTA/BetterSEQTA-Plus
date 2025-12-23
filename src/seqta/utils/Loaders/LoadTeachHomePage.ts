@@ -21,6 +21,7 @@ let routeListenerSetup = false;
 let LessonInterval: any;
 let currentSelectedDate = new Date();
 let loadingTimeout: any;
+let cachedStaffId: number | null = null;
 
 // BetterSEQTA+ homepage route (separate from Teach's welcome page)
 const BETTERSEQTA_HOME_ROUTE = '/betterseqta-home';
@@ -321,51 +322,94 @@ async function loadTeachHomePageContent() {
   const TodayFormatted = formatDate(date);
 
   try {
-    // Try to fetch data - Teach might use different endpoints
-    // Try common variations of Teach endpoints
-    const [timetableData, assessments, classes, prefs] = await Promise.all([
-      // Try Teach endpoints first, fallback to Learn endpoints
-      fetch(`${location.origin}/seqta/ta/load/timetable?`, {
+    // Get staff ID first
+    const staffId = await getStaffId();
+    if (!staffId) {
+      console.error("[BetterSEQTA+] Could not get staff ID");
+      document.getElementById("day-container")?.classList.remove("loading");
+      return;
+    }
+
+    // Calculate date range (week view - 7 days before and after)
+    const targetDateObj = new Date(date);
+    const dateFrom = new Date(targetDateObj);
+    dateFrom.setDate(dateFrom.getDate() - 7); // Start 7 days ago
+    const dateFromFormatted = formatDate(dateFrom);
+    
+    const dateTo = new Date(targetDateObj);
+    dateTo.setDate(dateTo.getDate() + 7); // End 7 days ahead
+    const dateToFormatted = formatDate(dateTo);
+
+    // Call all four APIs for timetable data
+    const [timetableData1, adhocData1, timetableData2, adhocData2] = await Promise.all([
+      // API 1: /seqta/ta/json/timetable/get with timetabled:true, untimetabled:true
+      fetch(`${location.origin}/seqta/ta/json/timetable/get`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: TodayFormatted,
-          until: TodayFormatted,
+          timetabled: true,
+          untimetabled: true,
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
         }),
-      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => 
-        // Fallback: try without /ta/ prefix
-        fetch(`${location.origin}/seqta/load/timetable?`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: TodayFormatted,
-            until: TodayFormatted,
-          }),
-        }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { items: [] } }))
-      ),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { timetabled: { periods: [] }, untimetabled: [] } })),
 
-      GetUpcomingAssessments(),
-
-      GetActiveClasses(),
-
-      fetch(`${location.origin}/seqta/ta/load/prefs?`, {
+      // API 2: /seqta/ta/json/timetable/adhoc/get
+      fetch(`${location.origin}/seqta/ta/json/timetable/adhoc/get`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ asArray: true, request: "userPrefs" }),
-      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => 
-        // Fallback: try without /ta/ prefix
-        fetch(`${location.origin}/seqta/load/prefs?`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ asArray: true, request: "userPrefs" }),
-        }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: [] }))
-      ),
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { adhoc_classunits: [], adhoc: [] } })),
+
+      // API 3: /seqta/ta/json/timetable/get with timetabled:true, untimetabled:false, expandLast:true
+      fetch(`${location.origin}/seqta/ta/json/timetable/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+          timetabled: true,
+          untimetabled: false,
+          expandLast: true,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { timetabled: { periods: [] } } })),
+
+      // API 4: /seqta/ta/json/timetable/adhoc/get with expandLast:true
+      fetch(`${location.origin}/seqta/ta/json/timetable/adhoc/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+          expandLast: true,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { adhoc_classunits: [], adhoc: [] } })),
     ]);
+
+    // Process timetable data from all APIs
+    const lessonArray = processTeachTimetableData(
+      timetableData1.payload,
+      adhocData1.payload,
+      timetableData2.payload,
+      adhocData2.payload,
+      TodayFormatted
+    );
+
+    console.debug("[BetterSEQTA+] Processed lesson array:", lessonArray);
+    console.debug("[BetterSEQTA+] Target date:", TodayFormatted);
+    console.debug("[BetterSEQTA+] Timetable data 1:", timetableData1.payload);
 
     // Render timetable
     const dayContainer = document.getElementById("day-container");
-    if (dayContainer && timetableData.payload?.items?.length > 0) {
-      const lessonArray = timetableData.payload.items.sort((a: any, b: any) =>
+    if (dayContainer && lessonArray.length > 0) {
+      lessonArray.sort((a: any, b: any) =>
         a.from.localeCompare(b.from),
       );
       const colours = await GetLessonColours();
@@ -373,9 +417,10 @@ async function loadTeachHomePageContent() {
       dayContainer.innerHTML = "";
       for (let i = 0; i < lessonArray.length; i++) {
         const lesson = lessonArray[i];
-        const subjectname = `timetable.subject.colour.${lesson.code}`;
+        // Teach uses timetable.class.colour.* instead of timetable.subject.colour.*
+        const subjectname = `timetable.class.colour.${lesson.classunit || lesson.code}`;
         const subject = colours.find(
-          (element: any) => element.name === subjectname,
+          (element: any) => element.name === subjectname || element.name === `timetable.subject.colour.${lesson.code}`,
         );
 
         lesson.colour = subject
@@ -416,37 +461,23 @@ async function loadTeachHomePageContent() {
     }
     dayContainer?.classList.remove("loading");
 
-    // Render assessments
-    const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
-    const activeSubjects = activeClass?.subjects || [];
-    const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
-    const currentAssessments = assessments
-      .filter((a: any) => activeSubjectCodes.includes(a.code))
-      .sort(comparedate);
-
+    // Skip assessments and notices for now - APIs not working
     const upcomingItems = document.getElementById("upcoming-items");
     if (upcomingItems) {
-      await CreateUpcomingSection(currentAssessments, activeSubjects);
       upcomingItems.classList.remove("loading");
+      upcomingItems.innerHTML = `
+        <div class="day-empty">
+          <p>Assessments section coming soon.</p>
+        </div>`;
     }
 
-    // Render notices
-    const labelArray = prefs.payload
-      ?.filter((item: any) => item.name === "notices.filters")
-      ?.map((item: any) => item.value) || [];
-
-    if (labelArray.length > 0) {
-      const noticeContainer = document.getElementById("notice-container");
-      if (noticeContainer) {
-        const dateControl = document.querySelector(
-          'input[type="date"]',
-        ) as HTMLInputElement;
-        if (dateControl) {
-          dateControl.value = TodayFormatted;
-          setupNotices(labelArray[0].split(" "), TodayFormatted);
-        }
-        noticeContainer.classList.remove("loading");
-      }
+    const noticeContainer = document.getElementById("notice-container");
+    if (noticeContainer) {
+      noticeContainer.classList.remove("loading");
+      noticeContainer.innerHTML = `
+        <div class="day-empty">
+          <p>Notices section coming soon.</p>
+        </div>`;
     }
   } catch (error) {
     console.error("[BetterSEQTA+] Error loading homepage data:", error);
@@ -460,6 +491,210 @@ async function loadTeachHomePageContent() {
   document.title = "Home ― BetterSEQTA+";
   
   isLoadingHomePage = false;
+}
+
+// Helper function to get staff ID
+async function getStaffId(): Promise<number | null> {
+  if (cachedStaffId) {
+    return cachedStaffId;
+  }
+
+  try {
+    // Method 1: Call /seqta/ta/login to get user info with staff ID
+    try {
+      const response = await fetch(`${location.origin}/seqta/ta/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({
+          mode: "normal",
+          query: null,
+          redirect_url: location.origin,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.id && typeof data.payload.id === 'number') {
+          cachedStaffId = data.payload.id;
+          console.info("[BetterSEQTA+] Retrieved staff ID from login endpoint:", cachedStaffId);
+          return cachedStaffId;
+        }
+      }
+    } catch (e) {
+      console.warn("[BetterSEQTA+] Login endpoint failed, trying other methods:", e);
+    }
+
+    // Method 2: Try /seqta/ta/json/user/get as fallback
+    try {
+      const response = await fetch(`${location.origin}/seqta/ta/json/user/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.payload?.id && typeof data.payload.id === 'number') {
+          cachedStaffId = data.payload.id;
+          console.info("[BetterSEQTA+] Retrieved staff ID from user/get endpoint:", cachedStaffId);
+          return cachedStaffId;
+        }
+      }
+    } catch (e) {
+      console.warn("[BetterSEQTA+] User/get endpoint failed:", e);
+    }
+
+    console.error("[BetterSEQTA+] Could not determine staff ID from any source");
+    return null;
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error getting staff ID:", error);
+    return null;
+  }
+}
+
+// Process timetable data from all 4 APIs and extract lessons for a specific date
+function processTeachTimetableData(
+  timetable1: any,
+  adhoc1: any,
+  timetable2: any,
+  adhoc2: any,
+  targetDate: string
+): any[] {
+  const lessons: any[] = [];
+  const allAvailableDates: string[] = [];
+
+  // Process timetabled periods from API 1 and 3
+  const processTimetabledPeriods = (timetabled: any) => {
+    if (!timetabled?.periods) {
+      console.debug("[BetterSEQTA+] No periods found in timetabled data");
+      return;
+    }
+    
+    console.debug("[BetterSEQTA+] Processing periods, target date:", targetDate, "periods count:", timetabled.periods.length);
+    for (const period of timetabled.periods) {
+      // Each period object has date keys like "2025-12-22" and "2025-12-29"
+      // Skip non-date keys like "name", "id", "order"
+      for (const dateKey in period) {
+        // Check if this key is a date (format: YYYY-MM-DD)
+        if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          // Track all available dates
+          if (!allAvailableDates.includes(dateKey)) {
+            allAvailableDates.push(dateKey);
+          }
+          
+          console.debug("[BetterSEQTA+] Found date key:", dateKey, "matches target?", dateKey === targetDate, "is array?", Array.isArray(period[dateKey]));
+          if (dateKey === targetDate && Array.isArray(period[dateKey])) {
+            console.debug("[BetterSEQTA+] Adding lessons for date:", dateKey, "count:", period[dateKey].length);
+            // Add all lessons for this date
+            for (const lesson of period[dateKey]) {
+              // Normalize lesson data
+              lessons.push({
+                ...lesson,
+                from: lesson.from?.substring(0, 5) || lesson.from,
+                until: lesson.until?.substring(0, 5) || lesson.until,
+              });
+            }
+          }
+        }
+      }
+    }
+  };
+
+  processTimetabledPeriods(timetable1?.timetabled);
+  processTimetabledPeriods(timetable2?.timetabled);
+
+  // Process adhoc lessons from API 2 and 4
+  const processAdhoc = (adhocPayload: any) => {
+    if (!adhocPayload?.adhoc) return;
+    
+    for (const adhocLesson of adhocPayload.adhoc) {
+      if (adhocLesson.date === targetDate) {
+        lessons.push({
+          ...adhocLesson,
+          from: adhocLesson.from?.substring(0, 5) || adhocLesson.from,
+          until: adhocLesson.until?.substring(0, 5) || adhocLesson.until,
+          type: 'adhoc',
+        });
+      }
+    }
+  };
+
+  processAdhoc(adhoc1);
+  processAdhoc(adhoc2);
+
+  // If no lessons found for target date, try nearest date
+  if (lessons.length === 0 && allAvailableDates.length > 0) {
+    console.debug("[BetterSEQTA+] No lessons for target date", targetDate, ", available dates:", allAvailableDates);
+    // Find nearest date
+    const targetDateObj = new Date(targetDate);
+    allAvailableDates.sort((a, b) => {
+      const dateA = new Date(a).getTime();
+      const dateB = new Date(b).getTime();
+      const targetTime = targetDateObj.getTime();
+      return Math.abs(dateA - targetTime) - Math.abs(dateB - targetTime);
+    });
+    
+    const nearestDate = allAvailableDates[0];
+    console.debug("[BetterSEQTA+] Using nearest date with lessons:", nearestDate);
+    
+    // Reprocess with nearest date
+    const processTimetabledPeriodsForDate = (timetabled: any, searchDate: string) => {
+      if (!timetabled?.periods) return;
+      for (const period of timetabled.periods) {
+        for (const dateKey in period) {
+          if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/) && dateKey === searchDate && Array.isArray(period[dateKey])) {
+            for (const lesson of period[dateKey]) {
+              lessons.push({
+                ...lesson,
+                from: lesson.from?.substring(0, 5) || lesson.from,
+                until: lesson.until?.substring(0, 5) || lesson.until,
+              });
+            }
+          }
+        }
+      }
+    };
+    
+    processTimetabledPeriodsForDate(timetable1?.timetabled, nearestDate);
+    processTimetabledPeriodsForDate(timetable2?.timetabled, nearestDate);
+    
+    // Also check adhoc for nearest date
+    if (adhoc1?.adhoc) {
+      for (const adhocLesson of adhoc1.adhoc) {
+        if (adhocLesson.date === nearestDate) {
+          lessons.push({
+            ...adhocLesson,
+            from: adhocLesson.from?.substring(0, 5) || adhocLesson.from,
+            until: adhocLesson.until?.substring(0, 5) || adhocLesson.until,
+            type: 'adhoc',
+          });
+        }
+      }
+    }
+    if (adhoc2?.adhoc) {
+      for (const adhocLesson of adhoc2.adhoc) {
+        if (adhocLesson.date === nearestDate) {
+          lessons.push({
+            ...adhocLesson,
+            from: adhocLesson.from?.substring(0, 5) || adhocLesson.from,
+            until: adhocLesson.until?.substring(0, 5) || adhocLesson.until,
+            type: 'adhoc',
+          });
+        }
+      }
+    }
+  }
+
+  // Remove duplicates based on id and time
+  const seen = new Set<string>();
+  return lessons.filter((lesson) => {
+    const key = `${lesson.id}-${lesson.from}-${lesson.until}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 // Helper functions (adapted from LoadHomePage.ts)
@@ -505,9 +740,9 @@ async function GetUpcomingAssessments() {
 
 async function GetActiveClasses() {
   try {
-    // Try Teach endpoint first
-    let response = await fetch(
-      `${location.origin}/seqta/ta/load/subjects?`,
+    // Use Teach endpoint /seqta/ta/json/program/list
+    const response = await fetch(
+      `${location.origin}/seqta/ta/json/program/list`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -516,22 +751,12 @@ async function GetActiveClasses() {
     );
     
     if (!response.ok) {
-      // Fallback: try without /ta/
-      response = await fetch(
-        `${location.origin}/seqta/load/subjects?`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-          body: JSON.stringify({}),
-        },
-      );
-    }
-    
-    if (!response.ok) {
+      console.warn("[BetterSEQTA+] Program list endpoint failed, returning empty array");
       return [];
     }
     
     const data = await response.json();
+    // Transform Teach program data to match Learn format if needed
     return data.payload || [];
   } catch (error) {
     console.error("[BetterSEQTA+] Error fetching classes:", error);
@@ -584,46 +809,108 @@ function setupTimetableListeners() {
   return () => listeners.forEach((cleanup) => cleanup());
 }
 
-function callHomeTimetable(date: string, change?: any) {
-  var xhr = new XMLHttpRequest();
-  // Try Teach endpoint first
-  let endpoint = `${location.origin}/seqta/ta/load/timetable?`;
-  xhr.open("POST", endpoint, true);
-  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+async function callHomeTimetable(date: string, change?: any) {
+  if (loadingTimeout) {
+    clearTimeout(loadingTimeout);
+    loadingTimeout = null;
+  }
 
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-        loadingTimeout = null;
-      }
+  const DayContainer = document.getElementById("day-container")!;
+  if (!DayContainer) return;
 
-      const DayContainer = document.getElementById("day-container")!;
+  try {
+    // Get staff ID
+    const staffId = await getStaffId();
+    if (!staffId) {
+      console.error("[BetterSEQTA+] Could not get staff ID for timetable");
+      DayContainer.classList.remove("loading");
+      return;
+    }
 
-      try {
-        // Handle non-JSON responses (HTML error pages)
-        if (!xhr.responseText.trim().startsWith('{')) {
-          throw new Error("Invalid response format");
-        }
-        
-        var serverResponse = JSON.parse(xhr.response);
-        let lessonArray: Array<any> = [];
+    // Calculate date range (week view - 7 days before and after)
+    // Parse the date string (format: YYYY-MM-DD)
+    const dateParts = date.split('-');
+    const targetDateObj = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+    const dateFrom = new Date(targetDateObj);
+    dateFrom.setDate(dateFrom.getDate() - 7);
+    const dateFromFormatted = formatDate(dateFrom);
+    
+    const dateTo = new Date(targetDateObj);
+    dateTo.setDate(dateTo.getDate() + 7);
+    const dateToFormatted = formatDate(dateTo);
 
-        if (serverResponse.payload?.items?.length > 0) {
-          if (DayContainer.innerText || change) {
-            for (let i = 0; i < serverResponse.payload.items.length; i++) {
-              lessonArray.push(serverResponse.payload.items[i]);
-            }
-            lessonArray.sort(function (a, b) {
-              return a.from.localeCompare(b.from);
-            });
+    // Call all four APIs
+    const [timetable1, adhoc1, timetable2, adhoc2] = await Promise.all([
+      fetch(`${location.origin}/seqta/ta/json/timetable/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          timetabled: true,
+          untimetabled: true,
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { timetabled: { periods: [] }, untimetabled: [] } })),
+
+      fetch(`${location.origin}/seqta/ta/json/timetable/adhoc/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { adhoc_classunits: [], adhoc: [] } })),
+
+      fetch(`${location.origin}/seqta/ta/json/timetable/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+          timetabled: true,
+          untimetabled: false,
+          expandLast: true,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { timetabled: { periods: [] } } })),
+
+      fetch(`${location.origin}/seqta/ta/json/timetable/adhoc/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateFrom: dateFromFormatted,
+          dateTo: dateToFormatted,
+          staff: staffId,
+          expandLast: true,
+        }),
+      }).then((res) => res.ok ? res.json() : Promise.reject()).catch(() => ({ payload: { adhoc_classunits: [], adhoc: [] } })),
+    ]);
+
+    // Process timetable data
+    const lessonArray = processTeachTimetableData(
+      timetable1.payload,
+      adhoc1.payload,
+      timetable2.payload,
+      adhoc2.payload,
+      date
+    );
+
+    if (lessonArray.length > 0) {
+      if (DayContainer.innerText || change) {
+        lessonArray.sort(function (a, b) {
+          return a.from.localeCompare(b.from);
+        });
 
             GetLessonColours().then((colours) => {
               let subjects = colours;
               for (let i = 0; i < lessonArray.length; i++) {
-                let subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
+                // Teach uses timetable.class.colour.* instead of timetable.subject.colour.*
+                const classunit = lessonArray[i].classunit || lessonArray[i].code;
+                let subjectname = `timetable.class.colour.${classunit}`;
                 let subject = subjects.find(
-                  (element: any) => element.name === subjectname,
+                  (element: any) => element.name === subjectname || element.name === `timetable.subject.colour.${lessonArray[i].code}`,
                 );
                 if (!subject) {
                   lessonArray[i].colour = "--item-colour: #8e8e8e;";
@@ -686,26 +973,18 @@ function callHomeTimetable(date: string, change?: any) {
           DayContainer.append(dummyDay);
           DayContainer.classList.remove("loading");
         }
-      } catch (error) {
-        console.error("Error loading timetable data:", error);
-        DayContainer.classList.remove("loading");
-        DayContainer.innerHTML = "";
-        const errorDiv = document.createElement("div");
-        errorDiv.classList.add("day-empty");
-        errorDiv.innerHTML = `
-          <img src="${browser.runtime.getURL(LogoLight)}" />
-          <p>Error loading lessons. Please try again.</p>
-        `;
-        DayContainer.append(errorDiv);
-      }
-    }
-  };
-  xhr.send(
-    JSON.stringify({
-      from: date,
-      until: date,
-    }),
-  );
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error in callHomeTimetable:", error);
+    DayContainer.classList.remove("loading");
+    DayContainer.innerHTML = "";
+    const errorDiv = document.createElement("div");
+    errorDiv.classList.add("day-empty");
+    errorDiv.innerHTML = `
+      <img src="${browser.runtime.getURL(LogoLight)}" />
+      <p>Error loading lessons. Please try again.</p>
+    `;
+    DayContainer.append(errorDiv);
+  }
 }
 
 function CheckCurrentLessonAll(lessons: any) {
@@ -863,8 +1142,12 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   let subjects = colours;
   for (let i = 0; i < assessments.length; i++) {
-    let subjectname = `timetable.subject.colour.${assessments[i].code}`;
-    let subject = subjects.find((element: any) => element.name === subjectname);
+    // Teach uses timetable.class.colour.* instead of timetable.subject.colour.*
+    const classunit = assessments[i].classunit || assessments[i].code;
+    let subjectname = `timetable.class.colour.${classunit}`;
+    let subject = subjects.find((element: any) => 
+      element.name === subjectname || element.name === `timetable.subject.colour.${assessments[i].code}`
+    );
 
     if (!subject) {
       assessments[i].colour = "--item-colour: #8e8e8e;";
@@ -876,8 +1159,12 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (let i = 0; i < activeSubjects.length; i++) {
     const element = activeSubjects[i];
-    let subjectname = `timetable.subject.colour.${element.code}`;
-    let colour = colours.find((element: any) => element.name === subjectname);
+    // Teach uses timetable.class.colour.* instead of timetable.subject.colour.*
+    const classunit = element.classunit || element.code;
+    let subjectname = `timetable.class.colour.${classunit}`;
+    let colour = colours.find((element: any) => 
+      element.name === subjectname || element.name === `timetable.subject.colour.${element.code}`
+    );
     if (!colour) {
       element.colour = "--item-colour: #8e8e8e;";
     } else {
@@ -1047,32 +1334,38 @@ function CheckSpecialDay(date1: Date, date2: Date) {
 
 async function GetLessonColours() {
   try {
-    // Try Teach endpoint first
-    let response = await fetch(`${location.origin}/seqta/ta/load/prefs?`, {
+    // Get staff ID first
+    const staffId = await getStaffId();
+    if (!staffId) {
+      console.warn("[BetterSEQTA+] Could not get staff ID for lesson colours");
+      return [];
+    }
+
+    const response = await fetch(`${location.origin}/seqta/ta/json/userPrefs/load`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ request: "userPrefs", asArray: true }),
+      body: JSON.stringify({
+        request: "userPrefs",
+        asArray: true,
+        user: staffId,
+      }),
     });
     
     if (!response.ok) {
-      // Fallback: try without /ta/
-      response = await fetch(`${location.origin}/seqta/load/prefs?`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify({ request: "userPrefs", asArray: true }),
-      });
-    }
-    
-    if (!response.ok) {
+      console.warn("[BetterSEQTA+] UserPrefs load failed, returning empty array");
       return [];
     }
     
     const data = await response.json();
-    return data.payload || [];
+    // Extract userPrefs array from payload, filter for timetable.class.colour entries (Teach uses class instead of subject)
+    const prefs = data.payload || [];
+    // Teach uses timetable.class.colour.* instead of timetable.subject.colour.*
+    return prefs.filter((pref: any) => 
+      pref.name?.startsWith('timetable.class.colour.') || 
+      pref.name?.startsWith('timetable.subject.colour.')
+    );
   } catch (error) {
     console.error("[BetterSEQTA+] Error fetching lesson colours:", error);
     return [];
@@ -1346,3 +1639,4 @@ export async function loadTeachHomePage() {
   // Load the homepage content
   await loadTeachHomePageContent();
 }
+
