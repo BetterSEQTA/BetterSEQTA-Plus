@@ -100,6 +100,9 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
     const disposables: Array<() => void> = [];
     const handledEditors = new WeakSet<HTMLElement>();
+    const handledIframes = new WeakSet<HTMLIFrameElement>();
+    const watchedNoticeContainers = new WeakSet<HTMLElement>();
+    const watchedNotices = new WeakSet<HTMLElement>();
 
     const dispose = () => {
       if (disposed) return;
@@ -125,7 +128,10 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
       const initialTarget = resolveTarget();
       if (!initialTarget) {
-        console.warn("[AI Plugin] Unable to locate target for AI summary", hostEl);
+        console.warn(
+          "[AI Plugin] Unable to locate target for AI summary",
+          hostEl,
+        );
         return;
       }
 
@@ -330,7 +336,8 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     }
 
     function handleIframe(iframe: HTMLIFrameElement) {
-      if (disposed) return;
+      if (disposed || handledIframes.has(iframe)) return;
+      handledIframes.add(iframe);
 
       const resolveTarget = () => {
         const doc = iframe.contentDocument;
@@ -341,10 +348,16 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       onIframeReady(iframe, () => {
         if (disposed) return;
 
-        if (!resolveTarget()) return;
+        if (!resolveTarget()) {
+          handledIframes.delete(iframe);
+          return;
+        }
 
         const host = iframe.parentElement;
-        if (!host) return;
+        if (!host) {
+          handledIframes.delete(iframe);
+          return;
+        }
 
         handleSummarisableContainer(resolveTarget, host, {
           resize: () => autosizeIframe(iframe),
@@ -361,17 +374,6 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       },
     );
     disposables.push(unregisterUserHTML);
-
-    const { unregister: unregisterNotices } = api.seqta.onMount(
-      ".notice",
-      (noticeEl) => {
-        const iframe = noticeEl.querySelector("iframe.userHTML");
-        if (iframe instanceof HTMLIFrameElement) {
-          handleIframe(iframe);
-        }
-      },
-    );
-    disposables.push(unregisterNotices);
 
     function tryHandleDraftEditor(root: HTMLElement) {
       if (disposed) return;
@@ -421,6 +423,117 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
     disposables.push(unregisterCourses);
 
+    function processNodeForNoticesContainers(node: Node) {
+      if (node instanceof HTMLElement) {
+        if (node.classList.contains("notices")) {
+          ensureNoticesContainer(node);
+        }
+      }
+    }
+
+    function initNoticesTracking() {
+      if (disposed) return;
+
+      const findExisting = () =>
+        document
+          .querySelectorAll(".notices")
+          .forEach((el) => ensureNoticesContainer(el as HTMLElement));
+
+      const observeBody = () => {
+        const body = document.body;
+        if (!body) return;
+
+        const observer = new MutationObserver((mutations) => {
+          if (disposed) {
+            observer.disconnect();
+            return;
+          }
+          for (const mutation of mutations) {
+            mutation.addedNodes.forEach((node) =>
+              processNodeForNoticesContainers(node),
+            );
+          }
+        });
+
+        observer.observe(body, { childList: true, subtree: true });
+        disposables.push(() => observer.disconnect());
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          () => {
+            if (disposed) return;
+            observeBody();
+            findExisting();
+          },
+          { once: true },
+        );
+      } else {
+        observeBody();
+        findExisting();
+      }
+    }
+
+    function ensureNoticesContainer(container: HTMLElement) {
+      if (disposed || watchedNoticeContainers.has(container)) return;
+      watchedNoticeContainers.add(container);
+
+      container
+        .querySelectorAll(".notice")
+        .forEach((notice) => ensureNotice(notice as HTMLElement));
+
+      const observer = new MutationObserver((mutations) => {
+        if (disposed || !container.isConnected) {
+          observer.disconnect();
+          return;
+        }
+        for (const mutation of mutations) {
+          mutation.addedNodes.forEach((node) => processNodeForNotice(node));
+        }
+      });
+
+      observer.observe(container, { childList: true, subtree: true });
+      disposables.push(() => observer.disconnect());
+    }
+
+    function processNodeForNotice(node: Node) {
+      if (node instanceof HTMLElement) {
+        if (node.classList.contains("notice")) {
+          ensureNotice(node);
+        }
+      }
+    }
+
+    function ensureNotice(noticeEl: HTMLElement) {
+      if (disposed || watchedNotices.has(noticeEl)) return;
+      watchedNotices.add(noticeEl);
+
+      const connectIframes = () => {
+        if (!noticeEl.isConnected) return;
+        noticeEl.querySelectorAll("iframe.userHTML").forEach((iframe) => {
+          if (iframe instanceof HTMLIFrameElement) {
+            handleIframe(iframe);
+          }
+        });
+      };
+
+      connectIframes();
+
+      const observer = new MutationObserver(() => {
+        if (disposed || !noticeEl.isConnected) {
+          observer.disconnect();
+          return;
+        }
+        connectIframes();
+      });
+
+      observer.observe(noticeEl, { childList: true, subtree: true });
+      disposables.push(() => observer.disconnect());
+    }
+
+    initNoticesTracking();
+
     return () => {
       dispose();
     };
@@ -428,3 +541,4 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 };
 
 export default AIPlugin;
+
