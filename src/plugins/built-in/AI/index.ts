@@ -116,19 +116,32 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     };
 
     function handleSummarisableContainer(
-      targetDiv: HTMLElement,
+      resolveTarget: () => HTMLElement | null,
       hostEl: HTMLElement,
       opts?: { resize?: () => void },
     ) {
       if (disposed) return;
 
-      const originalNodes = Array.from(targetDiv.childNodes).map((n) =>
+      const initialTarget = resolveTarget();
+      if (!initialTarget) {
+        console.warn("[AI Plugin] Unable to locate target for AI summary", hostEl);
+        return;
+      }
+
+      const originalDisplay = initialTarget.style.display;
+      const originalNodes = Array.from(initialTarget.childNodes).map((n) =>
         n.cloneNode(true),
       );
-      const originalText = targetDiv.textContent?.trim() ?? "";
+      const originalText = initialTarget.textContent?.trim() ?? "";
+      const attachmentLinks = extractAttachmentLinks(initialTarget);
 
-      // Helps solve an edge case in which an attachment is WITHIN a course outline. Very rare.
-      const attachmentLinks = extractAttachmentLinks(targetDiv);
+      const cloneOriginalNodes = () =>
+        originalNodes.map((n) => n.cloneNode(true));
+
+      const getLiveTarget = () => {
+        const target = resolveTarget();
+        return target?.isConnected ? target : null;
+      };
 
       // Save summary nodes, so that they can be swapped upon toggleBtn press.
       let summaryNodes: Node[] | null = null;
@@ -146,9 +159,11 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       // Remove buttonBar and reinstate the original content upon disposal.
       disposables.push(() => {
         buttonBar.remove();
-        targetDiv.replaceChildren(
-          ...originalNodes.map((n) => n.cloneNode(true)),
-        );
+        const targetDiv = getLiveTarget();
+        if (targetDiv) {
+          targetDiv.replaceChildren(...cloneOriginalNodes());
+          targetDiv.style.display = originalDisplay;
+        }
       });
 
       // Button that only shows when a summary does NOT exist. Creates a summary.
@@ -184,9 +199,11 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
       // Executed upon pressing the 'Show Original' button. Replaces summary text with the original text.
       function showOriginal() {
-        targetDiv.replaceChildren(
-          ...originalNodes.map((n) => n.cloneNode(true)),
-        );
+        const targetDiv = getLiveTarget();
+        if (!targetDiv) return;
+
+        targetDiv.replaceChildren(...cloneOriginalNodes());
+        targetDiv.style.display = originalDisplay;
         state.isShowingSummary = false;
         updateUI();
         opts?.resize?.();
@@ -195,10 +212,12 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       // Executed upon pressing the 'Show Summary' button. Replaces original text with the summary text.
       function showSummary() {
         if (!summaryNodes) return;
-        targetDiv.innerHTML = "";
-        for (const node of summaryNodes) {
-          targetDiv.append(node.cloneNode(true));
-        }
+        const targetDiv = getLiveTarget();
+        if (!targetDiv) return;
+
+        targetDiv.replaceChildren(
+          ...summaryNodes.map((node) => node.cloneNode(true)),
+        );
         state.isShowingSummary = true;
         updateUI();
         opts?.resize?.();
@@ -312,17 +331,21 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     function handleIframe(iframe: HTMLIFrameElement) {
       if (disposed) return;
 
+      const resolveTarget = () => {
+        const doc = iframe.contentDocument;
+        const inner = doc?.querySelector(".userHTML");
+        return (inner?.querySelector("div") as HTMLElement | null) ?? null;
+      };
+
       onIframeReady(iframe, () => {
         if (disposed) return;
 
-        const doc = iframe.contentDocument;
-        if (!doc) return;
+        if (!resolveTarget()) return;
 
-        const inner = doc.querySelector(".userHTML");
-        const targetDiv = inner?.querySelector("div") as HTMLElement | null;
-        if (!targetDiv) return;
+        const host = iframe.parentElement;
+        if (!host) return;
 
-        handleSummarisableContainer(targetDiv, iframe.parentElement!, {
+        handleSummarisableContainer(resolveTarget, host, {
           resize: () => autosizeIframe(iframe),
         });
       });
@@ -352,9 +375,12 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     function tryHandleDraftEditor(root: HTMLElement) {
       if (disposed) return;
 
-      const text = root.querySelector(
-        ".public-DraftEditor-content > div",
-      ) as HTMLElement | null;
+      const resolveTarget = () =>
+        (root.querySelector(
+          ".public-DraftEditor-content > div",
+        ) as HTMLElement | null);
+
+      const text = resolveTarget();
 
       if (!text || handledEditors.has(text)) return;
 
@@ -366,7 +392,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
       handledEditors.add(text);
 
-      handleSummarisableContainer(text, buttonBarLocation);
+      handleSummarisableContainer(resolveTarget, buttonBarLocation);
     }
 
     // Handles DraftEditor instances. Differs from standard userHTML iframes.
