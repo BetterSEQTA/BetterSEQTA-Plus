@@ -1,4 +1,4 @@
-export type ApiStandard = "openai" | "ollama" | "gemini";
+export type ApiStandard = "openai" | "ollama" | "gemini" | "claude";
 
 // Hashes text so that it can be identified. For preventing needless re-summarisations
 export async function hashText(text: string): Promise<string> {
@@ -43,6 +43,7 @@ export function buildRequestUrl(
   model: string,
 ): URL {
   switch (standard) {
+    case "claude":
     case "openai":
       return new URL("v1/chat/completions", endpoint);
     case "gemini":
@@ -75,6 +76,7 @@ export function buildPayload(
   prompt: string,
 ) {
   switch (standard) {
+    case "claude":
     case "openai":
       return {
         model,
@@ -114,6 +116,7 @@ export function extractResponseText(
 ): string | null {
   try {
     switch (standard) {
+      case "claude":
       case "openai":
         return data?.choices?.[0]?.message?.content ?? null;
 

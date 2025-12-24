@@ -34,6 +34,7 @@ const settings = defineSettings({
       { value: "openai", label: "OpenAI" },
       { value: "ollama", label: "Ollama" },
       { value: "gemini", label: "Gemini" },
+      { value: "claude", label: "Claude" },
     ],
   }),
   apiEndpoint: stringSetting({
