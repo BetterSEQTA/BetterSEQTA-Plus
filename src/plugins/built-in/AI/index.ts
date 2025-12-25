@@ -6,6 +6,7 @@ import {
   selectSetting,
   Setting,
   stringSetting,
+  booleanSetting,
 } from "@/plugins/core/settingsHelpers";
 
 import {
@@ -58,6 +59,11 @@ const settings = defineSettings({
     title: "System Prompt",
     description: "Controls the behaviour of the AI.",
   }),
+  showPreviousSummaries: booleanSetting({
+    default: false,
+    title: "Show Summaries by Default",
+    description: "Show previous summaries by default upon load.",
+  }),
 });
 
 class AIPluginClass extends BasePlugin<typeof settings> {
@@ -75,6 +81,9 @@ class AIPluginClass extends BasePlugin<typeof settings> {
 
   @Setting(settings.systemPrompt)
   systemPrompt!: string;
+
+  @Setting(settings.showPreviousSummaries)
+  showPreviousSummaries!: boolean;
 }
 
 const settingsInstance = new AIPluginClass();
@@ -266,7 +275,11 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
           summaryNodes = buildSummaryNodes(cached);
           state.hasSummary = true;
 
-          showSummary();
+          if (api.settings.showPreviousSummaries){
+            showSummary();
+          }
+          updateUI();
+
         } catch (err) {
           console.error("[AI Plugin] Failed to load summary from storage", err);
         }
@@ -423,40 +436,102 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
     disposables.push(unregisterCourses);
 
-    function processNodeForNoticesContainers(node: Node) {
-      if (node instanceof HTMLElement) {
-        if (node.classList.contains("notices")) {
-          ensureNoticesContainer(node);
-        }
-      }
-    }
-
     function initNoticesTracking() {
       if (disposed) return;
 
-      const findExisting = () =>
-        document
-          .querySelectorAll(".notices")
-          .forEach((el) => ensureNoticesContainer(el as HTMLElement));
+      const ensureNotice = (noticeEl: HTMLElement) => {
+        if (disposed || watchedNotices.has(noticeEl)) return;
+        watchedNotices.add(noticeEl);
 
-      const observeBody = () => {
-        const body = document.body;
-        if (!body) return;
+        const connectIframes = () => {
+          if (!noticeEl.isConnected) return;
+          noticeEl.querySelectorAll("iframe.userHTML").forEach((iframe) => {
+            if (iframe instanceof HTMLIFrameElement) handleIframe(iframe);
+          });
+        };
 
-        const observer = new MutationObserver((mutations) => {
-          if (disposed) {
+        connectIframes();
+
+        const observer = new MutationObserver(() => {
+          if (disposed || !noticeEl.isConnected) {
             observer.disconnect();
             return;
           }
+          connectIframes();
+        });
+
+        observer.observe(noticeEl, { childList: true, subtree: true });
+        disposables.push(() => observer.disconnect());
+      };
+
+      const ensureContainer = (container: HTMLElement) => {
+        if (disposed || watchedNoticeContainers.has(container)) return;
+        watchedNoticeContainers.add(container);
+
+        container
+          .querySelectorAll(".notice")
+          .forEach((notice) => ensureNotice(notice as HTMLElement));
+
+        const observer = new MutationObserver((mutations) => {
+          if (disposed || !container.isConnected) {
+            observer.disconnect();
+            return;
+          }
+
           for (const mutation of mutations) {
-            mutation.addedNodes.forEach((node) =>
-              processNodeForNoticesContainers(node),
-            );
+            for (const node of mutation.addedNodes) {
+              if (!(node instanceof HTMLElement)) continue;
+
+              if (node.classList.contains("notice")) {
+                ensureNotice(node);
+                continue;
+              }
+
+              node
+                .querySelectorAll?.(".notice")
+                .forEach((n) => ensureNotice(n as HTMLElement));
+            }
           }
         });
 
-        observer.observe(body, { childList: true, subtree: true });
+        observer.observe(container, { childList: true, subtree: true });
         disposables.push(() => observer.disconnect());
+      };
+
+      const findExisting = () => {
+        document
+          .querySelectorAll(".notices")
+          .forEach((el) => ensureContainer(el as HTMLElement));
+      };
+
+      const observeBodyForNotices = () => {
+        const body = document.body;
+        if (!body) return;
+
+        const bodyObserver = new MutationObserver((mutations) => {
+          if (disposed) {
+            bodyObserver.disconnect();
+            return;
+          }
+
+          for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+              if (!(node instanceof HTMLElement)) continue;
+
+              if (node.classList.contains("notices")) {
+                ensureContainer(node);
+                continue;
+              }
+
+              node
+                .querySelectorAll?.(".notices")
+                .forEach((n) => ensureContainer(n as HTMLElement));
+            }
+          }
+        });
+
+        bodyObserver.observe(body, { childList: true, subtree: true });
+        disposables.push(() => bodyObserver.disconnect());
       };
 
       if (document.readyState === "loading") {
@@ -464,74 +539,18 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
           "DOMContentLoaded",
           () => {
             if (disposed) return;
-            observeBody();
+            observeBodyForNotices();
             findExisting();
           },
           { once: true },
         );
       } else {
-        observeBody();
+        observeBodyForNotices();
         findExisting();
       }
     }
 
-    function ensureNoticesContainer(container: HTMLElement) {
-      if (disposed || watchedNoticeContainers.has(container)) return;
-      watchedNoticeContainers.add(container);
-
-      container
-        .querySelectorAll(".notice")
-        .forEach((notice) => ensureNotice(notice as HTMLElement));
-
-      const observer = new MutationObserver((mutations) => {
-        if (disposed || !container.isConnected) {
-          observer.disconnect();
-          return;
-        }
-        for (const mutation of mutations) {
-          mutation.addedNodes.forEach((node) => processNodeForNotice(node));
-        }
-      });
-
-      observer.observe(container, { childList: true, subtree: true });
-      disposables.push(() => observer.disconnect());
-    }
-
-    function processNodeForNotice(node: Node) {
-      if (node instanceof HTMLElement) {
-        if (node.classList.contains("notice")) {
-          ensureNotice(node);
-        }
-      }
-    }
-
-    function ensureNotice(noticeEl: HTMLElement) {
-      if (disposed || watchedNotices.has(noticeEl)) return;
-      watchedNotices.add(noticeEl);
-
-      const connectIframes = () => {
-        if (!noticeEl.isConnected) return;
-        noticeEl.querySelectorAll("iframe.userHTML").forEach((iframe) => {
-          if (iframe instanceof HTMLIFrameElement) {
-            handleIframe(iframe);
-          }
-        });
-      };
-
-      connectIframes();
-
-      const observer = new MutationObserver(() => {
-        if (disposed || !noticeEl.isConnected) {
-          observer.disconnect();
-          return;
-        }
-        connectIframes();
-      });
-
-      observer.observe(noticeEl, { childList: true, subtree: true });
-      disposables.push(() => observer.disconnect());
-    }
-
+    // Kick off the notices tracking subsystem as soon as the plugin run function executes.
     initNoticesTracking();
 
     return () => {
