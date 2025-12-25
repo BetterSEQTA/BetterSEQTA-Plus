@@ -2,11 +2,11 @@ import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
 
 import {
+  booleanSetting,
   defineSettings,
   selectSetting,
   Setting,
   stringSetting,
-  booleanSetting,
 } from "@/plugins/core/settingsHelpers";
 
 import {
