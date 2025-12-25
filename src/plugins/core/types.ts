@@ -28,7 +28,7 @@ export interface NumberSetting {
 
 export interface SelectSetting<T extends string> {
   type: "select";
-  options: readonly T[];
+  options: readonly { value: T; label: string }[];
   default: T;
   title: string;
   description?: string;
