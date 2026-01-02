@@ -3,6 +3,7 @@ import { BasePlugin } from "@/plugins/core/settings";
 
 import {
   booleanSetting,
+  buttonSetting,
   defineSettings,
   selectSetting,
   Setting,
@@ -36,7 +37,7 @@ const settings = defineSettings({
       { value: "ollama", label: "Ollama" },
       { value: "gemini", label: "Gemini" },
       { value: "claude", label: "Claude" },
-      { value: "groq", label: "Groq"}
+      { value: "groq", label: "Groq" },
     ],
   }),
   apiEndpoint: stringSetting({
@@ -65,6 +66,17 @@ const settings = defineSettings({
     title: "Show Summaries by Default",
     description: "Show previous summaries by default upon load.",
   }),
+  openDocs: buttonSetting({
+    title: "Open Documentation",
+    buttonText: "Help",
+    description: "Opens the documentation for configuring this plugin.",
+    trigger: () => {
+      window.open(
+        "https://docs.betterseqta.org/betterseqta/betterseqta-plus/user-guide/plugins/ai-summarisation",
+        "_blank",
+      );
+    },
+  }),
 });
 
 class AIPluginClass extends BasePlugin<typeof settings> {
@@ -85,13 +97,16 @@ class AIPluginClass extends BasePlugin<typeof settings> {
 
   @Setting(settings.showPreviousSummaries)
   showPreviousSummaries!: boolean;
+
+  @Setting(settings.openDocs)
+  openDocs!: void;
 }
 
 const settingsInstance = new AIPluginClass();
 
 const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
   id: "ai",
-  name: "AI",
+  name: "AI Summarisation",
   description: "Adds AI Functionality throughout SEQTA",
   version: "1.0.0",
   settings: settingsInstance.settings,
