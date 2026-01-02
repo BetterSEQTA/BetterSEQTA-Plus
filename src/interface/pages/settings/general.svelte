@@ -289,7 +289,7 @@
                   {:else if setting.type === 'button'}
                     <Button
                       onClick={() => setting.trigger?.()}
-                      text={setting.title}
+                      text={setting.buttonText ?? setting.title}
                     />
                   {:else if setting.type === 'hotkey'}
                     <HotkeyInput

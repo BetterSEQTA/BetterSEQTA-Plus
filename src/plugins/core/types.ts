@@ -38,6 +38,7 @@ export interface ButtonSetting {
   type: "button";
   title: string;
   description?: string;
+  buttonText?: string;
   trigger?: () => void | Promise<void>;
 }
 
