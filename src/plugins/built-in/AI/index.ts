@@ -36,6 +36,7 @@ const settings = defineSettings({
       { value: "ollama", label: "Ollama" },
       { value: "gemini", label: "Gemini" },
       { value: "claude", label: "Claude" },
+      { value: "groq", label: "Groq"}
     ],
   }),
   apiEndpoint: stringSetting({
