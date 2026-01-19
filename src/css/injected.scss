@@ -2214,6 +2214,7 @@ div.bar.flat {
       display: flex !important;
       align-items: flex-start !important;
       overflow: hidden !important;
+      color: var(--text-primary) !important;
     }
   }
 
@@ -3357,7 +3358,6 @@ div.day-empty {
   flex-direction: column;
   color: var(--text-primary);
   transform-origin: center center;
-
 }
 .whatsnewTextContainer.privacyStatement p {
   margin-bottom: 1.5ex;
@@ -3367,7 +3367,7 @@ div.day-empty {
   }
 }
 .whatsnewTextContainer.privacyStatement a {
-  background: rgba(184, 184, 184, 0.1); 
+  background: rgba(184, 184, 184, 0.1);
   border-radius: 0.5rem;
   margin-left: 0.25rem;
   padding: 2px 4px;
