@@ -2207,7 +2207,6 @@ div.bar.flat {
       border-radius: 12px !important;
       border: none !important;
       box-shadow: none !important;
-      color: #fff !important;
       padding: 16px !important;
       margin: 0 !important;
       height: 100% !important;
@@ -2215,6 +2214,7 @@ div.bar.flat {
       display: flex !important;
       align-items: flex-start !important;
       overflow: hidden !important;
+      color: var(--text-primary) !important;
     }
   }
 
@@ -3358,7 +3358,6 @@ div.day-empty {
   flex-direction: column;
   color: var(--text-primary);
   transform-origin: center center;
-
 }
 .whatsnewTextContainer.privacyStatement p {
   margin-bottom: 1.5ex;
@@ -3368,7 +3367,7 @@ div.day-empty {
   }
 }
 .whatsnewTextContainer.privacyStatement a {
-  background: rgba(184, 184, 184, 0.1); 
+  background: rgba(184, 184, 184, 0.1);
   border-radius: 0.5rem;
   margin-left: 0.25rem;
   padding: 2px 4px;
@@ -3437,7 +3436,6 @@ div.day-empty {
   font-size: 0.75rem;
   font-weight: 500;
   color: #9a3412;
-  background-color: #ffedd569;
   border-radius: 9999px;
   border: 1px solid rgba(253, 186, 140, 0.3);
   background-color: #ffedd5;
@@ -3814,7 +3812,7 @@ div.day-empty {
     font-size: 20px !important; // Nice middle ground - not too big, not too small
     font-weight: 600 !important;
     color: var(--text-primary) !important;
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 12px !important;
     line-height: 1.3 !important;
     flex-shrink: 0;
   }
@@ -3926,7 +3924,6 @@ button.notice-close-btn {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
   color: var(--text-primary);
   transition: all 0.2s ease !important;
   flex-shrink: 0;
@@ -3984,13 +3981,13 @@ button.notice-close-btn {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 16px 20px 20px 20px;
+  margin: 16px 20px 20px;
   line-height: 1.3;
   flex-shrink: 0;
 }
 
 .notice-modal-body {
-  padding: 0 20px 20px 20px;
+  padding: 0 20px 20px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -4071,11 +4068,11 @@ button.notice-close-btn {
 
   .notice-modal-title {
     font-size: 20px;
-    margin: 12px 16px 16px 16px;
+    margin: 12px 16px 16px;
   }
 
   .notice-modal-body {
-    padding: 0 16px 16px 16px;
+    padding: 0 16px 16px;
   }
 
   .notice-card {
