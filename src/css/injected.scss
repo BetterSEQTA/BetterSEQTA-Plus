@@ -824,7 +824,7 @@ div > ol:has(.uiFileHandlerWrapper) {
   min-height: 128px !important;
 }
 .student #menu > ul::before {
-  background-image: var(--betterseqta-logo);
+  background-image: var(--betterseqta-logo) !important;
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -1043,8 +1043,8 @@ html.transparencyEffects
   display: none;
 }
 #title {
-  background: var(--background-primary);
-  color: var(--text-primary);
+  background: var(--background-primary) !important;
+  color: var(--text-primary) !important;
   display: flex;
   justify-content: space-between;
   padding-right: 56px !important;
