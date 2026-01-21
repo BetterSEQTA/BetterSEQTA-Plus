@@ -173,28 +173,35 @@ async function updateStudentInfo(students: any) {
     );
   });
 
-  let houseelement1 = document.getElementsByClassName("userInfohouse")[0];
-  const houseelement = houseelement1 as HTMLElement;
+  const houseelement = document.getElementsByClassName("userInfohouse")[0] as HTMLElement;
 
-  if (students[index]?.house) {
-    if (students[index]?.house_colour) {
-      houseelement.style.background = students[index].house_colour;
+  // Fallback to N/A
+  let text = 'N/A';
+  const student = students[index] ?? {};
+
+  // If student has a house, prefer to show year + house. If no year, only show house.
+  if (student.house) {
+    text = `${student.year ?? ""}${student.house}`;
+
+    // If house_colour exists, compute colour
+    if (student.house_colour) {
+      houseelement.style.background = student.house_colour;
+
       try {
-        let colorresult = GetThresholdOfColor(students[index]?.house_colour);
+        const colorresult = GetThresholdOfColor(student.house_colour);
         houseelement.style.color =
           colorresult && colorresult > 300 ? "black" : "white";
-        houseelement.innerText = students[index].year + students[index].house;
-      } catch (error) {
-        houseelement.innerText = students[index].house;
+
+      } catch (err) {
+        // Colour calculation failed, no text colour set
       }
     }
-  } else {
-    try {
-      houseelement.innerText = students[index].year;
-    } catch (err) {
-      houseelement.innerText = "N/A";
-    }
+  } else if (student.year) {
+    // No house, only year will be shown
+    text = student.year;
   }
+
+  houseelement.innerText = text;
 }
 
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
