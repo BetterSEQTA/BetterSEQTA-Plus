@@ -57,7 +57,7 @@ select {
   transition: 200ms;
   background: var(--auto-background) !important;
 }
-* {
+:root * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 }
