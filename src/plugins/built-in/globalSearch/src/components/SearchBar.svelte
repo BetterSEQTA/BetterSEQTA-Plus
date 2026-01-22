@@ -176,13 +176,19 @@
     isLoading = false;
   };
 
-  const debouncedPerformSearch = debounce(performSearch, 20);
+  // Optimized debounce: shorter delay for better responsiveness
+  const debouncedPerformSearch = debounce(performSearch, 50);
 
   $effect(() => {
     if (commandPalleteOpen) {
       if (searchTerm === '') {
+        // Immediate search for empty query (shows recent items)
+        performSearch();
+      } else if (searchTerm.length <= 2) {
+        // Immediate search for very short queries
         performSearch();
       } else {
+        // Debounced search for longer queries
         debouncedPerformSearch();
       }
       tick().then(() => searchbar?.focus()); 
