@@ -1,4 +1,4 @@
-import type { Job, IndexItem } from "../types";
+import type { IndexItem, Job } from "../types";
 
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
