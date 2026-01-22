@@ -32,6 +32,13 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.4.13 - Bug Fixes & Styling Improvements</h1>
+      <li>Fixed house/year box hard failing when house_colour does not exist</li>
+      <li>Fixed message of the day being unreadable in light mode</li>
+      <li>Fixed global font styling issues due to SEQTA updates</li>
+      <li>Fixed styling issues with title bar and other elements</li>
+      <li>Other minor bug fixes and improvements</li>
+
       <h1>3.4.12 - Privacy Updates & Bug Fixes</h1>
       <li>Added privacy statement</li>
       <li>Added disclaimer modal to assessment averages switch</li>
