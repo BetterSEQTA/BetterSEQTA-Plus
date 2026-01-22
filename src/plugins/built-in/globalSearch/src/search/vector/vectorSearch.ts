@@ -60,6 +60,21 @@ function setCachedEmbedding(query: string, embedding: number[]) {
   embeddingCache.set(query, embedding);
 }
 
+/**
+ * Clears the embedding cache
+ */
+export function clearEmbeddingCache(): void {
+  embeddingCache.clear();
+  console.debug("[Vector Search] Embedding cache cleared");
+}
+
+// Listen for cache clear events (e.g., on extension update)
+if (typeof window !== 'undefined') {
+  window.addEventListener('betterseqta-clear-embedding-cache', () => {
+    clearEmbeddingCache();
+  });
+}
+
 export async function searchVectors(
   query: string,
   topK: number = 20,

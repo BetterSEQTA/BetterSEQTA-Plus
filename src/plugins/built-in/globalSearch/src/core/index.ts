@@ -151,6 +151,17 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
+    // Check for extension updates and clear caches if needed
+    try {
+      const { checkAndHandleUpdate } = await import("../utils/versionCheck");
+      const wasUpdated = await checkAndHandleUpdate();
+      if (wasUpdated) {
+        console.log("[Global Search] Extension updated - caches cleared");
+      }
+    } catch (error) {
+      console.warn("[Global Search] Failed to check for updates:", error);
+    }
+
     try {
       await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
         primaryKey: "id",

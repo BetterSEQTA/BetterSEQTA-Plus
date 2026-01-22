@@ -30,6 +30,21 @@ function setCachedResults(query: string, results: CombinedResult[]) {
   searchCache.set(query, { results, timestamp: Date.now() });
 }
 
+/**
+ * Clears the search result cache
+ */
+export function clearSearchCache(): void {
+  searchCache.clear();
+  console.debug("[Search] Search result cache cleared");
+}
+
+// Listen for cache clear events (e.g., on extension update)
+if (typeof window !== 'undefined') {
+  window.addEventListener('betterseqta-clear-search-cache', () => {
+    clearSearchCache();
+  });
+}
+
 export function createSearchIndexes() {
   const commands = getStaticCommands();
   const dynamicItems = getDynamicItems();
