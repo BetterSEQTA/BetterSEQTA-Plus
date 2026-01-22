@@ -158,17 +158,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       const hasMetaclassId = metaclassId !== undefined && metaclassId !== null && metaclassId !== '' && typeof metaclassId === 'number';
       const hasAssessmentId = assessmentId !== undefined && assessmentId !== null && assessmentId !== '' && typeof assessmentId === 'number';
       
-      console.log("[Assessment Action] Extracted values:", {
-        programmeId,
-        metaclassId,
-        assessmentId,
-        hasProgrammeId,
-        hasMetaclassId,
-        hasAssessmentId,
-        programmeIdType: typeof programmeId,
-        metaclassIdType: typeof metaclassId,
-        assessmentIdType: typeof assessmentId,
-      });
+     
       
       if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
         const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
