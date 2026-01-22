@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",
+    "compile": "npm i && npm run build",
     "build": "cross-env MODE=chrome vite build && cross-env MODE=firefox vite build",
     "build:chrome": "cross-env MODE=chrome vite build",
     "build:firefox": "cross-env MODE=firefox vite build",
