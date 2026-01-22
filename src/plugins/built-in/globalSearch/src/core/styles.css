@@ -90,6 +90,8 @@
   gap: 8px;
   margin-left: 8px;
   min-width: 120px;
+  max-width: 200px;
+  height: 32px;
 }
 
 .search-progress-bar-wrapper {
@@ -99,6 +101,7 @@
   border-radius: 2px;
   overflow: hidden;
   display: none;
+  min-width: 60px;
 }
 
 .dark .search-progress-bar-wrapper {
@@ -111,6 +114,7 @@
   transition: width 0.3s ease-out;
   width: 0%;
   position: relative;
+  border-radius: 2px;
 }
 
 .search-progress-bar::after {
@@ -119,6 +123,7 @@
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   animation: shimmer 2s infinite;
+  border-radius: 2px;
 }
 
 .search-progress-text {
@@ -126,6 +131,7 @@
   color: #666;
   white-space: nowrap;
   display: none;
+  font-weight: 500;
 }
 
 .dark .search-progress-text {
