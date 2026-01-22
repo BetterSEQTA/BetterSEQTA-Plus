@@ -84,19 +84,28 @@ export async function clearAllCaches(): Promise<void> {
     }
     
     // Also try to directly clear caches if modules are already loaded
-    try {
-      const { clearSearchCache } = await import("../search/searchUtils");
-      clearSearchCache();
-    } catch (e) {
-      // Module might not be loaded yet, that's okay
-    }
-    
-    try {
-      const { clearEmbeddingCache } = await import("../search/vector/vectorSearch");
-      clearEmbeddingCache();
-    } catch (e) {
-      // Module might not be loaded yet, that's okay
-    }
+    // Use setTimeout to avoid blocking and handle CSS preload errors
+    setTimeout(async () => {
+      try {
+        const { clearSearchCache } = await import("../search/searchUtils");
+        clearSearchCache();
+      } catch (e: any) {
+        // Module might not be loaded yet, or CSS preload error - that's okay
+        if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
+          console.debug("[Version Check] Could not clear search cache:", e);
+        }
+      }
+      
+      try {
+        const { clearEmbeddingCache } = await import("../search/vector/vectorSearch");
+        clearEmbeddingCache();
+      } catch (e: any) {
+        // Module might not be loaded yet, or CSS preload error - that's okay
+        if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
+          console.debug("[Version Check] Could not clear embedding cache:", e);
+        }
+      }
+    }, 50);
     
     console.debug("[Version Check] All caches cleared");
   } catch (e) {

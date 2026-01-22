@@ -14,6 +14,7 @@ import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
+import { checkAndHandleUpdate } from "../utils/versionCheck";
 
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
@@ -152,15 +153,25 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     const appRef = { current: null };
 
     // Check for extension updates and clear caches if needed
-    try {
-      const { checkAndHandleUpdate } = await import("../utils/versionCheck");
-      const wasUpdated = await checkAndHandleUpdate();
-      if (wasUpdated) {
-        console.log("[Global Search] Extension updated - caches cleared");
+    // Use a timeout to avoid blocking initialization
+    setTimeout(async () => {
+      try {
+        const wasUpdated = await checkAndHandleUpdate();
+        if (wasUpdated) {
+          console.log("[Global Search] Extension updated - caches cleared");
+        }
+      } catch (error: any) {
+        // Handle CSS preload errors and other failures gracefully
+        // These can happen in Firefox or when assets aren't available
+        if (error?.message?.includes("preload CSS") || 
+            error?.message?.includes("MIME type") || 
+            error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
+          console.debug("[Global Search] Version check skipped due to asset loading restrictions:", error.message);
+        } else {
+          console.warn("[Global Search] Failed to check for updates:", error);
+        }
       }
-    } catch (error) {
-      console.warn("[Global Search] Failed to check for updates:", error);
-    }
+    }, 100);
 
     try {
       await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
