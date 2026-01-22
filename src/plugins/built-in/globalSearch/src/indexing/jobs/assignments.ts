@@ -1,5 +1,4 @@
 import type { Job, IndexItem } from "../types";
-import { htmlToPlainText } from "../utils";
 
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
@@ -16,7 +15,8 @@ const fetchUpcomingAssessments = async (student: number = 69) => {
     const res = await fetchJSON("/seqta/student/assessment/list/upcoming?", {
       student,
     });
-    return res.payload || [];
+    // Match analytics.rs: payload is an array, return empty array if not found
+    return Array.isArray(res.payload) ? res.payload : [];
   } catch (e) {
     console.error("[Assignments job] Failed to fetch upcoming assessments:", e);
     return [];
@@ -38,66 +38,51 @@ const fetchSubjects = async () => {
 const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
   const map: Record<number, any> = {};
   
-  for (const subject of subjects) {
-    try {
-      const res = await fetchJSON("/seqta/student/assessment/list/past?", {
-        student,
-        metaclass: subject.metaclass,
-        programme: subject.programme,
-      });
-      
-      // Past assessments API returns data in payload.tasks, not payload directly
-      if (res.payload && res.payload.tasks && Array.isArray(res.payload.tasks)) {
-        res.payload.tasks.forEach((assessment: any) => {
+  // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
+  // This is much faster than sequential fetching
+  await Promise.all(
+    subjects.map(async (subject) => {
+      try {
+        // Match analytics.rs exactly: parameter order is programme, metaclass, student
+        const res = await fetchJSON("/seqta/student/assessment/list/past?", {
+          programme: subject.programme,
+          metaclass: subject.metaclass,
+          student,
+        });
+        
+        // Past assessments API can return data in payload.tasks OR payload.pending (or both)
+        // Based on analytics.rs fetch_past_assessments, we need to check both arrays
+        const processAssessment = (assessment: any) => {
           if (assessment && assessment.id) {
             // Ensure programme and metaclass are included from the subject
+            // Use the assessment's IDs if available, otherwise fall back to subject's
             map[assessment.id] = {
               ...assessment,
               programme: assessment.programme || assessment.programmeID || subject.programme,
+              programmeID: assessment.programmeID || assessment.programme || subject.programme,
               metaclass: assessment.metaclass || assessment.metaclassID || subject.metaclass,
+              metaclassID: assessment.metaclassID || assessment.metaclass || subject.metaclass,
             };
           }
-        });
-      } else if (res.payload && Array.isArray(res.payload)) {
-        // Fallback: some APIs might return array directly
-        res.payload.forEach((assessment: any) => {
-          if (assessment && assessment.id) {
-            map[assessment.id] = {
-              ...assessment,
-              programme: assessment.programme || assessment.programmeID || subject.programme,
-              metaclass: assessment.metaclass || assessment.metaclassID || subject.metaclass,
-            };
-          }
-        });
+        };
+        
+        // Match analytics.rs: Check both pending and tasks arrays
+        // Check for pending array first (matching Rust code order)
+        if (res.payload?.pending && Array.isArray(res.payload.pending)) {
+          res.payload.pending.forEach(processAssessment);
+        }
+        
+        // Check for tasks array
+        if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
+          res.payload.tasks.forEach(processAssessment);
+        }
+      } catch (e) {
+        console.warn(`[Assignments job] Failed to fetch past assessments for subject ${subject.code || subject.subject || 'unknown'}:`, e);
       }
-    } catch (e) {
-      console.warn(`[Assignments job] Failed to fetch past assessments for subject ${subject.code}:`, e);
-    }
-  }
+    })
+  );
   
   return Object.values(map);
-};
-
-const fetchAssessmentDetails = async (
-  assessmentId: number,
-  metaclassId: number,
-  programmeId: number,
-): Promise<string | null> => {
-  try {
-    const res = await fetchJSON("/seqta/student/assessment/view?", {
-      id: assessmentId,
-      metaclass: metaclassId,
-      programme: programmeId,
-    });
-    
-    if (res.payload && res.payload.description) {
-      return htmlToPlainText(res.payload.description);
-    }
-    return null;
-  } catch (e) {
-    console.warn(`[Assignments job] Failed to fetch details for assessment ${assessmentId}:`, e);
-    return null;
-  }
 };
 
 export const assignmentsJob: Job = {
@@ -136,11 +121,14 @@ export const assignmentsJob: Job = {
   },
 
   run: async (ctx) => {
-    const existingIds = new Set(
-      (await ctx.getStoredItems("assignments")).map((i) => i.id),
-    );
+    // Don't filter by existing IDs - we want to process ALL assessments (both new and old)
+    // to ensure metadata is up-to-date and all past assignments are indexed
+    const existingItems = await ctx.getStoredItems("assignments");
+    const existingIds = new Set(existingItems.map((i) => i.id));
 
     const student = 69; // TODO: Get from context if available
+    
+    console.debug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     
     // Fetch data in parallel
     const [upcoming, subjects] = await Promise.all([
@@ -148,8 +136,12 @@ export const assignmentsJob: Job = {
       fetchSubjects(),
     ]);
 
-    // Fetch past assessments
+    console.debug(`[Assignments job] Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`);
+
+    // Fetch past assessments for ALL subjects to ensure we get all historical assignments
     const past = await fetchPastAssessments(student, subjects);
+    
+    console.debug(`[Assignments job] Fetched ${past.length} past assessments`);
     
     // Create a lookup map from subject code to programme/metaclass
     const subjectLookup = new Map<string, { programme: number; metaclass: number }>();
@@ -233,9 +225,8 @@ export const assignmentsJob: Job = {
     
     // Skip fetching assessment details - the API endpoint doesn't exist or returns 404
     // Details are optional and not critical for search functionality
-    const detailPromises = new Map<string, Promise<string | null>>();
     
-    // Process all assessments
+    // Process ALL assessments (both upcoming and past) to ensure everything is indexed
     for (let i = 0; i < assessmentArray.length; i += batchSize) {
       const batch = assessmentArray.slice(i, i + batchSize);
       
@@ -250,8 +241,8 @@ export const assignmentsJob: Job = {
           
           processedIds.add(id);
           
-          // Process all assessments (both new and existing) to ensure metadata is up-to-date
-          // The indexer's merge logic will handle updates properly
+          // Process ALL assessments (both new and existing, upcoming and past)
+          // This ensures all historical assignments are indexed and metadata is up-to-date
 
           // Skip fetching details - API endpoint doesn't exist
           const description = "";
@@ -364,13 +355,14 @@ export const assignmentsJob: Job = {
   },
 
   purge: (items) => {
-    const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
+    // Keep ALL assignments - don't purge old ones as users may want to search for them
+    // Only remove items that are truly invalid (missing required metadata)
     return items.filter((i) => {
-      // Keep upcoming assignments and assignments from the last year
-      if (i.metadata.isUpcoming) {
-        return true;
-      }
-      return i.dateAdded >= oneYearAgo;
+      // Keep all items that have valid metadata
+      return i.metadata && 
+             i.metadata.assessmentId && 
+             i.metadata.programmeId !== undefined && 
+             i.metadata.metaclassId !== undefined;
     });
   },
 };
