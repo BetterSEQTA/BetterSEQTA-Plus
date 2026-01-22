@@ -66,7 +66,6 @@ const settings = defineSettings({
           // Close all database connections properly before deletion
           try {
             await resetDatabase();
-            console.log("betterseqta-index database closed and reset");
           } catch (e) {
             console.warn("Failed to reset betterseqta-index database:", e);
           }
