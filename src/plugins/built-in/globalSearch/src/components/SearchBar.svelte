@@ -35,6 +35,8 @@
   let isIndexing = $state(false);
   let completedJobs = $state(0);
   let totalJobs = $state(0);
+  let indexingStatus = $state<string | null>(null);
+  let indexingDetail = $state<string | null>(null);
 
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
@@ -110,10 +112,12 @@
 
   onMount(() => {
     const progressHandler = (event: CustomEvent) => {
-      const { completed, total, indexing } = event.detail;
+      const { completed, total, indexing, status, detail } = event.detail;
       completedJobs = completed;
       totalJobs = total;
       isIndexing = indexing;
+      indexingStatus = status || null;
+      indexingDetail = detail || null;
     };
 
     window.addEventListener('indexing-progress', progressHandler as EventListener);
@@ -400,15 +404,36 @@
               </div>
               {#if isIndexing}
                 <div class="inset-x-0 top-0">
-                  <div class="absolute right-2 -bottom-4 text-[10px] text-zinc-500 dark:text-zinc-400">
-                    Indexing
+                  <div class="absolute right-2 -bottom-6 flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span class="font-medium flex items-center gap-1">
+                      <svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Indexing
+                    </span>
+                    {#if totalJobs > 0}
+                      <span class="text-zinc-400 dark:text-zinc-500 font-mono">
+                        {completedJobs}/{totalJobs}
+                      </span>
+                      <span class="text-zinc-400 dark:text-zinc-500 font-mono">
+                        {Math.round((completedJobs / totalJobs) * 100)}%
+                      </span>
+                    {/if}
                   </div>
-                  <div class="overflow-hidden h-0.5 bg-zinc-200 dark:bg-zinc-700">
+                  <div class="overflow-hidden h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full shadow-inner">
                     <div 
-                      class="h-full bg-blue-500 transition-all duration-300 ease-out"
-                      style="width: {(completedJobs / totalJobs) * 100}%"
-                    ></div>
+                      class="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 transition-all duration-300 ease-out rounded-full relative overflow-hidden"
+                      style="width: {totalJobs > 0 ? Math.max(2, (completedJobs / totalJobs) * 100) : 0}%"
+                    >
+                      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                    </div>
                   </div>
+                  {#if indexingStatus || indexingDetail}
+                    <div class="absolute right-2 -bottom-10 text-[9px] text-zinc-400 dark:text-zinc-500 max-w-[250px] truncate" title={indexingStatus || indexingDetail}>
+                      {indexingStatus || indexingDetail}
+                    </div>
+                  {/if}
                 </div>
               {/if}
             </div>
