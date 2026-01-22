@@ -179,7 +179,6 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         });
         // If we at least have an assessmentId, try to navigate to the general assessments page
         if (hasAssessmentId) {
-          console.info("[Assessment Action] Attempting to navigate to assessments page with item filter");
           window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
         } else {
           console.warn("[Assessment Action] No valid assessment ID, redirecting to upcoming");
