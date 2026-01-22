@@ -50,31 +50,68 @@ const settings = defineSettings({
 
       if (confirmed) {
         try {
+          // Import resetDatabase function to properly close connections
+          const { resetDatabase } = await import("../indexing/db");
+          
           // Reset the vector worker first
-          const workerManager = VectorWorkerManager.getInstance();
-          await workerManager.resetWorker();
-          console.log("Vector worker reset successfully");
-        } catch (e) {
-          console.warn("Failed to reset vector worker:", e);
-        }
+          try {
+            const workerManager = VectorWorkerManager.getInstance();
+            await workerManager.resetWorker();
+            console.log("Vector worker reset successfully");
+          } catch (e) {
+            console.warn("Failed to reset vector worker:", e);
+          }
 
-        // Delete both 'embeddiaDB' and 'betterseqta-index' using native IndexedDB APIs
-        const deleteDb = (dbName: string) => {
-          return new Promise<void>((resolve, reject) => {
-            const req = indexedDB.deleteDatabase(dbName);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-            req.onblocked = () => {
-              reject(new Error(`One database is open, failed to remove: ${dbName}`));
-            };
-          });
-        };
-        try {
-          await deleteDb("embeddiaDB");
-          await deleteDb("betterseqta-index");
-          alert("Search index and storage have been reset.");
+          // Close all database connections properly before deletion
+          try {
+            await resetDatabase();
+            console.log("betterseqta-index database closed and reset");
+          } catch (e) {
+            console.warn("Failed to reset betterseqta-index database:", e);
+          }
+
+          // Wait a bit for connections to fully close
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // Delete embeddiaDB (vector search database)
+          const deleteDb = (dbName: string) => {
+            return new Promise<void>((resolve, reject) => {
+              const req = indexedDB.deleteDatabase(dbName);
+              req.onsuccess = () => {
+                console.log(`Successfully deleted database: ${dbName}`);
+                resolve();
+              };
+              req.onerror = () => {
+                console.error(`Error deleting database ${dbName}:`, req.error);
+                reject(req.error);
+              };
+              req.onblocked = () => {
+                console.warn(`Database ${dbName} deletion blocked - connections still open`);
+                // Wait and retry once
+                setTimeout(() => {
+                  const retryReq = indexedDB.deleteDatabase(dbName);
+                  retryReq.onsuccess = () => {
+                    console.log(`Successfully deleted database on retry: ${dbName}`);
+                    resolve();
+                  };
+                  retryReq.onerror = () => reject(retryReq.error);
+                  retryReq.onblocked = () => {
+                    reject(new Error(`One database is open, failed to remove: ${dbName}. Please close other tabs and try again.`));
+                  };
+                }, 500);
+              };
+            });
+          };
+          
+          try {
+            await deleteDb("embeddiaDB");
+            await deleteDb("betterseqta-index");
+            alert("Search index and storage have been reset successfully.");
+          } catch (e) {
+            alert("Failed to reset one or more databases: " + String(e) + "\n\nTry closing other browser tabs and try again.");
+          }
         } catch (e) {
-          alert("Failed to reset one or more databases: " + String(e));
+          alert("Failed to reset index: " + String(e));
         }
       }
     },

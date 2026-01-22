@@ -59,69 +59,150 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   }) as ActionHandler<any>,
 
   assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
-    console.debug("[Assessment Action] Navigating to assessment:", item.id, item.metadata);
+    // Deep clone the entire item to avoid Firefox XrayWrapper issues
+    // Firefox XrayWrapper prevents direct access to nested properties
+    let itemClone: IndexItem & { metadata: AssessmentMetadata };
+    let metadata: AssessmentMetadata;
     
-    if (item.metadata?.isMessageBased) {
+    try {
+      // First try to clone the entire item
+      itemClone = JSON.parse(JSON.stringify(item));
+      metadata = itemClone.metadata || {};
+    } catch (e) {
+      console.warn("[Assessment Action] Failed to clone item, trying to clone metadata separately:", e);
+      try {
+        // If full clone fails, try cloning just metadata
+        metadata = JSON.parse(JSON.stringify(item.metadata || {}));
+        itemClone = { ...item, metadata };
+      } catch (e2) {
+        console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
+        itemClone = item;
+        metadata = item.metadata || {} as AssessmentMetadata;
+      }
+    }
+    
+    // Try to extract metadata values using multiple methods to handle XrayWrapper
+    const getMetadataValue = (key: string, altKey?: string): any => {
+      try {
+        // Try direct access first
+        const value = metadata[key];
+        if (value !== undefined && value !== null) {
+          return value;
+        }
+        if (altKey) {
+          const altValue = metadata[altKey];
+          if (altValue !== undefined && altValue !== null) {
+            return altValue;
+          }
+        }
+        // Try accessing via Object.keys iteration (works around XrayWrapper)
+        try {
+          const keys = Object.keys(metadata);
+          for (const k of keys) {
+            if (k === key || k === altKey) {
+              const val = metadata[k];
+              if (val !== undefined && val !== null) {
+                return val;
+              }
+            }
+          }
+        } catch (e) {
+          // Object.keys might fail on XrayWrapper, that's okay
+        }
+        return undefined;
+      } catch (e) {
+        console.warn(`[Assessment Action] Failed to access metadata.${key}:`, e);
+        return undefined;
+      }
+    };
+    
+    // Log everything for debugging
+    console.log("[Assessment Action] Item ID:", itemClone.id);
+    try {
+      console.log("[Assessment Action] Metadata keys:", Object.keys(metadata));
+      console.log("[Assessment Action] Full metadata (stringified):", JSON.stringify(metadata, null, 2));
+    } catch (e) {
+      console.warn("[Assessment Action] Could not stringify metadata:", e);
+      console.log("[Assessment Action] Metadata (direct):", metadata);
+    }
+    
+    if (getMetadataValue('isMessageBased')) {
       window.location.hash = `#?page=/messages`;
 
       await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
 
       // Select the specific direct message
       ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
-        selected: new Set([item.metadata.messageId]),
+        selected: new Set([getMetadataValue('messageId')]),
       });
     } else {
-      // Use the correct URL format: /assessments/{programmeId}:{metaclassId}&item={assessmentId}
-      // Convert to numbers to handle string/number inconsistencies
-      let programmeId = item.metadata?.programmeId;
-      let metaclassId = item.metadata?.metaclassId;
-      let assessmentId = item.metadata?.assessmentId;
+      // Extract values - check both camelCase and PascalCase, and try multiple access methods
+      let programmeId = getMetadataValue('programmeId', 'programmeID');
+      let metaclassId = getMetadataValue('metaclassId', 'metaclassID');
+      let assessmentId = getMetadataValue('assessmentId', 'assessmentID');
       
       // Fallback: try to extract assessmentId from item ID if metadata is missing
-      if (!assessmentId && item.id && item.id.startsWith('assignment-')) {
-        const extractedId = item.id.replace('assignment-', '');
+      if ((assessmentId === undefined || assessmentId === null) && itemClone.id && itemClone.id.startsWith('assignment-')) {
+        const extractedId = itemClone.id.replace('assignment-', '');
         assessmentId = Number(extractedId) || extractedId;
-        console.debug("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
+        console.log("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
       }
       
-      // Convert to numbers for consistency
-      programmeId = Number(programmeId) || programmeId;
-      metaclassId = Number(metaclassId) || metaclassId;
-      assessmentId = Number(assessmentId) || assessmentId;
+      // Convert to numbers, but preserve 0 as valid
+      if (programmeId !== undefined && programmeId !== null && programmeId !== '') {
+        const num = Number(programmeId);
+        programmeId = isNaN(num) ? programmeId : num;
+      }
+      if (metaclassId !== undefined && metaclassId !== null && metaclassId !== '') {
+        const num = Number(metaclassId);
+        metaclassId = isNaN(num) ? metaclassId : num;
+      }
+      if (assessmentId !== undefined && assessmentId !== null && assessmentId !== '') {
+        const num = Number(assessmentId);
+        assessmentId = isNaN(num) ? assessmentId : num;
+      }
       
       // Check if values exist (including 0, which is a valid ID)
-      const hasProgrammeId = programmeId !== undefined && programmeId !== null && programmeId !== '';
-      const hasMetaclassId = metaclassId !== undefined && metaclassId !== null && metaclassId !== '';
-      const hasAssessmentId = assessmentId !== undefined && assessmentId !== null && assessmentId !== '';
+      // Use typeof check to properly handle 0
+      const hasProgrammeId = programmeId !== undefined && programmeId !== null && programmeId !== '' && typeof programmeId === 'number';
+      const hasMetaclassId = metaclassId !== undefined && metaclassId !== null && metaclassId !== '' && typeof metaclassId === 'number';
+      const hasAssessmentId = assessmentId !== undefined && assessmentId !== null && assessmentId !== '' && typeof assessmentId === 'number';
+      
+      console.log("[Assessment Action] Extracted values:", {
+        programmeId,
+        metaclassId,
+        assessmentId,
+        hasProgrammeId,
+        hasMetaclassId,
+        hasAssessmentId,
+        programmeIdType: typeof programmeId,
+        metaclassIdType: typeof metaclassId,
+        assessmentIdType: typeof assessmentId,
+      });
       
       if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
         const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
-        console.debug("[Assessment Action] Navigating to:", url, {
-          programmeId,
-          metaclassId,
-          assessmentId,
-          rawMetadata: item.metadata,
-        });
+        console.log("[Assessment Action] ✅ Navigating to:", url);
         window.location.hash = url;
       } else {
         // Fallback: try to navigate to assessments page if metadata is incomplete
-        console.warn("[Assessment Action] Missing required metadata:", {
+        console.error("[Assessment Action] ❌ Missing required metadata:", {
           programmeId,
           metaclassId,
           assessmentId,
           hasProgrammeId,
           hasMetaclassId,
           hasAssessmentId,
-          fullMetadata: item.metadata,
-          itemId: item.id,
-          itemKeys: Object.keys(item),
+          metadataKeys: Object.keys(metadata),
+          metadataString: JSON.stringify(metadata),
+          itemId: itemClone.id,
         });
         // If we at least have an assessmentId, try to navigate to the general assessments page
-        // The user can then find it manually
         if (hasAssessmentId) {
           console.info("[Assessment Action] Attempting to navigate to assessments page with item filter");
           window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
         } else {
+          console.warn("[Assessment Action] No valid assessment ID, redirecting to upcoming");
           window.location.hash = `#?page=/assessments/upcoming`;
         }
       }
