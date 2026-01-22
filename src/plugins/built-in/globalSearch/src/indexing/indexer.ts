@@ -396,18 +396,25 @@ export async function runIndexing(): Promise<void> {
   stopHeartbeat();
 
   allItemsInPrimaryStores = await loadAllStoredItems();
-  allItemsInPrimaryStores.forEach(item => {
-    const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
-    if (jobDef) {
-        const renderComponent = renderComponentMap[jobDef.renderComponentId];
-        if (renderComponent) {
-          item.renderComponent = renderComponent;
-        }
-    } else if (renderComponentMap[item.renderComponentId]) {
-        item.renderComponent = renderComponentMap[item.renderComponentId];
+  // Create new objects to avoid XrayWrapper issues in Firefox
+  const itemsWithComponents = allItemsInPrimaryStores.map(item => {
+    try {
+      const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
+      let renderComponent = item.renderComponent;
+      if (jobDef) {
+        renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
+      } else if (renderComponentMap[item.renderComponentId]) {
+        renderComponent = renderComponentMap[item.renderComponentId];
+      }
+      // Create a new object instead of modifying the existing one
+      return { ...item, renderComponent };
+    } catch (error) {
+      // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
+      console.warn("[Indexer] Failed to add render component to item (Firefox XrayWrapper):", error);
+      return item;
     }
   });
-  loadDynamicItems(allItemsInPrimaryStores);
+  loadDynamicItems(itemsWithComponents);
   window.dispatchEvent(new Event("dynamic-items-updated"));
 }
 

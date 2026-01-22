@@ -46,10 +46,27 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
         programme: subject.programme,
       });
       
-      if (res.payload && Array.isArray(res.payload)) {
+      // Past assessments API returns data in payload.tasks, not payload directly
+      if (res.payload && res.payload.tasks && Array.isArray(res.payload.tasks)) {
+        res.payload.tasks.forEach((assessment: any) => {
+          if (assessment && assessment.id) {
+            // Ensure programme and metaclass are included from the subject
+            map[assessment.id] = {
+              ...assessment,
+              programme: assessment.programme || assessment.programmeID || subject.programme,
+              metaclass: assessment.metaclass || assessment.metaclassID || subject.metaclass,
+            };
+          }
+        });
+      } else if (res.payload && Array.isArray(res.payload)) {
+        // Fallback: some APIs might return array directly
         res.payload.forEach((assessment: any) => {
           if (assessment && assessment.id) {
-            map[assessment.id] = assessment;
+            map[assessment.id] = {
+              ...assessment,
+              programme: assessment.programme || assessment.programmeID || subject.programme,
+              metaclass: assessment.metaclass || assessment.metaclassID || subject.metaclass,
+            };
           }
         });
       }
@@ -139,7 +156,13 @@ export const assignmentsJob: Job = {
     
     upcoming.forEach((a: any) => {
       if (a && a.id) {
-        allAssessments.set(a.id, { ...a, isUpcoming: true });
+        // Normalize field names - handle both programme/programmeID and metaclass/metaclassID
+        allAssessments.set(a.id, {
+          ...a,
+          programme: a.programme || a.programmeID,
+          metaclass: a.metaclass || a.metaclassID,
+          isUpcoming: true,
+        });
       }
     });
     
@@ -161,21 +184,9 @@ export const assignmentsJob: Job = {
     const assessmentArray = Array.from(allAssessments.values());
     const batchSize = 15; // Increased batch size for better performance
     
-    // Only fetch details for upcoming assignments to reduce API calls
-    const upcomingAssessments = assessmentArray.filter(a => a.isUpcoming);
+    // Skip fetching assessment details - the API endpoint doesn't exist or returns 404
+    // Details are optional and not critical for search functionality
     const detailPromises = new Map<string, Promise<string | null>>();
-    
-    // Pre-fetch details for upcoming assessments only (most important)
-    for (const assessment of upcomingAssessments.slice(0, 20)) {
-      if (assessment.metaclass && assessment.programme) {
-        const id = `assignment-${assessment.id}`;
-        detailPromises.set(id, fetchAssessmentDetails(
-          assessment.id,
-          assessment.metaclass,
-          assessment.programme,
-        ));
-      }
-    }
     
     // Process all assessments
     for (let i = 0; i < assessmentArray.length; i += batchSize) {
@@ -191,15 +202,26 @@ export const assignmentsJob: Job = {
           
           processedIds.add(id);
 
-          // Only fetch details for upcoming assignments (already pre-fetched)
-          let description = "";
-          const detailPromise = detailPromises.get(id);
-          if (detailPromise) {
-            description = (await detailPromise) || "";
-          }
+          // Skip fetching details - API endpoint doesn't exist
+          const description = "";
 
           const subjectName = assessment.subject || assessment.code || "Unknown Subject";
           const dueDate = assessment.due ? new Date(assessment.due).getTime() : null;
+          
+          // Normalize programme and metaclass IDs - handle both camelCase and PascalCase
+          const programmeId = assessment.programme || assessment.programmeID;
+          const metaclassId = assessment.metaclass || assessment.metaclassID;
+          
+          // Validate that we have the required IDs for navigation
+          if (!programmeId || !metaclassId || !assessment.id) {
+            console.warn(`[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`, {
+              programmeId,
+              metaclassId,
+              assessmentId: assessment.id,
+              assessment,
+            });
+            return null;
+          }
           
           const item: IndexItem = {
             id,
@@ -212,11 +234,12 @@ export const assignmentsJob: Job = {
               subject: subjectName,
               subjectCode: assessment.code,
               dueDate: assessment.due,
-              programmeId: assessment.programme,
-              metaclassId: assessment.metaclass,
+              programmeId: Number(programmeId) || programmeId, // Ensure it's a number
+              metaclassId: Number(metaclassId) || metaclassId, // Ensure it's a number
               submitted: assessment.submitted || false,
               isUpcoming: assessment.isUpcoming || false,
               term: assessment.term,
+              timestamp: assessment.due || new Date().toISOString(), // Required by AssessmentMetadata interface
             },
             actionId: "assessment",
             renderComponentId: "assessment",
