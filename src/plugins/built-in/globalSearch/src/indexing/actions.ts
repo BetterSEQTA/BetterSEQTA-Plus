@@ -59,7 +59,9 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   }) as ActionHandler<any>,
 
   assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
-    if (item.metadata.isMessageBased) {
+    console.debug("[Assessment Action] Navigating to assessment:", item.id, item.metadata);
+    
+    if (item.metadata?.isMessageBased) {
       window.location.hash = `#?page=/messages`;
 
       await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
@@ -69,7 +71,60 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         selected: new Set([item.metadata.messageId]),
       });
     } else {
-      window.location.hash = `#?page=/assessments&id=${item.metadata.assessmentId}`;
+      // Use the correct URL format: /assessments/{programmeId}:{metaclassId}&item={assessmentId}
+      // Convert to numbers to handle string/number inconsistencies
+      let programmeId = item.metadata?.programmeId;
+      let metaclassId = item.metadata?.metaclassId;
+      let assessmentId = item.metadata?.assessmentId;
+      
+      // Fallback: try to extract assessmentId from item ID if metadata is missing
+      if (!assessmentId && item.id && item.id.startsWith('assignment-')) {
+        const extractedId = item.id.replace('assignment-', '');
+        assessmentId = Number(extractedId) || extractedId;
+        console.debug("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
+      }
+      
+      // Convert to numbers for consistency
+      programmeId = Number(programmeId) || programmeId;
+      metaclassId = Number(metaclassId) || metaclassId;
+      assessmentId = Number(assessmentId) || assessmentId;
+      
+      // Check if values exist (including 0, which is a valid ID)
+      const hasProgrammeId = programmeId !== undefined && programmeId !== null && programmeId !== '';
+      const hasMetaclassId = metaclassId !== undefined && metaclassId !== null && metaclassId !== '';
+      const hasAssessmentId = assessmentId !== undefined && assessmentId !== null && assessmentId !== '';
+      
+      if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
+        const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
+        console.debug("[Assessment Action] Navigating to:", url, {
+          programmeId,
+          metaclassId,
+          assessmentId,
+          rawMetadata: item.metadata,
+        });
+        window.location.hash = url;
+      } else {
+        // Fallback: try to navigate to assessments page if metadata is incomplete
+        console.warn("[Assessment Action] Missing required metadata:", {
+          programmeId,
+          metaclassId,
+          assessmentId,
+          hasProgrammeId,
+          hasMetaclassId,
+          hasAssessmentId,
+          fullMetadata: item.metadata,
+          itemId: item.id,
+          itemKeys: Object.keys(item),
+        });
+        // If we at least have an assessmentId, try to navigate to the general assessments page
+        // The user can then find it manually
+        if (hasAssessmentId) {
+          console.info("[Assessment Action] Attempting to navigate to assessments page with item filter");
+          window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
+        } else {
+          window.location.hash = `#?page=/assessments/upcoming`;
+        }
+      }
     }
   }) as ActionHandler<any>,
 
