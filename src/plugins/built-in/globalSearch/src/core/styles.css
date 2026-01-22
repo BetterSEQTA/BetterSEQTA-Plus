@@ -82,3 +82,52 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* Progress indicator next to search trigger */
+.search-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  min-width: 120px;
+}
+
+.search-progress-bar-wrapper {
+  flex: 1;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  display: none;
+}
+
+.dark .search-progress-bar-wrapper {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb, #3b82f6);
+  transition: width 0.3s ease-out;
+  width: 0%;
+  position: relative;
+}
+
+.search-progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.search-progress-text {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  display: none;
+}
+
+.dark .search-progress-text {
+  color: #999;
+}
