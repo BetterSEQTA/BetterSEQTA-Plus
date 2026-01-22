@@ -1,16 +1,36 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../../indexing/types";
 import type { SearchResult } from "embeddia";
+import { isVectorSearchSupported } from "../../utils/browserDetection";
 
 let vectorIndex: EmbeddingIndex | null = null;
+let initializationAttempted = false;
+let initializationFailed = false;
 
 export async function initVectorSearch() {
+  // Skip initialization if already attempted and failed, or if not supported
+  if (initializationFailed || !isVectorSearchSupported()) {
+    if (!isVectorSearchSupported()) {
+      console.debug("[Vector Search] Vector search not supported in Firefox - using text search only");
+    }
+    return;
+  }
+
+  if (initializationAttempted) {
+    return;
+  }
+
+  initializationAttempted = true;
+
   try {
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
     vectorIndex.preloadIndexedDB();
+    console.debug("[Vector Search] Initialized successfully");
   } catch (e) {
-    console.error("Error initializing vector search", e);
+    console.warn("[Vector Search] Failed to initialize vector search (will use text search only):", e);
+    initializationFailed = true;
+    vectorIndex = null;
   }
 }
 
@@ -44,7 +64,17 @@ export async function searchVectors(
   query: string,
   topK: number = 20,
 ): Promise<VectorSearchResult[]> {
-  if (!vectorIndex) await initVectorSearch();
+  // Return empty array if vector search is not supported or failed to initialize
+  if (!isVectorSearchSupported() || initializationFailed) {
+    return [];
+  }
+
+  if (!vectorIndex) {
+    await initVectorSearch();
+    if (!vectorIndex) {
+      return [];
+    }
+  }
 
   // Normalize query for caching
   const normalizedQuery = query.trim().toLowerCase().slice(0, 100);
@@ -84,7 +114,20 @@ export async function searchVectors(
 }
 
 export async function refreshVectorCache() {
-  if (!vectorIndex) await initVectorSearch();
-  vectorIndex!.clearIndexedDBCache();
-  vectorIndex!.preloadIndexedDB();
+  if (!isVectorSearchSupported() || initializationFailed) {
+    return;
+  }
+  
+  if (!vectorIndex) {
+    await initVectorSearch();
+  }
+  
+  if (vectorIndex) {
+    try {
+      vectorIndex.clearIndexedDBCache();
+      vectorIndex.preloadIndexedDB();
+    } catch (e) {
+      console.warn("[Vector Search] Failed to refresh cache:", e);
+    }
+  }
 }

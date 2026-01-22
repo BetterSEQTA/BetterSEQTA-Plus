@@ -126,10 +126,16 @@ const globalSearchPlugin: Plugin<typeof settings> = {
 
     initVectorSearch();
 
-    // Warm up vector worker in background to improve initial response time
+    // Warm up vector worker in background to improve initial response time (skip in Firefox)
     setTimeout(async () => {
       try {
-        VectorWorkerManager.getInstance();
+        // Only initialize worker if vector search is supported
+        const { isVectorSearchSupported } = await import("../utils/browserDetection");
+        if (isVectorSearchSupported()) {
+          VectorWorkerManager.getInstance();
+        } else {
+          console.debug("[Global Search] Skipping vector worker warm-up (Firefox detected - using text search only)");
+        }
       } catch (error) {
         console.warn("[Global Search] Vector worker warm-up failed:", error);
       }
