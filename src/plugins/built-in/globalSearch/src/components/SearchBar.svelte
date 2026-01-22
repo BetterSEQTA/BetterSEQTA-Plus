@@ -167,7 +167,10 @@
       combinedResults = await doSearch(
         term, 
         commandsFuse, 
-        commandIdToItemMap, 
+        commandIdToItemMap,
+        dynamicContentFuse,
+        dynamicIdToItemMap,
+        true, // sortByRecent
       );
     } else {
       combinedResults = [];

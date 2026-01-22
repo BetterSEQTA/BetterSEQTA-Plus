@@ -617,8 +617,15 @@ export const messagesJob: Job = {
               } else if (renderComponentMap[item.renderComponentId]) {
                 renderComponent = renderComponentMap[item.renderComponentId];
               }
-              // Create a new object instead of modifying the existing one
-              return { ...item, renderComponent };
+              // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
+              try {
+                const cloned = JSON.parse(JSON.stringify(item));
+                cloned.renderComponent = renderComponent;
+                return cloned;
+              } catch (e) {
+                // Fallback to shallow copy if deep clone fails
+                return { ...item, renderComponent };
+              }
             } catch (error) {
               // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
               return item;
