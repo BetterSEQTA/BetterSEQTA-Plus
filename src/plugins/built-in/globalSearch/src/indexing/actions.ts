@@ -116,16 +116,6 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       }
     };
     
-    // Log everything for debugging
-    console.log("[Assessment Action] Item ID:", itemClone.id);
-    try {
-      console.log("[Assessment Action] Metadata keys:", Object.keys(metadata));
-      console.log("[Assessment Action] Full metadata (stringified):", JSON.stringify(metadata, null, 2));
-    } catch (e) {
-      console.warn("[Assessment Action] Could not stringify metadata:", e);
-      console.log("[Assessment Action] Metadata (direct):", metadata);
-    }
-    
     if (getMetadataValue('isMessageBased')) {
       window.location.hash = `#?page=/messages`;
 
