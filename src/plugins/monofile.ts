@@ -23,7 +23,7 @@ import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { isSEQTATeach } from "@/seqta/utils/platformDetection";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
@@ -206,7 +206,7 @@ async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
   
   // Set up route listener for Teach homepage early
-  if (isSEQTATeach()) {
+  if (isSEQTATeachSync()) {
     setupRouteListener();
   }
   
@@ -310,15 +310,21 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       break;
     case undefined:
       // Use platform-specific navigation for home page
+      // Only redirect if we're on the welcome page (not other pages like /messages, /timetable, etc.)
+      const currentPath = window.location.pathname;
+      const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
+      
       if (settingsState.defaultPage === "home") {
-        if (isSEQTATeach()) {
-          // Navigate to BetterSEQTA+ homepage (not welcome page)
-          if (!window.location.pathname.includes('/betterseqta-home')) {
-            window.location.replace(`${location.origin}/betterseqta-home`);
-            // Wait a bit for navigation, then load homepage
-            await delay(300);
+        if (isSEQTATeachSync()) {
+          // Only redirect from welcome page to BetterSEQTA+ home
+          if (isOnWelcomePage) {
+            // For Teach, wait for welcome page to load first, then navigate to BetterSEQTA+ home
+            // This ensures SEQTA's loading state is satisfied
+            await loadHomePage(); // This will wait for welcome page and then navigate
+          } else {
+            // Not on welcome page, just finish loading without redirecting
+            console.debug("[BetterSEQTA+] Not on welcome page, skipping redirect");
           }
-          loadHomePage();
         } else {
           window.location.replace(`${location.origin}/#?page=/home`);
           loadHomePage();
@@ -340,16 +346,17 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case "home":
     case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
       // Use platform-specific navigation
-      if (isSEQTATeach()) {
+      if (isSEQTATeachSync()) {
         // Check if homepage is already loaded
         const existingHome = document.getElementById("betterseqta-teach-home");
         const isOnHomePage = window.location.pathname.includes('/betterseqta-home');
         
         // Only navigate and load if not already done
         if (!isOnHomePage) {
-          window.location.replace(`${location.origin}/betterseqta-home`);
-          // Wait a bit for navigation, then load homepage
-          await delay(300);
+          // Use pushState to change URL without reloading
+          window.history.pushState({}, '', '/betterseqta-home');
+          // Trigger popstate event so route listener picks it up
+          window.dispatchEvent(new PopStateEvent('popstate'));
           console.info("[BetterSEQTA+] Started Init");
           if (settingsState.onoff) loadHomePage();
         } else if (!existingHome && settingsState.onoff) {
@@ -520,7 +527,7 @@ export function tryLoad() {
     if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
   }).catch(() => {
     // On Teach, .code might not exist, so call LoadPageElements directly
-    if (isSEQTATeach()) {
+    if (isSEQTATeachSync()) {
       LoadPageElements().catch((err) => {
         console.error("[BetterSEQTA+] Error loading page elements:", err);
       });
@@ -530,7 +537,7 @@ export function tryLoad() {
   // Fallback: Check for common elements that indicate page has loaded
   waitForElm("#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header", true, 30).then(() => {
     // On Teach, ensure LoadPageElements is called if it hasn't been already
-    if (isSEQTATeach()) {
+    if (isSEQTATeachSync()) {
       const codeElement = document.querySelector(".code");
       // Only call if .code doesn't exist (meaning the first waitForElm failed)
       if (!codeElement) {

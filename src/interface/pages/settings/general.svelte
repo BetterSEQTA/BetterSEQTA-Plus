@@ -15,6 +15,7 @@
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
+  import { isSEQTATeachSync } from "@/seqta/utils/platformDetection"
 
   // Union type representing all possible settings
   type SettingType =
@@ -48,7 +49,21 @@
     settings: Record<string, SettingType>;
   }
 
-  const pluginSettings = getAllPluginSettings() as Plugin[];
+  // Filter plugins for Teach platform - remove assessments-average, global-search, and lettergrade setting
+  const allPluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettings = isSEQTATeachSync() 
+    ? allPluginSettings.filter(plugin => 
+        plugin.pluginId !== 'assessments-average' && 
+        plugin.pluginId !== 'global-search'
+      ).map(plugin => {
+        // Remove lettergrade setting from any plugin if on Teach
+        if (plugin.settings && 'lettergrade' in plugin.settings) {
+          const { lettergrade, ...restSettings } = plugin.settings;
+          return { ...plugin, settings: restSettings };
+        }
+        return plugin;
+      })
+    : allPluginSettings;
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
   
   async function loadPluginSettings() {

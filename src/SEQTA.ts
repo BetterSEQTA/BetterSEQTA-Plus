@@ -42,7 +42,7 @@ if (document.childNodes[1]) {
 async function init() {
   // Use improved platform detection instead of just checking title format
   // This handles cases where title is "In brief - Student summary - SEQTA" etc.
-  const platform = detectSEQTAPlatform();
+  const platform = await detectSEQTAPlatform();
   const hasSEQTATitle = document.title.includes("SEQTA") || platform !== 'unknown';
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {

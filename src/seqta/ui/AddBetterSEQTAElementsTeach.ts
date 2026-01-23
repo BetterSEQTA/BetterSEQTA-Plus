@@ -176,8 +176,9 @@ async function createTeachHomeButton() {
   // Create home button matching Teach's navigation structure (icon-only)
   const homeButton = stringToHTML(
     /* html */`<a href="/betterseqta-home" id="betterseqta-teach-homebutton" data-betterseqta="true" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer;">
-      <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.46,13.97L5.82,21L12,17.27Z" />
+      <svg style="width: 24px; height: 24px;" viewBox="0 0 495.398 495.398" fill="currentColor">
+        <path d="M487.083,225.514l-75.08-75.08V63.704c0-15.682-12.708-28.391-28.413-28.391c-15.669,0-28.377,12.709-28.377,28.391 v29.941L299.31,37.74c-27.639-27.624-75.694-27.575-103.27,0.05L8.312,225.514c-11.082,11.104-11.082,29.071,0,40.158 c11.087,11.101,29.089,11.101,40.172,0l187.71-187.729c6.115-6.083,16.893-6.083,22.976-0.018l187.742,187.747 c5.567,5.551,12.825,8.312,20.081,8.312c7.271,0,14.541-2.764,20.091-8.312C498.17,254.586,498.17,236.619,487.083,225.514z"></path>
+        <path d="M257.561,131.836c-5.454-5.451-14.285-5.451-19.723,0L72.712,296.913c-2.607,2.606-4.085,6.164-4.085,9.877v120.401 c0,28.253,22.908,51.16,51.16,51.16h81.754v-126.61h92.299v126.61h81.755c28.251,0,51.159-22.907,51.159-51.159V306.79 c0-3.713-1.465-7.271-4.085-9.877L257.561,131.836z"></path>
       </svg>
     </a>`
   );
@@ -263,8 +264,15 @@ function setupTeachEventListeners() {
 
   homebutton?.addEventListener("click", function (e) {
     e.preventDefault();
-    // Navigate to BetterSEQTA+ homepage
-    window.location.href = "/betterseqta-home";
+    // Navigate to welcome page (keep valid route) but show BetterSEQTA+ homepage content
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/welcome' && !currentPath.endsWith('/welcome')) {
+      // Use pushState to change URL to /welcome (valid route) without reloading
+      window.history.pushState({}, '', '/welcome');
+      // Trigger popstate event so route listener picks it up
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+    // Load homepage (will check if already loaded)
     loadTeachHomePage();
   });
   

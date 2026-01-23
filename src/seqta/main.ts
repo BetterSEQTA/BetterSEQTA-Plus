@@ -30,19 +30,14 @@ export async function main() {
         }
         
         // Add platform detection to body for CSS targeting
-        // Try to detect platform, and retry if it returns unknown (title might not be set yet)
-        let platform = detectSEQTAPlatform();
+        // Use cached platform detection (will use cache if available, otherwise detect)
+        let platform = await detectSEQTAPlatform();
         
-        // If platform is unknown, wait a bit for title to be set and retry
+        // If platform is unknown, wait a bit for title/DOM to be ready and retry once
         if (platform === 'unknown') {
-          // Wait for title to be set (max 2 seconds)
-          let attempts = 0;
-          const maxAttempts = 20;
-          while (platform === 'unknown' && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            platform = detectSEQTAPlatform();
-            attempts++;
-          }
+          // Wait for title/DOM to be set (max 1 second)
+          await new Promise(resolve => setTimeout(resolve, 500));
+          platform = await detectSEQTAPlatform(true); // Force refresh if still unknown
         }
         
         document.body.setAttribute('data-seqta-platform', platform);

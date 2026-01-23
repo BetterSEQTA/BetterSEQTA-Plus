@@ -1176,6 +1176,10 @@ html.transparencyEffects
 }
 .home-root {
   width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   color: var(--text-primary);
   font-size: unset;
@@ -1210,6 +1214,7 @@ html.transparencyEffects
   gap: 32px;
   padding: 32px 64px;
   align-items: center;
+  min-height: fit-content;
 
   @media (max-width: 650px) {
     width: 100%;
@@ -1748,6 +1753,25 @@ iframe.userHTML {
 }
 [class*="Spinner__Spinner___"] > svg > path {
   stroke: var(--text-primary) !important;
+}
+
+// Hide SEQTA's loading indicators when on BetterSEQTA+ home page
+// This prevents SEQTA from showing a loading spinner while waiting for welcome page
+body:has(#betterseqta-teach-home),
+body:has([data-betterseqta-homepage="true"]) {
+  // Hide SEQTA's loading spinner
+  [class*="Spinner__Spinner___"],
+  [class*="Loading__Loading___"],
+  [class*="Loader__Loader___"] {
+    display: none !important;
+  }
+  
+  // Hide any loading overlays
+  [class*="Overlay__Overlay___"]:has([class*="Spinner"]),
+  [class*="Overlay__Overlay___"]:has([class*="Loading"]),
+  [class*="Overlay__Overlay___"]:has([class*="Loader"]) {
+    display: none !important;
+  }
 }
 #main > .reports > .item > .report > .term {
   color: var(--text-color);
@@ -12000,6 +12024,9 @@ body[data-seqta-platform="teach"] {
       margin: 4px !important;
       padding: 12px !important;
       transition: all 0.2s ease !important;
+      width: auto !important; // Override SEQTA's width: 100% rule to match other buttons
+      min-width: auto !important;
+      max-width: none !important;
       
       &:hover {
         background: var(--button-hover) !important;
@@ -12028,6 +12055,11 @@ body[data-seqta-platform="teach"] {
       flex: 1 !important;
     }
     
+    // Hide redundant SEQTA home button (we have our own)
+    a[class*="Spine__q___vhZqf"] {
+      display: none !important;
+    }
+    
     [class*="Spine__logout"] {
       color: var(--text-muted) !important;
       background: transparent !important;
@@ -12035,6 +12067,9 @@ body[data-seqta-platform="teach"] {
       margin: 4px !important;
       padding: 12px !important;
       transition: all 0.2s ease !important;
+      width: auto !important; // Override SEQTA's width: 100% rule to match other buttons
+      min-width: auto !important;
+      max-width: none !important;
       
       &:hover {
         background: rgba(255, 59, 48, 0.2) !important;

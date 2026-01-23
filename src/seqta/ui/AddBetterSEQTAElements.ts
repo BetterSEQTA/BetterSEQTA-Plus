@@ -10,7 +10,7 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
-import { isSEQTATeach } from "@/seqta/utils/platformDetection";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 
 let cachedUserInfo: any = null;
 
@@ -43,7 +43,7 @@ async function getUserInfo() {
 
 export async function AddBetterSEQTAElements() {
   // Use Teach-specific implementation when on Teach platform
-  if (isSEQTATeach()) {
+  if (isSEQTATeachSync()) {
     return AddBetterSEQTAElementsTeach();
   }
 
