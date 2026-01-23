@@ -49,6 +49,7 @@ export async function AddBetterSEQTAElements() {
 
   // Learn platform implementation (original)
   // Always create settings button and popup, regardless of onoff state
+  console.debug("[BetterSEQTA+] Learn platform detected, creating settings button");
   addExtensionSettings();
   await createSettingsButton();
   
@@ -61,17 +62,14 @@ export async function AddBetterSEQTAElements() {
       document.documentElement.classList.add("dark");
     }
 
-    // Learn platform: inject into menu
     const fragment = document.createDocumentFragment();
-    const menu = document.getElementById("menu");
-    if (menu) {
-      const menuList = menu.firstChild as HTMLElement;
-      if (menuList) {
-        createHomeButton(fragment, menuList);
-        createNewsButton(fragment, menu);
-        menuList.insertBefore(fragment, menuList.firstChild);
-      }
-    }
+    const menu = document.getElementById("menu")!;
+    const menuList = menu.firstChild as HTMLElement;
+
+    createHomeButton(fragment, menuList);
+    createNewsButton(fragment, menu);
+
+    menuList.insertBefore(fragment, menuList.firstChild);
 
     try {
       await Promise.all([
@@ -83,11 +81,9 @@ export async function AddBetterSEQTAElements() {
       console.error("Error initializing UI elements:", error);
     }
 
-    // Setup Learn-specific event listeners
     setupEventListeners();
-    customizeMenuToggle();
-    
     await addDarkLightToggle();
+    customizeMenuToggle();
   }
 }
 
@@ -277,8 +273,27 @@ function setupEventListeners() {
 async function createSettingsButton() {
   // Check if button already exists
   if (document.getElementById("AddedSettings")) {
-    return; // Button already exists, don't create another one
+    console.debug("[BetterSEQTA+] Settings button already exists");
+    return;
   }
+
+  // Wait for content div to be available
+  let ContentDiv = document.getElementById("content");
+  let attempts = 0;
+  const maxAttempts = 50; // Wait up to 5 seconds
+  
+  while (!ContentDiv && attempts < maxAttempts) {
+    await delay(100);
+    ContentDiv = document.getElementById("content");
+    attempts++;
+  }
+
+  if (!ContentDiv) {
+    console.error("[BetterSEQTA+] Could not find content div for Learn platform after waiting");
+    return;
+  }
+
+  console.debug("[BetterSEQTA+] Creating settings button for Learn platform");
 
   let SettingsButton = stringToHTML(/* html */ `
     <button class="addedButton tooltip" id="AddedSettings">
@@ -288,18 +303,17 @@ async function createSettingsButton() {
       ${settingsState.onoff ? '<div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div>' : ""}
     </button>
   `);
-  
+
   if (!SettingsButton.firstChild) {
     console.error("[BetterSEQTA+] Failed to create SettingsButton element");
     return;
   }
-  
-  // For Learn, append to content div
-  let ContentDiv = document.getElementById("content");
-  if (ContentDiv && SettingsButton.firstChild) {
+
+  try {
     ContentDiv.append(SettingsButton.firstChild);
-  } else {
-    console.error("[BetterSEQTA+] Could not find content div for Learn platform");
+    console.info("[BetterSEQTA+] Successfully created and appended settings button for Learn platform");
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error appending settings button:", error);
   }
 }
 
