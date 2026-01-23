@@ -6,6 +6,7 @@ import {
 import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 import Settings from "@/interface/pages/settings.svelte";
+import SettingsTeach from "@/interface/pages/settings-teach.svelte";
 import { isSEQTATeach } from "../platformDetection";
 
 let isSettingsRendered = false;
@@ -63,10 +64,13 @@ export function renderSettingsIfNeeded() {
 
   try {
     const shadow = extensionPopup.attachShadow({ mode: "open" });
+    // Use Teach-specific settings page when on Teach platform
+    const SettingsComponent = isSEQTATeach() ? SettingsTeach : Settings;
+    
     if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => renderSvelte(Settings, shadow));
+      requestIdleCallback(() => renderSvelte(SettingsComponent, shadow));
     } else {
-      renderSvelte(Settings, shadow);
+      renderSvelte(SettingsComponent, shadow);
     }
     isSettingsRendered = true;
   } catch (err) {

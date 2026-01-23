@@ -2,6 +2,7 @@ import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings"
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
+import { AddBetterSEQTAElementsTeach } from "./AddBetterSEQTAElementsTeach";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
@@ -41,6 +42,12 @@ async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
+  // Use Teach-specific implementation when on Teach platform
+  if (isSEQTATeach()) {
+    return AddBetterSEQTAElementsTeach();
+  }
+
+  // Learn platform implementation (original)
   // Always create settings button and popup, regardless of onoff state
   addExtensionSettings();
   await createSettingsButton();
@@ -54,41 +61,31 @@ export async function AddBetterSEQTAElements() {
       document.documentElement.classList.add("dark");
     }
 
-    // Create platform-specific navigation elements
-    if (!isSEQTATeach()) {
-      // Learn platform: inject into menu
-      const fragment = document.createDocumentFragment();
-      const menu = document.getElementById("menu");
-      if (menu) {
-        const menuList = menu.firstChild as HTMLElement;
-        if (menuList) {
-          createHomeButton(fragment, menuList);
-          createNewsButton(fragment, menu);
-          menuList.insertBefore(fragment, menuList.firstChild);
-        }
+    // Learn platform: inject into menu
+    const fragment = document.createDocumentFragment();
+    const menu = document.getElementById("menu");
+    if (menu) {
+      const menuList = menu.firstChild as HTMLElement;
+      if (menuList) {
+        createHomeButton(fragment, menuList);
+        createNewsButton(fragment, menu);
+        menuList.insertBefore(fragment, menuList.firstChild);
       }
-    } else {
-      // Teach platform: inject into Spine navbar
-      await createTeachHomeButton();
     }
 
     try {
       await Promise.all([
         appendBackgroundToUI(),
-        // Only call Learn-specific functions on Learn platform
-        ...(isSEQTATeach() ? [] : [handleUserInfo(), handleStudentData()]),
+        handleUserInfo(),
+        handleStudentData(),
       ]);
     } catch (error) {
       console.error("Error initializing UI elements:", error);
     }
 
-    // Setup platform-specific event listeners
-    if (!isSEQTATeach()) {
-      setupEventListeners();
-      customizeMenuToggle();
-    } else {
-      setupTeachEventListeners();
-    }
+    // Setup Learn-specific event listeners
+    setupEventListeners();
+    customizeMenuToggle();
     
     await addDarkLightToggle();
   }
@@ -105,72 +102,6 @@ function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
   );
   if (NewButton.firstChild) {
     fragment.appendChild(NewButton.firstChild);
-  }
-}
-
-async function createTeachHomeButton() {
-  // Wait for the Spine navbar to be available
-  let spineNavbar: HTMLElement | null = null;
-  let attempts = 0;
-  const maxAttempts = 50; // Wait up to 5 seconds
-
-  while (!spineNavbar && attempts < maxAttempts) {
-    await delay(100);
-    // Try multiple selectors to find the Spine navbar
-    spineNavbar = (document.querySelector("#root > div > div.Spine__Spine___zYUJ6.tour-spine") ||
-                   document.querySelector("#root > div > div[class*='Spine__Spine'].tour-spine") ||
-                   document.querySelector("#root > div > div[class*='Spine__Spine']")) as HTMLElement | null;
-    attempts++;
-  }
-
-  if (!spineNavbar) {
-    console.error("[BetterSEQTA+] Could not find Spine navbar element for Teach platform");
-    return;
-  }
-
-  // Check if home button already exists
-  if (document.getElementById("betterseqta-teach-homebutton")) {
-    return; // Button already exists
-  }
-
-  // Find the navigation container - look for the container that holds navigation links
-  // Based on the snapshot, navigation items are direct children or in a nested container
-  let navContainer: HTMLElement | null = null;
-  
-  // Try to find a container with navigation links (links with href attributes)
-  const possibleContainers = spineNavbar.querySelectorAll("div, nav");
-  for (const container of Array.from(possibleContainers)) {
-    const links = container.querySelectorAll("a[href]");
-    if (links.length > 0) {
-      navContainer = container as HTMLElement;
-      break;
-    }
-  }
-  
-  // Fallback: use the first child element or the spine navbar itself
-  if (!navContainer) {
-    navContainer = (spineNavbar.firstElementChild || spineNavbar) as HTMLElement;
-  }
-  
-  if (!navContainer) {
-    console.error("[BetterSEQTA+] Could not find navigation container in Spine navbar");
-    return;
-  }
-
-  // Create home button matching Teach's navigation structure (icon-only)
-  // Use a star icon to represent BetterSEQTA+
-  const homeButton = stringToHTML(
-    /* html */`<a href="/betterseqta-home" id="betterseqta-teach-homebutton" data-betterseqta="true" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer;">
-      <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.46,13.97L5.82,21L12,17.27Z" />
-      </svg>
-    </a>`
-  );
-
-  if (homeButton.firstChild) {
-    // Insert at the beginning of the navigation container
-    navContainer.insertBefore(homeButton.firstChild, navContainer.firstChild);
-    console.info("[BetterSEQTA+] Successfully injected home button into Teach navbar");
   }
 }
 
@@ -322,35 +253,17 @@ function setupEventListeners() {
   });
 
   menuCover?.addEventListener("click", function () {
-    // Only navigate on Learn, not Teach (to avoid cross-origin security errors)
-    if (!isSEQTATeach()) {
-      try {
-        location.href = "../#?page=/home";
-        loadHomePage();
-      } catch (error) {
-        // Fallback: just load homepage without navigation
-        console.warn("[BetterSEQTA+] Navigation failed, loading homepage directly");
-        loadHomePage();
-      }
-    } else {
-      // For Teach, navigate to BetterSEQTA+ homepage
-      window.location.href = "/betterseqta-home";
+    try {
+      location.href = "../#?page=/home";
+      loadHomePage();
+    } catch (error) {
+      // Fallback: just load homepage without navigation
+      console.warn("[BetterSEQTA+] Navigation failed, loading homepage directly");
       loadHomePage();
     }
     (
       document.getElementById("menu")!.firstChild! as HTMLElement
     ).classList.remove("noscroll");
-  });
-}
-
-function setupTeachEventListeners() {
-  const homebutton = document.getElementById("betterseqta-teach-homebutton");
-
-  homebutton?.addEventListener("click", function (e) {
-    e.preventDefault();
-    // Navigate to BetterSEQTA+ homepage
-    window.location.href = "/betterseqta-home";
-    loadHomePage();
   });
 }
 
@@ -374,43 +287,12 @@ async function createSettingsButton() {
     return;
   }
   
-  if (isSEQTATeach()) {
-    // For Teach, wait for header to exist and append to it
-    let header = document.querySelector("#root > div > main > header");
-    let attempts = 0;
-    const maxAttempts = 50; // Wait up to 5 seconds
-    
-    while (!header && attempts < maxAttempts) {
-      await delay(100);
-      header = document.querySelector("#root > div > main > header");
-      attempts++;
-    }
-    
-    if (header && SettingsButton.firstChild) {
-      // Insert before the profile menu (last child) or after the spacer
-      const spacer = header.querySelector(".spacer");
-      if (spacer && spacer.nextSibling) {
-        header.insertBefore(SettingsButton.firstChild, spacer.nextSibling);
-      } else {
-        // Fallback: append before the profile menu
-        const profileMenu = header.querySelector(".ProfileMenu__ProfileMenu___d4v98");
-        if (profileMenu) {
-          header.insertBefore(SettingsButton.firstChild, profileMenu);
-        } else {
-          header.appendChild(SettingsButton.firstChild);
-        }
-      }
-    } else {
-      console.error("[BetterSEQTA+] Could not find header element for Teach platform");
-    }
+  // For Learn, append to content div
+  let ContentDiv = document.getElementById("content");
+  if (ContentDiv && SettingsButton.firstChild) {
+    ContentDiv.append(SettingsButton.firstChild);
   } else {
-    // For Learn, use the original logic
-    let ContentDiv = document.getElementById("content");
-    if (ContentDiv && SettingsButton.firstChild) {
-      ContentDiv.append(SettingsButton.firstChild);
-    } else {
-      console.error("[BetterSEQTA+] Could not find content div for Learn platform");
-    }
+    console.error("[BetterSEQTA+] Could not find content div for Learn platform");
   }
 }
 
@@ -441,43 +323,12 @@ async function addDarkLightToggle() {
     return;
   }
 
-  if (isSEQTATeach()) {
-    // For Teach, wait for header to exist and append to it
-    let header = document.querySelector("#root > div > main > header");
-    let attempts = 0;
-    const maxAttempts = 50; // Wait up to 5 seconds
-    
-    while (!header && attempts < maxAttempts) {
-      await delay(100);
-      header = document.querySelector("#root > div > main > header");
-      attempts++;
-    }
-    
-    if (header && LightDarkModeButton.firstChild) {
-      // Insert after the settings button or before the profile menu
-      const settingsButton = header.querySelector("#AddedSettings");
-      if (settingsButton && settingsButton.nextSibling) {
-        header.insertBefore(LightDarkModeButton.firstChild, settingsButton.nextSibling);
-      } else {
-        // Fallback: insert before the profile menu
-        const profileMenu = header.querySelector("[class*='ProfileMenu']");
-        if (profileMenu) {
-          header.insertBefore(LightDarkModeButton.firstChild, profileMenu);
-        } else {
-          header.appendChild(LightDarkModeButton.firstChild);
-        }
-      }
-    } else {
-      console.error("[BetterSEQTA+] Could not find header element for Teach platform");
-    }
+  // For Learn, append to content div
+  let ContentDiv = document.getElementById("content");
+  if (ContentDiv && LightDarkModeButton.firstChild) {
+    ContentDiv.append(LightDarkModeButton.firstChild);
   } else {
-    // For Learn, use the original logic
-    let ContentDiv = document.getElementById("content");
-    if (ContentDiv && LightDarkModeButton.firstChild) {
-      ContentDiv.append(LightDarkModeButton.firstChild);
-    } else {
-      console.error("[BetterSEQTA+] Could not find content div for Learn platform");
-    }
+    console.error("[BetterSEQTA+] Could not find content div for Learn platform");
   }
 
   updateAllColors();

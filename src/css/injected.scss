@@ -196,13 +196,21 @@ select {
 [class*="LegacyModuleBody__LegacyModule___"] {
   background: transparent;
 }
-#AddedSettings {
-  top: 17.5px !important;
-  z-index: 21 !important;
-}
+// Removed fixed positioning for Teach - buttons now flow in Spine
+// #AddedSettings positioning handled by Spine-specific styles
 .addedButton {
-  position: absolute !important;
-  right: 105px;
+  // Only apply absolute positioning for Learn platform, not Teach Spine
+  &:not([data-betterseqta="true"]) {
+    position: absolute !important;
+    right: 105px;
+  }
+  
+  // Override for Teach Spine buttons
+  &[data-betterseqta="true"] {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+  }
   padding: 6px !important;
   overflow: unset !important;
   border-radius: 10px !important;
@@ -5222,6 +5230,59 @@ body[data-seqta-platform="teach"] {
         background: var(--background-secondary) !important;
         color: var(--text-primary) !important;
       }
+    }
+  }
+
+  // Header button fixes - icon centering and spacing
+  #root > div > main > header {
+    // Ensure proper flexbox layout with space-between to push buttons to right
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0 !important; // Remove gap, use margins instead
+    
+    // Spacer should push content to right
+    .spacer {
+      display: block !important;
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+    }
+    
+    // Create a container for all right-side buttons (BetterSEQTA + SEQTA)
+    // Group BetterSEQTA and SEQTA buttons together on the right
+    .spacer ~ button,
+    .spacer ~ [class*="ProfileMenu__"] {
+      // All buttons after spacer should be grouped together
+      margin-left: 8px !important;
+    }
+    
+    // First button after spacer should have no left margin
+    .spacer ~ button:first-of-type,
+    .spacer ~ [class*="ProfileMenu__"]:first-of-type {
+      margin-left: 0 !important;
+    }
+    
+    // Fix button icon centering
+    button.addedButton,
+    button[class*="addedButton"] {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: relative !important; // Change from fixed to relative
+      margin: 0 !important;
+      
+      svg,
+      img {
+        display: block !important;
+        margin: 0 !important;
+        vertical-align: middle !important;
+      }
+    }
+    
+    // SEQTA buttons should maintain their styling
+    button[class*="Chrome__actionButton___"],
+    [class*="ProfileMenu__"] {
+      margin-left: 8px !important;
     }
   }
 
@@ -11962,6 +12023,74 @@ body[data-seqta-platform="teach"] {
         height: 24px !important;
       }
     }
+    
+    // BetterSEQTA+ buttons in Spine - ensure they flow naturally like native icons
+    a[data-betterseqta="true"],
+    button[data-betterseqta="true"],
+    #AddedSettings[data-betterseqta="true"],
+    #LightDarkModeButton[data-betterseqta="true"],
+    #betterseqta-teach-homebutton[data-betterseqta="true"] {
+      position: static !important; // Override any fixed/absolute positioning
+      top: auto !important;
+      right: auto !important;
+      left: auto !important;
+      bottom: auto !important;
+      color: var(--text-secondary) !important;
+      background: transparent !important;
+      border-radius: 8px !important;
+      margin: 4px !important;
+      padding: 12px !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: auto !important;
+      height: auto !important;
+      min-width: auto !important;
+      z-index: auto !important;
+      
+      &:hover {
+        background: var(--button-hover) !important;
+        color: var(--text-primary) !important;
+        transform: translateX(2px) !important;
+      }
+      
+      &.active,
+      &[class*="active"] {
+        background: var(--button-active) !important;
+        color: var(--text-primary) !important;
+        box-shadow: inset 3px 0 0 var(--accent-bg) !important;
+      }
+      
+      svg {
+        fill: currentColor !important;
+        width: 24px !important;
+        height: 24px !important;
+        display: block !important;
+        margin: 0 !important;
+      }
+      
+      // Tooltip styling for Spine buttons - hidden by default, shown on hover
+      .tooltiptext {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        left: 100% !important;
+        margin-left: 8px !important;
+        top: 50% !important;
+        transform: translateY(-50%) scale(0) !important;
+        white-space: nowrap !important;
+        transition: opacity 0.2s ease, transform 0.2s ease !important;
+        pointer-events: none !important;
+      }
+      
+      // Show tooltip on hover
+      &:hover .tooltiptext {
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: translateY(-50%) scale(1) !important;
+        pointer-events: auto !important;
+      }
+    }
   }
   
   // Tier 2: Page List (medium shade)
@@ -12331,84 +12460,17 @@ body[data-seqta-platform="teach"] {
     }
   }
 
-  // BetterSEQTA Settings Button Integration for SEQTA Teach
-  #AddedSettings {
-    position: fixed !important;
-    top: 16px !important;
-    right: 280px !important;
-    z-index: 1000 !important;
-    background: var(--button-bg) !important;
-    color: var(--text-secondary) !important;
-    border: 1px solid var(--border-primary) !important;
-    border-radius: 50% !important;
-    width: 44px !important;
-    height: 44px !important;
-    padding: 10px !important;
-    transition: all 0.2s ease !important;
-    
-    &:hover {
-      background: var(--button-hover) !important;
-      color: var(--text-primary) !important;
-      transform: scale(1.05) !important;
-      box-shadow: var(--shadow-md) !important;
-    }
-    
-    svg {
-      fill: currentColor !important;
-      width: 20px !important;
-      height: 20px !important;
-    }
-    
-    .tooltiptext {
-      background: var(--accent-bg) !important;
-      color: var(--text-on-accent) !important;
-      border: 1px solid var(--border-primary) !important;
-      border-radius: 6px !important;
-      font-family: Rubik, sans-serif !important;
-      font-size: 12px !important;
-      padding: 6px 8px !important;
-      white-space: nowrap !important;
-    }
-  }
+  // BetterSEQTA Settings Button Integration for SEQTA Teach - REMOVED fixed positioning
+  // Buttons now flow naturally in Spine navigation (handled by data-betterseqta styles above)
 
-  // Dark/Light Mode Toggle Integration for SEQTA Teach  
-  #LightDarkModeButton {
-    position: fixed !important;
-    top: 16px !important;
-    right: 330px !important;
+  // Settings popup positioning for Teach - appear next to Spine
+  .outside-container {
+    left: 72px !important; // Position next to Spine (Spine width is 72px)
+    right: auto !important;
+    top: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
     z-index: 1000 !important;
-    background: var(--button-bg) !important;
-    color: var(--text-secondary) !important;
-    border: 1px solid var(--border-primary) !important;
-    border-radius: 50% !important;
-    width: 44px !important;
-    height: 44px !important;
-    padding: 10px !important;
-    transition: all 0.2s ease !important;
-    
-    &:hover {
-      background: var(--button-hover) !important;
-      color: var(--text-primary) !important;
-      transform: scale(1.05) !important;
-      box-shadow: var(--shadow-md) !important;
-    }
-    
-    svg {
-      fill: currentColor !important;
-      width: 20px !important;
-      height: 20px !important;
-    }
-    
-    .tooltiptext {
-      background: var(--accent-bg) !important;
-      color: var(--text-on-accent) !important;
-      border: 1px solid var(--border-primary) !important;
-      border-radius: 6px !important;
-      font-family: Rubik, sans-serif !important;
-      font-size: 12px !important;
-      padding: 6px 8px !important;
-      white-space: nowrap !important;
-    }
   }
 
   // Marksbook/Gradebook styling
