@@ -5128,6 +5128,103 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Programme List / List of programmes light mode fixes
+  .programmeListFilters.filterBox,
+  [class*="programmeListFilters"] {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // Programme card elements with very light backgrounds
+  .title,
+  [class*="programme"] .title {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .owner,
+  [class*="programme"] .owner {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .course,
+  [class*="programme"] .course {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .actions,
+  [class*="programme"] .actions {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // Toolbar with light background
+  [class*="Toolbar__Toolbar___"],
+  [class*="LegacyPage__toolbar___"] {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // Iframe wrapper with light background
+  .iframeWrapper.outline,
+  [class*="iframeWrapper"] {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // Buttons with light backgrounds and dark text
+  button.uiButton.select.person,
+  button[class*="uiButton"][class*="select"][class*="person"] {
+    background: var(--button-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-primary) !important;
+  }
+
+  // Input fields with light backgrounds
+  input.uiShortText,
+  input[class*="uiShortText"] {
+    background: var(--button-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-primary) !important;
+    
+    &::placeholder {
+      color: var(--text-muted) !important;
+    }
+  }
+
+  // Checkboxes with light backgrounds
+  input.uiCheckbox,
+  input[class*="uiCheckbox"] {
+    background: var(--button-bg) !important;
+    border-color: var(--border-primary) !important;
+  }
+
+  // Table footer (tfoot) styling for programme list
+  [class*="programmeListWrapper"] table tfoot,
+  [class*="tableContainer"] table tfoot {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+    
+    tr {
+      background: var(--background-secondary) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    td,
+    th {
+      background: var(--background-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-primary) !important;
+      
+      &.selection {
+        background: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
   // Dashboard specific styling
   .dashboard {
     background: transparent !important;
