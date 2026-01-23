@@ -50,10 +50,12 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS;
     document.head.appendChild(documentLoadStyle);
 
-    const icon = document.querySelector(
-      'link[rel*="icon"]',
-    )! as HTMLLinkElement;
-    icon.href = icon48; // Change the icon
+    const icons =
+      document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]');
+
+    icons.forEach((link) => {
+      link.href = icon48;
+    });
 
     try {
       await initializeSettingsState();
