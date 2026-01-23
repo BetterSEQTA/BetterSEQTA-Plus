@@ -1978,6 +1978,14 @@ div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
 [class*="TabSet__TabSet___"] > [class*="TabSet__tabContainer___"] {
   background: unset;
 }
+// Fix non-selected tab text color (for Direqt messages inbox tabs)
+[class*="TabSet__TabSet___"] > ol[class*="TabSet__tabs___"] > li:not([class*="selected"]):not([class*="active"]) {
+  color: var(--text-primary) !important;
+  
+  .dark & {
+    color: var(--text-primary) !important;
+  }
+}
 [class*="BasicPanel__BasicPanel___"] {
   background: var(--background-primary);
 }
@@ -5087,6 +5095,35 @@ body[data-seqta-platform="teach"] {
       
       &::placeholder {
         color: var(--text-muted) !important;
+      }
+    }
+  }
+
+  // Direqt Messages styling
+  [class*="Viewer__sidebar___"] {
+    // Fix white "add folder" button - specific targeting
+    [class*="LabelList__LabelMaker___"] button[class*="Button__Button___"] {
+      background: var(--button-bg) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border-primary) !important;
+    }
+    
+    // Fix non-selected inbox tab text (black text should be white/light)
+    // Tabs are list items inside ol, non-selected ones don't have LabelList__selected___ class
+    ol > li:not([class*="LabelList__selected___"]) {
+      color: var(--text-primary) !important;
+    }
+  }
+  
+  // Also target Viewer components more broadly
+  [class*="Viewer__"] {
+    // Fix any white buttons
+    button[class*="Button__Button___"] {
+      &[style*="background-color: rgb(255, 255, 255)"],
+      &[style*="background-color:rgb(255,255,255)"] {
+        background: var(--button-bg) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-primary) !important;
       }
     }
   }
