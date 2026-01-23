@@ -1,5 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import { componentSetting, defineSettings, numberSetting } from "@/plugins/core/settingsHelpers";
+import { componentSetting, defineSettings, numberSetting, booleanSetting } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
@@ -7,7 +7,7 @@ import localforage from "localforage";
 const settings = defineSettings({
   uploader: componentSetting({
     title: "Background Music",
-    description: "Upload a .wav audio file to play in the background.",
+    description: "Upload a .wav or .mp3 audio file to play in the background.",
     component: BackgroundMusicSetting,
   }),
   volume: numberSetting({
@@ -17,6 +17,11 @@ const settings = defineSettings({
     min: 0,
     max: 1,
     step: 0.05,
+  }),
+  pauseOnHidden: booleanSetting({
+    title: "Pause when tab hidden",
+    description: "Pause music when switching to another tab or minimizing the browser",
+    default: true,
   }),
 });
 
@@ -110,6 +115,14 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       if (currentAudio) currentAudio.volume = Math.max(0, Math.min(1, vol));
     });
 
+    api.settings.onChange("pauseOnHidden" as any, (value: any) => {
+      const pauseOnHidden = (typeof value === "boolean" ? value : true) as boolean;
+      // If the setting is disabled and audio is currently paused due to tab being hidden, resume it
+      if (!pauseOnHidden && currentAudio && currentAudio.paused && document.visibilityState === "hidden") {
+        currentAudio.play().catch(() => {});
+      }
+    });
+
     // Note: Stop button/event removed by user; no stop handling needed
 
     // Start if we have audio and autoplay is enabled
@@ -124,9 +137,12 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     (window as any).__betterseqta_bg_music_cancel__ = cancel;
     tryStart();
 
-    // Pause on tab hide, resume on show with a small delay
+    // Pause on tab hide, resume on show with a small delay (if enabled)
     const visHandler = () => {
       if (!currentAudio) return;
+      const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
+      if (!pauseOnHidden) return;
+      
       if (document.visibilityState === "hidden") {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);

@@ -25,12 +25,10 @@ import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSEQTATeach } from "@/seqta/utils/platformDetection";
 import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
-import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
-//import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
+import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
-import {
-  updateTimetableTimes,
-} from "@/seqta/utils/updateTimetableTimes";
+import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
 // JSON content
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
@@ -98,7 +96,12 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk")) {
+  // Check and show privacy statement notification (before what's new)
+  if (!document.getElementById("privacy-notification")) {
+    await showPrivacyNotification();
+  }
+
+  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
     OpenWhatsNewPopup();
   }
 }

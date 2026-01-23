@@ -11,13 +11,16 @@
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/Whatsnew";
-  import { OpenMinecraftServerPopup } from "@/seqta/utils/AboutMinecraftServer";
+  import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+  //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
+  import DisclaimerModal from "../components/DisclaimerModal.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
 
   let devModeSequence = "";
+  let showDisclaimerModal = $state(false);
+  let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
 
   const handleDevModeToggle = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -50,13 +53,23 @@
     closeExtensionPopup();
   };
 
-  const openMinecraftServer = () => {
+  /* const openMinecraftServer = () => {
     OpenMinecraftServerPopup();
+    closeExtensionPopup();
+  }; */
+
+  const openPrivacyStatement = () => {
+    window.open("https://betterseqta.org/privacy", "_blank");
     closeExtensionPopup();
   };
 
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
+
+  const showDisclaimer = (onConfirm: () => void, onCancel: () => void) => {
+    disclaimerCallbacks = { onConfirm, onCancel };
+    showDisclaimerModal = true;
+  };
 
   onMount(async () => {
     settingsPopup.addListener(() => {
@@ -101,25 +114,34 @@
       />
 
       {#if !standalone}
-        <button
-          onclick={openAbout}
-          class="absolute top-1 right-[62px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
-        >
-          {"\ueb73"}
-        </button>
+        <div class="flex absolute top-1 right-1 gap-1 items-center">
+          <button
+            onclick={openAbout}
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          >
+            {"\ueb73"}
+          </button>
 
-        <button
-          onclick={openChangelog}
-          class="absolute top-1 right-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
-        >
-          {"\ue929"}
-        </button>
+          <button
+            onclick={openChangelog}
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          >
+            {"\ue929"}
+          </button>
 
-        <button
-          onclick={openMinecraftServer}
-          class="absolute top-1 right-1 w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-xl p-1"
-          aria-label="Open Minecraft Server"
-        >
+          <button
+            onclick={openPrivacyStatement}
+            class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+            aria-label="Privacy Statement"
+          >
+            {"\uecba"}
+          </button>
+
+          <!-- <button
+            onclick={openMinecraftServer}
+            class="flex justify-center items-center p-1 w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-700"
+            aria-label="Open Minecraft Server"
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 64 70"
@@ -247,7 +269,8 @@
               transform="translate(18,10)"
             />
           </svg>
-        </button>
+        </button> -->
+        </div>
       {/if}
     </div>
 
@@ -256,7 +279,7 @@
         {
           title: "Settings",
           Content: Settings,
-          props: { showColourPicker: openColourPicker },
+          props: { showColourPicker: openColourPicker, showDisclaimer },
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
@@ -272,3 +295,27 @@
     />
   {/if}
 </div>
+
+{#if showDisclaimerModal && disclaimerCallbacks}
+  <DisclaimerModal
+    title="Assessment Averages Disclaimer"
+    message="This feature calculates a simple average of your assessment grades. It does not take into account:
+• Assessment weightings
+• Different grading scales
+• Other factors used in official reports
+
+The displayed average may be inaccurate compared to your actual marks found in reports.
+
+Do you want to enable this feature?"
+    onConfirm={() => {
+      disclaimerCallbacks?.onConfirm();
+      showDisclaimerModal = false;
+      disclaimerCallbacks = null;
+    }}
+    onCancel={() => {
+      disclaimerCallbacks?.onCancel();
+      showDisclaimerModal = false;
+      disclaimerCallbacks = null;
+    }}
+  />
+{/if}

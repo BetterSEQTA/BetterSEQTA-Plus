@@ -8,12 +8,16 @@
   object-fit: cover;
   z-index: 4;
   box-shadow: 0 0 0 3px #000000;
+  transition: box-shadow 0.05s ease-in-out;
 }
 
 .dark .userInfoImg {
   box-shadow: 0 0 0 3px #ffffff;
+  transition: box-shadow 0.05s ease-in-out;
 }
 
-.userInfosvgdiv {
-  filter: invert(0) !important;
+@media (prefers-reduced-motion: reduce) {
+  .userInfoImg {
+    transition: none !important;
+  }
 }

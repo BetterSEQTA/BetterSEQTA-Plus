@@ -147,14 +147,21 @@ export class ThemeManager {
   public async initialize(): Promise<void> {
     console.debug("[ThemeManager] Starting initialization");
     try {
-      // Check if theme creator was open during reload
+      const neumorphicThemeId = "9a9786d1-b5fc-4a91-8c7a-f8bf7f7679ad";
+      const migrationCSS = "#title {\nbackground: transparent !important;\n}";
+      
+      const theme = (await localforage.getItem(neumorphicThemeId)) as CustomTheme | null;
+      if (theme && theme.CustomCSS && !theme.CustomCSS.includes("#title {\nbackground: transparent !important;\n}")) {
+        theme.CustomCSS = theme.CustomCSS + "\n" + migrationCSS;
+        await localforage.setItem(neumorphicThemeId, theme);
+      }
+
       const themeCreatorOpen = localStorage.getItem("themeCreatorOpen");
       if (themeCreatorOpen === "true") {
         console.debug(
           "[ThemeManager] Theme creator was open, clearing preview state",
         );
         this.clearPreview();
-        // Clean up the flag
         localStorage.removeItem("themeCreatorOpen");
       }
 

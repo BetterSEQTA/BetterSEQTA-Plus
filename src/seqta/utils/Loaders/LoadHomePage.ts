@@ -1109,6 +1109,14 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
   FilterUpcomingAssessments(settingsState.subjectfilters);
+  
+  if (assessments.length === 0) {
+    upcomingitemcontainer!.innerHTML = `
+      <div class="day-empty">
+        <img src="${browser.runtime.getURL(LogoLight)}" />
+        <p>No assessments available.</p>
+      </div>`;
+  }
 }
 
 function createAssessmentDateDiv(date: string, value: any, datecase?: any) {

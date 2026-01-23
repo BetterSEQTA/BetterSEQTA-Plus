@@ -40,7 +40,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
           "[class*='notifications__bubble___']",
         ) as HTMLElement;
 
-        if (api.storage.lastNotificationCount !== 0) {
+        if (alertDiv && api.storage.lastNotificationCount !== 0) {
           alertDiv.textContent = api.storage.lastNotificationCount.toString();
         }
 
@@ -64,7 +64,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
         const notificationCount = data.payload.notifications.length;
         api.storage.lastNotificationCount = notificationCount;
         api.storage.lastCheckedTime = new Date().toISOString();
-        
+
         // Reset error count on success
         api.storage.consecutiveErrors = 0;
 
@@ -75,31 +75,36 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
         }
       } catch (error) {
         console.error("[BetterSEQTA+] Error fetching notifications:", error);
-        api.storage.consecutiveErrors = (api.storage.consecutiveErrors || 0) + 1;
+        api.storage.consecutiveErrors =
+          (api.storage.consecutiveErrors || 0) + 1;
       }
     };
 
     const getNextInterval = () => {
       // Exponential backoff on errors, max 5 minutes
-      const errorMultiplier = Math.min(Math.pow(2, api.storage.consecutiveErrors || 0), 10);
+      const errorMultiplier = Math.min(
+        Math.pow(2, api.storage.consecutiveErrors || 0),
+        10,
+      );
       return Math.min(baseInterval * errorMultiplier, maxInterval);
     };
 
     const startPolling = () => {
       if (pollInterval) return; // Already polling
       checkNotifications();
-      
+
       const scheduleNext = () => {
         const interval = getNextInterval();
         pollInterval = window.setTimeout(() => {
           checkNotifications().then(() => {
-            if (pollInterval) { // Only continue if not stopped
+            if (pollInterval) {
+              // Only continue if not stopped
               scheduleNext();
             }
           });
         }, interval);
       };
-      
+
       scheduleNext();
     };
 
@@ -125,14 +130,16 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
       isVisible = !document.hidden;
       if (isVisible && !pollInterval) {
         // Resume polling when tab becomes visible
-        const alertDiv = document.querySelector("[class*='notifications__bubble___']");
+        const alertDiv = document.querySelector(
+          "[class*='notifications__bubble___']",
+        );
         if (alertDiv) {
           startPolling();
         }
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     api.seqta.onMount("[class*='notifications__bubble___']", (_) => {
       startPolling();
@@ -140,7 +147,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
 
     return () => {
       stopPolling();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   },
 };
