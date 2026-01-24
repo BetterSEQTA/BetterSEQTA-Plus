@@ -856,7 +856,6 @@ async function CheckCurrentLesson(lesson: any, num: number) {
 
 function makeLessonDiv(lesson: any, num: number) {
   if (!lesson) throw new Error("No lesson provided.");
-  console.info(lesson);
 
   const {
     code,
