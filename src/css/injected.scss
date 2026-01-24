@@ -6229,6 +6229,61 @@ body[data-seqta-platform="teach"] {
       color: var(--text-primary) !important;
       padding: 20px !important;
       
+      // Improve scalability for options in first child div (PREFERENCES section)
+      > div > div:nth-child(1) {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        
+        // Make pillbox/option containers wrap and scale better
+        [class*="PillBox"],
+        .pillbox,
+        [class*="pillbox"],
+        [class*="Pillbox"] {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: visible !important;
+          
+          button,
+          [class*="Button"],
+          [class*="PillboxButton"],
+          [class*="PillboxButton__"] {
+            flex: 0 1 auto !important;
+            min-width: fit-content !important;
+            max-width: 100% !important;
+            white-space: nowrap !important;
+            padding: 6px 12px !important;
+            font-size: 13px !important;
+            overflow: visible !important;
+          }
+        }
+        
+        // Target specific preference option containers
+        > div,
+        > section,
+        [class*="dashlet"] {
+          max-width: 100% !important;
+          overflow-x: visible !important;
+          min-width: 0 !important;
+          
+          // Ensure nested option containers also wrap
+          [class*="PillBox"],
+          .pillbox,
+          [class*="pillbox"],
+          [class*="Pillbox"] {
+            flex-wrap: wrap !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+        }
+      }
+      
       .timetable {
         background: transparent !important;
         
