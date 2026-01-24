@@ -104,17 +104,7 @@ export async function loadHomePage() {
   const date = new Date();
   const TodayFormatted = formatDate(date);
 
-  const [timetablePromise, assessmentsPromise, classesPromise, prefsPromise] = [
-    fetch(`${location.origin}/seqta/student/load/timetable?`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: TodayFormatted,
-        until: TodayFormatted,
-        student: 69,
-      }),
-    }).then((res) => res.json()),
-
+  const [assessmentsPromise, classesPromise, prefsPromise] = [
     GetUpcomingAssessments(),
 
     GetActiveClasses(),
@@ -126,65 +116,13 @@ export async function loadHomePage() {
     }).then((res) => res.json()),
   ];
 
-  const [timetableData, assessments, classes, prefs] = await Promise.all([
-    timetablePromise,
+  const [assessments, classes, prefs] = await Promise.all([
     assessmentsPromise,
     classesPromise,
     prefsPromise,
   ]);
 
-  const dayContainer = document.getElementById("day-container");
-  if (dayContainer && timetableData.payload.items.length > 0) {
-    const lessonArray = timetableData.payload.items.sort((a: any, b: any) =>
-      a.from.localeCompare(b.from),
-    );
-    const colours = await GetLessonColours();
-
-    dayContainer.innerHTML = "";
-    for (let i = 0; i < lessonArray.length; i++) {
-      const lesson = lessonArray[i];
-      const subjectname = `timetable.subject.colour.${lesson.code}`;
-      const subject = colours.find(
-        (element: any) => element.name === subjectname,
-      );
-
-      lesson.colour = subject
-        ? `--item-colour: ${subject.value};`
-        : "--item-colour: #8e8e8e;";
-      lesson.from = lesson.from.substring(0, 5);
-      lesson.until = lesson.until.substring(0, 5);
-
-      if (settingsState.timeFormat === "12") {
-        lesson.from = convertTo12HourFormat(lesson.from);
-        lesson.until = convertTo12HourFormat(lesson.until);
-      }
-
-      lesson.attendanceTitle = CheckUnmarkedAttendance(lesson.attendance);
-
-      const div = makeLessonDiv(lesson, i + 1);
-      if (GetThresholdOfColor(subject?.value) > 300) {
-        const firstChild = div.firstChild as HTMLElement;
-        if (firstChild) {
-          firstChild.classList.add("day-inverted");
-        }
-      }
-      dayContainer.appendChild(div.firstChild!);
-    }
-
-    if (currentSelectedDate.getDate() === date.getDate()) {
-      for (let i = 0; i < lessonArray.length; i++) {
-        CheckCurrentLesson(lessonArray[i], i + 1);
-      }
-      CheckCurrentLessonAll(lessonArray);
-    }
-  } else if (dayContainer) {
-    dayContainer.innerHTML = `
-        <div class="day-empty">
-          <img src="${browser.runtime.getURL(LogoLight)}" />
-          <p>No lessons available.</p>
-        </div>`;
-  }
-  dayContainer?.classList.remove("loading");
+  callHomeTimetable(TodayFormatted, false)
 
   const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
   const activeSubjects = activeClass?.subjects || [];
@@ -742,7 +680,8 @@ function callHomeTimetable(date: string, change?: any) {
             GetLessonColours().then((colours) => {
               let subjects = colours;
               for (let i = 0; i < lessonArray.length; i++) {
-                let subjectname = `timetable.subject.colour.${lessonArray[i].code}`;
+                
+                let subjectname = ((lessonArray[i].type == "tutorial") ? `timetable.tutor.${lessonArray[i].tutorID}` : `timetable.subject.colour.${lessonArray[i].code}`);
 
                 let subject = subjects.find(
                   (element: any) => element.name === subjectname,
@@ -917,6 +856,7 @@ async function CheckCurrentLesson(lesson: any, num: number) {
 
 function makeLessonDiv(lesson: any, num: number) {
   if (!lesson) throw new Error("No lesson provided.");
+  console.info(lesson);
 
   const {
     code,
@@ -930,33 +870,35 @@ function makeLessonDiv(lesson: any, num: number) {
     programmeID,
     metaID,
     assessments,
+    type
   } = lesson;
 
   let lessonString = `
       <div class="day" id="${code + num}" style="${colour}">
-        <h2>${description || "Unknown"}</h2>
+        <h2>${(type == "class") ? description : (type == "tutorial") ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
-        <h3>${room || "Unknown"}</h3>
+        <h3>${(type == "class") ? room : (type == "tutorial") ? "N/A" : "Unknown"}</h3>
         <h4>${from || "Unknown"} - ${until || "Unknown"}</h4>
         <h5>${attendanceTitle || "Unknown"}</h5>
     `;
 
-  if (programmeID !== 0) {
-    lessonString += `
+  if (type == "class") {
+    if (programmeID !== 0) {
+      lessonString += `
         <div class="day-button clickable" style="right: 5px;" onclick="location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
         <div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
       `;
-  }
+    }
 
-  if (assessments && assessments.length > 0) {
-    const assessmentString = assessments
-      .map(
-        (element: any) =>
-          `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`,
-      )
-      .join("");
+    if (assessments && assessments.length > 0) {
+      const assessmentString = assessments
+        .map(
+          (element: any) =>
+            `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`,
+        )
+        .join("");
 
-    lessonString += `
+      lessonString += `
         <div class="fixed-tooltip assessmenttooltip">
           <svg style="width:28px;height:28px;border-radius:0;" viewBox="0 0 24 24">
             <path fill="#ed3939" d="M16 2H4C2.9 2 2 2.9 2 4V20C2 21.11 2.9 22 4 22H16C17.11 22 18 21.11 18 20V4C18 2.9 17.11 2 16 2M16 20H4V4H6V12L8.5 9.75L11 12V4H16V20M20 15H22V17H20V15M22 7V13H20V7H22Z" />
@@ -964,6 +906,7 @@ function makeLessonDiv(lesson: any, num: number) {
           <div class="tooltiptext">${assessmentString}</div>
         </div>
       `;
+    }
   }
 
   lessonString += "</div>";
