@@ -571,7 +571,7 @@ async function loadTeachHomePageContent() {
     return;
   }
 
-  // Create skeleton structure with only shortcuts
+  // Create skeleton structure with all widgets (similar to Learn but adapted for Teach)
   const skeletonStructure = stringToHTML(/* html */`
     <div class="home-container" id="home-container">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 8px 0;">
@@ -582,6 +582,45 @@ async function loadTeachHomePageContent() {
       </div>
       <div class="border shortcut-container">
         <div class="border shortcuts" id="shortcuts"></div>
+      </div>
+      <div class="border timetable-container">
+        <div class="home-subtitle">
+          <h2 id="home-lesson-subtitle">Today's Lessons</h2>
+          <div class="timetable-arrows">
+            <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back">
+              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward">
+              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
+            </svg>
+          </div>
+        </div>
+        <div class="day-container loading" id="day-container">
+        </div>
+      </div>
+      <div class="border upcoming-container">
+        <div class="upcoming-title">
+          <h2 class="home-subtitle">Upcoming Assessments</h2>
+          <div class="upcoming-filters" id="upcoming-filters"></div>
+        </div>
+        <div class="upcoming-items loading" id="upcoming-items">
+        </div>
+      </div>
+      <div class="border messages-container">
+        <div class="home-subtitle" style="margin-bottom: 12px;">
+          <h2>Direqt Messages</h2>
+          <a href="/messages" style="color: var(--text-secondary, rgba(255,255,255,0.7)); text-decoration: none; font-size: 14px; transition: color 0.2s ease; margin-right: 20px;">View All</a>
+        </div>
+        <div class="messages-items loading" id="messages-container">
+        </div>
+      </div>
+      <div class="border notices-container">
+        <div class="home-subtitle">
+          <h2>Notices</h2>
+          <input type="date" style="margin-right: 20px;" />
+        </div>
+        <div class="notice-container upcoming-items loading" id="notice-container">
+        </div>
       </div>
     </div>
   `);
@@ -642,7 +681,7 @@ async function loadTeachHomePageContent() {
     );
   }
 
-  // Render shortcuts only
+  // Render shortcuts
   renderShortcuts();
 
   // Set up toggle button to switch between BetterSEQTA+ home and original welcome
@@ -654,7 +693,206 @@ async function loadTeachHomePageContent() {
   // Update page title
   document.title = "Home ― BetterSEQTA+";
   
+  // Load all widget data
+  await loadHomePageWidgets();
+  
   isLoadingHomePage = false;
+}
+
+/**
+ * Loads all homepage widgets with data
+ */
+async function loadHomePageWidgets() {
+  const date = new Date();
+  const TodayFormatted = formatDate(date);
+  
+  // Set up timetable listeners
+  const cleanup = setupTimetableListeners();
+  
+  // Load timetable for today
+  await callHomeTimetable(TodayFormatted, false);
+  SetTimetableSubtitle();
+  
+  // Load assessments, classes, prefs, and messages in parallel
+  const [assessments, classes, prefs, messages] = await Promise.all([
+    GetUpcomingAssessments(),
+    GetActiveClasses(),
+    GetUserPrefs(),
+    GetDireqtMessages(),
+  ]);
+  
+  // Load upcoming assessments widget
+  const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
+  const activeSubjects = activeClass?.subjects || [];
+  const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
+  const currentAssessments = assessments
+    .filter((a: any) => activeSubjectCodes.includes(a.code))
+    .sort(comparedate);
+  
+  const upcomingItems = document.getElementById("upcoming-items");
+  if (upcomingItems) {
+    await CreateUpcomingSection(currentAssessments, activeSubjects);
+    upcomingItems.classList.remove("loading");
+  }
+  
+  // Load notices widget
+  const labelArray = prefs.payload
+    ?.filter((item: any) => item.name === "notices.filters")
+    ?.map((item: any) => item.value) || [];
+  
+  if (labelArray.length > 0) {
+    const noticeContainer = document.getElementById("notice-container");
+    if (noticeContainer) {
+      const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement;
+      if (dateControl) {
+        dateControl.value = TodayFormatted;
+        setupNotices(labelArray[0].split(" "), TodayFormatted);
+      }
+      noticeContainer.classList.remove("loading");
+    }
+  } else {
+    const noticeContainer = document.getElementById("notice-container");
+    if (noticeContainer) {
+      noticeContainer.classList.remove("loading");
+      noticeContainer.innerHTML = '<div class="dummynotice">No notice filters configured.</div>';
+    }
+  }
+  
+  // Load Direqt Messages widget
+  const messagesContainer = document.getElementById("messages-container");
+  if (messagesContainer) {
+    await renderMessagesWidget(messages);
+    messagesContainer.classList.remove("loading");
+  }
+  
+  return cleanup;
+}
+
+/**
+ * Fetches Direqt Messages for Teach platform
+ */
+async function GetDireqtMessages(limit: number = 5) {
+  try {
+    // Use correct Teach endpoint: /seqta/ta/json/coneqtmessage/load
+    const response = await fetch(
+      `${location.origin}/seqta/ta/json/coneqtmessage/load`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({
+          searchValue: "",
+          sortBy: "date",
+          sortOrder: "desc",
+          action: "list",
+          label: "inbox",
+          offset: 0,
+          limit: limit,
+          datetimeUntil: null,
+        }),
+      },
+    );
+    
+    if (!response.ok) {
+      console.warn("[BetterSEQTA+] Messages endpoint failed:", response.status, response.statusText);
+      return [];
+    }
+    
+    const data = await response.json();
+    return data.payload?.messages || [];
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error fetching messages:", error);
+    return [];
+  }
+}
+
+/**
+ * Renders Direqt Messages widget
+ */
+async function renderMessagesWidget(messages: any[]) {
+  const messagesContainer = document.getElementById("messages-container");
+  if (!messagesContainer) return;
+  
+  if (messages.length === 0) {
+    messagesContainer.innerHTML = `
+      <div class="dummynotice" style="text-align: center;">
+        No unread messages.
+      </div>
+    `;
+    return;
+  }
+  
+  const fragment = document.createDocumentFragment();
+  
+  messages.slice(0, 5).forEach((message: any) => {
+    const messageElement = document.createElement("div");
+    messageElement.className = "message-card";
+    messageElement.addEventListener("click", () => {
+      window.location.href = "/messages";
+    });
+    
+    const unreadBadge = message.read === 0 ? '<span class="message-unread-badge"></span>' : '';
+    
+    const messageDate = new Date(message.date);
+    const formattedDate = messageDate.toLocaleDateString("en-AU", {
+      day: "numeric",
+      month: "short",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    
+    messageElement.innerHTML = `
+      <div class="message-header">
+        <div class="message-sender">
+          ${unreadBadge}
+          <span>${message.sender || "Unknown"}</span>
+        </div>
+        <span class="message-date">${formattedDate}</span>
+      </div>
+      <div class="message-subject">
+        ${message.subject || "No subject"}
+      </div>
+    `;
+    
+    fragment.appendChild(messageElement);
+  });
+  
+  messagesContainer.innerHTML = "";
+  messagesContainer.appendChild(fragment);
+}
+
+/**
+ * Fetches user preferences for Teach platform
+ */
+async function GetUserPrefs() {
+  try {
+    const staffId = await getStaffId();
+    if (!staffId) {
+      return { payload: [] };
+    }
+    
+    const response = await fetch(
+      `${location.origin}/seqta/ta/json/userPrefs/load`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({
+          request: "userPrefs",
+          asArray: true,
+          user: staffId,
+        }),
+      },
+    );
+    
+    if (!response.ok) {
+      console.warn("[BetterSEQTA+] UserPrefs load failed");
+      return { payload: [] };
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error fetching user prefs:", error);
+    return { payload: [] };
+  }
 }
 
 // Helper function to get staff ID
