@@ -27,6 +27,7 @@ import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
+import { fixTimetableColours } from "@/seqta/utils/fixTimetableColours";
 
 // JSON content
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
@@ -99,7 +100,11 @@ export async function finishLoad() {
     await showPrivacyNotification();
   }
 
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
+  if (
+    settingsState.justupdated &&
+    !document.getElementById("whatsnewbk") &&
+    !document.getElementById("privacy-notification")
+  ) {
     OpenWhatsNewPopup();
   }
 }
@@ -257,6 +262,7 @@ async function LoadPageElements(): Promise<void> {
     },
     async () => {
       await updateTimetableTimes();
+      await fixTimetableColours();
     },
   );
 
