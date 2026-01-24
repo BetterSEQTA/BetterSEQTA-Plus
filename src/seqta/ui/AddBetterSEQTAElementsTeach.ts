@@ -95,7 +95,7 @@ function setupSpineObserver() {
     // Check if BetterSEQTA elements were removed
     const settingsButton = document.getElementById("AddedSettings");
     const homeButton = document.getElementById("betterseqta-teach-homebutton");
-    const darkToggle = document.getElementById("betterseqta-teach-darktoggle");
+    const darkToggle = document.getElementById("LightDarkModeButton"); // Use correct ID
     
     // If any element is missing, re-inject (but only if not already in progress)
     if (!injectionInProgress && (!settingsButton || !homeButton || !darkToggle)) {
@@ -422,8 +422,10 @@ function GetLightDarkModeString() {
  */
 async function addDarkLightToggleTeach() {
   // Check if dark toggle already exists and is still in the DOM
-  const existingToggle = document.getElementById("betterseqta-teach-darktoggle");
+  // Use the correct ID that matches what we create below
+  const existingToggle = document.getElementById("LightDarkModeButton");
   if (existingToggle && document.body.contains(existingToggle)) {
+    console.debug("[BetterSEQTA+] Dark/light toggle already exists, skipping creation");
     return; // Toggle already exists and is attached
   }
   
