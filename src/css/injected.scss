@@ -5684,6 +5684,203 @@ body[data-seqta-platform="teach"] {
         }
       }
       
+      // Help page improvements
+      button:has-text("Knowledge base"),
+      button:has-text("Nerdy stuff") {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: scale(1.02) !important;
+        }
+      }
+      
+      // Release history links styling
+      a[href*="release"] {
+        color: var(--theme-primary) !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease !important;
+        
+        &:hover {
+          color: var(--theme-primary) !important;
+          text-decoration: underline !important;
+        }
+      }
+      
+      // Table improvements for My Classes and other table views
+      table {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+        
+        thead,
+        tbody {
+          tr {
+            th,
+            td {
+              padding: 12px 16px !important;
+              text-align: left !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              color: white !important;
+              font-family: Rubik, sans-serif !important;
+            }
+            
+            th {
+              background: rgba(255, 255, 255, 0.05) !important;
+              font-weight: 600 !important;
+              font-size: 14px !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+              position: sticky !important;
+              top: 0 !important;
+              z-index: 10 !important;
+            }
+            
+            td {
+              background: transparent !important;
+              font-size: 14px !important;
+            }
+            
+            &:hover td {
+              background: rgba(255, 255, 255, 0.03) !important;
+            }
+          }
+        }
+      }
+      
+      // "New untimetabled class" and similar action buttons
+      button:has-text("New untimetabled class"),
+      button:has-text("New") {
+        background: var(--theme-primary) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        
+        &:hover {
+          filter: brightness(1.1) !important;
+          transform: scale(1.02) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+      }
+      
+      // Traditional grid timetable view improvements
+      table[class*="grid"],
+      table:has(th:contains("Mon")),
+      table:has(th:contains("Tue")) {
+        th {
+          background: rgba(255, 255, 255, 0.08) !important;
+          color: white !important;
+          font-weight: 600 !important;
+          padding: 12px !important;
+          text-align: center !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        td {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          padding: 16px !important;
+          min-height: 100px !important;
+          vertical-align: top !important;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+          }
+        }
+        
+        // Empty state message styling
+        td:has-text("no timetabled classes"),
+        td:has-text("Try changing") {
+          text-align: center !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-style: italic !important;
+          padding: 40px !important;
+        }
+      }
+      
+      // Info/tooltip boxes (like "Untimetabled classes" info)
+      [class*="info"],
+      [class*="tooltip"],
+      div:has(img[alt*="💡"]) {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+      
+      // Calendar view time slots styling
+      div:has-text("0:00"),
+      div:has-text("1:00"),
+      div:has-text(":00") {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        padding: 4px 8px !important;
+      }
+      
+      // Student Summary page improvements
+      iframe[src*="studentSummary"],
+      iframe:has([class*="student"]) {
+        border: none !important;
+        border-radius: 8px !important;
+        background: transparent !important;
+      }
+      
+      // Print button consistency
+      button:has-text("Print"),
+      button[aria-label*="Print"] {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 8px 16px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: scale(1.02) !important;
+        }
+      }
+      
+      // Dropdown buttons consistency
+      button:has-text("▾"),
+      button:has-text("selected") {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 8px 16px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+        }
+      }
+      
       // Message outside content (for sentence generator)
       > .message {
         background: rgba(255, 255, 255, 0.03) !important;
@@ -6281,6 +6478,79 @@ body[data-seqta-platform="teach"] {
             width: 100% !important;
             max-width: 100% !important;
           }
+        }
+      }
+      
+      // Improve student selection and filter controls
+      input[type="text"][placeholder*="Select student"],
+      input[type="text"][placeholder*="student"] {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        padding: 10px 16px !important;
+        transition: all 0.2s ease !important;
+        
+        &:focus {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: var(--theme-primary) !important;
+          outline: none !important;
+          box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.3) !important;
+        }
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      }
+      
+      // Improve filter checkbox styling
+      label[for*="Roll"],
+      label[for*="House"],
+      label[for*="Year"],
+      label:has(+ input[type="checkbox"]) {
+        color: white !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        input[type="checkbox"] {
+          width: 18px !important;
+          height: 18px !important;
+          accent-color: var(--theme-primary) !important;
+          cursor: pointer !important;
+        }
+      }
+      
+      // Improve navigation buttons (prev/next)
+      button:has(svg[viewBox*="24"]):not([class*="Button__"]) {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+        color: white !important;
+        padding: 10px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          transform: scale(1.05) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 20px !important;
+          height: 20px !important;
         }
       }
       
