@@ -2535,7 +2535,16 @@ div.bar.flat {
   border-radius: 12px !important;
   padding: 16px !important;
   margin-bottom: 12px !important;
-  backdrop-filter: blur(10px) !important;
+  
+  // Make fully solid when transparency effects are disabled
+  html:not(.transparencyEffects) & {
+    background: var(--background-primary) !important;
+  }
+  
+  // Apply blur only when transparency effects are enabled
+  html.transparencyEffects & {
+    backdrop-filter: blur(10px) !important;
+  }
   
   label {
     color: var(--text-primary) !important;
@@ -5066,6 +5075,35 @@ h2.home-subtitle {
 // SEQTA Teach main layout improvements
 body[data-seqta-platform="teach"] {
   
+  // Remove all backdrop-filter blur effects when transparency effects are disabled
+  html:not(.transparencyEffects) & {
+    * {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+  
+  // Make semi-transparent backgrounds fully solid when transparency effects are disabled
+  html:not(.transparencyEffects) & {
+    [style*="backdrop-filter"],
+    [style*="backdropFilter"] {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    
+    // Make rgba backgrounds fully solid
+    [style*="rgba(255, 255, 255, 0.05)"],
+    [style*="rgba(255,255,255,0.05)"],
+    [style*="rgba(255, 255, 255, 0.08)"],
+    [style*="rgba(255,255,255,0.08)"],
+    [style*="rgba(255, 255, 255, 0.1)"],
+    [style*="rgba(255,255,255,0.1)"],
+    [style*="rgba(255, 255, 255, 0.15)"],
+    [style*="rgba(255,255,255,0.15)"] {
+      background: var(--background-primary) !important;
+    }
+  }
+  
   // Global button SVG sizing fix
   button,
   [class*="Button__Button"] {
@@ -5113,11 +5151,15 @@ body[data-seqta-platform="teach"] {
     
     .defaultWelcome {
       background: var(--card-bg) !important;
-      backdrop-filter: blur(10px) !important;
       border: 1px solid var(--card-border) !important;
       border-radius: 12px !important;
       color: var(--text-primary) !important;
       box-shadow: var(--shadow-lg) !important;
+      
+      // Apply blur only when transparency effects are enabled
+      html.transparencyEffects & {
+        backdrop-filter: blur(10px) !important;
+      }
       
       // Override the complex clip-path with simple rounded corners
       clip-path: none !important;
@@ -7850,10 +7892,19 @@ body[data-seqta-platform="teach"] {
                   background: rgba(255, 255, 255, 0.05) !important;
                   border: 1px solid rgba(255, 255, 255, 0.1) !important;
                   border-radius: 12px !important;
-                  backdrop-filter: blur(10px) !important;
                   padding: 20px !important;
                   margin-bottom: 20px !important;
                   color: white !important;
+                  
+                  // Make fully solid when transparency effects are disabled
+                  html:not(.transparencyEffects) & {
+                    background: var(--background-primary) !important;
+                  }
+                  
+                  // Apply blur only when transparency effects are enabled
+                  html.transparencyEffects & {
+                    backdrop-filter: blur(10px) !important;
+                  }
                   
                   // Section headers
                   > div:first-child {
@@ -10816,8 +10867,17 @@ body[data-seqta-platform="teach"] {
     background: var(--background-primary) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 16px !important;
-    backdrop-filter: blur(10px) !important;
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5) !important;
+    
+    // Make fully solid when transparency effects are disabled
+    html:not(.transparencyEffects) & {
+      background: var(--background-primary) !important;
+    }
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(10px) !important;
+    }
     overflow: hidden !important;
     z-index: 10000 !important;
     
@@ -11637,9 +11697,18 @@ body[data-seqta-platform="teach"] {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
-    backdrop-filter: blur(10px) !important;
     color: white !important;
     overflow: hidden !important;
+    
+    // Make fully solid when transparency effects are disabled
+    html:not(.transparencyEffects) & {
+      background: var(--background-primary) !important;
+    }
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(10px) !important;
+    }
     
     // Filters section
     .filters {
@@ -12621,8 +12690,12 @@ body[data-seqta-platform="teach"] {
   // Tier 2: Page List (medium shade) - Apply theme color like Learn menu
   [class*="PageList__PageList"] {
     background: var(--better-main) !important;
-    backdrop-filter: blur(10px) !important;
     border-right: 1px solid var(--border-secondary) !important;
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(10px) !important;
+    }
     
     [class*="PageList__pageContainer"] {
       padding: 8px !important;
@@ -12691,8 +12764,12 @@ body[data-seqta-platform="teach"] {
   // Tier 3: Subpage List (lightest shade)
   [class*="SubpageList__SubpageList"] {
     background: var(--theme-offset-bg) !important;
-    backdrop-filter: blur(5px) !important;
     border-right: 1px solid var(--border-tertiary) !important;
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(5px) !important;
+    }
     padding: 8px !important;
     
     [class*="SubpageList__menuToggle"] {
@@ -12751,8 +12828,12 @@ body[data-seqta-platform="teach"] {
   // SEQTA Teach Header and Toolbar Styling
   header {
     background: var(--theme-offset-bg-more) !important;
-    backdrop-filter: blur(15px) !important;
     border-bottom: 1px solid var(--border-secondary) !important;
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(15px) !important;
+    }
     padding: 16px 24px !important;
     display: flex !important;
     align-items: center !important;
@@ -12822,8 +12903,12 @@ body[data-seqta-platform="teach"] {
       background: var(--card-bg) !important;
       border: 1px solid var(--card-border) !important;
       border-radius: 12px !important;
-      backdrop-filter: blur(10px) !important;
       box-shadow: var(--shadow-lg) !important;
+      
+      // Apply blur only when transparency effects are enabled
+      html.transparencyEffects & {
+        backdrop-filter: blur(10px) !important;
+      }
       padding: 0 !important;
       min-width: 320px !important;
       overflow: hidden !important;
@@ -12950,8 +13035,12 @@ body[data-seqta-platform="teach"] {
   // Toolbar styling (under header)
   [class*="Toolbar__Toolbar"] {
     background: var(--theme-offset-bg) !important;
-    backdrop-filter: blur(5px) !important;
     border-bottom: 1px solid var(--border-tertiary) !important;
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(5px) !important;
+    }
     padding: 12px 24px !important;
     
     &[class*="LegacyPage__toolbar"] {
@@ -14686,8 +14775,17 @@ body[data-seqta-platform="teach"] {
           background: rgba(255, 255, 255, 0.05) !important;
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           border-radius: 12px !important;
-          backdrop-filter: blur(10px) !important;
           padding: 20px !important;
+          
+          // Make opaque when transparency effects are disabled
+          html:not(.transparencyEffects) & {
+            background: rgba(255, 255, 255, 0.15) !important;
+          }
+          
+          // Apply blur only when transparency effects are enabled
+          html.transparencyEffects & {
+            backdrop-filter: blur(10px) !important;
+          }
           margin-bottom: 20px !important;
           display: flex !important;
           align-items: center !important;
@@ -14761,5 +14859,43 @@ body[data-seqta-platform="teach"] {
         }
       }
     }
+  }
+}
+
+// Global rule: Remove all backdrop-filter blur effects and make backgrounds fully solid when transparency effects are disabled
+// This catches any backdrop-filter blur effects set via JavaScript or inline styles
+html:not(.transparencyEffects) {
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  // Also remove from elements with inline styles
+  [style*="backdrop-filter"],
+  [style*="backdropFilter"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  
+  // Convert all semi-transparent rgba backgrounds to fully solid
+  // Target common rgba patterns used in Teach platform (inline styles)
+  [style*="rgba(255, 255, 255, 0.05)"],
+  [style*="rgba(255,255,255,0.05)"],
+  [style*="rgba(255, 255, 255, 0.08)"],
+  [style*="rgba(255,255,255,0.08)"],
+  [style*="rgba(255, 255, 255, 0.1)"],
+  [style*="rgba(255,255,255,0.1)"],
+  [style*="rgba(255, 255, 255, 0.15)"],
+  [style*="rgba(255,255,255,0.15)"],
+  [style*="background: rgba(255, 255, 255, 0"],
+  [style*="background:rgba(255,255,255,0"] {
+    background: var(--background-primary) !important;
+  }
+  
+  // Convert CSS-defined semi-transparent backgrounds to fully solid
+  // Target elements with common semi-transparent background patterns
+  [style*="background: rgba(0, 0, 0, 0"],
+  [style*="background:rgba(0,0,0,0"] {
+    background: var(--background-secondary) !important;
   }
 }
