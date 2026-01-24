@@ -122,7 +122,7 @@ export async function loadHomePage() {
     prefsPromise,
   ]);
 
-  callHomeTimetable(TodayFormatted, false)
+  callHomeTimetable(TodayFormatted, true);
 
   const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
   const activeSubjects = activeClass?.subjects || [];
