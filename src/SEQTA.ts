@@ -10,6 +10,7 @@ import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
+import { detectSEQTAPlatform } from "@/seqta/utils/platformDetection";
 
 export let MenuOptionsOpen = false;
 
@@ -39,12 +40,28 @@ if (document.childNodes[1]) {
  * 8. Logs success or error messages during initialization.
  */
 async function init() {
-  const hasSEQTATitle = document.title.includes("SEQTA Learn");
+  // Use improved platform detection instead of just checking title format
+  // This handles cases where title is "In brief - Student summary - SEQTA" etc.
+  const platform = await detectSEQTAPlatform();
+  const hasSEQTATitle = document.title.includes("SEQTA") || platform !== 'unknown';
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     // Verify we are on a SEQTA page
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
+
+    // Wait for document.head if it doesn't exist yet
+    let headWaitAttempts = 0;
+    const maxHeadWaitAttempts = 50; // 5 seconds max
+    while (!document.head && headWaitAttempts < maxHeadWaitAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      headWaitAttempts++;
+    }
+    
+    if (!document.head) {
+      console.error('[BetterSEQTA+] document.head is still null after waiting, cannot inject styles');
+      return;
+    }
 
     const documentLoadStyle = document.createElement("style");
     documentLoadStyle.textContent = documentLoadCSS;
@@ -62,7 +79,6 @@ async function init() {
 
       if (typeof settingsState.onoff === "undefined") {
         await browser.runtime.sendMessage({ type: "setDefaultStorage" });
-
         await delay(5);
       }
 

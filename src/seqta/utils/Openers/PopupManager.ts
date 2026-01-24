@@ -1,5 +1,6 @@
 import { settingsState } from "../listeners/SettingsState";
 import { animate as motionAnimate, stagger } from "motion";
+import { isSEQTATeachSync } from "../platformDetection";
 
 type AnimationTarget = string | Element | Element[] | NodeList | null;
 
@@ -61,7 +62,23 @@ export function openPopup({
   container.append(closeButton);
 
   background.append(container);
-  document.getElementById("container")!.append(background);
+  
+  // Find the appropriate container based on platform
+  let parentContainer: HTMLElement | null = null;
+  if (isSEQTATeachSync()) {
+    // For Teach, try #root first, then fall back to body
+    parentContainer = document.getElementById("root") || document.body;
+  } else {
+    // For Learn, use #container
+    parentContainer = document.getElementById("container");
+  }
+  
+  if (!parentContainer) {
+    console.error("[BetterSEQTA+] Could not find container for popup");
+    return;
+  }
+  
+  parentContainer.append(background);
 
   if (settingsState.animations) {
     (motionAnimate as any)(

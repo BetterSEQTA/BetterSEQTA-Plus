@@ -26,7 +26,14 @@
   let darkMode = $state(false);
   let displayTheme = $state<Theme | null>(null);
   let currentThemes = $state<string[]>([]);
-  let activeTab = $state('themes');
+  
+  // Get initial tab from sessionStorage, default to 'themes'
+  let initialTab = 'themes';
+  if (typeof sessionStorage !== 'undefined') {
+    initialTab = sessionStorage.getItem('storeInitialTab') || 'themes';
+    sessionStorage.removeItem('storeInitialTab'); // Clear after reading
+  }
+  let activeTab = $state(initialTab as 'themes' | 'backgrounds');
   
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
