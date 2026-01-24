@@ -6667,6 +6667,66 @@ body[data-seqta-platform="teach"] {
         }
       }
       
+      // Fix programmeListByStaff popup - size it like body > ul dropdown menus
+      .programmeListByStaff.popup {
+        position: absolute !important; // Keep absolute like dropdown menus
+        width: auto !important; // Auto width based on content
+        min-width: 300px !important; // Minimum width for readability
+        max-width: 600px !important; // Maximum width to prevent it being too wide
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        margin: 0 !important;
+        background: var(--background-primary) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        color: var(--text-primary) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+        overflow: visible !important;
+        z-index: 1000 !important;
+        
+        // Apply blur only when transparency effects are enabled
+        html.transparencyEffects & {
+          backdrop-filter: blur(10px) !important;
+          background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        // Ensure fully solid when transparency effects are disabled
+        html:not(.transparencyEffects) & {
+          background: var(--background-primary) !important;
+          backdrop-filter: none !important;
+        }
+        
+        // Ensure child elements are visible
+        * {
+          color: var(--text-primary) !important;
+        }
+        
+        // Programme list table inside popup
+        .programmeList {
+          background: transparent !important;
+          width: 100% !important;
+          
+          thead tr {
+            html:not(.transparencyEffects) & {
+              background: var(--background-secondary) !important;
+            }
+          }
+          
+          tbody tr {
+            html:not(.transparencyEffects) & {
+              background: var(--background-primary) !important;
+              
+              &:hover {
+                background: var(--background-secondary) !important;
+              }
+            }
+          }
+        }
+      }
+      
       // Improve filter checkbox styling
       label[for*="Roll"],
       label[for*="House"],
@@ -8893,18 +8953,31 @@ body[data-seqta-platform="teach"] {
         // Left sidebar
         &.SidebarPage__sidebar-left___QVo3S {
           .SidebarPage__sidebar___fG08i {
-            background: var(--theme-offset-bg) !important;
+            background: var(--background-secondary) !important;
+            background-color: var(--background-secondary) !important;
             border-right: 1px solid var(--border-secondary) !important;
             color: var(--text-primary) !important;
+            padding: 0 !important;
+            
+            // Ensure all child divs inherit dark backgrounds
+            > div {
+              background: var(--background-primary) !important;
+              background-color: var(--background-primary) !important;
+            }
             
             // SelectionList (assessment list)
-            .SelectionList__SelectionList___oaomc {
-              background: transparent !important;
+            .SelectionList__SelectionList___oaomc,
+            div.SelectionList__SelectionList___oaomc {
+              background: var(--background-primary) !important;
+              background-color: var(--background-primary) !important;
               color: var(--text-primary) !important;
+              border-radius: 8px !important;
+              overflow: hidden !important;
+              box-shadow: none !important;
               
               // Header with search
               .SelectionList__header___jwVkB {
-                background: transparent !important;
+                background: var(--background-secondary) !important;
                 padding: 16px !important;
                 border-bottom: 1px solid var(--border-secondary) !important;
                 
@@ -8972,10 +9045,12 @@ body[data-seqta-platform="teach"] {
               }
               
               // Assessment list
-              .SelectionList__list___QE5YK {
-                background: transparent !important;
+              .SelectionList__list___QE5YK,
+              ol.SelectionList__list___QE5YK {
+                background: var(--background-primary) !important;
+                background-color: var(--background-primary) !important;
                 list-style: none !important;
-                padding: 0 !important;
+                padding: 8px 0 !important;
                 margin: 0 !important;
                 
                 // Individual assessment items
@@ -9050,8 +9125,10 @@ body[data-seqta-platform="teach"] {
               }
               
               // Footer (Marks book settings button)
-              .SelectionList__footer___JKarl {
-                background: transparent !important;
+              .SelectionList__footer___JKarl,
+              footer.SelectionList__footer___JKarl {
+                background: var(--background-secondary) !important;
+                background-color: var(--background-secondary) !important;
                 padding: 16px !important;
                 border-top: 1px solid var(--border-secondary) !important;
                 
@@ -9148,6 +9225,654 @@ body[data-seqta-platform="teach"] {
             }
           }
         }
+        
+        // Main content area (right side)
+        .SidebarPage__main___h9E40 {
+          background: transparent !important;
+          color: var(--text-primary) !important;
+          padding: 24px !important;
+          
+          // AssessmentManager container
+          .AssessmentManager__container___SNwet {
+            background: transparent !important;
+            
+            // Main content wrapper
+            .AssessmentManager__main___jtnog {
+              background: transparent !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 24px !important;
+            }
+          }
+        }
+        
+        // Separator between sidebar and main content
+        .SidebarPage__separator___hJYxU {
+          background: var(--border-secondary) !important;
+          width: 1px !important;
+        }
+      }
+      
+      // BasicPanel styling (used throughout AssessmentManager)
+      [class*="BasicPanel__BasicPanel"] {
+        background: var(--background-primary) !important;
+        border: 1px solid var(--border-secondary) !important;
+        border-radius: 12px !important;
+        padding: 24px !important;
+        color: var(--text-primary) !important;
+        box-shadow: var(--shadow-sm) !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          box-shadow: var(--shadow-md) !important;
+        }
+        
+        // Headers
+        header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 20px !important;
+        padding-bottom: 12px !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
+        
+        h2 {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          margin: 0 !important;
+        }
+        
+        // InlineHelp buttons
+        [class*="InlineHelp__InlineHelp"] {
+          button {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-muted) !important;
+            padding: 4px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              color: var(--text-primary) !important;
+              transform: scale(1.1) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+              width: 20px !important;
+              height: 20px !important;
+            }
+          }
+        }
+        
+        // InfoPill badges
+        [class*="InfoPill__InfoPill"] {
+          background: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
+          padding: 4px 8px !important;
+          border-radius: 4px !important;
+          font-size: 11px !important;
+          font-weight: 600 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
+        }
+      }
+      
+      // Ordered lists (form fields)
+      ol {
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        
+        li {
+          margin-bottom: 16px !important;
+          
+          &:last-child {
+            margin-bottom: 0 !important;
+          }
+          
+          // Label styling
+          label[class*="Label__Label"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+            
+            .Label__innerText___HVhy6 {
+              color: var(--text-secondary) !important;
+              font-size: 13px !important;
+              font-weight: 500 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+            }
+            
+            // Input fields
+            &[class*="Input__Input"] {
+              background: var(--input-bg) !important;
+              border: 1px solid var(--border-primary) !important;
+              border-radius: 8px !important;
+              padding: 10px 12px !important;
+              color: var(--text-primary) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 14px !important;
+              transition: all 0.2s ease !important;
+              
+              &:focus-within {
+                border-color: var(--accent-bg) !important;
+                box-shadow: 0 0 0 3px var(--accent-ring) !important;
+                outline: none !important;
+              }
+              
+              input {
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-primary) !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                width: 100% !important;
+                
+                &::placeholder {
+                  color: var(--text-muted) !important;
+                }
+                
+                &:focus {
+                  outline: none !important;
+                }
+              }
+            }
+            
+            // Textarea
+            &[class*="Textarea__Textarea"] {
+              background: var(--input-bg) !important;
+              border: 1px solid var(--border-primary) !important;
+              border-radius: 8px !important;
+              padding: 10px 12px !important;
+              color: var(--text-primary) !important;
+              font-family: Rubik, sans-serif !important;
+              font-size: 14px !important;
+              transition: all 0.2s ease !important;
+              width: 100% !important;
+              
+              &:focus-within {
+                border-color: var(--accent-bg) !important;
+                box-shadow: 0 0 0 3px var(--accent-ring) !important;
+                outline: none !important;
+              }
+              
+              textarea {
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-primary) !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 14px !important;
+                width: 100% !important;
+                resize: vertical !important;
+                
+                &::placeholder {
+                  color: var(--text-muted) !important;
+                }
+                
+                &:focus {
+                  outline: none !important;
+                }
+              }
+            }
+          }
+        }
+        
+        // Add buttons
+        li.add {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 12px !important;
+          background: var(--button-bg) !important;
+          border: 1px dashed var(--border-primary) !important;
+          border-radius: 8px !important;
+          color: var(--text-secondary) !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: var(--button-hover) !important;
+            border-color: var(--accent-bg) !important;
+            color: var(--text-primary) !important;
+          }
+          
+          > div {
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+          }
+          
+          button {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-secondary) !important;
+            padding: 4px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              color: var(--accent-bg) !important;
+              transform: scale(1.1) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+            }
+          }
+        }
+      }
+      
+      // FancyNumberInput styling
+      [class*="FancyNumberInput__FancyNumberInput"] {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      
+      label[class*="FancyNumberInput__label"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        
+        .Label__innerText___HVhy6 {
+          color: var(--text-secondary) !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
+        }
+      }
+      
+      button {
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 6px !important;
+        color: var(--text-secondary) !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover:not(:disabled) {
+          background: var(--button-hover) !important;
+          color: var(--text-primary) !important;
+          border-color: var(--accent-bg) !important;
+          transform: scale(1.05) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 16px !important;
+          height: 16px !important;
+        }
+      }
+      
+      input {
+        background: var(--input-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 6px !important;
+        padding: 6px 8px !important;
+        color: var(--text-primary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        transition: all 0.2s ease !important;
+        
+        &:focus {
+          border-color: var(--accent-bg) !important;
+          box-shadow: 0 0 0 3px var(--accent-ring) !important;
+          outline: none !important;
+        }
+      }
+      
+      // FancyCheckbox styling
+      [class*="FancyCheckbox__FancyCheckbox"] {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      
+      label[class*="FancyCheckbox__label"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        
+        .Label__innerText___HVhy6 {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+      }
+      
+      .FancyCheckbox__wrapper___doLbf {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        
+        input[type="checkbox"] {
+          width: 20px !important;
+          height: 20px !important;
+          cursor: pointer !important;
+          accent-color: var(--accent-bg) !important;
+        }
+        
+        .FancyCheckbox__activeText___eri8w {
+          color: var(--text-muted) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 12px !important;
+          font-weight: 500 !important;
+        }
+      }
+      
+      // Checked state
+      &.FancyCheckbox__checked___ykkiZ {
+        .FancyCheckbox__wrapper___doLbf {
+          .FancyCheckbox__activeText___eri8w {
+            color: var(--accent-bg) !important;
+          }
+        }
+      }
+      
+      // MenuButton (dropdown) styling
+      [class*="MenuButton__Menu"] {
+      position: relative !important;
+      
+      button[class*="Button__dropdown"] {
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 8px !important;
+        padding: 10px 12px !important;
+        color: var(--text-primary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+        
+        &:hover:not(:disabled) {
+          background: var(--button-hover) !important;
+          border-color: var(--accent-bg) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        // Color swatch in Group dropdown
+        [class*="BasicDetails__swatch"] {
+          width: 16px !important;
+          height: 16px !important;
+          border-radius: 4px !important;
+          border: 1px solid var(--border-primary) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 16px !important;
+          height: 16px !important;
+          margin-left: auto !important;
+        }
+      }
+      
+      // DatePicker styling
+      [class*="DatePicker__DatePicker"] {
+      button[class*="DatePicker__button"] {
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 8px !important;
+        padding: 10px 12px !important;
+        color: var(--text-primary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: var(--button-hover) !important;
+          border-color: var(--accent-bg) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+          width: 16px !important;
+          height: 16px !important;
+          margin-left: auto !important;
+        }
+      }
+      
+      // AvailabilitySlider styling
+      [class*="AvailabilitySlider__AvailabilitySlider"] {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 0 !important;
+      
+      [class*="AvailabilitySlider__travelled"],
+      [class*="AvailabilitySlider__untravelled"] {
+        height: 4px !important;
+        border-radius: 2px !important;
+        transition: all 0.2s ease !important;
+      }
+      
+      [class*="AvailabilitySlider__travelled"] {
+        background: var(--accent-bg) !important;
+      }
+      
+      [class*="AvailabilitySlider__untravelled"] {
+        background: var(--border-secondary) !important;
+      }
+      
+      label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        color: var(--text-secondary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 13px !important;
+        
+        input[type="radio"] {
+          accent-color: var(--accent-bg) !important;
+          cursor: pointer !important;
+        }
+        
+        &[class*="AvailabilitySlider__active"] {
+          background: var(--button-bg) !important;
+          color: var(--text-primary) !important;
+        }
+        
+        &:hover {
+          background: var(--button-hover) !important;
+          color: var(--text-primary) !important;
+        }
+      }
+      
+      // AssessableCriteria specific styling
+      [class*="AssessableCriteria__criterion"] {
+      padding: 16px !important;
+      background: var(--background-secondary) !important;
+      border: 1px solid var(--border-secondary) !important;
+      border-radius: 8px !important;
+      margin-bottom: 12px !important;
+      
+      // Criterion number badge
+      div.open {
+        position: absolute !important;
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        margin-right: 12px !important;
+      }
+      
+      // Remove button
+      button.remove {
+        background: transparent !important;
+        border: none !important;
+        color: var(--text-muted) !important;
+        padding: 4px !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          color: #ef4444 !important;
+          transform: scale(1.1) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+      
+      // Empty state styling
+      [class*="Empty__Empty"] {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 40px 20px !important;
+      text-align: center !important;
+      
+      svg {
+        fill: var(--text-muted) !important;
+        width: 48px !important;
+        height: 48px !important;
+        margin-bottom: 16px !important;
+        opacity: 0.5 !important;
+      }
+      
+      [class*="Empty__title"] {
+        color: var(--text-primary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        margin-bottom: 8px !important;
+      }
+      
+      [class*="Empty__message"] {
+        color: var(--text-muted) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+      }
+      
+      // CKEditor (rich text editor) styling
+      [class*="cke_editor"] {
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      
+      [class*="cke_top"] {
+        background: var(--background-secondary) !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
+        padding: 8px !important;
+      }
+      
+      [class*="cke_contents"] {
+        background: var(--input-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 0 0 8px 8px !important;
+        
+        iframe {
+          background: var(--input-bg) !important;
+          color: var(--text-primary) !important;
+        }
+      }
+      
+      // Toolbar buttons
+      [class*="cke_button"] {
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+          color: var(--text-primary) !important;
+          background: var(--button-hover) !important;
+        }
+      }
+      
+      // Word count footer
+      .wordCount {
+      color: var(--text-muted) !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 12px !important;
+      margin-top: 8px !important;
+      
+      // File handler/upload area
+      [class*="uiFileHandler"] {
+      background: var(--background-secondary) !important;
+      border: 2px dashed var(--border-primary) !important;
+      border-radius: 8px !important;
+      padding: 24px !important;
+      text-align: center !important;
+      transition: all 0.2s ease !important;
+      
+      &.droppable {
+        border-color: var(--accent-bg) !important;
+        background: var(--accent-ring) !important;
+      }
+      
+      .note {
+        color: var(--text-muted) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        margin-bottom: 12px !important;
+      }
+      
+      button[class*="uiButton"] {
+        background: var(--accent-bg) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        color: var(--text-on-accent) !important;
+        padding: 8px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+        }
+      }
+      
+      // AssessmentManager specific blocks
+      [class*="AssessmentManager__Block"] {
+        // Span two columns
+        &.AssessmentManager__spanTwoColumns___ITyGi {
+          grid-column: 1 / -1 !important;
+        }
+      }
+      
+      // BasicDetails border styling
+      [class*="BasicDetails__border"] {
+        border-bottom: 1px solid var(--border-secondary) !important;
+        padding-bottom: 20px !important;
+        margin-bottom: 20px !important;
       }
     }
     
