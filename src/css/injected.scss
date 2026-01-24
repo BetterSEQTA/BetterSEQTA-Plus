@@ -229,8 +229,16 @@ select {
   background: var(--text-primary) !important;
   color: var(--theme-primary) !important;
   height: 35px;
-  justify-content: center;
   width: 35px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+// Specific positioning for settings button on Learn platform
+#AddedSettings:not([data-betterseqta="true"]) {
+  top: 10px !important;
+  z-index: 1000 !important;
 }
 [style="background-color: rgb(255, 255, 255);"] {
   color: black;

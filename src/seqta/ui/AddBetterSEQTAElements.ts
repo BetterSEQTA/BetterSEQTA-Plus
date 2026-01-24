@@ -274,30 +274,7 @@ function setupEventListeners() {
 }
 
 async function createSettingsButton() {
-  // Check if button already exists
-  if (document.getElementById("AddedSettings")) {
-    console.debug("[BetterSEQTA+] Settings button already exists");
-    return;
-  }
-
-  // Wait for content div to be available
-  let ContentDiv = document.getElementById("content");
-  let attempts = 0;
-  const maxAttempts = 50; // Wait up to 5 seconds
-  
-  while (!ContentDiv && attempts < maxAttempts) {
-    await delay(100);
-    ContentDiv = document.getElementById("content");
-    attempts++;
-  }
-
-  if (!ContentDiv) {
-    console.error("[BetterSEQTA+] Could not find content div for Learn platform after waiting");
-    return;
-  }
-
-  console.debug("[BetterSEQTA+] Creating settings button for Learn platform");
-
+  // Match the approach used by addDarkLightToggle - simpler, no existence check
   let SettingsButton = stringToHTML(/* html */ `
     <button class="addedButton tooltip" id="AddedSettings">
       <svg width="24" height="24" viewBox="0 0 24 24">
@@ -312,11 +289,12 @@ async function createSettingsButton() {
     return;
   }
 
-  try {
+  // For Learn, append to content div - same approach as dark/light toggle
+  let ContentDiv = document.getElementById("content");
+  if (ContentDiv && SettingsButton.firstChild) {
     ContentDiv.append(SettingsButton.firstChild);
-    console.info("[BetterSEQTA+] Successfully created and appended settings button for Learn platform");
-  } catch (error) {
-    console.error("[BetterSEQTA+] Error appending settings button:", error);
+  } else {
+    console.error("[BetterSEQTA+] Could not find content div for Learn platform");
   }
 }
 
