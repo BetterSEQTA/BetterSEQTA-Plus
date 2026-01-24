@@ -167,8 +167,27 @@ export function detectSEQTAPlatformSync(): SEQTAPlatform {
     return syncCachedPlatform;
   }
   
-  // Quick synchronous detection (URL-based only)
+  // Check body attribute first (set by main() after async detection)
+  if (document.body) {
+    const platformAttr = document.body.getAttribute('data-seqta-platform');
+    if (platformAttr === 'teach' || platformAttr === 'learn') {
+      return platformAttr as SEQTAPlatform;
+    }
+  }
+  
+  // Quick synchronous detection (URL-based)
   const url = window.location.href.toLowerCase();
+  const hostname = window.location.hostname.toLowerCase();
+  
+  // Check hostname for teach/learn subdomains
+  if (hostname.includes('teach.') || hostname.includes('.teach')) {
+    return 'teach';
+  }
+  if (hostname.includes('learn.') || hostname.includes('.learn')) {
+    return 'learn';
+  }
+  
+  // Check URL path
   if (url.includes('/learn/') || url.includes('/student/')) {
     return 'learn';
   }

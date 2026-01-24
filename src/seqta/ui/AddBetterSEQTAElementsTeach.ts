@@ -14,42 +14,150 @@ import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
 
+// Track if we've set up the observer to prevent multiple observers
+let spineObserverSetup = false;
+let injectionInProgress = false;
+
 /**
  * Adds Teach-specific BetterSEQTA+ elements to the page
  * This is the Teach equivalent of AddBetterSEQTAElements for Learn
  */
 export async function AddBetterSEQTAElementsTeach() {
-  // Always create settings button and popup, regardless of onoff state
-  addExtensionSettings();
-  await createTeachSettingsButton();
-  
-  // Wait a bit for the button to be inserted before setting up event listener
-  await delay(50);
-  setupSettingsButton();
-
-  if (settingsState.onoff) {
-    if (settingsState.DarkMode) {
-      document.documentElement.classList.add("dark");
-    }
-
-    // Create Teach-specific navigation elements
-    await createTeachHomeButton();
-
-    try {
-      await Promise.all([
-        appendBackgroundToUI(),
-        // Teach-specific initialization
-        initializeTeachFeatures(),
-      ]);
-    } catch (error) {
-      console.error("[BetterSEQTA+] Error initializing Teach UI elements:", error);
-    }
-
-    // Setup Teach-specific event listeners
-    setupTeachEventListeners();
-    
-    await addDarkLightToggleTeach();
+  console.log("[BetterSEQTA+] AddBetterSEQTAElementsTeach called!");
+  // Prevent concurrent injections
+  if (injectionInProgress) {
+    console.debug("[BetterSEQTA+] Injection already in progress, skipping");
+    return;
   }
+  
+  injectionInProgress = true;
+  console.log("[BetterSEQTA+] Starting injection process...");
+  
+  try {
+    // Always create settings button and popup, regardless of onoff state
+    addExtensionSettings();
+    await createTeachSettingsButton();
+    
+    // Wait a bit for the button to be inserted before setting up event listener
+    await delay(50);
+    setupSettingsButton();
+
+    if (settingsState.onoff) {
+      if (settingsState.DarkMode) {
+        document.documentElement.classList.add("dark");
+      }
+
+      // Create Teach-specific navigation elements
+      await createTeachHomeButton();
+
+      try {
+        await Promise.all([
+          appendBackgroundToUI(),
+          // Teach-specific initialization
+          initializeTeachFeatures(),
+        ]);
+      } catch (error) {
+        console.error("[BetterSEQTA+] Error initializing Teach UI elements:", error);
+      }
+
+      // Setup Teach-specific event listeners
+      setupTeachEventListeners();
+      
+      await addDarkLightToggleTeach();
+    }
+    
+    // Set up MutationObserver to watch for Spine changes (React navigation)
+    if (!spineObserverSetup) {
+      setupSpineObserver();
+      spineObserverSetup = true;
+    }
+    
+    // Set up navigation listener for Teach's React Router
+    setupNavigationListener();
+  } finally {
+    injectionInProgress = false;
+  }
+}
+
+/**
+ * Sets up a MutationObserver to watch for Spine navigation changes
+ * This ensures elements are re-injected when React replaces the DOM
+ */
+function setupSpineObserver() {
+  const spine = document.querySelector("[class*='Spine__Spine']");
+  if (!spine) {
+    // Retry after a delay if Spine isn't ready yet
+    setTimeout(() => setupSpineObserver(), 500);
+    return;
+  }
+  
+  const observer = new MutationObserver((mutations) => {
+    // Check if BetterSEQTA elements were removed
+    const settingsButton = document.getElementById("AddedSettings");
+    const homeButton = document.getElementById("betterseqta-teach-homebutton");
+    const darkToggle = document.getElementById("betterseqta-teach-darktoggle");
+    
+    // If any element is missing, re-inject (but only if not already in progress)
+    if (!injectionInProgress && (!settingsButton || !homeButton || !darkToggle)) {
+      console.debug("[BetterSEQTA+] Spine changed, re-injecting BetterSEQTA+ elements");
+      // Use a small delay to avoid rapid re-injections
+      setTimeout(() => {
+        AddBetterSEQTAElementsTeach().catch(err => {
+          console.error("[BetterSEQTA+] Error re-injecting elements:", err);
+        });
+      }, 100);
+    }
+  });
+  
+  // Observe the Spine and its children
+  observer.observe(spine, {
+    childList: true,
+    subtree: true,
+    attributes: false
+  });
+  
+  console.debug("[BetterSEQTA+] Spine observer setup complete");
+}
+
+/**
+ * Sets up a listener for Teach's React Router navigation
+ */
+function setupNavigationListener() {
+  // Listen for popstate events (back/forward navigation)
+  window.addEventListener("popstate", () => {
+    console.debug("[BetterSEQTA+] Navigation detected (popstate), re-injecting elements");
+    setTimeout(() => {
+      AddBetterSEQTAElementsTeach().catch(err => {
+        console.error("[BetterSEQTA+] Error re-injecting on navigation:", err);
+      });
+    }, 300);
+  });
+  
+  // Listen for pushstate/replacestate (programmatic navigation)
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+  
+  history.pushState = function(...args) {
+    originalPushState.apply(history, args);
+    console.debug("[BetterSEQTA+] Navigation detected (pushState), re-injecting elements");
+    setTimeout(() => {
+      AddBetterSEQTAElementsTeach().catch(err => {
+        console.error("[BetterSEQTA+] Error re-injecting on pushState:", err);
+      });
+    }, 300);
+  };
+  
+  history.replaceState = function(...args) {
+    originalReplaceState.apply(history, args);
+    console.debug("[BetterSEQTA+] Navigation detected (replaceState), re-injecting elements");
+    setTimeout(() => {
+      AddBetterSEQTAElementsTeach().catch(err => {
+        console.error("[BetterSEQTA+] Error re-injecting on replaceState:", err);
+      });
+    }, 300);
+  };
+  
+  console.debug("[BetterSEQTA+] Navigation listener setup complete");
 }
 
 /**
@@ -139,9 +247,15 @@ function findSpineNavContainer(): HTMLElement | null {
  * Creates the home button for Teach platform
  */
 async function createTeachHomeButton() {
-  // Check if home button already exists
-  if (document.getElementById("betterseqta-teach-homebutton")) {
-    return; // Button already exists
+  // Check if home button already exists and is still in the DOM
+  const existingButton = document.getElementById("betterseqta-teach-homebutton");
+  if (existingButton && document.body.contains(existingButton)) {
+    return; // Button already exists and is attached
+  }
+  
+  // If button exists but isn't attached, remove the reference
+  if (existingButton) {
+    existingButton.remove();
   }
 
   // Wait for the Spine navbar to be available
@@ -194,9 +308,15 @@ async function createTeachHomeButton() {
  * Creates the settings button for Teach platform - injects into Spine
  */
 async function createTeachSettingsButton() {
-  // Check if button already exists
-  if (document.getElementById("AddedSettings")) {
-    return; // Button already exists
+  // Check if button already exists and is still in the DOM
+  const existingButton = document.getElementById("AddedSettings");
+  if (existingButton && document.body.contains(existingButton)) {
+    return; // Button already exists and is attached
+  }
+  
+  // If button exists but isn't attached, remove the reference
+  if (existingButton) {
+    existingButton.remove();
   }
 
   // Wait for the Spine navigation container to be available
@@ -301,6 +421,17 @@ function GetLightDarkModeString() {
  * Add dark/light mode toggle button for Teach - injects into Spine
  */
 async function addDarkLightToggleTeach() {
+  // Check if dark toggle already exists and is still in the DOM
+  const existingToggle = document.getElementById("betterseqta-teach-darktoggle");
+  if (existingToggle && document.body.contains(existingToggle)) {
+    return; // Toggle already exists and is attached
+  }
+  
+  // If toggle exists but isn't attached, remove the reference
+  if (existingToggle) {
+    existingToggle.remove();
+  }
+  
   const tooltipString = GetLightDarkModeString();
   const SUN_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
   const MOON_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;

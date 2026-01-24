@@ -12334,9 +12334,9 @@ body[data-seqta-platform="teach"] {
 
   // SEQTA Teach Navigation Styling (3-tier spine system)
   
-  // Tier 1: Main Spine (darkest shade)
+  // Tier 1: Main Spine (darkest shade) - Apply theme color like Learn menu
   [class*="Spine__Spine"] {
-    background: var(--theme-primary) !important;
+    background: var(--better-main) !important;
     border-right: 1px solid var(--border-secondary) !important;
     min-width: 72px !important;
     width: 72px !important;
@@ -12497,9 +12497,9 @@ body[data-seqta-platform="teach"] {
     }
   }
   
-  // Tier 2: Page List (medium shade)
+  // Tier 2: Page List (medium shade) - Apply theme color like Learn menu
   [class*="PageList__PageList"] {
-    background: var(--theme-offset-bg) !important;
+    background: var(--better-main) !important;
     backdrop-filter: blur(10px) !important;
     border-right: 1px solid var(--border-secondary) !important;
     

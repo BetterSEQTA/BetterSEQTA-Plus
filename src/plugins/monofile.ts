@@ -203,6 +203,7 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
+  console.log("[BetterSEQTA+] LoadPageElements called");
   await AddBetterSEQTAElements();
   
   // Set up route listener for Teach homepage early
@@ -502,7 +503,10 @@ function CheckNoticeTextColour(notice: any) {
 }
 
 export function tryLoad() {
+  console.log("[BetterSEQTA+] tryLoad() called");
   let loadFinished = false;
+  // Track if LoadPageElements has been called to prevent duplicate calls
+  let loadPageElementsCalled = false;
   
   const finishLoadOnce = () => {
     if (!loadFinished) {
@@ -524,30 +528,76 @@ export function tryLoad() {
   }).catch(() => {});
 
   waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
+    if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
+      loadPageElementsCalled = true;
+      LoadPageElements();
+    }
   }).catch(() => {
     // On Teach, .code might not exist, so call LoadPageElements directly
-    if (isSEQTATeachSync()) {
+    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
+    if (isSEQTATeachSync() && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
+      loadPageElementsCalled = true;
       LoadPageElements().catch((err) => {
         console.error("[BetterSEQTA+] Error loading page elements:", err);
       });
+    } else {
+      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
     }
   });
   
   // Fallback: Check for common elements that indicate page has loaded
   waitForElm("#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header", true, 30).then(() => {
+    console.log("[BetterSEQTA+] Main content element found");
     // On Teach, ensure LoadPageElements is called if it hasn't been already
-    if (isSEQTATeachSync()) {
+    const isTeach = isSEQTATeachSync();
+    console.log("[BetterSEQTA+] Platform check in fallback - isTeach:", isTeach, "loadPageElementsCalled:", loadPageElementsCalled);
+    if (isTeach && !loadPageElementsCalled) {
       const codeElement = document.querySelector(".code");
+      console.log("[BetterSEQTA+] .code element check:", codeElement ? "found" : "not found");
       // Only call if .code doesn't exist (meaning the first waitForElm failed)
       if (!codeElement) {
+        console.log("[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback");
+        loadPageElementsCalled = true;
         LoadPageElements().catch((err) => {
           console.error("[BetterSEQTA+] Error loading page elements:", err);
         });
+      } else {
+        console.log("[BetterSEQTA+] .code element exists, skipping LoadPageElements");
       }
+    } else if (!isTeach) {
+      console.log("[BetterSEQTA+] Not Teach platform, skipping LoadPageElements");
+    } else {
+      console.log("[BetterSEQTA+] LoadPageElements already called, skipping");
     }
     finishLoadOnce();
-  }).catch(() => {});
+  }).catch(() => {
+    console.log("[BetterSEQTA+] Main content element not found");
+  });
+  
+  // Also update the .code catch block to track when it's called
+  waitForElm(".code", true, 50).then((elm: any) => {
+    if (!elm.innerText.includes("BetterSEQTA")) {
+      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
+      if (!loadPageElementsCalled) {
+        loadPageElementsCalled = true;
+        LoadPageElements();
+      }
+    }
+  }).catch(() => {
+    // On Teach, .code might not exist, so call LoadPageElements directly
+    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
+    if (isSEQTATeachSync() && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
+      loadPageElementsCalled = true;
+      LoadPageElements().catch((err) => {
+        console.error("[BetterSEQTA+] Error loading page elements:", err);
+      });
+    } else {
+      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
+    }
+  });
   
   // Fallback timeout: If none of the above elements appear, finish loading after 3 seconds
   setTimeout(() => {

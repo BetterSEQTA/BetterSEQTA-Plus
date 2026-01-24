@@ -43,7 +43,10 @@ async function getUserInfo() {
 
 export async function AddBetterSEQTAElements() {
   // Use Teach-specific implementation when on Teach platform
-  if (isSEQTATeachSync()) {
+  const isTeach = isSEQTATeachSync();
+  console.log("[BetterSEQTA+] AddBetterSEQTAElements called, isTeach:", isTeach);
+  if (isTeach) {
+    console.log("[BetterSEQTA+] Calling AddBetterSEQTAElementsTeach...");
     return AddBetterSEQTAElementsTeach();
   }
 
