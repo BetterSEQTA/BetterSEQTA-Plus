@@ -50,12 +50,30 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS;
     document.head.appendChild(documentLoadStyle);
 
-    const icons =
-      document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]');
+    replaceIcons();
 
-    icons.forEach((link) => {
-      link.href = icon48;
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+
+        if (
+          mutation.type === "attributes" &&
+          mutation.target instanceof HTMLLinkElement &&
+          mutation.target.rel.includes("icon") &&
+          mutation.attributeName === "href"
+        ) {
+          replaceIcons();
+          return;
+        }
+      }
     });
+
+    observer.observe(document.head, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href"],
+    });
+
+
 
     try {
       await initializeSettingsState();
@@ -84,4 +102,14 @@ async function init() {
       console.error(error);
     }
   }
+}
+
+function replaceIcons() {
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+    .forEach((link) => {
+      if (link.href !== icon48) {
+        link.href = icon48;
+      }
+    });
 }
