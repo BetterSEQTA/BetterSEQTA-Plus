@@ -3,8 +3,23 @@ import type { IndexItem } from "../types";
 
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
+let initializationFailed = false;
 let currentAbortController: AbortController | null = null;
 let loadedItemIds = new Set<string>();
+
+// Detect Firefox in worker context
+function isFirefoxWorker(): boolean {
+  try {
+    // Check for Firefox-specific APIs or user agent
+    if (typeof navigator !== "undefined") {
+      return navigator.userAgent.toLowerCase().includes("firefox");
+    }
+    // In worker context, check for Firefox-specific behavior
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 let streamingSession: {
   isActive: boolean;
@@ -21,6 +36,16 @@ async function initWorker() {
     console.debug("Vector worker already initialized.");
     return;
   }
+  
+  // Skip initialization in Firefox
+  if (isFirefoxWorker()) {
+    console.debug("[Vector Worker] Vector search not supported in Firefox - skipping initialization");
+    isInitialized = true;
+    initializationFailed = true;
+    vectorIndex = null;
+    return;
+  }
+  
   console.debug("Initializing vector worker...");
   try {
     await initializeModel();
@@ -48,8 +73,9 @@ async function initWorker() {
     isInitialized = true;
     console.debug("Vector worker initialized successfully.");
   } catch (e) {
-    console.error("Failed to initialize vector worker:", e);
+    console.warn("[Vector Worker] Failed to initialize vector worker (will use text search only):", e);
     isInitialized = true;
+    initializationFailed = true;
     vectorIndex = null;
   }
 }
@@ -80,18 +106,29 @@ async function startStreamingSession(
   totalExpected: number,
   batchSize: number = 5,
 ) {
+  if (initializationFailed || isFirefoxWorker()) {
+    self.postMessage({
+      type: "progress",
+      data: {
+        status: "complete",
+        message: "Vector search not available in Firefox - using text search only",
+      },
+    });
+    return;
+  }
+  
   if (!vectorIndex) {
     console.warn(
       "Streaming requested but vector index not ready. Attempting init.",
     );
     await initWorker();
-    if (!vectorIndex) {
+    if (!vectorIndex || initializationFailed) {
       self.postMessage({
         type: "progress",
         data: {
-          status: "error",
+          status: "complete",
           message:
-            "Vector index not available for streaming after init attempt.",
+            "Vector index not available - using text search only",
         },
       });
       return;
@@ -306,18 +343,29 @@ async function endStreamingSession() {
 async function processItems(items: IndexItem[], signal: AbortSignal) {
   console.debug("Worker received process request.");
 
+  if (initializationFailed || isFirefoxWorker()) {
+    self.postMessage({
+      type: "progress",
+      data: {
+        status: "complete",
+        message: "Vector search not available - using text search only",
+      },
+    });
+    return;
+  }
+
   if (!vectorIndex) {
     console.warn(
       "Processing requested but vector index not ready. Attempting init.",
     );
     await initWorker();
-    if (!vectorIndex) {
+    if (!vectorIndex || initializationFailed) {
       self.postMessage({
         type: "progress",
         data: {
-          status: "error",
+          status: "complete",
           message:
-            "Vector index not available for processing after init attempt.",
+            "Vector index not available - using text search only",
         },
       });
       return;

@@ -47,7 +47,17 @@ export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = 
         
         // Execute the actual plugin's run function
         return await actualPlugin.run(api);
-      } catch (error) {
+      } catch (error: any) {
+        // Handle Firefox MIME type errors gracefully
+        if (error?.message?.includes("MIME type") || error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
+          console.error(
+            `[BetterSEQTA+] Failed to load plugin "${lazyPlugin.id}" due to Firefox module loading restrictions. ` +
+            `This may be a build configuration issue. Error:`,
+            error
+          );
+          // Don't throw - allow the extension to continue functioning without this plugin
+          return;
+        }
         console.error(`[BetterSEQTA+] Failed to dynamically load plugin "${lazyPlugin.id}":`, error);
         throw error;
       }
