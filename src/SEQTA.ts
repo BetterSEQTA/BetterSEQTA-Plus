@@ -50,12 +50,29 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS;
     document.head.appendChild(documentLoadStyle);
 
-    const icons =
-      document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]');
+    function replaceIcons() {
+      document
+        .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+        .forEach((link) => {
+          if (link.href !== icon48) {
+            link.href = icon48;
+          }
+        });
+    }
 
-    icons.forEach((link) => {
-      link.href = icon48;
+    replaceIcons();
+
+    const observer = new MutationObserver(() => {
+      replaceIcons();
     });
+
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"],
+    });
+
 
     try {
       await initializeSettingsState();
