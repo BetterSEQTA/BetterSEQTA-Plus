@@ -1,6 +1,6 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.4.12",
+  "version": "3.4.13",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -49,7 +49,7 @@
     "mime-types": "^3.0.1",
     "prettier": "^3.5.3",
     "process": "^0.11.10",
-    "publish-browser-extension": "^3.0.1",
+    "publish-browser-extension": "^4.0.0",
     "sass": "^1.85.1",
     "sass-loader": "^16.0.5",
     "semver": "^7.7.1",

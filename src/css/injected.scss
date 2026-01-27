@@ -825,7 +825,7 @@ div > ol:has(.uiFileHandlerWrapper) {
 [aria-labelledby="lixycoxs-tab-1"] [minlength="0"] {
   min-height: 128px !important;
 }
-.student #menu > ul::before {
+body.student #menu > ul::before {
   background-image: var(--betterseqta-logo) !important;
   position: -webkit-sticky;
   position: sticky;
