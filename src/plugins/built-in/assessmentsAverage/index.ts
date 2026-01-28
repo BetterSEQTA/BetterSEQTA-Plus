@@ -57,17 +57,8 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       }
     }
     if (hasStuckProcessing) {
-      // Force update storage
       api.storage.weightings = { ...api.storage.weightings };
     }
-
-    // Expose globally for easy access in console: window.BetterSEQTAWeightings
-    (window as any).BetterSEQTAWeightings = api.storage.weightings;
-    
-    // Keep it updated when weightings change
-    api.storage.onChange('weightings', (newWeightings) => {
-      (window as any).BetterSEQTAWeightings = newWeightings;
-    });
 
     api.seqta.onMount(".assessmentsWrapper", async () => {
       await waitForElm(
@@ -649,10 +640,7 @@ async function handleWeightings(mark: any, api: any) {
       // For Chrome, it uses extension context
       text = await extractPDFText(pdfUrl);
     } catch (error: any) {
-      // Handle CSP errors or other fetch issues
-      // Suppress Firefox blob URL CSP errors (they're warnings, not fatal)
       if (isFirefox && (error?.message?.includes('blob') || error?.message?.includes('Security') || error?.message?.includes('CSP'))) {
-        // Try one more time with a longer delay in case PDF wasn't ready
         await new Promise(resolve => setTimeout(resolve, 2000));
         try {
           text = await extractPDFText(pdfUrl);
@@ -664,17 +652,14 @@ async function handleWeightings(mark: any, api: any) {
       }
     }
 
-    // Use regex to find the line "Assessment weight: X"
     const match = text.match(/Assessment weight:\s*(\d+\.?\d*)/i);
     const weight = match ? match[1] : "N/A";
 
-    // Save it to storage
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: weight,
     };
   } catch (error: any) {
-    // Catch any error and set to N/A instead of leaving as "processing"
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: "N/A",
