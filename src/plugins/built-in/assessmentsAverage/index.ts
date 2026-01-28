@@ -125,10 +125,12 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       );
       if (!assessmentsList) return;
 
-      const gradeElements = document.querySelectorAll(
-        "[class*='Thermoscore__text___']",
-      );
-      if (!gradeElements.length) return;
+      // Get marks from React state to match with DOM elements
+      const state = await ReactFiber.find(
+        "[class*='AssessmentList__items___']",
+      ).getState();
+      const marks = state["marks"];
+      if (!marks || !marks.length) return;
 
       // Parse and average grades
       const letterToNumber: Record<string, number> = {
@@ -162,19 +164,59 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         return letterToNumber[str] ?? 0;
       }
 
-      let total = 0;
+      // Get all assessment items (excluding the average we might have added)
+      const assessmentItems = Array.from(
+        assessmentsList.querySelectorAll(`[class*='AssessmentItem__AssessmentItem___']`),
+      ).filter(
+        (item) =>
+          !item.querySelector(`[class*='AssessmentItem__title___']`)?.textContent?.includes("Subject Average"),
+      );
+
+      // Match marks to assessment items and calculate weighted average
+      let weightedTotal = 0;
+      let totalWeight = 0;
+      let hasInaccurateWeighting = false;
       let count = 0;
-      gradeElements.forEach((el) => {
-        const grade = parseGrade(el.textContent || "");
-        if (grade > 0) {
-          total += grade;
-          count++;
+
+      for (let i = 0; i < marks.length && i < assessmentItems.length; i++) {
+        const mark = marks[i];
+        const assessmentItem = assessmentItems[i];
+        const gradeElement = assessmentItem.querySelector(
+          `[class*='Thermoscore__text___']`,
+        );
+
+        if (!gradeElement) continue;
+
+        const grade = parseGrade(gradeElement.textContent || "");
+        if (grade <= 0) continue;
+
+        const assessmentID = String(mark.id);
+        const weighting = api.storage.weightings[assessmentID];
+
+        // Check if weighting is unavailable or still processing
+        if (!weighting || weighting === "N/A" || weighting === "processing") {
+          hasInaccurateWeighting = true;
+          // Fall back to equal weighting if unavailable
+          weightedTotal += grade;
+          totalWeight += 1;
+        } else {
+          const weight = parseFloat(weighting);
+          if (!isNaN(weight) && weight > 0) {
+            weightedTotal += grade * weight;
+            totalWeight += weight;
+          } else {
+            // Invalid weight, use equal weighting
+            weightedTotal += grade;
+            totalWeight += 1;
+            hasInaccurateWeighting = true;
+          }
         }
-      });
+        count++;
+      }
 
-      if (!count) return;
+      if (!count || totalWeight === 0) return;
 
-      const avg = total / count;
+      const avg = weightedTotal / totalWeight;
       const rounded = Math.ceil(avg / 5) * 5;
       const numberToLetter = Object.entries(letterToNumber).reduce(
         (acc, [k, v]) => {
@@ -195,6 +237,16 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       );
       if (existing?.textContent === "Subject Average") return;
 
+      // Build warning message if needed
+      let warningHTML = "";
+      if (hasInaccurateWeighting) {
+        warningHTML = /* html */ `
+          <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.6); opacity: 0.8; line-height: 1.3;">
+            ⚠ Some weightings unavailable
+          </div>
+        `;
+      }
+
       // Use the dynamic class names in the HTML template
       const averageElement = stringToHTML(/* html */ `
         <div class="${assessmentItemClass}">
@@ -202,12 +254,13 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
             <div class="${metaClass}">
               <div class="${simpleResultClass}">
                 <div class="${titleClass}">Subject Average</div>
+                ${warningHTML}
               </div>
             </div>
           </div>
           <div class="${thermoscoreClass}">
             <div class="${fillClass}" style="width: ${avg.toFixed(2)}%">
-              <div class="${textClass}" title="${display}">${display}</div>
+              <div class="${textClass}" title="${hasInaccurateWeighting ? display + ' (some weightings unavailable)' : display}">${display}</div>
             </div>
           </div>
         </div>
@@ -219,7 +272,11 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
 };
 
 async function extractPDFText(url: string): Promise<string> {
-  const loadingTask = pdfjs.getDocument(url);
+  // Fetch PDF as ArrayBuffer to avoid blob URL CSP issues in Firefox extensions
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  
+  const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
 
   let text = "";
