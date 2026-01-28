@@ -16,6 +16,7 @@ pdfjs.GlobalWorkerOptions.workerSrc =
 // Storage
 interface weightingsStorage {
   weightings: Record<string, string>;
+  assessments: Record<string, string>;
 }
 
 const settings = defineSettings({
@@ -46,6 +47,9 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
 
     if (!api.storage.weightings) {
       api.storage.weightings = {};
+    }
+    if (!api.storage.assessments) {
+      api.storage.assessments = {};
     }
 
     // Clear any stuck "processing" states so they can retry
@@ -190,9 +194,8 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       let hasInaccurateWeighting = false;
       let count = 0;
 
-      for (let i = 0; i < marks.length && i < assessmentItems.length; i++) {
-        const mark = marks[i];
-        const assessmentItem = assessmentItems[i];
+      // Iterate through assessments for processing
+      for (const assessmentItem of assessmentItems) {
         const gradeElement = assessmentItem.querySelector(
           `[class*='Thermoscore__text___']`,
         );
@@ -202,18 +205,86 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         const grade = parseGrade(gradeElement.textContent || "");
         if (grade <= 0) continue;
 
-        const assessmentID = String(mark.id);
-        const weighting = api.storage.weightings[assessmentID];
+        const titleEl = assessmentItem.querySelector(
+          `[class*='AssessmentItem__title___']`,
+        );
+        if (!titleEl) continue;
+
+        const title = titleEl.textContent?.trim();
+        if (!title) continue;
+
+        // Get correlated assessment ID in order to fetch weightings
+        const assessmentID = api.storage.assessments?.[title];
+        const weighting = assessmentID
+          ? api.storage.weightings?.[assessmentID]
+          : undefined;
+
+        const statsContainer = assessmentItem.querySelector(
+          `[class*='AssessmentItem__stats___']`,
+        ) as HTMLElement;
+
+        // Creates a weighting label next to the average score
+        if (statsContainer) {
+          // Only add label if it hasn't been added before
+          if (!statsContainer.querySelector(".betterseqta-weight-label")) {
+            const label = statsContainer.querySelector(
+              `[class*='Label__Label___']`,
+            ) as HTMLElement;
+
+            if (label) {
+              // Clone average score node
+              const weightLabel = label.cloneNode(true) as HTMLElement;
+
+              // Mark as added to prevent duplicates
+              weightLabel.classList.add("betterseqta-weight-label");
+
+              const innerTextDiv = weightLabel.querySelector(
+                `[class*='Label__innerText___']`,
+              );
+
+              // Repurpose for showing weight
+              if (innerTextDiv) innerTextDiv.textContent = "Weight";
+
+              const textNodes = Array.from(weightLabel.childNodes).filter(
+                (node) => node.nodeType === Node.TEXT_NODE,
+              );
+
+              // Set weight value, discarding useless decimals (.0)
+              if (textNodes.length) {
+                textNodes[0].textContent =
+                  weighting && weighting !== "processing"
+                    ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
+                    : "N/A";
+              }
+
+              // Set position opposite to the average score node
+              statsContainer.style.position = "relative";
+              weightLabel.style.position = "absolute";
+              weightLabel.style.right = "0";
+              weightLabel.style.top = "50%";
+              weightLabel.style.transform = "translateY(-50%)";
+
+              statsContainer.appendChild(weightLabel);
+            }
+          }
+        }
 
         // Check if weighting is unavailable or still processing
-        if (!weighting || weighting === "N/A" || weighting === "processing") {
+        if (
+          weighting === null ||
+          weighting === undefined ||
+          weighting === "N/A" ||
+          weighting === "processing"
+        ) {
           hasInaccurateWeighting = true;
           // Fall back to equal weighting if unavailable
           weightedTotal += grade;
           totalWeight += 1;
         } else {
           const weight = parseFloat(weighting);
-          if (!isNaN(weight) && weight > 0) {
+
+          // If weight is a positive number, add to total
+          if (!isNaN(weight) && weight >= 0) {
             weightedTotal += grade * weight;
             totalWeight += weight;
           } else {
@@ -410,8 +481,8 @@ async function extractPDFText(url: string): Promise<string> {
           } else {
             // Load pdfjs in page context
             const pdfjsScript = document.createElement('script');
-            pdfjsScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs';
-            pdfjsScript.type = 'module';
+            pdfjsScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.min.js';
+            pdfjsScript.type = 'text/javascript';
             
             pdfjsScript.onload = function() {
               extractPDF();
@@ -592,7 +663,8 @@ async function handleWeightings(mark: any, api: any) {
   const metaclassID = mark.metaclassID;
   const userInfo = await getUserInfo();
   const userID = userInfo.id;
-  
+  const title = mark.title;
+
   // Skip if already processed (not "processing")
   if (api.storage.weightings[assessmentID] != undefined && api.storage.weightings[assessmentID] !== "processing") {
     return;
@@ -603,6 +675,12 @@ async function handleWeightings(mark: any, api: any) {
     ...api.storage.weightings,
     [assessmentID]: "processing",
   };
+
+  // Correlate assessment title with its ID
+  api.storage.assessments = {
+    ...api.storage.assessments,
+    [title.trim()]: assessmentID
+  }
 
   try {
     const filename =
@@ -652,9 +730,11 @@ async function handleWeightings(mark: any, api: any) {
       }
     }
 
-    const match = text.match(/Assessment weight:\s*(\d+\.?\d*)/i);
+    // Match weighting from extracted text
+    const match = text.match(/weight:\s*(\d+\.?\d*)/i);
     const weight = match ? match[1] : "N/A";
 
+    // Store and correlate weight with assessment ID
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: weight,
@@ -675,9 +755,8 @@ async function parseAssessments(api: any) {
   const marks = state["marks"];
   if (!marks) return;
 
-  for (const mark of marks) {
-    await handleWeightings(mark, api);
-  }
+  // Dispatch for all assessments asynchronously
+  await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
 }
 
 export default assessmentsAveragePlugin;
