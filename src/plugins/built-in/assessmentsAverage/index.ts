@@ -7,6 +7,16 @@ import {
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import ReactFiber from "@/seqta/utils/ReactFiber.ts";
+import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
+import * as pdfjs from "pdfjs-dist";
+pdfjs.GlobalWorkerOptions.workerSrc =
+  "https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.worker.min.mjs";
+
+// Storage
+interface weightingsStorage {
+  weightings: Record<string, string>;
+}
 
 const settings = defineSettings({
   lettergrade: booleanSetting({
@@ -23,7 +33,7 @@ class AssessmentsAveragePluginClass extends BasePlugin<typeof settings> {
 
 const instance = new AssessmentsAveragePluginClass();
 
-const assessmentsAveragePlugin: Plugin<typeof settings> = {
+const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
   id: "assessments-average",
   name: "Assessment Averages",
   description: "Adds an average grade to the Assessments page",
@@ -32,14 +42,21 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
+    await api.storage.loaded;
+
+    if (!api.storage.weightings) {
+      api.storage.weightings = {};
+    }
+
     api.seqta.onMount(".assessmentsWrapper", async () => {
-      // Wait for any assessment item to load first
       await waitForElm(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
         true,
         10,
         1000,
       );
+
+      await parseAssessments(api);
 
       // Helper function to find actual class names by their base pattern
       const getClassByPattern = (
@@ -200,5 +217,79 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
     });
   },
 };
+
+async function extractPDFText(url: string): Promise<string> {
+  const loadingTask = pdfjs.getDocument(url);
+  const pdf = await loadingTask.promise;
+
+  let text = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item: any) => item.str).join(" ") + "\n";
+  }
+
+  return text;
+}
+
+async function handleWeightings(mark: any, api: any) {
+  const assessmentID = mark.id;
+  const metaclassID = mark.metaclassID;
+  const userInfo = await getUserInfo();
+  const userID = userInfo.id;
+  if (api.storage.weightings[assessmentID] != undefined) {
+    return;
+  }
+
+  api.storage.weightings = {
+    ...api.storage.weightings,
+    [assessmentID]: "processing",
+  };
+
+  const filename =
+    "BetterSEQTA-" + String(Math.floor(Math.random() * 1e15)).padStart(15, "0");
+
+  await fetch(`${location.origin}/seqta/student/print/assessment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({
+      fileName: filename,
+      id: assessmentID,
+      metaclass: metaclassID,
+      student: userID,
+    }),
+  });
+
+  const pdfUrl = `${location.origin}/seqta/student/report/get?file=${filename}`;
+  const text = await extractPDFText(pdfUrl);
+
+  // Use regex to find the line "Assessment weight: X"
+  const match = text.match(/Assessment weight:\s*(\d+\.?\d*)/i);
+  const weight = match ? match[1] : "N/A";
+
+  // Save it to storage
+  api.storage.weightings = {
+    ...api.storage.weightings,
+    [assessmentID]: weight,
+  };
+
+  console.log(`Assessment ID ${assessmentID} weight:`, weight);
+
+  console.log(text);
+}
+
+async function parseAssessments(api: any) {
+  const state = await ReactFiber.find(
+    "[class*='AssessmentList__items___']",
+  ).getState();
+
+  const marks = state["marks"];
+  if (!marks) return;
+
+  for (const mark of marks) {
+    await handleWeightings(mark, api);
+  }
+}
 
 export default assessmentsAveragePlugin;
