@@ -653,6 +653,7 @@ async function extractPDFText(url: string): Promise<string> {
 
       return text;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
