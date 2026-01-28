@@ -14,7 +14,7 @@ let cachedUserInfo: any = null;
 
 let LightDarkModeSnakeEggButton = 0;
 
-async function getUserInfo() {
+export async function getUserInfo() {
   if (cachedUserInfo) return cachedUserInfo;
 
   try {
