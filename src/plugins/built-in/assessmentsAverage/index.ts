@@ -8,7 +8,7 @@ import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
-import { initStorage, clearStuck, getClassByPattern, parseGrade, createWeightLabel, parseAssessments, letterToNumber} from "./utils.ts";
+import { clearStuck, createWeightLabel, getClassByPattern, initStorage, letterToNumber, parseAssessments, parseGrade} from "./utils.ts";
 
 // Storage
 interface weightingsStorage {
