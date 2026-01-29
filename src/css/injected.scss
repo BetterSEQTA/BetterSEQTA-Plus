@@ -434,6 +434,11 @@ ul.magicDelete > li.deleting {
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+  border-bottom: none;
+  height: 540px;
+  display: flex;
+  flex-direction: column;
+
   &::-webkit-scrollbar {
     display: none !important;
   }
@@ -728,13 +733,7 @@ td.colourBar {
 #container #content .uiButton {
   border-radius: 16px;
 }
-.dark {
-  #toolbar button.toggled,
-  #toolbar button.depressed {
-    background: #333333;
-    color: white;
-  }
-}
+
 #toolbar button.toggled,
 #toolbar button.depressed {
   background: #f3f3f3;
@@ -1510,12 +1509,6 @@ html.transparencyEffects
     border: 1px solid white;
   }
 }
-[class*="notifications__items___"] {
-  border-bottom: none;
-  height: 540px;
-  display: flex;
-  flex-direction: column;
-}
 [class*="notifications__details___"] {
   max-width: 80%;
   overflow: clip;
@@ -1708,6 +1701,9 @@ iframe.userHTML {
   box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.05);
   overflow-y: scroll;
   height: 100%;
+  width: 400px;
+  background: var(--background-primary);
+  position: relative;
 
   .navigator {
     padding: 6px !important;
@@ -1849,21 +1845,6 @@ ul {
   scrollbar-color: #babac0 #fff !important;
 }
 
-.dark {
-  body,
-  div,
-  ol,
-  ul {
-    scrollbar-width: thin;
-    scrollbar-color: #333 #111 !important;
-  }
-}
-
-.programmeNavigator {
-  width: 400px;
-  background: var(--background-primary);
-  position: relative;
-}
 #userActions > .details > .code {
   text-transform: initial;
 }
@@ -2002,14 +1983,13 @@ div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
 }
 div.entry.class {
   border-radius: 4px;
-}
-
-div.entry.class {
   width: 100% !important;
 }
+
 div.entry.class[style*="left: 46.5%"] {
   left: 50% !important;
 }
+
 div.entry.class[style*="width: 46.5%"] {
   width: 50% !important;
 }
@@ -2088,6 +2068,22 @@ a.uiFile:not(.rows) {
     background: transparent !important;
     font-size: 12px !important;
     flex: 1;
+  }
+}
+
+.dark {
+  body,
+  div,
+  ol,
+  ul {
+    scrollbar-width: thin;
+    scrollbar-color: #333 #111 !important;
+  }
+
+  #toolbar button.toggled,
+  #toolbar button.depressed {
+    background: #333333;
+    color: white;
   }
 }
 
