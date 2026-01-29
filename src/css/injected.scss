@@ -39,7 +39,6 @@ html {
   font-family: Rubik, sans-serif !important;
 }
 
-/* Ensure native select dropdowns are readable on Windows */
 select option {
   background-color: #ffffff !important;
   color: #111827 !important;
@@ -49,7 +48,6 @@ select option {
   color: #ffffff !important;
 }
 
-/* Consistent rounded corners for selects */
 select {
   border-radius: 8px !important;
 }
@@ -158,8 +156,7 @@ select {
 #main {
   color: var(--text-primary);
   position: relative;
-}
-#main {
+
   > .timetablepage {
     > .quickbar {
       .gutter {
@@ -276,10 +273,8 @@ select {
   grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
   background: unset;
 
-  // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
   > section {
     border-radius: 16px !important;
-    //opacity: 0;
 
     button {
       border-radius: 16px;
@@ -319,7 +314,6 @@ select {
   > .dashlet {
     background: var(--background-primary);
     border-radius: 16px;
-    //opacity: 0;
 
     &[data-ident="timetable"] {
       grid-row: span 2 / auto !important;
@@ -335,9 +329,6 @@ select {
       }
     }
   }
-}
-.dashlet-summary-homework > .summary > .subject > .item {
-  color: var(--text-primary) !important;
 }
 .dashlet-summary-homework > .summary > .subject > .item {
   color: var(--text-primary) !important;
@@ -406,7 +397,6 @@ ul.magicDelete > li.deleting {
   white-space: nowrap;
 }
 
-/* Allow long course/assessment names in the sidebar to wrap and break safely */
 #menu li > label,
 #menu section > label {
   white-space: normal;
@@ -500,7 +490,6 @@ ul.magicDelete > li.deleting {
 html {
   background: var(--better-main) !important;
 }
-/* Messages */
 .menuShown .content .anyoneSelect .listWrapper .list:has(.item) {
   width: 100% !important;
 }
@@ -519,7 +508,6 @@ ol:has([class*="MessageList__avatar___"] svg) {
   transition-duration: 150ms !important;
   transition-delay: 0ms !important;
 }
-/* Direct Message Menu */
 .wrapper .cke_contents iframe {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -528,7 +516,6 @@ ol:has([class*="MessageList__avatar___"] svg) {
 }
 .wrapper .cke_contents::-webkit-scrollbar-thumb {
   background-color: #969696 !important;
-  /* color of the scroll thumb */
 }
 .content .footer {
   margin-top: 5px;
@@ -1364,7 +1351,6 @@ html.transparencyEffects
   font-size: 20px !important;
   font-weight: 500;
   min-height: 46px;
-  /* Let the title expand naturally but clamp to 2 lines to avoid overlap */
   height: auto;
   line-height: 1.2;
   display: -webkit-box;
@@ -1438,8 +1424,6 @@ html.transparencyEffects
   background: white;
   z-index: 21 !important;
   color: var(--better-sub);
-}
-[class*="notifications__notifications___"] > button {
   padding: 8px;
 }
 .legacy-root button > svg,
@@ -1540,7 +1524,6 @@ html.transparencyEffects
   display: none !important;
 }
 [class*="MessageList__MessageList___"] ol [class*="Button__Button___"]::before {
-  // plus icon
   content: "";
   font-size: 12px;
   margin-right: 4px;
@@ -1831,7 +1814,6 @@ iframe.userHTML {
   color: var(--text-primary);
 }
 
-/* set button(top and bottom of the scrollbar) */
 body::-webkit-scrollbar-button {
   display: none !important;
 }
@@ -1845,9 +1827,6 @@ ul {
   scrollbar-color: #babac0 #fff !important;
 }
 
-#userActions > .details > .code {
-  text-transform: initial;
-}
 div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
   padding: 4px;
 }
@@ -2355,7 +2334,6 @@ ul.buttonChecklist,
 ul.buttonMenu,
 ul.colourButtonOptions,
 ul.uiSplitButtonList,
-ul.buttonMenu,
 .contactFormPanel {
   background: var(--background-primary) !important;
   border: solid 4px var(--background-primary);
@@ -2426,9 +2404,6 @@ body {
 }
 .days {
   width: 100%;
-}
-.hidden {
-  display: none;
 }
 .modaliser {
   display: none;
@@ -2775,6 +2750,7 @@ body {
   bottom: 20px;
 }
 #userActions > .details > .code {
+  text-transform: initial;
   overflow: visible !important;
 }
 .code {
@@ -2896,8 +2872,6 @@ div.day-empty {
   height: 6em;
   padding: 0px;
   border-radius: 10px;
-}
-.upcoming-assessment {
   display: flex;
 }
 .upcoming-date-container {
@@ -2966,7 +2940,6 @@ div.day-empty {
   align-items: center;
   display: flex;
 }
-/* Hide the browser's default checkbox */
 .upcoming-checkbox-container input {
   position: absolute;
   opacity: 0;
@@ -2975,7 +2948,6 @@ div.day-empty {
   width: 0;
   padding: 0;
 }
-/* Create a custom checkbox */
 .upcoming-checkmark {
   position: absolute;
   top: 0;
@@ -3001,11 +2973,9 @@ div.day-empty {
   display: none;
 }
 
-/* Show the checkmark when checked */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
   display: block;
 }
-/* Style the checkmark/indicator */
 .upcoming-checkbox-container .upcoming-checkmark:after {
   left: 3.5px;
   top: 0px;
@@ -3076,9 +3046,6 @@ div.day-empty {
   box-shadow:
     inset 0px 6px 0 var(--item-colour, transparent),
     inset 0px 40px 50px -40px rgba(0, 0, 0, 0.9);
-}
-.clickable {
-  cursor: pointer;
 }
 .day:hover {
   background: var(--background-secondary);
@@ -3177,7 +3144,6 @@ div.day-empty {
   align-items: center;
   display: flex;
 }
-/* Hide the browser's default checkbox */
 .upcoming-checkbox-container input {
   position: absolute;
   opacity: 0;
@@ -3186,7 +3152,6 @@ div.day-empty {
   width: 0;
   padding: 0;
 }
-/* Create a custom checkbox */
 .upcoming-checkmark {
   position: absolute;
   top: 0;
@@ -3197,25 +3162,20 @@ div.day-empty {
   border-radius: 5px;
   color: var(--text-color);
 }
-/* On mouse-over, add a grey background color */
 .upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
   filter: brightness(0.8);
 }
-/* When the checkbox is checked, add a blue background */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
   background: var(--item-colour);
 }
-/* Create the checkmark/indicator (hidden when not checked) */
 .upcoming-checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
-/* Show the checkmark when checked */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
   display: block;
 }
-/* Style the checkmark/indicator */
 .upcoming-checkbox-container .upcoming-checkmark:after {
   left: 3.5px;
   top: 0px;
@@ -3523,7 +3483,6 @@ div.day-empty {
   overflow: visible;
 }
 
-// Auto collapsing alignment toolbar
 .cke_toolbar:has(.cke_button__seqta-align-left) {
   overflow: visible !important;
 
@@ -3564,13 +3523,11 @@ div.day-empty {
         }
       }
 
-      // Button icons
       .cke_button_icon {
         margin: 0 !important;
       }
     }
 
-    // menu background
     &:before {
       content: "";
       position: absolute;
@@ -3588,7 +3545,6 @@ div.day-empty {
       transition: all 0.2s ease-out;
     }
 
-    // Dropdown behavior on hover
     &:hover {
       &:hover:before {
         transform: scale(1);
@@ -3599,7 +3555,6 @@ div.day-empty {
         visibility: visible;
         transition-delay: 0s;
 
-        // Stack buttons in dropdown with spacing
         &:first-child {
           transform: translateY(0);
           border-top-left-radius: 12px !important;
@@ -3627,7 +3582,6 @@ div.day-empty {
       }
     }
 
-    // Add subtle animation when closing dropdown
     &:not(:hover)
       .cke_button:not(.cke_button_on):not(
         .cke_button__seqta-align-left:first-child
@@ -3659,7 +3613,6 @@ div.day-empty {
   border: none !important;
 }
 
-// Notice card hover effects for main page cards
 .notice-unified-content.notice-card-state:not([data-transitioning]) {
   cursor: pointer;
 
@@ -3700,7 +3653,6 @@ div.day-empty {
   text-overflow: ellipsis;
 }
 
-// Modal styles
 .notice-modal-overlay {
   position: fixed;
   top: 0;
@@ -3719,7 +3671,7 @@ div.day-empty {
 .notice-modal-transition {
   position: fixed;
   z-index: 10001;
-  transition: none; // Controlled by motion animations
+  transition: none;
 }
 
 .notice-modal-content {
@@ -3753,13 +3705,7 @@ div.day-empty {
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
-.dark .notice-unified-content {
-  color: white;
-}
-
-.notice-unified-content {
   h1,
   h2,
   h3,
@@ -3783,7 +3729,7 @@ div.day-empty {
   }
 
   .notice-content-title {
-    font-size: 20px !important; // Nice middle ground - not too big, not too small
+    font-size: 20px !important;
     font-weight: 600 !important;
     color: var(--text-primary) !important;
     margin: 0 0 12px !important;
@@ -3798,17 +3744,14 @@ div.day-empty {
     margin: 0 !important;
     flex: 1;
     display: block;
-    // Force stable layout dimensions - content renders at full size always
-    min-width: 600px; // Ensure tables have consistent width for layout
+    min-width: 600px;
     width: 100%;
   }
 
-  // The ONLY difference between states is clipping!
   &.notice-card-state {
     .notice-content-body {
-      // Clip to show only 2 lines but keep full layout
       overflow: hidden;
-      max-height: 3em; // ~2 lines worth of height
+      max-height: 3em;
     }
   }
 
@@ -3818,10 +3761,8 @@ div.day-empty {
     }
 
     .notice-content-body {
-      // Show full content with scrolling
       overflow-y: auto;
 
-      // Custom scrollbar for long content
       &::-webkit-scrollbar {
         width: 6px;
       }
@@ -3839,7 +3780,6 @@ div.day-empty {
         background: rgba(255, 255, 255, 0.3);
       }
 
-      // Style content elements nicely
       p {
         margin-bottom: 12px;
 
@@ -3868,6 +3808,10 @@ div.day-empty {
       }
     }
   }
+}
+
+.dark .notice-unified-content {
+  color: white;
 }
 
 .notice-header {
@@ -3968,7 +3912,6 @@ button.notice-close-btn {
   flex: 1;
   overflow-y: auto;
 
-  // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -3986,7 +3929,6 @@ button.notice-close-btn {
     background: rgba(255, 255, 255, 0.3);
   }
 
-  // Style content elements
   p {
     margin-bottom: 12px;
 
@@ -4015,7 +3957,6 @@ button.notice-close-btn {
   }
 }
 
-// Dark mode adjustments
 .dark {
   .notice-card {
     border-color: rgba(255, 255, 255, 0.05);
@@ -4030,7 +3971,6 @@ button.notice-close-btn {
   }
 }
 
-// Mobile responsiveness
 @media (max-width: 768px) {
   .notice-modal-overlay {
     padding: 10px;
