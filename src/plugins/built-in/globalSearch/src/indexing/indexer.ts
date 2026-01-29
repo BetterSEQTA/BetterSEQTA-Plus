@@ -1,4 +1,4 @@
-import { clear, getAll, get, put, remove } from "./db";
+import { clear, get, getAll, put, remove } from "./db";
 import { jobs } from "./jobs";
 import { renderComponentMap } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
