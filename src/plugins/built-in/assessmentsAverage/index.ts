@@ -8,7 +8,7 @@ import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
-import { clearStuck, createWeightLabel, getClassByPattern, initStorage, letterToNumber, parseAssessments, parseGrade} from "./utils.ts";
+import { clearStuck, getClassByPattern, initStorage, letterToNumber, parseAssessments, processAssessments} from "./utils.ts";
 
 // Storage
 interface weightingsStorage {
@@ -128,68 +128,13 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
           !item.querySelector(`[class*='AssessmentItem__title___']`)?.textContent?.includes("Subject Average"),
       );
 
-      // Match marks to assessment items and calculate weighted average
-      let weightedTotal = 0;
-      let totalWeight = 0;
-      let hasInaccurateWeighting = false;
-      let count = 0;
-
-      // Iterate through assessments for processing
-      for (const assessmentItem of assessmentItems) {
-        const gradeElement = assessmentItem.querySelector(
-          `[class*='Thermoscore__text___']`,
-        );
-
-        if (!gradeElement) continue;
-
-        const grade = parseGrade(gradeElement.textContent || "");
-        if (grade <= 0) continue;
-
-        const titleEl = assessmentItem.querySelector(
-          `[class*='AssessmentItem__title___']`,
-        );
-        if (!titleEl) continue;
-
-        const title = titleEl.textContent?.trim();
-        if (!title) continue;
-
-        // Get correlated assessment ID in order to fetch weightings
-        const assessmentID = api.storage.assessments?.[title];
-        const weighting = assessmentID
-          ? api.storage.weightings?.[assessmentID]
-          : undefined;
-
-
-        // Creates a weighting label next to the average score
-        createWeightLabel(assessmentItem, weighting)
-
-        // Check if weighting is unavailable or still processing
-        if (
-          weighting === null ||
-          weighting === undefined ||
-          weighting === "N/A" ||
-          weighting === "processing"
-        ) {
-          hasInaccurateWeighting = true;
-          // Fall back to equal weighting if unavailable
-          weightedTotal += grade;
-          totalWeight += 1;
-        } else {
-          const weight = parseFloat(weighting);
-
-          // If weight is a positive number, add to total
-          if (!isNaN(weight) && weight >= 0) {
-            weightedTotal += grade * weight;
-            totalWeight += weight;
-          } else {
-            // Invalid weight, use equal weighting
-            weightedTotal += grade;
-            totalWeight += 1;
-            hasInaccurateWeighting = true;
-          }
-        }
-        count++;
-      }
+      // Tally up weightedTotal, totalWeight, count, determine if weighting is accurate, and display a weight label per assessment
+      const {
+        weightedTotal,
+        totalWeight,
+        hasInaccurateWeighting,
+        count,
+      } = await processAssessments(api, assessmentItems);
 
       if (!count || totalWeight === 0) return;
 
