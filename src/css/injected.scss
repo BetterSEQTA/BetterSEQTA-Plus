@@ -3177,17 +3177,6 @@ div.day-empty {
   display: flex;
   align-content: space-between;
 }
-.upcoming-filters {
-  display: flex;
-  height: 26px;
-  width: 65%;
-  align-self: center;
-  align-items: center;
-  color: var(--text-color);
-  padding: 5px;
-  overflow-x: scroll;
-  overflow-y: hidden;
-}
 .upcoming-checkbox-container {
   position: relative;
   padding: none !important;
