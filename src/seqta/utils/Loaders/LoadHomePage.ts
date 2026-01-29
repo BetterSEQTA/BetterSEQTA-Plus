@@ -43,7 +43,7 @@ export async function loadHomePage() {
   const homeContainer = document.getElementById("home-root");
   if (!homeContainer) return;
 
-  const skeletonStructure = stringToHTML(/* html */`
+  const skeletonStructure = stringToHTML(/* html */ `
       <div class="home-container" id="home-container">
         <div class="border shortcut-container">
           <div class="border shortcuts" id="shortcuts"></div>
@@ -299,7 +299,6 @@ function comparedate(obj1: any, obj2: any) {
   return 0;
 }
 
-
 function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");
   if (!NoticeContainer) return;
@@ -343,14 +342,14 @@ function processNoticeColor(colour: string): string | undefined {
 }
 
 function createNoticeElement(notice: any, colour: string | undefined): Node {
-  const textPreview = notice.contents
-    .replace(/<[^>]*>/g, "")
-    .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .substring(0, 150)
-    + (notice.contents.length > 150 ? "..." : "");
-  
+  const textPreview =
+    notice.contents
+      .replace(/<[^>]*>/g, "")
+      .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .substring(0, 150) + (notice.contents.length > 150 ? "..." : "");
+
   const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const htmlContent = `
@@ -680,8 +679,10 @@ function callHomeTimetable(date: string, change?: any) {
             GetLessonColours().then((colours) => {
               let subjects = colours;
               for (let i = 0; i < lessonArray.length; i++) {
-                
-                let subjectname = ((lessonArray[i].type == "tutorial") ? `timetable.tutor.${lessonArray[i].tutorID}` : `timetable.subject.colour.${lessonArray[i].code}`);
+                let subjectname =
+                  lessonArray[i].type == "tutorial"
+                    ? `timetable.tutor.${lessonArray[i].tutorID}`
+                    : `timetable.subject.colour.${lessonArray[i].code}`;
 
                 let subject = subjects.find(
                   (element: any) => element.name === subjectname,
@@ -869,14 +870,14 @@ function makeLessonDiv(lesson: any, num: number) {
     programmeID,
     metaID,
     assessments,
-    type
+    type,
   } = lesson;
 
   let lessonString = `
       <div class="day" id="${code + num}" style="${colour}">
-        <h2>${(type == "class") ? description : (type == "tutorial") ? "Tutorial" : "Unknown"}</h2>
+        <h2>${type == "class" ? description : type == "tutorial" ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
-        <h3>${(type == "class") ? room : (type == "tutorial") ? "N/A" : "Unknown"}</h3>
+        <h3>${room || "N/A"}</h3>
         <h4>${from || "Unknown"} - ${until || "Unknown"}</h4>
         <h5>${attendanceTitle || "Unknown"}</h5>
     `;
@@ -987,22 +988,16 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   CreateFilters(activeSubjects);
 
-  let type;
-  let class_;
-
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];
     if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
-      let dateObj: any = new Object();
-      dateObj.div = CreateElement(
-        (type = "div"),
-        (class_ = "upcoming-date-container"),
-      );
+      const dateObj: any = {};
+      dateObj.div = CreateElement("div", "upcoming-date-container");
       dateObj.assessments = [];
       (upcomingDates[element.due as keyof typeof upcomingDates] as any) =
         dateObj;
     }
-    let assessmentDateDiv =
+    const assessmentDateDiv =
       upcomingDates[element.due as keyof typeof upcomingDates];
 
     if (assessmentDateDiv) {
@@ -1012,9 +1007,8 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (var date in upcomingDates) {
     let assessmentdue = new Date(
-      (
-        upcomingDates[date as keyof typeof upcomingDates] as any
-      ).assessments[0].due,
+      (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0]
+        .due,
     );
     let specialcase = CheckSpecialDay(Today, assessmentdue);
     let assessmentDate;
@@ -1044,7 +1038,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
   FilterUpcomingAssessments(settingsState.subjectfilters);
-  
+
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
       <div class="day-empty">
