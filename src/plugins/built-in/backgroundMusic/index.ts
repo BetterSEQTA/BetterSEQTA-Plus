@@ -1,5 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import { componentSetting, defineSettings, numberSetting, booleanSetting } from "@/plugins/core/settingsHelpers";
+import { booleanSetting, componentSetting, defineSettings, numberSetting } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
