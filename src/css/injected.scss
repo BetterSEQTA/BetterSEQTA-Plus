@@ -8751,6 +8751,95 @@ body[data-seqta-platform="teach"] {
         }
       }
       
+      // Essential Learning and Homework sections (.foot)
+      .programmeWrapper {
+        .editArea {
+          .foot {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 20px !important;
+            margin-top: 24px !important;
+            padding-top: 24px !important;
+            border-top: 1px solid var(--border-secondary) !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            background-image: none !important;
+            
+            // Override any inline styles or blue backgrounds - use attribute selector with !important
+            &[style] {
+              background: transparent !important;
+              background-color: transparent !important;
+              background-image: none !important;
+            }
+            
+            .essential,
+            .homework {
+              background: transparent !important;
+              background-color: transparent !important;
+              border: 1px solid var(--border-secondary) !important;
+              border-radius: 12px !important;
+              padding: 20px !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 12px !important;
+              
+              // Override any inline styles
+              &[style*="background"],
+              &[style*="background-color"] {
+                background: transparent !important;
+                background-color: transparent !important;
+              }
+          
+          h2 {
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            
+            .sequence {
+              color: var(--accent-bg) !important;
+              font-weight: 700 !important;
+            }
+          }
+          
+          textarea {
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 8px !important;
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            padding: 12px !important;
+            min-height: 150px !important;
+            resize: vertical !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            
+            &:focus {
+              border-color: var(--accent-bg) !important;
+              outline: none !important;
+              box-shadow: 0 0 0 3px var(--accent-ring) !important;
+            }
+            
+            &::placeholder {
+              color: var(--text-muted) !important;
+            }
+          }
+        }
+        
+        // Responsive: stack on smaller screens
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr !important;
+        }
+          }
+        }
+      }
+      
       // Online lesson editor - Palette styling (for editArea context)
       .editArea {
         .editorContainer {

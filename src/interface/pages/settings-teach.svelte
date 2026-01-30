@@ -13,6 +13,7 @@
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
   import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
   import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
+  import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
   import ColourPicker from "../components/ColourPicker.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
@@ -52,6 +53,11 @@
 
   const openMinecraftServer = () => {
     OpenMinecraftServerPopup();
+    closeExtensionPopup();
+  };
+
+  const openPrivacyPolicy = () => {
+    showPrivacyNotification();
     closeExtensionPopup();
   };
 
@@ -108,16 +114,24 @@
       {#if !standalone}
         <button
           onclick={openAbout}
-          class="absolute top-1 right-[62px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          class="absolute top-1 right-[124px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
         >
           {"\ueb73"}
         </button>
 
         <button
           onclick={openChangelog}
-          class="absolute top-1 right-10 w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          class="absolute top-1 right-[72px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
         >
           {"\ue929"}
+        </button>
+
+        <button
+          onclick={openPrivacyPolicy}
+          class="absolute top-1 right-[34px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          aria-label="Privacy Statement"
+        >
+          {"\uecba"}
         </button>
 
         <button
