@@ -2132,14 +2132,14 @@ function setupNotices(labelArray: string[], date: string) {
   return () => dateControl?.removeEventListener("input", debouncedInputChange);
 }
 
-function debounce<T extends (..._args: any[]) => any>(
+function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
-): (..._args: Parameters<T>) => void {
+): (...args: Parameters<T>) => void {
   let timeout: any;
-  return (..._args: Parameters<T>) => {
+  return (...args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(..._args), wait);
+    timeout = setTimeout(() => func(...args), wait);
   };
 }
 
@@ -2213,17 +2213,13 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
   const element = stringToHTML(htmlContent).firstChild as HTMLElement;
   if (element) {
     element.addEventListener("click", () =>
-      openNoticeModal(notice, colour, element),
+      openNoticeModal(notice),
     );
   }
   return element!;
 }
 
-function openNoticeModal(
-  notice: any,
-  _colour: string | undefined,
-  _sourceElement: HTMLElement,
-) {
+function openNoticeModal(notice: any) {
   // Simplified notice modal - can be expanded later
   const cleanContent = notice.contents
     ?.replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
