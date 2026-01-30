@@ -12759,6 +12759,212 @@ body[data-seqta-platform="teach"] {
     }
   }
   
+  // WidgetPortal styling (for dropdowns rendered outside normal DOM hierarchy)
+  [class*="WidgetPortal__WidgetPortal"] {
+    // FindAsYouType panel dropdown styling
+    [class*="FindAsYouType__panel"],
+    [class*="Header__panel"] {
+      background: rgba(var(--background-primary-rgb, 30, 30, 30), 0.85) !important;
+      background-color: rgba(var(--background-primary-rgb, 30, 30, 30), 0.85) !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+      border: 1px solid var(--border-secondary) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+      overflow: hidden !important;
+      margin-top: 8px !important;
+      max-height: 500px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      opacity: 1 !important;
+      
+      // Search input container
+      > label,
+      > div:first-child {
+        padding: 12px !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
+        background: rgba(var(--background-secondary-rgb, 40, 40, 40), 0.8) !important;
+        background-color: rgba(var(--background-secondary-rgb, 40, 40, 40), 0.8) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        
+        input {
+          background: var(--input-bg) !important;
+          background-color: var(--input-bg) !important;
+          border: 1px solid var(--border-primary) !important;
+          border-radius: 8px !important;
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          padding: 10px 12px 10px 36px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
+          
+          &:focus {
+            border-color: var(--accent-bg) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px var(--accent-ring) !important;
+          }
+          
+          &::placeholder {
+            color: var(--text-muted) !important;
+          }
+        }
+      }
+      
+      // Student list container
+      ol,
+      [role="listbox"],
+      > div:last-child {
+        background: transparent !important;
+        background-color: transparent !important;
+        max-height: 400px !important;
+        overflow-y: auto !important;
+        padding: 8px !important;
+        margin: 0 !important;
+        list-style: none !important;
+        
+        // Custom scrollbar
+        &::-webkit-scrollbar {
+          width: 8px !important;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: var(--background-secondary) !important;
+          border-radius: 4px !important;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: var(--border-secondary) !important;
+          border-radius: 4px !important;
+          
+          &:hover {
+            background: var(--text-muted) !important;
+          }
+        }
+      }
+      
+      // Individual student list items
+      li,
+      [role="option"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 8px 12px !important;
+        margin-bottom: 2px !important;
+        background: rgba(var(--background-secondary-rgb, 40, 40, 40), 0.6) !important;
+        background-color: rgba(var(--background-secondary-rgb, 40, 40, 40), 0.6) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid transparent !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        color: var(--text-primary) !important;
+        font-family: Rubik, sans-serif !important;
+        min-height: 32px !important;
+        
+        &:hover {
+          background: rgba(var(--button-hover-rgb, 60, 60, 60), 0.8) !important;
+          background-color: rgba(var(--button-hover-rgb, 60, 60, 60), 0.8) !important;
+          backdrop-filter: blur(10px) !important;
+          -webkit-backdrop-filter: blur(10px) !important;
+          border-color: var(--accent-bg) !important;
+          transform: translateX(2px) !important;
+        }
+        
+        &[aria-selected="true"],
+        &[class*="selected"],
+        &[class*="active"] {
+          background: var(--accent-bg) !important;
+          background-color: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
+          border-color: var(--accent-bg) !important;
+          
+          > div:first-child,
+          [class*="FindAsYouType__value"] {
+            color: var(--text-on-accent) !important;
+            font-weight: 600 !important;
+          }
+        }
+        
+        // Student name - make sure it has priority and space
+        > div:first-child,
+        > span:first-child,
+        [class*="FindAsYouType__value"] {
+          color: var(--text-primary) !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+          margin-right: 8px !important;
+        }
+        
+        // Identifier badges container - make it smaller and tighter
+        > div:last-child,
+        > span:last-child,
+        [class*="FindAsYouType__meta"] {
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          flex-shrink: 0 !important;
+          margin-left: 8px !important;
+          
+          // Individual identifier badges (Q, G, 10, 1, etc.) - make them much smaller
+          > div,
+          > span,
+          [class*="FindAsYouType__house"],
+          [class*="FindAsYouType__rollgroup"],
+          [class*="FindAsYouType__schoolyear"],
+          [class*="FindAsYouType__campus"] {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+            height: 18px !important;
+            padding: 0 2px !important;
+            background: var(--accent-bg) !important;
+            background-color: var(--accent-bg) !important;
+            border: 1px solid var(--accent-bg) !important;
+            border-radius: 4px !important;
+            color: var(--text-on-accent) !important;
+            font-size: 10px !important;
+            font-weight: 600 !important;
+            font-family: Rubik, sans-serif !important;
+            line-height: 1 !important;
+            flex-shrink: 0 !important;
+          }
+        }
+        
+        // Empty state
+        &[class*="FindAsYouType__empty"] {
+          background: transparent !important;
+          background-color: transparent !important;
+          color: var(--text-muted) !important;
+          text-align: center !important;
+          padding: 16px !important;
+          cursor: default !important;
+          
+          &:hover {
+            background: transparent !important;
+            background-color: transparent !important;
+            transform: none !important;
+            border-color: transparent !important;
+          }
+        }
+      }
+      
+      // Pointer indicator
+      [class*="FindAsYouType__pointer"] {
+        display: none !important;
+      }
+    }
+  }
+  
   // Student Information Panel (SIP) styling
   [class*="SIP__SIP"] {
     background: var(--background-primary) !important;
