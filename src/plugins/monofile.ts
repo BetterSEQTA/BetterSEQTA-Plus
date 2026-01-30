@@ -344,6 +344,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 
       finishLoad();
       break;
+    }
     case "home":
     case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
       // Use platform-specific navigation
