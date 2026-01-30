@@ -2940,56 +2940,11 @@ div.day-empty {
   align-items: center;
   display: flex;
 }
-.upcoming-checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-  padding: 0;
-}
-.upcoming-checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 15px;
-  width: 15px;
-  border: 3px solid var(--item-colour);
-  border-radius: 5px;
-  color: var(--text-color);
-}
 
-.upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
-  filter: brightness(0.8);
-}
-
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
-  background: var(--item-colour);
-}
-
-.upcoming-checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
-  display: block;
-}
-.upcoming-checkbox-container .upcoming-checkmark:after {
-  left: 3.5px;
-  top: 0px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 3px 3px 0;
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
 .upcoming-hiddenassessment {
   color: #797979;
 }
+
 .calendarEventEditor > .tabset > .item {
   border-radius: 0 !important;
 }
@@ -3587,10 +3542,6 @@ div.day-empty {
   scrollbar-width: none !important;
 }
 
-.notice-modal-content {
-  border: none !important;
-}
-
 .notice-unified-content.notice-modal-state {
   border: none !important;
 }
@@ -3743,7 +3694,7 @@ div.day-empty {
     }
 
     .notice-content-body {
-      overflow-y: auto;
+      overflow-y: hidden;
 
       &::-webkit-scrollbar {
         width: 6px;
