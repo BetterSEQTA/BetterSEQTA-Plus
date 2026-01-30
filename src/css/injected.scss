@@ -1197,7 +1197,7 @@ html.transparencyEffects
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color);
+  color: var(--text-primary) !important;
 }
 .timetable-arrows {
   padding: 5px;
@@ -1802,6 +1802,18 @@ body:has([data-betterseqta-homepage="true"]) {
   [class*="Overlay__Overlay___"]:has([class*="Loading"]),
   [class*="Overlay__Overlay___"]:has([class*="Loader"]) {
     display: none !important;
+  }
+  
+  // Ensure widget titles change color with theme
+  #betterseqta-teach-home {
+    .home-subtitle h2,
+    h2.home-subtitle,
+    #home-lesson-subtitle,
+    .upcoming-title h2,
+    .messages-container h2,
+    .notices-container h2 {
+      color: var(--text-primary) !important;
+    }
   }
 }
 #main > .reports > .item > .report > .term {
@@ -3979,6 +3991,7 @@ div.day-empty {
 }
 .upcoming-title h2 {
   width: 100%;
+  color: var(--text-primary) !important;
 }
 .upcoming-filters {
   display: flex;
@@ -5113,6 +5126,7 @@ h2.home-subtitle {
   margin: 20px;
   font-size: 20px;
   font-weight: 400;
+  color: var(--text-primary) !important;
 }
 
 /* ========================================
@@ -13360,10 +13374,21 @@ body[data-seqta-platform="teach"] {
   
   // Student Information Panel (SIP) styling
   [class*="SIP__SIP"] {
-    background: var(--background-primary) !important;
     border: 1px solid var(--border-primary) !important;
     border-radius: 12px !important;
     box-shadow: var(--shadow-lg) !important;
+    
+    // Make fully solid when transparency effects are disabled
+    html:not(.transparencyEffects) & {
+      background: var(--background-primary) !important;
+      backdrop-filter: none !important;
+    }
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(10px) !important;
+      background: var(--background-primary) !important;
+    }
     
     [class*="SIP__content"] {
       background: transparent !important;
@@ -13371,10 +13396,21 @@ body[data-seqta-platform="teach"] {
       
         // Header section
         [class*="Header__Header"] {
-          background: var(--background-secondary) !important;
           border-bottom: 1px solid var(--border-secondary) !important;
           border-radius: 12px 12px 0 0 !important;
           padding: 16px !important;
+          
+          // Make fully solid when transparency effects are disabled
+          html:not(.transparencyEffects) & {
+            background: var(--background-secondary) !important;
+            backdrop-filter: none !important;
+          }
+          
+          // Apply blur only when transparency effects are enabled
+          html.transparencyEffects & {
+            backdrop-filter: blur(10px) !important;
+            background: var(--background-secondary) !important;
+          }
         
         [class*="Header__selector"] {
           [class*="FindAsYouType__FindAsYouType"] {
@@ -13836,12 +13872,23 @@ body[data-seqta-platform="teach"] {
     
     // Navigation tabs
     [class*="SIP__nav"] {
-      background: var(--background-secondary) !important;
       border-top: 1px solid var(--border-secondary) !important;
       border-radius: 0 0 12px 12px !important;
       padding: 12px !important;
       display: flex !important;
       gap: 8px !important;
+      
+      // Make fully solid when transparency effects are disabled
+      html:not(.transparencyEffects) & {
+        background: var(--background-secondary) !important;
+        backdrop-filter: none !important;
+      }
+      
+      // Apply blur only when transparency effects are enabled
+      html.transparencyEffects & {
+        backdrop-filter: blur(10px) !important;
+        background: var(--background-secondary) !important;
+      }
       
       a {
         background: var(--button-bg) !important;
