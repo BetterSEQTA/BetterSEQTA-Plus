@@ -9318,6 +9318,7 @@ body[data-seqta-platform="teach"] {
           text-transform: uppercase !important;
           letter-spacing: 0.5px !important;
         }
+        }
       }
       
       // Ordered lists (form fields)
@@ -9536,6 +9537,7 @@ body[data-seqta-platform="teach"] {
           outline: none !important;
         }
       }
+      }
       
       // FancyCheckbox styling
       [class*="FancyCheckbox__FancyCheckbox"] {
@@ -9584,6 +9586,7 @@ body[data-seqta-platform="teach"] {
           }
         }
       }
+      }
       
       // MenuButton (dropdown) styling
       [class*="MenuButton__Menu"] {
@@ -9629,6 +9632,7 @@ body[data-seqta-platform="teach"] {
           margin-left: auto !important;
         }
       }
+      }
       
       // DatePicker styling
       [class*="DatePicker__DatePicker"] {
@@ -9657,6 +9661,7 @@ body[data-seqta-platform="teach"] {
           height: 16px !important;
           margin-left: auto !important;
         }
+      }
       }
       
       // AvailabilitySlider styling
@@ -9708,6 +9713,7 @@ body[data-seqta-platform="teach"] {
           color: var(--text-primary) !important;
         }
       }
+      }
       
       // AssessableCriteria specific styling
       [class*="AssessableCriteria__criterion"] {
@@ -9751,6 +9757,7 @@ body[data-seqta-platform="teach"] {
           fill: currentColor !important;
         }
       }
+      }
       
       // Empty state styling
       [class*="Empty__Empty"] {
@@ -9781,6 +9788,7 @@ body[data-seqta-platform="teach"] {
         color: var(--text-muted) !important;
         font-family: Rubik, sans-serif !important;
         font-size: 14px !important;
+      }
       }
       
       // CKEditor (rich text editor) styling
@@ -9814,6 +9822,7 @@ body[data-seqta-platform="teach"] {
           background: var(--button-hover) !important;
         }
       }
+      }
       
       // Word count footer
       .wordCount {
@@ -9821,6 +9830,7 @@ body[data-seqta-platform="teach"] {
       font-family: Rubik, sans-serif !important;
       font-size: 12px !important;
       margin-top: 8px !important;
+      }
       
       // File handler/upload area
       [class*="uiFileHandler"] {
@@ -9858,6 +9868,7 @@ body[data-seqta-platform="teach"] {
           background: var(--accent-hover) !important;
           transform: translateY(-1px) !important;
         }
+      }
       }
       
       // AssessmentManager specific blocks
