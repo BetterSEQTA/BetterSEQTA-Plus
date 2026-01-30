@@ -11,7 +11,7 @@
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+  import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
   import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
@@ -41,7 +41,7 @@
   };
 
   const openChangelog = () => {
-    OpenWhatsNewPopup();
+    OpenWhatsNewPopupTeach();
     closeExtensionPopup();
   };
 

@@ -47,6 +47,13 @@ export function openPopup({
   content = [],
   animateSelector = ".whatsnewTextContainer *",
 }: OpenPopupOptions = {}) {
+  // Check if popup already exists
+  const existingPopup = document.getElementById("whatsnewbk");
+  if (existingPopup) {
+    console.debug("[BetterSEQTA+] Popup already exists, skipping");
+    return;
+  }
+
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");

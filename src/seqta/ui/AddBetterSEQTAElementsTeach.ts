@@ -7,12 +7,13 @@
 import { delay } from "@/seqta/utils/delay";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { isSEQTATeach } from "@/seqta/utils/platformDetection";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
+import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 
 // Track if we've set up the observer to prevent multiple observers
 let spineObserverSetup = false;
@@ -371,9 +372,51 @@ async function createTeachSettingsButton() {
  * Initialize Teach-specific features
  */
 async function initializeTeachFeatures() {
+  // Check for Spine elements and show changelog if visible
+  checkAndShowChangelog();
   // Add Teach-specific features here
   // For example: Teach-specific shortcuts, Teach-specific UI enhancements, etc.
   console.debug("[BetterSEQTA+] Initializing Teach-specific features");
+}
+
+/**
+ * Checks for Spine and tour-spine elements and shows changelog when visible
+ * Only shows if justupdated flag is set (same as Learn)
+ */
+function checkAndShowChangelog() {
+  // Only run on Teach platform
+  if (!isSEQTATeachSync()) {
+    console.debug("[BetterSEQTA+] Not on Teach platform, skipping changelog check");
+    return;
+  }
+
+  // Only show if extension was just updated (same logic as Learn)
+  if (!settingsState.justupdated) {
+    return;
+  }
+
+  // Check if popup is already open in the DOM
+  const existingPopup = document.getElementById("whatsnewbk");
+  if (existingPopup) {
+    console.debug("[BetterSEQTA+] Changelog popup already exists in DOM, skipping");
+    return;
+  }
+
+  // Check for Spine__Spine___zYUJ6 and tour-spine elements
+  const spine = document.querySelector("[class*='Spine__Spine___zYUJ6']");
+  const tourSpine = document.querySelector(".tour-spine");
+
+  if (spine && tourSpine) {
+    // Double-check popup doesn't exist before showing
+    if (document.getElementById("whatsnewbk")) {
+      console.debug("[BetterSEQTA+] Popup appeared between checks, skipping");
+      return;
+    }
+
+    // Both elements are visible, show changelog
+    console.debug("[BetterSEQTA+] Spine and tour-spine elements detected, showing changelog");
+    OpenWhatsNewPopupTeach();
+  }
 }
 
 /**
