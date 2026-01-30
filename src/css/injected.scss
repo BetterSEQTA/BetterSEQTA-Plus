@@ -6636,6 +6636,27 @@ body[data-seqta-platform="teach"] {
       color: var(--text-primary) !important;
       padding: 20px !important;
       
+      // Fix attendance table day headers being too tall
+      table {
+        thead {
+          tr {
+            td {
+              div.day {
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                display: block !important;
+                flex-direction: unset !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                line-height: 1.2 !important;
+              }
+            }
+          }
+        }
+      }
+      
       // Improve scalability for options in first child div (PREFERENCES section)
       > div > div:nth-child(1) {
         overflow-x: visible !important;
@@ -10166,6 +10187,13 @@ body[data-seqta-platform="teach"] {
                     font-size: 12px !important;
                     color: var(--theme-primary) !important;
                     margin-bottom: 4px !important;
+                    height: auto !important;
+                    min-height: auto !important;
+                    display: block !important;
+                    flex-direction: unset !important;
+                    box-shadow: none !important;
+                    background: transparent !important;
+                    padding: 0 !important;
                   }
                   
                   .period {
