@@ -1208,6 +1208,7 @@ async function GetUpcomingAssessmentsToMark() {
 
         const marksbookData = await marksbookResponse.json();
         const assessmentSets = marksbookData.payload?.assessmentSets || [];
+        const students = marksbookData.payload?.students || [];
 
         // Extract assessments from assessment sets
         const assessments: any[] = [];
@@ -1219,6 +1220,46 @@ async function GetUpcomingAssessmentsToMark() {
               const dueDate = classData?.d;
 
               if (dueDate) {
+                // Count marked vs total students for this assessment
+                const assessmentId = assessment.id;
+                let markedCount = 0;
+                let totalCount = 0;
+
+                students.forEach((student: any) => {
+                  const studentMarks = student.marks?.[assessmentId];
+                  if (studentMarks) {
+                    totalCount++;
+                    let isMarked = false;
+                    
+                    // Check if any criterion has a non-empty score
+                    const criteria = assessment.criteria || [];
+                    if (criteria.length > 0) {
+                      // Check each criterion for this student
+                      criteria.forEach((criterion: any) => {
+                        const criterionId = criterion.id;
+                        const criterionData = studentMarks[criterionId];
+                        if (criterionData) {
+                          // Check if score exists and is not empty string
+                          const score = criterionData.score;
+                          if (score !== undefined && score !== null && score !== '') {
+                            isMarked = true;
+                          }
+                        }
+                      });
+                    } else {
+                      // If no criteria, check for direct score property
+                      const directScore = studentMarks.score;
+                      if (directScore !== undefined && directScore !== null && directScore !== '') {
+                        isMarked = true;
+                      }
+                    }
+                    
+                    if (isMarked) {
+                      markedCount++;
+                    }
+                  }
+                });
+
                 // Format to match expected structure for CreateUpcomingSection
                 const subjectDesc = program.subjectDesc || marksbookData.payload?.subjectDesc || '';
                 assessments.push({
@@ -1236,6 +1277,8 @@ async function GetUpcomingAssessmentsToMark() {
                   metaId: metaId,
                   classunit: program.meta?.[0]?.name || '',
                   assessment: assessment,
+                  markedCount: markedCount,
+                  totalCount: totalCount,
                 });
               }
             });
@@ -1883,6 +1926,45 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
     detailsdiv.classList.add("upcoming-details");
     let detailstitle = document.createElement("h5");
     detailstitle.innerText = `${element.subject} assessment`;
+    
+    // Add progress indicator if available
+    if (element.markedCount !== undefined && element.totalCount !== undefined) {
+      let progress = document.createElement("span");
+      progress.classList.add("upcoming-assessment-progress");
+      const markedCount = element.markedCount;
+      const totalCount = element.totalCount;
+      const percentage = totalCount > 0 ? (markedCount / totalCount) * 100 : 0;
+      
+      progress.innerText = `${markedCount}/${totalCount} marked`;
+      
+      // Color coding based on completion percentage
+      let progressColor;
+      if (percentage === 0) {
+        progressColor = "#ef4444"; // Red - none marked
+      } else if (percentage < 33) {
+        progressColor = "#f59e0b"; // Amber - low completion
+      } else if (percentage < 66) {
+        progressColor = "#eab308"; // Yellow - medium completion
+      } else if (percentage < 100) {
+        progressColor = "#84cc16"; // Light green - high completion
+      } else {
+        progressColor = "#22c55e"; // Green - fully marked
+      }
+      
+      progress.style.cssText = `
+        font-size: 14px; 
+        font-weight: 600; 
+        margin-left: 12px; 
+        padding: 4px 10px; 
+        border-radius: 6px; 
+        background: ${progressColor}20; 
+        color: ${progressColor}; 
+        border: 1px solid ${progressColor}40;
+        display: inline-block;
+      `;
+      detailstitle.append(progress);
+    }
+    
     let subject = document.createElement("p");
     subject.innerText = element.title;
     subject.classList.add("upcoming-assessment-title");
