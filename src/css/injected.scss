@@ -1645,7 +1645,7 @@ iframe.userHTML {
 }
 [class*="Thermoscore__Thermoscore___"] {
   background-image: unset;
-  background-color: var(--auto-background);
+  background: var(--auto-background);
   border-radius: 8px;
 }
 .dark [class*="Thermoscore__Thermoscore___"] {
@@ -2666,16 +2666,16 @@ body {
 }
 .big-circle {
   margin: -88px;
-  animation: spin 3s ease infinite;
-  -moz-animation: spin 3s ease infinite;
+  animation-timing-function: ease;
+  animation: spin 3s linear infinite;
+  -moz-animation: spin 3s linear infinite;
 }
-
 .small-circle {
   margin: -66px;
-  animation: spin 3s ease infinite;
-  -moz-animation: spin 3s ease infinite;
+  animation-timing-function: ease;
+  animation: spin 3s linear infinite;
+  -moz-animation: spin 3s linear infinite;
 }
-
 .dark [class*="LabelList__name___"] {
   text-shadow: 0 0 5px black;
 }
@@ -2717,10 +2717,10 @@ body {
 }
 .outer-circle {
   margin: -108px;
-  animation: spinback 1s linear infinite alternate-reverse;
-  -moz-animation: spinback 1s linear infinite alternate-reverse;
+  animation-direction: alternate-reverse;
+  animation: spinback 1s linear infinite;
+  -moz-animation: spinback 1s linear infinite;
 }
-
 @-moz-keyframes spin {
   100% {
     -moz-transform: rotate(360deg);
@@ -3707,7 +3707,7 @@ div.day-empty {
   h2,
   h3,
   h4,
-  z h5,
+  h5,
   h6 {
     margin: 0 !important;
     padding: 0 !important;
