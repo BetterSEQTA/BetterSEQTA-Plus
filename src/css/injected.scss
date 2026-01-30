@@ -2658,16 +2658,16 @@ body {
 }
 .big-circle {
   margin: -88px;
-  animation-timing-function: ease;
-  animation: spin 3s linear infinite;
-  -moz-animation: spin 3s linear infinite;
+  animation: spin 3s ease infinite;
+  -moz-animation: spin 3s ease infinite;
 }
+
 .small-circle {
   margin: -66px;
-  animation-timing-function: ease;
-  animation: spin 3s linear infinite;
-  -moz-animation: spin 3s linear infinite;
+  animation: spin 3s ease infinite;
+  -moz-animation: spin 3s ease infinite;
 }
+
 .dark [class*="LabelList__name___"] {
   text-shadow: 0 0 5px black;
 }
@@ -2709,9 +2709,8 @@ body {
 }
 .outer-circle {
   margin: -108px;
-  animation-direction: alternate-reverse;
-  animation: spinback 1s linear infinite;
-  -moz-animation: spinback 1s linear infinite;
+  animation: spinback 1s linear infinite alternate-reverse;
+  -moz-animation: spinback 1s linear infinite alternate-reverse;
 }
 @-moz-keyframes spin {
   100% {
