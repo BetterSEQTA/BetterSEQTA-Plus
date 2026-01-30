@@ -147,7 +147,7 @@
         onClick: showColourPicker
       }
     },
-    {
+    ...(!isSEQTATeachSync() ? [{
       title: "Edit Sidebar Layout",
       description: "Customise the sidebar layout.",
       id: 5,
@@ -156,7 +156,7 @@
         onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
         text: "Edit"
       }
-    },
+    }] : []),
     ...(isSEQTATeachSync() ? [
       {
         title: "Reorder Spine Navigation",
