@@ -600,7 +600,7 @@ async function loadTeachHomePageContent() {
       </div>
       <div class="border upcoming-container">
         <div class="upcoming-title">
-          <h2 class="home-subtitle">Upcoming Assessments</h2>
+          <h2 class="home-subtitle">Upcoming Assessments to Mark</h2>
           <div class="upcoming-filters" id="upcoming-filters"></div>
         </div>
         <div class="upcoming-items loading" id="upcoming-items">
@@ -713,25 +713,21 @@ async function loadHomePageWidgets() {
   await callHomeTimetable(TodayFormatted, false);
   SetTimetableSubtitle();
   
-  // Load assessments, classes, prefs, and messages in parallel
-  const [assessments, classes, prefs, messages] = await Promise.all([
-    GetUpcomingAssessments(),
+  // Load assessments to mark, classes, prefs, and messages in parallel
+  const [assessmentsToMark, classes, prefs, messages] = await Promise.all([
+    GetUpcomingAssessmentsToMark(),
     GetActiveClasses(),
     GetUserPrefs(),
     GetDireqtMessages(),
   ]);
   
-  // Load upcoming assessments widget
+  // Load upcoming assessments to mark widget
   const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
   const activeSubjects = activeClass?.subjects || [];
-  const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
-  const currentAssessments = assessments
-    .filter((a: any) => activeSubjectCodes.includes(a.code))
-    .sort(comparedate);
   
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
-    await CreateUpcomingSection(currentAssessments, activeSubjects);
+    await CreateUpcomingSection(assessmentsToMark, activeSubjects);
     upcomingItems.classList.remove("loading");
   }
   
@@ -1114,6 +1110,172 @@ function processTeachTimetableData(
 }
 
 // Helper functions (adapted from LoadHomePage.ts)
+/**
+ * Fetches upcoming assessments to mark for Teach platform
+ * Uses the marksbook API flow to get assessments that need marking
+ */
+async function GetUpcomingAssessmentsToMark() {
+  try {
+    // Step 1: Get terms to find current term
+    const termsResponse = await fetch(`${location.origin}/seqta/ta/json/get`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ request: "terms", asArray: true }),
+    });
+
+    if (!termsResponse.ok) {
+      console.warn("[BetterSEQTA+] Failed to fetch terms");
+      return [];
+    }
+
+    const termsData = await termsResponse.json();
+    const terms = termsData.payload || [];
+
+    // Find the term that the current date fits into
+    const currentDate = new Date();
+    const currentTerm = terms.find((term: any) => {
+      const startDate = new Date(term.start);
+      const endDate = new Date(term.end);
+      return currentDate >= startDate && currentDate <= endDate;
+    });
+
+    if (!currentTerm || !currentTerm.xx_value) {
+      console.warn("[BetterSEQTA+] Could not find current term");
+      return [];
+    }
+
+    const termValue = currentTerm.xx_value;
+
+    // Step 2: Get staff ID
+    const staffId = await getStaffId();
+    if (!staffId) {
+      console.warn("[BetterSEQTA+] Could not get staff ID for assessments to mark");
+      return [];
+    }
+
+    // Step 3: Get programs for this staff member and term
+    const programsResponse = await fetch(`${location.origin}/seqta/ta/json/program/list`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        search: [],
+        tags: [],
+        staff: [staffId],
+        terms: [termValue],
+      }),
+    });
+
+    if (!programsResponse.ok) {
+      console.warn("[BetterSEQTA+] Failed to fetch programs");
+      return [];
+    }
+
+    const programsData = await programsResponse.json();
+    const programs = programsData.payload || [];
+
+    if (programs.length === 0) {
+      return [];
+    }
+
+    // Step 4: For each program, get marksbook data
+    const todayFormatted = formatDate(currentDate);
+    const allAssessments: any[] = [];
+
+    // Process programs in parallel (limit to avoid too many requests)
+    const programPromises = programs.slice(0, 20).map(async (program: any) => {
+      const programId = program.id;
+      const metaId = program.meta?.[0]?.id;
+
+      if (!metaId) {
+        return [];
+      }
+
+      try {
+        // Step 5: Get marksbook data for this program/class
+        const marksbookResponse = await fetch(`${location.origin}/seqta/ta/json/marksbook/load`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify({
+            classes: [metaId],
+            date: todayFormatted,
+            program: programId,
+          }),
+        });
+
+        if (!marksbookResponse.ok) {
+          return [];
+        }
+
+        const marksbookData = await marksbookResponse.json();
+        const assessmentSets = marksbookData.payload?.assessmentSets || [];
+
+        // Extract assessments from assessment sets
+        const assessments: any[] = [];
+        assessmentSets.forEach((set: any) => {
+          if (set.assessments && Array.isArray(set.assessments)) {
+            set.assessments.forEach((assessment: any) => {
+              // Get due date from classes[metaId].d
+              const classData = assessment.classes?.[metaId];
+              const dueDate = classData?.d;
+
+              if (dueDate) {
+                // Format to match expected structure for CreateUpcomingSection
+                const subjectDesc = program.subjectDesc || marksbookData.payload?.subjectDesc || '';
+                assessments.push({
+                  id: assessment.id,
+                  title: assessment.title,
+                  due: dueDate, // Use 'due' instead of 'dueDate' for compatibility
+                  date: dueDate, // Also include 'date' for sorting
+                  code: subjectDesc,
+                  subject: subjectDesc, // For display in createAssessmentDateDiv
+                  subjectDesc: subjectDesc,
+                  programmeID: programId, // For URL generation
+                  metaclassID: metaId, // For URL generation
+                  programId: programId,
+                  programTitle: program.title || marksbookData.payload?.title,
+                  metaId: metaId,
+                  classunit: program.meta?.[0]?.name || '',
+                  assessment: assessment,
+                });
+              }
+            });
+          }
+        });
+
+        return assessments;
+      } catch (error) {
+        console.warn(`[BetterSEQTA+] Error fetching marksbook for program ${programId}:`, error);
+        return [];
+      }
+    });
+
+    const assessmentArrays = await Promise.all(programPromises);
+    assessmentArrays.forEach((assessments) => {
+      allAssessments.push(...assessments);
+    });
+
+    // Step 6: Filter to only future assessments and sort by due date
+    const futureAssessments = allAssessments.filter((assessment) => {
+      const dueDate = new Date(assessment.due);
+      return dueDate >= currentDate;
+    });
+
+    // Sort by due date (ascending - earliest first)
+    futureAssessments.sort((a, b) => {
+      const dateA = new Date(a.due).getTime();
+      const dateB = new Date(b.due).getTime();
+      return dateA - dateB;
+    });
+    
+    console.log("[BetterSEQTA+] Found assessments to mark:", futureAssessments.length, futureAssessments);
+
+    return futureAssessments.slice(0, 50); // Limit to 50 most upcoming
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error fetching assessments to mark:", error);
+    return [];
+  }
+}
+
 async function GetUpcomingAssessments() {
   try {
     // Try Teach endpoint first
@@ -1538,6 +1700,9 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let overdueDates = [];
   let upcomingDates = {};
 
+  console.log("[BetterSEQTA+] CreateUpcomingSection called with", assessments?.length || 0, "assessments");
+  console.log("[BetterSEQTA+] Assessments data:", assessments);
+
   var Today = new Date();
 
   for (let i = 0; i < assessments.length; i++) {
@@ -1617,6 +1782,9 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
+  console.log("[BetterSEQTA+] upcomingDates object:", upcomingDates);
+  console.log("[BetterSEQTA+] Number of date groups:", Object.keys(upcomingDates).length);
+
   for (var date in upcomingDates) {
     let assessmentdue = new Date(
       (
@@ -1648,6 +1816,16 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     } else {
       upcomingitemcontainer!.append(assessmentDate);
     }
+  }
+  
+  // If no assessments, show empty state
+  if (Object.keys(upcomingDates).length === 0 && assessments.length === 0) {
+    console.log("[BetterSEQTA+] No assessments to display");
+    if (upcomingitemcontainer) {
+      upcomingitemcontainer.innerHTML = '<div class="dummynotice">No assessments to mark.</div>';
+    }
+  } else {
+    console.log("[BetterSEQTA+] Rendered", Object.keys(upcomingDates).length, "date groups with assessments");
   }
   FilterUpcomingAssessments(settingsState.subjectfilters);
 }
