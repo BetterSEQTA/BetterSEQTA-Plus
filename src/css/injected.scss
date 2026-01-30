@@ -6657,6 +6657,22 @@ body[data-seqta-platform="teach"] {
         }
       }
       
+      // Ensure attendance table container allows horizontal scrolling
+      > div > div > div > div > table.attendance.students,
+      table.attendance.students {
+        // Parent containers should allow horizontal scroll
+        + *,
+        ~ * {
+          overflow-x: auto !important;
+        }
+      }
+      
+      // Make sure parent divs allow scrolling
+      div:has(table.attendance.students) {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+      }
+      
       // Improve scalability for options in first child div (PREFERENCES section)
       > div > div:nth-child(1) {
         overflow-x: visible !important;
@@ -10116,7 +10132,7 @@ body[data-seqta-platform="teach"] {
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
           border-radius: 12px !important;
           color: white !important;
-          overflow: hidden !important;
+          overflow: visible !important;
           border-collapse: separate !important;
           border-spacing: 0 !important;
           width: 100% !important;
@@ -10134,9 +10150,13 @@ body[data-seqta-platform="teach"] {
                 font-weight: 600 !important;
                 font-family: Rubik, sans-serif !important;
                 
-                // Meta column (class info)
+                // Meta column (class info) - Make sticky
                 &.meta {
                   background: var(--theme-primary) !important;
+                  position: sticky !important;
+                  left: 0 !important;
+                  z-index: 20 !important;
+                  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2) !important;
                   
                   .wrap {
                     h2 {
@@ -10283,9 +10303,13 @@ body[data-seqta-platform="teach"] {
                 padding: 8px !important;
                 vertical-align: middle !important;
                 
-                // Student meta column
+                // Student meta column - Make sticky
                 &.meta {
                   background: rgba(255, 255, 255, 0.03) !important;
+                  position: sticky !important;
+                  left: 0 !important;
+                  z-index: 10 !important;
+                  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2) !important;
                   
                   .name {
                     display: flex !important;
