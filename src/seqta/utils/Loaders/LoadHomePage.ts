@@ -43,7 +43,7 @@ export async function loadHomePage() {
   const homeContainer = document.getElementById("home-root");
   if (!homeContainer) return;
 
-  const skeletonStructure = stringToHTML(/* html */ `
+  const skeletonStructure = stringToHTML(/* html */`
       <div class="home-container" id="home-container">
         <div class="border shortcut-container">
           <div class="border shortcuts" id="shortcuts"></div>
