@@ -1345,7 +1345,70 @@ function applySubPageOrder(mainPage: string, order: string[]): void {
     }
   });
   
+  // Add reorder button at the bottom of sub-pages if it doesn't exist
+  addSubPageReorderButton(mainPage, parentContainer);
+  
   console.debug(`[BetterSEQTA+] Applied sub-page order for ${mainPage}:`, order);
+}
+
+/**
+ * Adds a reorder button at the bottom of sub-pages list
+ */
+function addSubPageReorderButton(mainPage: string, parentContainer: HTMLElement): void {
+  // Check if button already exists
+  const existingButton = document.getElementById(`betterseqta-subpage-reorder-btn-${mainPage}`);
+  if (existingButton) {
+    return;
+  }
+  
+  // Check if dark mode
+  const isDarkMode = document.documentElement.classList.contains("dark") || 
+                     window.getComputedStyle(document.body).backgroundColor === "rgb(0, 0, 0)" ||
+                     window.getComputedStyle(document.body).backgroundColor === "rgba(0, 0, 0, 0)";
+  
+  // Create reorder button
+  const reorderButton = document.createElement("button");
+  reorderButton.id = `betterseqta-subpage-reorder-btn-${mainPage}`;
+  reorderButton.setAttribute("data-betterseqta", "true");
+  reorderButton.textContent = "Reorder Pages";
+  reorderButton.style.cssText = `
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: transparent;
+    color: ${isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
+    border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)'};
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: Rubik, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+  `;
+  
+  // Add hover effect
+  reorderButton.addEventListener("mouseenter", () => {
+    reorderButton.style.opacity = "1";
+    reorderButton.style.color = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)';
+    reorderButton.style.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.25)';
+    reorderButton.style.background = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)';
+  });
+  reorderButton.addEventListener("mouseleave", () => {
+    reorderButton.style.opacity = "0.7";
+    reorderButton.style.color = isDarkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)';
+    reorderButton.style.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)';
+    reorderButton.style.background = "transparent";
+  });
+  
+  // Open reorder modal on click
+  reorderButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    OpenMenuOptionsTeach();
+  });
+  
+  // Append to parent container
+  parentContainer.appendChild(reorderButton);
 }
 
 /**
@@ -1354,15 +1417,32 @@ function applySubPageOrder(mainPage: string, order: string[]): void {
  */
 export function applySavedSubPageOrders(): void {
   const mainPage = getCurrentMainPage();
-  if (!mainPage || !settingsState.teachSubPageOrders) return;
+  if (!mainPage) return;
   
-  const order = settingsState.teachSubPageOrders[mainPage];
-  if (order && order.length > 0) {
-    // Wait a bit for page to render
-    setTimeout(() => {
-      applySubPageOrder(mainPage, order);
-    }, 300);
+  // Check if sub-pages exist
+  const subPages = getSubPages();
+  if (subPages.length === 0) return;
+  
+  // Find parent container
+  const parentContainer = subPages[0]?.parentElement;
+  if (!parentContainer) return;
+  
+  // Apply saved order if exists
+  if (settingsState.teachSubPageOrders) {
+    const order = settingsState.teachSubPageOrders[mainPage];
+    if (order && order.length > 0) {
+      // Wait a bit for page to render
+      setTimeout(() => {
+        applySubPageOrder(mainPage, order);
+      }, 300);
+      return;
+    }
   }
+  
+  // Even if no saved order, add the reorder button
+  setTimeout(() => {
+    addSubPageReorderButton(mainPage, parentContainer);
+  }, 300);
 }
 
 /**
