@@ -14,6 +14,7 @@ import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
 import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+import { ChangeSpineItemPositions } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
 
 // Track if we've set up the observer to prevent multiple observers
 let spineObserverSetup = false;
@@ -92,7 +93,7 @@ function setupSpineObserver() {
     return;
   }
   
-  const observer = new MutationObserver((mutations) => {
+  const observer = new MutationObserver(() => {
     // Check if BetterSEQTA elements were removed
     const settingsButton = document.getElementById("AddedSettings");
     const homeButton = document.getElementById("betterseqta-teach-homebutton");
@@ -374,6 +375,17 @@ async function createTeachSettingsButton() {
 async function initializeTeachFeatures() {
   // Check for Spine elements and show changelog if visible
   checkAndShowChangelog();
+  
+  // Apply saved spine order if available
+  if (settingsState.teachspineorder && settingsState.teachspineorder.length > 0) {
+    // Wait a bit for Spine to be fully rendered
+    await delay(500);
+    try {
+      ChangeSpineItemPositions(settingsState.teachspineorder);
+    } catch (error) {
+      console.error("[BetterSEQTA+] Error applying spine order:", error);
+    }
+  }
   // Add Teach-specific features here
   // For example: Teach-specific shortcuts, Teach-specific UI enhancements, etc.
   console.debug("[BetterSEQTA+] Initializing Teach-specific features");

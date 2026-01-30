@@ -114,7 +114,7 @@
       {#if !standalone}
         <button
           onclick={openAbout}
-          class="absolute top-1 right-[124px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
+          class="absolute top-1 right-[166px] w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
         >
           {"\ueb73"}
         </button>

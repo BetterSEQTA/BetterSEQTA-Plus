@@ -12,6 +12,7 @@
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
+  import { OpenMenuOptionsTeach } from "@/seqta/utils/Openers/OpenMenuOptionsTeach"
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
@@ -156,6 +157,19 @@
         text: "Edit"
       }
     },
+    ...(isSEQTATeachSync() ? [{
+      title: "Reorder Spine Navigation",
+      description: "Drag and drop to reorder items in the Spine navigation menu.",
+      id: 13,
+      Component: Button,
+      props: {
+        onClick: async () => {
+          closeExtensionPopup();
+          await OpenMenuOptionsTeach();
+        },
+        text: "Reorder"
+      }
+    }] : []),
     {
       title: "Animations",
       description: "Enables animations on certain pages.",

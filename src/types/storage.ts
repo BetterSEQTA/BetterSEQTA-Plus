@@ -23,6 +23,12 @@ export interface SettingsState {
     welcome: ToggleItem;
   };
   menuorder: any[];
+  // Teach-specific spine navigation order
+  teachspineorder: any[];
+  defaultteachspineorder: any[];
+  teachspineitems: {
+    [key: string]: ToggleItem;
+  };
   onoff: boolean;
   selectedColor: string;
   originalSelectedColor: string;

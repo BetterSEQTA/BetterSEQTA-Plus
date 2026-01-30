@@ -14005,6 +14005,7 @@ body[data-seqta-platform="teach"] {
     a[data-betterseqta="true"],
     button[data-betterseqta="true"],
     #AddedSettings[data-betterseqta="true"],
+    .betterseqta-spine-top-item,
     #LightDarkModeButton[data-betterseqta="true"],
     #betterseqta-teach-homebutton[data-betterseqta="true"] {
       position: static !important; // Override any fixed/absolute positioning
@@ -14015,7 +14016,7 @@ body[data-seqta-platform="teach"] {
       color: var(--text-secondary) !important;
       background: transparent !important;
       border-radius: 8px !important;
-      margin: 4px !important;
+      margin: 4px auto !important; // Center horizontally with auto margins
       padding: 12px !important;
       transition: all 0.2s ease !important;
       display: flex !important;
@@ -14024,7 +14025,9 @@ body[data-seqta-platform="teach"] {
       width: auto !important;
       height: auto !important;
       min-width: auto !important;
+      max-width: none !important;
       z-index: auto !important;
+      align-self: center !important; // Ensure center alignment
       
       &:hover {
         background: var(--button-hover) !important;
