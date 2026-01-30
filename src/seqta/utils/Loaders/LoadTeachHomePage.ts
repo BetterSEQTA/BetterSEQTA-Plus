@@ -814,7 +814,7 @@ async function renderMessagesWidget(messages: any[]) {
   
   if (messages.length === 0) {
     messagesContainer.innerHTML = `
-      <div class="dummynotice" style="text-align: center;">
+      <div class="dummynotice" style="text-align: center; padding: 24px; color: var(--text-muted, rgba(255,255,255,0.5));">
         No unread messages.
       </div>
     `;
@@ -825,9 +825,16 @@ async function renderMessagesWidget(messages: any[]) {
   
   messages.slice(0, 5).forEach((message: any) => {
     const messageElement = document.createElement("div");
-    messageElement.className = "message-card";
+    messageElement.className = `message-card ${message.read === 0 ? 'message-unread' : ''}`;
+    
+    // Use message.id or message.messageID, fallback to index if neither exists
+    const messageId = message.id || message.messageID || message.index;
     messageElement.addEventListener("click", () => {
-      window.location.href = "/messages";
+      if (messageId) {
+        window.location.href = `/messages/${messageId}`;
+      } else {
+        window.location.href = "/messages";
+      }
     });
     
     const unreadBadge = message.read === 0 ? '<span class="message-unread-badge"></span>' : '';
@@ -840,17 +847,24 @@ async function renderMessagesWidget(messages: any[]) {
       minute: "2-digit",
     });
     
+    // Get preview text if available (first 60 chars of body/content)
+    const previewText = message.body || message.content || message.preview || '';
+    const truncatedPreview = previewText.length > 60 
+      ? previewText.substring(0, 60).trim() + '...' 
+      : previewText.trim();
+    
     messageElement.innerHTML = `
       <div class="message-header">
         <div class="message-sender">
           ${unreadBadge}
-          <span>${message.sender || "Unknown"}</span>
+          <span class="message-sender-name">${message.sender || "Unknown"}</span>
         </div>
         <span class="message-date">${formattedDate}</span>
       </div>
       <div class="message-subject">
         ${message.subject || "No subject"}
       </div>
+      ${truncatedPreview ? `<div class="message-preview">${truncatedPreview}</div>` : ''}
     `;
     
     fragment.appendChild(messageElement);
