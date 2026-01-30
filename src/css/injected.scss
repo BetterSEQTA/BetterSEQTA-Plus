@@ -955,6 +955,14 @@ html.transparencyEffects
   color: white !important;
 }
 .notices-container {
+  width: 100%;
+  max-height: 60em;
+  background: var(--better-main);
+  display: flex;
+  flex-direction: column;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
   input {
     border: none;
     color: var(--text-color) !important;
@@ -970,6 +978,7 @@ html.transparencyEffects
     }
   }
 }
+
 #main > .notices > .notice > .label,
 #main > .notices > .notice > .staff,
 #main > .notices > .notice > h2 {
@@ -1182,15 +1191,6 @@ html.transparencyEffects
     }
   }
 }
-.notices-container {
-  width: 100%;
-  max-height: 60em;
-  background: var(--better-main);
-  display: flex;
-  flex-direction: column;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
 .notice-container {
   background: var(--better-main);
   width: 100%;
@@ -1339,10 +1339,6 @@ html.transparencyEffects
 .clickable {
   cursor: pointer;
 }
-.day:hover {
-  background: var(--background);
-  transition: 200ms;
-}
 
 .day h2 {
   margin: 0;
@@ -1443,10 +1439,6 @@ html.transparencyEffects
 }
 .legacy-root button::after {
   background: black !important;
-}
-
-.legacy-root button::after {
-  background: var(--better-main);
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);
@@ -2862,10 +2854,6 @@ div.day-empty {
   border-radius: 5px 0px 0px 5px;
   background: var(--item-colour);
 }
-.upcoming-assessment-title {
-  color: var(--text-primary);
-  font-size: 10px;
-}
 .upcoming-assessment {
   border: 2px solid var(--item-colour);
   margin: 5px 50px;
@@ -2874,24 +2862,13 @@ div.day-empty {
   border-radius: 10px;
   display: flex;
 }
-.upcoming-date-container {
-  margin-bottom: 20px;
-}
 .upcoming-date-title {
   padding: 12px;
   font-size: 20px;
 }
-.upcoming-details h5 {
-  text-transform: uppercase;
-  color: #aaaaaa;
-  padding: 0px 4px;
-}
 .upcoming-details p:hover {
   cursor: pointer;
   text-decoration: underline;
-}
-.upcoming-special-day {
-  font-size: 20px;
 }
 .upcoming-blank {
   display: flex;
@@ -2900,16 +2877,8 @@ div.day-empty {
   height: 2em;
   padding: 0px;
 }
-.upcoming-blank p {
-  padding: 0;
-  margin: 0;
-}
 .upcoming-tick {
   align-self: center;
-}
-.upcoming-title {
-  display: flex;
-  align-content: space-between;
 }
 .upcoming-title h2 {
   width: 100%;
@@ -3031,16 +3000,6 @@ div.day-empty {
   transition: 200ms;
   font-size: 10px;
   margin: 0;
-}
-.upcoming-assessment {
-  border: 3px solid var(--item-colour);
-  margin: 5px 50px;
-  height: 6em;
-  padding: 0px;
-  border-radius: 10px;
-}
-.upcoming-assessment {
-  display: flex;
 }
 .upcoming-date-container {
   margin-bottom: 20px;
