@@ -33,7 +33,6 @@ export const getClassByPattern = (
   element: Element | Document,
   basePattern: string,
 ): string => {
-  // Find all classes on the element
   const classes = Array.from(element.querySelectorAll("*"))
     .flatMap((el) => Array.from(el.classList))
     .filter((className) => className.startsWith(basePattern));
@@ -72,76 +71,66 @@ function parseGrade(text: string): number {
   return letterToNumber[str] ?? 0;
 }
 
-function createWeightLabel(assessmentItem: Element, weighting: string | undefined) {
+function createWeightLabel(
+  assessmentItem: Element,
+  weighting: string | undefined,
+) {
   const statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___']`,
   ) as HTMLElement;
 
-  if (statsContainer) {
-    // Only add label if it hasn't been added before
-    if (!statsContainer.querySelector(".betterseqta-weight-label")) {
-      const label = statsContainer.querySelector(
-        `[class*='Label__Label___']`,
-      ) as HTMLElement;
+  if (
+    !statsContainer ||
+    statsContainer.querySelector(".betterseqta-weight-label")
+  )
+    return;
 
-      if (label) {
-        // Clone average score node
-        const weightLabel = label.cloneNode(true) as HTMLElement;
+  const label = statsContainer.querySelector(
+    `[class*='Label__Label___']`,
+  ) as HTMLElement;
 
-        // Mark as added to prevent duplicates
-        weightLabel.classList.add("betterseqta-weight-label");
+  if (!label) return;
 
-        const innerTextDiv = weightLabel.querySelector(
-          `[class*='Label__innerText___']`,
-        );
+  const weightLabel = label.cloneNode(true) as HTMLElement;
+  weightLabel.classList.add("betterseqta-weight-label");
 
-        // Repurpose for showing weight
-        if (innerTextDiv) innerTextDiv.textContent = "Weight";
+  const innerTextDiv = weightLabel.querySelector(
+    `[class*='Label__innerText___']`,
+  );
+  if (innerTextDiv) innerTextDiv.textContent = "Weight";
 
-        const textNodes = Array.from(weightLabel.childNodes).filter(
-          (node) => node.nodeType === Node.TEXT_NODE,
-        );
+  const textNodes = Array.from(weightLabel.childNodes).filter(
+    (node) => node.nodeType === Node.TEXT_NODE,
+  );
 
-        // Set weight value, discarding useless decimals (.0)
-        if (textNodes.length) {
-          textNodes[0].textContent =
-            weighting && weighting !== "processing"
-              ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
-              : "N/A";
-        }
-
-        // Set position opposite to the average score node
-        statsContainer.style.position = "relative";
-        weightLabel.style.position = "absolute";
-        weightLabel.style.right = "0";
-        weightLabel.style.top = "50%";
-        weightLabel.style.transform = "translateY(-50%)";
-
-        statsContainer.appendChild(weightLabel);
-      }
-    }
+  if (textNodes.length) {
+    textNodes[0].textContent =
+      weighting && weighting !== "processing"
+        ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
+        : "N/A";
   }
+
+  statsContainer.style.position = "relative";
+  weightLabel.style.position = "absolute";
+  weightLabel.style.right = "0";
+  weightLabel.style.top = "50%";
+  weightLabel.style.transform = "translateY(-50%)";
+
+  statsContainer.appendChild(weightLabel);
 }
 
-// Detect Firefox (has stricter CSP for blob URLs)
-// Use userAgent instead of deprecated InstallTrigger
-export const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 &&
-  !navigator.userAgent.toLowerCase().includes('seamonkey') &&
-  !navigator.userAgent.toLowerCase().includes('waterfox');
+export const isFirefox =
+  navigator.userAgent.toLowerCase().indexOf("firefox") > -1 &&
+  !navigator.userAgent.toLowerCase().includes("seamonkey") &&
+  !navigator.userAgent.toLowerCase().includes("waterfox");
 
 async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
-  // Detect if URL is a blob URL
   const isBlobUrl = url.startsWith("blob:");
 
-  // For Firefox, ALWAYS use page context to avoid any CSP issues
-  // For blob URLs in any browser, use page context
   if (isBlobUrl || isFirefox) {
     return new Promise((resolve, reject) => {
-      // Inject script into page context to fetch (bypasses Firefox CSP restrictions)
       const script = document.createElement("script");
       const requestId = `pdf-fetch-${Date.now()}-${Math.random()}`;
-
-      // Escape URL for use in script
       const escapedUrl = url.replace(/'/g, "\\'");
 
       script.textContent = `
@@ -178,9 +167,7 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
           }
 
           if (event.data.success) {
-            // Convert back to ArrayBuffer
-            const uint8Array = new Uint8Array(event.data.data);
-            resolve(uint8Array.buffer);
+            resolve(new Uint8Array(event.data.data).buffer);
           } else {
             reject(new Error(event.data.error || "Failed to fetch PDF"));
           }
@@ -190,7 +177,6 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
       window.addEventListener("message", messageHandler);
       (document.head || document.documentElement).appendChild(script);
 
-      // Timeout after 30 seconds
       setTimeout(() => {
         window.removeEventListener("message", messageHandler);
         if (script.parentNode) {
@@ -199,241 +185,226 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
         reject(new Error("Timeout fetching PDF"));
       }, 30000);
     });
-  } else {
-    // Regular URL - fetch normally, but check if response URL becomes blob
-    try {
-      const response = await fetch(url, {
-        credentials: "include",
-        redirect: "follow",
-      });
+  }
 
-      // Check if response URL is a blob URL (server might redirect to blob)
-      if (response.url && response.url.startsWith("blob:")) {
-        // Re-fetch using page context
-        return await fetchPDFAsArrayBuffer(response.url);
-      }
+  try {
+    const response = await fetch(url, {
+      credentials: "include",
+      redirect: "follow",
+    });
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch PDF: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      return await response.arrayBuffer();
-    } catch (error: any) {
-      // If error mentions blob or security, try using page context
-      if (
-        error?.message?.includes("blob") ||
-        error?.message?.includes("Security") ||
-        error?.message?.includes("CSP")
-      ) {
-        // Force use page context
-        return await fetchPDFAsArrayBuffer(url);
-      }
-      throw error;
+    if (response.url && response.url.startsWith("blob:")) {
+      return await fetchPDFAsArrayBuffer(response.url);
     }
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch PDF: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return await response.arrayBuffer();
+  } catch (error: any) {
+    if (
+      error?.message?.includes("blob") ||
+      error?.message?.includes("Security") ||
+      error?.message?.includes("CSP")
+    ) {
+      return await fetchPDFAsArrayBuffer(url);
+    }
+    throw error;
   }
 }
 
 export async function extractPDFText(url: string): Promise<string> {
-  // For Firefox, do everything in page context to avoid blob URL CSP issues
-  if (isFirefox) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
+  try {
+    if (isFirefox) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
 
-      // Escape URL for use in script (handle both single and double quotes)
-      const escapedUrl = url
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '\\"');
+        const escapedUrl = url
+          .replace(/\\/g, "\\\\")
+          .replace(/'/g, "\\'")
+          .replace(/"/g, '\\"');
 
-      script.textContent = `
-        (function() {
-          const requestId = '${requestId}';
-          const url = '${escapedUrl}';
-          
-          // Check if pdfjs is already loaded
-          if (window.pdfjsLib) {
-            extractPDF();
-          } else {
-            // Load pdfjs in page context
-            const pdfjsScript = document.createElement('script');
-            pdfjsScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.min.js';
-            pdfjsScript.type = 'text/javascript';
+        script.textContent = `
+          (function() {
+            const requestId = '${requestId}';
+            const url = '${escapedUrl}';
             
-            pdfjsScript.onload = function() {
+            if (window.pdfjsLib) {
               extractPDF();
-            };
-            pdfjsScript.onerror = function() {
-              window.postMessage({
-                type: requestId,
-                success: false,
-                error: 'Failed to load pdfjs library'
-              }, '*');
-            };
+            } else {
+              const pdfjsScript = document.createElement('script');
+              pdfjsScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.min.js';
+              pdfjsScript.type = 'text/javascript';
+              
+              pdfjsScript.onload = function() {
+                extractPDF();
+              };
+              pdfjsScript.onerror = function() {
+                window.postMessage({
+                  type: requestId,
+                  success: false,
+                  error: 'Failed to load pdfjs library'
+                }, '*');
+              };
+              
+              document.head.appendChild(pdfjsScript);
+            }
             
-            document.head.appendChild(pdfjsScript);
-          }
-          
-          function extractPDF() {
-            try {
-              // Disable worker for Firefox to avoid blob URL CSP issues
-              // Set to empty string to disable worker completely
-              window.pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-              
-              // Use XMLHttpRequest instead of fetch for better blob URL handling
-              const xhr = new XMLHttpRequest();
-              xhr.open('GET', url, true);
-              xhr.responseType = 'arraybuffer';
-              xhr.withCredentials = true;
-              
-              xhr.onload = function() {
-                if (xhr.status !== 200) {
-                  window.postMessage({
-                    type: requestId,
-                    success: false,
-                    error: 'HTTP ' + xhr.status + ': ' + xhr.statusText
-                  }, '*');
-                  return;
-                }
+            function extractPDF() {
+              try {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = '';
                 
-                try {
-                  const arrayBuffer = xhr.response;
-                  if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-                    throw new Error('PDF response is empty');
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.responseType = 'arraybuffer';
+                xhr.withCredentials = true;
+                
+                xhr.onload = function() {
+                  if (xhr.status !== 200) {
+                    window.postMessage({
+                      type: requestId,
+                      success: false,
+                      error: 'HTTP ' + xhr.status + ': ' + xhr.statusText
+                    }, '*');
+                    return;
                   }
                   
-                  window.pdfjsLib.getDocument({ 
-                    data: arrayBuffer,
-                    useSystemFonts: true,
-                    verbosity: 0,
-                    // Explicitly disable worker
-                    useWorkerFetch: false,
-                    isEvalSupported: false
-                  }).promise
-                    .then(pdf => {
-                      const pagePromises = [];
-                      for (let i = 1; i <= pdf.numPages; i++) {
-                        pagePromises.push(
-                          pdf.getPage(i).then(page => {
-                            return page.getTextContent().then(content => {
-                              return content.items.map(item => item.str).join(' ');
-                            });
-                          })
-                        );
-                      }
-                      return Promise.all(pagePromises);
-                    })
-                    .then(pages => {
-                      const text = pages.join('\\n');
-                      window.postMessage({
-                        type: requestId,
-                        success: true,
-                        text: text
-                      }, '*');
-                    })
-                    .catch(error => {
-                      window.postMessage({
-                        type: requestId,
-                        success: false,
-                        error: 'PDF parsing error: ' + (error.message || String(error))
-                      }, '*');
-                    });
-                } catch (error) {
+                  try {
+                    const arrayBuffer = xhr.response;
+                    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                      throw new Error('PDF response is empty');
+                    }
+                    
+                    window.pdfjsLib.getDocument({ 
+                      data: arrayBuffer,
+                      useSystemFonts: true,
+                      verbosity: 0,
+                      useWorkerFetch: false,
+                      isEvalSupported: false
+                    }).promise
+                      .then(pdf => {
+                        const pagePromises = [];
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                          pagePromises.push(
+                            pdf.getPage(i).then(page => {
+                              return page.getTextContent().then(content => {
+                                return content.items.map(item => item.str).join(' ');
+                              });
+                            })
+                          );
+                        }
+                        return Promise.all(pagePromises);
+                      })
+                      .then(pages => {
+                        const text = pages.join('\\n');
+                        window.postMessage({
+                          type: requestId,
+                          success: true,
+                          text: text
+                        }, '*');
+                      })
+                      .catch(error => {
+                        window.postMessage({
+                          type: requestId,
+                          success: false,
+                          error: 'PDF parsing error: ' + (error.message || String(error))
+                        }, '*');
+                      });
+                  } catch (error) {
+                    window.postMessage({
+                      type: requestId,
+                      success: false,
+                      error: 'ArrayBuffer error: ' + (error.message || String(error))
+                    }, '*');
+                  }
+                };
+                
+                xhr.onerror = function() {
                   window.postMessage({
                     type: requestId,
                     success: false,
-                    error: 'ArrayBuffer error: ' + (error.message || String(error))
+                    error: 'Network error fetching PDF'
                   }, '*');
-                }
-              };
-              
-              xhr.onerror = function() {
+                };
+                
+                xhr.ontimeout = function() {
+                  window.postMessage({
+                    type: requestId,
+                    success: false,
+                    error: 'Timeout fetching PDF'
+                  }, '*');
+                };
+                
+                xhr.timeout = 30000;
+                xhr.send();
+              } catch (error) {
                 window.postMessage({
                   type: requestId,
                   success: false,
-                  error: 'Network error fetching PDF'
+                  error: 'Setup error: ' + (error.message || String(error))
                 }, '*');
-              };
-              
-              xhr.ontimeout = function() {
-                window.postMessage({
-                  type: requestId,
-                  success: false,
-                  error: 'Timeout fetching PDF'
-                }, '*');
-              };
-              
-              xhr.timeout = 30000;
-              xhr.send();
-            } catch (error) {
-              window.postMessage({
-                type: requestId,
-                success: false,
-                error: 'Setup error: ' + (error.message || String(error))
-              }, '*');
+              }
+            }
+          })();
+        `;
+
+        const messageHandler = (event: MessageEvent) => {
+          if (event.data?.type === requestId) {
+            window.removeEventListener("message", messageHandler);
+            if (script.parentNode) {
+              script.parentNode.removeChild(script);
+            }
+
+            if (event.data.success) {
+              resolve(event.data.text);
+            } else {
+              reject(
+                new Error(event.data.error || "Failed to extract PDF text"),
+              );
             }
           }
-        })();
-      `;
+        };
 
-      const messageHandler = (event: MessageEvent) => {
-        if (event.data?.type === requestId) {
+        window.addEventListener("message", messageHandler);
+        (document.head || document.documentElement).appendChild(script);
+
+        setTimeout(() => {
           window.removeEventListener("message", messageHandler);
           if (script.parentNode) {
             script.parentNode.removeChild(script);
           }
-
-          if (event.data.success) {
-            resolve(event.data.text);
-          } else {
-            reject(new Error(event.data.error || "Failed to extract PDF text"));
-          }
-        }
-      };
-
-      window.addEventListener("message", messageHandler);
-      (document.head || document.documentElement).appendChild(script);
-
-      // Timeout after 60 seconds (PDF parsing can take time)
-      setTimeout(() => {
-        window.removeEventListener("message", messageHandler);
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-        reject(new Error("Timeout extracting PDF text"));
-      }, 60000);
-    });
-  } else {
-    // Chrome - use extension context
-    try {
-      const arrayBuffer = await fetchPDFAsArrayBuffer(url);
-
-      if (arrayBuffer.byteLength === 0) {
-        throw new Error("PDF response is empty");
-      }
-
-      const loadingTask = pdfjs.getDocument({
-        data: arrayBuffer,
-        useSystemFonts: true,
+          reject(new Error("Timeout extracting PDF text"));
+        }, 60000);
       });
-
-      const pdf = await loadingTask.promise;
-
-      let text = "";
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map((item: any) => item.str).join(" ") + "\n";
-      }
-
-      return text;
-    } catch (error) {
-      console.log(error);
-      throw error;
     }
+
+    const arrayBuffer = await fetchPDFAsArrayBuffer(url);
+
+    if (arrayBuffer.byteLength === 0) {
+      throw new Error("PDF response is empty");
+    }
+
+    const pdf = await pdfjs.getDocument({
+      data: arrayBuffer,
+      useSystemFonts: true,
+    }).promise;
+
+    let text = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map((item: any) => item.str).join(" ") + "\n";
+    }
+
+    return text;
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to extract PDF text:", error);
+    throw error;
   }
 }
 
@@ -444,7 +415,6 @@ async function handleWeightings(mark: any, api: any) {
   const userID = userInfo.id;
   const title = mark.title;
 
-  // Skip if already processed (not "processing")
   if (
     api.storage.weightings[assessmentID] != undefined &&
     api.storage.weightings[assessmentID] !== "processing"
@@ -452,13 +422,11 @@ async function handleWeightings(mark: any, api: any) {
     return;
   }
 
-  // Set to processing
   api.storage.weightings = {
     ...api.storage.weightings,
     [assessmentID]: "processing",
   };
 
-  // Correlate assessment title with its ID
   api.storage.assessments = {
     ...api.storage.assessments,
     [title.trim()]: assessmentID,
@@ -490,20 +458,16 @@ async function handleWeightings(mark: any, api: any) {
       );
     }
 
-    // Wait a bit for the PDF to be generated
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const pdfUrl = `${location.origin}/seqta/student/report/get?file=${filename}`;
 
-    // Check if URL is a blob URL (which extensions can't access)
     if (pdfUrl.startsWith("blob:")) {
       throw new Error(`Cannot fetch blob URL from extension: ${pdfUrl}`);
     }
 
     let text: string;
     try {
-      // For Firefox, extractPDFText already handles everything in page context
-      // For Chrome, it uses extension context
       text = await extractPDFText(pdfUrl);
     } catch (error: any) {
       if (
@@ -513,26 +477,17 @@ async function handleWeightings(mark: any, api: any) {
           error?.message?.includes("CSP"))
       ) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        try {
-          text = await extractPDFText(pdfUrl);
-        } catch (retryError: any) {
-          throw new Error(
-            `PDF extraction failed after retry: ${retryError.message}`,
-          );
-        }
+        text = await extractPDFText(pdfUrl);
       } else {
         throw new Error(`PDF extraction failed: ${error.message}`);
       }
     }
 
-    // Match weighting from extracted text
     const match = text.match(/weight:\s*(\d+\.?\d*)/i);
-    const weight = match ? match[1] : "N/A";
 
-    // Store and correlate weight with assessment ID
     api.storage.weightings = {
       ...api.storage.weightings,
-      [assessmentID]: weight,
+      [assessmentID]: match ? match[1] : "N/A",
     };
   } catch (error: any) {
     api.storage.weightings = {
@@ -550,11 +505,9 @@ export async function parseAssessments(api: any) {
   const marks = state["marks"];
   if (!marks) return;
 
-  // Dispatch for all assessments asynchronously
   await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
 }
 
-// Tally up weightedTotal, totalWeight, count, determine if weighting is accurate, and display a weight label per assessment
 export async function processAssessments(api: any, assessmentItems: Element[]) {
   let weightedTotal = 0;
   let totalWeight = 0;
@@ -579,16 +532,13 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     const title = titleEl.textContent?.trim();
     if (!title) continue;
 
-    // Get correlated assessment ID in order to fetch weightings
     const assessmentID = api.storage.assessments?.[title];
     const weighting = assessmentID
       ? api.storage.weightings?.[assessmentID]
       : undefined;
 
-    // Creates a weighting label next to the average score
     createWeightLabel(assessmentItem, weighting);
 
-    // Check if weighting is unavailable or still processing
     if (
       weighting === null ||
       weighting === undefined ||
@@ -596,18 +546,15 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
       weighting === "processing"
     ) {
       hasInaccurateWeighting = true;
-      // Fall back to equal weighting if unavailable
       weightedTotal += grade;
       totalWeight += 1;
     } else {
       const weight = parseFloat(weighting);
 
-      // If weight is a positive number, add to total
       if (!isNaN(weight) && weight >= 0) {
         weightedTotal += grade * weight;
         totalWeight += weight;
       } else {
-        // Invalid weight, use equal weighting
         weightedTotal += grade;
         totalWeight += 1;
         hasInaccurateWeighting = true;
