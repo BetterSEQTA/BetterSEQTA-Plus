@@ -24,29 +24,6 @@ Themes in BetterSEQTA+ allow you to completely customize the appearance of SEQTA
 
 Themes are applied by injecting CSS into the SEQTA page and setting CSS custom properties (variables) on the document root.
 
-## Theme Structure
-
-A theme is stored as a `CustomTheme` object with the following structure:
-
-```typescript
-{
-  id: string;                    // Unique identifier (UUID)
-  name: string;                  // Display name
-  description: string;           // Theme description
-  defaultColour: string;         // Default accent color (e.g., "rgba(0, 123, 255, 1)")
-  CanChangeColour: boolean;      // Whether users can change the accent color
-  allowBackgrounds: boolean;     // Whether background images are allowed
-  CustomCSS: string;             // Your custom CSS code
-  CustomImages: CustomImage[];   // Array of custom images
-  coverImage: Blob | null;       // Cover image for theme preview
-  isEditable: boolean;           // Whether theme can be edited
-  hideThemeName: boolean;        // Hide theme name on cover image
-  webURL?: string;               // URL if downloaded from store
-  selectedColor?: string;        // User's selected color override
-  forceDark?: boolean;           // Force dark/light mode (undefined = auto)
-}
-```
-
 ## CSS Variables
 
 BetterSEQTA+ provides a comprehensive set of CSS variables that you can use in your themes. These variables automatically adapt to light/dark mode and user preferences.
