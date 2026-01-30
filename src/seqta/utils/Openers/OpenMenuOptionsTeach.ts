@@ -121,6 +121,117 @@ function getSpineNavItems(container: HTMLElement): HTMLElement[] {
 }
 
 /**
+ * Gets the current main page identifier from URL
+ */
+function getCurrentMainPage(): string | null {
+  const path = window.location.pathname;
+  // Extract main page from path (e.g., /ta/messages -> "messages", /ta/assessments -> "assessments")
+  const match = path.match(/\/(?:ta\/|teach\/)?([^\/\?]+)/);
+  if (match && match[1]) {
+    return match[1].toLowerCase();
+  }
+  return null;
+}
+
+/**
+ * Detects sub-pages (tabs, secondary navigation) on the current page
+ * Looks for common patterns like tabs, secondary nav menus, etc.
+ */
+function getSubPages(): HTMLElement[] {
+  const subPages: HTMLElement[] = [];
+  
+  // Strategy 1: Look for tab navigation (common pattern)
+  const tabContainers = document.querySelectorAll('[role="tablist"], [class*="Tab"], [class*="tab"], nav[class*="Nav"]');
+  for (const container of Array.from(tabContainers)) {
+    const tabs = container.querySelectorAll('[role="tab"], a[href], button');
+    for (const tab of Array.from(tabs)) {
+      const element = tab as HTMLElement;
+      // Skip if it's a main navigation item or external link
+      if (element.closest('[class*="Spine"]') || 
+          element.getAttribute('href')?.startsWith('http') ||
+          !element.getAttribute('href')) {
+        continue;
+      }
+      // Check if it's a sub-page link (usually relative URLs within the same section)
+      const href = element.getAttribute('href');
+      if (href && (href.startsWith('/') || href.startsWith('#'))) {
+        subPages.push(element);
+      }
+    }
+  }
+  
+  // Strategy 2: Look for secondary navigation menus
+  const navMenus = document.querySelectorAll('nav:not([class*="Spine"]), [class*="Nav"]:not([class*="Spine"])');
+  for (const nav of Array.from(navMenus)) {
+    const links = nav.querySelectorAll('a[href], button[data-href]');
+    for (const link of Array.from(links)) {
+      const element = link as HTMLElement;
+      const href = element.getAttribute('href') || element.getAttribute('data-href');
+      if (href && (href.startsWith('/') || href.startsWith('#')) && !href.includes('http')) {
+        if (!subPages.includes(element)) {
+          subPages.push(element);
+        }
+      }
+    }
+  }
+  
+  // Strategy 3: Look for buttons/links in content area that might be sub-pages
+  // This is more aggressive and might catch some false positives
+  const contentArea = document.querySelector('main, [class*="Content"], [class*="content"], [class*="Page"]');
+  if (contentArea) {
+    const potentialSubPages = contentArea.querySelectorAll('a[href^="/"], a[href^="#"], button[data-href]');
+    for (const item of Array.from(potentialSubPages)) {
+      const element = item as HTMLElement;
+      // Skip if already added or if it's clearly not a sub-page
+      if (subPages.includes(element) || 
+          element.closest('[class*="Spine"]') ||
+          element.textContent?.trim().length === 0) {
+        continue;
+      }
+      // Only add if it looks like a navigation item (has text, is clickable)
+      const text = element.textContent?.trim();
+      if (text && text.length > 0 && text.length < 50) { // Reasonable length for a nav item
+        subPages.push(element);
+      }
+    }
+  }
+  
+  // Remove duplicates
+  return Array.from(new Set(subPages));
+}
+
+/**
+ * Generates a unique key for a sub-page item
+ */
+function getSubPageKey(item: HTMLElement): string {
+  // Try data-key first
+  if (item.dataset.key) {
+    return item.dataset.key;
+  }
+  
+  // Try href
+  const href = item.getAttribute("href") || item.getAttribute("data-href");
+  if (href) {
+    // Extract meaningful part from href
+    const match = href.match(/\/([^/?#]+)/);
+    if (match && match[1]) {
+      return match[1].toLowerCase();
+    }
+    // Fallback to full href (sanitized)
+    return href.replace(/[/?#=]/g, "_").toLowerCase();
+  }
+  
+  // Try text content
+  const text = item.textContent?.trim();
+  if (text) {
+    return text.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  }
+  
+  // Fallback
+  return `subpage_${Date.now()}_${Math.random()}`;
+}
+
+/**
  * Generates a unique key for a Spine navigation item
  */
 function getSpineItemKey(item: HTMLElement): string {
@@ -242,6 +353,11 @@ export async function OpenMenuOptionsTeach() {
   
   SpineMenuOptionsOpen = true;
   
+  // Check for sub-pages on current page (before creating modal)
+  const currentMainPage = getCurrentMainPage();
+  const subPages = currentMainPage ? getSubPages() : [];
+  const hasSubPages = subPages.length > 0;
+  
   // Create cover overlay
   const cover = document.createElement("div");
   cover.classList.add("notMenuCover");
@@ -273,6 +389,9 @@ export async function OpenMenuOptionsTeach() {
                      window.getComputedStyle(document.body).backgroundColor === "rgb(0, 0, 0)" ||
                      window.getComputedStyle(document.body).backgroundColor === "rgba(0, 0, 0, 0)";
   
+  const modalWidth = hasSubPages ? '1100px' : '700px';
+  const modalMinWidth = hasSubPages ? '900px' : '600px';
+  
   spineSettings.style.cssText = `
     position: fixed;
     top: 50%;
@@ -282,9 +401,9 @@ export async function OpenMenuOptionsTeach() {
     border-radius: 16px;
     padding: 32px;
     z-index: 100001 !important;
-    min-width: 600px;
-    width: 700px;
-    max-width: 90vw;
+    min-width: ${modalMinWidth};
+    width: ${modalWidth};
+    max-width: 95vw;
     min-height: 500px;
     max-height: 85vh;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
@@ -379,17 +498,27 @@ export async function OpenMenuOptionsTeach() {
     settingsState.teachspineitems = spineItems;
   }
   
-  // Create a temporary container for reordering
+  // Create a wrapper container for side-by-side layout
+  const contentWrapper = document.createElement("div");
+  contentWrapper.style.cssText = `
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    overflow: hidden;
+    margin: 0 0 24px 0;
+    min-height: 350px;
+    max-height: calc(85vh - 200px);
+  `;
+  
+  // Create a temporary container for reordering main spine items
   const reorderContainer = document.createElement("div");
   reorderContainer.id = "betterseqta-spine-reorder-container";
   reorderContainer.style.cssText = `
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    margin: 0 0 24px 0;
     padding-right: 12px;
     min-height: 350px;
-    max-height: calc(85vh - 200px);
   `;
   
   // Add custom scrollbar styling
@@ -545,8 +674,301 @@ export async function OpenMenuOptionsTeach() {
     reorderContainer.appendChild(clone);
   }
   
-  // Insert reorderContainer before buttonContainer
-  spineSettings.insertBefore(reorderContainer, buttonContainer);
+  // Add sub-pages section if they exist
+  let subPageSortable: any = null;
+  const clonedSubPages: HTMLElement[] = [];
+  
+  // Create sub-page container (will be added to right side if sub-pages exist)
+  let subPageSection: HTMLElement | null = null;
+  
+  // Add main spine items to content wrapper
+  contentWrapper.appendChild(reorderContainer);
+  
+  if (hasSubPages && currentMainPage) {
+    subPageSection = document.createElement("div");
+    subPageSection.style.cssText = `
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    `;
+    
+    const subPageTitle = document.createElement("h3");
+    subPageTitle.textContent = `Reorder ${currentMainPage.charAt(0).toUpperCase() + currentMainPage.slice(1)} Sub-pages`;
+    subPageTitle.style.cssText = `
+      margin: 0 0 16px 0;
+      font-family: Rubik, sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: ${isDarkMode ? '#fff' : '#000'} !important;
+    `;
+    subPageSection.appendChild(subPageTitle);
+    
+    const subPageContainer = document.createElement("div");
+    subPageContainer.id = "betterseqta-subpage-reorder-container";
+    subPageContainer.style.cssText = `
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 12px;
+      min-height: 350px;
+    `;
+    
+    // Initialize sub-page orders if needed
+    if (!settingsState.teachSubPageOrders) {
+      settingsState.teachSubPageOrders = {};
+    }
+    if (!settingsState.defaultTeachSubPageOrders) {
+      settingsState.defaultTeachSubPageOrders = {};
+    }
+    
+    // Get default order or create it from current DOM order
+    let defaultOrder = settingsState.defaultTeachSubPageOrders[currentMainPage] || [];
+    
+    // Create default order if not exists (capture original order from DOM)
+    if (defaultOrder.length === 0) {
+      const newDefaultOrder: string[] = [];
+      for (const subPage of subPages) {
+        const key = getSubPageKey(subPage);
+        newDefaultOrder.push(key);
+        subPage.setAttribute("data-subpage-key", key);
+      }
+      settingsState.defaultTeachSubPageOrders[currentMainPage] = newDefaultOrder;
+      defaultOrder = newDefaultOrder;
+    } else {
+      // Ensure all current sub-pages have keys set
+      for (const subPage of subPages) {
+        const key = getSubPageKey(subPage);
+        subPage.setAttribute("data-subpage-key", key);
+        // If a new sub-page appears that's not in default order, add it
+        if (!defaultOrder.includes(key)) {
+          defaultOrder.push(key);
+          settingsState.defaultTeachSubPageOrders[currentMainPage] = [...defaultOrder];
+        }
+      }
+    }
+    
+    // Clone sub-pages for reordering
+    for (const subPage of subPages) {
+      const key = getSubPageKey(subPage);
+      const clone = subPage.cloneNode(true) as HTMLElement;
+      // Ensure data-subpage-key is set (required for Sortable toArray())
+      clone.setAttribute("data-subpage-key", key);
+      clone.classList.add("draggable-subpage-item");
+      
+      // Debug: verify key is set
+      if (!clone.getAttribute("data-subpage-key")) {
+        console.warn("[BetterSEQTA+] Warning: data-subpage-key not set for sub-page:", key, clone);
+      }
+      
+      const textContent = subPage.textContent?.trim() || 
+                         subPage.getAttribute("aria-label") ||
+                         subPage.getAttribute("title") ||
+                         key;
+      
+      // Style the clone
+      clone.style.cssText = `
+        display: flex !important;
+        align-items: center !important;
+        padding: 14px 18px !important;
+        background: ${isDarkMode ? 'rgb(63, 63, 70)' : '#f5f5f5'} !important;
+        border: 2px solid ${isDarkMode ? 'rgb(82, 82, 91)' : '#ddd'} !important;
+        border-radius: 8px !important;
+        cursor: move !important;
+        transition: all 0.2s ease !important;
+        min-height: 48px !important;
+        gap: 12px !important;
+      `;
+      
+      // Clear and rebuild with proper structure
+      clone.innerHTML = "";
+      
+      const leftSide = document.createElement("div");
+      leftSide.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+      `;
+      
+      const dragHandle = document.createElement("div");
+      dragHandle.innerHTML = "⋮⋮";
+      dragHandle.style.cssText = `
+        color: var(--text-muted, #999);
+        font-size: 14px;
+        cursor: move;
+        user-select: none;
+      `;
+      leftSide.appendChild(dragHandle);
+      
+      const textSpan = document.createElement("span");
+      textSpan.textContent = textContent;
+      textSpan.style.cssText = `
+        font-family: Rubik, sans-serif !important;
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: ${isDarkMode ? '#fff' : '#000'} !important;
+      `;
+      leftSide.appendChild(textSpan);
+      
+      clone.appendChild(leftSide);
+      
+      // Add toggle switch on the right (like main spine items)
+      const toggle = stringToHTML(
+        `<div class="onoffswitch" style="margin-left: auto; flex-shrink: 0;"><input class="onoffswitch-checkbox subpage-menuitem" type="checkbox" id="subpage_${currentMainPage}_${key}"><label for="subpage_${currentMainPage}_${key}" class="onoffswitch-label"></label></div>`,
+      ).firstChild as HTMLElement;
+      clone.appendChild(toggle);
+      
+      // Set initial toggle state
+      const checkbox = clone.querySelector(`#subpage_${currentMainPage}_${key}`) as HTMLInputElement;
+      if (!settingsState.teachSubPageItems) {
+        settingsState.teachSubPageItems = {};
+      }
+      if (!settingsState.teachSubPageItems[currentMainPage]) {
+        settingsState.teachSubPageItems[currentMainPage] = {};
+      }
+      if (settingsState.teachSubPageItems[currentMainPage][key]) {
+        checkbox.checked = settingsState.teachSubPageItems[currentMainPage][key].toggle;
+      } else {
+        checkbox.checked = true;
+        settingsState.teachSubPageItems[currentMainPage][key] = { toggle: true };
+      }
+      
+      // Make clickable but prevent navigation when clicking in reorder menu
+      // Store original href for later use
+      const originalHref = subPage.getAttribute("href");
+      if (clone.tagName === "A" && originalHref) {
+        clone.setAttribute("href", originalHref);
+      }
+      
+      // Add click handler that prevents navigation only in reorder menu
+      clone.addEventListener("click", (e) => {
+        // Only prevent if clicking the item itself (not the toggle)
+        if (e.target === clone || clone.contains(e.target as Node)) {
+          const target = e.target as HTMLElement;
+          // Allow toggle clicks
+          if ((target instanceof HTMLInputElement && target.type === "checkbox") || target.closest(".onoffswitch")) {
+            return;
+          }
+          // Prevent navigation in reorder menu
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+      
+      clonedSubPages.push(clone);
+      subPageContainer.appendChild(clone);
+    }
+    
+    subPageSection.appendChild(subPageContainer);
+    
+    // Add scrollbar styling for sub-page container
+    const subPageStyle = document.createElement("style");
+    subPageStyle.textContent = `
+      #betterseqta-subpage-reorder-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      #betterseqta-subpage-reorder-container::-webkit-scrollbar-track {
+        background: var(--background-secondary, #f5f5f5);
+        border-radius: 4px;
+      }
+      #betterseqta-subpage-reorder-container::-webkit-scrollbar-thumb {
+        background: var(--border-primary, #ddd);
+        border-radius: 4px;
+      }
+      #betterseqta-subpage-reorder-container::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted, #999);
+      }
+    `;
+    document.head.appendChild(subPageStyle);
+    
+    // Add sub-page section to content wrapper (right side)
+    contentWrapper.appendChild(subPageSection);
+    
+    // Add event listeners to sub-page checkboxes
+    const subPageCheckboxes = subPageContainer.querySelectorAll(".subpage-menuitem");
+    for (const checkbox of Array.from(subPageCheckboxes)) {
+      checkbox.addEventListener("change", (e) => {
+        const target = e.target as HTMLInputElement;
+        const item = target.closest(".draggable-subpage-item") as HTMLElement;
+        if (!item) return;
+        
+        const key = item.getAttribute("data-subpage-key");
+        if (!key || !currentMainPage) return;
+        
+        if (!settingsState.teachSubPageItems) {
+          settingsState.teachSubPageItems = {};
+        }
+        if (!settingsState.teachSubPageItems[currentMainPage]) {
+          settingsState.teachSubPageItems[currentMainPage] = {};
+        }
+        
+        settingsState.teachSubPageItems[currentMainPage][key] = { toggle: target.checked };
+        
+        // Update visual state
+        if (!target.checked) {
+          item.style.opacity = "0.5";
+          item.style.pointerEvents = "none";
+        } else {
+          item.style.opacity = "1";
+          item.style.pointerEvents = "auto";
+        }
+        
+        // Save sub-page settings immediately
+        storeSubPageSettings();
+      });
+    }
+    
+    // Initialize Sortable for sub-pages
+    try {
+      subPageSortable = Sortable.create(subPageContainer, {
+        draggable: ".draggable-subpage-item",
+        dataIdAttr: "data-subpage-key",
+        animation: 150,
+        easing: "cubic-bezier(.5,0,.5,1)",
+        onEnd: function () {
+          if (subPageSortable && currentMainPage) {
+            let newOrder = subPageSortable.toArray();
+            
+            // Fallback: manually extract order from DOM if toArray() returns empty
+            if (!newOrder || newOrder.length === 0) {
+              const subPageContainer = document.getElementById("betterseqta-subpage-reorder-container");
+              if (subPageContainer) {
+                newOrder = [];
+                const items = subPageContainer.querySelectorAll(".draggable-subpage-item");
+                for (const item of Array.from(items)) {
+                  const key = item.getAttribute("data-subpage-key");
+                  if (key) {
+                    newOrder.push(key);
+                  }
+                }
+              }
+            }
+            
+            console.debug("[BetterSEQTA+] Sub-page order changed:", { mainPage: currentMainPage, order: newOrder });
+            
+            if (newOrder && newOrder.length > 0) {
+              if (!settingsState.teachSubPageOrders) {
+                settingsState.teachSubPageOrders = {};
+              }
+              settingsState.teachSubPageOrders[currentMainPage] = newOrder;
+              // Explicitly save to ensure persistence
+              storeSubPageSettings();
+            }
+          }
+        },
+      });
+    } catch (err) {
+      console.error("[BetterSEQTA+] Error creating sub-page Sortable:", err);
+    }
+  }
+  
+  // Insert contentWrapper before buttonContainer
+  spineSettings.insertBefore(contentWrapper, buttonContainer);
   
   // Debug: Log container state
   console.debug("[BetterSEQTA+] Reorder container created:", {
@@ -600,6 +1022,27 @@ export async function OpenMenuOptionsTeach() {
     settingsState.teachspineitems = spineItems;
   }
   
+  function storeSubPageSettings() {
+    if (!currentMainPage || clonedSubPages.length === 0) return;
+    
+    if (!settingsState.teachSubPageItems) {
+      settingsState.teachSubPageItems = {};
+    }
+    if (!settingsState.teachSubPageItems[currentMainPage]) {
+      settingsState.teachSubPageItems[currentMainPage] = {};
+    }
+    
+    for (const item of clonedSubPages) {
+      const key = item.getAttribute("data-subpage-key");
+      if (key) {
+        const checkbox = item.querySelector(`#subpage_${currentMainPage}_${key}`) as HTMLInputElement;
+        if (checkbox) {
+          settingsState.teachSubPageItems[currentMainPage][key] = { toggle: checkbox.checked };
+        }
+      }
+    }
+  }
+  
   // Add event listeners to checkboxes
   const checkboxes = reorderContainer.querySelectorAll(".spine-menuitem");
   for (const checkbox of Array.from(checkboxes)) {
@@ -632,7 +1075,40 @@ export async function OpenMenuOptionsTeach() {
       const newOrder = sortable.toArray();
       ChangeSpineItemPositions(newOrder);
     }
+    
+    // Apply sub-page order if exists
+    if (subPageSortable && currentMainPage) {
+      // Get order from Sortable, or manually extract from DOM if toArray() fails
+      let newSubPageOrder = subPageSortable.toArray();
+      
+      // Fallback: manually extract order from DOM if toArray() returns empty
+      if (!newSubPageOrder || newSubPageOrder.length === 0) {
+        const subPageContainer = document.getElementById("betterseqta-subpage-reorder-container");
+        if (subPageContainer) {
+          newSubPageOrder = [];
+          const items = subPageContainer.querySelectorAll(".draggable-subpage-item");
+          for (const item of Array.from(items)) {
+            const key = item.getAttribute("data-subpage-key");
+            if (key) {
+              newSubPageOrder.push(key);
+            }
+          }
+        }
+      }
+      
+      console.debug("[BetterSEQTA+] Saving sub-page order on Save:", { mainPage: currentMainPage, order: newSubPageOrder });
+      
+      if (newSubPageOrder && newSubPageOrder.length > 0) {
+        if (!settingsState.teachSubPageOrders) {
+          settingsState.teachSubPageOrders = {};
+        }
+        settingsState.teachSubPageOrders[currentMainPage] = newSubPageOrder;
+        applySubPageOrder(currentMainPage, newSubPageOrder);
+      }
+    }
+    
     storeSpineSettings();
+    storeSubPageSettings();
     closeAll();
   });
   
@@ -686,6 +1162,114 @@ export async function OpenMenuOptionsTeach() {
         }
       }
       
+      // Reset sub-pages: remove storage item and use default order
+      if (currentMainPage && subPageSortable) {
+        // Remove the storage items for this page
+        if (settingsState.teachSubPageOrders) {
+          delete settingsState.teachSubPageOrders[currentMainPage];
+        }
+        if (settingsState.teachSubPageItems) {
+          delete settingsState.teachSubPageItems[currentMainPage];
+        }
+        
+        // Get the default order (should already be stored)
+        const defaultSubPageOrder = settingsState.defaultTeachSubPageOrders?.[currentMainPage];
+        
+        if (defaultSubPageOrder && defaultSubPageOrder.length > 0) {
+          // Reset all sub-page toggles to true
+          const subPageCheckboxes = document.querySelectorAll("#betterseqta-subpage-reorder-container .subpage-menuitem");
+          for (const checkbox of Array.from(subPageCheckboxes)) {
+            (checkbox as HTMLInputElement).checked = true;
+            const item = checkbox.closest(".draggable-subpage-item") as HTMLElement;
+            if (item) {
+              item.style.opacity = "1";
+              item.style.pointerEvents = "auto";
+            }
+          }
+          
+          // Update the cloned items to match default order
+          clonedSubPages.sort((a, b) => {
+            const keyA = a.getAttribute("data-subpage-key") || "";
+            const keyB = b.getAttribute("data-subpage-key") || "";
+            const indexA = defaultSubPageOrder.indexOf(keyA);
+            const indexB = defaultSubPageOrder.indexOf(keyB);
+            return indexA - indexB;
+          });
+          
+          // Rebuild sub-page DOM
+          const subPageContainer = document.getElementById("betterseqta-subpage-reorder-container");
+          if (subPageContainer) {
+            subPageContainer.innerHTML = "";
+            clonedSubPages.forEach(item => {
+              subPageContainer.appendChild(item);
+              // Re-add click prevention (but allow toggle clicks)
+              item.addEventListener("click", (e) => {
+                const target = e.target as HTMLElement;
+                // Allow toggle clicks
+                if ((target instanceof HTMLInputElement && target.type === "checkbox") || target.closest(".onoffswitch")) {
+                  return;
+                }
+                // Prevent navigation in reorder menu
+                e.preventDefault();
+                e.stopPropagation();
+              });
+              
+              // Re-add toggle event listener
+              const checkbox = item.querySelector(`#subpage_${currentMainPage}_${item.getAttribute("data-subpage-key")}`) as HTMLInputElement;
+              if (checkbox) {
+                checkbox.addEventListener("change", (e) => {
+                  const target = e.target as HTMLInputElement;
+                  const item = target.closest(".draggable-subpage-item") as HTMLElement;
+                  if (!item) return;
+                  
+                  const key = item.getAttribute("data-subpage-key");
+                  if (!key || !currentMainPage) return;
+                  
+                  if (!settingsState.teachSubPageItems) {
+                    settingsState.teachSubPageItems = {};
+                  }
+                  if (!settingsState.teachSubPageItems[currentMainPage]) {
+                    settingsState.teachSubPageItems[currentMainPage] = {};
+                  }
+                  
+                  settingsState.teachSubPageItems[currentMainPage][key] = { toggle: target.checked };
+                  
+                  // Update visual state
+                  if (!target.checked) {
+                    item.style.opacity = "0.5";
+                    item.style.pointerEvents = "none";
+                  } else {
+                    item.style.opacity = "1";
+                    item.style.pointerEvents = "auto";
+                  }
+                  
+                  // Save sub-page settings immediately
+                  storeSubPageSettings();
+                });
+              }
+            });
+            
+            // Reinitialize sub-page Sortable
+            subPageSortable.destroy();
+            subPageSortable = Sortable.create(subPageContainer, {
+              draggable: ".draggable-subpage-item",
+              dataIdAttr: "data-subpage-key",
+              animation: 150,
+              easing: "cubic-bezier(.5,0,.5,1)",
+              onEnd: function () {
+                if (subPageSortable && currentMainPage) {
+                  const newOrder = subPageSortable.toArray();
+                  if (!settingsState.teachSubPageOrders) {
+                    settingsState.teachSubPageOrders = {};
+                  }
+                  settingsState.teachSubPageOrders[currentMainPage] = newOrder;
+                }
+              },
+            });
+          }
+        }
+      }
+      
       storeSpineSettings();
       saveSpineNewOrder(sortable);
     }
@@ -696,6 +1280,89 @@ function saveSpineNewOrder(sortable: any) {
   if (!sortable) return;
   const order = sortable.toArray();
   settingsState.teachspineorder = order;
+}
+
+/**
+ * Applies the saved sub-page order for a specific main page
+ */
+function applySubPageOrder(mainPage: string, order: string[]): void {
+  if (!order || order.length === 0) return;
+  
+  const subPages = getSubPages();
+  if (subPages.length === 0) return;
+  
+  // Create a map of sub-pages by key
+  const subPagesMap = new Map<string, HTMLElement>();
+  for (const subPage of subPages) {
+    const key = getSubPageKey(subPage);
+    subPagesMap.set(key, subPage);
+  }
+  
+  // Find the parent container (could be tablist, nav, etc.)
+  const parentContainer = subPages[0]?.parentElement;
+  if (!parentContainer) return;
+  
+  // Reorder based on saved order
+  const orderedSubPages: HTMLElement[] = [];
+  for (const key of order) {
+    const subPage = subPagesMap.get(key);
+    if (subPage && parentContainer.contains(subPage)) {
+      orderedSubPages.push(subPage);
+    }
+  }
+  
+  // Add any sub-pages not in the order (new items)
+  for (const subPage of subPages) {
+    const key = getSubPageKey(subPage);
+    if (!order.includes(key) && parentContainer.contains(subPage)) {
+      orderedSubPages.push(subPage);
+    }
+  }
+  
+  // Apply visibility based on teachSubPageItems
+  for (const subPage of orderedSubPages) {
+    const key = getSubPageKey(subPage);
+    const subPageItem = settingsState.teachSubPageItems?.[mainPage]?.[key];
+    if (subPageItem && !subPageItem.toggle) {
+      subPage.style.display = "none";
+    } else {
+      subPage.style.display = "";
+    }
+  }
+  
+  // Apply the order to DOM
+  // Remove all sub-pages first
+  orderedSubPages.forEach(subPage => {
+    if (subPage.parentElement) {
+      subPage.parentElement.removeChild(subPage);
+    }
+  });
+  
+  // Re-append in order (only visible ones)
+  orderedSubPages.forEach(subPage => {
+    if (subPage.style.display !== "none") {
+      parentContainer.appendChild(subPage);
+    }
+  });
+  
+  console.debug(`[BetterSEQTA+] Applied sub-page order for ${mainPage}:`, order);
+}
+
+/**
+ * Applies saved sub-page orders when pages load
+ * Should be called when navigating to a page
+ */
+export function applySavedSubPageOrders(): void {
+  const mainPage = getCurrentMainPage();
+  if (!mainPage || !settingsState.teachSubPageOrders) return;
+  
+  const order = settingsState.teachSubPageOrders[mainPage];
+  if (order && order.length > 0) {
+    // Wait a bit for page to render
+    setTimeout(() => {
+      applySubPageOrder(mainPage, order);
+    }, 300);
+  }
 }
 
 /**

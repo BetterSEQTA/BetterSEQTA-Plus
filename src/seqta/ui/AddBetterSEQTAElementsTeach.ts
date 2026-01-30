@@ -14,7 +14,7 @@ import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
 import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { ChangeSpineItemPositions } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
+import { ChangeSpineItemPositions, applySavedSubPageOrders } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
 import { initializeSIPEnhancements } from "@/seqta/utils/SIPEnhancements";
 
 // Track if we've set up the observer to prevent multiple observers
@@ -77,6 +77,9 @@ export async function AddBetterSEQTAElementsTeach() {
     
     // Set up navigation listener for Teach's React Router
     setupNavigationListener();
+    
+    // Apply saved sub-page orders
+    applySavedSubPageOrders();
   } finally {
     injectionInProgress = false;
   }
