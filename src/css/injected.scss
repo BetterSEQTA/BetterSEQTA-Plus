@@ -1637,8 +1637,7 @@ iframe.userHTML {
 }
 [class*="Thermoscore__Thermoscore___"] {
   background-image: unset;
-  background: var(--auto-background);
-  border-radius: 8px;
+  background-color: var(--auto-background);
 }
 .dark [class*="Thermoscore__Thermoscore___"] {
   border: 2px solid rgba(255, 255, 255, 0.3);
