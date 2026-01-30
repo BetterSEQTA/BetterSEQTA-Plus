@@ -8,9 +8,15 @@ import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
-import { clearStuck, getClassByPattern, initStorage, letterToNumber, parseAssessments, processAssessments} from "./utils.ts";
+import {
+  clearStuck,
+  getClassByPattern,
+  initStorage,
+  letterToNumber,
+  parseAssessments,
+  processAssessments,
+} from "./utils.ts";
 
-// Storage
 interface weightingsStorage {
   weightings: Record<string, string>;
   assessments: Record<string, string>;
@@ -40,11 +46,7 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
   settings: instance.settings,
 
   run: async (api) => {
-
-    // Ensure storage is ready for use
     await initStorage(api);
-
-    // Clear any stuck "processing" states so they can retry
     clearStuck(api);
 
     api.seqta.onMount(".assessmentsWrapper", async () => {
@@ -57,13 +59,11 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
 
       await parseAssessments(api);
 
-      // Find actual class names from the DOM
       const sampleAssessmentItem = document.querySelector(
         "[class*='AssessmentItem__AssessmentItem___']",
       );
       if (!sampleAssessmentItem) return;
 
-      // Extract all necessary class patterns from a sample assessment item
       const assessmentItemClass =
         Array.from(sampleAssessmentItem.classList).find((c) =>
           c.startsWith("AssessmentItem__AssessmentItem___"),
@@ -86,7 +86,6 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         "AssessmentItem__title___",
       );
 
-      // Get Thermoscore classes
       const thermoscoreElement = document.querySelector(
         "[class*='Thermoscore__Thermoscore___']",
       );
@@ -105,36 +104,30 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         "Thermoscore__text___",
       );
 
-      // Find assessment list
       const assessmentsList = document.querySelector(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentList__items___']",
       );
       if (!assessmentsList) return;
 
-      // Get marks from React state to match with DOM elements
       const state = await ReactFiber.find(
         "[class*='AssessmentList__items___']",
       ).getState();
       const marks = state["marks"];
       if (!marks || !marks.length) return;
 
-      // Parse and average grades
-
-      // Get all assessment items (excluding the average we might have added)
       const assessmentItems = Array.from(
-        assessmentsList.querySelectorAll(`[class*='AssessmentItem__AssessmentItem___']`),
+        assessmentsList.querySelectorAll(
+          `[class*='AssessmentItem__AssessmentItem___']`,
+        ),
       ).filter(
         (item) =>
-          !item.querySelector(`[class*='AssessmentItem__title___']`)?.textContent?.includes("Subject Average"),
+          !item
+            .querySelector(`[class*='AssessmentItem__title___']`)
+            ?.textContent?.includes("Subject Average"),
       );
 
-      // Tally up weightedTotal, totalWeight, count, determine if weighting is accurate, and display a weight label per assessment
-      const {
-        weightedTotal,
-        totalWeight,
-        hasInaccurateWeighting,
-        count,
-      } = await processAssessments(api, assessmentItems);
+      const { weightedTotal, totalWeight, hasInaccurateWeighting, count } =
+        await processAssessments(api, assessmentItems);
 
       if (!count || totalWeight === 0) return;
 
@@ -153,13 +146,11 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         ? letterAvg
         : `${avg.toFixed(2)}%`;
 
-      // Prevent duplicate
       const existing = assessmentsList.querySelector(
         `[class*='AssessmentItem__title___']`,
       );
       if (existing?.textContent === "Subject Average") return;
 
-      // Build warning message if needed
       let warningHTML = "";
       if (hasInaccurateWeighting) {
         warningHTML = /* html */ `
@@ -169,8 +160,8 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         `;
       }
 
-      // Use the dynamic class names in the HTML template
-      const averageElement = stringToHTML(/* html */ `
+      assessmentsList.insertBefore(
+        stringToHTML(/* html */ `
         <div class="${assessmentItemClass}">
           <div class="${metaContainerClass}">
             <div class="${metaClass}">
@@ -182,13 +173,13 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
           </div>
           <div class="${thermoscoreClass}">
             <div class="${fillClass}" style="width: ${avg.toFixed(2)}%">
-              <div class="${textClass}" title="${hasInaccurateWeighting ? display + ' (some weightings unavailable)' : display}">${display}</div>
+              <div class="${textClass}" title="${hasInaccurateWeighting ? display + " (some weightings unavailable)" : display}">${display}</div>
             </div>
           </div>
         </div>
-      `).firstChild;
-
-      assessmentsList.insertBefore(averageElement!, assessmentsList.firstChild);
+      `).firstChild!,
+        assessmentsList.firstChild,
+      );
     });
   },
 };

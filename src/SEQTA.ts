@@ -25,37 +25,20 @@ if (document.childNodes[1]) {
   init();
 }
 
-/**
- * Initializes BetterSEQTA+ on a SEQTA page.
- *
- * This function performs the following steps:
- * 1. Verifies that the current page is a SEQTA page.
- * 2. Injects CSS styles for document loading.
- * 3. Changes the page's favicon.
- * 4. Initializes the extension's settings state.
- * 5. Sets default storage if settings are not already defined.
- * 6. Calls the main function to apply core BetterSEQTA+ modifications.
- * 7. Initializes legacy and new plugins if the extension is enabled.
- * 8. Logs success or error messages during initialization.
- */
 async function init() {
-  const hasSEQTATitle = document.title.includes("SEQTA Learn");
-
-  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-    // Verify we are on a SEQTA page
+  if (hasSEQTAText && document.title.includes("SEQTA Learn") && !IsSEQTAPage) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
-    const documentLoadStyle = document.createElement("style");
-    documentLoadStyle.textContent = documentLoadCSS;
-    document.head.appendChild(documentLoadStyle);
+    const style = document.createElement("style");
+    style.textContent = documentLoadCSS;
+    document.head.appendChild(style);
 
-    const icons =
-      document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]');
-
-    icons.forEach((link) => {
-      link.href = icon48;
-    });
+    document
+      .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+      .forEach((link) => {
+        link.href = icon48;
+      });
 
     try {
       await initializeSettingsState();
@@ -80,7 +63,7 @@ async function init() {
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
     }
   }
