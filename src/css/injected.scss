@@ -3129,21 +3129,6 @@ div.day-empty {
   display: flex;
   align-content: space-between;
 }
-.upcoming-checkbox-container {
-  position: relative;
-  padding: none !important;
-  padding-left: 25px !important;
-  padding-right: 10px !important;
-  cursor: pointer;
-  font-size: 12px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  height: 20px;
-  align-items: center;
-  display: flex;
-}
 .upcoming-checkbox-container input {
   position: absolute;
   opacity: 0;
