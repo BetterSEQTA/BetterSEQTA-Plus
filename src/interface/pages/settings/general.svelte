@@ -157,19 +157,31 @@
         text: "Edit"
       }
     },
-    ...(isSEQTATeachSync() ? [{
-      title: "Reorder Spine Navigation",
-      description: "Drag and drop to reorder items in the Spine navigation menu.",
-      id: 13,
-      Component: Button,
-      props: {
-        onClick: async () => {
-          closeExtensionPopup();
-          await OpenMenuOptionsTeach();
-        },
-        text: "Reorder"
+    ...(isSEQTATeachSync() ? [
+      {
+        title: "Reorder Spine Navigation",
+        description: "Drag and drop to reorder items in the Spine navigation menu.",
+        id: 13,
+        Component: Button,
+        props: {
+          onClick: async () => {
+            closeExtensionPopup();
+            await OpenMenuOptionsTeach();
+          },
+          text: "Reorder"
+        }
+      },
+      {
+        title: "Auto-clear Pastoral Notes on Student Change",
+        description: "Automatically clear pastoral care notes when switching to a different student.",
+        id: 14,
+        Component: Switch,
+        props: {
+          state: $settingsState.sipAutoClearOnStudentChange ?? true,
+          onChange: (isOn: boolean) => settingsState.sipAutoClearOnStudentChange = isOn
+        }
       }
-    }] : []),
+    ] : []),
     {
       title: "Animations",
       description: "Enables animations on certain pages.",

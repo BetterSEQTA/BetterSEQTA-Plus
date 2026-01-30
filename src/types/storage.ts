@@ -46,6 +46,7 @@ export interface SettingsState {
   newsSource?: string;
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
+  sipAutoClearOnStudentChange?: boolean;
 
   // depreciated keys
   animatedbk: boolean;

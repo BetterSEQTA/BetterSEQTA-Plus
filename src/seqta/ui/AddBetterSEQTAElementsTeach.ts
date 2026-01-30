@@ -15,6 +15,7 @@ import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
 import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { ChangeSpineItemPositions } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
+import { initializeSIPEnhancements } from "@/seqta/utils/SIPEnhancements";
 
 // Track if we've set up the observer to prevent multiple observers
 let spineObserverSetup = false;
@@ -386,6 +387,13 @@ async function initializeTeachFeatures() {
       console.error("[BetterSEQTA+] Error applying spine order:", error);
     }
   }
+  // Initialize SIP enhancements
+  try {
+    await initializeSIPEnhancements();
+  } catch (error) {
+    console.error("[BetterSEQTA+] Error initializing SIP enhancements:", error);
+  }
+  
   // Add Teach-specific features here
   // For example: Teach-specific shortcuts, Teach-specific UI enhancements, etc.
   console.debug("[BetterSEQTA+] Initializing Teach-specific features");
