@@ -133,12 +133,12 @@ function getSpineItemKey(item: HTMLElement): string {
   const href = item.getAttribute("href");
   if (href) {
     // Extract meaningful part from href (e.g., "/ta/assessments" -> "assessments")
-    const match = href.match(/\/([^\/]+)$/);
+    const match = href.match(/\/([^/]+)$/);
     if (match) {
       return match[1];
     }
     // Fallback to full href
-    return href.replace(/[\/\?=]/g, "_");
+    return href.replace(/[/?=]/g, "_");
   }
   
   // Try text content

@@ -309,7 +309,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case "news":
       await handleNewsPage();
       break;
-    case undefined:
+    case undefined: {
       // Use platform-specific navigation for home page
       // Only redirect if we're on the welcome page (not other pages like /messages, /timetable, etc.)
       const currentPath = window.location.pathname;

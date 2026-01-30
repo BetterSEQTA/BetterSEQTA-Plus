@@ -1,7 +1,6 @@
 import { delay } from "../delay";
 import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
-import { isSEQTATeach } from "../platformDetection";
 import { animate, stagger } from "motion";
 import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
@@ -369,8 +368,6 @@ export function setupRouteListener() {
     console.debug("[BetterSEQTA+] Route check:", currentPath, "isWelcome:", isOnWelcomePage, "isHomeRoute:", isOnHomeRoute);
     
     const homeElement = document.getElementById("betterseqta-teach-home");
-    const homeRoot = document.querySelector(".home-root");
-    const mainContent = homeElement?.parentElement;
     
     // Show BetterSEQTA home if on welcome page OR on betterseqta-home route
     // We keep URL as /welcome to prevent SEQTA from showing "Unknown page"
@@ -482,7 +479,7 @@ export function setupRouteListener() {
   // Also check periodically in case Teach uses other navigation methods
   // Use a longer interval to reduce overhead
   let lastPath = window.location.pathname;
-  const routeCheckInterval = setInterval(() => {
+  setInterval(() => {
     const currentPath = window.location.pathname;
     if (currentPath !== lastPath) {
       lastPath = currentPath;
@@ -722,7 +719,7 @@ async function loadHomePageWidgets() {
   ]);
   
   // Load upcoming assessments to mark widget
-  const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
+  const activeClass = classes.find((c: any) => Object.prototype.hasOwnProperty.call(c, "active"));
   const activeSubjects = activeClass?.subjects || [];
   
   const upcomingItems = document.getElementById("upcoming-items");
@@ -1319,45 +1316,6 @@ async function GetUpcomingAssessmentsToMark() {
   }
 }
 
-async function GetUpcomingAssessments() {
-  try {
-    // Try Teach endpoint first
-    let response = await fetch(
-      `${location.origin}/seqta/ta/assessment/list/upcoming?`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify({}),
-      },
-    );
-    
-    if (!response.ok) {
-      // Fallback: try without /ta/
-      response = await fetch(
-        `${location.origin}/seqta/assessment/list/upcoming?`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-          },
-          body: JSON.stringify({}),
-        },
-      );
-    }
-    
-    if (!response.ok) {
-      return [];
-    }
-    
-    const data = await response.json();
-    return data.payload || [];
-  } catch (error) {
-    console.error("[BetterSEQTA+] Error fetching assessments:", error);
-    return [];
-  }
-}
 
 async function GetActiveClasses() {
   try {
@@ -1624,9 +1582,6 @@ async function CheckCurrentLesson(lesson: any, num: number) {
     from: startTime,
     until: endTime,
     code,
-    description,
-    room,
-    staff,
   } = lesson;
   const currentDate = new Date();
 
@@ -1728,15 +1683,6 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lesson;
 }
 
-function comparedate(obj1: any, obj2: any) {
-  if (obj1.date < obj2.date) {
-    return -1;
-  }
-  if (obj1.date > obj2.date) {
-    return 1;
-  }
-  return 0;
-}
 
 async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   let upcomingitemcontainer = document.querySelector("#upcoming-items");
@@ -1802,16 +1748,13 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   CreateFilters(activeSubjects);
 
-  let type;
-  let class_;
-
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];
     if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
       let dateObj: any = new Object();
       dateObj.div = CreateElement(
-        (type = "div"),
-        (class_ = "upcoming-date-container"),
+        "div",
+        "upcoming-date-container",
       );
       dateObj.assessments = [];
       (upcomingDates[element.due as keyof typeof upcomingDates] as any) =
@@ -2189,14 +2132,14 @@ function setupNotices(labelArray: string[], date: string) {
   return () => dateControl?.removeEventListener("input", debouncedInputChange);
 }
 
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (..._args: any[]) => any>(
   func: T,
   wait: number,
-): (...args: Parameters<T>) => void {
+): (..._args: Parameters<T>) => void {
   let timeout: any;
-  return (...args: Parameters<T>) => {
+  return (..._args: Parameters<T>) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
+    timeout = setTimeout(() => func(..._args), wait);
   };
 }
 
@@ -2278,8 +2221,8 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
 
 function openNoticeModal(
   notice: any,
-  colour: string | undefined,
-  sourceElement: HTMLElement,
+  _colour: string | undefined,
+  _sourceElement: HTMLElement,
 ) {
   // Simplified notice modal - can be expanded later
   const cleanContent = notice.contents
