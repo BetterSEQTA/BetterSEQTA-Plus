@@ -5136,8 +5136,177 @@ h2.home-subtitle {
 // SEQTA Teach main layout improvements
 body[data-seqta-platform="teach"] {
   
+  // Target main section div container (AssessmentManager and other pages)
+  // This ensures styles apply to the direct path: #root > div.Chrome__Chrome___AyWT1 > main > section > div
+  main > section > div {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    
+    // AssessmentManager component - direct targeting
+    [class*="AssessmentManager__AssessmentManager"] {
+      background: transparent !important;
+      color: var(--text-primary) !important;
+    }
+    
+    // SidebarPage component - direct targeting  
+    [class*="SidebarPage__SidebarPage"] {
+      background: transparent !important;
+      color: var(--text-primary) !important;
+      
+      // Sidebar content
+      [class*="SidebarPage__sidebar"] {
+        background: var(--background-secondary) !important;
+        color: var(--text-primary) !important;
+        
+        // Apply blur only when transparency effects are enabled
+        html.transparencyEffects & {
+          backdrop-filter: blur(10px) !important;
+        }
+      }
+      
+      // Main content area
+      [class*="SidebarPage__main"] {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+        padding: 24px !important;
+        
+        // Direct child div (AssessmentManager container) - specific path targeting
+        > div {
+          background: transparent !important;
+          color: var(--text-primary) !important;
+          width: 100% !important;
+          
+          // AssessmentManager container
+          [class*="AssessmentManager__container"] {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            width: 100% !important;
+            
+            // Main content wrapper
+            [class*="AssessmentManager__main"] {
+              background: transparent !important;
+              color: var(--text-primary) !important;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 24px !important;
+              width: 100% !important;
+            }
+          }
+          
+          // Also target any direct children that might be AssessmentManager components
+          &[class*="AssessmentManager__container"],
+          &[class*="AssessmentManager__main"] {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+          }
+        }
+      }
+    }
+    
+    // Additional specific targeting for the exact path structure
+    // Targets: main > section > div > div.SidebarPage__SidebarPage > div.SidebarPage__main > div
+    [class*="SidebarPage__SidebarPage"][class*="SidebarPage__sidebar-left"] {
+      [class*="SidebarPage__main"] {
+        > div {
+          background: transparent !important;
+          color: var(--text-primary) !important;
+          width: 100% !important;
+          
+          // Ensure all nested AssessmentManager components are styled
+          [class*="AssessmentManager__container"],
+          [class*="AssessmentManager__main"] {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            width: 100% !important;
+          }
+          
+          // Ensure BasicPanel components get styled
+          [class*="BasicPanel__BasicPanel"] {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            border-radius: 12px !important;
+            padding: 24px !important;
+            color: var(--text-primary) !important;
+            box-shadow: var(--shadow-sm) !important;
+            transition: all 0.2s ease !important;
+            
+            // Apply blur only when transparency effects are enabled
+            html.transparencyEffects & {
+              backdrop-filter: blur(10px) !important;
+            }
+            
+            &:hover {
+              box-shadow: var(--shadow-md) !important;
+            }
+            
+            // Headers
+            header {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              margin-bottom: 20px !important;
+              padding-bottom: 12px !important;
+              border-bottom: 1px solid var(--border-secondary) !important;
+              
+              h2 {
+                color: var(--text-primary) !important;
+                font-family: Rubik, sans-serif !important;
+                font-size: 18px !important;
+                font-weight: 600 !important;
+                margin: 0 !important;
+              }
+            }
+          }
+        }
+      }
+    }
+    }
+    
+    // Toolbar - can appear directly in AssessmentManager
+    [class*="Toolbar__Toolbar"] {
+      background: var(--theme-offset-bg) !important;
+      border-bottom: 1px solid var(--border-secondary) !important;
+      padding: 12px 16px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      color: var(--text-primary) !important;
+      
+      // Apply blur only when transparency effects are enabled
+      html.transparencyEffects & {
+        backdrop-filter: blur(10px) !important;
+      }
+      
+      button {
+        background: var(--button-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        border-radius: 6px !important;
+        color: var(--text-primary) !important;
+        padding: 8px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        
+        &:hover:not(:disabled) {
+          background: var(--button-hover) !important;
+          border-color: var(--accent-bg) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+    }
+  }
+  
   // Remove all backdrop-filter blur effects when transparency effects are disabled
-  html:not(.transparencyEffects) & {
+  html:not(.transparencyEffects) {
     * {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -5145,7 +5314,7 @@ body[data-seqta-platform="teach"] {
   }
   
   // Make semi-transparent backgrounds fully solid when transparency effects are disabled
-  html:not(.transparencyEffects) & {
+  html:not(.transparencyEffects) {
     [style*="backdrop-filter"],
     [style*="backdropFilter"] {
       backdrop-filter: none !important;
@@ -9146,32 +9315,40 @@ body[data-seqta-platform="teach"] {
     }
     
     // Assessment Manager (Overview of assessments page)
+    // Target via main > section > div path for better specificity
+    main > section > div [class*="AssessmentManager__AssessmentManager"],
     .AssessmentManager__AssessmentManager___F_zDS {
       background: transparent !important;
-      color: white !important;
+      color: var(--text-primary) !important;
       
       // Toolbar
       .Toolbar__Toolbar___ecArT {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--theme-offset-bg) !important;
+        border-bottom: 1px solid var(--border-secondary) !important;
         padding: 12px 16px !important;
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        color: white !important;
+        color: var(--text-primary) !important;
+        
+        // Apply blur only when transparency effects are enabled
+        html.transparencyEffects & {
+          backdrop-filter: blur(10px) !important;
+        }
         
         button {
-          background: rgba(255, 255, 255, 0.1) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-primary) !important;
           border-radius: 6px !important;
-          color: white !important;
+          color: var(--text-primary) !important;
           padding: 8px 16px !important;
           font-family: Rubik, sans-serif !important;
           font-weight: 500 !important;
           transition: all 0.2s ease !important;
           
           &:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.2) !important;
+            background: var(--button-hover) !important;
+            border-color: var(--accent-bg) !important;
             transform: translateY(-1px) !important;
           }
           
@@ -9187,6 +9364,8 @@ body[data-seqta-platform="teach"] {
       }
       
       // SidebarPage layout
+      // Target via main > section > div path for better specificity
+      main > section > div [class*="SidebarPage__SidebarPage"],
       .SidebarPage__SidebarPage___HEWl3 {
         background: transparent !important;
         color: var(--text-primary) !important;
@@ -9199,6 +9378,11 @@ body[data-seqta-platform="teach"] {
             border-right: 1px solid var(--border-secondary) !important;
             color: var(--text-primary) !important;
             padding: 0 !important;
+            
+            // Apply blur only when transparency effects are enabled
+            html.transparencyEffects & {
+              backdrop-filter: blur(10px) !important;
+            }
             
             // Ensure all child divs inherit dark backgrounds
             > div {
@@ -9496,13 +9680,18 @@ body[data-seqta-platform="teach"] {
       
       // BasicPanel styling (used throughout AssessmentManager)
       [class*="BasicPanel__BasicPanel"] {
-        background: var(--background-primary) !important;
-        border: 1px solid var(--border-secondary) !important;
+        background: var(--card-bg) !important;
+        border: 1px solid var(--card-border) !important;
         border-radius: 12px !important;
         padding: 24px !important;
         color: var(--text-primary) !important;
         box-shadow: var(--shadow-sm) !important;
         transition: all 0.2s ease !important;
+        
+        // Apply blur only when transparency effects are enabled
+        html.transparencyEffects & {
+          backdrop-filter: blur(10px) !important;
+        }
         
         &:hover {
           box-shadow: var(--shadow-md) !important;
@@ -10125,6 +10314,120 @@ body[data-seqta-platform="teach"] {
         border-bottom: 1px solid var(--border-secondary) !important;
         padding-bottom: 20px !important;
         margin-bottom: 20px !important;
+      }
+      
+      // ResourceList styling
+      [class*="ResourceList__ResourceList"] {
+        background: transparent !important;
+        
+        [class*="ResourceList__ResourceItem"] {
+          background: var(--button-bg) !important;
+          border: 1px solid var(--border-secondary) !important;
+          border-radius: 8px !important;
+          padding: 12px 16px !important;
+          margin-bottom: 8px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          transition: all 0.2s ease !important;
+          
+          &:hover {
+            background: var(--button-hover) !important;
+            border-color: var(--border-primary) !important;
+          }
+          
+          [class*="ResourceList__name"] {
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+          }
+          
+          button.remove {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-muted) !important;
+            padding: 4px !important;
+            transition: all 0.2s ease !important;
+            
+            &:hover {
+              color: #ef4444 !important;
+              transform: scale(1.1) !important;
+            }
+            
+            svg {
+              fill: currentColor !important;
+            }
+          }
+        }
+      }
+      
+      // Reflection component styling
+      [class*="Reflection__Reflection"] {
+        background: transparent !important;
+        
+        [class*="Reflection__headerRow"] {
+          background: var(--background-secondary) !important;
+          padding: 12px 16px !important;
+          border-radius: 8px !important;
+          margin-bottom: 12px !important;
+          border-bottom: 1px solid var(--border-secondary) !important;
+          
+          label {
+            color: var(--text-primary) !important;
+            font-family: Rubik, sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+          }
+        }
+        
+        [class*="Reflection__noBorder"] {
+          border-bottom: none !important;
+        }
+      }
+      
+      // ChecklistItems styling
+      [class*="ChecklistItems__ChecklistItems"] {
+        background: transparent !important;
+        
+        [class*="AssessmentManager__item"] {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+      }
+      
+      // SubmissionSettings styling
+      [class*="SubmissionSettings__lateSubmissionDaysInputWrapper"] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      
+      // Availability component styling
+      [class*="Availability__Availability"] {
+        background: transparent !important;
+        
+        [class*="Availability__metaclass"] {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 12px !important;
+          padding: 16px !important;
+          background: var(--background-secondary) !important;
+          border-radius: 8px !important;
+          margin-bottom: 12px !important;
+        }
+        
+        [class*="Availability__label"] {
+          color: var(--text-primary) !important;
+          font-family: Rubik, sans-serif !important;
+          font-weight: 500 !important;
+        }
+        
+        [class*="Availability__currentClass"] {
+          color: var(--accent-bg) !important;
+        }
       }
     }
     
@@ -16650,7 +16953,6 @@ body[data-seqta-platform="teach"] {
       }
     }
   }
-}
 
 // Global rule: Remove all backdrop-filter blur effects and make backgrounds fully solid when transparency effects are disabled
 // This catches any backdrop-filter blur effects set via JavaScript or inline styles
