@@ -39,7 +39,6 @@ html {
   font-family: Rubik, sans-serif !important;
 }
 
-/* Ensure native select dropdowns are readable on Windows */
 select option {
   background-color: #ffffff !important;
   color: #111827 !important;
@@ -49,7 +48,6 @@ select option {
   color: #ffffff !important;
 }
 
-/* Consistent rounded corners for selects */
 select {
   border-radius: 8px !important;
 }
@@ -158,8 +156,7 @@ select {
 #main {
   color: var(--text-primary);
   position: relative;
-}
-#main {
+
   > .timetablepage {
     > .quickbar {
       .gutter {
@@ -276,10 +273,8 @@ select {
   grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
   background: unset;
 
-  // TODO: Make this only opacity 0 when the animation will be played to stop a flash of the original
   > section {
     border-radius: 16px !important;
-    //opacity: 0;
 
     button {
       border-radius: 16px;
@@ -319,7 +314,6 @@ select {
   > .dashlet {
     background: var(--background-primary);
     border-radius: 16px;
-    //opacity: 0;
 
     &[data-ident="timetable"] {
       grid-row: span 2 / auto !important;
@@ -335,9 +329,6 @@ select {
       }
     }
   }
-}
-.dashlet-summary-homework > .summary > .subject > .item {
-  color: var(--text-primary) !important;
 }
 .dashlet-summary-homework > .summary > .subject > .item {
   color: var(--text-primary) !important;
@@ -406,7 +397,6 @@ ul.magicDelete > li.deleting {
   white-space: nowrap;
 }
 
-/* Allow long course/assessment names in the sidebar to wrap and break safely */
 #menu li > label,
 #menu section > label {
   white-space: normal;
@@ -434,6 +424,11 @@ ul.magicDelete > li.deleting {
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+  border-bottom: none;
+  height: 540px;
+  display: flex;
+  flex-direction: column;
+
   &::-webkit-scrollbar {
     display: none !important;
   }
@@ -495,7 +490,6 @@ ul.magicDelete > li.deleting {
 html {
   background: var(--better-main) !important;
 }
-/* Messages */
 .menuShown .content .anyoneSelect .listWrapper .list:has(.item) {
   width: 100% !important;
 }
@@ -514,7 +508,6 @@ ol:has([class*="MessageList__avatar___"] svg) {
   transition-duration: 150ms !important;
   transition-delay: 0ms !important;
 }
-/* Direct Message Menu */
 .wrapper .cke_contents iframe {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -523,7 +516,6 @@ ol:has([class*="MessageList__avatar___"] svg) {
 }
 .wrapper .cke_contents::-webkit-scrollbar-thumb {
   background-color: #969696 !important;
-  /* color of the scroll thumb */
 }
 .content .footer {
   margin-top: 5px;
@@ -728,13 +720,7 @@ td.colourBar {
 #container #content .uiButton {
   border-radius: 16px;
 }
-.dark {
-  #toolbar button.toggled,
-  #toolbar button.depressed {
-    background: #333333;
-    color: white;
-  }
-}
+
 #toolbar button.toggled,
 #toolbar button.depressed {
   background: #f3f3f3;
@@ -969,6 +955,14 @@ html.transparencyEffects
   color: white !important;
 }
 .notices-container {
+  width: 100%;
+  max-height: 60em;
+  background: var(--better-main);
+  display: flex;
+  flex-direction: column;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
   input {
     border: none;
     color: var(--text-color) !important;
@@ -984,6 +978,7 @@ html.transparencyEffects
     }
   }
 }
+
 #main > .notices > .notice > .label,
 #main > .notices > .notice > .staff,
 #main > .notices > .notice > h2 {
@@ -1196,15 +1191,6 @@ html.transparencyEffects
     }
   }
 }
-.notices-container {
-  width: 100%;
-  max-height: 60em;
-  background: var(--better-main);
-  display: flex;
-  flex-direction: column;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
 .notice-container {
   background: var(--better-main);
   width: 100%;
@@ -1353,10 +1339,6 @@ html.transparencyEffects
 .clickable {
   cursor: pointer;
 }
-.day:hover {
-  background: var(--background);
-  transition: 200ms;
-}
 
 .day h2 {
   margin: 0;
@@ -1365,7 +1347,6 @@ html.transparencyEffects
   font-size: 20px !important;
   font-weight: 500;
   min-height: 46px;
-  /* Let the title expand naturally but clamp to 2 lines to avoid overlap */
   height: auto;
   line-height: 1.2;
   display: -webkit-box;
@@ -1407,9 +1388,6 @@ html.transparencyEffects
 .waitWindow {
   background: var(--better-main);
 }
-.modaliser {
-  background: var(--better-main);
-}
 .alert-container {
   height: 35em;
   width: 22em;
@@ -1442,8 +1420,6 @@ html.transparencyEffects
   background: white;
   z-index: 21 !important;
   color: var(--better-sub);
-}
-[class*="notifications__notifications___"] > button {
   padding: 8px;
 }
 .legacy-root button > svg,
@@ -1463,10 +1439,6 @@ html.transparencyEffects
 }
 .legacy-root button::after {
   background: black !important;
-}
-
-.legacy-root button::after {
-  background: var(--better-main);
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);
@@ -1513,12 +1485,6 @@ html.transparencyEffects
     border: 1px solid white;
   }
 }
-[class*="notifications__items___"] {
-  border-bottom: none;
-  height: 540px;
-  display: flex;
-  flex-direction: column;
-}
 [class*="notifications__details___"] {
   max-width: 80%;
   overflow: clip;
@@ -1550,7 +1516,6 @@ html.transparencyEffects
   display: none !important;
 }
 [class*="MessageList__MessageList___"] ol [class*="Button__Button___"]::before {
-  // plus icon
   content: "";
   font-size: 12px;
   margin-right: 4px;
@@ -1672,8 +1637,7 @@ iframe.userHTML {
 }
 [class*="Thermoscore__Thermoscore___"] {
   background-image: unset;
-  background: var(--auto-background);
-  border-radius: 8px;
+  background-color: var(--auto-background);
 }
 .dark [class*="Thermoscore__Thermoscore___"] {
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -1711,6 +1675,9 @@ iframe.userHTML {
   box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.05);
   overflow-y: scroll;
   height: 100%;
+  width: 400px;
+  background: var(--background-primary);
+  position: relative;
 
   .navigator {
     padding: 6px !important;
@@ -1838,7 +1805,6 @@ iframe.userHTML {
   color: var(--text-primary);
 }
 
-/* set button(top and bottom of the scrollbar) */
 body::-webkit-scrollbar-button {
   display: none !important;
 }
@@ -1852,30 +1818,6 @@ ul {
   scrollbar-color: #babac0 #fff !important;
 }
 
-.dark {
-  body,
-  div,
-  ol,
-  ul {
-    scrollbar-width: thin;
-    scrollbar-color: #333 #111 !important;
-  }
-}
-
-.connectedNotificationsWrapper > div > button {
-  color: var(--text-primary) !important;
-  height: 45px;
-  width: 45px;
-}
-
-.programmeNavigator {
-  width: 400px;
-  background: var(--background-primary);
-  position: relative;
-}
-#userActions > .details > .code {
-  text-transform: initial;
-}
 div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
   padding: 4px;
 }
@@ -2011,14 +1953,13 @@ div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
 }
 div.entry.class {
   border-radius: 4px;
-}
-
-div.entry.class {
   width: 100% !important;
 }
+
 div.entry.class[style*="left: 46.5%"] {
   left: 50% !important;
 }
+
 div.entry.class[style*="width: 46.5%"] {
   width: 50% !important;
 }
@@ -2097,6 +2038,22 @@ a.uiFile:not(.rows) {
     background: transparent !important;
     font-size: 12px !important;
     flex: 1;
+  }
+}
+
+.dark {
+  body,
+  div,
+  ol,
+  ul {
+    scrollbar-width: thin;
+    scrollbar-color: #333 #111 !important;
+  }
+
+  #toolbar button.toggled,
+  #toolbar button.depressed {
+    background: #333333;
+    color: white;
   }
 }
 
@@ -2294,8 +2251,8 @@ div.bar.flat {
 .cke_toolbox {
   padding: 0 !important;
   padding-left: 8px !important;
-  background: unset !important;
   gap: 0 8px;
+  background: var(--better-main);
 }
 .cke_toolbar:has(.cke_toolgroup) {
   .cke_combo {
@@ -2368,7 +2325,6 @@ ul.buttonChecklist,
 ul.buttonMenu,
 ul.colourButtonOptions,
 ul.uiSplitButtonList,
-ul.buttonMenu,
 .contactFormPanel {
   background: var(--background-primary) !important;
   border: solid 4px var(--background-primary);
@@ -2440,14 +2396,9 @@ body {
 .days {
   width: 100%;
 }
-.hidden {
-  display: none;
-}
-.cke_toolbox {
-  background: var(--better-main);
-}
 .modaliser {
   display: none;
+  background: var(--better-main);
 }
 
 [class*="MessageList__unread___"] {
@@ -2706,16 +2657,16 @@ body {
 }
 .big-circle {
   margin: -88px;
-  animation-timing-function: ease;
-  animation: spin 3s linear infinite;
-  -moz-animation: spin 3s linear infinite;
+  animation: spin 3s ease infinite;
+  -moz-animation: spin 3s ease infinite;
 }
+
 .small-circle {
   margin: -66px;
-  animation-timing-function: ease;
-  animation: spin 3s linear infinite;
-  -moz-animation: spin 3s linear infinite;
+  animation: spin 3s ease infinite;
+  -moz-animation: spin 3s ease infinite;
 }
+
 .dark [class*="LabelList__name___"] {
   text-shadow: 0 0 5px black;
 }
@@ -2757,9 +2708,8 @@ body {
 }
 .outer-circle {
   margin: -108px;
-  animation-direction: alternate-reverse;
-  animation: spinback 1s linear infinite;
-  -moz-animation: spinback 1s linear infinite;
+  animation: spinback 1s linear infinite alternate-reverse;
+  -moz-animation: spinback 1s linear infinite alternate-reverse;
 }
 @-moz-keyframes spin {
   100% {
@@ -2790,6 +2740,7 @@ body {
   bottom: 20px;
 }
 #userActions > .details > .code {
+  text-transform: initial;
   overflow: visible !important;
 }
 .code {
@@ -2901,38 +2852,21 @@ div.day-empty {
   border-radius: 5px 0px 0px 5px;
   background: var(--item-colour);
 }
-.upcoming-assessment-title {
-  color: var(--text-primary);
-  font-size: 10px;
-}
 .upcoming-assessment {
   border: 2px solid var(--item-colour);
   margin: 5px 50px;
   height: 6em;
   padding: 0px;
   border-radius: 10px;
-}
-.upcoming-assessment {
   display: flex;
-}
-.upcoming-date-container {
-  margin-bottom: 20px;
 }
 .upcoming-date-title {
   padding: 12px;
   font-size: 20px;
 }
-.upcoming-details h5 {
-  text-transform: uppercase;
-  color: #aaaaaa;
-  padding: 0px 4px;
-}
 .upcoming-details p:hover {
   cursor: pointer;
   text-decoration: underline;
-}
-.upcoming-special-day {
-  font-size: 20px;
 }
 .upcoming-blank {
   display: flex;
@@ -2941,16 +2875,8 @@ div.day-empty {
   height: 2em;
   padding: 0px;
 }
-.upcoming-blank p {
-  padding: 0;
-  margin: 0;
-}
 .upcoming-tick {
   align-self: center;
-}
-.upcoming-title {
-  display: flex;
-  align-content: space-between;
 }
 .upcoming-title h2 {
   width: 100%;
@@ -2981,60 +2907,11 @@ div.day-empty {
   align-items: center;
   display: flex;
 }
-/* Hide the browser's default checkbox */
-.upcoming-checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-  padding: 0;
-}
-/* Create a custom checkbox */
-.upcoming-checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 15px;
-  width: 15px;
-  border: 3px solid var(--item-colour);
-  border-radius: 5px;
-  color: var(--text-color);
-}
 
-.upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
-  filter: brightness(0.8);
-}
-
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
-  background: var(--item-colour);
-}
-
-.upcoming-checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-
-/* Show the checkmark when checked */
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
-  display: block;
-}
-/* Style the checkmark/indicator */
-.upcoming-checkbox-container .upcoming-checkmark:after {
-  left: 3.5px;
-  top: 0px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 3px 3px 0;
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
 .upcoming-hiddenassessment {
   color: #797979;
 }
+
 .calendarEventEditor > .tabset > .item {
   border-radius: 0 !important;
 }
@@ -3092,9 +2969,6 @@ div.day-empty {
     inset 0px 6px 0 var(--item-colour, transparent),
     inset 0px 40px 50px -40px rgba(0, 0, 0, 0.9);
 }
-.clickable {
-  cursor: pointer;
-}
 .day:hover {
   background: var(--background-secondary);
   transition: 200ms;
@@ -3124,16 +2998,6 @@ div.day-empty {
   transition: 200ms;
   font-size: 10px;
   margin: 0;
-}
-.upcoming-assessment {
-  border: 3px solid var(--item-colour);
-  margin: 5px 50px;
-  height: 6em;
-  padding: 0px;
-  border-radius: 10px;
-}
-.upcoming-assessment {
-  display: flex;
 }
 .upcoming-date-container {
   margin-bottom: 20px;
@@ -3177,33 +3041,6 @@ div.day-empty {
   display: flex;
   align-content: space-between;
 }
-.upcoming-filters {
-  display: flex;
-  height: 26px;
-  width: 65%;
-  align-self: center;
-  align-items: center;
-  color: var(--text-color);
-  padding: 5px;
-  overflow-x: scroll;
-  overflow-y: hidden;
-}
-.upcoming-checkbox-container {
-  position: relative;
-  padding: none !important;
-  padding-left: 25px !important;
-  padding-right: 10px !important;
-  cursor: pointer;
-  font-size: 12px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  height: 20px;
-  align-items: center;
-  display: flex;
-}
-/* Hide the browser's default checkbox */
 .upcoming-checkbox-container input {
   position: absolute;
   opacity: 0;
@@ -3212,7 +3049,6 @@ div.day-empty {
   width: 0;
   padding: 0;
 }
-/* Create a custom checkbox */
 .upcoming-checkmark {
   position: absolute;
   top: 0;
@@ -3223,25 +3059,20 @@ div.day-empty {
   border-radius: 5px;
   color: var(--text-color);
 }
-/* On mouse-over, add a grey background color */
 .upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
   filter: brightness(0.8);
 }
-/* When the checkbox is checked, add a blue background */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
   background: var(--item-colour);
 }
-/* Create the checkmark/indicator (hidden when not checked) */
 .upcoming-checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
-/* Show the checkmark when checked */
 .upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
   display: block;
 }
-/* Style the checkmark/indicator */
 .upcoming-checkbox-container .upcoming-checkmark:after {
   left: 3.5px;
   top: 0px;
@@ -3252,9 +3083,6 @@ div.day-empty {
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
-}
-.upcoming-hiddenassessment {
-  color: #797979;
 }
 .titlebar {
   align-items: center;
@@ -3549,7 +3377,6 @@ div.day-empty {
   overflow: visible;
 }
 
-// Auto collapsing alignment toolbar
 .cke_toolbar:has(.cke_button__seqta-align-left) {
   overflow: visible !important;
 
@@ -3590,13 +3417,11 @@ div.day-empty {
         }
       }
 
-      // Button icons
       .cke_button_icon {
         margin: 0 !important;
       }
     }
 
-    // menu background
     &:before {
       content: "";
       position: absolute;
@@ -3614,7 +3439,6 @@ div.day-empty {
       transition: all 0.2s ease-out;
     }
 
-    // Dropdown behavior on hover
     &:hover {
       &:hover:before {
         transform: scale(1);
@@ -3625,7 +3449,6 @@ div.day-empty {
         visibility: visible;
         transition-delay: 0s;
 
-        // Stack buttons in dropdown with spacing
         &:first-child {
           transform: translateY(0);
           border-top-left-radius: 12px !important;
@@ -3653,7 +3476,6 @@ div.day-empty {
       }
     }
 
-    // Add subtle animation when closing dropdown
     &:not(:hover)
       .cke_button:not(.cke_button_on):not(
         .cke_button__seqta-align-left:first-child
@@ -3677,15 +3499,10 @@ div.day-empty {
   scrollbar-width: none !important;
 }
 
-.notice-modal-content {
-  border: none !important;
-}
-
 .notice-unified-content.notice-modal-state {
   border: none !important;
 }
 
-// Notice card hover effects for main page cards
 .notice-unified-content.notice-card-state:not([data-transitioning]) {
   cursor: pointer;
 
@@ -3726,7 +3543,6 @@ div.day-empty {
   text-overflow: ellipsis;
 }
 
-// Modal styles
 .notice-modal-overlay {
   position: fixed;
   top: 0;
@@ -3745,7 +3561,7 @@ div.day-empty {
 .notice-modal-transition {
   position: fixed;
   z-index: 10001;
-  transition: none; // Controlled by motion animations
+  transition: none;
 }
 
 .notice-modal-content {
@@ -3779,13 +3595,7 @@ div.day-empty {
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
-.dark .notice-unified-content {
-  color: white;
-}
-
-.notice-unified-content {
   h1,
   h2,
   h3,
@@ -3809,7 +3619,7 @@ div.day-empty {
   }
 
   .notice-content-title {
-    font-size: 20px !important; // Nice middle ground - not too big, not too small
+    font-size: 20px !important;
     font-weight: 600 !important;
     color: var(--text-primary) !important;
     margin: 0 0 12px !important;
@@ -3824,17 +3634,14 @@ div.day-empty {
     margin: 0 !important;
     flex: 1;
     display: block;
-    // Force stable layout dimensions - content renders at full size always
-    min-width: 600px; // Ensure tables have consistent width for layout
+    min-width: 600px;
     width: 100%;
   }
 
-  // The ONLY difference between states is clipping!
   &.notice-card-state {
     .notice-content-body {
-      // Clip to show only 2 lines but keep full layout
       overflow: hidden;
-      max-height: 3em; // ~2 lines worth of height
+      max-height: 3em;
     }
   }
 
@@ -3844,10 +3651,8 @@ div.day-empty {
     }
 
     .notice-content-body {
-      // Show full content with scrolling
-      overflow-y: auto;
+      overflow-y: hidden;
 
-      // Custom scrollbar for long content
       &::-webkit-scrollbar {
         width: 6px;
       }
@@ -3865,7 +3670,6 @@ div.day-empty {
         background: rgba(255, 255, 255, 0.3);
       }
 
-      // Style content elements nicely
       p {
         margin-bottom: 12px;
 
@@ -3894,6 +3698,10 @@ div.day-empty {
       }
     }
   }
+}
+
+.dark .notice-unified-content {
+  color: white;
 }
 
 .notice-header {
@@ -3994,7 +3802,6 @@ button.notice-close-btn {
   flex: 1;
   overflow-y: auto;
 
-  // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -4012,7 +3819,6 @@ button.notice-close-btn {
     background: rgba(255, 255, 255, 0.3);
   }
 
-  // Style content elements
   p {
     margin-bottom: 12px;
 
@@ -4041,7 +3847,6 @@ button.notice-close-btn {
   }
 }
 
-// Dark mode adjustments
 .dark {
   .notice-card {
     border-color: rgba(255, 255, 255, 0.05);
@@ -4056,7 +3861,6 @@ button.notice-close-btn {
   }
 }
 
-// Mobile responsiveness
 @media (max-width: 768px) {
   .notice-modal-overlay {
     padding: 10px;

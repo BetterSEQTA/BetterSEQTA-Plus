@@ -1,12 +1,12 @@
 import type {
   BooleanSetting,
   ButtonSetting,
+  ComponentSetting,
+  HotkeySetting,
   NumberSetting,
+  PluginSettings,
   SelectSetting,
   StringSetting,
-  HotkeySetting,
-  PluginSettings,
-  ComponentSetting,
 } from "./types";
 
 /**

@@ -4,8 +4,8 @@ import {
   booleanSetting,
   buttonSetting,
   defineSettings,
-  Setting,
   hotkeySetting,
+  Setting,
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";

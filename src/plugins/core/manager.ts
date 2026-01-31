@@ -1,13 +1,13 @@
 import type {
   BooleanSetting,
+  ButtonSetting,
+  ComponentSetting,
+  HotkeySetting,
   NumberSetting,
   Plugin,
   PluginSettings,
   SelectSetting,
   StringSetting,
-  ButtonSetting,
-  HotkeySetting,
-  ComponentSetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
