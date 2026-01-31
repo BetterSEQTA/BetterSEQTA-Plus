@@ -1,5 +1,6 @@
 import { refreshVectorCache } from "../../search/vector/vectorSearch";
 import type { IndexItem } from "../types";
+import { isVectorSearchSupported } from "../../utils/browserDetection";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 
 export type ProgressCallback = (data: {
@@ -42,6 +43,13 @@ export class VectorWorkerManager {
   }
 
   private async initWorker(): Promise<void> {
+    // Skip initialization if vector search is not supported (e.g., Firefox)
+    if (!isVectorSearchSupported()) {
+      console.debug("[VectorWorkerManager] Vector search not supported - skipping worker initialization");
+      this.isInitialized = false;
+      return Promise.resolve();
+    }
+
     if (this.isInitialized) return Promise.resolve();
     if (this.readyPromise) return this.readyPromise;
 
@@ -234,6 +242,17 @@ export class VectorWorkerManager {
   }
 
   async processItems(items: IndexItem[], onProgress?: ProgressCallback) {
+    // Skip if vector search is not supported
+    if (!isVectorSearchSupported()) {
+      if (onProgress) {
+        onProgress({
+          status: "complete",
+          message: "Vector search not available - using text search only"
+        });
+      }
+      return;
+    }
+
     // Only initialize worker if we actually have items to process
     if (items.length === 0) {
       if (onProgress) {
@@ -298,6 +317,18 @@ export class VectorWorkerManager {
     batchSize: number = 10,
     jobId?: string,
   ): Promise<void> {
+    // Skip if vector search is not supported
+    if (!isVectorSearchSupported()) {
+      console.debug("[VectorWorker] Vector search not supported - skipping streaming session");
+      if (onProgress) {
+        onProgress({
+          status: "complete",
+          message: "Vector search not available - using text search only",
+        });
+      }
+      return;
+    }
+
     // Only initialize if we expect items to process
     if (totalExpectedItems === 0) {
       console.debug("[VectorWorker] No items expected, not starting streaming session");
