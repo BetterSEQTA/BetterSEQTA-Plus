@@ -10,6 +10,35 @@
   z-index: 0 !important;
   overflow: hidden;
   scale: 1.5;
+  transition: opacity 0.3s ease;
+}
+
+/* Transparency effects adjustments */
+html.transparencyEffects .bg {
+  /* Reduce opacity when transparency effects are enabled for better visibility through blurred elements */
+  opacity: 0.3;
+}
+
+html.transparencyEffects.dark .bg {
+  /* Slightly higher opacity in dark mode with transparency effects */
+  opacity: 0.35;
+}
+
+html.transparencyEffects:not(.dark) .bg {
+  /* Lower opacity in light mode with transparency effects */
+  opacity: 0.25;
+}
+
+/* Teach platform specific adjustments */
+body[data-seqta-platform="teach"] .bg {
+  /* Ensure backgrounds work behind Teach's navigation structure */
+  z-index: -1 !important;
+}
+
+/* Teach platform with transparency effects */
+html.transparencyEffects body[data-seqta-platform="teach"] .bg {
+  /* Ensure backgrounds are visible behind Teach's blurred navigation */
+  z-index: -2 !important;
 }
 
 .bg2 {

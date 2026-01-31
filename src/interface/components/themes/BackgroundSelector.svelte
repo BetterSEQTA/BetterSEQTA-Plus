@@ -6,6 +6,8 @@
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import { delay } from 'lodash'
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
+  import { OpenStorePage } from '@/seqta/ui/renderStore'
+  import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
@@ -231,5 +233,19 @@
         {/if}
       {/each}
     </div>
+  {/if}
+
+  {#if !isEditMode && (imageBackgrounds.length > 0 || videoBackgrounds.length > 0)}
+    <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
+  {/if}
+
+  {#if !isEditMode}
+    <button
+      onclick={() => { OpenStorePage('backgrounds'); closeExtensionPopup(); }}
+      class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+    >
+      <span class="text-xl font-IconFamily">&#xecc5;</span>
+      <span class="ml-2">Background Store</span>
+    </button>
   {/if}
 </div>
