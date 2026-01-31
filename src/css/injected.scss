@@ -13951,6 +13951,309 @@ body[data-seqta-platform="teach"] {
     }
   }
 
+  // Pastoral Care Component Styling
+  [class*="Pastoral__container"] {
+    background: transparent !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    color: var(--text-primary) !important;
+    
+    // Apply blur only when transparency effects are enabled
+    html.transparencyEffects & {
+      backdrop-filter: blur(10px) !important;
+    }
+    
+    // Section titles (Date, Details, Aliases)
+    [class*="Pastoral__title"] {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+      padding: 12px 16px !important;
+      border-radius: 6px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      margin-bottom: 12px !important;
+      transition: all 0.2s ease !important;
+      
+      // Clickable titles (like Aliases)
+      &[class*="Pastoral__clickable"] {
+        cursor: pointer !important;
+        
+        &:hover {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+      }
+    }
+    
+    // Category dropdown button
+    [class*="Pastoral__category"] {
+      [class*="Button__Button"][class*="Button__dropdown"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        
+        &:hover {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+        
+        &:active {
+          transform: translateY(0) !important;
+        }
+        
+        &:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+    }
+    
+    // Date picker dropdown button
+    [class*="DatePicker__DatePicker"] {
+      [class*="Button__Button"][class*="DatePicker__button"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        
+        &:hover {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+        
+        &:active {
+          transform: translateY(0) !important;
+        }
+        
+        &:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+    }
+    
+    // Points number input buttons (+/-)
+    [class*="FancyNumberInput__FancyNumberInput"] {
+      [class*="FancyNumberInput__subtract"],
+      [class*="FancyNumberInput__add"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        
+        &:hover:not(:disabled) {
+          background: var(--accent-hover) !important;
+          transform: scale(1.05) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+        
+        &:active:not(:disabled) {
+          transform: scale(0.95) !important;
+        }
+        
+        &:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+      
+      input {
+        background: var(--input-bg) !important;
+        border: 1px solid var(--border-primary) !important;
+        color: var(--text-primary) !important;
+        border-radius: 6px !important;
+        padding: 8px !important;
+        text-align: center !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        
+        &:focus {
+          border-color: var(--accent-bg) !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+          outline: none !important;
+        }
+      }
+    }
+    
+    // Action buttons (Save, Popout editor, Clear)
+    [class*="Pastoral__saveButtons"] {
+      display: flex !important;
+      gap: 12px !important;
+      margin-top: 20px !important;
+      padding-top: 20px !important;
+      border-top: 1px solid var(--border-secondary) !important;
+      
+      [class*="Button__Button"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 10px 20px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        
+        &:hover:not(:disabled) {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+        
+        &:active:not(:disabled) {
+          transform: translateY(0) !important;
+        }
+        
+        &:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        }
+        
+        &:disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+    }
+    
+    // Textarea styling
+    textarea {
+      background: transparent !important;
+      border: 1px solid var(--border-primary) !important;
+      color: var(--text-primary) !important;
+      border-radius: 8px !important;
+      padding: 12px !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+      min-height: 120px !important;
+      resize: vertical !important;
+      transition: all 0.2s ease !important;
+      
+      // Apply backdrop blur when transparency effects are enabled
+      html.transparencyEffects & {
+        backdrop-filter: blur(10px) !important;
+      }
+      
+      &:focus {
+        border-color: var(--accent-bg) !important;
+        box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        outline: none !important;
+      }
+      
+      &::placeholder {
+        color: var(--text-muted) !important;
+      }
+    }
+    
+    // Description text
+    [class*="Pastoral__description"] {
+      color: var(--text-secondary) !important;
+      font-family: Rubik, sans-serif !important;
+      font-size: 13px !important;
+      margin-top: 8px !important;
+      margin-bottom: 16px !important;
+    }
+    
+    // Selector labels
+    [class*="Pastoral__selector"] {
+      span[class*="Pastoral__shortLabel"] {
+        color: var(--text-secondary) !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        margin-right: 8px !important;
+      }
+    }
+    
+    // Other dropdown buttons in the form
+    [class*="FindAsYouType__FindAsYouType"] {
+      [class*="Button__Button"][class*="Button__dropdown"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 10px 16px !important;
+        font-family: Rubik, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        
+        &:hover {
+          background: var(--accent-hover) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: var(--shadow-sm) !important;
+        }
+        
+        &:active {
+          transform: translateY(0) !important;
+        }
+        
+        &:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--accent-ring) !important;
+        }
+        
+        svg {
+          fill: currentColor !important;
+        }
+      }
+    }
+  }
+
   // SEQTA Teach Navigation Styling (3-tier spine system)
   
   // Tier 1: Main Spine (darkest shade) - Apply theme color like Learn menu
