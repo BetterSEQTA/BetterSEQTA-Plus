@@ -30,15 +30,34 @@ async function init() {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
-    const style = document.createElement("style");
-    style.textContent = documentLoadCSS;
-    document.head.appendChild(style);
+    const documentLoadStyle = document.createElement("style");
+    documentLoadStyle.textContent = documentLoadCSS;
+    document.head.appendChild(documentLoadStyle);
 
-    document
-      .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
-      .forEach((link) => {
-        link.href = icon48;
-      });
+    replaceIcons();
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+
+        if (
+          mutation.type === "attributes" &&
+          mutation.target instanceof HTMLLinkElement &&
+          mutation.target.rel.includes("icon") &&
+          mutation.attributeName === "href"
+        ) {
+          replaceIcons();
+          return;
+        }
+      }
+    });
+
+    observer.observe(document.head, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href"],
+    });
+
+
 
     try {
       await initializeSettingsState();
@@ -67,4 +86,14 @@ async function init() {
       console.error(error);
     }
   }
+}
+
+function replaceIcons() {
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+    .forEach((link) => {
+      if (link.href !== icon48) {
+        link.href = icon48;
+      }
+    });
 }
