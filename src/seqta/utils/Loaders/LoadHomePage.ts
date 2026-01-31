@@ -30,20 +30,17 @@ export async function loadHomePage() {
   element?.classList.add("active");
 
   const main = document.getElementById("main");
-  if (!main) {
-    console.error("[BetterSEQTA+] Main element not found.");
-    return;
-  }
-
-  const homeRoot = stringToHTML(`<div id="home-root" class="home-root"></div>`);
+  if (!main) return;
 
   main.innerHTML = "";
-  main.appendChild(homeRoot?.firstChild!);
+  main.appendChild(
+    stringToHTML(`<div id="home-root" class="home-root"></div>`).firstChild!,
+  );
 
   const homeContainer = document.getElementById("home-root");
   if (!homeContainer) return;
 
-  const skeletonStructure = stringToHTML(/* html */`
+  const skeletonStructure = stringToHTML(/* html */ `
       <div class="home-container" id="home-container">
         <div class="border shortcut-container">
           <div class="border shortcuts" id="shortcuts"></div>
@@ -101,25 +98,16 @@ export async function loadHomePage() {
 
   renderShortcuts();
 
-  const date = new Date();
-  const TodayFormatted = formatDate(date);
+  const TodayFormatted = formatDate(new Date());
 
-  const [assessmentsPromise, classesPromise, prefsPromise] = [
+  const [assessments, classes, prefs] = await Promise.all([
     GetUpcomingAssessments(),
-
     GetActiveClasses(),
-
     fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ asArray: true, request: "userPrefs" }),
     }).then((res) => res.json()),
-  ];
-
-  const [assessments, classes, prefs] = await Promise.all([
-    assessmentsPromise,
-    classesPromise,
-    prefsPromise,
   ]);
 
   callHomeTimetable(TodayFormatted, true);
@@ -159,20 +147,20 @@ export async function loadHomePage() {
 }
 
 async function GetUpcomingAssessments() {
-  let func = fetch(
-    `${location.origin}/seqta/student/assessment/list/upcoming?`,
-    {
+  try {
+    return fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ student: 69 }),
-    },
-  );
-
-  return func
-    .then((result) => result.json())
-    .then((response) => response.payload);
+    })
+      .then((result) => result.json())
+      .then((response) => response.payload);
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to get upcoming assessments:", error);
+    return [];
+  }
 }
 
 function setupTimetableListeners() {
@@ -230,15 +218,10 @@ async function GetActiveClasses() {
         body: JSON.stringify({}),
       },
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.payload;
+    return (await response.json()).payload;
   } catch (error) {
-    console.error("Oops! There was a problem fetching active classes:", error);
+    console.error("[BetterSEQTA+] Failed to get active classes:", error);
+    return [];
   }
 }
 
@@ -248,28 +231,25 @@ function setupNotices(labelArray: string[], date: string) {
   ) as HTMLInputElement;
 
   const fetchNotices = async (date: string) => {
-    let data;
+    try {
+      const data = settingsState.mockNotices
+        ? getMockNotices()
+        : await (
+            await fetch(`${location.origin}/seqta/student/load/notices?`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+              body: JSON.stringify({ date }),
+            })
+          ).json();
 
-    if (settingsState.mockNotices) {
-      data = getMockNotices();
-    } else {
-      const response = await fetch(
-        `${location.origin}/seqta/student/load/notices?`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-          body: JSON.stringify({ date }),
-        },
-      );
-      data = await response.json();
+      processNotices(data, labelArray);
+    } catch (error) {
+      console.error("[BetterSEQTA+] Failed to fetch notices:", error);
     }
-
-    processNotices(data, labelArray);
   };
 
   const debouncedInputChange = debounce((e: Event) => {
-    const target = e.target as HTMLInputElement;
-    fetchNotices(target.value);
+    fetchNotices((e.target as HTMLInputElement).value);
   }, 250);
 
   dateControl?.addEventListener("input", debouncedInputChange);
@@ -290,16 +270,8 @@ function debounce<T extends (...args: any[]) => any>(
 }
 
 function comparedate(obj1: any, obj2: any) {
-  if (obj1.date < obj2.date) {
-    return -1;
-  }
-  if (obj1.date > obj2.date) {
-    return 1;
-  }
-  return 0;
+  return obj1.date < obj2.date ? -1 : obj1.date > obj2.date ? 1 : 0;
 }
-
-
 function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");
   if (!NoticeContainer) return;
@@ -343,14 +315,14 @@ function processNoticeColor(colour: string): string | undefined {
 }
 
 function createNoticeElement(notice: any, colour: string | undefined): Node {
-  const textPreview = notice.contents
-    .replace(/<[^>]*>/g, "")
-    .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .substring(0, 150)
-    + (notice.contents.length > 150 ? "..." : "");
-  
+  const textPreview =
+    notice.contents
+      .replace(/<[^>]*>/g, "")
+      .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .substring(0, 150) + (notice.contents.length > 150 ? "..." : "");
+
   const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const htmlContent = `
@@ -369,12 +341,10 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
     </div>`;
 
   const element = stringToHTML(htmlContent).firstChild as HTMLElement;
-  if (element) {
-    element.addEventListener("click", () =>
-      openNoticeModal(notice, colour, element),
-    );
-  }
-  return element!;
+  element.addEventListener("click", () =>
+    openNoticeModal(notice, colour, element),
+  );
+  return element;
 }
 
 function openNoticeModal(
@@ -386,15 +356,11 @@ function openNoticeModal(
     .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
     .replace(/ +/, " ");
 
-  const existingModal = document.getElementById("notice-modal");
-  if (existingModal) {
-    existingModal.remove();
-  }
+  document.getElementById("notice-modal")?.remove();
 
   const sourceRect = sourceElement.getBoundingClientRect();
   let scrollY = Math.round(window.scrollY);
   let scrollX = Math.round(window.scrollX);
-
   let sourceLeft = sourceRect.left;
   let sourceTop = sourceRect.top;
   let sourceWidth = sourceRect.width;
@@ -476,7 +442,6 @@ function openNoticeModal(
   let targetHeight = Math.round(
     Math.min(Math.max(measuredHeight, 200), viewportHeight * 0.85),
   );
-
   let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
   let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
 
@@ -585,13 +550,10 @@ function openNoticeModal(
     const newTargetWidth = Math.round(
       Math.min(Math.max(newSourceWidth, 800), newViewportWidth - 40),
     );
-
-    // Just measure the existing modal content
     const currentHeight = unifiedContent.getBoundingClientRect().height;
     const newTargetHeight = Math.round(
       Math.min(Math.max(currentHeight, 200), newViewportHeight * 0.85),
     );
-
     const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
     const newTargetTop =
       Math.round((newViewportHeight - newTargetHeight) / 2) + newScrollY;
@@ -656,116 +618,92 @@ function callHomeTimetable(date: string, change?: any) {
   xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
 
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-        loadingTimeout = null;
-      }
+    if (xhr.readyState !== 4) return;
 
-      const DayContainer = document.getElementById("day-container")!;
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      loadingTimeout = null;
+    }
 
-      try {
-        var serverResponse = JSON.parse(xhr.response);
-        let lessonArray: Array<any> = [];
+    const DayContainer = document.getElementById("day-container")!;
 
-        if (serverResponse.payload.items.length > 0) {
-          if (DayContainer.innerText || change) {
-            for (let i = 0; i < serverResponse.payload.items.length; i++) {
-              lessonArray.push(serverResponse.payload.items[i]);
+    var serverResponse = JSON.parse(xhr.response);
+    let lessonArray: Array<any> = [];
+
+    if (serverResponse.payload.items.length > 0) {
+      if (DayContainer.innerText || change) {
+        for (let i = 0; i < serverResponse.payload.items.length; i++) {
+          lessonArray.push(serverResponse.payload.items[i]);
+        }
+        lessonArray.sort(function (a, b) {
+          return a.from.localeCompare(b.from);
+        });
+
+        GetLessonColours().then((colours) => {
+          for (let i = 0; i < lessonArray.length; i++) {
+            let subjectname =
+              lessonArray[i].type == "tutorial"
+                ? `timetable.tutor.${lessonArray[i].tutorID}`
+                : `timetable.subject.colour.${lessonArray[i].code}`;
+            let subject = colours.find(
+              (element: any) => element.name === subjectname,
+            );
+
+            if (!subject) {
+              lessonArray[i].colour = "--item-colour: #8e8e8e;";
+            } else {
+              lessonArray[i].colour = `--item-colour: ${subject.value};`;
+              if (GetThresholdOfColor(subject.value) > 300) {
+                lessonArray[i].invert = true;
+              }
             }
-            lessonArray.sort(function (a, b) {
-              return a.from.localeCompare(b.from);
-            });
 
-            GetLessonColours().then((colours) => {
-              let subjects = colours;
-              for (let i = 0; i < lessonArray.length; i++) {
-                
-                let subjectname = ((lessonArray[i].type == "tutorial") ? `timetable.tutor.${lessonArray[i].tutorID}` : `timetable.subject.colour.${lessonArray[i].code}`);
+            lessonArray[i].from = lessonArray[i].from.substring(0, 5);
+            lessonArray[i].until = lessonArray[i].until.substring(0, 5);
 
-                let subject = subjects.find(
-                  (element: any) => element.name === subjectname,
-                );
-                if (!subject) {
-                  lessonArray[i].colour = "--item-colour: #8e8e8e;";
-                } else {
-                  lessonArray[i].colour = `--item-colour: ${subject.value};`;
-                  let result = GetThresholdOfColor(subject.value);
+            if (settingsState.timeFormat === "12") {
+              lessonArray[i].from = convertTo12HourFormat(lessonArray[i].from);
+              lessonArray[i].until = convertTo12HourFormat(
+                lessonArray[i].until,
+              );
+            }
 
-                  if (result > 300) {
-                    lessonArray[i].invert = true;
-                  }
-                }
-
-                lessonArray[i].from = lessonArray[i].from.substring(0, 5);
-                lessonArray[i].until = lessonArray[i].until.substring(0, 5);
-
-                if (settingsState.timeFormat === "12") {
-                  lessonArray[i].from = convertTo12HourFormat(
-                    lessonArray[i].from,
-                  );
-                  lessonArray[i].until = convertTo12HourFormat(
-                    lessonArray[i].until,
-                  );
-                }
-
-                lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
-                  lessonArray[i].attendance,
-                );
-              }
-
-              DayContainer.innerText = "";
-              for (let i = 0; i < lessonArray.length; i++) {
-                var div = makeLessonDiv(lessonArray[i], i + 1);
-
-                if (lessonArray[i].invert) {
-                  const div1 = div.firstChild! as HTMLElement;
-                  div1.classList.add("day-inverted");
-                }
-
-                DayContainer.append(div.firstChild as HTMLElement);
-              }
-
-              DayContainer.classList.remove("loading");
-
-              const today = new Date();
-              if (currentSelectedDate.getDate() == today.getDate()) {
-                for (let i = 0; i < lessonArray.length; i++) {
-                  CheckCurrentLesson(lessonArray[i], i + 1);
-                }
-
-                CheckCurrentLessonAll(lessonArray);
-              }
-            });
+            lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
+              lessonArray[i].attendance,
+            );
           }
-        } else {
-          DayContainer.innerHTML = "";
-          var dummyDay = document.createElement("div");
-          dummyDay.classList.add("day-empty");
-          let img = document.createElement("img");
-          img.src = browser.runtime.getURL(LogoLight);
-          let text = document.createElement("p");
-          text.innerText = "No lessons available.";
-          dummyDay.append(img);
-          dummyDay.append(text);
-          DayContainer.append(dummyDay);
+
+          DayContainer.innerText = "";
+          for (let i = 0; i < lessonArray.length; i++) {
+            const div = makeLessonDiv(lessonArray[i], i + 1);
+            if (lessonArray[i].invert) {
+              (div.firstChild! as HTMLElement).classList.add("day-inverted");
+            }
+            DayContainer.append(div.firstChild as HTMLElement);
+          }
 
           DayContainer.classList.remove("loading");
-        }
-      } catch (error) {
-        console.error("Error loading timetable data:", error);
 
-        DayContainer.classList.remove("loading");
-
-        DayContainer.innerHTML = "";
-        const errorDiv = document.createElement("div");
-        errorDiv.classList.add("day-empty");
-        errorDiv.innerHTML = `
-          <img src="${browser.runtime.getURL(LogoLight)}" />
-          <p>Error loading lessons. Please try again.</p>
-        `;
-        DayContainer.append(errorDiv);
+          const today = new Date();
+          if (currentSelectedDate.getDate() == today.getDate()) {
+            for (let i = 0; i < lessonArray.length; i++) {
+              CheckCurrentLesson(lessonArray[i], i + 1);
+            }
+            CheckCurrentLessonAll(lessonArray);
+          }
+        });
       }
+    } else {
+      DayContainer.innerHTML = "";
+      const dummyDay = document.createElement("div");
+      dummyDay.classList.add("day-empty");
+      const img = document.createElement("img");
+      img.src = browser.runtime.getURL(LogoLight);
+      const text = document.createElement("p");
+      text.innerText = "No lessons available.";
+      dummyDay.append(img, text);
+      DayContainer.append(dummyDay);
+      DayContainer.classList.remove("loading");
     }
   };
   xhr.send(
@@ -855,8 +793,6 @@ async function CheckCurrentLesson(lesson: any, num: number) {
 }
 
 function makeLessonDiv(lesson: any, num: number) {
-  if (!lesson) throw new Error("No lesson provided.");
-
   const {
     code,
     colour,
@@ -869,14 +805,14 @@ function makeLessonDiv(lesson: any, num: number) {
     programmeID,
     metaID,
     assessments,
-    type
+    type,
   } = lesson;
 
   let lessonString = `
       <div class="day" id="${code + num}" style="${colour}">
-        <h2>${(type == "class") ? description : (type == "tutorial") ? "Tutorial" : "Unknown"}</h2>
+        <h2>${type == "class" ? description : type == "tutorial" ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
-        <h3>${(type == "class") ? room : (type == "tutorial") ? "N/A" : "Unknown"}</h3>
+        <h3>${type == "class" ? room : type == "tutorial" ? "N/A" : "Unknown"}</h3>
         <h4>${from || "Unknown"} - ${until || "Unknown"}</h4>
         <h5>${attendanceTitle || "Unknown"}</h5>
     `;
@@ -922,64 +858,48 @@ function buildAssessmentURL(programmeID: any, metaID: any, itemID = "") {
 }
 
 function CheckUnmarkedAttendance(lessonattendance: any) {
-  if (lessonattendance) {
-    var lesson = lessonattendance.label;
-  } else {
-    lesson = " ";
-  }
-  return lesson;
+  return lessonattendance ? lessonattendance.label : " ";
 }
 
 async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
-  let upcomingitemcontainer = document.querySelector("#upcoming-items");
-  let overdueDates = [];
-  let upcomingDates = {};
-
-  var Today = new Date();
+  const upcomingitemcontainer = document.querySelector("#upcoming-items");
+  const overdueDates = [];
+  const upcomingDates = {};
+  const Today = new Date();
 
   for (let i = 0; i < assessments.length; i++) {
-    const assessment = assessments[i];
-    let assessmentdue = new Date(assessment.due);
-
-    CheckSpecialDay(Today, assessmentdue);
-    if (assessmentdue < Today) {
-      if (!CheckSpecialDay(Today, assessmentdue)) {
-        overdueDates.push(assessment);
-        assessments.splice(i, 1);
-        i--;
-      }
+    const assessmentdue = new Date(assessments[i].due);
+    if (assessmentdue < Today && !CheckSpecialDay(Today, assessmentdue)) {
+      overdueDates.push(assessments[i]);
+      assessments.splice(i, 1);
+      i--;
     }
   }
 
-  var TomorrowDate = new Date();
-  TomorrowDate.setDate(TomorrowDate.getDate() + 1);
-
   const colours = await GetLessonColours();
 
-  let subjects = colours;
   for (let i = 0; i < assessments.length; i++) {
-    let subjectname = `timetable.subject.colour.${assessments[i].code}`;
-
-    let subject = subjects.find((element: any) => element.name === subjectname);
-
+    const subject = colours.find(
+      (element: any) =>
+        element.name === `timetable.subject.colour.${assessments[i].code}`,
+    );
     if (!subject) {
       assessments[i].colour = "--item-colour: #8e8e8e;";
     } else {
       assessments[i].colour = `--item-colour: ${subject.value};`;
-      GetThresholdOfColor(subject.value);
     }
   }
 
   for (let i = 0; i < activeSubjects.length; i++) {
     const element = activeSubjects[i];
-    let subjectname = `timetable.subject.colour.${element.code}`;
-    let colour = colours.find((element: any) => element.name === subjectname);
+    const colour = colours.find(
+      (c: any) => c.name === `timetable.subject.colour.${element.code}`,
+    );
     if (!colour) {
       element.colour = "--item-colour: #8e8e8e;";
     } else {
       element.colour = `--item-colour: ${colour.value};`;
-      let result = GetThresholdOfColor(colour.value);
-      if (result > 300) {
+      if (GetThresholdOfColor(colour.value) > 300) {
         element.invert = true;
       }
     }
@@ -987,52 +907,35 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   CreateFilters(activeSubjects);
 
-  let type;
-  let class_;
-
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];
     if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
-      let dateObj: any = new Object();
-      dateObj.div = CreateElement(
-        (type = "div"),
-        (class_ = "upcoming-date-container"),
-      );
-      dateObj.assessments = [];
+      const dateObj: any = {
+        div: CreateElement("div", "upcoming-date-container"),
+        assessments: [],
+      };
       (upcomingDates[element.due as keyof typeof upcomingDates] as any) =
         dateObj;
     }
-    let assessmentDateDiv =
+    const assessmentDateDiv =
       upcomingDates[element.due as keyof typeof upcomingDates];
-
     if (assessmentDateDiv) {
       (assessmentDateDiv as any).assessments.push(element);
     }
   }
 
   for (var date in upcomingDates) {
-    let assessmentdue = new Date(
+    const assessmentdue = new Date(
       (
         upcomingDates[date as keyof typeof upcomingDates] as any
       ).assessments[0].due,
     );
-    let specialcase = CheckSpecialDay(Today, assessmentdue);
-    let assessmentDate;
-
-    if (specialcase) {
-      let datecase: string = specialcase!;
-      assessmentDate = createAssessmentDateDiv(
-        date,
-        upcomingDates[date as keyof typeof upcomingDates],
-
-        datecase,
-      );
-    } else {
-      assessmentDate = createAssessmentDateDiv(
-        date,
-        upcomingDates[date as keyof typeof upcomingDates],
-      );
-    }
+    const specialcase = CheckSpecialDay(Today, assessmentdue);
+    const assessmentDate = createAssessmentDateDiv(
+      date,
+      upcomingDates[date as keyof typeof upcomingDates],
+      specialcase,
+    );
 
     if (specialcase === "Yesterday") {
       upcomingitemcontainer!.insertBefore(
@@ -1044,7 +947,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
   FilterUpcomingAssessments(settingsState.subjectfilters);
-  
+
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
       <div class="day-empty">
@@ -1055,77 +958,68 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 }
 
 function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
-  var options = {
+  const options = {
     weekday: "long" as "long",
     month: "long" as "long",
     day: "numeric" as "numeric",
   };
   const FormattedDate = new Date(date);
-
   const assessments = value.assessments;
   const container = value.div;
 
-  let DateTitleDiv = document.createElement("div");
+  const DateTitleDiv = document.createElement("div");
   DateTitleDiv.classList.add("upcoming-date-title");
 
   if (datecase) {
-    let datetitle = document.createElement("h5");
+    const datetitle = document.createElement("h5");
     datetitle.classList.add("upcoming-special-day");
     datetitle.innerText = datecase;
     DateTitleDiv.append(datetitle);
     container.setAttribute("data-day", datecase);
   }
 
-  let DateTitle = document.createElement("h5");
+  const DateTitle = document.createElement("h5");
   DateTitle.innerText = FormattedDate.toLocaleDateString("en-AU", options);
   DateTitleDiv.append(DateTitle);
-
   container.append(DateTitleDiv);
 
-  let assessmentContainer = document.createElement("div");
+  const assessmentContainer = document.createElement("div");
   assessmentContainer.classList.add("upcoming-date-assessments");
 
   for (let i = 0; i < assessments.length; i++) {
     const element = assessments[i];
-    let item = document.createElement("div");
+    const item = document.createElement("div");
     item.classList.add("upcoming-assessment");
     item.setAttribute("data-subject", element.code);
     item.id = `assessment${element.id}`;
-
     item.style.cssText = element.colour;
 
-    let titlediv = document.createElement("div");
+    const titlediv = document.createElement("div");
     titlediv.classList.add("upcoming-subject-title");
-
-    let titlesvg =
+    titlediv.append(
       stringToHTML(`<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;">
     <path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z"></path>
-    </svg>`).firstChild;
-    titlediv.append(titlesvg!);
+    </svg>`).firstChild!,
+    );
 
-    let detailsdiv = document.createElement("div");
+    const detailsdiv = document.createElement("div");
     detailsdiv.classList.add("upcoming-details");
-    let detailstitle = document.createElement("h5");
+    const detailstitle = document.createElement("h5");
     detailstitle.innerText = `${element.subject} assessment`;
-    let subject = document.createElement("p");
+    const subject = document.createElement("p");
     subject.innerText = element.title;
     subject.classList.add("upcoming-assessment-title");
     subject.onclick = function () {
       document.querySelector("#menu ul")!.classList.add("noscroll");
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
-    detailsdiv.append(detailstitle);
-    detailsdiv.append(subject);
-
-    item.append(titlediv);
-    item.append(detailsdiv);
+    detailsdiv.append(detailstitle, subject);
+    item.append(titlediv, detailsdiv);
     assessmentContainer.append(item);
 
     fetch(`${location.origin}/seqta/student/assessment/submissions/get`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         assessment: element.id,
         metaclass: element.metaclassID,
@@ -1136,8 +1030,7 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
       .then((response) => {
         if (response.payload.length > 0) {
           const assessment = document.querySelector(`#assessment${element.id}`);
-
-          let submittedtext = document.createElement("div");
+          const submittedtext = document.createElement("div");
           submittedtext.classList.add("upcoming-submittedtext");
           submittedtext.innerText = "Submitted";
           assessment!.append(submittedtext);
@@ -1175,36 +1068,37 @@ function CheckSpecialDay(date1: Date, date2: Date) {
 }
 
 async function GetLessonColours() {
-  let func = fetch(`${location.origin}/seqta/student/load/prefs?`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-    },
-    body: JSON.stringify({ request: "userPrefs", asArray: true, user: 69 }),
-  });
-  return func
-    .then((result) => result.json())
-    .then((response) => response.payload);
+  try {
+    return fetch(`${location.origin}/seqta/student/load/prefs?`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ request: "userPrefs", asArray: true, user: 69 }),
+    })
+      .then((result) => result.json())
+      .then((response) => response.payload);
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to get lesson colours:", error);
+    return [];
+  }
 }
 
 function CreateFilters(subjects: any) {
-  let filteroptions = settingsState.subjectfilters;
+  const filteroptions = settingsState.subjectfilters;
+  const filterdiv = document.querySelector("#upcoming-filters");
 
-  let filterdiv = document.querySelector("#upcoming-filters");
   for (let i = 0; i < subjects.length; i++) {
     const element = subjects[i];
-
     if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
       filteroptions[element.code] = true;
       settingsState.subjectfilters = filteroptions;
     }
-    let elementdiv = CreateSubjectFilter(
-      element.code,
-      element.colour,
-      filteroptions[element.code],
+    filterdiv!.append(
+      CreateSubjectFilter(
+        element.code,
+        element.colour,
+        filteroptions[element.code],
+      ),
     );
-
-    filterdiv!.append(elementdiv);
   }
 }
 
@@ -1213,23 +1107,20 @@ function CreateSubjectFilter(
   itemcolour: string,
   checked: any,
 ) {
-  let label = CreateElement("label", "upcoming-checkbox-container");
+  const label = CreateElement("label", "upcoming-checkbox-container");
   label.innerText = subjectcode;
-  let input1 = CreateElement("input");
-  const input = input1 as HTMLInputElement;
+  const input = CreateElement("input") as HTMLInputElement;
   input.type = "checkbox";
   input.checked = checked;
   input.id = `filter-${subjectcode}`;
   label.style.cssText = itemcolour;
-  let span = CreateElement("span", "upcoming-checkmark");
-  label.append(input);
-  label.append(span);
+  const span = CreateElement("span", "upcoming-checkmark");
+  label.append(input, span);
 
   input.addEventListener("change", function (change) {
-    let filters = settingsState.subjectfilters;
-    let id = (change.target as HTMLInputElement)!.id.split("-")[1];
-    filters[id] = (change.target as HTMLInputElement)!.checked;
-
+    const filters = settingsState.subjectfilters;
+    const id = (change.target as HTMLInputElement).id.split("-")[1];
+    filters[id] = (change.target as HTMLInputElement).checked;
     settingsState.subjectfilters = filters;
   });
 
