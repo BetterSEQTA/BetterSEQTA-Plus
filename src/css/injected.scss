@@ -6650,6 +6650,61 @@ body[data-seqta-platform="teach"] {
       color: var(--text-primary) !important;
       padding: 20px !important;
       
+      // Forums page layout fix - ensure proper flex layout for list and view container
+      // Target the direct child div that contains both listContainer and viewContainer
+      > div:has(.viewContainer),
+      > div:has(.listContainer) {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        align-items: stretch !important;
+        
+        // Forum list container (left side) - first child div or .listContainer
+        > div:first-child:not(.viewContainer),
+        > .listContainer,
+        .listContainer {
+          display: flex !important;
+          flex-direction: column !important;
+          width: 350px !important;
+          min-width: 350px !important;
+          max-width: 350px !important;
+          flex-shrink: 0 !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          background: transparent !important;
+          border-right: 1px solid var(--border-secondary) !important;
+          padding-right: 16px !important;
+          margin-right: 16px !important;
+          
+          // Apply backdrop blur when transparency effects are enabled
+          html.transparencyEffects & {
+            backdrop-filter: blur(10px) !important;
+          }
+        }
+        
+        // Message viewing container (right side)
+        > div.viewContainer,
+        > .viewContainer,
+        .viewContainer {
+          display: flex !important;
+          flex-direction: column !important;
+          flex: 1 !important;
+          flex-grow: 1 !important;
+          min-width: 0 !important;
+          width: auto !important;
+          overflow: hidden !important;
+          background: transparent !important;
+          
+          // Apply backdrop blur when transparency effects are enabled
+          html.transparencyEffects & {
+            backdrop-filter: blur(10px) !important;
+          }
+        }
+      }
+      
       // Fix attendance table day headers being too tall
       table {
         thead {
