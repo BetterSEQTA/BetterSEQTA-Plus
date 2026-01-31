@@ -7,6 +7,20 @@ import {
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import ReactFiber from "@/seqta/utils/ReactFiber.ts";
+import {
+  clearStuck,
+  getClassByPattern,
+  initStorage,
+  letterToNumber,
+  parseAssessments,
+  processAssessments,
+} from "./utils.ts";
+
+interface weightingsStorage {
+  weightings: Record<string, string>;
+  assessments: Record<string, string>;
+}
 
 const settings = defineSettings({
   lettergrade: booleanSetting({
@@ -23,7 +37,7 @@ class AssessmentsAveragePluginClass extends BasePlugin<typeof settings> {
 
 const instance = new AssessmentsAveragePluginClass();
 
-const assessmentsAveragePlugin: Plugin<typeof settings> = {
+const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
   id: "assessments-average",
   name: "Assessment Averages",
   description: "Adds an average grade to the Assessments page",
@@ -32,8 +46,10 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
+    await initStorage(api);
+    clearStuck(api);
+
     api.seqta.onMount(".assessmentsWrapper", async () => {
-      // Wait for any assessment item to load first
       await waitForElm(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
         true,
@@ -41,26 +57,13 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
         1000,
       );
 
-      // Helper function to find actual class names by their base pattern
-      const getClassByPattern = (
-        element: Element | Document,
-        basePattern: string,
-      ): string => {
-        // Find all classes on the element
-        const classes = Array.from(element.querySelectorAll("*"))
-          .flatMap((el) => Array.from(el.classList))
-          .filter((className) => className.startsWith(basePattern));
+      await parseAssessments(api);
 
-        return classes.length ? classes[0] : "";
-      };
-
-      // Find actual class names from the DOM
       const sampleAssessmentItem = document.querySelector(
         "[class*='AssessmentItem__AssessmentItem___']",
       );
       if (!sampleAssessmentItem) return;
 
-      // Extract all necessary class patterns from a sample assessment item
       const assessmentItemClass =
         Array.from(sampleAssessmentItem.classList).find((c) =>
           c.startsWith("AssessmentItem__AssessmentItem___"),
@@ -83,7 +86,6 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
         "AssessmentItem__title___",
       );
 
-      // Get Thermoscore classes
       const thermoscoreElement = document.querySelector(
         "[class*='Thermoscore__Thermoscore___']",
       );
@@ -102,62 +104,34 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
         "Thermoscore__text___",
       );
 
-      // Find assessment list
       const assessmentsList = document.querySelector(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentList__items___']",
       );
       if (!assessmentsList) return;
 
-      const gradeElements = document.querySelectorAll(
-        "[class*='Thermoscore__text___']",
+      const state = await ReactFiber.find(
+        "[class*='AssessmentList__items___']",
+      ).getState();
+      const marks = state["marks"];
+      if (!marks || !marks.length) return;
+
+      const assessmentItems = Array.from(
+        assessmentsList.querySelectorAll(
+          `[class*='AssessmentItem__AssessmentItem___']`,
+        ),
+      ).filter(
+        (item) =>
+          !item
+            .querySelector(`[class*='AssessmentItem__title___']`)
+            ?.textContent?.includes("Subject Average"),
       );
-      if (!gradeElements.length) return;
 
-      // Parse and average grades
-      const letterToNumber: Record<string, number> = {
-        "A+": 100,
-        A: 95,
-        "A-": 90,
-        "B+": 85,
-        B: 80,
-        "B-": 75,
-        "C+": 70,
-        C: 65,
-        "C-": 60,
-        "D+": 55,
-        D: 50,
-        "D-": 45,
-        "E+": 40,
-        E: 35,
-        "E-": 30,
-        F: 0,
-      };
+      const { weightedTotal, totalWeight, hasInaccurateWeighting, count } =
+        await processAssessments(api, assessmentItems);
 
-      function parseGrade(text: string): number {
-        const str = text.trim().toUpperCase();
-        if (str.includes("/")) {
-          const [raw, max] = str.split("/").map((n) => parseFloat(n));
-          return (raw / max) * 100;
-        }
-        if (str.includes("%")) {
-          return parseFloat(str.replace("%", "")) || 0;
-        }
-        return letterToNumber[str] ?? 0;
-      }
+      if (!count || totalWeight === 0) return;
 
-      let total = 0;
-      let count = 0;
-      gradeElements.forEach((el) => {
-        const grade = parseGrade(el.textContent || "");
-        if (grade > 0) {
-          total += grade;
-          count++;
-        }
-      });
-
-      if (!count) return;
-
-      const avg = total / count;
+      const avg = weightedTotal / totalWeight;
       const rounded = Math.ceil(avg / 5) * 5;
       const numberToLetter = Object.entries(letterToNumber).reduce(
         (acc, [k, v]) => {
@@ -172,31 +146,40 @@ const assessmentsAveragePlugin: Plugin<typeof settings> = {
         ? letterAvg
         : `${avg.toFixed(2)}%`;
 
-      // Prevent duplicate
       const existing = assessmentsList.querySelector(
         `[class*='AssessmentItem__title___']`,
       );
       if (existing?.textContent === "Subject Average") return;
 
-      // Use the dynamic class names in the HTML template
-      const averageElement = stringToHTML(/* html */ `
+      let warningHTML = "";
+      if (hasInaccurateWeighting) {
+        warningHTML = /* html */ `
+          <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.6); opacity: 0.8; line-height: 1.3;">
+            ⚠ Some weightings unavailable
+          </div>
+        `;
+      }
+
+      assessmentsList.insertBefore(
+        stringToHTML(/* html */ `
         <div class="${assessmentItemClass}">
           <div class="${metaContainerClass}">
             <div class="${metaClass}">
               <div class="${simpleResultClass}">
                 <div class="${titleClass}">Subject Average</div>
+                ${warningHTML}
               </div>
             </div>
           </div>
           <div class="${thermoscoreClass}">
             <div class="${fillClass}" style="width: ${avg.toFixed(2)}%">
-              <div class="${textClass}" title="${display}">${display}</div>
+              <div class="${textClass}" title="${hasInaccurateWeighting ? display + " (some weightings unavailable)" : display}">${display}</div>
             </div>
           </div>
         </div>
-      `).firstChild;
-
-      assessmentsList.insertBefore(averageElement!, assessmentsList.firstChild);
+      `).firstChild!,
+        assessmentsList.firstChild,
+      );
     });
   },
 };
