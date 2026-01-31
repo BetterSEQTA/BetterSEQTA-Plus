@@ -1,4 +1,4 @@
-import type { Job, IndexItem } from "../types";
+import type { IndexItem, Job } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
