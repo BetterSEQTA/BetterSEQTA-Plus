@@ -812,7 +812,7 @@ function makeLessonDiv(lesson: any, num: number) {
       <div class="day" id="${code + num}" style="${colour}">
         <h2>${type == "class" ? description : type == "tutorial" ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
-        <h3>${type == "class" ? room : type == "tutorial" ? "N/A" : "Unknown"}</h3>
+        <h3>${room || (type == "tutorial" ? "Unknown" : "N/A")}</h3>
         <h4>${from || "Unknown"} - ${until || "Unknown"}</h4>
         <h5>${attendanceTitle || "Unknown"}</h5>
     `;
@@ -926,9 +926,8 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (var date in upcomingDates) {
     const assessmentdue = new Date(
-      (
-        upcomingDates[date as keyof typeof upcomingDates] as any
-      ).assessments[0].due,
+      (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0]
+        .due,
     );
     const specialcase = CheckSpecialDay(Today, assessmentdue);
     const assessmentDate = createAssessmentDateDiv(
