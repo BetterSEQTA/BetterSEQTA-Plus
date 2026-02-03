@@ -1,6 +1,5 @@
 @use "sass:meta";
-// Removed Google Fonts import - Firefox blocks external resources
-// Using system font stack instead: Rubik -> system-ui -> sans-serif
+@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
 
 @include meta.load-css("injected/sidebar-animation.scss");
 @include meta.load-css("injected/theme.scss");
