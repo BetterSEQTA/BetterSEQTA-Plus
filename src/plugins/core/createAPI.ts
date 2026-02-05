@@ -107,8 +107,8 @@ function createMetaAPI(plugin: Plugin<any>): MetaAPI {
     },
 
     // Set override:
-    // - api.meta.hidden = true/false writes plugin.<id>.hidden
-    // - api.meta.hidden = undefined removes plugin.<id>.hidden (revert to default)
+    // - api.meta.hidden = true/false writes plugin.<id>.meta.hidden
+    // - api.meta.hidden = undefined removes plugin.<id>.meta.hidden (revert to default)
     set hidden(value: boolean | undefined) {
       if (value === undefined) {
         hidden = undefined;

@@ -55,7 +55,7 @@
           continue;
         }
 
-        // Default key: plugin.<id>.defaultHidden (only used if no override exists)
+        // Default key: plugin.<id>.meta.defaultHidden (only used if no override exists)
         const matchDefaultHidden = key.match(/^plugin\.(.+)\.meta\.defaultHidden$/);
         if (matchDefaultHidden) {
           const pluginId = matchDefaultHidden[1];

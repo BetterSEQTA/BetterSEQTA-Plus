@@ -348,8 +348,8 @@ export class PluginManager {
         ]);
       }
 
-      // plugin.<id>.defaultHidden is the "default" value used when no override exists
-      // plugin.<id>.hidden is reserved for manual user overrides
+      // plugin.<id>.meta.defaultHidden is the "default" value used when no override exists
+      // plugin.<id>.meta.hidden is reserved for manual user overrides
       if (plugin.defaultHidden !== undefined) {
         const defaultHiddenKey = `plugin.${id}.meta.defaultHidden`;
 
