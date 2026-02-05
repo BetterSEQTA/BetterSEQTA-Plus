@@ -14,7 +14,77 @@
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 
   import { getAllPluginSettings } from "@/plugins"
+  import { onMount } from "svelte";
+
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
+
+  const pluginSettings = $state<Plugin[]>([]);
+
+  onMount(async () => {
+    const plugins = await getAllPluginSettings();
+    pluginSettings.splice(0, pluginSettings.length, ...plugins);
+
+    // initial load of hidden/settings values once plugins are known
+    await loadPluginSettings();
+
+    const handler = (
+      changes: { [key: string]: browser.Storage.StorageChange },
+      area: string,
+    ) => {
+      if (area !== "local") return;
+
+      for (const [key, change] of Object.entries(changes)) {
+        // Manual override key: plugin.<id>.meta.hidden
+        const matchHidden = key.match(/^plugin\.(.+)\.meta\.hidden$/);
+        if (matchHidden) {
+          const pluginId = matchHidden[1];
+
+          // If override removed, fall back to defaultHidden (from storage), else use override.
+          const override = change.newValue;
+          if (override === undefined) {
+            // keep previous value for now; async refresh from defaultHidden
+            void (async () => {
+              const defaultKey = `plugin.${pluginId}.meta.defaultHidden`;
+              const storedDefault = await browser.storage.local.get(defaultKey);
+              const def = storedDefault[defaultKey];
+              hiddenPlugins[pluginId] = def === undefined ? false : Boolean(def);
+            })();
+          } else {
+            hiddenPlugins[pluginId] = Boolean(override);
+          }
+          continue;
+        }
+
+        // Default key: plugin.<id>.defaultHidden (only used if no override exists)
+        const matchDefaultHidden = key.match(/^plugin\.(.+)\.meta\.defaultHidden$/);
+        if (matchDefaultHidden) {
+          const pluginId = matchDefaultHidden[1];
+
+          // Only apply defaultHidden changes if there is no manual override present
+          void (async () => {
+            const overrideKey = `plugin.${pluginId}.meta.hidden`;
+            const storedOverride = await browser.storage.local.get(overrideKey);
+            if (storedOverride[overrideKey] !== undefined) return;
+
+            const next = change.newValue;
+            hiddenPlugins[pluginId] = next === undefined ? false : Boolean(next);
+          })();
+          continue;
+        }
+
+        // React to settings changes
+        const matchSettings = key.match(/^plugin\.(.+)\.settings$/);
+        if (matchSettings) {
+          const pluginId = matchSettings[1];
+          pluginSettingsValues[pluginId] =
+            (change.newValue as Record<string, any>) || {};
+        }
+      }
+    };
+
+    browser.storage.onChanged.addListener(handler);
+    return () => browser.storage.onChanged.removeListener(handler);
+  });
 
   // Union type representing all possible settings
   type SettingType =
@@ -48,18 +118,36 @@
     settings: Record<string, SettingType>;
   }
 
-  const pluginSettings = getAllPluginSettings() as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
-  
+  const hiddenPlugins = $state<Record<string, boolean>>({});
+
   async function loadPluginSettings() {
     for (const plugin of pluginSettings) {
+      const overrideKey = `plugin.${plugin.pluginId}.meta.hidden`;
+      const defaultKey = `plugin.${plugin.pluginId}.meta.defaultHidden`;
+
+      // Fetch both; override wins if present
+      const [overrideStored, defaultStored] = await Promise.all([
+        browser.storage.local.get(overrideKey),
+        browser.storage.local.get(defaultKey),
+      ]);
+
+      const overrideVal = overrideStored[overrideKey];
+      if (overrideVal !== undefined) {
+        hiddenPlugins[plugin.pluginId] = Boolean(overrideVal);
+      } else {
+        const defaultVal = defaultStored[defaultKey];
+        hiddenPlugins[plugin.pluginId] =
+          defaultVal === undefined ? false : Boolean(defaultVal);
+      }
+
       if (Object.keys(plugin.settings).length === 0) continue;
-      
+
       const storageKey = `plugin.${plugin.pluginId}.settings`;
       const stored = await browser.storage.local.get(storageKey);
-      
+
       pluginSettingsValues[plugin.pluginId] = stored[storageKey] || {};
-      
+
       for (const [key, setting] of Object.entries(plugin.settings)) {
         if (
           pluginSettingsValues[plugin.pluginId][key] === undefined &&
@@ -71,7 +159,7 @@
       }
     }
   }
-  
+
   async function updatePluginSetting(pluginId: string, key: string, value: any) {
     const storageKey = `plugin.${pluginId}.settings`;
     
@@ -87,10 +175,6 @@
     
     await browser.storage.local.set({ [storageKey]: currentSettings });
   }
-
-  $effect(() => {
-    loadPluginSettings();
-  })
 
   const { showColourPicker, showDisclaimer } = $props<{ 
     showColourPicker: () => void;
@@ -208,6 +292,7 @@
   {/each}
   
   {#each pluginSettings as plugin}
+  {#if !hiddenPlugins[plugin.pluginId]}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
       <!-- Always show enable toggle if disableToggle is true -->
@@ -308,6 +393,7 @@
         {/if}
       </div>
   </div>
+  {/if}
   {/each}
 
   <div class="p-1 border-none"></div>

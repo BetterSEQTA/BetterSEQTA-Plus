@@ -117,6 +117,12 @@ export class PluginManager {
       throw new Error(`Plugin with id "${plugin.id}" is already registered`);
     }
     this.plugins.set(plugin.id, plugin);
+
+    // Clear hidden override if it is set to not persist
+    if (plugin.persistHidden === false) {
+      const overrideKey = `plugin.${plugin.id}.meta.hidden`;
+      void browser.storage.local.remove(overrideKey);
+    }
   }
 
   /**
@@ -283,7 +289,7 @@ export class PluginManager {
    *                          The specific structure of each setting object within `settings`
    *                          depends on its type (boolean, string, number, select, button, hotkey).
    */
-  public getAllPluginSettings(): Array<{
+  public getAllPluginSettings(): Promise<Array<{
     pluginId: string;
     name: string;
     description: string;
@@ -304,8 +310,8 @@ export class PluginManager {
     };
     // Actual type is more complex, see original code, but this gives the gist for the JSDoc.
     // Array<{ pluginId: string; name: string; description: string; beta?: boolean; settings: Record<string, ProcessedSetting>; disableToggle?: boolean; }>
-  }> {
-    return Array.from(this.plugins.entries()).map(([id, plugin]) => {
+  }>> {
+    return Promise.all(Array.from(this.plugins.entries()).map(async ([id, plugin]) => {
       const settingsEntries = Object.entries(plugin.settings).map(
         ([key, setting]) => {
           const settingObj = setting as any;
@@ -341,6 +347,20 @@ export class PluginManager {
           },
         ]);
       }
+
+      // plugin.<id>.defaultHidden is the "default" value used when no override exists
+      // plugin.<id>.hidden is reserved for manual user overrides
+      if (plugin.defaultHidden !== undefined) {
+        const defaultHiddenKey = `plugin.${id}.meta.defaultHidden`;
+
+        const existing = await browser.storage.local.get(defaultHiddenKey);
+        if (existing[defaultHiddenKey] === undefined) {
+          await browser.storage.local.set({
+            [defaultHiddenKey]: plugin.defaultHidden,
+          });
+        }
+      }
+
       return {
         pluginId: id,
         name: plugin.name,
@@ -349,7 +369,7 @@ export class PluginManager {
         settings: Object.fromEntries(settingsEntries),
         disableToggle: plugin.disableToggle,
       };
-    });
+    }));
   }
 
   /**
