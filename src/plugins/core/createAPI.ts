@@ -52,7 +52,7 @@ function createSEQTAAPI(): SEQTAAPI {
 
 function createMetaAPI(plugin: Plugin<any>): MetaAPI {
   const hiddenKey = `plugin.${plugin.id}.meta.hidden`;
-  const listeners = new Set<(value: boolean | undefined) => void>();
+  const listeners = new Set<(hidden: boolean | undefined) => void>();
 
   // cache: undefined means "not set, follow default"
   let hidden: boolean | undefined = undefined;
@@ -86,11 +86,11 @@ function createMetaAPI(plugin: Plugin<any>): MetaAPI {
     // - true/false when explicitly stored
     // - undefined when the key is removed (meaning "follow default")
     onChange: (_key, callback) => {
-      listeners.add(callback as any);
-      return { unregister: () => listeners.delete(callback as any) };
+      listeners.add(callback);
+      return { unregister: () => listeners.delete(callback) };
     },
     offChange: (_key, callback) => {
-      listeners.delete(callback as any);
+      listeners.delete(callback);
     },
 
     // Whether there is an explicit override stored.

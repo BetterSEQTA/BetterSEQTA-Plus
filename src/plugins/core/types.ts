@@ -146,11 +146,11 @@ export interface MetaAPI {
   clearHidden: () => Promise<void>;
   onChange: (
     key: "hidden",
-    callback: (value: boolean | undefined) => void,
+    callback: (hidden: boolean | undefined) => void,
   ) => { unregister: () => void };
   offChange: (
     key: "hidden",
-    callback: (value: boolean | undefined) => void,
+    callback: (hidden: boolean | undefined) => void,
   ) => void;
 }
 
