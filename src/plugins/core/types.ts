@@ -136,11 +136,30 @@ export interface EventsAPI {
   emit: (event: string, ...args: any[]) => void;
 }
 
+export interface MetaAPI {
+  loaded: Promise<void>;
+  // undefined = not set in storage; callers should fall back to plugin.defaultHidden (or false)
+  hidden: boolean | undefined;
+  // true = default overridden
+  isHiddenSet: boolean;
+  // remove the stored override so defaults apply again
+  clearHidden: () => Promise<void>;
+  onChange: (
+    key: "hidden",
+    callback: (hidden: boolean | undefined) => void,
+  ) => { unregister: () => void };
+  offChange: (
+    key: "hidden",
+    callback: (hidden: boolean | undefined) => void,
+  ) => void;
+}
+
 export interface PluginAPI<T extends PluginSettings, S = any> {
   seqta: SEQTAAPI;
   settings: SettingsAPI<T>;
   storage: TypedStorageAPI<S>;
   events: EventsAPI;
+  meta: MetaAPI;
 }
 
 export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
@@ -153,6 +172,8 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   disableToggle?: boolean; // Optional flag to show/hide the plugin's enable/disable toggle in settings
   defaultEnabled?: boolean; // Optional flag to set the plugin's default enabled state
   beta?: boolean; // Optional flag to mark the plugin as beta
+  defaultHidden?: boolean; // Optional flag to set the default visibility. 'api.meta.hidden' takes priority as an override.
+  persistHidden?: boolean; // Optional flag to either persist hidden data across extension loads, or reset it.
   run: (
     api: PluginAPI<T, S>,
   ) => void | Promise<void> | (() => void) | Promise<() => void>;
