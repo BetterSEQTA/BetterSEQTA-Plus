@@ -2439,7 +2439,8 @@ div.bar.flat {
 }
 .legacy-root button.depressed,
 .legacy-root button.toggled {
-  background: #797979;
+  background: var(--accent-bg) !important;
+  color: var(--text-on-accent) !important;
 }
 .legacy-root button,
 .legacy-root a {
@@ -6623,6 +6624,51 @@ body[data-seqta-platform="teach"] {
       color: var(--text-primary) !important;
       padding: 20px !important;
       
+      // Correspondence/SMS layout - data (recipient list) ~30%, content (message area) ~70%
+      > div:has(> .data):has(> .content) {
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+
+        > .data {
+          flex: 0 0 auto !important;
+          width: 280px !important;
+          min-width: 256px !important;
+          max-width: 350px !important;
+        }
+
+        > .content {
+          flex: 1 1 0% !important;
+          min-width: 0 !important;
+          overflow: auto !important;
+        }
+      }
+
+      // Attendance admin layout - prevent anyoneSelect from taking full width, keep content panel visible
+      > div.attendanceAdmin,
+      > div:has(> .attendanceManage.filterBox):has(> .anyoneSelect.filterBox) {
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+
+        > .anyoneSelect.filterBox {
+          flex: 0 0 auto !important;
+          width: 280px !important;
+          min-width: 200px !important;
+          max-width: 280px !important;
+        }
+
+        > .attendanceManage.filterBox {
+          flex: 1 1 0% !important;
+          min-width: 300px !important;
+          overflow: auto !important;
+        }
+      }
+
       // Forums page layout fix - ensure proper flex layout for list and view container
       // Target the direct child div that contains both listContainer and viewContainer
       > div:has(.viewContainer),
@@ -15027,9 +15073,29 @@ body[data-seqta-platform="teach"] {
     border-radius: 8px !important;
     overflow: hidden !important;
     box-shadow: var(--shadow-sm) !important;
+
+    td.tableHeader {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1 !important;
+    }
+
+    td.period {
+      background: rgba(var(--theme-bg-parts), 0.5) !important;
+      color: var(--text-primary) !important;
+      font-size: var(--small-text) !important;
+    }
     
     > tbody > tr > td {
       border-color: var(--border-primary) !important;
+      
+      .item > .meta > .room.moved,
+      .item > .meta > .staff {
+        background: var(--warning-bg) !important;
+        color: var(--better-sub) !important;
+      }
       
       .item {
         background: var(--accent-bg) !important;
@@ -15063,6 +15129,26 @@ body[data-seqta-platform="teach"] {
     margin: 16px !important;
     overflow: hidden !important;
     box-shadow: var(--shadow-md) !important;
+
+    .params > div[data-field="subject"] input {
+      border-color: var(--warning-bg) !important;
+    }
+    .params > .footer > .wordcount span {
+      color: var(--text-muted) !important;
+    }
+    .export .limit {
+      border-left: 8px solid var(--warning-bg) !important;
+    }
+
+    > .data > .mergeOptions {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg) !important;
+      .preset > .warning {
+        background: var(--background-primary) !important;
+        border-color: var(--warning-bg) !important;
+        color: var(--text-primary) !important;
+      }
+    }
     
     > .data {
       background: var(--background-secondary) !important;
@@ -15105,30 +15191,2019 @@ body[data-seqta-platform="teach"] {
     }
   }
 
-  // Academic reports styling
+  // Academic reports / Report archive styling
   .academicReportsWrapper {
     background: var(--background-primary) !important;
     border-radius: 8px !important;
     margin: 16px !important;
     box-shadow: var(--shadow-md) !important;
-    
+    color: var(--text-primary) !important;
+
+    > .tabPage > .report > .content {
+      color: var(--text-primary) !important;
+
+      > .item,
+      > .value {
+        color: var(--text-primary) !important;
+
+        > .alpha > .title {
+          background: var(--better-main) !important;
+          color: var(--text-on-accent) !important;
+          > .name {
+            color: var(--text-on-accent) !important;
+          }
+          > .staff {
+            color: rgba(255, 255, 255, 0.85) !important;
+          }
+          > .locked {
+            background: rgba(0, 0, 0, 0.2) !important;
+          }
+        }
+
+        > .alpha > .comment {
+          > textarea {
+            background: var(--background-primary) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--theme-offset-bg) !important;
+          }
+        }
+
+        > .beta {
+          color: var(--text-primary) !important;
+          > .score {
+            background: var(--theme-offset-bg) !important;
+            color: var(--text-primary) !important;
+            .item,
+            .template {
+              color: var(--text-primary) !important;
+            }
+            input {
+              background: var(--background-primary) !important;
+              color: var(--text-primary) !important;
+              border-color: var(--theme-offset-bg) !important;
+            }
+          }
+          .row {
+            border-color: var(--theme-offset-bg) !important;
+            color: var(--text-primary) !important;
+            > .name {
+              color: var(--text-primary) !important;
+            }
+            > .value > input {
+              background: var(--background-primary) !important;
+              color: var(--text-primary) !important;
+              border-color: var(--theme-offset-bg) !important;
+            }
+          }
+        }
+      }
+
+      > .item > .beta input.changed,
+      > .item > .alpha > .comment > textarea.changed {
+        box-shadow: inset 0 0 0 2px var(--accent-bg) !important;
+      }
+    }
+
+    > .tabPage > .report > .content > .value > .alpha > .title {
+      background: var(--better-main) !important;
+      > .staff {
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
+    }
+
     > .tabPage {
       background: var(--background-secondary) !important;
-      
+      color: var(--text-primary) !important;
+
       .filterBox {
         background: var(--background-primary) !important;
         border-radius: 6px !important;
         padding: 12px !important;
         margin: 8px !important;
-        
+        color: var(--text-primary) !important;
+
         .supplementary > input {
           background: var(--input-bg) !important;
           border: 1px solid var(--border-primary) !important;
           color: var(--text-primary) !important;
-          font-family: Rubik, sans-serif !important;
+          font-family: Rubik, system-ui, sans-serif !important;
+        }
+      }
+
+      .tabset .item {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .academicAddValue {
+    color: var(--text-primary) !important;
+    > label {
+      color: var(--text-primary) !important;
+    }
+    > input {
+      background: var(--input-bg) !important;
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .curriculumSetup {
+    .adminList {
+      border-color: var(--accent-bg) !important;
+    }
+    .itemList > .list > .item > button {
+      color: var(--text-primary) !important;
+      width: min-content !important;
+    }
+    .itemList > .list > .item.selected > button {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .management > .edit > .parameters > .group > .header {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    .management > .edit > .details {
+      .courseSetEditor,
+      .cutoffsEditor,
+      .reportingFieldsEditor {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .studentPlansContent > .tabPage > .detailTable {
+    > .headerWrapper {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    .tableWrapper tr {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    td[data-field] {
+      border-left: 1px solid var(--theme-offset-bg) !important;
+      border-right: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+  .studentPlansGeneral.adminGeneral > .studentPlansList > .list > .item {
+    border-bottom: 1px solid var(--theme-offset-bg) !important;
+    > button {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .untimetabledEditor > .details {
+    > .field {
+      border-bottom: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    > .note {
+      background: var(--theme-offset-bg) !important;
+      border-radius: 4px !important;
+      color: var(--text-primary) !important;
+    }
+  }
+  .untimetabledItems {
+    > .handleContainer > .handle {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    &.visible > .handleContainer > .handle {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .list {
+      background: var(--background-primary) !important;
+      border-color: var(--accent-bg) !important;
+    }
+  }
+
+  .bookingCategories > .labelList {
+    border: 1px solid var(--theme-offset-bg) !important;
+    background: var(--background-primary) !important;
+    .selected,
+    > .list > .default:active {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    > .list > .item {
+      border-bottom: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &.selected {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+    }
+  }
+  .bookingItems > .numberKey > .number > .info {
+    color: var(--text-muted) !important;
+  }
+
+  .classSyncManagement > .uiResultsTable .tableWrapper > table.body tbody tr td {
+    border-bottom: 1px solid var(--theme-offset-bg) !important;
+  }
+
+  .lessonBrowserByStaff.popup > .anyoneSelect {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    height: 100% !important;
+  }
+  .forumEdit {
+    .anyoneSelect {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    .adminList {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .details {
+      color: var(--text-primary) !important;
+      input {
+        background: var(--input-bg) !important;
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+  .lessonBrowser > .body > .resultsTable {
+    table th.activeSort {
+      background: var(--warning-bg) !important;
+    }
+    .tableWrapper > .body td,
+    .tableWrapper > table.body td {
+      border-bottom: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    .tableWrapper > .body tr.selected,
+    .tableWrapper > table.body tbody tr.selected {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .footer {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+      > .limit {
+        color: var(--text-muted) !important;
+      }
+    }
+  }
+  .commentBankManager > .filterBox > button {
+    color: var(--text-primary) !important;
+  }
+
+  .lessonEditor {
+    .body.wrapper .beta .syllabus ul li,
+    .body.wrapper .beta .assessments ul li {
+      border-bottom: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    .body.wrapper .beta .essential .editor {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    .online.wrapper .title,
+    .body.wrapper .title {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .uiSlidePane {
+    > .kitPane .content > .manageKit .metaC .meta .favourite.toggled {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    > .pane > .content > .manageItemType > .bulkEdit {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .unitPlannerAdmin {
+    .unitplannerCurriculum .resultsFilterWrapper .filterBox button.buttonChecklist.depressed {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .unitplannerCurriculum > .fieldsBarWrapper {
+      border-color: var(--theme-offset-bg) !important;
+      > .fieldLabels {
+        color: var(--text-muted) !important;
+      }
+    }
+    .unitplanTemplateManager > .management > .header {
+      .title input {
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+      .title.error > .warning > span {
+        color: var(--text-muted) !important;
+      }
+      .visibility .visibilityCB label {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .accountSetup > .userTable {
+    table th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+      &.activeSort {
+        background: var(--warning-bg) !important;
+      }
+    }
+    tr.selected {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .email.missing {
+      color: var(--warning-text) !important;
+    }
+    [data-type="student"] .type {
+      box-shadow: inset 8px 0 var(--success-bg, #4caf50) !important;
+    }
+    [data-type="contact"] .type {
+      box-shadow: inset 8px 0 var(--warning-bg) !important;
+    }
+    [data-type="staff"] .type {
+      box-shadow: inset 8px 0 var(--accent-bg) !important;
+    }
+    [data-type="tutor"] .type {
+      box-shadow: inset 8px 0 var(--warning-bg) !important;
+    }
+  }
+
+  .attendanceTypes {
+    > .note,
+    .uiSlidePane .attendanceType > .note {
+      background: var(--background-primary) !important;
+      border-color: var(--warning-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    > ul > li {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+      &.inactive {
+        background-image: repeating-linear-gradient(135deg, var(--theme-offset-bg), var(--theme-offset-bg) 4px, transparent 4px, transparent 8px) !important;
+      }
+    }
+  }
+  .uiSlidePane .attendanceType {
+    > .field {
+      border-color: var(--theme-offset-bg) !important;
+      label {
+        color: var(--text-primary) !important;
+      }
+    }
+    > .attributes {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    > .codes > .codeset {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    > .codes > h2,
+    > .attributes > h2 {
+      color: var(--text-primary) !important;
+    }
+    .field > .uiDateRangeOptional > .toggle {
+      color: var(--text-muted) !important;
+    }
+  }
+
+  .attendanceByPeriods table.attendance {
+    thead, thead td {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody tr td:nth-child(odd):not(.date) {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+    }
+    tbody .date {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .attendanceMap {
+    > .ticks > li:nth-child(odd) {
+      background: var(--theme-offset-bg) !important;
+    }
+    > .items {
+      border-color: var(--theme-offset-bg) !important;
+      > li {
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+        > .content > .layer {
+          background: var(--background-primary) !important;
         }
       }
     }
+    > .items.hoveringLayer > li > .content > .layer.hovered {
+      box-shadow: 0 0 2px 2px var(--warning-bg) !important;
+    }
+  }
+
+  .attendanceStack > .items > li[data-key="map"] {
+    background: var(--theme-offset-bg-more) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .attendanceEditSolutions > .results {
+    table th {
+      background: var(--theme-table-headers) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    table td {
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody tr:nth-of-type(2n) {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+    }
+    tbody tr[data-suppressed] {
+      color: var(--text-muted) !important;
+    }
+    tbody tr[data-changed] {
+      box-shadow: inset 8px 0 var(--accent-bg) !important;
+    }
+  }
+
+  .brandingSettings > .message {
+    background: var(--theme-offset-bg) !important;
+    border-color: var(--warning-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .itemList.filterBox {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  .itemList > .list > .item {
+    border-bottom: 1px solid var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+    &:not(.selected):hover {
+      background: var(--theme-offset-bg) !important;
+    }
+    &.selected {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .portalEditor > .tabPage > .people > .staff > .anyoneSelect {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .programmePresentation {
+    &.embiggened {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .outline > h2,
+    > .homework > h2 {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+  ul.programmeShuffleExtraList {
+    border-color: var(--theme-offset-bg) !important;
+  }
+  .programmeShuffleExtra > .bookmark {
+    background: var(--accent-bg) !important;
+    color: var(--text-on-accent) !important;
+  }
+
+  .siteSettings > .category {
+    > .header {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .items > .item > .subitems > .subitem {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .quant table {
+    th {
+      background: var(--theme-table-headers) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+      &.total {
+        background: var(--theme-offset-bg) !important;
+      }
+    }
+    td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &.label,
+      &.total {
+        background: var(--background-primary) !important;
+      }
+    }
+    tbody > tr:nth-of-type(2n) {
+      background: var(--theme-offset-bg-more) !important;
+      td.label,
+      td.total {
+        background: var(--background-secondary) !important;
+      }
+    }
+  }
+
+  .anyoneSelect.filterBox {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  .anyoneSelect > .listWrapper > .list > .item {
+    background: rgba(var(--theme-fg-parts), 0.04) !important;
+    border-color: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .uiScrollableTable {
+    th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    td, th {
+      border-color: rgba(var(--theme-fg-parts), 0.1) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  ul.singleSelect,
+  ul.buttonChecklist,
+  ul.buttonMenu,
+  ul.colourButtonOptions,
+  ul.uiSplitButtonList,
+  .contactFormPanel {
+    background: var(--background-primary) !important;
+    border-color: var(--accent-bg) !important;
+    color: var(--text-primary) !important;
+    li, .item, a {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &:hover {
+        background: var(--theme-offset-bg) !important;
+      }
+    }
+    li.lowlight,
+    .item.lowlight {
+      color: rgba(var(--theme-fg-parts), 0.3) !important;
+    }
+    li .extra,
+    .item .extra {
+      color: rgba(var(--theme-fg-parts), 0.5) !important;
+    }
+  }
+  button.buttonChecklist.depressed,
+  button.buttonMenu.depressed {
+    background: var(--accent-bg) !important;
+    color: var(--text-on-accent) !important;
+  }
+
+  .filterBox button.buttonChecklist.depressed,
+  .filterBox > button.depressed {
+    background: var(--accent-bg) !important;
+    color: var(--text-on-accent) !important;
+  }
+
+  .uiResultsTable {
+    color: var(--text-primary) !important;
+    table th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+      &.activeSort {
+        background: var(--warning-bg) !important;
+      }
+    }
+    .tableWrapper > .body tr.selected,
+    .chromeBugWrapper .tableWrapper > table.body tbody tr.selected {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .tableWrapper > .body td,
+    .chromeBugWrapper .tableWrapper > table.body td {
+      border-color: rgba(var(--theme-fg-parts), 0.1) !important;
+      color: var(--text-primary) !important;
+    }
+    .chromeBugWrapper .tableWrapper > table.body tbody tr.selectableRow td.unitplan .unitplanTitleWrapper .concept {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    .chromeBugWrapper .tableWrapper > table.body tbody tr.selectableRow td.classes .classesWrapper .metaclass .classCode {
+      color: var(--text-muted) !important;
+    }
+    .chromeBugWrapper .tableWrapper > table.body tbody tr.selectableRow.selected td.classes .classesWrapper .metaclass .classCode {
+      color: rgba(var(--theme-sel-fg-parts), 0.5) !important;
+    }
+    .footer {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    .title {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .appManagement > .uiResultsTable .chromeBugWrapper .tableWrapper > table.body tbody tr td {
+    border-bottom: 1px solid var(--theme-offset-bg) !important;
+  }
+
+  .uiCardTable .card input {
+    background: rgba(var(--theme-bg-parts), 0.2) !important;
+    border-color: rgba(var(--theme-bg-parts), 0.1) !important;
+    color: var(--text-primary) !important;
+  }
+  .uiCardTable .cardTable > button {
+    color: var(--text-primary) !important;
+  }
+
+  .programSequences {
+    .sequences > .tableWrapper > .content td,
+    .classes > .tableWrapper > .content td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    .sequences > .tableWrapper > .content .new {
+      box-shadow: inset 8px 0 var(--accent-bg) !important;
+    }
+  }
+
+  .studentGoalsWrapper .goalManagement > .contents > .tableWrapper > table {
+    tbody tr > td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .stdTestImport .importContainer {
+    .sidebar .checklist table tr {
+      td {
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+      &.checked {
+        background: rgba(var(--theme-sel-bg-parts), 0.3) !important;
+      }
+    }
+    .data .tableContainer .headerWrapper .header,
+    .data .studentContainer table.student thead {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+      td {
+        border-color: var(--theme-offset-bg) !important;
+      }
+    }
+  }
+  .stdTestImport .importContainer .data {
+    .tableContainer .tableWrapper > table.body td.field,
+    .studentContainer > table.student td.field {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    .studentContainer > table.student tbody td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    .studentContainer > table.student tbody td .noneFound {
+      color: var(--warning-text) !important;
+    }
+    .studentContainer > table.student tbody td .suggestion {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .uiCutoffs > .cutoffs > .beta {
+    > .cutoffsWrapper {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    thead td {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    .tableWrapper td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    thead .upper,
+    .tableWrapper .upper {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-muted) !important;
+    }
+  }
+
+  .uiSlidePane > .pane.macro {
+    &.image .content > .figdetails,
+    &.resource .content > .figdetails {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      .label {
+        color: var(--text-primary) !important;
+      }
+    }
+    &.maths .explanation pre,
+    &.music .explanation pre {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &:hover {
+        background: var(--theme-offset-bg-more) !important;
+      }
+    }
+    &.theme .selector {
+      background: var(--theme-offset-bg) !important;
+    }
+    &.embed .url {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      .label {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .quickbar.inlineHelp {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  .legacy-root button.inlineHelp {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .reports > .filters .field {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--theme-offset-bg) !important;
+  }
+
+  .portalEditor .tabPage .people .staff .anyoneSelect,
+  .portalEditor .tabPage .people .students .anyoneSelect,
+  .creator-portal.filterBox .anyoneSelect {
+    background: var(--theme-offset-bg) !important;
+  }
+
+  .programmeShuffle.week {
+    background: var(--background-primary) !important;
+    .meta .number,
+    .lesson .meta .sequence .number {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    &.shuffled {
+      background: rgba(var(--theme-sel-bg-parts), 0.8) !important;
+    }
+  }
+  .programmeShuffle.lesson {
+    background: var(--theme-offset-bg) !important;
+    &.shuffled {
+      background: rgba(var(--theme-sel-bg-parts), 0.8) !important;
+    }
+  }
+
+  .programmeEditWrapper > .weeks > .week {
+    background: var(--background-primary) !important;
+    > .meta {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg) !important;
+      .number,
+      .lesson .head .number {
+        border-color: var(--theme-offset-bg) !important;
+      }
+    }
+    > .addLesson {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-muted) !important;
+    }
+    .lesson {
+      background: var(--theme-offset-bg) !important;
+      > .body {
+        background: var(--background-primary) !important;
+        border-color: var(--theme-offset-bg) !important;
+        .secondary {
+          border-color: var(--theme-offset-bg) !important;
+          .syllabus {
+            border-color: var(--theme-offset-bg) !important;
+          }
+        }
+        .tertiary {
+          border-color: var(--theme-offset-bg) !important;
+        }
+        .primary .editOutline {
+          background: var(--theme-offset-bg) !important;
+        }
+      }
+    }
+  }
+
+  .adminList .list .item {
+    &:not(.selected):hover {
+      background: var(--theme-offset-bg) !important;
+    }
+    &.selected,
+    &.selected > .uiButton {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .browserFilters {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .stdTestInstrument {
+    > .adminList {
+      background: var(--background-primary) !important;
+      .list .item {
+        border-color: var(--theme-offset-bg) !important;
+      }
+    }
+    table th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    table td {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .stdTestStatistics table {
+    thead tr th {
+      background: var(--theme-table-headers) !important;
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody tr td {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .syncManagement > .mainContainer {
+    background: var(--background-primary) !important;
+    .taskList .item.disabled {
+      color: var(--text-muted) !important;
+    }
+  }
+
+  .timetableSetup > .management > .edit > .definition {
+    td.injector div button {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+      &:hover {
+        background: var(--theme-offset-bg-more) !important;
+      }
+    }
+    td.gutter {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+      &.hovered {
+        background: var(--theme-offset-bg-more) !important;
+      }
+    }
+    .primary table tbody tr td.cycleperiod {
+      background: rgba(var(--theme-fg-parts), 0.1) !important;
+      &:not([data-id]) > div {
+        background: rgba(var(--theme-sel-bg-parts), 0.7) !important;
+        color: rgb(var(--theme-sel-fg-parts)) !important;
+      }
+    }
+  }
+
+  .assessmentSelector > table > tbody > tr {
+    border-color: var(--theme-offset-bg) !important;
+    &.selectedAssessment {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .programmeWispEdit > .editArea > .foot {
+    background: var(--background-primary) !important;
+    .essential {
+      border-color: var(--theme-offset-bg-more) !important;
+    }
+    textarea {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .uiSlidePane .addResource > fieldset > .radioGroupItem.selected {
+    background: var(--accent-bg) !important;
+    color: var(--text-on-accent) !important;
+  }
+
+  .pane.studentPlanTypesManager .managementContainer .labelListContainer .labelList {
+    .selected,
+    .default:active {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    .deleted {
+      color: var(--text-muted) !important;
+      font-style: italic !important;
+    }
+    .item {
+      border-bottom: 1px solid var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  div.attendance.container {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  table.attendance {
+    tbody tr:hover td.meta {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    tbody td.tutorial {
+      background: var(--theme-offset-bg) !important;
+    }
+    tbody td.trait {
+      background: var(--theme-offset-bg) !important;
+    }
+    tbody tr:hover {
+      background: var(--background-primary) !important;
+    }
+    thead td.now {
+      border-bottom-color: var(--accent-bg) !important;
+    }
+    td.now {
+      background: rgba(var(--theme-sel-bg-parts), 0.7) !important;
+      color: rgb(var(--theme-sel-fg-parts)) !important;
+    }
+  }
+  .attendanceLegend {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  div.marksbook.container {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  table.marksbook {
+    background: var(--background-primary) !important;
+    td.z {
+      border-color: var(--background-primary) !important;
+    }
+    thead tr td {
+      border-color: var(--background-primary) !important;
+    }
+    thead td.set {
+      border-color: var(--background-primary) !important;
+    }
+    tbody td.editable.appScore {
+      background: var(--warning-bg) !important;
+      color: var(--better-sub) !important;
+    }
+    tbody td.invalid {
+      background: var(--warning-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody td.criterion.calculated {
+      background: var(--warning-bg) !important;
+    }
+    tbody td.criterion.clipboard,
+    tbody td.assSubmission.clipboard {
+      background: var(--background-primary) !important;
+    }
+    tbody td.assSubmission.files.studentSubmission > .submission.student {
+      background: var(--success-bg, #4caf50) !important;
+    }
+    tbody td.assSubmission.files.teacherSubmission > .submission.teacher {
+      background: var(--accent-bg) !important;
+    }
+    tbody td div.annotation.expectation {
+      background: var(--warning-bg) !important;
+    }
+    tbody td div.annotation.public {
+      background: var(--accent-bg) !important;
+    }
+    tbody td div.annotation.private {
+      background: var(--warning-bg) !important;
+    }
+    tbody td div.annotation.reflection {
+      background: var(--success-bg, #4caf50) !important;
+    }
+    tbody td.attendance.clipboard,
+    tbody td.attendance.fixed,
+    tbody td.trait.fixed {
+      border-right-color: var(--background-primary) !important;
+    }
+    tfoot td {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    tfoot td.label {
+      color: var(--text-primary) !important;
+    }
+    tfoot td.attendance,
+    tfoot td.trait {
+      border-right-color: var(--background-primary) !important;
+    }
+  }
+
+  div.tooltip.mb-comment {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    .feedback.expectation .indicator::before {
+      background: var(--warning-bg) !important;
+    }
+    .feedback.public .indicator::before {
+      background: var(--accent-bg) !important;
+    }
+    .feedback.private .indicator::before {
+      background: var(--warning-bg) !important;
+    }
+    .feedback.reflection .indicator::before {
+      background: var(--success-bg, #4caf50) !important;
+    }
+  }
+
+  div#marksbookInput > .edit {
+    input {
+      background: var(--background-primary) !important;
+      border-color: var(--accent-bg) !important;
+      color: var(--text-primary) !important;
+      &.calculated {
+        background: var(--warning-bg) !important;
+        color: var(--better-sub) !important;
+      }
+    }
+    button {
+      border-color: var(--accent-bg) !important;
+      &:not(.depressed) {
+        background: var(--theme-offset-bg) !important;
+      }
+    }
+  }
+
+  #mbSubmissionsList {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > .wisp {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    > .files > .item > a,
+    > .backFiles > .item > a {
+      border-color: var(--theme-offset-bg) !important;
+    }
+  }
+
+  .reportCommentEditor > .content > .reportComment > .container {
+    .editor {
+      border-color: rgba(var(--theme-sel-bg-parts), 1) !important;
+      .wordcount.tooShort,
+      .wordcount.tooLong {
+        color: var(--warning-text) !important;
+      }
+      .wordcount {
+        background: rgba(var(--theme-fg-parts), 0.05) !important;
+      }
+      .namePanel {
+        background: var(--background-primary) !important;
+      }
+    }
+    .information .reportData .item,
+    .information .previousReports .report .item {
+      border-color: var(--theme-offset-bg) !important;
+      input.invalid {
+        border-color: var(--warning-bg) !important;
+        color: var(--warning-text) !important;
+      }
+    }
+  }
+
+  .programmeList {
+    th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    tfoot td {
+      background: var(--background-primary) !important;
+      color: var(--text-muted) !important;
+    }
+    tbody tr {
+      background: rgba(var(--theme-bg-parts), 0.4) !important;
+      border-color: var(--theme-offset-bg) !important;
+      &.selected {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+      > .cover > .container > .locked {
+        background: rgba(var(--theme-sel-bg-parts), 0.8) !important;
+        color: rgb(var(--theme-sel-fg-parts)) !important;
+      }
+      > .meta {
+        .title,
+        .reportSyllabusSet,
+        .course,
+        .owner,
+        .data,
+        .actions {
+          background: rgba(var(--theme-bg-parts), 0.8) !important;
+          color: var(--text-primary) !important;
+        }
+        .data {
+          border-color: var(--accent-bg) !important;
+        }
+        .actions {
+          background: rgba(var(--theme-bg-parts), 0.5) !important;
+        }
+      }
+      > .tags > button {
+        color: var(--text-primary) !important;
+      }
+      > .tags > .tags > .tag {
+        border-color: var(--text-primary) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .programImport > .summary > .resources {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .contactFormPanel > a {
+    border-color: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .programPermissions > .permissionType {
+    border-color: var(--theme-offset-bg) !important;
+    .header {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    .list .permission {
+      &:not(.selected):hover {
+        background: rgba(var(--theme-fg-parts), 0.1) !important;
+      }
+      &.selected {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+    }
+  }
+
+  .programSequences > .explanation {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+  .programSequences > .sequences > .header th,
+  .programSequences > .classes > .header th {
+    border-color: var(--theme-offset-bg) !important;
+  }
+  .programSequences > .sequences > .tableWrapper > .content td,
+  .programSequences > .classes > .tableWrapper > .content td {
+    border-color: var(--theme-offset-bg) !important;
+  }
+
+  .counterBullyingList {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > .list > .item {
+      background: rgba(var(--theme-fg-parts), 0.04) !important;
+      color: var(--text-primary) !important;
+    }
+    .add .uiButton {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .counterBullyingBrowser .incidentTable {
+    thead td {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody tr.selected td {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    tbody td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .cb-quant {
+    table tbody > tr:nth-of-type(2n) {
+      background: var(--theme-offset-bg-more) !important;
+    }
+    table td {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    table td.label,
+    table td.total {
+      background: var(--theme-table-headers) !important;
+    }
+    table tbody > tr:nth-of-type(2n) td.label,
+    table tbody > tr:nth-of-type(2n) td.total {
+      background: var(--theme-offset-bg) !important;
+    }
+    table th.total {
+      background: var(--theme-offset-bg) !important;
+    }
+    .content .manip .load {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .timetableManagerList.filterBox {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > input.singleSelect {
+      border-color: var(--accent-bg) !important;
+    }
+  }
+
+  .ttManager > .disabledWarning {
+    background: var(--theme-offset-bg-more) !important;
+    color: var(--text-primary) !important;
+  }
+  .timetableManagerClassOptions > .anyoneSelect {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+  .ptSSConnotation > .anyoneSelect {
+    border-right-color: var(--accent-bg) !important;
+  }
+  .pastoralEdit .note {
+    background: var(--theme-offset-bg) !important;
+    border-color: var(--theme-offset-bg-more) !important;
+    color: var(--text-primary) !important;
+  }
+
+  table.timetableManager,
+  table.timetableManager td {
+    border-color: var(--theme-offset-bg) !important;
+  }
+
+  .groupManager > .adminList {
+    background: var(--background-primary) !important;
+    > .list > .item {
+      border-color: var(--theme-offset-bg) !important;
+      > button {
+        border-color: var(--theme-offset-bg) !important;
+      }
+    }
+  }
+  .groupManager > .manageContainer {
+    .simpleGroupManager,
+    .queryBuilder {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // Attendance manager / Attendance administration
+  .attendanceAdmin {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    display: flex !important;
+    flex: 1 !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+
+    // Student list (anyoneSelect) - fixed width, do not grow
+    > .anyoneSelect.filterBox {
+      flex: 0 0 auto !important;
+      width: 280px !important;
+      min-width: 200px !important;
+      max-width: 280px !important;
+    }
+
+    // Also support adminList/itemList if used
+    > .adminList,
+    > .itemList.filterBox,
+    > .adminList.filterBox {
+      flex: 0 0 auto !important;
+      min-width: 200px !important;
+      max-width: 280px !important;
+    }
+
+    // Content panel (attendanceManage) - must take remaining space and be visible
+    > .attendanceManage.filterBox {
+      flex: 1 1 0% !important;
+      min-width: 300px !important;
+      overflow: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    &.absenteeSMS {
+      > .absenteeSMS {
+        background: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+      }
+      .absenteeListWrapper > .uiTable {
+        background: var(--background-primary) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+    &.reporting .adminList {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .attendanceManage {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+
+    &.filterBox {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+
+    > .prose {
+      color: var(--text-primary) !important;
+      .buttonMenu,
+      input {
+        border-color: var(--theme-offset-bg-more) !important;
+        color: var(--text-primary) !important;
+      }
+      .buttonMenu.depressed {
+        color: var(--text-primary) !important;
+      }
+      > .students,
+      > .dateCount {
+        color: var(--text-primary) !important;
+        > em {
+          background: var(--background-primary) !important;
+          border-color: var(--theme-offset-bg-more) !important;
+          color: var(--text-primary) !important;
+        }
+        &.warn > em {
+          background: var(--background-primary) !important;
+          color: var(--warning-text) !important;
+        }
+      }
+    }
+
+    > .metadata {
+      background: var(--theme-offset-bg) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+      > label {
+        color: var(--text-primary) !important;
+      }
+      > .authorisation > input,
+      > .relationship > input,
+      > .form > input,
+      > .details > textarea {
+        background: var(--background-primary) !important;
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .singleSelect > li.attendanceAdminResetType {
+    background: var(--warning-bg) !important;
+    color: var(--warning-text) !important;
+  }
+
+  .attendanceGoggles {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+
+    > .prose {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    > .preamble {
+      color: var(--text-primary) !important;
+    }
+    > .students,
+    > .days {
+      color: var(--text-primary) !important;
+      > input {
+        background: var(--background-primary) !important;
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+    > .students + .days {
+      border-color: var(--theme-offset-bg) !important;
+    }
+    > .maps > .student {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .suggestions {
+      color: var(--text-primary) !important;
+      > h2 {
+        color: var(--text-primary) !important;
+      }
+      > .preamble {
+        color: var(--text-primary) !important;
+      }
+      > .bulkSelect {
+        color: var(--text-primary) !important;
+      }
+      > ul > li {
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+        > .type {
+          color: var(--text-primary) !important;
+        }
+        > .range {
+          color: var(--text-muted) !important;
+        }
+      }
+    }
+  }
+
+  .attendanceDayView table {
+    > thead > tr > td {
+      background: rgba(var(--theme-bg-parts), 0.8) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    > tbody > tr {
+      &:nth-of-type(2n) {
+        background: rgba(var(--theme-fg-parts), 0.05) !important;
+      }
+      &:hover {
+        background: var(--theme-offset-bg) !important;
+      }
+      > td {
+        border-color: var(--theme-offset-bg-more) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .attendanceTutorialQueue table {
+    th {
+      background: rgba(var(--theme-bg-parts), 0.8) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    tbody tr:nth-of-type(2n) {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+    }
+    tbody tr.selected {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    td {
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .metaManager .terms .item {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+    &.selected {
+      box-shadow: inset 0 0 0 2px var(--accent-bg) !important;
+    }
+  }
+
+  .studentSummary .brief table,
+  .studentGoalsWrapper .brief table {
+    td,
+    th {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    thead th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .documentsPage > .uiTable {
+    table th {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+    td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .notices > .notice {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > .meta > .vis {
+      background: var(--theme-offset-bg) !important;
+      &.student {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+    }
+    > .contents iframe {
+      background: rgba(var(--theme-bg-parts), 0.5) !important;
+    }
+  }
+  .notices-edit > fieldset {
+    border-color: var(--theme-offset-bg) !important;
+  }
+
+  .manage-labels > .labelList > .list > .item {
+    border-color: var(--theme-offset-bg) !important;
+    &.selected,
+    &.selected > .uiButton {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .classSelect > .list {
+    background: var(--background-primary) !important;
+    border-color: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .permissions {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > table {
+      border-color: var(--theme-offset-bg) !important;
+      thead tr th,
+      tfoot tr th {
+        background: var(--background-secondary) !important;
+        border-color: var(--theme-offset-bg) !important;
+      }
+      tbody tr {
+        &:nth-child(2n + 1) {
+          background: var(--theme-offset-bg) !important;
+        }
+        &:hover {
+          background: var(--theme-offset-bg-more) !important;
+        }
+        > td {
+          border-color: var(--theme-offset-bg) !important;
+          &.granted {
+            background: rgba(var(--theme-sel-bg-parts), 0.2) !important;
+          }
+          &.group {
+            background: var(--background-primary) !important;
+          }
+        }
+      }
+      tbody tr:nth-child(2n + 1) td.group {
+        background: var(--background-secondary) !important;
+      }
+    }
+  }
+
+  .permissionGroups {
+    > .groupSelect {
+      border-color: var(--theme-offset-bg) !important;
+      > .list > .item {
+        border-color: var(--theme-offset-bg) !important;
+      }
+    }
+    > .edit > .anyoneSelect {
+      border-color: var(--theme-offset-bg) !important;
+    }
+  }
+
+  .defaultWelcome {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > section.sip {
+      background: var(--theme-offset-bg) !important;
+    }
+  }
+
+  .splashManager > .tableWrapper > .content td {
+    border-color: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .reliefManager > .body {
+    > .metadata {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+    > .adminList > .list > .item {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &.busy {
+        background: var(--theme-offset-bg) !important;
+        color: var(--text-muted) !important;
+      }
+      &.busy.selected {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+    }
+    > .reasoning {
+      color: var(--text-primary) !important;
+      > .staff,
+      > .room {
+        color: var(--text-primary) !important;
+      }
+      > .item,
+      > .overall {
+        border-color: var(--theme-offset-bg) !important;
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+
+  .seatingAttendance > .seating > .room {
+    background: rgba(var(--theme-bg-parts), 0.8) !important;
+    color: var(--text-primary) !important;
+  }
+  .seatingAttendance.design > .seating > .room {
+    background-image: repeating-linear-gradient(to left, var(--theme-offset-bg), var(--theme-offset-bg) 1px, transparent 1px, transparent 1%),
+      repeating-linear-gradient(to top, var(--theme-offset-bg), var(--theme-offset-bg) 1px, transparent 1px, transparent 1%) !important;
+    > .seatingObject.selected {
+      filter: drop-shadow(0 0 2px var(--accent-bg)) !important;
+    }
+  }
+
+  .seatingStudent {
+    color: var(--text-primary) !important;
+    &.seated > .name {
+      background: var(--background-primary) !important;
+    }
+    > .photo {
+      background: var(--background-primary) !important;
+      > .attendance {
+        background: rgba(var(--theme-bg-parts), 0.8) !important;
+      }
+    }
+  }
+
+  .unitplanConceptlist {
+    border-color: var(--theme-offset-bg) !important;
+    > ul > li {
+      background: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &.key {
+        background: var(--warning-bg) !important;
+        color: var(--better-sub) !important;
+      }
+    }
+  }
+  .unitplanConceptlistAvailable > ul > li {
+    background: var(--theme-offset-bg) !important;
+    &.key {
+      background: var(--warning-bg) !important;
+    }
+  }
+
+  .healthCentre > .sickbayEntry > .contents {
+    .group > h3 {
+      background: rgba(var(--theme-fg-parts), 0.04) !important;
+      color: var(--text-primary) !important;
+    }
+    .group table tbody td {
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .commentbank {
+    border-color: var(--theme-offset-bg-more) !important;
+    > .filters {
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+    > .list {
+      background: var(--background-secondary) !important;
+      color: var(--text-primary) !important;
+      > .item {
+        border-color: var(--theme-offset-bg) !important;
+        &:hover {
+          background: var(--theme-offset-bg) !important;
+        }
+      }
+    }
+  }
+
+  .folios > .folioViewer > .pane {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    > .list > .item.current {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .pane.dashletManagement > .content > .dashletConfigure > .configure > .field > label {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .filterBox {
+    background: rgba(var(--theme-bg-parts), 0.8) !important;
+    color: var(--text-primary) !important;
+    > button {
+      color: var(--text-primary) !important;
+    }
+    button.load {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+
+  .filterbarByStaff.popup > .anyoneSelect.filterBox {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .academicReportsWrapper .qual .popup .anyoneSelect,
+  .studentSummary .qual .popup .anyoneSelect,
+  .programmeListByStaff.popup .anyoneSelect {
+    background: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .studentSummary .detail .pastoral .uiTable .staff .staff_via,
+  .academicReportsWrapper .qual .uiTable .staff .staff_via,
+  .studentSummary .qual .uiTable .staff .staff_via,
+  .studentGoalsWrapper .detail .pastoral .uiTable .staff .staff_via {
+    color: var(--text-muted) !important;
+  }
+  .studentSummary .detail .pastoral .uiTable .dates .date_joiner,
+  .academicReportsWrapper .qual .uiTable .dates .date_joiner,
+  .studentSummary .qual .uiTable .dates .date_joiner,
+  .studentSummary > .correspondence .log .uiTable .dates .date_joiner,
+  .studentGoalsWrapper .detail .pastoral .uiTable .dates .date_joiner {
+    color: var(--text-muted) !important;
+  }
+
+  [class*="AcademicResult__cohort___"] > li[class*="AcademicResult__min___"] {
+    --indicator-colour: var(--warning-bg) !important;
+  }
+  [class*="AcademicResult__cohort___"] > li[class*="AcademicResult__max___"] {
+    --indicator-colour: var(--success-bg, #4caf50) !important;
+  }
+  [class*="AcademicResult__cohort___"] > li[class*="AcademicResult__avg___"] {
+    --indicator-colour: var(--accent-bg) !important;
+  }
+
+  [class*="SimpleGrade__SimpleGrade___"] {
+    --accent-colour: var(--accent-bg) !important;
+    --contrast-colour: var(--text-on-accent) !important;
+  }
+
+  [class*="Thermoscore__Thermoscore___"] {
+    --background-color: var(--accent-bg) !important;
+    --fill-colour: var(--accent-bg) !important;
+    border-color: var(--background-primary) !important;
+    [class*="Thermoscore__marker___"] {
+      &[class*="Thermoscore__min___"] {
+        --fill-colour: var(--warning-bg) !important;
+      }
+      &[class*="Thermoscore__avg___"] {
+        --fill-colour: var(--accent-bg) !important;
+      }
+      &[class*="Thermoscore__max___"] {
+        --fill-colour: var(--success-bg, #4caf50) !important;
+      }
+    }
+  }
+
+  [class*="AvailabilitySlider__AvailabilitySlider___"] {
+    > [class*="AvailabilitySlider__untravelled___"] {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+    }
+    [class*="AvailabilitySlider__blob___"] {
+      border-color: rgba(var(--theme-fg-parts), 0.05) !important;
+      background: var(--background-primary) !important;
+    }
+  }
+
+  [class*="Documentation__menu___"] {
+    h2 {
+      color: var(--text-muted) !important;
+      border-color: var(--theme-offset-bg) !important;
+    }
+    a {
+      color: var(--text-muted) !important;
+      &:hover {
+        background: var(--theme-offset-bg) !important;
+      }
+    }
+  }
+
+  code.class {
+    border-color: var(--warning-bg) !important;
+    background: var(--theme-offset-bg) !important;
+  }
+  code.attribute {
+    border-color: var(--success-bg, #4caf50) !important;
+    background: var(--theme-offset-bg) !important;
+  }
+  code.property {
+    border-color: var(--accent-bg) !important;
+    background: var(--theme-offset-bg) !important;
+  }
+  code.element {
+    border-color: var(--warning-bg) !important;
+    background: var(--theme-offset-bg) !important;
+  }
+
+  [class*="BasicPanel__BasicPanel___"] > ol > li {
+    border-color: var(--theme-offset-bg) !important;
+    color: var(--text-primary) !important;
+    > :not(button).open {
+      border-color: rgba(var(--theme-fg-parts), 0.2) !important;
+    }
+    &.add > .add {
+      background: var(--background-primary) !important;
+    }
+  }
+
+  [class*="InlineHelp__InlineHelp___"] > button > [class*="InlineHelp__warn___"] {
+    color: var(--warning-bg) !important;
+  }
+
+  [class*="Calendar__grid___"] [class*="Calendar__day___"] {
+    &:hover:not([class*="Calendar__disabled___"]) > div {
+      background: var(--theme-offset-bg) !important;
+    }
+    &[class*="Calendar__today___"] > div {
+      background: rgba(var(--theme-sel-bg-parts), 0.5) !important;
+      color: rgb(var(--theme-sel-fg-parts)) !important;
+    }
+    &[class*="Calendar__selected___"] > div {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+    &[class*="Calendar__sibling___"],
+    &[class*="Calendar__disabled___"] {
+      color: var(--text-muted) !important;
+    }
+  }
+
+  [class*="MenuButton__Menu___"][class*="MenuButton__invalid___"] > button {
+    box-shadow: inset 0 0 2px 1px var(--warning-bg) !important;
+  }
+  [class*="MenuButton__MenuPanel___"] {
+    border-color: var(--theme-offset-bg) !important;
+    [class*="MenuButton__toggles___"] [class*="MenuButton__all___"]:hover,
+    [class*="MenuButton__toggles___"] [class*="MenuButton__none___"]:hover {
+      background: var(--theme-offset-bg) !important;
+    }
+    menu > li:hover {
+      background: var(--theme-offset-bg) !important;
+    }
+  }
+
+  [class*="Button__Button___"] {
+    &:not([disabled]):focus,
+    &:not([disabled]):active,
+    &[class*="Button__highlight___"] {
+      border-color: var(--accent-bg) !important;
+    }
+    &[class*="Button__inverse___"] {
+      background: var(--text-primary) !important;
+      color: var(--background-primary) !important;
+    }
+  }
+
+  .quickbar {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .uiTable {
+    table th {
+      background: var(--theme-table-headers) !important;
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+      &.sorted {
+        background: var(--warning-bg) !important;
+      }
+    }
+    tbody tr:nth-of-type(2n) {
+      background: rgba(var(--theme-fg-parts), 0.05) !important;
+    }
+    td {
+      border-color: var(--theme-offset-bg-more) !important;
+      color: var(--text-primary) !important;
+    }
+    .footer {
+      background: var(--theme-table-headers) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .legacy-root input.singleSelect {
+    &:focus {
+      background: var(--accent-bg) !important;
+      color: var(--text-on-accent) !important;
+    }
+  }
+  .legacy-root .singleSelect.overlay {
+    background: var(--background-primary) !important;
+    color: var(--text-muted) !important;
+  }
+  .legacy-root input.singleSelect:active + .singleSelect.overlay,
+  .legacy-root input.singleSelect:focus + .singleSelect.overlay {
+    background: var(--accent-bg) !important;
+    color: var(--text-on-accent) !important;
+  }
+
+  .formattedTextNew > .footer {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .student .formattedText > .wrapper > .cke > .cke_inner > .cke_contents,
+  .contact .formattedText > .wrapper > .cke > .cke_inner > .cke_contents {
+    border-color: var(--theme-offset-bg) !important;
+  }
+
+  .legacy-root .uiFileHandler {
+    background: rgba(var(--theme-bg-parts), 0.8) !important;
+    color: var(--text-primary) !important;
+    > .note {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .uiFileHandlerPanel {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .formattedText > .footer {
+    background: var(--background-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  table.students {
+    thead tr td {
+      background: var(--background-primary) !important;
+      border-color: var(--theme-offset-bg) !important;
+      color: var(--text-primary) !important;
+      &.meta .wrap {
+        color: var(--text-primary) !important;
+        h2 {
+          background: rgba(var(--theme-fg-parts), 0.7) !important;
+        }
+        .details {
+          background: rgba(var(--theme-fg-parts), 0.5) !important;
+          color: var(--background-primary) !important;
+        }
+      }
+    }
+    tbody tr td {
+      border-color: rgba(var(--theme-fg-parts), 0.05) !important;
+      color: var(--text-primary) !important;
+      &.meta {
+        background: var(--background-primary) !important;
+        border-color: var(--theme-offset-bg) !important;
+        &.active {
+          background: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
+        }
+      }
+      &.demographics {
+        color: var(--text-muted) !important;
+      }
+      &.code {
+        border-color: var(--background-primary) !important;
+        color: var(--text-muted) !important;
+      }
+    }
+    tbody tr:nth-child(2n) td.meta {
+      background: var(--theme-offset-bg) !important;
+    }
+    tfoot tr td.label {
+      border-color: var(--background-primary) !important;
+    }
+  }
+
+  #metaAlertPopup {
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
   }
   
   // Custom Reports page styling
