@@ -3,6 +3,7 @@
   import Settings from "./settings/general.svelte";
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
+  import Dashboard from "./settings/dashboard.svelte";
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
@@ -278,6 +279,7 @@
           props: { showColourPicker: openColourPicker },
         },
         { title: "Shortcuts", Content: Shortcuts },
+        { title: "Dashboard", Content: Dashboard },
         { title: "Themes", Content: Theme },
       ]}
     />

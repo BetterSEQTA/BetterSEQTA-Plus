@@ -127,6 +127,13 @@ function getDefaultValues(): SettingsState {
     customshortcuts: [],
     lettergrade: false,
     newsSource: "australia",
+    teachHomeWidgets: {
+      shortcuts: { toggle: true },
+      timetable: { toggle: true },
+      upcomingAssessments: { toggle: true },
+      messages: { toggle: true },
+      notices: { toggle: true },
+    },
   };
 }
 

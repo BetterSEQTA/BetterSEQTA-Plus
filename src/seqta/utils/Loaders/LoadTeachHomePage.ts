@@ -21,11 +21,115 @@ let LessonInterval: any;
 let currentSelectedDate = new Date();
 let loadingTimeout: any;
 let cachedStaffId: number | null = null;
+let cachedStaffName: string | null = null;
 let loadingIndicatorObserver: MutationObserver | null = null;
 let showingOriginalWelcome = false; // Track if we're showing original welcome page
 
 // BetterSEQTA+ homepage route (separate from Teach's welcome page)
 const BETTERSEQTA_HOME_ROUTE = '/betterseqta-home';
+
+const DEFAULT_TEACH_HOME_WIDGETS: Record<string, { toggle: boolean }> = {
+  shortcuts: { toggle: true },
+  timetable: { toggle: true },
+  upcomingAssessments: { toggle: true },
+  messages: { toggle: true },
+  notices: { toggle: true },
+};
+
+/**
+ * Fetches staff display name from user/get endpoint
+ */
+async function getStaffName(): Promise<string | null> {
+  if (cachedStaffName) {
+    return cachedStaffName;
+  }
+  try {
+    const response = await fetch(`${location.origin}/seqta/ta/json/user/get`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const payload = data.payload;
+      if (payload) {
+        const name = payload.firstName ?? payload.name ?? payload.displayName ?? null;
+        if (name && typeof name === "string") {
+          cachedStaffName = name.trim();
+          return cachedStaffName;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[BetterSEQTA+] Failed to get staff name:", e);
+  }
+  return null;
+}
+
+/**
+ * Renders the stats summary bar with message count, assessments to mark, and lessons today
+ */
+function renderStatsSummary(
+  messageCount: number,
+  assessmentCount: number,
+  lessonCount: number,
+) {
+  const container = document.getElementById("stats-summary");
+  if (!container) return;
+
+  const unreadCount = messageCount; // Show total for now; API may provide unread
+  const stats = [
+    {
+      label: unreadCount === 1 ? "message" : "messages",
+      count: unreadCount,
+      href: "/messages",
+    },
+    {
+      label: "to mark",
+      count: assessmentCount,
+      href: "/marksbook",
+    },
+    {
+      label: lessonCount === 1 ? "lesson" : "lessons",
+      count: lessonCount,
+      href: "#day-container",
+    },
+  ];
+
+  container.innerHTML = stats
+    .map(
+      (s) =>
+        `<a href="${s.href}" class="stats-pill">${s.count} ${s.label}</a>`,
+    )
+    .join("");
+}
+
+/**
+ * Returns time-based greeting (Good morning/afternoon/evening)
+ */
+function getTimeBasedGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+/**
+ * Applies widget visibility based on teachHomeWidgets settings
+ */
+function applyWidgetVisibility() {
+  const widgets = settingsState.teachHomeWidgets ?? DEFAULT_TEACH_HOME_WIDGETS;
+  const homeContainer = document.getElementById("home-container");
+  if (!homeContainer) return;
+
+  const widgetContainers = homeContainer.querySelectorAll("[data-home-widget]");
+  for (const el of widgetContainers) {
+    const key = el.getAttribute("data-home-widget");
+    if (!key) continue;
+    const toggle = widgets[key]?.toggle ?? true;
+    (el as HTMLElement).style.display = toggle ? "" : "none";
+  }
+}
 
 /**
  * Hides SEQTA's loading indicators/spinners when on BetterSEQTA+ home page
@@ -572,15 +676,16 @@ async function loadTeachHomePageContent() {
   const skeletonStructure = stringToHTML(/* html */`
     <div class="home-container" id="home-container">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 8px 0;">
-        <h2 style="margin: 0; font-size: 20px; font-weight: 600;">BetterSEQTA+ Home</h2>
+        <h2 id="home-greeting" style="margin: 0; font-size: 20px; font-weight: 600;">BetterSEQTA+ Home</h2>
         <button id="toggle-welcome-view" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-secondary, rgba(255,255,255,0.1)); background: var(--button-hover, rgba(255,255,255,0.05)); color: var(--text-primary, white); cursor: pointer; font-size: 14px; transition: all 0.2s ease; font-weight: 500;">
           View Original Welcome
         </button>
       </div>
-      <div class="border shortcut-container">
+      <div class="stats-summary" id="stats-summary"></div>
+      <div class="border shortcut-container" data-home-widget="shortcuts">
         <div class="border shortcuts" id="shortcuts"></div>
       </div>
-      <div class="border timetable-container">
+      <div class="border timetable-container" data-home-widget="timetable">
         <div class="home-subtitle">
           <h2 id="home-lesson-subtitle">Today's Lessons</h2>
           <div class="timetable-arrows">
@@ -595,7 +700,7 @@ async function loadTeachHomePageContent() {
         <div class="day-container loading" id="day-container">
         </div>
       </div>
-      <div class="border upcoming-container">
+      <div class="border upcoming-container" data-home-widget="upcomingAssessments">
         <div class="upcoming-title">
           <h2 class="home-subtitle">Upcoming Assessments to Mark</h2>
           <div class="upcoming-filters" id="upcoming-filters"></div>
@@ -603,7 +708,7 @@ async function loadTeachHomePageContent() {
         <div class="upcoming-items loading" id="upcoming-items">
         </div>
       </div>
-      <div class="border messages-container">
+      <div class="border messages-container" data-home-widget="messages">
         <div class="home-subtitle" style="margin-bottom: 12px;">
           <h2>Direqt Messages</h2>
           <a href="/messages" style="color: var(--text-secondary, rgba(255,255,255,0.7)); text-decoration: none; font-size: 14px; transition: color 0.2s ease; margin-right: 20px;">View All</a>
@@ -611,7 +716,7 @@ async function loadTeachHomePageContent() {
         <div class="messages-items loading" id="messages-container">
         </div>
       </div>
-      <div class="border notices-container">
+      <div class="border notices-container" data-home-widget="notices">
         <div class="home-subtitle">
           <h2>Notices</h2>
           <input type="date" style="margin-right: 20px;" />
@@ -687,8 +792,25 @@ async function loadTeachHomePageContent() {
   // Set up persistent observer to hide loading indicators while on BetterSEQTA home page
   setupLoadingIndicatorObserver();
 
+  // Apply widget visibility from settings
+  applyWidgetVisibility();
+
+  // Listen for widget visibility changes (e.g. from settings popup)
+  settingsState.register("teachHomeWidgets", () => {
+    applyWidgetVisibility();
+  });
+
   // Update page title
   document.title = "Home ― BetterSEQTA+";
+
+  // Update greeting with staff name (in parallel with widget load)
+  getStaffName().then((name) => {
+    const greetingEl = document.getElementById("home-greeting");
+    if (greetingEl) {
+      const greeting = getTimeBasedGreeting();
+      greetingEl.textContent = name ? `${greeting}, ${name}!` : `${greeting}!`;
+    }
+  });
   
   // Load all widget data
   await loadHomePageWidgets();
@@ -757,6 +879,11 @@ async function loadHomePageWidgets() {
     await renderMessagesWidget(messages);
     messagesContainer.classList.remove("loading");
   }
+
+  // Render stats summary bar
+  const unreadMessageCount = messages.filter((m: any) => m.read === 0).length;
+  const lessonCount = document.querySelectorAll("#day-container .day").length;
+  renderStatsSummary(unreadMessageCount, assessmentsToMark.length, lessonCount);
   
   return cleanup;
 }

@@ -1779,6 +1779,37 @@ body:has([data-betterseqta-homepage="true"]) {
     .notices-container h2 {
       color: var(--text-primary) !important;
     }
+
+    // Stats summary bar
+    .stats-summary {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+
+      .stats-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--accent-bg, rgba(76, 175, 80, 0.2));
+        color: var(--text-primary, white);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid var(--accent-ring, rgba(76, 175, 80, 0.4));
+
+        &:hover {
+          transform: scale(1.02);
+          opacity: 0.95;
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
   }
 }
 #main > .reports > .item > .report > .term {

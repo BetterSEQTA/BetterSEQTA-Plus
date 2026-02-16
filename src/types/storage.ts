@@ -61,6 +61,11 @@ export interface SettingsState {
   hideSensitiveContent?: boolean;
   sipAutoClearOnStudentChange?: boolean;
 
+  // Teach home page widget visibility
+  teachHomeWidgets?: {
+    [key: string]: ToggleItem;
+  };
+
   // depreciated keys
   animatedbk: boolean;
   bksliderinput: string;
