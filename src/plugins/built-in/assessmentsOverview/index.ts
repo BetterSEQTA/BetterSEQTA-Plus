@@ -1,7 +1,7 @@
 import type { Plugin } from "../../core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { getAssessmentsData } from "./api";
-import { renderSkeletonLoader, renderErrorState } from "./ui";
+import { renderErrorState, renderSkeletonLoader } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
 import { isSEQTALearnSync } from "@/seqta/utils/platformDetection";

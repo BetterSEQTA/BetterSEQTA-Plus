@@ -26,19 +26,6 @@ if (document.childNodes[1]) {
   init();
 }
 
-/**
- * Initializes BetterSEQTA+ on a SEQTA page.
- *
- * This function performs the following steps:
- * 1. Verifies that the current page is a SEQTA page.
- * 2. Injects CSS styles for document loading.
- * 3. Changes the page's favicon.
- * 4. Initializes the extension's settings state.
- * 5. Sets default storage if settings are not already defined.
- * 6. Calls the main function to apply core BetterSEQTA+ modifications.
- * 7. Initializes legacy and new plugins if the extension is enabled.
- * 8. Logs success or error messages during initialization.
- */
 async function init() {
   // Use improved platform detection instead of just checking title format
   // This handles cases where title is "In brief - Student summary - SEQTA" etc.
@@ -46,7 +33,6 @@ async function init() {
   const hasSEQTATitle = document.title.includes("SEQTA") || platform !== 'unknown';
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-    // Verify we are on a SEQTA page
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
@@ -67,12 +53,30 @@ async function init() {
     documentLoadStyle.textContent = documentLoadCSS;
     document.head.appendChild(documentLoadStyle);
 
-    const icons =
-      document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]');
+    replaceIcons();
 
-    icons.forEach((link) => {
-      link.href = icon48;
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+
+        if (
+          mutation.type === "attributes" &&
+          mutation.target instanceof HTMLLinkElement &&
+          mutation.target.rel.includes("icon") &&
+          mutation.attributeName === "href"
+        ) {
+          replaceIcons();
+          return;
+        }
+      }
     });
+
+    observer.observe(document.head, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href"],
+    });
+
+
 
     try {
       await initializeSettingsState();
@@ -96,8 +100,18 @@ async function init() {
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
     }
   }
+}
+
+function replaceIcons() {
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+    .forEach((link) => {
+      if (link.href !== icon48) {
+        link.href = icon48;
+      }
+    });
 }

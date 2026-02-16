@@ -69,3 +69,71 @@
 .dark .highlight {
   background-color: rgba(255, 230, 100, 0.4);
 }
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Progress indicator next to search trigger */
+.search-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  min-width: 120px;
+  max-width: 200px;
+  height: 32px;
+}
+
+.search-progress-bar-wrapper {
+  flex: 1;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  display: none;
+  min-width: 60px;
+}
+
+.dark .search-progress-bar-wrapper {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb, #3b82f6);
+  transition: width 0.3s ease-out;
+  width: 0%;
+  position: relative;
+  border-radius: 2px;
+}
+
+.search-progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+  border-radius: 2px;
+}
+
+.search-progress-text {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  display: none;
+  font-weight: 500;
+}
+
+.dark .search-progress-text {
+  color: #999;
+}

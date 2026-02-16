@@ -5,8 +5,10 @@
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
+    "autoaudit": "npm audit && npm audit fix && npm run build",
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",
+    "compile": "npm i && npm run build",
     "build": "cross-env MODE=chrome vite build && cross-env MODE=firefox vite build",
     "build:chrome": "cross-env MODE=chrome vite build",
     "build:firefox": "cross-env MODE=firefox vite build",
@@ -93,6 +95,7 @@
     "mathjs": "^14.4.0",
     "million": "^3.1.11",
     "motion": "^12.4.12",
+    "pdfjs-dist": "^5.4.530",
     "postcss": "^8.5.3",
     "react": "17",
     "react-best-gradient-color-picker": "3.0.11",

@@ -8,7 +8,7 @@ import browser from "webextension-polyfill";
 export function mountSearchBar(
   titleElement: Element,
   api: any,
-  appRef: { current: any; storageChangeHandler?: any },
+  appRef: { current: any; storageChangeHandler?: any; progressHandler?: any },
 ) {
   if (titleElement.querySelector(".search-trigger")) {
     return;
@@ -20,6 +20,72 @@ export function mountSearchBar(
 
   const searchButton = document.createElement("div");
   searchButton.className = "search-trigger";
+  
+  // Create progress indicator container
+  const progressContainer = document.createElement("div");
+  progressContainer.className = "search-progress-container";
+  progressContainer.style.cssText = "display: flex; align-items: center; gap: 8px; margin-left: 8px; min-width: 120px;";
+  
+  // Create progress bar
+  const progressBarWrapper = document.createElement("div");
+  progressBarWrapper.className = "search-progress-bar-wrapper";
+  progressBarWrapper.style.cssText = "flex: 1; height: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 2px; overflow: hidden; display: none;";
+  
+  const progressBar = document.createElement("div");
+  progressBar.className = "search-progress-bar";
+  progressBar.style.cssText = "height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb, #3b82f6); transition: width 0.3s ease-out; width: 0%; position: relative;";
+  
+  // Add shimmer effect
+  const shimmer = document.createElement("div");
+  shimmer.style.cssText = "position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite;";
+  progressBar.appendChild(shimmer);
+  progressBarWrapper.appendChild(progressBar);
+  
+  // Create progress text
+  const progressText = document.createElement("span");
+  progressText.className = "search-progress-text";
+  progressText.style.cssText = "font-size: 11px; color: #666; white-space: nowrap; display: none;";
+  
+  progressContainer.appendChild(progressBarWrapper);
+  progressContainer.appendChild(progressText);
+  
+  // Indexing state
+  let isIndexing = false;
+  let completedJobs = 0;
+  let totalJobs = 0;
+  let indexingStatus: string | null = null;
+  
+  const updateProgressDisplay = () => {
+    if (isIndexing && totalJobs > 0) {
+      const percentage = Math.round((completedJobs / totalJobs) * 100);
+      progressBar.style.width = `${Math.max(2, percentage)}%`;
+      progressBarWrapper.style.display = "block";
+      
+      if (indexingStatus) {
+        progressText.textContent = indexingStatus.length > 20 ? indexingStatus.substring(0, 20) + "..." : indexingStatus;
+        progressText.style.display = "block";
+      } else {
+        progressText.textContent = `${completedJobs}/${totalJobs} (${percentage}%)`;
+        progressText.style.display = "block";
+      }
+    } else {
+      progressBarWrapper.style.display = "none";
+      progressText.style.display = "none";
+    }
+  };
+  
+  // Listen for indexing progress events
+  const progressHandler = (event: CustomEvent) => {
+    const { completed, total, indexing, status } = event.detail;
+    completedJobs = completed || 0;
+    totalJobs = total || 0;
+    isIndexing = indexing || false;
+    indexingStatus = status || null;
+    updateProgressDisplay();
+  };
+  
+  window.addEventListener('indexing-progress', progressHandler as EventListener);
+  appRef.progressHandler = progressHandler;
   
   const updateSearchButtonDisplay = () => {
     searchButton.innerHTML = /* html */ `
@@ -34,6 +100,7 @@ export function mountSearchBar(
 
   updateSearchButtonDisplay();
   titleElement.appendChild(searchButton);
+  titleElement.appendChild(progressContainer);
 
   // Listen for hotkey setting changes
   const handleStorageChange = (changes: any, area: string) => {
@@ -72,7 +139,7 @@ export function mountSearchBar(
   }
 }
 
-export function cleanupSearchBar(appRef: { current: any; storageChangeHandler?: any }) {
+export function cleanupSearchBar(appRef: { current: any; storageChangeHandler?: any; progressHandler?: any }) {
   if (appRef.current) {
     try {
       unmount(appRef.current);
@@ -82,10 +149,22 @@ export function cleanupSearchBar(appRef: { current: any; storageChangeHandler?: 
     }
   }
 
+  // Remove progress event listener
+  if (appRef.progressHandler) {
+    window.removeEventListener('indexing-progress', appRef.progressHandler as EventListener);
+    appRef.progressHandler = null;
+  }
+
   // Remove search trigger button
   const searchTrigger = document.querySelector(".search-trigger");
   if (searchTrigger) {
     searchTrigger.remove();
+  }
+  
+  // Remove progress container
+  const progressContainer = document.querySelector(".search-progress-container");
+  if (progressContainer) {
+    progressContainer.remove();
   }
 
   // Remove search root

@@ -1,4 +1,4 @@
-import type { Job, IndexItem } from "../types";
+import type { IndexItem, Job } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
@@ -604,22 +604,34 @@ export const messagesJob: Job = {
       if (processedItems.length > 0) {
         try {
           const currentItems = await loadAllStoredItems();
-          currentItems.forEach((item) => {
-            const jobDef =
-              jobs[item.category] ||
-              Object.values(jobs).find((j) => j.id === item.category) ||
-              jobs[item.renderComponentId];
-            if (jobDef) {
-              const renderComponent =
-                renderComponentMap[jobDef.renderComponentId];
-              if (renderComponent) {
-                item.renderComponent = renderComponent;
+          // Create new objects to avoid XrayWrapper issues in Firefox
+          const itemsWithComponents = currentItems.map((item) => {
+            try {
+              const jobDef =
+                jobs[item.category] ||
+                Object.values(jobs).find((j) => j.id === item.category) ||
+                jobs[item.renderComponentId];
+              let renderComponent = item.renderComponent;
+              if (jobDef) {
+                renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
+              } else if (renderComponentMap[item.renderComponentId]) {
+                renderComponent = renderComponentMap[item.renderComponentId];
               }
-            } else if (renderComponentMap[item.renderComponentId]) {
-              item.renderComponent = renderComponentMap[item.renderComponentId];
+              // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
+              try {
+                const cloned = JSON.parse(JSON.stringify(item));
+                cloned.renderComponent = renderComponent;
+                return cloned;
+              } catch (e) {
+                // Fallback to shallow copy if deep clone fails
+                return { ...item, renderComponent };
+              }
+            } catch (error) {
+              // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
+              return item;
             }
           });
-          loadDynamicItems(currentItems);
+          loadDynamicItems(itemsWithComponents);
           window.dispatchEvent(
             new CustomEvent("dynamic-items-updated", {
               detail: {
