@@ -32,6 +32,15 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.4.14 - Search & Assessments Update</h1>
+      <li>Global Search improvements: indexing progress, more accurate results, and now includes past assessments/assignments</li>
+      <li>Assessment Averages now parse weightings when possible for more accurate subject averages</li>
+      <li>Added weight labels to assessment items (including proper handling of 0% and missing weights)</li>
+      <li>Fixed homepage tutor lesson colours and assessments/courses visibility issues</li>
+      <li>Fixed upcoming lessons tutorial room not displaying</li>
+      <li>Fixed favicon not showing / race condition issues</li>
+      <li>Other minor styling and stability improvements</li>
+
       <h1>3.4.13 - Bug Fixes & Styling Improvements</h1>
       <li>Fixed house/year box hard failing when house_colour does not exist</li>
       <li>Fixed message of the day being unreadable in light mode</li>
