@@ -35,6 +35,8 @@
   let isIndexing = $state(false);
   let completedJobs = $state(0);
   let totalJobs = $state(0);
+  let indexingStatus = $state<string | null>(null);
+  let indexingDetail = $state<string | null>(null);
 
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
@@ -110,10 +112,12 @@
 
   onMount(() => {
     const progressHandler = (event: CustomEvent) => {
-      const { completed, total, indexing } = event.detail;
+      const { completed, total, indexing, status, detail } = event.detail;
       completedJobs = completed;
       totalJobs = total;
       isIndexing = indexing;
+      indexingStatus = status || null;
+      indexingDetail = detail || null;
     };
 
     window.addEventListener('indexing-progress', progressHandler as EventListener);
@@ -167,7 +171,10 @@
       combinedResults = await doSearch(
         term, 
         commandsFuse, 
-        commandIdToItemMap, 
+        commandIdToItemMap,
+        dynamicContentFuse,
+        dynamicIdToItemMap,
+        true, // sortByRecent
       );
     } else {
       combinedResults = [];
@@ -176,13 +183,19 @@
     isLoading = false;
   };
 
-  const debouncedPerformSearch = debounce(performSearch, 20);
+  // Optimized debounce: shorter delay for better responsiveness
+  const debouncedPerformSearch = debounce(performSearch, 50);
 
   $effect(() => {
     if (commandPalleteOpen) {
       if (searchTerm === '') {
+        // Immediate search for empty query (shows recent items)
+        performSearch();
+      } else if (searchTerm.length <= 2) {
+        // Immediate search for very short queries
         performSearch();
       } else {
+        // Debounced search for longer queries
         debouncedPerformSearch();
       }
       tick().then(() => searchbar?.focus()); 
@@ -389,19 +402,6 @@
                 {@render Shortcut({ text: 'Select', keybind: ['↵']})}
                 {/if}
               </div>
-              {#if isIndexing}
-                <div class="inset-x-0 top-0">
-                  <div class="absolute right-2 -bottom-4 text-[10px] text-zinc-500 dark:text-zinc-400">
-                    Indexing
-                  </div>
-                  <div class="overflow-hidden h-0.5 bg-zinc-200 dark:bg-zinc-700">
-                    <div 
-                      class="h-full bg-blue-500 transition-all duration-300 ease-out"
-                      style="width: {(completedJobs / totalJobs) * 100}%"
-                    ></div>
-                  </div>
-                </div>
-              {/if}
             </div>
           {/if}
         </div>

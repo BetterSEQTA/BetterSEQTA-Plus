@@ -213,18 +213,29 @@ export async function clear(store: string): Promise<void> {
 }
 
 export async function resetDatabase(): Promise<void> {
+  // Close cached database connection
   if (cachedDb) {
-    cachedDb.close();
+    try {
+      cachedDb.close();
+    } catch (e) {
+      console.warn("[DB] Error closing cached database:", e);
+    }
     cachedDb = null;
   }
 
+  // Close pending database promise
   if (dbPromise) {
     try {
       const db = await dbPromise;
       db.close();
-    } catch (e) {}
+    } catch (e) {
+      // Database might not be open yet, that's okay
+    }
     dbPromise = null;
   }
+
+  // Wait a bit for connections to fully close
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   return new Promise((resolve, reject) => {
     const req = indexedDB.deleteDatabase(DB_NAME);
@@ -232,6 +243,24 @@ export async function resetDatabase(): Promise<void> {
       localStorage.removeItem(VERSION_KEY);
       resolve();
     };
-    req.onerror = () => reject(req.error);
+    req.onerror = () => {
+      console.error("[DB] Error deleting database:", req.error);
+      reject(req.error);
+    };
+    req.onblocked = () => {
+      console.warn("[DB] Database deletion blocked - waiting for connections to close");
+      // Wait a bit longer and try again
+      setTimeout(() => {
+        const retryReq = indexedDB.deleteDatabase(DB_NAME);
+        retryReq.onsuccess = () => {
+          localStorage.removeItem(VERSION_KEY);
+          resolve();
+        };
+        retryReq.onerror = () => reject(retryReq.error);
+        retryReq.onblocked = () => {
+          reject(new Error(`Database is still open. Please close other tabs/windows and try again.`));
+        };
+      }, 500);
+    };
   });
 }

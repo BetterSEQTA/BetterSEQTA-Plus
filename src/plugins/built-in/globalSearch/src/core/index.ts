@@ -14,6 +14,7 @@ import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
+import { checkAndHandleUpdate } from "../utils/versionCheck";
 
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
@@ -50,31 +51,67 @@ const settings = defineSettings({
 
       if (confirmed) {
         try {
+          // Import resetDatabase function to properly close connections
+          const { resetDatabase } = await import("../indexing/db");
+          
           // Reset the vector worker first
-          const workerManager = VectorWorkerManager.getInstance();
-          await workerManager.resetWorker();
-          console.log("Vector worker reset successfully");
-        } catch (e) {
-          console.warn("Failed to reset vector worker:", e);
-        }
+          try {
+            const workerManager = VectorWorkerManager.getInstance();
+            await workerManager.resetWorker();
+            console.log("Vector worker reset successfully");
+          } catch (e) {
+            console.warn("Failed to reset vector worker:", e);
+          }
 
-        // Delete both 'embeddiaDB' and 'betterseqta-index' using native IndexedDB APIs
-        const deleteDb = (dbName: string) => {
-          return new Promise<void>((resolve, reject) => {
-            const req = indexedDB.deleteDatabase(dbName);
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-            req.onblocked = () => {
-              reject(new Error(`One database is open, failed to remove: ${dbName}`));
-            };
-          });
-        };
-        try {
-          await deleteDb("embeddiaDB");
-          await deleteDb("betterseqta-index");
-          alert("Search index and storage have been reset.");
+          // Close all database connections properly before deletion
+          try {
+            await resetDatabase();
+          } catch (e) {
+            console.warn("Failed to reset betterseqta-index database:", e);
+          }
+
+          // Wait a bit for connections to fully close
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // Delete embeddiaDB (vector search database)
+          const deleteDb = (dbName: string) => {
+            return new Promise<void>((resolve, reject) => {
+              const req = indexedDB.deleteDatabase(dbName);
+              req.onsuccess = () => {
+                console.log(`Successfully deleted database: ${dbName}`);
+                resolve();
+              };
+              req.onerror = () => {
+                console.error(`Error deleting database ${dbName}:`, req.error);
+                reject(req.error);
+              };
+              req.onblocked = () => {
+                console.warn(`Database ${dbName} deletion blocked - connections still open`);
+                // Wait and retry once
+                setTimeout(() => {
+                  const retryReq = indexedDB.deleteDatabase(dbName);
+                  retryReq.onsuccess = () => {
+                    console.log(`Successfully deleted database on retry: ${dbName}`);
+                    resolve();
+                  };
+                  retryReq.onerror = () => reject(retryReq.error);
+                  retryReq.onblocked = () => {
+                    reject(new Error(`One database is open, failed to remove: ${dbName}. Please close other tabs and try again.`));
+                  };
+                }, 500);
+              };
+            });
+          };
+          
+          try {
+            await deleteDb("embeddiaDB");
+            await deleteDb("betterseqta-index");
+            alert("Search index and storage have been reset successfully.");
+          } catch (e) {
+            alert("Failed to reset one or more databases: " + String(e) + "\n\nTry closing other browser tabs and try again.");
+          }
         } catch (e) {
-          alert("Failed to reset one or more databases: " + String(e));
+          alert("Failed to reset index: " + String(e));
         }
       }
     },
@@ -114,6 +151,27 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
+    // Check for extension updates and clear caches if needed
+    // Use a timeout to avoid blocking initialization
+    setTimeout(async () => {
+      try {
+        const wasUpdated = await checkAndHandleUpdate();
+        if (wasUpdated) {
+          console.log("[Global Search] Extension updated - caches cleared");
+        }
+      } catch (error: any) {
+        // Handle CSS preload errors and other failures gracefully
+        // These can happen in Firefox or when assets aren't available
+        if (error?.message?.includes("preload CSS") || 
+            error?.message?.includes("MIME type") || 
+            error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
+          console.debug("[Global Search] Version check skipped due to asset loading restrictions:", error.message);
+        } else {
+          console.warn("[Global Search] Failed to check for updates:", error);
+        }
+      }
+    }, 100);
+
     try {
       await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
         primaryKey: "id",
@@ -126,10 +184,16 @@ const globalSearchPlugin: Plugin<typeof settings> = {
 
     initVectorSearch();
 
-    // Warm up vector worker in background to improve initial response time
+    // Warm up vector worker in background to improve initial response time (skip in Firefox)
     setTimeout(async () => {
       try {
-        VectorWorkerManager.getInstance();
+        // Only initialize worker if vector search is supported
+        const { isVectorSearchSupported } = await import("../utils/browserDetection");
+        if (isVectorSearchSupported()) {
+          VectorWorkerManager.getInstance();
+        } else {
+          console.debug("[Global Search] Skipping vector worker warm-up (Firefox detected - using text search only)");
+        }
       } catch (error) {
         console.warn("[Global Search] Vector worker warm-up failed:", error);
       }
