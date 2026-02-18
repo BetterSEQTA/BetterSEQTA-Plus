@@ -28,7 +28,7 @@ export interface NumberSetting {
 
 export interface SelectSetting<T extends string> {
   type: "select";
-  options: readonly T[];
+  options: readonly { value: T; label: string }[];
   default: T;
   title: string;
   description?: string;
@@ -38,6 +38,7 @@ export interface ButtonSetting {
   type: "button";
   title: string;
   description?: string;
+  buttonText?: string;
   trigger?: () => void | Promise<void>;
 }
 
