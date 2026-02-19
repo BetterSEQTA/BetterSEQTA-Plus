@@ -1,4 +1,5 @@
 import localforage from "localforage";
+import browser from "webextension-polyfill";
 import type { CustomTheme, LoadedCustomTheme } from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
@@ -470,23 +471,50 @@ export class ThemeManager {
     }
   }
 
+  private readonly THEME_API_BASE = 'https://betterseqta.org/api';
+
+  /**
+   * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
+   */
+  private async fetchFromUrl(url: string): Promise<any> {
+    const result = (await browser.runtime.sendMessage({
+      type: 'fetchFromUrl',
+      url,
+    })) as { data?: unknown; error?: string };
+    if (result?.error) throw new Error(result.error);
+    return result?.data;
+  }
+
   /**
    * Download and install a theme from the store
    */
   public async downloadTheme(themeContent: {
     id: string;
     name: string;
-    description: string;
-    coverImage: string;
+    description?: string;
+    coverImage?: string;
+    theme_json_url?: string;
   }): Promise<void> {
     console.debug("[ThemeManager] Downloading theme:", themeContent.name);
     try {
       if (!themeContent.id) return;
 
-      const response = await fetch(
-        `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes/${themeContent.id}/theme.json`,
-      );
-      const themeData = (await response.json()) as ThemeContent;
+      let themeJsonUrl: string;
+
+      // Use theme_json_url if provided (from API list), otherwise call download endpoint
+      if (themeContent.theme_json_url) {
+        themeJsonUrl = themeContent.theme_json_url;
+      } else {
+        const downloadData = await this.fetchFromUrl(
+          `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
+        ) as { success?: boolean; data?: { theme_json_url: string } };
+        if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+          throw new Error("Failed to get theme download URL");
+        }
+        themeJsonUrl = downloadData.data.theme_json_url;
+      }
+
+      const themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
 
       await this.installTheme(themeData);
     } catch (error) {

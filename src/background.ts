@@ -14,8 +14,8 @@ function reloadSeqtaPages() {
   result.then(open, console.error);
 }
 
-// @ts-ignore
 browser.runtime.onMessage.addListener(
+  // @ts-ignore - OnMessageListener expects literal true for async, we return boolean
   (request: any, _: any, sendResponse: (response?: any) => void) => {
     switch (request.type) {
       case "reloadTabs":
@@ -55,6 +55,34 @@ browser.runtime.onMessage.addListener(
       case "sendNews":
         fetchNews(request.source ?? "australia", sendResponse);
         return true;
+
+      case "fetchThemes": {
+        const url = `https://betterseqta.org/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+        fetch(url, { cache: "no-store" })
+          .then((r) => r.json())
+          .then(sendResponse)
+          .catch((err) => {
+            console.error("[Background] fetchThemes error:", err);
+            sendResponse({ success: false, error: err?.message });
+          });
+        return true;
+      }
+
+      case "fetchFromUrl": {
+        const { url } = request;
+        if (!url || typeof url !== "string") {
+          sendResponse({ error: "Missing url" });
+          return false;
+        }
+        fetch(url, { cache: "no-store" })
+          .then((r) => r.json())
+          .then((data) => sendResponse({ data }))
+          .catch((err) => {
+            console.error("[Background] fetchFromUrl error:", err);
+            sendResponse({ error: err?.message });
+          });
+        return true;
+      }
 
       default:
         console.log("Unknown request type");
