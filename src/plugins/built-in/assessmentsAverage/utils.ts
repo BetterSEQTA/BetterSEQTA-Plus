@@ -2,7 +2,7 @@ import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
 import * as pdfjs from "pdfjs-dist";
 pdfjs.GlobalWorkerOptions.workerSrc =
-  "https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.worker.min.mjs";
+  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export async function initStorage(api: any) {
   await api.storage.loaded;
