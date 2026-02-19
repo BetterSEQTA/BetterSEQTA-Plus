@@ -472,6 +472,7 @@ export class ThemeManager {
   }
 
   private readonly THEME_API_BASE = 'https://betterseqta.org/api';
+  private readonly GITHUB_THEMES_BASE = 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes';
 
   /**
    * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
@@ -487,7 +488,7 @@ export class ThemeManager {
 
   /**
    * Download and install a theme from the store.
-   * Always calls the download API first to increment download_count on the server.
+   * Uses API first (increments download_count), falls back to GitHub if unreachable.
    */
   public async downloadTheme(themeContent: {
     id: string;
@@ -500,16 +501,23 @@ export class ThemeManager {
     try {
       if (!themeContent.id) return;
 
-      // Always call download endpoint to increment download_count
-      const downloadData = (await this.fetchFromUrl(
-        `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
-      )) as { success?: boolean; data?: { theme_json_url: string } };
-      if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
-        throw new Error("Failed to get theme download URL");
-      }
-      const themeJsonUrl = downloadData.data.theme_json_url;
+      let themeData: ThemeContent;
 
-      const themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
+      try {
+        // Try API first (increments download_count)
+        const downloadData = (await this.fetchFromUrl(
+          `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
+        )) as { success?: boolean; data?: { theme_json_url: string } };
+        if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+          throw new Error("Failed to get theme download URL");
+        }
+        themeData = (await this.fetchFromUrl(downloadData.data.theme_json_url)) as ThemeContent;
+      } catch (apiError) {
+        // Fallback to GitHub if API is unreachable
+        console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
+        const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
+        themeData = (await this.fetchFromUrl(githubUrl)) as ThemeContent;
+      }
 
       await this.installTheme(themeData);
     } catch (error) {

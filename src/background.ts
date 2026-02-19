@@ -57,13 +57,20 @@ browser.runtime.onMessage.addListener(
         return true;
 
       case "fetchThemes": {
-        const url = `https://betterseqta.org/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
-        fetch(url, { cache: "no-store" })
+        const apiUrl = `https://betterseqta.org/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+        const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
+        fetch(apiUrl, { cache: "no-store" })
           .then((r) => r.json())
           .then(sendResponse)
           .catch((err) => {
-            console.error("[Background] fetchThemes error:", err);
-            sendResponse({ success: false, error: err?.message });
+            console.warn("[Background] fetchThemes API failed, trying GitHub fallback:", err?.message);
+            fetch(githubUrl, { cache: "no-store" })
+              .then((r) => r.json())
+              .then((data) => sendResponse({ success: true, data: { themes: data.themes ?? [] } }))
+              .catch((fallbackErr) => {
+                console.error("[Background] fetchThemes GitHub fallback error:", fallbackErr);
+                sendResponse({ success: false, error: fallbackErr?.message });
+              });
           });
         return true;
       }
