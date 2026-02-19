@@ -32,6 +32,11 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.4.15 - SEQTA New UI Patch</h1>
+      <li>Fixed compatibility issues caused by the new SEQTA UI update</li>
+      <li>Adjusted styling to match updated SEQTA layout changes</li>
+      <li>Other minor bug fixes and stability improvements</li>
+
       <h1>3.4.14 - Search & Assessments Update</h1>
       <li>Global Search improvements: indexing progress, more accurate results, and now includes past assessments/assignments</li>
       <li>Assessment Averages now parse weightings when possible for more accurate subject averages</li>

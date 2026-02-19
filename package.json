@@ -1,6 +1,6 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.4.14",
+  "version": "3.4.15",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
