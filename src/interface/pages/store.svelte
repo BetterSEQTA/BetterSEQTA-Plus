@@ -48,20 +48,26 @@
     activeTab = tab;
   };
 
-  // Fetch themes and initialize app
+  // Fetch themes via background script (avoids CORS when store runs inside SEQTA page)
   const fetchThemes = async () => {
     try {
-      const response = await fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' });
-      const data = await response.json();
-      themes = data.themes;
+      const data = (await browser.runtime.sendMessage({ type: 'fetchThemes' })) as {
+        success?: boolean;
+        data?: { themes: Theme[] };
+        error?: string;
+      };
+      if (!data?.success || !data?.data?.themes) {
+        throw new Error(data?.error || 'Failed to fetch themes');
+      }
+      themes = data.data.themes;
 
       // Shuffle for cover themes
       const shuffled = [...themes].sort(() => 0.5 - Math.random());
       coverThemes = shuffled.slice(0, 3);
 
       loading = false;
-    } catch (error) {
-      console.error('Failed to fetch themes', error);
+    } catch (err) {
+      console.error('Failed to fetch themes', err);
       setTimeout(fetchThemes, 5000); // Retry after 5 seconds if failure occurs
     }
   };
