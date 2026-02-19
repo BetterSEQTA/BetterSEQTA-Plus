@@ -486,7 +486,8 @@ export class ThemeManager {
   }
 
   /**
-   * Download and install a theme from the store
+   * Download and install a theme from the store.
+   * Always calls the download API first to increment download_count on the server.
    */
   public async downloadTheme(themeContent: {
     id: string;
@@ -499,20 +500,14 @@ export class ThemeManager {
     try {
       if (!themeContent.id) return;
 
-      let themeJsonUrl: string;
-
-      // Use theme_json_url if provided (from API list), otherwise call download endpoint
-      if (themeContent.theme_json_url) {
-        themeJsonUrl = themeContent.theme_json_url;
-      } else {
-        const downloadData = await this.fetchFromUrl(
-          `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
-        ) as { success?: boolean; data?: { theme_json_url: string } };
-        if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
-          throw new Error("Failed to get theme download URL");
-        }
-        themeJsonUrl = downloadData.data.theme_json_url;
+      // Always call download endpoint to increment download_count
+      const downloadData = (await this.fetchFromUrl(
+        `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
+      )) as { success?: boolean; data?: { theme_json_url: string } };
+      if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+        throw new Error("Failed to get theme download URL");
       }
+      const themeJsonUrl = downloadData.data.theme_json_url;
 
       const themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
 
