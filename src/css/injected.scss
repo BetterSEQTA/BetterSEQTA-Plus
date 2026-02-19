@@ -22,6 +22,10 @@
   font-family: Rubik, sans-serif !important;
 }
 
+*:not([class^="Canvas__canvas___"]):not([class^="Canvas__canvas___"] *):not([class^="ThemeCard__"]):not([class^="ThemeCard__"] *):not([class^="ThemePreview__"]):not([class^="ThemePreview__"] *):not([class^="academicReportsWrapper"]):not([class^="academicReportsWrapper"] *):not(textarea):not(.doesntexist) {
+  font-family: Rubik, sans-serif !important;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -867,7 +871,7 @@ html.transparencyEffects
   display: none;
 }
 #menu li:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.15) !important;
 }
 #main > .timetablepage > .container {
   background: var(--background-primary);
