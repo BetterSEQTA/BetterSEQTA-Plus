@@ -4,6 +4,7 @@ import { getAssessmentsData } from "./api";
 import { renderErrorState, renderSkeletonLoader } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
+import { isSEQTALearnSync } from "@/seqta/utils/platformDetection";
 
 const assessmentsOverviewPlugin: Plugin<{}> = {
   id: "assessments-overview",
@@ -16,6 +17,12 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
   styles,
 
   run: async () => {
+    // Only run on SEQTA Learn, not SEQTA Teach
+    if (!isSEQTALearnSync()) {
+      console.info("[Assessments Overview] Skipping - only available on SEQTA Learn");
+      return () => {}; // Return empty cleanup function
+    }
+
     const menu = (await waitForElm(
       '[data-key="assessments"] > .sub > ul',
       true,

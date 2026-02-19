@@ -2,6 +2,7 @@ import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings"
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
+import { AddBetterSEQTAElementsTeach } from "./AddBetterSEQTAElementsTeach";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
@@ -9,6 +10,7 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 
 let cachedUserInfo: any = null;
 
@@ -39,6 +41,24 @@ export async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
+  // Use Teach-specific implementation when on Teach platform
+  const isTeach = isSEQTATeachSync();
+  console.log("[BetterSEQTA+] AddBetterSEQTAElements called, isTeach:", isTeach);
+  if (isTeach) {
+    console.log("[BetterSEQTA+] Calling AddBetterSEQTAElementsTeach...");
+    return AddBetterSEQTAElementsTeach();
+  }
+
+  // Learn platform implementation (original)
+  // Always create settings button and popup, regardless of onoff state
+  console.debug("[BetterSEQTA+] Learn platform detected, creating settings button");
+  addExtensionSettings();
+  await createSettingsButton();
+  
+  // Wait a bit for the button to be inserted before setting up event listener
+  await delay(50);
+  setupSettingsButton();
+
   if (settingsState.onoff) {
     if (settingsState.DarkMode) {
       document.documentElement.classList.add("dark");
@@ -67,10 +87,6 @@ export async function AddBetterSEQTAElements() {
     await addDarkLightToggle();
     customizeMenuToggle();
   }
-
-  addExtensionSettings();
-  await createSettingsButton();
-  setupSettingsButton();
 }
 
 function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
@@ -232,8 +248,14 @@ function setupEventListeners() {
   });
 
   menuCover?.addEventListener("click", function () {
-    location.href = "../#?page=/home";
-    loadHomePage();
+    try {
+      location.href = "../#?page=/home";
+      loadHomePage();
+    } catch (error) {
+      // Fallback: just load homepage without navigation
+      console.warn("[BetterSEQTA+] Navigation failed, loading homepage directly");
+      loadHomePage();
+    }
     (
       document.getElementById("menu")!.firstChild! as HTMLElement
     ).classList.remove("noscroll");

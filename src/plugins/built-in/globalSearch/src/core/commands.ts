@@ -1,6 +1,7 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 
 export interface BaseCommandItem {
   id: string;
@@ -139,7 +140,16 @@ const staticCommands: StaticCommandItem[] = [
     category: "navigation",
     text: "Home",
     action: () => {
-      window.location.hash = "?page=/home";
+      if (isSEQTATeachSync()) {
+        // Use History API to navigate without page reload
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/betterseqta-home')) {
+          window.history.pushState({}, '', '/betterseqta-home');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      } else {
+        window.location.hash = "?page=/home";
+      }
       loadHomePage();
     },
     priority: 4,

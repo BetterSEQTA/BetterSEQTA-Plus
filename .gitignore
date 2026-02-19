@@ -21,3 +21,7 @@ betterseqtaplus-safari/
 .vscode/
 
 **/.DS_Store
+
+seqtacode/
+
+.playwright-mcp/

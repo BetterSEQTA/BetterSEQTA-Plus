@@ -1,15 +1,91 @@
 html.dark {
+  // Background colors
   --background-primary: #232323;
   --background-secondary: #1a1a1a;
+  --background-tertiary: #0f0f0f;
+  
+  // Theme colors
   --theme-primary: #232323;
   --theme-secondary: #1a1a1a;
+  
+  // Text colors
   --text-primary: white;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-on-accent: white;
+  
+  // Accent colors (using better-main if available, otherwise default blue)
+  --accent-bg: var(--better-main, #3b82f6);
+  --accent-hover: var(--better-light, #60a5fa);
+  --accent-ring: rgba(59, 130, 246, 0.5);
+  
+  // Border colors
+  --border-primary: rgba(255, 255, 255, 0.2);
+  --border-secondary: rgba(255, 255, 255, 0.1);
+  --border-tertiary: rgba(255, 255, 255, 0.05);
+  
+  // Shadow colors
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  
+  // Button colors
+  --button-bg: rgba(255, 255, 255, 0.1);
+  --button-hover: rgba(255, 255, 255, 0.15);
+  --button-active: rgba(255, 255, 255, 0.2);
+  
+  // Card/panel colors
+  --card-bg: #1a1a1a;
+  --card-border: rgba(255, 255, 255, 0.2);
+  
+  // Theme offset backgrounds (for layered navigation)
+  --theme-offset-bg: rgba(255, 255, 255, 0.05);
+  --theme-offset-bg-more: rgba(255, 255, 255, 0.1);
+  --theme-table-headers: rgba(255, 255, 255, 0.08);
 }
 
 html:not(.dark) {
+  // Background colors
   --background-primary: #ffffff;
   --background-secondary: #e5e7eb;
+  --background-tertiary: #f3f4f6;
+  
+  // Theme colors
   --theme-primary: #ffffff;
   --theme-secondary: #e5e7eb;
+  
+  // Text colors
   --text-primary: black;
+  --text-secondary: rgba(0, 0, 0, 0.8);
+  --text-muted: rgba(0, 0, 0, 0.6);
+  --text-on-accent: white;
+  
+  // Accent colors
+  --accent-bg: var(--better-main, #3b82f6);
+  --accent-hover: var(--better-light, #2563eb);
+  --accent-ring: rgba(59, 130, 246, 0.3);
+  
+  // Border colors
+  --border-primary: rgba(0, 0, 0, 0.2);
+  --border-secondary: rgba(0, 0, 0, 0.1);
+  --border-tertiary: rgba(0, 0, 0, 0.05);
+  
+  // Shadow colors
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  
+  // Button colors
+  --button-bg: rgba(0, 0, 0, 0.05);
+  --button-hover: rgba(0, 0, 0, 0.1);
+  --button-active: rgba(0, 0, 0, 0.15);
+  
+  // Card/panel colors
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.1);
+  
+  // Theme offset backgrounds (for layered navigation)
+  --theme-offset-bg: rgba(0, 0, 0, 0.03);
+  --theme-offset-bg-more: rgba(0, 0, 0, 0.05);
+  --theme-table-headers: rgba(0, 0, 0, 0.05);
 }

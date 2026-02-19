@@ -22,6 +22,15 @@
   transition-duration: 100ms;
 }
 
+// Teach-specific positioning - appear next to Spine
+body:has([class*="Spine__Spine"]) .outside-container {
+  left: 72px !important; // Position next to Spine (Spine width is 72px)
+  right: auto !important;
+  top: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
 .imageBackground {
   width: 100%;
   height: 100%;
