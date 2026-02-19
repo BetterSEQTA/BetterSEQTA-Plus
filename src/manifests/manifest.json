@@ -21,7 +21,7 @@
     "service_worker": "background.ts"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://betterseqta.org"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://betterseqta.org https://raw.githubusercontent.com"
   },
   "content_scripts": [
     {
