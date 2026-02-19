@@ -32,6 +32,9 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.4.16 - Subject Averages Fixes</h1>
+      <li>Fixed subject averages not showing correctly with letter grades and weighted marks</li>
+
       <h1>3.4.15 - SEQTA New UI Patch</h1>
       <li>Fixed compatibility issues caused by the new SEQTA UI update</li>
       <li>Adjusted styling to match updated SEQTA layout changes</li>
