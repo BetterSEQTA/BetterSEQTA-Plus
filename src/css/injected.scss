@@ -1,5 +1,15 @@
 @use "sass:meta";
-@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600");
+@import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600,700");
+
+/* Force Roboto for legacy-root - SEQTA UI update overrides fonts */
+@font-face {
+  font-family: "Roboto";
+  src: url("https://fonts.gstatic.com/s/roboto/v50/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 @include meta.load-css("injected/sidebar-animation.scss");
 @include meta.load-css("injected/theme.scss");
@@ -9,7 +19,11 @@
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
   --auto-background: var(--better-pale, var(--background-secondary)) !important;
-  font-family: Rubik, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family: Rubik, sans-serif !important;
+}
+
+*:not([class^="Canvas__canvas___"]):not([class^="Canvas__canvas___"] *):not([class^="ThemeCard__"]):not([class^="ThemeCard__"] *):not([class^="ThemePreview__"]):not([class^="ThemePreview__"] *):not([class^="academicReportsWrapper"]):not([class^="academicReportsWrapper"] *):not(textarea):not(.doesntexist) {
+  font-family: Rubik, sans-serif !important;
 }
 
 ::view-transition-old(root),
@@ -36,7 +50,18 @@ body,
 .legacy-root option,
 .legacy-root .input,
 html {
-  font-family: Rubik, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family: Rubik, sans-serif !important;
+}
+
+.legacy-root {
+  color: rgb(var(--theme-fg-parts));
+  cursor: default;
+  font-family: Rubik, sans-serif !important;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: Rubik, sans-serif !important;
 }
 
 select option {
@@ -56,7 +81,7 @@ select {
   background: var(--auto-background) !important;
 }
 :root * {
-  font-family: Rubik, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 }
 .extension-editor {
@@ -302,7 +327,7 @@ select {
 
       .material-icons {
         font-size: 0px !important;
-        font-family: Rubik, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        font-family: Rubik, sans-serif !important;
         &::before {
           font-size: 18px !important;
           content: "Search" !important;
@@ -407,13 +432,22 @@ ul.magicDelete > li.deleting {
   hyphens: auto;
   line-height: 1.2;
 }
+#menu,
+#menu li,
+#menu section,
+#menu li > label,
+#menu section > label {
+  font-family: Rubik, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
 #menu {
   width: 270px;
   z-index: 19;
   background: var(--better-main) !important;
   color: var(--text-color);
   border-right: none;
-  font-family: Rubik, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 #menu li > label > svg,
 #menu section > label > svg {
@@ -488,6 +522,7 @@ ul.magicDelete > li.deleting {
   display: none;
 }
 html {
+  font-family: Rubik, sans-serif !important;
   background: var(--better-main) !important;
 }
 .menuShown .content .anyoneSelect .listWrapper .list:has(.item) {
@@ -836,7 +871,7 @@ html.transparencyEffects
   display: none;
 }
 #menu li:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.15) !important;
 }
 #main > .timetablepage > .container {
   background: var(--background-primary);
@@ -1149,9 +1184,12 @@ html.transparencyEffects
   transition: 200ms;
   width: 100%;
   height: 15em;
+  font-family: Rubik, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(142px, 1fr);
+  grid-auto-columns: minmax(100px, 1fr);
   border-radius: 16px;
   overflow-x: auto;
 
@@ -1344,8 +1382,8 @@ html.transparencyEffects
   margin: 0;
   padding: 8px;
   padding-top: 14px;
-  font-size: 20px !important;
-  font-weight: 500;
+  font-size: 14px !important;
+  font-weight: 700;
   min-height: 46px;
   height: auto;
   line-height: 1.2;
@@ -1372,8 +1410,8 @@ html.transparencyEffects
   margin: 0;
   padding: 2px;
   padding-left: 8px;
-  font-size: 16px !important;
-  font-weight: 500;
+  font-size: 13px !important;
+  font-weight: 700;
 }
 .day h5 {
   margin: 0;
@@ -1383,7 +1421,7 @@ html.transparencyEffects
   bottom: 0;
   right: 0;
   font-size: 10px !important;
-  font-weight: 500;
+  font-weight: 700;
 }
 .waitWindow {
   background: var(--better-main);
@@ -2843,7 +2881,8 @@ div.day-empty {
 .upcoming-subject-title {
   color: var(--text-primary);
   width: 15%;
-  font-size: 20px;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   text-align: center;
   padding: 5px;
   display: flex;
@@ -2856,13 +2895,17 @@ div.day-empty {
   border: 2px solid var(--item-colour);
   margin: 5px 50px;
   height: 6em;
+  font-family: Rubik, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   padding: 0px;
   border-radius: 10px;
   display: flex;
 }
 .upcoming-date-title {
   padding: 12px;
-  font-size: 20px;
+  font-size: 20px !important;
+  font-weight: 700 !important;
 }
 .upcoming-details p:hover {
   cursor: pointer;
@@ -2962,7 +3005,9 @@ div.day-empty {
   height: 15em;
   color: var(--text-primary);
   background: var(--background-primary);
-  font-family: Rubik, sans-serif;
+  font-family: Rubik, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
 }
 .dark .day {
   box-shadow:
@@ -2989,6 +3034,9 @@ div.day-empty {
     200ms,
     background-color 0s;
   border-radius: 16px;
+  font-family: Rubik, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
 }
 .dark .upcoming-items {
   box-shadow: inset 0px 40px 80px -40px rgba(0, 0, 0, 0.6);
@@ -2996,7 +3044,8 @@ div.day-empty {
 .upcoming-assessment-title {
   color: var(--text-primary);
   transition: 200ms;
-  font-size: 10px;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   margin: 0;
 }
 .upcoming-date-container {
@@ -3004,7 +3053,7 @@ div.day-empty {
 }
 .upcoming-date-title h5 {
   margin: 0;
-  font-weight: 500;
+  font-weight: 700;
 }
 .upcoming-details {
   width: 60%;
@@ -3012,6 +3061,7 @@ div.day-empty {
   flex-direction: column;
   justify-content: center;
   padding: 0px 12px;
+  font-size: 15px;
 }
 .upcoming-details h5 {
   text-transform: uppercase;
@@ -3020,7 +3070,8 @@ div.day-empty {
   margin: 0;
 }
 .upcoming-details p {
-  font-size: 15px;
+  font-size: 15px !important;
+  font-weight: 700 !important;
   padding: 4px;
 }
 .upcoming-special-day {
@@ -3121,7 +3172,7 @@ div.day-empty {
 .userInfoName {
   margin: 0 !important;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 700;
 }
 .userInfoCode {
   margin: 0 !important;
@@ -3262,7 +3313,7 @@ div.day-empty {
   padding-bottom: 0.125rem;
   margin-left: 2px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 700;
   color: #9a3412;
   border-radius: 9999px;
   border: 1px solid rgba(253, 186, 140, 0.3);
@@ -3521,7 +3572,7 @@ div.day-empty {
   padding: 4px 10px;
   border-radius: 16px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -3754,7 +3805,7 @@ button.notice-close-btn {
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   white-space: nowrap;
 }
 
