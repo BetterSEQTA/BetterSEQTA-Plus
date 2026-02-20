@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import { animate } from 'motion';
 
-  let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme } = $props<{
+  let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme, toggleFavorite, isLoggedIn } = $props<{
     theme: Theme | null;
     currentThemes: string[];
     setDisplayTheme: (theme: Theme | null) => void;
@@ -11,6 +11,8 @@
     onRemove: (themeId: string) => void;
     allThemes: Theme[];
     displayTheme: Theme | null;
+    toggleFavorite?: (theme: Theme) => void;
+    isLoggedIn?: boolean;
   }>();
   let installing = $state(false);
   let modalElement: HTMLElement;
@@ -73,13 +75,35 @@
     onkeydown={(e) => e.stopPropagation()}
   >
     <div class="relative h-auto">
-      <button class="absolute top-0 right-0 p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200" onclick={() => hideModal()}>
-        {'\ued8a'}
-      </button>
+      <div class="absolute top-0 right-0 flex gap-1 items-center">
+        {#if isLoggedIn && toggleFavorite && theme}
+          <button
+            type="button"
+            class="p-2 rounded-lg transition-all hover:bg-zinc-100 dark:hover:bg-zinc-700 {theme.is_favorited ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'}"
+            onclick={() => toggleFavorite(theme)}
+            title={theme.is_favorited ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill={theme.is_favorited ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-6 h-6"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        {/if}
+        <button class="p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200" onclick={() => hideModal()}>
+          {'\ued8a'}
+        </button>
+      </div>
       <h2 class="mb-4 text-2xl font-bold">
         {theme.name}
       </h2>
-      <img src={theme.marqueeImage} alt="Theme Cover" class="object-cover mb-4 w-full rounded-md" />
+      <img src={theme.marqueeImage || theme.coverImage} alt="Theme Cover" class="object-cover mb-4 w-full rounded-md" />
       <p class="mb-4 text-gray-700 dark:text-gray-300">
         {theme.description}
       </p>
@@ -116,7 +140,7 @@
                 {relatedTheme.name}
               </div>
               <div class="absolute bottom-0 z-0 w-full h-3/4 to-transparent from-black/80 bg-linear-to-t"></div>
-              <img src={relatedTheme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-48" />
+              <img src={relatedTheme.marqueeImage || relatedTheme.coverImage} alt="Theme Preview" class="object-cover w-full h-48" />
             </div>
           </button>
         {/each}

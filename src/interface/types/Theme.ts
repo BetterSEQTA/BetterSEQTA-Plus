@@ -5,4 +5,6 @@ export type Theme = {
   coverImage: string;
   marqueeImage?: string;
   theme_json_url?: string;
+  is_favorited?: boolean;
+  favorite_count?: number;
 };
