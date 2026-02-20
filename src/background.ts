@@ -14,7 +14,7 @@ function reloadSeqtaPages() {
   result.then(open, console.error);
 }
 
-type MessageSender = (response?: any) => void;
+type MessageSender = (_?: unknown) => void;
 
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   const { token } = request;
@@ -166,7 +166,9 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
   return true;
 }
 
-const MESSAGE_HANDLERS: Record<string, (req: any, send: MessageSender) => boolean | void> = {
+type MessageHandler = (_req: any, _res: MessageSender) => boolean | void;
+
+const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   reloadTabs: () => reloadSeqtaPages(),
   extensionPages: (req) => {
     browser.tabs.query({}).then((tabs) => {
