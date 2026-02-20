@@ -63,11 +63,18 @@
       action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {
+      const delta = isFavorite ? 1 : -1;
       themes = themes.map((t) =>
-        t.id === theme.id ? { ...t, is_favorited: isFavorite } : t
+        t.id === theme.id
+          ? { ...t, is_favorited: isFavorite, favorite_count: Math.max(0, (t.favorite_count ?? 0) + delta) }
+          : t
       );
       if (displayTheme?.id === theme.id) {
-        displayTheme = { ...displayTheme, is_favorited: isFavorite };
+        displayTheme = {
+          ...displayTheme,
+          is_favorited: isFavorite,
+          favorite_count: Math.max(0, (displayTheme.favorite_count ?? 0) + delta),
+        };
       }
     }
   };

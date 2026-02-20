@@ -7,4 +7,5 @@ export type Theme = {
   theme_json_url?: string;
   is_favorited?: boolean;
   favorite_count?: number;
+  download_count?: number;
 };

@@ -20,6 +20,7 @@
   import { settingsPopup } from "../hooks/SettingsPopup";
 
   let devModeSequence = "";
+  let settingsActiveTab = $state(0);
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
 
@@ -72,13 +73,18 @@
     showDisclaimerModal = true;
   };
 
-  onMount(async () => {
+  onMount(() => {
     settingsPopup.addListener(() => {
       showColourPicker = false;
     });
 
-    if (!standalone) return;
-    StandaloneStore.setStandalone(true);
+    if (window.location.hash === "#cloud") {
+      settingsActiveTab = 3;
+    }
+
+    if (standalone) {
+      StandaloneStore.setStandalone(true);
+    }
   });
 </script>
 
@@ -276,6 +282,7 @@
     </div>
 
     <TabbedContainer
+      bind:activeTab={settingsActiveTab}
       tabs={[
         {
           title: "Settings",

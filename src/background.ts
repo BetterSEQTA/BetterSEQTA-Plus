@@ -78,6 +78,27 @@ browser.runtime.onMessage.addListener(
         return true;
       }
 
+      case "fetchThemeDetails": {
+        const { themeId, token } = request;
+        if (!themeId || typeof themeId !== "string") {
+          sendResponse({ success: false, error: "Missing themeId" });
+          return false;
+        }
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        fetch(`https://betterseqta.org/api/themes/${themeId}`, {
+          cache: "no-store",
+          headers,
+        })
+          .then((r) => r.json())
+          .then(sendResponse)
+          .catch((err) => {
+            console.error("[Background] fetchThemeDetails error:", err);
+            sendResponse({ success: false, error: err?.message });
+          });
+        return true;
+      }
+
       case "fetchFromUrl": {
         const { url } = request;
         if (!url || typeof url !== "string") {

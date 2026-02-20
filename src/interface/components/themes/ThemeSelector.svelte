@@ -1,11 +1,14 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
+  import browser from 'webextension-polyfill'
   import { OpenThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
   import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+  import { cloudAuth } from '@/seqta/utils/CloudAuth'
+  import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
 
   const themeManager = ThemeManager.getInstance();
 
@@ -13,6 +16,17 @@
   let { isEditMode } = $props<{ isEditMode: boolean }>();
   let isDragging = $state(false);
   let tempTheme = $state(null);
+  let favoriteStatus = $state<Record<string, boolean>>({});
+  let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
+  let prevLoggedIn = $state(false);
+  let showSignInModal = $state(false);
+
+  cloudAuth.subscribe((s) => {
+    const now = s.isLoggedIn;
+    if (now && !prevLoggedIn && themes) void fetchThemes();
+    prevLoggedIn = now;
+    cloudLoggedIn = now;
+  });
 
   const handleThemeClick = async (theme: CustomTheme, e: MouseEvent) => {
     if (isEditMode) return;
@@ -87,11 +101,55 @@
       themes: await themeManager.getAvailableThemes(),
       selectedTheme: themeManager.getSelectedThemeId() || '',
     }
+    if (themes && cloudLoggedIn) {
+      const token = await cloudAuth.getStoredToken();
+      if (token) {
+        const status: Record<string, boolean> = {};
+        await Promise.all(
+          themes.themes.map(async (t) => {
+            try {
+              const res = (await browser.runtime.sendMessage({
+                type: 'fetchThemeDetails',
+                themeId: t.id,
+                token,
+              })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
+              if (res?.success && res?.data?.theme) {
+                status[t.id] = !!res.data.theme.is_favorited;
+              }
+            } catch {
+              // Theme may not exist on store (e.g. locally created)
+            }
+          })
+        );
+        favoriteStatus = status;
+      }
+    } else {
+      favoriteStatus = {};
+    }
+  }
+
+  const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
+    e.stopPropagation();
+    if (!cloudLoggedIn) {
+      showSignInModal = true;
+      return;
+    }
+    const token = await cloudAuth.getStoredToken();
+    if (!token) return;
+    const isFavorite = !favoriteStatus[theme.id];
+    const result = (await browser.runtime.sendMessage({
+      type: 'cloudFavorite',
+      themeId: theme.id,
+      token,
+      action: isFavorite ? 'favorite' : 'unfavorite',
+    })) as { success?: boolean };
+    if (result?.success) {
+      favoriteStatus = { ...favoriteStatus, [theme.id]: isFavorite };
+    }
   }
 
   onMount(async () => {
     await fetchThemes();
-
     themeUpdates.addListener(fetchThemes);
   })
 
@@ -144,6 +202,18 @@
           {/if}
 
           {#if !isEditMode}
+            <div
+              class="flex absolute right-24 top-1/4 z-20 place-items-center p-2 w-8 h-8 text-center rounded-full opacity-0 transition-all -translate-y-1/2 group-hover:opacity-100 group-hover:top-1/2 {(favoriteStatus[theme.id] ?? false) ? 'text-red-400' : 'text-white/80'} bg-black/50"
+              onclick={(event) => handleToggleFavorite(theme, event)}
+              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleToggleFavorite(theme, event as any) }}
+              role="button"
+              tabindex="-1"
+              title={cloudLoggedIn ? ((favoriteStatus[theme.id] ?? false) ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
             <div
               class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
               onclick={(event) => { event.stopPropagation(); OpenThemeCreator(theme.id); closeExtensionPopup() }}
@@ -211,3 +281,7 @@
     </button>
   </div>
 </div>
+
+{#if showSignInModal}
+  <SignInToFavoriteModal onClose={() => (showSignInModal = false)} />
+{/if}
