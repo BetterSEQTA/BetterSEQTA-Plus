@@ -2,7 +2,13 @@
   import type { Theme } from '@/interface/types/Theme'
   import ThemeCard from './ThemeCard.svelte';
 
-  let { themes, searchTerm, setDisplayTheme } = $props<{ themes: Theme[]; searchTerm: string, setDisplayTheme: (theme: Theme) => void }>();
+  let { themes, searchTerm, setDisplayTheme, toggleFavorite, isLoggedIn } = $props<{
+    themes: Theme[];
+    searchTerm: string;
+    setDisplayTheme: (theme: Theme) => void;
+    toggleFavorite: (theme: Theme) => void;
+    isLoggedIn: boolean;
+  }>();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) =>
     theme.name.toLowerCase().includes(searchTerm.toLowerCase()) || theme.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -12,7 +18,12 @@
 <div class="relative" >
   <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
     {#each filteredThemes as theme (theme.id)}
-      <ThemeCard theme={theme} onClick={() => setDisplayTheme(theme)} />
+      <ThemeCard
+        {theme}
+        onClick={() => setDisplayTheme(theme)}
+        {toggleFavorite}
+        {isLoggedIn}
+      />
     {/each}
   
     {#if filteredThemes.length !== 0}

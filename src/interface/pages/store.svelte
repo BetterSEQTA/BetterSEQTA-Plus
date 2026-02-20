@@ -15,8 +15,12 @@
 
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import Backgrounds from '../components/store/Backgrounds.svelte'
+  import { cloudAuth } from '@/seqta/utils/CloudAuth'
 
   const themeManager = ThemeManager.getInstance();
+  let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
+
+  cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
 
   // State variables
   let searchTerm = $state('');
@@ -48,20 +52,57 @@
     activeTab = tab;
   };
 
-  // Fetch themes and initialize app
+  const toggleFavorite = async (theme: Theme) => {
+    const token = await cloudAuth.getStoredToken();
+    if (!token) return;
+    const isFavorite = !theme.is_favorited;
+    const result = (await browser.runtime.sendMessage({
+      type: 'cloudFavorite',
+      themeId: theme.id,
+      token,
+      action: isFavorite ? 'favorite' : 'unfavorite',
+    })) as { success?: boolean };
+    if (result?.success) {
+      const delta = isFavorite ? 1 : -1;
+      themes = themes.map((t) =>
+        t.id === theme.id
+          ? { ...t, is_favorited: isFavorite, favorite_count: Math.max(0, (t.favorite_count ?? 0) + delta) }
+          : t
+      );
+      if (displayTheme?.id === theme.id) {
+        displayTheme = {
+          ...displayTheme,
+          is_favorited: isFavorite,
+          favorite_count: Math.max(0, (displayTheme.favorite_count ?? 0) + delta),
+        };
+      }
+    }
+  };
+
+  // Fetch themes via background script (avoids CORS when store runs inside SEQTA page)
   const fetchThemes = async () => {
     try {
-      const response = await fetch(`https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${(new Date()).getTime()}`, { cache: 'no-store' });
-      const data = await response.json();
-      themes = data.themes;
+      const token = await cloudAuth.getStoredToken();
+      const data = (await browser.runtime.sendMessage({
+        type: 'fetchThemes',
+        token: token ?? undefined,
+      })) as {
+        success?: boolean;
+        data?: { themes: Theme[] };
+        error?: string;
+      };
+      if (!data?.success || !data?.data?.themes) {
+        throw new Error(data?.error || 'Failed to fetch themes');
+      }
+      themes = data.data.themes;
 
       // Shuffle for cover themes
       const shuffled = [...themes].sort(() => 0.5 - Math.random());
       coverThemes = shuffled.slice(0, 3);
 
       loading = false;
-    } catch (error) {
-      console.error('Failed to fetch themes', error);
+    } catch (err) {
+      console.error('Failed to fetch themes', err);
       setTimeout(fetchThemes, 5000); // Retry after 5 seconds if failure occurs
     }
   };
@@ -91,6 +132,17 @@
       console.error(error);
     }
   });
+
+  // Refetch themes when user logs in (from another tab) to get is_favorited
+  let lastLoggedIn = $state(false);
+  $effect(() => {
+    if (cloudLoggedIn && !lastLoggedIn) {
+      lastLoggedIn = true;
+      fetchThemes();
+    } else if (!cloudLoggedIn) {
+      lastLoggedIn = false;
+    }
+  });
 </script>
 
 <div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
@@ -111,7 +163,13 @@
           {/if}
     
           <!-- ThemeGrid to display filtered themes -->
-          <ThemeGrid themes={filteredThemes} {searchTerm} {setDisplayTheme} />
+          <ThemeGrid
+            themes={filteredThemes}
+            {searchTerm}
+            {setDisplayTheme}
+            {toggleFavorite}
+            isLoggedIn={cloudLoggedIn}
+          />
     
           {#if displayTheme}
             <ThemeModal
@@ -120,6 +178,8 @@
               theme={displayTheme}
               {displayTheme}
               {setDisplayTheme}
+              {toggleFavorite}
+              isLoggedIn={cloudLoggedIn}
               onInstall={async () => {
                 if (displayTheme) {
                   await themeManager.downloadTheme(displayTheme);
