@@ -24,7 +24,8 @@ export type CloudAuthState = {
   user: CloudUser | null;
 };
 
-type Listener = (_: CloudAuthState) => void;
+/** Callback invoked when auth state changes */
+type Listener = { (state: CloudAuthState): void };
 
 class CloudAuthService {
   private static instance: CloudAuthService;
