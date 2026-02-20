@@ -15,8 +15,12 @@
 
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import Backgrounds from '../components/store/Backgrounds.svelte'
+  import { cloudAuth } from '@/seqta/utils/CloudAuth'
 
   const themeManager = ThemeManager.getInstance();
+  let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
+
+  cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
 
   // State variables
   let searchTerm = $state('');
@@ -48,10 +52,34 @@
     activeTab = tab;
   };
 
+  const toggleFavorite = async (theme: Theme) => {
+    const token = await cloudAuth.getStoredToken();
+    if (!token) return;
+    const isFavorite = !theme.is_favorited;
+    const result = (await browser.runtime.sendMessage({
+      type: 'cloudFavorite',
+      themeId: theme.id,
+      token,
+      action: isFavorite ? 'favorite' : 'unfavorite',
+    })) as { success?: boolean };
+    if (result?.success) {
+      themes = themes.map((t) =>
+        t.id === theme.id ? { ...t, is_favorited: isFavorite } : t
+      );
+      if (displayTheme?.id === theme.id) {
+        displayTheme = { ...displayTheme, is_favorited: isFavorite };
+      }
+    }
+  };
+
   // Fetch themes via background script (avoids CORS when store runs inside SEQTA page)
   const fetchThemes = async () => {
     try {
-      const data = (await browser.runtime.sendMessage({ type: 'fetchThemes' })) as {
+      const token = await cloudAuth.getStoredToken();
+      const data = (await browser.runtime.sendMessage({
+        type: 'fetchThemes',
+        token: token ?? undefined,
+      })) as {
         success?: boolean;
         data?: { themes: Theme[] };
         error?: string;
@@ -97,6 +125,17 @@
       console.error(error);
     }
   });
+
+  // Refetch themes when user logs in (from another tab) to get is_favorited
+  let lastLoggedIn = $state(false);
+  $effect(() => {
+    if (cloudLoggedIn && !lastLoggedIn) {
+      lastLoggedIn = true;
+      fetchThemes();
+    } else if (!cloudLoggedIn) {
+      lastLoggedIn = false;
+    }
+  });
 </script>
 
 <div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
@@ -117,7 +156,13 @@
           {/if}
     
           <!-- ThemeGrid to display filtered themes -->
-          <ThemeGrid themes={filteredThemes} {searchTerm} {setDisplayTheme} />
+          <ThemeGrid
+            themes={filteredThemes}
+            {searchTerm}
+            {setDisplayTheme}
+            {toggleFavorite}
+            isLoggedIn={cloudLoggedIn}
+          />
     
           {#if displayTheme}
             <ThemeModal
@@ -126,6 +171,8 @@
               theme={displayTheme}
               {displayTheme}
               {setDisplayTheme}
+              {toggleFavorite}
+              isLoggedIn={cloudLoggedIn}
               onInstall={async () => {
                 if (displayTheme) {
                   await themeManager.downloadTheme(displayTheme);

@@ -57,9 +57,12 @@ browser.runtime.onMessage.addListener(
         return true;
 
       case "fetchThemes": {
+        const { token } = request;
         const apiUrl = `https://betterseqta.org/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
         const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
-        fetch(apiUrl, { cache: "no-store" })
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        fetch(apiUrl, { cache: "no-store", headers })
           .then((r) => r.json())
           .then(sendResponse)
           .catch((err) => {
@@ -87,6 +90,129 @@ browser.runtime.onMessage.addListener(
           .catch((err) => {
             console.error("[Background] fetchFromUrl error:", err);
             sendResponse({ error: err?.message });
+          });
+        return true;
+      }
+
+      case "cloudReserveClient": {
+        const redirect_uri =
+          request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
+        fetch("https://accounts.betterseqta.org/api/bsplus/client/reserve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ redirect_uri }),
+        })
+          .then(async (r) => {
+            const text = await r.text();
+            let data: any = {};
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch {
+              sendResponse({ error: "Invalid response from server" });
+              return;
+            }
+            if (!r.ok) {
+              sendResponse({
+                error: data?.error ?? `Reserve failed (${r.status})`,
+              });
+            } else {
+              sendResponse(data);
+            }
+          })
+          .catch((err) => {
+            console.error("[Background] cloudReserveClient error:", err);
+            sendResponse({ error: err?.message ?? "Network error" });
+          });
+        return true;
+      }
+
+      case "cloudLogin": {
+        const { client_id, redirect_uri, login, password } = request;
+        if (!client_id || !redirect_uri || !login || !password) {
+          sendResponse({
+            error: "Missing client_id, redirect_uri, login, or password",
+          });
+          return false;
+        }
+        fetch("https://accounts.betterseqta.org/api/bsplus/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_id,
+            redirect_uri,
+            login,
+            password,
+          }),
+        })
+          .then(async (r) => {
+            const text = await r.text();
+            let data: any = {};
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch {
+              sendResponse({ error: "Invalid response from server" });
+              return;
+            }
+            if (!r.ok) {
+              sendResponse({ error: data?.error ?? "Login failed" });
+              return;
+            }
+            sendResponse(data);
+          })
+          .catch((err) => {
+            console.error("[Background] cloudLogin error:", err);
+            sendResponse({ error: err?.message ?? "Network error" });
+          });
+        return true;
+      }
+
+      case "cloudRefresh": {
+        const { refresh_token, client_id } = request;
+        if (!refresh_token || !client_id) {
+          sendResponse({ error: "Missing refresh_token or client_id" });
+          return false;
+        }
+        fetch("https://accounts.betterseqta.org/api/bsplus/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token, client_id }),
+        })
+          .then(async (r) => {
+            const text = await r.text();
+            let data: any = {};
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch {
+              sendResponse({ error: "Invalid response from server" });
+              return;
+            }
+            if (!r.ok) sendResponse({ error: data?.error ?? "Refresh failed" });
+            else sendResponse(data);
+          })
+          .catch((err) => {
+            console.error("[Background] cloudRefresh error:", err);
+            sendResponse({ error: err?.message ?? "Network error" });
+          });
+        return true;
+      }
+
+      case "cloudFavorite": {
+        const { themeId, token, action } = request;
+        if (!themeId || !token) {
+          sendResponse({ success: false, error: "Theme ID and token required" });
+          return false;
+        }
+        const isFavorite = action === "favorite";
+        const url = `https://betterseqta.org/api/themes/${themeId}/favorite`;
+        fetch(url, {
+          method: isFavorite ? "POST" : "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then(sendResponse)
+          .catch((err) => {
+            console.error("[Background] cloudFavorite error:", err);
+            sendResponse({ success: false, error: err?.message });
           });
         return true;
       }
