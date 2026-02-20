@@ -14,7 +14,8 @@ function reloadSeqtaPages() {
   result.then(open, console.error);
 }
 
-type MessageSender = (_?: unknown) => void;
+/** Callback for sending a response back to the message sender */
+type MessageSender = { (response?: unknown): void };
 
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   const { token } = request;
@@ -166,7 +167,8 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
   return true;
 }
 
-type MessageHandler = (_req: any, _res: MessageSender) => boolean | void;
+/** Handler for a message type; receives request and sendResponse callback */
+type MessageHandler = { (request: any, sendResponse: MessageSender): boolean | void };
 
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   reloadTabs: () => reloadSeqtaPages(),
