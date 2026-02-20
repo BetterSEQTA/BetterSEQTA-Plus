@@ -24,7 +24,7 @@ export type CloudAuthState = {
   user: CloudUser | null;
 };
 
-type Listener = (_state: CloudAuthState) => void;
+type Listener = (state: CloudAuthState) => void;
 
 class CloudAuthService {
   private static instance: CloudAuthService;
