@@ -3550,6 +3550,16 @@ div.day-empty {
   scrollbar-width: none !important;
 }
 
+/* Fix SEQTA update: ul.logo-link covers sidebar and causes page reload on empty space clicks */
+#menu ul.logo-link {
+  pointer-events: none;
+
+  /* Re-enable clicks on menu items (li) - they're inside the logo-link ul */
+  li {
+    pointer-events: auto;
+  }
+}
+
 .notice-unified-content.notice-modal-state {
   border: none !important;
 }
