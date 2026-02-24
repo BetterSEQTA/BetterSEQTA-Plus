@@ -23,6 +23,8 @@ import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
 
@@ -201,7 +203,14 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
+  console.log("[BetterSEQTA+] LoadPageElements called");
   await AddBetterSEQTAElements();
+  
+  // Set up route listener for Teach homepage early
+  if (isSEQTATeachSync()) {
+    setupRouteListener();
+  }
+  
   const sublink: string | undefined = window.location.href.split("/")[4];
 
   eventManager.register(
@@ -300,11 +309,32 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case "news":
       await handleNewsPage();
       break;
-    case undefined:
-      window.location.replace(
-        `${location.origin}/#?page=/${settingsState.defaultPage}`,
-      );
-      if (settingsState.defaultPage === "home") loadHomePage();
+    case undefined: {
+      // Use platform-specific navigation for home page
+      // Only redirect if we're on the welcome page (not other pages like /messages, /timetable, etc.)
+      const currentPath = window.location.pathname;
+      const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
+      
+      if (settingsState.defaultPage === "home") {
+        if (isSEQTATeachSync()) {
+          // Only redirect from welcome page to BetterSEQTA+ home
+          if (isOnWelcomePage) {
+            // For Teach, wait for welcome page to load first, then navigate to BetterSEQTA+ home
+            // This ensures SEQTA's loading state is satisfied
+            await loadHomePage(); // This will wait for welcome page and then navigate
+          } else {
+            // Not on welcome page, just finish loading without redirecting
+            console.debug("[BetterSEQTA+] Not on welcome page, skipping redirect");
+          }
+        } else {
+          window.location.replace(`${location.origin}/#?page=/home`);
+          loadHomePage();
+        }
+      } else {
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+      }
       if (settingsState.defaultPage === "documents")
         handleDocuments(document.querySelector(".documents")!);
       if (settingsState.defaultPage === "reports")
@@ -314,10 +344,35 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 
       finishLoad();
       break;
+    }
     case "home":
-      window.location.replace(`${location.origin}/#?page=/home`);
-      console.info("[BetterSEQTA+] Started Init");
-      if (settingsState.onoff) loadHomePage();
+    case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
+      // Use platform-specific navigation
+      if (isSEQTATeachSync()) {
+        // Check if homepage is already loaded
+        const existingHome = document.getElementById("betterseqta-teach-home");
+        const isOnHomePage = window.location.pathname.includes('/betterseqta-home');
+        
+        // Only navigate and load if not already done
+        if (!isOnHomePage) {
+          // Use pushState to change URL without reloading
+          window.history.pushState({}, '', '/betterseqta-home');
+          // Trigger popstate event so route listener picks it up
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          console.info("[BetterSEQTA+] Started Init");
+          if (settingsState.onoff) loadHomePage();
+        } else if (!existingHome && settingsState.onoff) {
+          // On BetterSEQTA+ homepage but content not loaded yet
+          console.info("[BetterSEQTA+] On BetterSEQTA+ homepage, loading content");
+          loadHomePage();
+        } else {
+          console.info("[BetterSEQTA+] Homepage already loaded");
+        }
+      } else {
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init");
+        if (settingsState.onoff) loadHomePage();
+      }
       finishLoad();
       break;
 
@@ -449,21 +504,108 @@ function CheckNoticeTextColour(notice: any) {
 }
 
 export function tryLoad() {
+  console.log("[BetterSEQTA+] tryLoad() called");
+  let loadFinished = false;
+  // Track if LoadPageElements has been called to prevent duplicate calls
+  let loadPageElementsCalled = false;
+  
+  const finishLoadOnce = () => {
+    if (!loadFinished) {
+      loadFinished = true;
+      finishLoad();
+    }
+  };
+  
   waitForElm(".login").then(() => {
-    finishLoad();
-  });
+    finishLoadOnce();
+  }).catch(() => {});
 
   waitForElm(".day-container").then(() => {
-    finishLoad();
-  });
+    finishLoadOnce();
+  }).catch(() => {});
 
   waitForElm("[data-key=welcome]").then((elm: any) => {
     elm.classList.remove("active");
-  });
+  }).catch(() => {});
 
   waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
+    if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
+      loadPageElementsCalled = true;
+      LoadPageElements();
+    }
+  }).catch(() => {
+    // On Teach, .code might not exist, so call LoadPageElements directly
+    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
+    if (isSEQTATeachSync() && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
+      loadPageElementsCalled = true;
+      LoadPageElements().catch((err) => {
+        console.error("[BetterSEQTA+] Error loading page elements:", err);
+      });
+    } else {
+      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
+    }
   });
+  
+  // Fallback: Check for common elements that indicate page has loaded
+  waitForElm("#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header", true, 30).then(() => {
+    console.log("[BetterSEQTA+] Main content element found");
+    // On Teach, ensure LoadPageElements is called if it hasn't been already
+    const isTeach = isSEQTATeachSync();
+    console.log("[BetterSEQTA+] Platform check in fallback - isTeach:", isTeach, "loadPageElementsCalled:", loadPageElementsCalled);
+    if (isTeach && !loadPageElementsCalled) {
+      const codeElement = document.querySelector(".code");
+      console.log("[BetterSEQTA+] .code element check:", codeElement ? "found" : "not found");
+      // Only call if .code doesn't exist (meaning the first waitForElm failed)
+      if (!codeElement) {
+        console.log("[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback");
+        loadPageElementsCalled = true;
+        LoadPageElements().catch((err) => {
+          console.error("[BetterSEQTA+] Error loading page elements:", err);
+        });
+      } else {
+        console.log("[BetterSEQTA+] .code element exists, skipping LoadPageElements");
+      }
+    } else if (!isTeach) {
+      console.log("[BetterSEQTA+] Not Teach platform, skipping LoadPageElements");
+    } else {
+      console.log("[BetterSEQTA+] LoadPageElements already called, skipping");
+    }
+    finishLoadOnce();
+  }).catch(() => {
+    console.log("[BetterSEQTA+] Main content element not found");
+  });
+  
+  // Also update the .code catch block to track when it's called
+  waitForElm(".code", true, 50).then((elm: any) => {
+    if (!elm.innerText.includes("BetterSEQTA")) {
+      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
+      if (!loadPageElementsCalled) {
+        loadPageElementsCalled = true;
+        LoadPageElements();
+      }
+    }
+  }).catch(() => {
+    // On Teach, .code might not exist, so call LoadPageElements directly
+    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
+    if (isSEQTATeachSync() && !loadPageElementsCalled) {
+      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
+      loadPageElementsCalled = true;
+      LoadPageElements().catch((err) => {
+        console.error("[BetterSEQTA+] Error loading page elements:", err);
+      });
+    } else {
+      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
+    }
+  });
+  
+  // Fallback timeout: If none of the above elements appear, finish loading after 3 seconds
+  setTimeout(() => {
+    if (!loadFinished) {
+      finishLoadOnce();
+    }
+  }, 3000);
 
   updateIframesWithDarkMode();
   // Waits for page to call on load, run scripts
@@ -587,7 +729,8 @@ export function showConflictPopup() {
 
   background.append(container);
 
-  document.getElementById("container")?.append(background);
+  const containerElement = document.getElementById("container") || document.body;
+  containerElement.append(background);
 
   if (settingsState.animations) {
     animate([background as HTMLElement], { opacity: [0, 1] });
