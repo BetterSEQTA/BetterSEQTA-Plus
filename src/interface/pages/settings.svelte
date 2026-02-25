@@ -3,7 +3,6 @@
   import Settings from "./settings/general.svelte";
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
-  import Cloud from "./settings/cloud.svelte";
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
@@ -77,10 +76,6 @@
     settingsPopup.addListener(() => {
       showColourPicker = false;
     });
-
-    if (window.location.hash === "#cloud") {
-      settingsActiveTab = 3;
-    }
 
     if (standalone) {
       StandaloneStore.setStandalone(true);
@@ -291,7 +286,6 @@
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
-        { title: "BetterSEQTA Cloud", Content: Cloud },
       ]}
     />
   </div>

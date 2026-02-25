@@ -29,7 +29,7 @@
 {#if coverThemes.length > 0}
   <div class="relative w-full overflow-clip rounded-xl transition-opacity" transition:fade>
     <div 
-      class="w-full aspect-8/3" 
+      class="w-full aspect-[5/1] max-h-[500px]" 
       use:emblaCarouselSvelte={{ options, plugins }} 
       onemblaInit={onInit}
     >
