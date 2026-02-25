@@ -46,7 +46,7 @@
     </h2>
 
     <p class="mb-6 text-zinc-600 dark:text-zinc-400">
-      Go to Settings → BetterSEQTA Cloud to sign in, or create an account to get started.
+      Sign in in the Theme Store to save favorites across devices, or create an account to get started.
     </p>
 
     <div class="flex flex-wrap gap-2 justify-end">
