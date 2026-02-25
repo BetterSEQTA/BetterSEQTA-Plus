@@ -1,4 +1,5 @@
 import localforage from "localforage";
+import browser from "webextension-polyfill";
 import type { CustomTheme, LoadedCustomTheme } from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
@@ -470,23 +471,53 @@ export class ThemeManager {
     }
   }
 
+  private readonly THEME_API_BASE = 'https://betterseqta.org/api';
+  private readonly GITHUB_THEMES_BASE = 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes';
+
   /**
-   * Download and install a theme from the store
+   * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
+   */
+  private async fetchFromUrl(url: string): Promise<any> {
+    const result = (await browser.runtime.sendMessage({
+      type: 'fetchFromUrl',
+      url,
+    })) as { data?: unknown; error?: string };
+    if (result?.error) throw new Error(result.error);
+    return result?.data;
+  }
+
+  /**
+   * Download and install a theme from the store.
+   * Uses API first (increments download_count), falls back to GitHub if unreachable.
    */
   public async downloadTheme(themeContent: {
     id: string;
     name: string;
-    description: string;
-    coverImage: string;
+    description?: string;
+    coverImage?: string;
+    theme_json_url?: string;
   }): Promise<void> {
     console.debug("[ThemeManager] Downloading theme:", themeContent.name);
     try {
       if (!themeContent.id) return;
 
-      const response = await fetch(
-        `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes/${themeContent.id}/theme.json`,
-      );
-      const themeData = (await response.json()) as ThemeContent;
+      let themeData: ThemeContent;
+
+      try {
+        // Try API first (increments download_count)
+        const downloadData = (await this.fetchFromUrl(
+          `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
+        )) as { success?: boolean; data?: { theme_json_url: string } };
+        if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+          throw new Error("Failed to get theme download URL");
+        }
+        themeData = (await this.fetchFromUrl(downloadData.data.theme_json_url)) as ThemeContent;
+      } catch (apiError) {
+        // Fallback to GitHub if API is unreachable
+        console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
+        const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
+        themeData = (await this.fetchFromUrl(githubUrl)) as ThemeContent;
+      }
 
       await this.installTheme(themeData);
     } catch (error) {

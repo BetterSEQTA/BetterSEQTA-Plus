@@ -16,12 +16,12 @@
     }
   },
   "permissions": ["tabs", "notifications", "storage"],
-  "host_permissions": ["https://newsapi.org/", "*://*/*"],
+  "host_permissions": ["https://newsapi.org/", "https://betterseqta.org/", "https://accounts.betterseqta.org/", "*://*/*"],
   "background": {
     "service_worker": "background.ts"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://betterseqta.org https://accounts.betterseqta.org https://raw.githubusercontent.com"
   },
   "content_scripts": [
     {
