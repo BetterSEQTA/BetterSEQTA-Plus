@@ -10,6 +10,7 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
+  import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
 
@@ -112,6 +113,13 @@
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
+    {
+      title: "Connect Mobile App",
+      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn. Scan the QR code with DesQTA to sign in instantly.",
+      id: 0,
+      Component: ConnectMobileApp,
+      props: {}
+    },
     {
       title: "Transparency Effects",
       description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",

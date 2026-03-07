@@ -200,6 +200,33 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   cloudLogin: handleCloudLogin,
   cloudRefresh: handleCloudRefresh,
   cloudFavorite: handleCloudFavorite,
+  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender) => {
+    (async () => {
+      try {
+        let baseUrl = req.baseUrl;
+        if (!baseUrl) {
+          const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+          const tab = tabs[0];
+          if (!tab?.url) {
+            sendResponse({ session: null });
+            return;
+          }
+          baseUrl = new URL(tab.url).origin;
+        }
+        const cookies = await browser.cookies.getAll({ url: baseUrl });
+        const jsession = cookies.find((c) => c.name === "JSESSIONID");
+        if (jsession?.value) {
+          sendResponse({ session: { baseUrl, jsessionId: jsession.value } });
+        } else {
+          sendResponse({ session: null });
+        }
+      } catch (err) {
+        console.error("[Background] getSeqtaSession error:", err);
+        sendResponse({ session: null });
+      }
+    })();
+    return true;
+  },
 };
 
 browser.runtime.onMessage.addListener(
