@@ -97,6 +97,7 @@
     "motion": "^12.4.12",
     "pdfjs-dist": "^5.4.530",
     "postcss": "^8.5.3",
+    "qrcode": "^1.5.4",
     "react": "17",
     "react-best-gradient-color-picker": "3.0.11",
     "react-dom": "17",
