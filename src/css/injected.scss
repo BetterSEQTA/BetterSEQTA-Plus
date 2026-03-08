@@ -5181,6 +5181,83 @@ body[data-seqta-platform="teach"] {
       fill: currentColor !important;
     }
   }
+
+  // Global LexicalEditor toolbar - compact sizing for ALL instances (ProgrammeCoverPage, filterBox, etc.)
+  // Original SEQTA: padding 8px, icons 18px. Override to compact 24px buttons, 16px icons for visibility.
+  [class*="LexicalEditor__editor-container"] [class*="LexicalEditor__toolbar"] {
+    padding: 6px 8px !important;
+    gap: 4px !important;
+    background: var(--theme-offset-bg-more, var(--button-bg)) !important;
+    color: var(--text-primary) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    [class*="LexicalEditor__divider"] {
+      height: 16px !important;
+      margin: 0 2px !important;
+      background: var(--border-primary) !important;
+    }
+
+    [class*="MenuButton__Menu"] [class*="Button__Button"] {
+      padding: 4px 8px !important;
+      font-size: 12px !important;
+      border-radius: 4px !important;
+      background: var(--button-bg) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border-primary) !important;
+    }
+
+    [class*="Button__Button"][class*="LexicalEditor__toolbar-item"] {
+      min-width: 24px !important;
+      height: 24px !important;
+      padding: 4px !important;
+      border-radius: 4px !important;
+      background: var(--button-bg) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid transparent !important;
+
+      svg[class*="LexicalEditor__format"] {
+        width: 16px !important;
+        height: 16px !important;
+        fill: currentColor !important;
+      }
+
+      &:hover:not(:disabled) {
+        background: var(--button-hover) !important;
+        border-color: var(--border-primary) !important;
+      }
+
+      &[class*="LexicalEditor__active"] {
+        background: var(--accent-bg) !important;
+        color: var(--text-on-accent) !important;
+      }
+
+      &[class*="LexicalEditor__color-indicator-button"] {
+        padding: 4px 6px !important;
+
+        [class*="LexicalEditor__icon-with-indicator"] {
+          gap: 1px !important;
+        }
+        [class*="LexicalEditor__color-indicator"] {
+          width: 12px !important;
+          height: 2px !important;
+        }
+      }
+    }
+
+    [class*="LexicalEditor__toolbar-group"] {
+      gap: 2px !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  // Ensure editor container constrains toolbar width
+  [class*="LexicalEditor__editor-container"] {
+    min-width: 0 !important;
+  }
   
   // Override SEQTA Teach CSS variables to use BetterSEQTA theming
   :root,
@@ -6654,6 +6731,21 @@ body[data-seqta-platform="teach"] {
       background: transparent !important;
       color: var(--text-primary) !important;
       padding: 20px !important;
+      
+      // Fix transparent table rows - ensure solid backgrounds in both transparency modes
+      table tbody tr {
+        background: var(--background-primary) !important;
+        &:nth-of-type(2n) {
+          background: var(--background-secondary) !important;
+        }
+        &:hover {
+          background: var(--theme-offset-bg-more) !important;
+        }
+        &.selected {
+          background: var(--accent-bg) !important;
+          color: var(--text-on-accent) !important;
+        }
+      }
       
       // Correspondence/SMS layout - data (recipient list) ~30%, content (message area) ~70%
       > div:has(> .data):has(> .content) {
@@ -14863,12 +14955,32 @@ body[data-seqta-platform="teach"] {
           border-radius: 50% !important;
           width: 36px !important;
           height: 36px !important;
+          flex-shrink: 0 !important;
           
           svg text {
             fill: var(--text-on-accent) !important;
             font-family: Rubik, sans-serif !important;
           }
         }
+      }
+    }
+    
+    // Fix ProfileMenu circle stretch - ensure button maintains square aspect ratio
+    [class*="ProfileMenu__ProfileMenu"] {
+      display: flex !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
+      
+      > button {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
       }
     }
     
@@ -17930,25 +18042,33 @@ body[data-seqta-platform="teach"] {
         .LexicalEditor__editor-container___RCCFr {
           background: transparent !important;
 
-          // Toolbar
+          // Toolbar - compact sizing for text formatting controls
           .LexicalEditor__toolbar___kprF1 {
             background: var(--theme-offset-bg-more) !important;
             border-bottom: 1px solid var(--border-secondary) !important;
-            padding: 12px 16px !important;
+            padding: 6px 8px !important;
             display: flex !important;
             align-items: center !important;
-            gap: 8px !important;
+            gap: 4px !important;
             flex-wrap: wrap !important;
+
+            // All toolbar buttons (including standalone Insert Link, Insert Table)
+            .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
+              min-width: 24px !important;
+              height: 24px !important;
+              padding: 4px !important;
+              border-radius: 4px !important;
+            }
 
             // Dropdown Menu Button
             .MenuButton__Menu___FMwps {
               .Button__Button___kQRWg {
                 background: var(--button-bg) !important;
                 border: 1px solid var(--border-primary) !important;
-                border-radius: 6px !important;
+                border-radius: 4px !important;
                 color: var(--text-primary) !important;
-                padding: 8px 12px !important;
-                font-size: 13px !important;
+                padding: 4px 8px !important;
+                font-size: 12px !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
 
@@ -17962,9 +18082,9 @@ body[data-seqta-platform="teach"] {
             // Dividers
             .LexicalEditor__divider___xunJd {
               width: 1px !important;
-              height: 20px !important;
+              height: 16px !important;
               background: var(--border-primary) !important;
-              margin: 0 4px !important;
+              margin: 0 2px !important;
 
               &.LexicalEditor__auto-hide___x9WCG {
                 opacity: 0.5 !important;
@@ -17975,22 +18095,22 @@ body[data-seqta-platform="teach"] {
             .LexicalEditor__toolbar-group___cCQ3d {
               display: flex !important;
               align-items: center !important;
-              gap: 4px !important;
+              gap: 2px !important;
 
-              // Toolbar Buttons
+              // Toolbar Buttons - compact sizing
               .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
                 background: var(--button-bg) !important;
                 border: 1px solid transparent !important;
-                border-radius: 6px !important;
+                border-radius: 4px !important;
                 color: var(--text-secondary) !important;
-                padding: 8px !important;
+                padding: 4px !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                min-width: 32px !important;
-                height: 32px !important;
+                min-width: 24px !important;
+                height: 24px !important;
 
                 &:hover:not(:disabled) {
                   background: var(--button-hover) !important;
@@ -18014,19 +18134,32 @@ body[data-seqta-platform="teach"] {
                   cursor: not-allowed !important;
                 }
 
-                // Icon styling
+                // Icon styling - compact to match button size
                 svg.LexicalEditor__format___mlo_D {
-                  width: 16px !important;
-                  height: 16px !important;
+                  width: 14px !important;
+                  height: 14px !important;
                   fill: currentColor !important;
                 }
 
                 &.LexicalEditor__spaced___LHB2C {
-                  margin-right: 2px !important;
+                  margin-right: 1px !important;
                 }
 
                 &.LexicalEditor__toolbarEnd___qZQjB {
                   margin-left: auto !important;
+                }
+
+                // Color indicator buttons - compact
+                &.LexicalEditor__color-indicator-button___EUR5w {
+                  padding: 4px 6px !important;
+
+                  .LexicalEditor__icon-with-indicator___fKDO1 {
+                    gap: 1px !important;
+                  }
+                  .LexicalEditor__color-indicator___qbNKE {
+                    width: 12px !important;
+                    height: 2px !important;
+                  }
                 }
               }
             }
@@ -18119,13 +18252,21 @@ body[data-seqta-platform="teach"] {
       .LexicalEditor__editor-container___RCCFr {
         background: transparent !important;
 
-        // Toolbar - ensure dark background
+        // Toolbar - compact sizing, ensure dark background
         .LexicalEditor__toolbar___kprF1 {
           background: var(--theme-offset-bg-more) !important;
           background-color: var(--theme-offset-bg-more) !important;
           border-bottom: 1px solid var(--border-secondary) !important;
-          padding: 12px 16px !important;
+          padding: 6px 8px !important;
           color: var(--text-primary) !important;
+
+          // All toolbar buttons (including standalone)
+          .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
+            min-width: 24px !important;
+            height: 24px !important;
+            padding: 4px !important;
+            border-radius: 4px !important;
+          }
 
           // Dropdown Menu Button
           .MenuButton__Menu___FMwps {
@@ -18133,10 +18274,10 @@ body[data-seqta-platform="teach"] {
               background: var(--button-bg) !important;
               background-color: var(--button-bg) !important;
               border: 1px solid var(--border-primary) !important;
-              border-radius: 6px !important;
+              border-radius: 4px !important;
               color: var(--text-primary) !important;
-              padding: 8px 12px !important;
-              font-size: 13px !important;
+              padding: 4px 8px !important;
+              font-size: 12px !important;
               cursor: pointer !important;
               transition: all 0.2s ease !important;
 
@@ -18151,10 +18292,10 @@ body[data-seqta-platform="teach"] {
           // Dividers
           .LexicalEditor__divider___xunJd {
             width: 1px !important;
-            height: 20px !important;
+            height: 16px !important;
             background: var(--border-primary) !important;
             background-color: var(--border-primary) !important;
-            margin: 0 4px !important;
+            margin: 0 2px !important;
 
             &.LexicalEditor__auto-hide___x9WCG {
               opacity: 0.5 !important;
@@ -18165,23 +18306,23 @@ body[data-seqta-platform="teach"] {
           .LexicalEditor__toolbar-group___cCQ3d {
             display: flex !important;
             align-items: center !important;
-            gap: 4px !important;
+            gap: 2px !important;
 
-            // Toolbar Buttons
+            // Toolbar Buttons - compact sizing
             .Button__Button___kQRWg.LexicalEditor__toolbar-item___Yv9Mw {
               background: var(--button-bg) !important;
               background-color: var(--button-bg) !important;
               border: 1px solid transparent !important;
-              border-radius: 6px !important;
+              border-radius: 4px !important;
               color: var(--text-secondary) !important;
-              padding: 8px !important;
+              padding: 4px !important;
               cursor: pointer !important;
               transition: all 0.2s ease !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              min-width: 32px !important;
-              height: 32px !important;
+              min-width: 24px !important;
+              height: 24px !important;
 
               &:hover:not(:disabled) {
                 background: var(--button-hover) !important;
@@ -18207,16 +18348,29 @@ body[data-seqta-platform="teach"] {
                 cursor: not-allowed !important;
               }
 
-              // Icon styling
+              // Icon styling - compact
               svg.LexicalEditor__format___mlo_D {
-                width: 16px !important;
-                height: 16px !important;
+                width: 14px !important;
+                height: 14px !important;
                 fill: currentColor !important;
                 color: currentColor !important;
               }
 
               &.LexicalEditor__spaced___LHB2C {
-                margin-right: 2px !important;
+                margin-right: 1px !important;
+              }
+
+              // Color indicator buttons - compact
+              &.LexicalEditor__color-indicator-button___EUR5w {
+                padding: 4px 6px !important;
+
+                .LexicalEditor__icon-with-indicator___fKDO1 {
+                  gap: 1px !important;
+                }
+                .LexicalEditor__color-indicator___qbNKE {
+                  width: 12px !important;
+                  height: 2px !important;
+                }
               }
             }
           }
@@ -18899,5 +19053,14 @@ html:not(.transparencyEffects) {
   [style*="background: rgba(0, 0, 0, 0"],
   [style*="background:rgba(0,0,0,0"] {
     background: var(--background-secondary) !important;
+  }
+  
+  // Fix popups - ensure solid background when transparency effects are off
+  // Targets LegacyPage popups and other Teach page popups (e.g. programmeListByStaff, filterbarByStaff, lessonBrowserByStaff)
+  main .popup,
+  [class*="LegacyPage__body"] .popup {
+    background: var(--background-primary) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
