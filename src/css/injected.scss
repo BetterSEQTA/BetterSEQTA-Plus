@@ -3695,7 +3695,7 @@ div.day-empty {
     margin: 0 !important;
     flex: 1;
     display: block;
-    min-width: 0;
+    min-width: 600px;
     width: 100%;
   }
 
@@ -3712,8 +3712,7 @@ div.day-empty {
     }
 
     .notice-content-body {
-      overflow-y: auto;
-      min-height: 0;
+      overflow-y: hidden;
 
       &::-webkit-scrollbar {
         width: 6px;
