@@ -268,13 +268,13 @@ CanChangeColour: false  // Color is locked
 Always use CSS variables instead of hardcoded colors:
 
 ```css
-/* ✅ Good */
+/* Good */
 .my-element {
   background: var(--background-primary);
   color: var(--text-primary);
 }
 
-/* ❌ Bad */
+/* Bad */
 .my-element {
   background: #ffffff;
   color: #000000;
@@ -307,12 +307,12 @@ html:not(.dark) .my-element {
 Only use `!important` when necessary to override SEQTA's default styles:
 
 ```css
-/* ✅ Good - necessary override */
+/* Good - necessary override */
 #title {
   background: var(--background-primary) !important;
 }
 
-/* ❌ Bad - unnecessary */
+/* Bad - unnecessary */
 .my-element {
   color: var(--text-primary) !important;
 }
@@ -336,12 +336,12 @@ SEQTA is responsive. Test your theme at different screen sizes:
 Prefer semantic selectors over fragile ones:
 
 ```css
-/* ✅ Good - stable selector */
+/* Good - stable selector */
 #main > .dashboard > section {
   border-radius: 16px;
 }
 
-/* ⚠️ Caution - CSS module classes may change */
+/* Caution - CSS module classes may change */
 [class*="Dashboard__Dashboard___"] {
   border-radius: 16px;
 }

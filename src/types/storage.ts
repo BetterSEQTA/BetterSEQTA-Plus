@@ -47,6 +47,12 @@ export interface SettingsState {
   lettergrade: boolean;
   assessmentsAverage?: boolean;
   notificationCollector?: boolean;
+
+  // BetterSEQTA Cloud (accounts.betterseqta.org)
+  bsplus_client_id?: string;
+  bsplus_token?: string;
+  bsplus_refresh_token?: string;
+  bsplus_user?: { id: string; email?: string; username?: string; displayName?: string; pfpUrl?: string; admin_level?: number };
 }
 
 interface ToggleItem {

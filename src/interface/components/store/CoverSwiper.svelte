@@ -29,7 +29,7 @@
 {#if coverThemes.length > 0}
   <div class="relative w-full overflow-clip rounded-xl transition-opacity" transition:fade>
     <div 
-      class="w-full aspect-8/3" 
+      class="w-full aspect-[5/1] max-h-[500px]" 
       use:emblaCarouselSvelte={{ options, plugins }} 
       onemblaInit={onInit}
     >
@@ -42,7 +42,7 @@
             onkeydown={(e) => { if (e.key === 'Enter') setDisplayTheme(theme) }}
             onclick={() => setDisplayTheme(theme)}
           >
-            <img src={theme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-full" />
+            <img src={theme.marqueeImage || theme.coverImage} alt="Theme Preview" class="object-cover w-full h-full" />
             <div class='absolute bottom-0 left-0 p-8 z-[1]'>
               <h2 class='text-4xl font-bold text-white'>{theme.name}</h2>
               <p class='text-lg text-white'>{theme.description}</p>
