@@ -617,12 +617,15 @@ export function getMockAssessmentsData() {
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * -3) - 1 }, // Recently overdue
   ];
 
-  const assessments = Array.from({ length: 12 }, (_, i) => {
+  const currentYear = new Date().getFullYear();
+  const assessments = Array.from({ length: 14 }, (_, i) => {
     const subj = subjects[i % subjects.length];
     const template = statusTemplates[i % statusTemplates.length];
     const due = new Date();
     due.setDate(due.getDate() + template.dayOffset());
+    if (i >= 10) due.setFullYear(currentYear - 1);
     
+    const types = ["Assignment", "Test", "Exam", "Project", "Presentation", "Report"];
     const assessment: any = {
       id: i + 1,
       title: mockData.assessmentTitles[i % mockData.assessmentTitles.length],
@@ -631,6 +634,7 @@ export function getMockAssessmentsData() {
       metaclassID: subj.metaclass,
       due: due.toISOString(),
       submitted: template.submitted,
+      type: types[i % types.length],
     };
 
     if (template.score && typeof template.score === 'function') {
