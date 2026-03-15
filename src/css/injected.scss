@@ -3712,7 +3712,8 @@ div.day-empty {
     }
 
     .notice-content-body {
-      overflow-y: hidden;
+      overflow-y: auto;
+      min-height: 0;
 
       &::-webkit-scrollbar {
         width: 6px;
