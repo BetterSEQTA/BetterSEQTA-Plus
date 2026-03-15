@@ -180,8 +180,52 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       `).firstChild!,
         assessmentsList.firstChild,
       );
+
+      applySubjectColourToOverallResult();
+
+      const observer = new MutationObserver(() => {
+        applySubjectColourToOverallResult();
+      });
+      const wrapper = document.querySelector(".assessmentsWrapper");
+      if (wrapper) {
+        observer.observe(wrapper, { childList: true, subtree: true });
+        setTimeout(() => observer.disconnect(), 10000);
+      }
     });
   },
 };
+
+function applySubjectColourToOverallResult() {
+  const selectedAssessmentItem = document.querySelector(
+    "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
+  ) || document.querySelector(
+    "[class*='Collapsible__content___'] [class*='AssessmentItem__AssessmentItem___']",
+  );
+  const assessmentThermoscore = selectedAssessmentItem?.querySelector(
+    "[class*='Thermoscore__Thermoscore___']",
+  ) as HTMLElement | null;
+  const overallResult = document.querySelector(
+    "[class*='OverallResult__OverallResult___']",
+  ) as HTMLElement | null;
+  const assessableCriterionHeaders = document.querySelectorAll(
+    "[class*='AssessableCriterion__header___']",
+  );
+
+  if (assessmentThermoscore && (overallResult || assessableCriterionHeaders.length > 0)) {
+    const accentColour =
+      getComputedStyle(assessmentThermoscore).getPropertyValue("--assessment-accent-colour").trim() ||
+      getComputedStyle(assessmentThermoscore).getPropertyValue("--fill-colour").trim() ||
+      getComputedStyle(assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") || assessmentThermoscore).getPropertyValue("--assessment-accent-colour").trim() ||
+      getComputedStyle(assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") || assessmentThermoscore).getPropertyValue("--item-colour").trim();
+    if (accentColour) {
+      overallResult?.style.setProperty("--assessment-accent-colour", accentColour);
+      overallResult?.style.setProperty("--fill-colour", accentColour);
+      assessableCriterionHeaders.forEach((el) => {
+        (el as HTMLElement).style.setProperty("--assessment-accent-colour", accentColour);
+        (el as HTMLElement).style.setProperty("--fill-colour", accentColour);
+      });
+    }
+  }
+}
 
 export default assessmentsAveragePlugin;

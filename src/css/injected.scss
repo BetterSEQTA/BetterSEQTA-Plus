@@ -1677,6 +1677,22 @@ iframe.userHTML {
   background-image: unset;
   background-color: var(--auto-background);
 }
+[class*="OverallResult__OverallResult___"] {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="OverallResult__OverallResult___"] [class*="Thermoscore__Thermoscore___"],
+[class*="OverallResult__OverallResult___"] [class*="Thermoscore__fill___"],
+[class*="OverallResult__OverallResult___"] > div > div {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="AssessableCriterion__header___"] {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="AssessableCriterion__header___"] [class*="Thermoscore__Thermoscore___"],
+[class*="AssessableCriterion__header___"] [class*="Thermoscore__fill___"],
+[class*="AssessableCriterion__header___"] > div > div > div {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
 .dark [class*="Thermoscore__Thermoscore___"] {
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
