@@ -305,6 +305,7 @@ function getDefaultValues(): SettingsState {
     customshortcuts: [],
     lettergrade: false,
     newsSource: "australia",
+    iconOnlySidebar: false,
   };
 }
 

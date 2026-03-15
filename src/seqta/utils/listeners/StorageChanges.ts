@@ -30,6 +30,18 @@ export class StorageChangeHandler {
       "subjectfilters",
       FilterUpcomingAssessments.bind(this),
     );
+    settingsState.register(
+      "iconOnlySidebar",
+      this.handleIconOnlySidebarChange.bind(this),
+    );
+  }
+
+  private handleIconOnlySidebarChange(newValue: boolean | undefined) {
+    if (newValue) {
+      document.body.classList.add("icon-only-sidebar");
+    } else {
+      document.body.classList.remove("icon-only-sidebar");
+    }
   }
 
   private handleDarkModeChange() {

@@ -612,6 +612,7 @@ export function init() {
   if (settingsState.onoff) {
     console.info("[BetterSEQTA+] Enabled");
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
+    if (settingsState.iconOnlySidebar) document.body.classList.add("icon-only-sidebar");
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
     ObserveMenuItemPosition();
