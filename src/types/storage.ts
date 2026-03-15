@@ -40,6 +40,7 @@ export interface SettingsState {
   newsSource?: string;
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
+  iconOnlySidebar?: boolean;
 
   // depreciated keys
   animatedbk: boolean;
