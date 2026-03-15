@@ -56,6 +56,18 @@ async function loadUpcoming(student: number) {
   return res.payload;
 }
 
+function normalizeAssessmentDates(t: any, subject: Subject): any {
+  const normalized = { ...t };
+  // Past API may use different date fields - ensure we have 'due' for year filter & display
+  if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
+    normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
+  }
+  if (!normalized.programmeID) normalized.programmeID = subject.programme;
+  if (!normalized.metaclassID) normalized.metaclassID = subject.metaclass;
+  if (!normalized.code && t.subject) normalized.code = t.subject;
+  return normalized;
+}
+
 async function loadPast(student: number, subjects: Subject[]) {
   const map: Record<number, any> = {};
   await Promise.all(
@@ -65,10 +77,22 @@ async function loadPast(student: number, subjects: Subject[]) {
         metaclass: s.metaclass,
         student,
       });
-      if (res.payload.tasks) {
-        res.payload.tasks.forEach((t: any) => {
-          map[t.id] = t;
-        });
+      const processAssessment = (t: any) => {
+        if (t && t.id) {
+          const merged = {
+            ...t,
+            programmeID: t.programmeID || t.programme || s.programme,
+            metaclassID: t.metaclassID || t.metaclass || s.metaclass,
+            code: t.code || t.subject || s.code,
+          };
+          map[t.id] = normalizeAssessmentDates(merged, s);
+        }
+      };
+      if (res.payload?.pending && Array.isArray(res.payload.pending)) {
+        res.payload.pending.forEach(processAssessment);
+      }
+      if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
+        res.payload.tasks.forEach(processAssessment);
       }
     }),
   );

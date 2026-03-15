@@ -150,6 +150,16 @@
       }
     },
     {
+      title: "Icon Only Sidebar",
+      description: "Show only icons in the sidebar for a compact layout.",
+      id: 14,
+      Component: Switch,
+      props: {
+        state: $settingsState.iconOnlySidebar ?? false,
+        onChange: (isOn: boolean) => settingsState.iconOnlySidebar = isOn
+      }
+    },
+    {
       title: "Animations",
       description: "Enables animations on certain pages.",
       id: 6,

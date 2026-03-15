@@ -455,6 +455,63 @@ ul.magicDelete > li.deleting {
   width: 28px !important;
   height: 28px !important;
 }
+
+/* Icon Only Sidebar - compact mode. When submenu is open, all styles are disabled so it behaves as normal sidebar. */
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+  #menu {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    transition: width 0.2s ease;
+    overflow: hidden !important;
+  }
+
+  #menu > ul {
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  #content {
+    left: 70px !important;
+  }
+
+  #menu li > label span,
+  #menu section > label span {
+    display: none !important;
+  }
+
+  #menu ul > li > svg {
+    display: none !important;
+  }
+
+  #menu .sub {
+    left: 70px !important;
+  }
+
+  #menu ul li,
+  #menu ul section {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 8px !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  #menu li > label,
+  #menu section > label {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  #menu li > label > svg,
+  #menu section > label > svg {
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+}
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
@@ -920,6 +977,17 @@ html.transparencyEffects
   .menuShown #content {
     -webkit-transform: translatex(270px);
     transform: translatex(270px);
+  }
+
+  body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+    #menu {
+      -webkit-transform: translatex(-70px);
+      transform: translatex(-70px);
+    }
+    .menuShown #content {
+      -webkit-transform: translatex(70px);
+      transform: translatex(70px);
+    }
   }
 }
 
@@ -1676,6 +1744,22 @@ iframe.userHTML {
 [class*="Thermoscore__Thermoscore___"] {
   background-image: unset;
   background-color: var(--auto-background);
+}
+[class*="OverallResult__OverallResult___"] {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="OverallResult__OverallResult___"] [class*="Thermoscore__Thermoscore___"],
+[class*="OverallResult__OverallResult___"] [class*="Thermoscore__fill___"],
+[class*="OverallResult__OverallResult___"] > div > div {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="AssessableCriterion__header___"] {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+}
+[class*="AssessableCriterion__header___"] [class*="Thermoscore__Thermoscore___"],
+[class*="AssessableCriterion__header___"] [class*="Thermoscore__fill___"],
+[class*="AssessableCriterion__header___"] > div > div > div {
+  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
 }
 .dark [class*="Thermoscore__Thermoscore___"] {
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -3712,7 +3796,8 @@ div.day-empty {
     }
 
     .notice-content-body {
-      overflow-y: hidden;
+      overflow-y: auto;
+      min-height: 0;
 
       &::-webkit-scrollbar {
         width: 6px;
