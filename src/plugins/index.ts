@@ -2,6 +2,7 @@ import { PluginManager } from "./core/manager";
 
 // Lightweight plugins (load immediately)
 import timetablePlugin from "./built-in/timetable";
+import timetableEditPlugin from "./built-in/timetableEdit";
 import notificationCollectorPlugin from "./built-in/notificationCollector";
 import themesPlugin from "./built-in/themes";
 import animatedBackgroundPlugin from "./built-in/animatedBackground";
@@ -23,6 +24,7 @@ pluginManager.registerPlugin(animatedBackgroundPlugin);
 pluginManager.registerPlugin(assessmentsAveragePlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(timetablePlugin);
+pluginManager.registerPlugin(timetableEditPlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
