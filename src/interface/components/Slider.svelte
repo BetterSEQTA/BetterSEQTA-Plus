@@ -9,7 +9,7 @@
   let percentage = $derived(((state - min) / (max - min)) * 100);
 </script>
 
-<div class="relative mx-auto w-full max-w-lg">
+<div class="relative w-full min-w-0">
   <input
     type="range"
     min={min}

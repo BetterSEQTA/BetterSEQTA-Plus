@@ -620,7 +620,11 @@ export function init() {
     new StorageChangeHandler();
     new MessageHandler();
 
-    updateAllColors();
+    void updateAllColors();
+
+    window.addEventListener("hashchange", () => {
+      if (settingsState.adaptiveThemeColour) void updateAllColors();
+    });
     loading();
     InjectCustomIcons();
     HideMenuItems();

@@ -306,6 +306,8 @@ function getDefaultValues(): SettingsState {
     lettergrade: false,
     newsSource: "australia",
     iconOnlySidebar: false,
+    adaptiveThemeColour: false,
+    adaptiveThemeGradient: false,
   };
 }
 

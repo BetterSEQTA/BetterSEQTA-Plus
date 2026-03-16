@@ -14,7 +14,9 @@ export class StorageChangeHandler {
   }
 
   private registerHandlers() {
-    settingsState.register("selectedColor", updateAllColors.bind(this));
+    settingsState.register("selectedColor", () => void updateAllColors());
+    settingsState.register("adaptiveThemeColour", () => void updateAllColors());
+    settingsState.register("adaptiveThemeGradient", () => void updateAllColors());
     settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
     settingsState.register("onoff", this.handleOnOffChange.bind(this));
     settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
@@ -45,7 +47,7 @@ export class StorageChangeHandler {
   }
 
   private handleDarkModeChange() {
-    updateAllColors();
+    void updateAllColors();
   }
 
   private handleOnOffChange(newValue: boolean) {
