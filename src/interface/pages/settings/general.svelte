@@ -224,7 +224,36 @@
   ] as option}
     {@render Setting(option)}
   {/each}
-  
+
+  <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+    <div class="flex justify-between items-center px-4 py-3">
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
+        <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page).</p>
+      </div>
+      <div>
+        <Switch
+          state={$settingsState.adaptiveThemeColour ?? false}
+          onChange={(isOn: boolean) => settingsState.adaptiveThemeColour = isOn}
+        />
+      </div>
+    </div>
+    {#if $settingsState.adaptiveThemeColour}
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Soft Gradient</h2>
+          <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class.</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.adaptiveThemeGradient ?? false}
+            onChange={(isOn: boolean) => settingsState.adaptiveThemeGradient = isOn}
+          />
+        </div>
+      </div>
+    {/if}
+  </div>
+
   {#each pluginSettings as plugin}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
@@ -280,13 +309,15 @@
                       onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     />
                   {:else if setting.type === 'number'}
-                    <Slider
-                      state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                      min={setting.min}
-                      max={setting.max}
-                      step={setting.step}
-                    />
+                    <div class="w-28 shrink-0">
+                      <Slider
+                        state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                        onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                        min={setting.min}
+                        max={setting.max}
+                        step={setting.step}
+                      />
+                    </div>
                   {:else if setting.type === 'string'}
                     <input
                       type="text"

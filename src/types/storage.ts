@@ -41,6 +41,8 @@ export interface SettingsState {
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
   iconOnlySidebar?: boolean;
+  adaptiveThemeColour?: boolean;
+  adaptiveThemeGradient?: boolean;
 
   // depreciated keys
   animatedbk: boolean;
