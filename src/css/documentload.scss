@@ -26,11 +26,26 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "IconFamily";
+  src: url("@/resources/fonts/IconFamily.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
 @layer base, override;
 
 @layer override {
   * {
     font-family: Rubik, sans-serif !important;
+  }
+
+  .iconFamily,
+  .iconFamily *,
+  [class~="iconFamily"],
+  [class~="iconFamily"] * {
+    font-family: "IconFamily" !important;
   }
 }
 
