@@ -39,6 +39,7 @@ export class StorageChangeHandler {
   }
 
   private handleIconOnlySidebarChange(newValue: boolean | undefined) {
+    if (!document.body) return;
     if (newValue) {
       document.body.classList.add("icon-only-sidebar");
     } else {
