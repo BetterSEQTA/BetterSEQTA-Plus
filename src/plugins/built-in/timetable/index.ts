@@ -130,7 +130,7 @@ function handleTimetableAssessmentHide(): void {
 
   const hideOn = document.createElement("button");
   hideOn.className = "uiButton timetable-hide iconFamily";
-  hideOn.innerHTML = "&#128065;";
+  hideOn.innerHTML = "&#xeab3;";
 
   hideControls.appendChild(hideOn);
 

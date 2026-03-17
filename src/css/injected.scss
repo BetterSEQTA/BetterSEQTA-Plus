@@ -285,8 +285,13 @@ select {
   }
 }
 
-.timetable-zoom {
+.timetable-zoom,
+.timetable-hide {
   font-size: 14px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 #main > .dashboard {
