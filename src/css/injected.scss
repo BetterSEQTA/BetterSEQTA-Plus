@@ -447,6 +447,7 @@ ul.magicDelete > li.deleting {
   background: var(--better-main) !important;
   color: var(--text-color);
   border-right: none;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #menu li > label > svg,
 #menu section > label > svg {
@@ -459,9 +460,7 @@ ul.magicDelete > li.deleting {
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
   #menu {
     width: 70px !important;
-    min-width: 70px !important;
-    max-width: 70px !important;
-    transition: width 0.2s ease;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden !important;
   }
 
@@ -472,6 +471,12 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
 
   #content {
     left: 70px !important;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #menu .sub {
+    left: 70px !important;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   #menu li > label span,
@@ -481,10 +486,6 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
 
   #menu ul > li > svg {
     display: none !important;
-  }
-
-  #menu .sub {
-    left: 70px !important;
   }
 
   #menu ul li,
@@ -934,7 +935,7 @@ html.transparencyEffects
 }
 
 #content {
-  transition: 0.4s;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s ease;
   left: 270px;
   background: unset;
 }

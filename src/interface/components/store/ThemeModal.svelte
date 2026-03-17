@@ -29,9 +29,13 @@
 
   // Function to get related themes
   function getRelatedThemes() {
+    if (!theme) return [];
     return allThemes
-      .filter((t: Theme) => t.id !== theme.id)
-      .sort((a: Theme, b: Theme) => a.name.localeCompare(theme.name) - b.name.localeCompare(theme.name))
+      .filter((t: Theme) => !!t && t.id !== theme.id)
+      .sort(
+        (a: Theme, b: Theme) =>
+          a.name.localeCompare(theme.name) - b.name.localeCompare(theme.name),
+      )
       .slice(0, 4);
   }
 
@@ -84,6 +88,7 @@
     onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
+    {#if theme}
     <div class="relative h-auto">
       <div class="absolute top-0 right-0 flex gap-1 items-center">
         <button class="p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200" onclick={() => hideModal()}>
@@ -166,6 +171,13 @@
         {/each}
       </div>
     </div>
+    {:else}
+      <div class="flex justify-center items-center h-full text-zinc-600 dark:text-zinc-300">
+        <button class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95" onclick={() => hideModal()}>
+          Close
+        </button>
+      </div>
+    {/if}
   </div>
 </div>
 
