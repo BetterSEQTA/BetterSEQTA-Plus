@@ -32,6 +32,17 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.5.0 - Adaptive Theme, Timetable Editor & More</h1>
+      <li>Added adaptive theme colour — theme changes based on the current class when viewing courses or assessments</li>
+      <li>Added optional soft gradient for adaptive theme when viewing a class</li>
+      <li>Added timetable editor — edit rooms and teachers directly from the timetable with apply-to-future-weeks option</li>
+      <li>Added icon-only sidebar option for a compact layout</li>
+      <li>Fixed assessment colouring issues</li>
+      <li>Added new kanban categories to the assessments overview</li>
+      <li>Added DesQTA QR code generation in settings for linking to the DesQTA (BetterSEQTA) mobile app</li>
+      <li>New store with improved theme browsing and backgrounds</li>
+      <li>Other minor bug fixes and improvements</li>
+
       <h1>3.4.16 - Subject Averages Fixes</h1>
       <li>Fixed subject averages not showing correctly with letter grades and weighted marks</li>
 
