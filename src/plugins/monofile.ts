@@ -630,6 +630,73 @@ export function init() {
     HideMenuItems();
     tryLoad();
 
+    // Auto-focus WISP direct online submission editor when pane opens
+    eventManager.register(
+      "wispassessmentAdded",
+      {
+        customCheck: (el) =>
+          el.classList.contains("wispassessment") ||
+          el.querySelector(".wispassessment") !== null,
+      },
+      (element) => {
+        const wispassessment = element.classList.contains("wispassessment")
+          ? (element as Element)
+          : element.querySelector(".wispassessment");
+        if (!wispassessment) return;
+
+        const focusEditableBody = (iframe: HTMLIFrameElement) => {
+          try {
+            const doc = iframe.contentDocument;
+            const win = iframe.contentWindow;
+            if (doc?.body && win) {
+              const editable =
+                doc.body.querySelector(".cke_editable") || doc.body;
+              const el = editable as HTMLElement;
+              el.focus();
+              const range = doc.createRange();
+              range.selectNodeContents(el);
+              range.collapse(true);
+              const sel = win.getSelection();
+              if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+              }
+              return true;
+            }
+          } catch (_) {}
+          return false;
+        };
+
+        const focusEditor = () => {
+          const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+          if (iframe instanceof HTMLIFrameElement) {
+            if (focusEditableBody(iframe)) return;
+            iframe.focus();
+            return;
+          }
+          const ckeditor = (window as any).CKEDITOR;
+          if (ckeditor?.instances?.editor1) {
+            try {
+              ckeditor.instances.editor1.focus();
+            } catch (_) {}
+          }
+        };
+
+        const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+        if (iframe instanceof HTMLIFrameElement) {
+          iframe.addEventListener(
+            "load",
+            () => focusEditableBody(iframe),
+            { once: true },
+          );
+        }
+
+        [1000, 1200, 1500].forEach((delay) =>
+          setTimeout(focusEditor, delay),
+        );
+      },
+    );
+
     setTimeout(() => {
       const legacyElement = document.querySelector(
         ".outside-container .bottom-container",
