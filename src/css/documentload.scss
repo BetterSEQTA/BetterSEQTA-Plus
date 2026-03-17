@@ -26,6 +26,14 @@
   font-display: swap;
 }
 
+@layer base, override;
+
+@layer override {
+  * {
+    font-family: Rubik, sans-serif !important;
+  }
+}
+
 html {
   background: #161616 !important;
   background-color: #161616;

@@ -22,10 +22,6 @@
   font-family: Rubik, sans-serif !important;
 }
 
-*:not([class^="Canvas__canvas___"]):not([class^="Canvas__canvas___"] *):not([class^="ThemeCard__"]):not([class^="ThemeCard__"] *):not([class^="ThemePreview__"]):not([class^="ThemePreview__"] *):not([class^="academicReportsWrapper"]):not([class^="academicReportsWrapper"] *):not(textarea):not(.doesntexist) {
-  font-family: Rubik, sans-serif !important;
-}
-
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
