@@ -125,22 +125,43 @@ export async function loadHomePage() {
     upcomingItems.classList.remove("loading");
   }
 
-  const labelArray = prefs.payload
-    .filter((item: any) => item.name === "notices.filters")
-    .map((item: any) => item.value);
+  const noticesFilterPrefs = prefs.payload.filter(
+    (item: any) => item.name === "notices.filters",
+  );
+  const labelArray = noticesFilterPrefs.map((item: any) => item.value);
 
-  if (labelArray.length > 0) {
-    const noticeContainer = document.getElementById("notice-container");
-    if (noticeContainer) {
-      const dateControl = document.querySelector(
-        'input[type="date"]',
-      ) as HTMLInputElement;
-      if (dateControl) {
-        dateControl.value = TodayFormatted;
-        setupNotices(labelArray[0].split(" "), TodayFormatted);
-      }
-      noticeContainer.classList.remove("loading");
+  console.info("[BetterSEQTA+] Notices: prefs", {
+    hasNoticesFiltersPref: noticesFilterPrefs.length > 0,
+    noticesFilterPrefs,
+    labelArrayLength: labelArray.length,
+  });
+
+  const noticeContainer = document.getElementById("notice-container");
+  if (!noticeContainer) {
+    console.warn("[BetterSEQTA+] Notices: notice-container element not found");
+  } else if (labelArray.length > 0) {
+    const dateControl = document.querySelector(
+      'input[type="date"]',
+    ) as HTMLInputElement;
+    if (dateControl) {
+      dateControl.value = TodayFormatted;
+      setupNotices(labelArray[0].split(" "), TodayFormatted);
+    } else {
+      console.warn("[BetterSEQTA+] Notices: date input not found, cannot setup notices");
     }
+    noticeContainer.classList.remove("loading");
+  } else {
+    console.info("[BetterSEQTA+] Notices: no notices.filters pref — showing empty state");
+    noticeContainer.classList.remove("loading");
+    noticeContainer.innerHTML = "";
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No notices available.";
+    emptyState.append(img, text);
+    noticeContainer.append(emptyState);
   }
 
   return cleanup;
@@ -226,11 +247,18 @@ async function GetActiveClasses() {
 }
 
 function setupNotices(labelArray: string[], date: string) {
+  console.info("[BetterSEQTA+] Notices: setupNotices called", {
+    labelArray,
+    date,
+    labelCount: labelArray.length,
+  });
+
   const dateControl = document.querySelector(
     'input[type="date"]',
   ) as HTMLInputElement;
 
   const fetchNotices = async (date: string) => {
+    console.info("[BetterSEQTA+] Notices: fetchNotices start", { date });
     try {
       const data = settingsState.mockNotices
         ? getMockNotices()
@@ -242,6 +270,12 @@ function setupNotices(labelArray: string[], date: string) {
             })
           ).json();
 
+      console.info("[BetterSEQTA+] Notices: fetchNotices response", {
+        date,
+        hasPayload: !!data?.payload,
+        payloadLength: Array.isArray(data?.payload) ? data.payload.length : "n/a",
+        rawKeys: data ? Object.keys(data) : [],
+      });
       processNotices(data, labelArray);
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to fetch notices:", error);
@@ -274,20 +308,45 @@ function comparedate(obj1: any, obj2: any) {
 }
 function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");
-  if (!NoticeContainer) return;
+  if (!NoticeContainer) {
+    console.warn("[BetterSEQTA+] Notices: processNotices — notice-container not found");
+    return;
+  }
 
   NoticeContainer.innerHTML = "";
 
-  const notices = response.payload;
+  const notices = response?.payload;
+  if (!Array.isArray(notices)) {
+    console.warn("[BetterSEQTA+] Notices: processNotices — invalid or missing payload", {
+      hasResponse: !!response,
+      payloadType: typeof response?.payload,
+    });
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No notices for today.";
+    emptyState.append(img, text);
+    NoticeContainer.append(emptyState);
+    return;
+  }
+
   if (!notices.length) {
-    const dummyNotice = document.createElement("div");
-    dummyNotice.textContent = "No notices for today.";
-    dummyNotice.classList.add("dummynotice");
-    NoticeContainer.append(dummyNotice);
+    console.info("[BetterSEQTA+] Notices: processNotices — no notices for date");
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No notices for today.";
+    emptyState.append(img, text);
+    NoticeContainer.append(emptyState);
     return;
   }
 
   const fragment = document.createDocumentFragment();
+  let includedCount = 0;
 
   notices.forEach((notice: any) => {
     const shouldInclude =
@@ -295,12 +354,17 @@ function processNotices(response: any, labelArray: string[]) {
       labelArray.includes(JSON.stringify(notice.label));
 
     if (shouldInclude) {
+      includedCount++;
       const colour = processNoticeColor(notice.colour);
       const noticeElement = createNoticeElement(notice, colour);
       fragment.appendChild(noticeElement);
     }
   });
 
+  console.info("[BetterSEQTA+] Notices: processNotices — rendered", {
+    totalFromApi: notices.length,
+    includedAfterFilter: includedCount,
+  });
   NoticeContainer.appendChild(fragment);
 }
 
