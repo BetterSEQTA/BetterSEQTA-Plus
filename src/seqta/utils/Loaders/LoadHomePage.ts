@@ -468,7 +468,7 @@ function openNoticeModal(
   document.body.removeChild(tempMeasureDiv);
 
   let targetHeight = Math.round(
-    Math.min(Math.max(measuredHeight, 200), viewportHeight * 0.85),
+    Math.min(Math.max(measuredHeight + 32, 200), viewportHeight * 0.9),
   );
   let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
   let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
@@ -580,7 +580,7 @@ function openNoticeModal(
     );
     const currentHeight = unifiedContent.getBoundingClientRect().height;
     const newTargetHeight = Math.round(
-      Math.min(Math.max(currentHeight, 200), newViewportHeight * 0.85),
+      Math.min(Math.max(currentHeight + 32, 200), newViewportHeight * 0.9),
     );
     const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
     const newTargetTop =
