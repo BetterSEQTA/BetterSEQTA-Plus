@@ -2,8 +2,8 @@
   import { fade } from "svelte/transition";
   import browser from "webextension-polyfill";
   import QRCode from "qrcode";
+  import { portal } from "../utils/portal";
 
-  const DESQTA_DOWNLOAD_URL = "https://betterseqta.org/desqta";
   const DEEPLINK_PREFIX = "desqta://connect/";
 
   let showQrModal = $state(false);
@@ -109,29 +109,23 @@
   }
 </script>
 
-<div class="flex flex-col items-end gap-1">
-  <a
-    href={DESQTA_DOWNLOAD_URL}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500/50 rounded-sm transition-all duration-200">
-    Download
-  </a>
+<div class="flex flex-col gap-1 items-end">
   <button
     type="button"
     onclick={generateQrCode}
     disabled={isLoading}
-    class="px-5 py-1.5 text-[0.75rem] shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
+    class="px-5 py-1.5 text-[0.75rem] text-nowrap shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
     {isLoading ? "Generating..." : "Generate QR"}
   </button>
   {#if errorMessage}
-    <p class="text-xs text-amber-600 dark:text-amber-400 text-right">{errorMessage}</p>
+    <p class="text-xs text-right text-amber-600 dark:text-amber-400">{errorMessage}</p>
   {/if}
 </div>
 
 {#if showQrModal && qrDataUrl}
   <div
-    class="fixed inset-0 z-[10000] flex justify-center items-center bg-black/50 backdrop-blur-sm"
+    use:portal
+    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 backdrop-blur-sm"
     role="button"
     tabindex="-1"
     onclick={(e) => {
@@ -151,31 +145,31 @@
         <button
           type="button"
           onclick={closeModal}
-          class="p-2 rounded-lg text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-400 dark:hover:bg-zinc-700 transition-colors"
+          class="p-2 rounded-lg transition-colors text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-400 dark:hover:bg-zinc-700"
           aria-label="Close">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div class="flex justify-center p-4 bg-white dark:bg-zinc-900 rounded-xl">
+      <div class="flex justify-center p-4 bg-white rounded-xl dark:bg-zinc-900">
         <img src={qrDataUrl} alt="DesQTA QR Code" class="w-64 h-64" />
       </div>
       <div class="flex flex-col gap-2 mt-4">
         <button
           type="button"
           onclick={openInDesqta}
-          class="w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+          class="px-4 py-2.5 w-full text-sm font-medium text-white bg-indigo-600 rounded-lg transition-colors dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600">
           Sign into DesQTA Desktop
         </button>
         <button
           type="button"
           onclick={downloadQrImage}
-          class="w-full px-4 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400 rounded-lg border border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+          class="px-4 py-2 w-full text-xs font-medium rounded-lg border transition-colors text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
           Download QR as image
         </button>
       </div>
-      <p class="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+      <p class="mt-2 text-sm text-center text-zinc-600 dark:text-zinc-400">
         Or scan this QR code with DesQTA on your phone.
       </p>
     </div>

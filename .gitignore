@@ -4,6 +4,7 @@ package-lock.json
 bun.lockb
 pnpm-lock.yaml
 yarn.lock
+bun.lock
 
 .parcel-cache
 .env

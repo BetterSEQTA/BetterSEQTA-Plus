@@ -115,7 +115,7 @@
   {#each [
     {
       title: "Connect Mobile App",
-      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn. Scan the QR code with DesQTA to sign in instantly.",
+      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn.",
       id: 0,
       Component: ConnectMobileApp,
       props: {}
@@ -225,7 +225,7 @@
     {@render Setting(option)}
   {/each}
 
-  <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+  <div class="p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
     <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
         <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
