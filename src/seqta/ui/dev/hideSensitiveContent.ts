@@ -1,6 +1,8 @@
 interface ElementConfig {
   selector: string;
   action: (element: Element) => void;
+  /** When true, element is not added to processedElements so the action runs every time (e.g. overwriting container content) */
+  alwaysRun?: boolean;
 }
 
 interface ContentConfig {
@@ -77,6 +79,18 @@ const contentConfig: ContentConfig = {
       element.textContent = getRandomElement(mockData.assessmentTitles);
     },
   },
+  assessmentTitleInTooltip: {
+    selector: ".assessmenttooltip .tooltiptext p",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.assessmentTitles);
+    },
+  },
+  assessmentTitleInDetail: {
+    selector: "[class*='AssessmentItem__title___'], .assessment-title",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.assessmentTitles);
+    },
+  },
   assessmentSubject: {
     selector: ".upcoming-assessment .upcoming-details h5",
     action: (element) => {
@@ -92,7 +106,8 @@ const contentConfig: ContentConfig = {
   noticeContent: {
     selector: ".notice .contents",
     action: (element) => {
-      element.textContent = "Content has been redacted for privacy.";
+      element.textContent =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     },
   },
   upcomingCheckboxes: {
@@ -135,7 +150,7 @@ const contentConfig: ContentConfig = {
     selector:
       '[class*="MessageList__recipients___"] [class*="MessageList__value___"]',
     action: (element) => {
-      element.textContent = "Recipient(s) Redacted";
+      element.textContent = getRandomElement(mockData.messages.recipients);
     },
   },
 
@@ -175,16 +190,15 @@ const contentConfig: ContentConfig = {
   documentNames: {
     selector: ".document td.title",
     action: (element) => {
-      element.textContent = "Document Name Redacted";
+      element.textContent = getRandomElement(mockData.documentTitles);
     },
   },
   forumTopics: {
     selector: "#menu .sub ul li:not([data-colour]):not(.hasChildren) label",
     action: (element) => {
-      // Only redact if not in assessments section
       const assessmentsSection = element.closest('[data-key="assessments"]');
       if (!assessmentsSection) {
-        element.textContent = "Forum Topic Redacted";
+        element.textContent = getRandomElement(mockData.forumTopics);
       }
     },
   },
@@ -210,31 +224,72 @@ const contentConfig: ContentConfig = {
   courseNames: {
     selector: "#menu .sub ul li[data-colour] label",
     action: (element) => {
-      element.textContent = "Course Name Redacted";
+      element.textContent = getRandomElement(mockData.subjects);
     },
   },
   yearGroups: {
     selector: "#menu .sub > ul > li > label",
     action: (element) => {
-      element.textContent = "Year Group Redacted";
+      const yearGroup = Math.floor(Math.random() * 5) + 8;
+      element.textContent = `Year ${yearGroup}`;
     },
   },
   newsArticleTitle: {
     selector: ".ArticleText a",
     action: (element) => {
-      element.textContent = "News Article Title Redacted";
+      element.textContent = getRandomElement(mockData.notices);
     },
   },
   newsArticleContent: {
     selector: ".ArticleText p",
     action: (element) => {
-      element.textContent = "News Article Content Redacted";
+      element.textContent =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     },
   },
   userHouse: {
     selector: ".userInfohouse",
     action: (element) => {
       element.textContent = "House";
+    },
+  },
+
+  // Timetable page: replace class names, teachers, rooms with fake data
+  timetableEntryTitle: {
+    selector: ".timetablepage .entry .title",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.subjects);
+    },
+  },
+  timetableEntryTeacher: {
+    selector: ".timetablepage .entry .teacher, .timetablepage .quickbar .meta .teacher",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.teachers);
+    },
+  },
+  timetableEntryRoom: {
+    selector: ".timetablepage .entry .room, .timetablepage .quickbar .meta .room",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.classrooms);
+    },
+  },
+  quickbarTitle: {
+    selector: ".timetablepage .quickbar .title",
+    action: (element) => {
+      element.textContent = getRandomElement(mockData.subjects);
+    },
+  },
+
+  // Home page: replace entire day with mock schedule (care + 7 lessons 8:55–3:15)
+  homeDayContainer: {
+    selector: "#day-container",
+    alwaysRun: true,
+    action: (element) => {
+      const container = element as HTMLElement;
+      if (!container.closest(".timetable-container")) return; // only on home
+      const schedule = getMockDaySchedule();
+      container.innerHTML = schedule;
+      container.classList.remove("loading");
     },
   },
 };
@@ -367,7 +422,26 @@ const mockData = {
     "Field Trip",
     "Cultural Festival",
   ],
+  documentTitles: [
+    "Course Outline",
+    "Assignment Brief",
+    "Study Guide",
+    "Reference Material",
+    "Worksheet",
+    "Reading List",
+    "Project Guidelines",
+  ],
+  forumTopics: [
+    "General Discussion",
+    "Homework Help",
+    "Resource Share",
+    "Class Updates",
+    "Study Group",
+    "Q&A",
+    "Announcements",
+  ],
   messages: {
+    recipients: ["Students", "Class", "Year Group", "Parents", "Guardians"],
     subjects: [
       "Mid-year Exams",
       "Science project due soon",
@@ -573,6 +647,35 @@ Register through the PE department or see your house captains for more informati
   ]
 };
 
+/** Mock day schedule for home timetable: care 8:30–8:55, then 7 lessons 8:55–3:15 (45m each), 20m recess, lunch. */
+function getMockDaySchedule(): string {
+  const blocks: { title: string; teacher: string; room: string; from: string; until: string }[] = [
+    { title: "Care Group", teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "8:30am", until: "8:55am" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "8:55am", until: "9:40am" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "9:40am", until: "10:25am" },
+    { title: "Recess", teacher: "—", room: "—", from: "10:25am", until: "10:45am" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "10:45am", until: "11:30am" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "11:30am", until: "12:15pm" },
+    { title: "Lunch", teacher: "—", room: "—", from: "12:15pm", until: "1:00pm" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "1:00pm", until: "1:45pm" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "1:45pm", until: "2:30pm" },
+    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "2:30pm", until: "3:15pm" },
+  ];
+  const colours = ["#8e8e8e", "#4FBBFE", "#59F675", "#fa915d", "#9c27b0", "#2196f3", "#4caf50", "#ff9800", "#e91e63", "#673ab7"];
+  return blocks
+    .map(
+      (b, i) =>
+        `<div class="day" style="--item-colour: ${colours[i % colours.length]};">
+          <h2>${b.title}</h2>
+          <h3>${b.teacher}</h3>
+          <h3>${b.room}</h3>
+          <h4>${b.from} – ${b.until}</h4>
+          <h5> </h5>
+        </div>`,
+    )
+    .join("");
+}
+
 export function getMockNotices() {
   return {
     payload: mockData.noticesData
@@ -654,13 +757,15 @@ export function getMockAssessmentsData() {
 const debouncedProcessElements = debounce(processNewElements, 1);
 
 function processNewElements() {
-  Object.entries(contentConfig).forEach(([_, { selector, action }]) => {
+  Object.entries(contentConfig).forEach(([_, config]) => {
+    const { selector, action, alwaysRun } = config;
     const elements = document.querySelectorAll(selector);
     elements.forEach((element: Element) => {
-      // Only process elements that haven't been processed before
-      if (!processedElements.has(element)) {
+      if (alwaysRun || !processedElements.has(element)) {
         action(element);
-        processedElements.add(element);
+        if (!alwaysRun) {
+          processedElements.add(element);
+        }
       }
     });
   });
