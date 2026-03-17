@@ -2773,20 +2773,25 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
+  will-change: transform;
 }
 .logo {
   transform: translate(-50%, -50%);
 }
 .big-circle {
   margin: -88px;
-  animation: spin 3s ease infinite;
-  -moz-animation: spin 3s ease infinite;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation: spin 3s linear infinite;
+  -moz-animation: spin 3s linear infinite;
 }
 
 .small-circle {
   margin: -66px;
-  animation: spin 3s ease infinite;
-  -moz-animation: spin 3s ease infinite;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation: spin 3s linear infinite;
+  -moz-animation: spin 3s linear infinite;
 }
 
 .dark [class*="LabelList__name___"] {
@@ -2830,8 +2835,10 @@ body {
 }
 .outer-circle {
   margin: -108px;
-  animation: spinback 1s linear infinite alternate-reverse;
-  -moz-animation: spinback 1s linear infinite alternate-reverse;
+  will-change: transform;
+  animation-direction: alternate-reverse;
+  animation: spinback 1s linear infinite;
+  -moz-animation: spinback 1s linear infinite;
 }
 @-moz-keyframes spin {
   100% {
