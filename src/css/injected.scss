@@ -2370,7 +2370,7 @@ div.bar.flat {
   padding: 0 !important;
   padding-left: 8px !important;
   gap: 0 8px;
-  background: var(--better-main);
+  background: transparent !important;
 }
 .cke_toolbar:has(.cke_toolgroup) {
   .cke_combo {
