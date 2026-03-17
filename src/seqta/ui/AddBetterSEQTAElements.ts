@@ -113,6 +113,10 @@ function updateUserInfo(info: {
   userName: string | null;
 }) {
   const titlebar = document.getElementsByClassName("titlebar")[0];
+  const metadata = [info.meta.code, info.meta.governmentID]
+    .filter((value): value is string => Boolean(value))
+    .join(" // ");
+  const displayName = info.userDesc || info.userName || "";
 
   titlebar.append(
     stringToHTML(/* html */ `
@@ -128,10 +132,10 @@ function updateUserInfo(info: {
       <div class="userInfo">
         <div class="userInfoText">
           <div style="display: flex; align-items: center;">
-            <p class="userInfohouse userInfoCode"></p>
-            <p class="userInfoName">${info.userDesc}</p>
+            <p class="userInfohouse userInfoCode" style="display: none;"></p>
+            ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
           </div>
-          <p class="userInfoCode">${info.meta.code} // ${info.meta.governmentID}</p>
+          ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
         </div>
       </div>
     `).firstChild!,
@@ -171,9 +175,12 @@ async function updateStudentInfo(students: any) {
 
   const houseelement = document.getElementsByClassName(
     "userInfohouse",
-  )[0] as HTMLElement;
+  )[0] as HTMLElement | undefined;
+
+  if (!houseelement) return;
+
   const student = students[index] ?? {};
-  let text = "N/A";
+  let text = "";
 
   if (student.house) {
     text = `${student.year ?? ""}${student.house}`;
@@ -193,6 +200,7 @@ async function updateStudentInfo(students: any) {
   }
 
   houseelement.innerText = text;
+  houseelement.style.display = text ? "block" : "none";
 }
 
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
