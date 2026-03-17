@@ -1249,7 +1249,7 @@ html.transparencyEffects
   height: 15em;
   font-family: Rubik, sans-serif !important;
   font-size: 14px !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(100px, 1fr);
@@ -2934,7 +2934,13 @@ div.day-empty {
   p {
     margin: 0;
     font-size: 30px;
+    font-weight: 400;
   }
+}
+
+#notice-container.day-empty,
+#notice-container .day-empty {
+  font-size: 14px !important;
 }
 .upcoming-submittedtext {
   align-self: center;
@@ -3115,7 +3121,7 @@ div.day-empty {
   border-radius: 16px;
   font-family: Rubik, sans-serif !important;
   font-size: 20px !important;
-  font-weight: 700 !important;
+  font-weight: 500 !important;
 }
 .dark .upcoming-items {
   box-shadow: inset 0px 40px 80px -40px rgba(0, 0, 0, 0.6);
