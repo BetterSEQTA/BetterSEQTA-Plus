@@ -34,17 +34,36 @@
 }
 
 .filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   background: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
+  background-position: right 0.9rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem !important;
   border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #1a1a1a;
-  padding: 0.75rem 1rem;
+  color-scheme: light;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
+  font-family: Rubik, sans-serif;
+  line-height: 1.2;
   transition: all 0.2s ease;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   min-width: 180px;
+}
+
+.filter-select::-ms-expand {
+  display: none;
+}
+
+.filter-select option {
+  background: #ffffff;
+  color: #1a1a1a;
 }
 
 .filter-select:focus {
@@ -61,8 +80,10 @@
 /* Dark mode dropdowns */
 .dark .filter-select {
   background: var(--background-primary) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='rgba(255,255,255,0.72)'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
   border-color: var(--background-secondary);
   color: var(--text-primary);
+  color-scheme: dark;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -73,7 +94,8 @@
 
 .dark .filter-select:hover {
   border-color: var(--background-secondary);
-  background: var(--background-secondary);
+  background: var(--background-secondary) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='rgba(255,255,255,0.72)'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
 }
 
 .dark .filter-select option {
