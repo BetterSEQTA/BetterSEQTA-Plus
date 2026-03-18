@@ -512,31 +512,6 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
     flex-shrink: 0 !important;
   }
 
-  #menu li:focus-visible,
-  #menu section:focus-visible {
-    width: 270px !important;
-    max-width: 270px !important;
-    justify-content: flex-start !important;
-    padding: 12px !important;
-    position: relative;
-    z-index: 2;
-  }
-
-  #menu li:focus-visible > label,
-  #menu section:focus-visible > label {
-    flex: 1 1 auto !important;
-    justify-content: flex-start !important;
-  }
-
-  #menu li:focus-visible > label > span,
-  #menu section:focus-visible > label > span {
-    display: inline !important;
-  }
-
-  #menu li:focus-visible > label > svg,
-  #menu section:focus-visible > label > svg {
-    margin: 0 10px 0 4px !important;
-  }
 }
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
