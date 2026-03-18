@@ -13,6 +13,9 @@ import { delay } from "@/seqta/utils/delay";
 let cachedUserInfo: any = null;
 
 let LightDarkModeSnakeEggButton = 0;
+let sidebarAccessibilityObserver: MutationObserver | null = null;
+let sidebarTabOrderAnimationFrame: number | null = null;
+let sidebarAccessibilityListenersAttached = false;
 
 export async function getUserInfo() {
   if (cachedUserInfo) return cachedUserInfo;
@@ -66,6 +69,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
+    setupSidebarAccessibility();
   }
 
   addExtensionSettings();
@@ -221,22 +225,27 @@ function setupEventListeners() {
   const homebutton = document.getElementById("homebutton");
   const newsbutton = document.getElementById("newsbutton");
 
-  homebutton?.addEventListener("click", function () {
+  const activateMenuAction = (button: HTMLElement, action: () => void) => {
     if (
-      !homebutton.classList.contains("draggable") &&
-      !homebutton.classList.contains("active")
+      button.classList.contains("draggable") ||
+      button.classList.contains("active")
     ) {
-      loadHomePage();
+      return;
     }
+
+    action();
+  };
+
+  homebutton?.addEventListener("click", function () {
+    activateMenuAction(homebutton, () => {
+      loadHomePage();
+    });
   });
 
   newsbutton?.addEventListener("click", function () {
-    if (
-      !newsbutton.classList.contains("draggable") &&
-      !newsbutton.classList.contains("active")
-    ) {
+    activateMenuAction(newsbutton, () => {
       SendNewsPage();
-    }
+    });
   });
 
   menuCover?.addEventListener("click", function () {
@@ -326,4 +335,217 @@ function customizeMenuToggle() {
     line.className = "hamburger-line";
     menuToggle.appendChild(line);
   }
+}
+
+function setupSidebarAccessibility() {
+  updateSidebarAccessibility();
+
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  sidebarAccessibilityObserver?.disconnect();
+  sidebarAccessibilityObserver = new MutationObserver(() => {
+    scheduleSidebarAccessibilityUpdate();
+  });
+  sidebarAccessibilityObserver.observe(menu, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["class", "style"],
+  });
+
+  if (!sidebarAccessibilityListenersAttached) {
+    document.addEventListener("keydown", handleSidebarKeyboardActivation);
+    sidebarAccessibilityListenersAttached = true;
+  }
+}
+
+function scheduleSidebarAccessibilityUpdate() {
+  if (sidebarTabOrderAnimationFrame !== null) {
+    cancelAnimationFrame(sidebarTabOrderAnimationFrame);
+  }
+
+  sidebarTabOrderAnimationFrame = requestAnimationFrame(() => {
+    sidebarTabOrderAnimationFrame = null;
+    updateSidebarAccessibility();
+  });
+}
+
+function handleSidebarKeyboardActivation(event: KeyboardEvent) {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+
+  const menuItem = target.closest("#menu li, #menu section") as
+    | HTMLElement
+    | null;
+  if (!menuItem || target !== menuItem) return;
+
+  if (event.key === "Tab") {
+    const menu = document.getElementById("menu");
+    if (!menu) return;
+
+    const visibleList = getVisibleSidebarList(menu);
+    if (!visibleList) return;
+
+    const visibleEntries = getDirectSidebarEntries(visibleList);
+    if (visibleEntries.length === 0) return;
+
+    const boundaryEntry = event.shiftKey
+      ? visibleEntries[0]
+      : visibleEntries[visibleEntries.length - 1];
+
+    if (boundaryEntry !== menuItem) return;
+
+    const parentEntry = getSidebarListParentEntry(visibleList);
+    if (!parentEntry) return;
+
+    event.preventDefault();
+    parentEntry.classList.remove("active");
+    scheduleSidebarAccessibilityUpdate();
+    requestAnimationFrame(() => {
+      parentEntry.focus();
+    });
+    return;
+  }
+
+  if (event.key !== "Enter" && event.key !== " ") return;
+
+  event.preventDefault();
+
+  const childSubmenu = menuItem.querySelector(":scope > .sub > ul") as
+    | HTMLElement
+    | null;
+
+  menuItem.click();
+  scheduleSidebarAccessibilityUpdate();
+
+  if (childSubmenu) {
+    focusFirstSidebarSubmenuEntry(menuItem);
+  }
+}
+
+function updateSidebarAccessibility() {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  const visibleEntries = new Set(getVisibleSidebarEntries(menu));
+  const menuEntries = menu.querySelectorAll("li.item, section.item, li, section");
+
+  for (const entry of menuEntries) {
+    if (!(entry instanceof HTMLElement)) continue;
+
+    const label = entry.querySelector(":scope > label") as HTMLLabelElement | null;
+    if (!label) continue;
+
+    const childSubmenu = entry.querySelector(":scope > .sub") as HTMLElement | null;
+    const isHidden =
+      entry.offsetParent === null ||
+      window.getComputedStyle(entry).display === "none" ||
+      window.getComputedStyle(label).display === "none" ||
+      !visibleEntries.has(entry);
+
+    if (isHidden) {
+      entry.tabIndex = -1;
+      label.tabIndex = -1;
+      entry.setAttribute("aria-hidden", "true");
+      label.setAttribute("aria-hidden", "true");
+      if (childSubmenu) {
+        childSubmenu.setAttribute("aria-hidden", "true");
+      }
+      continue;
+    }
+
+    entry.tabIndex = 0;
+    label.tabIndex = -1;
+    entry.removeAttribute("aria-hidden");
+    label.removeAttribute("aria-hidden");
+
+    if (!entry.hasAttribute("role")) {
+      entry.setAttribute("role", "button");
+    }
+
+    const accessibleLabel = label.textContent?.trim();
+    if (accessibleLabel) {
+      entry.setAttribute("aria-label", accessibleLabel);
+    }
+
+    if (childSubmenu) {
+      const isExpanded = entry.classList.contains("active");
+      entry.setAttribute("aria-expanded", String(isExpanded));
+      childSubmenu.setAttribute("aria-hidden", String(!isExpanded));
+    } else {
+      entry.removeAttribute("aria-expanded");
+    }
+  }
+}
+
+function getVisibleSidebarEntries(menu = document.getElementById("menu")) {
+  if (!menu) return [] as HTMLElement[];
+
+  const visibleList = getVisibleSidebarList(menu);
+  if (!visibleList) return [] as HTMLElement[];
+
+  return getDirectSidebarEntries(visibleList);
+}
+
+function getDirectSidebarEntries(list: HTMLElement) {
+  return Array.from(list.querySelectorAll(":scope > li, :scope > section")).filter(
+    (entry): entry is HTMLElement => entry instanceof HTMLElement,
+  );
+}
+
+function getVisibleSidebarList(menu: HTMLElement) {
+  let currentList = menu.querySelector(":scope > ul") as HTMLElement | null;
+
+  while (currentList) {
+    const activeSubmenuParent = currentList.querySelector(
+      ":scope > li.hasChildren.active, :scope > section.hasChildren.active",
+    ) as HTMLElement | null;
+
+    if (!activeSubmenuParent) {
+      return currentList;
+    }
+
+    const nextList = activeSubmenuParent.querySelector(
+      ":scope > .sub > ul",
+    ) as HTMLElement | null;
+
+    if (!nextList) {
+      return currentList;
+    }
+
+    currentList = nextList;
+  }
+
+  return null;
+}
+
+function getSidebarListParentEntry(list: HTMLElement) {
+  return list.closest(".sub")?.parentElement instanceof HTMLElement
+    ? (list.closest(".sub")!.parentElement as HTMLElement)
+    : null;
+}
+
+function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!parentEntry.classList.contains("active")) return;
+
+      const visibleList = getVisibleSidebarList(menu);
+      if (!visibleList || getSidebarListParentEntry(visibleList) !== parentEntry) {
+        return;
+      }
+
+      const firstEntry = getDirectSidebarEntries(visibleList).find(
+        (entry) =>
+          entry.offsetParent !== null &&
+          window.getComputedStyle(entry).display !== "none",
+      );
+
+      firstEntry?.focus({ preventScroll: true });
+    });
+  });
 }

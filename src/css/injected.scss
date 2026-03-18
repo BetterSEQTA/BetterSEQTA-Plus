@@ -462,12 +462,12 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
   #menu {
     width: 70px !important;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #menu > ul {
     min-width: 0 !important;
-    overflow-x: hidden !important;
+    overflow-x: visible !important;
   }
 
   #content {
@@ -503,13 +503,39 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
     flex: 0 0 auto !important;
     min-width: 0 !important;
     justify-content: center !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #menu li > label > svg,
   #menu section > label > svg {
     margin: 0 auto !important;
     flex-shrink: 0 !important;
+  }
+
+  #menu li:focus-visible,
+  #menu section:focus-visible {
+    width: 270px !important;
+    max-width: 270px !important;
+    justify-content: flex-start !important;
+    padding: 12px !important;
+    position: relative;
+    z-index: 2;
+  }
+
+  #menu li:focus-visible > label,
+  #menu section:focus-visible > label {
+    flex: 1 1 auto !important;
+    justify-content: flex-start !important;
+  }
+
+  #menu li:focus-visible > label > span,
+  #menu section:focus-visible > label > span {
+    display: inline !important;
+  }
+
+  #menu li:focus-visible > label > svg,
+  #menu section:focus-visible > label > svg {
+    margin: 0 10px 0 4px !important;
   }
 }
 [class*="notifications__items___"] {
@@ -930,6 +956,14 @@ html.transparencyEffects
 #menu li:hover {
   background: rgba(0, 0, 0, 0.15) !important;
 }
+
+#menu li:focus-visible,
+#menu section:focus-visible {
+  outline: 1px solid rgb(from currentColor r g b / 0.55);
+  outline-offset: -1px;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
 #main > .timetablepage > .container {
   background: var(--background-primary);
 }
