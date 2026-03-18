@@ -3703,8 +3703,9 @@ div.day-empty {
 #menu ul.logo-link {
   pointer-events: none;
 
-  /* Re-enable clicks on menu items (li) - they're inside the logo-link ul */
-  li {
+  /* Re-enable clicks on menu items while sidebar editing swaps built-in items to <section> */
+  li,
+  section {
     pointer-events: auto;
   }
 }
