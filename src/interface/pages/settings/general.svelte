@@ -243,7 +243,7 @@
         <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
           <div class="pr-4">
             <h2 class="text-sm font-bold">Soft Gradient</h2>
-            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class.</p>
+            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class</p>
           </div>
           <div>
             <Switch
