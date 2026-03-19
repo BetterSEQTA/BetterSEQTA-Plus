@@ -165,10 +165,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       const vol = (api.settings as any).volume ?? 0.5;
       startPlayback(vol);
     };
-    window.addEventListener(
-      "betterseqta-background-music-updated",
-      uploadedHandler,
-    );
+    window.addEventListener("betterseqta-background-music-updated", uploadedHandler);
 
     return () => {
       document.removeEventListener("visibilitychange", visHandler);
