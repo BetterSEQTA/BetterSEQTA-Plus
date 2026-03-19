@@ -117,9 +117,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     });
 
     api.settings.onChange("pauseOnHidden" as any, (value: any) => {
-      const pauseOnHidden = (
-        typeof value === "boolean" ? value : true
-      ) as boolean;
+      const pauseOnHidden = (typeof value === "boolean" ? value : true) as boolean;
       // If the setting is disabled and audio is currently paused due to tab being hidden, resume it
       if (
         !pauseOnHidden &&
