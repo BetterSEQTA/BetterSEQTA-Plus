@@ -145,7 +145,6 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       if (!currentAudio) return;
       const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
       if (!pauseOnHidden) return;
-
       if (document.visibilityState === "hidden") {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);
