@@ -72,10 +72,8 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     await updateImageFromStore();
 
     // Listen for profile picture updates
-    const handler = () => {
-      updateImageFromStore();
-    };
-    window.addEventListener("profile-picture-updated", handler);
+    const handler = () => { updateImageFromStore(); };
+    window.addEventListener('profile-picture-updated', handler);
 
     return () => {
       window.removeEventListener("profile-picture-updated", handler);
