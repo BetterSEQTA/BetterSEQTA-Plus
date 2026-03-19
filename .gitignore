@@ -6,12 +6,6 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 
-.parcel-cache
-.env
-.env.submit
-
-dependency-graph.svg
-
 # Build
 extension.zip
 build/
@@ -22,3 +16,9 @@ betterseqtaplus-safari/
 .vscode/
 
 **/.DS_Store
+
+.parcel-cache
+.env
+.env.submit
+
+dependency-graph.svg
