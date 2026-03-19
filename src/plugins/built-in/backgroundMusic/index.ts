@@ -175,14 +175,8 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
 
     return () => {
       document.removeEventListener("visibilitychange", visHandler);
-      window.removeEventListener(
-        "betterseqta-background-music-updated",
-        uploadedHandler,
-      );
-      if (
-        cleanupRegistered &&
-        (window as any).__betterseqta_bg_music_cancel__
-      ) {
+      window.removeEventListener("betterseqta-background-music-updated", uploadedHandler);
+      if (cleanupRegistered && (window as any).__betterseqta_bg_music_cancel__) {
         (window as any).__betterseqta_bg_music_cancel__();
         (window as any).__betterseqta_bg_music_cancel__ = undefined;
       }
