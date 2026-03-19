@@ -1,8 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import {
-  componentSetting,
-  defineSettings,
-} from "@/plugins/core/settingsHelpers";
+import { componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import styles from "./styles.css?inline";
