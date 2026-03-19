@@ -178,14 +178,8 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
         (window as any).__betterseqta_bg_music_cancel__();
         (window as any).__betterseqta_bg_music_cancel__ = undefined;
       }
-      if (pendingGestureCancel) {
-        pendingGestureCancel();
-        pendingGestureCancel = null;
-      }
-      if (visibilityResumeTimeout !== null) {
-        clearTimeout(visibilityResumeTimeout);
-        visibilityResumeTimeout = null;
-      }
+      if (pendingGestureCancel) { pendingGestureCancel(); pendingGestureCancel = null; }
+      if (visibilityResumeTimeout !== null) { clearTimeout(visibilityResumeTimeout); visibilityResumeTimeout = null; }
       stopAndCleanupAudio();
     };
   },
