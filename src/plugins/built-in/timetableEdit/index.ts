@@ -53,8 +53,7 @@ function showEditModal(
   const modal = document.createElement("div");
   modal.className = "timetable-edit-modal";
 
-  const override =
-    overrides?.[String(item.ci)] ?? overridesBySubject?.[item.description];
+  const override = overrides?.[String(item.ci)] ?? overridesBySubject?.[item.description];
 
   const roomValue = override?.room ?? item.room ?? "";
   const staffValue = override?.staff ?? item.staff ?? "";
@@ -99,27 +98,19 @@ function showEditModal(
   modal.addEventListener("mousedown", (e) => e.stopPropagation());
   modal.addEventListener("mouseup", (e) => e.stopPropagation());
 
-  const roomInput = modal.querySelector(
-    "#timetable-edit-room",
-  ) as HTMLInputElement;
-  const staffInput = modal.querySelector(
-    "#timetable-edit-staff",
-  ) as HTMLInputElement;
-  const applyFutureCheckbox = modal.querySelector(
-    "#timetable-edit-apply-future",
-  ) as HTMLInputElement;
+  const roomInput = modal.querySelector("#timetable-edit-room") as HTMLInputElement;
+  const staffInput = modal.querySelector("#timetable-edit-staff") as HTMLInputElement;
+  const applyFutureCheckbox = modal.querySelector("#timetable-edit-apply-future") as HTMLInputElement;
 
-  modal
-    .querySelector(".timetable-edit-btn-save")
-    ?.addEventListener("click", () => {
-      onSave(
-        item.ci,
-        roomInput.value.trim(),
-        staffInput.value.trim(),
-        applyFutureCheckbox?.checked ?? false,
-      );
-      removeModal();
-    });
+  modal.querySelector(".timetable-edit-btn-save")?.addEventListener("click", () => {
+    onSave(
+      item.ci,
+      roomInput.value.trim(),
+      staffInput.value.trim(),
+      applyFutureCheckbox?.checked ?? false,
+    );
+    removeModal();
+  });
 
   modal
     .querySelector(".timetable-edit-btn-cancel")
