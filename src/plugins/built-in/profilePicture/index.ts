@@ -1,5 +1,8 @@
 import type { Plugin } from "@/plugins/core/types";
-import { componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
+import {
+  componentSetting,
+  defineSettings,
+} from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import styles from "./styles.css?inline";
@@ -12,7 +15,6 @@ const settings = defineSettings({
     component: ProfilePictureSetting,
   }),
 });
-
 
 const profilePicturePlugin: Plugin<typeof settings> = {
   id: "profile-picture",
@@ -70,11 +72,13 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     await updateImageFromStore();
 
     // Listen for profile picture updates
-    const handler = () => { updateImageFromStore(); };
-    window.addEventListener('profile-picture-updated', handler);
+    const handler = () => {
+      updateImageFromStore();
+    };
+    window.addEventListener("profile-picture-updated", handler);
 
     return () => {
-      window.removeEventListener('profile-picture-updated', handler);
+      window.removeEventListener("profile-picture-updated", handler);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
@@ -83,4 +87,3 @@ const profilePicturePlugin: Plugin<typeof settings> = {
 };
 
 export default profilePicturePlugin;
-
