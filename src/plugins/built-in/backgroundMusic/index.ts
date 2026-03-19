@@ -133,9 +133,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     };
 
     // Always arm gesture start and attempt immediate start
-    const cancel = ensureGestureStart(() => {
-      tryStart();
-    });
+    const cancel = ensureGestureStart(() => { tryStart(); });
     cleanupRegistered = true;
     (window as any).__betterseqta_bg_music_cancel__ = cancel;
     tryStart();
