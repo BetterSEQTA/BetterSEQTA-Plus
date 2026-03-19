@@ -67,7 +67,7 @@ async function handleTimetable(): Promise<void> {
 
   // Convert time format if needed
   if (settingsState.timeFormat == "12") {
-   const times = document.querySelectorAll(".timetablepage .times .time, .timetablepage .entry.new");
+  const times = document.querySelectorAll(".timetablepage .times .time, .timetablepage .entry.new");
     for (const time of times) {
       if (!time.textContent) continue;
       time.textContent = convertTo12HourFormat(time.textContent, true);
@@ -101,18 +101,14 @@ function handleTimetableZoom(): void {
 
   // Store event listener references
   const zoomInHandler = () => {
-    const seqtaZoomIn = document.querySelector(
-      ".uiButton.zoom.in",
-    ) as HTMLElement;
+    const seqtaZoomIn = document.querySelector('.uiButton.zoom.in') as HTMLElement;
     if (seqtaZoomIn) {
       seqtaZoomIn.click();
     }
   };
 
   const zoomOutHandler = () => {
-    const seqtaZoomOut = document.querySelector(
-      ".uiButton.zoom.out",
-    ) as HTMLElement;
+    const seqtaZoomOut = document.querySelector('.uiButton.zoom.out') as HTMLElement;
     if (seqtaZoomOut) {
       seqtaZoomOut.click();
     }
