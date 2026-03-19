@@ -1,5 +1,10 @@
 import type { Plugin } from "@/plugins/core/types";
-import { booleanSetting, componentSetting, defineSettings, numberSetting } from "@/plugins/core/settingsHelpers";
+import {
+  booleanSetting,
+  componentSetting,
+  defineSettings,
+  numberSetting,
+} from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
@@ -7,7 +12,7 @@ import localforage from "localforage";
 const settings = defineSettings({
   uploader: componentSetting({
     title: "Background Music",
-    description: "Upload a .wav or .mp3 audio file to play in the background.",
+    description: "Upload a .wav or .mp3 audio file to play in the background",
     component: BackgroundMusicSetting,
   }),
   volume: numberSetting({
@@ -20,7 +25,8 @@ const settings = defineSettings({
   }),
   pauseOnHidden: booleanSetting({
     title: "Pause when tab hidden",
-    description: "Pause music when switching to another tab or minimizing the browser",
+    description:
+      "Pause music when switching to another tab or minimizing the browser",
     default: true,
   }),
 });
@@ -99,7 +105,7 @@ async function startPlayback(volume: number): Promise<void> {
 const backgroundMusicPlugin: Plugin<typeof settings> = {
   id: "background-music",
   name: "Background Music",
-  description: "Play your own music in the background while SEQTA is open.",
+  description: "Play your own music in the background while SEQTA is open",
   version: "1.0.0",
   settings,
   styles,
@@ -116,9 +122,16 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     });
 
     api.settings.onChange("pauseOnHidden" as any, (value: any) => {
-      const pauseOnHidden = (typeof value === "boolean" ? value : true) as boolean;
+      const pauseOnHidden = (
+        typeof value === "boolean" ? value : true
+      ) as boolean;
       // If the setting is disabled and audio is currently paused due to tab being hidden, resume it
-      if (!pauseOnHidden && currentAudio && currentAudio.paused && document.visibilityState === "hidden") {
+      if (
+        !pauseOnHidden &&
+        currentAudio &&
+        currentAudio.paused &&
+        document.visibilityState === "hidden"
+      ) {
         currentAudio.play().catch(() => {});
       }
     });
@@ -132,7 +145,9 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     };
 
     // Always arm gesture start and attempt immediate start
-    const cancel = ensureGestureStart(() => { tryStart(); });
+    const cancel = ensureGestureStart(() => {
+      tryStart();
+    });
     cleanupRegistered = true;
     (window as any).__betterseqta_bg_music_cancel__ = cancel;
     tryStart();
@@ -142,7 +157,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       if (!currentAudio) return;
       const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
       if (!pauseOnHidden) return;
-      
+
       if (document.visibilityState === "hidden") {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);
@@ -166,22 +181,35 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       const vol = (api.settings as any).volume ?? 0.5;
       startPlayback(vol);
     };
-    window.addEventListener("betterseqta-background-music-updated", uploadedHandler);
+    window.addEventListener(
+      "betterseqta-background-music-updated",
+      uploadedHandler,
+    );
 
     return () => {
       document.removeEventListener("visibilitychange", visHandler);
-      window.removeEventListener("betterseqta-background-music-updated", uploadedHandler);
-      if (cleanupRegistered && (window as any).__betterseqta_bg_music_cancel__) {
+      window.removeEventListener(
+        "betterseqta-background-music-updated",
+        uploadedHandler,
+      );
+      if (
+        cleanupRegistered &&
+        (window as any).__betterseqta_bg_music_cancel__
+      ) {
         (window as any).__betterseqta_bg_music_cancel__();
         (window as any).__betterseqta_bg_music_cancel__ = undefined;
       }
-      if (pendingGestureCancel) { pendingGestureCancel(); pendingGestureCancel = null; }
-      if (visibilityResumeTimeout !== null) { clearTimeout(visibilityResumeTimeout); visibilityResumeTimeout = null; }
+      if (pendingGestureCancel) {
+        pendingGestureCancel();
+        pendingGestureCancel = null;
+      }
+      if (visibilityResumeTimeout !== null) {
+        clearTimeout(visibilityResumeTimeout);
+        visibilityResumeTimeout = null;
+      }
       stopAndCleanupAudio();
     };
   },
 };
 
 export default backgroundMusicPlugin;
-
-
