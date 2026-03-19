@@ -20,8 +20,7 @@ const settings = defineSettings({
   }),
   pauseOnHidden: booleanSetting({
     title: "Pause when tab hidden",
-    description:
-      "Pause music when switching to another tab or minimizing the browser",
+    description: "Pause music when switching to another tab or minimizing the browser",
     default: true,
   }),
 });
