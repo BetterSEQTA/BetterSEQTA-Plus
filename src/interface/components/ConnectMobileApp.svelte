@@ -132,7 +132,7 @@
 {#if showQrModal && qrDataUrl}
   <div
     use:portal
-    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 backdrop-blur-sm"
+    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''}"
     role="button"
     tabindex="-1"
     onclick={(e) => {
