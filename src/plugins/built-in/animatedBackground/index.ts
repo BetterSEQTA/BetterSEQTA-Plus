@@ -6,6 +6,7 @@ import {
   Setting,
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
+import { waitForElm } from "@/seqta/utils/waitForElm";
 
 const settings = defineSettings({
   speed: numberSetting({
@@ -35,13 +36,10 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
-    // Create the background elements
-    const container = document.getElementById("container");
-    const menu = document.getElementById("menu");
-
-    if (!container || !menu) {
-      return () => {};
-    }
+    const [container, menu] = await Promise.all([
+      waitForElm("#container", true),
+      waitForElm("#menu", true),
+    ]);
 
     const backgrounds = [
       { classes: ["bg"] },
