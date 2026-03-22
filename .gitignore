@@ -20,5 +20,6 @@ betterseqtaplus-safari/
 
 .million/
 .vscode/
+.idea/
 
 **/.DS_Store
