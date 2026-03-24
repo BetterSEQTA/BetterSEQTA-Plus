@@ -182,11 +182,8 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
 
       const override = getEffectiveOverride(ci, description);
       if (override) {
-        if (override.room !== undefined && roomEl)
-          roomEl.textContent = override.room;
-        if (override.staff !== undefined && teacherEl)
-          teacherEl.textContent = override.staff;
-      }
+        if (override.room !== undefined && roomEl) roomEl.textContent = override.room;
+        if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
 
       const captureClick = () => {
         lastClickedCi = ci;
@@ -196,11 +193,9 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const processAllEntries = () => {
-      document
-        .querySelectorAll(".timetablepage .entry.class")
-        .forEach((entry) => {
-          processEntry(entry as HTMLElement);
-        });
+      document.querySelectorAll(".timetablepage .entry.class").forEach((entry) => {
+        processEntry(entry as HTMLElement);
+      });
     };
 
     const addEditButtonToQuickbar = (quickbar: HTMLElement) => {
@@ -224,12 +219,9 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
 
         const qb = (e.currentTarget as HTMLElement).closest(".quickbar");
         if (!qb) return;
-        const quickbarRoom =
-          qb.querySelector(".meta .room")?.textContent?.trim() ?? "";
-        const quickbarTeacher =
-          qb.querySelector(".meta .teacher")?.textContent?.trim() ?? "";
-        const quickbarTitle =
-          qb.querySelector(".title")?.textContent?.trim() ?? "";
+        const quickbarRoom = qb.querySelector(".meta .room")?.textContent?.trim() ?? "";
+        const quickbarTeacher = qb.querySelector(".meta .teacher")?.textContent?.trim() ?? "";
+        const quickbarTitle = qb.querySelector(".title")?.textContent?.trim() ?? "";
         const item: TimetableEntryData = {
           ci,
           description: quickbarTitle || entryData.item.description,
@@ -278,9 +270,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const syncQuickbarFromDOM = () => {
-      const quickbar = document.querySelector(
-        ".timetablepage .quickbar.visible",
-      );
+      const quickbar = document.querySelector(".timetablepage .quickbar.visible");
       if (quickbar && quickbar.getAttribute("data-type") === "class") {
         const titleEl = quickbar.querySelector(".title");
         const roomEl = quickbar.querySelector(".meta .room");
@@ -302,9 +292,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       if (!timetablePage || quickbarObserver) return;
 
       quickbarObserver = new MutationObserver(() => {
-        const quickbar = document.querySelector(
-          ".timetablepage .quickbar.visible",
-        );
+        const quickbar = document.querySelector(".timetablepage .quickbar.visible");
         if (quickbar?.getAttribute("data-type") === "class") {
           addEditButtonToQuickbar(quickbar as HTMLElement);
         }
@@ -346,14 +334,10 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       observer?.disconnect();
       quickbarObserver?.disconnect();
       styleEl.remove();
-      document
-        .querySelectorAll("[data-timetable-edit-processed]")
-        .forEach((el) => {
-          el.removeAttribute("data-timetable-edit-processed");
-        });
-      document
-        .querySelectorAll(".timetable-edit-quickbar-btn")
-        .forEach((el) => el.remove());
+      document.querySelectorAll("[data-timetable-edit-processed]").forEach((el) => {
+        el.removeAttribute("data-timetable-edit-processed");
+      });
+      document.querySelectorAll(".timetable-edit-quickbar-btn").forEach((el) => el.remove());
     };
   },
 };
