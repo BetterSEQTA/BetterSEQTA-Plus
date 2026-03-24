@@ -253,10 +253,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
               const current = getOverrides();
               api.storage.timetableOverrides = {
                 ...current,
-                [String(ci)]: {
-                  room: room || undefined,
-                  staff: staff || undefined,
-                },
+                [String(ci)]: { room: room || undefined, staff: staff || undefined },
               };
             }
             if (entryData.roomEl) entryData.roomEl.textContent = room;
