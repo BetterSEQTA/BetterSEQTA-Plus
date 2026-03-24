@@ -112,9 +112,7 @@ function showEditModal(
     removeModal();
   });
 
-  modal
-    .querySelector(".timetable-edit-btn-cancel")
-    ?.addEventListener("click", removeModal);
+  modal.querySelector(".timetable-edit-btn-cancel")?.addEventListener("click", removeModal);
 
   const clearBtn = modal.querySelector(".timetable-edit-btn-clear");
   if (clearBtn) {
@@ -148,11 +146,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     let observer: MutationObserver | null = null;
     let quickbarObserver: MutationObserver | null = null;
     let lastClickedCi: number | null = null;
-    let lastClickedEntry: {
-      roomEl: HTMLElement | null;
-      teacherEl: HTMLElement | null;
-      item: TimetableEntryData;
-    } | null = null;
+    let lastClickedEntry: { roomEl: HTMLElement; teacherEl: HTMLElement; item: TimetableEntryData } | null = null;
 
     const getOverrides = (): TimetableOverrides =>
       api.storage.timetableOverrides ?? {};
@@ -166,11 +160,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       getOverrides()[String(ci)] ?? getOverridesBySubject()[description];
 
     const processEntry = (entry: HTMLElement): void => {
-      if (
-        entry.classList.contains("assessment") ||
-        entry.hasAttribute("data-timetable-edit-processed")
-      )
-        return;
+      if (entry.classList.contains("assessment") || entry.hasAttribute("data-timetable-edit-processed")) return;
 
       const ciStr = entry.getAttribute("data-instance");
       if (!ciStr) return;
