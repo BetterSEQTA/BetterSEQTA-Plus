@@ -14,11 +14,8 @@ betterseqtaplus-safari/
 
 .million/
 .vscode/
-
 **/.DS_Store
-
 .parcel-cache
 .env
 .env.submit
-
 dependency-graph.svg
