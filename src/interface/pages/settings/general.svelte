@@ -115,33 +115,14 @@
   {#each [
     {
       title: "Connect Mobile App",
-      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn.",
+      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn",
       id: 0,
       Component: ConnectMobileApp,
       props: {}
     },
     {
-      title: "Transparency Effects",
-      description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
-      id: 1,
-      Component: Switch,
-      props: {
-        state: $settingsState.transparencyEffects,
-        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
-      }
-    },
-    {
-      title: "Custom Theme Colour",
-      description: "Customise the overall theme colour of SEQTA Learn.",
-      id: 4,
-      Component: PickerSwatch,
-      props: {
-        onClick: showColourPicker
-      }
-    },
-    {
       title: "Edit Sidebar Layout",
-      description: "Customise the sidebar layout.",
+      description: "Reorder pages on the sidebar",
       id: 5,
       Component: Button,
       props: {
@@ -150,8 +131,17 @@
       }
     },
     {
+      title: "Custom Theme Colour",
+      description: "Customise the overall theme colour of SEQTA Learn",
+      id: 4,
+      Component: PickerSwatch,
+      props: {
+        onClick: showColourPicker
+      }
+    },
+    {
       title: "Icon Only Sidebar",
-      description: "Show only icons in the sidebar for a compact layout.",
+      description: "Show only icons in the sidebar for a compact layout",
       id: 14,
       Component: Switch,
       props: {
@@ -161,7 +151,7 @@
     },
     {
       title: "Animations",
-      description: "Enables animations on certain pages.",
+      description: "Enable animations on certain pages",
       id: 6,
       Component: Switch,
       props: {
@@ -180,8 +170,18 @@
       }
     },
     {
+      title: "Transparency Effects",
+      description: "Enable transparency effects on certain elements, such as blur (May impact battery life)",
+      id: 1,
+      Component: Switch,
+      props: {
+        state: $settingsState.transparencyEffects,
+        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
+      }
+    },
+    {
       title: "Default Page",
-      description: "The page to load when SEQTA Learn is opened.",
+      description: "The page to load when SEQTA Learn is opened",
       id: 10,
       Component: Select,
       props: {
@@ -200,7 +200,7 @@
     },
     {
       title: "News Feed Source",
-      description: "Choose sources of your news feed.",
+      description: "Choose the sources for your news feed",
       id: 11,
       Component: Select,
       props: {
@@ -230,7 +230,7 @@
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
           <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
-          <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page).</p>
+          <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
         </div>
         <div>
           <Switch
@@ -243,7 +243,7 @@
         <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
           <div class="pr-4">
             <h2 class="text-sm font-bold">Soft Gradient</h2>
-            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class.</p>
+            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class</p>
           </div>
           <div>
             <Switch
@@ -283,7 +283,6 @@
                         await updatePluginSetting(plugin.pluginId, 'enabled', true);
                       },
                       () => {
-                        // Do nothing on cancel
                       }
                     );
                     return;

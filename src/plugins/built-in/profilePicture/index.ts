@@ -13,7 +13,6 @@ const settings = defineSettings({
   }),
 });
 
-
 const profilePicturePlugin: Plugin<typeof settings> = {
   id: "profile-picture",
   name: "Custom Profile Picture",
@@ -74,7 +73,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     window.addEventListener('profile-picture-updated', handler);
 
     return () => {
-      window.removeEventListener('profile-picture-updated', handler);
+      window.removeEventListener("profile-picture-updated", handler);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
@@ -83,4 +82,3 @@ const profilePicturePlugin: Plugin<typeof settings> = {
 };
 
 export default profilePicturePlugin;
-
