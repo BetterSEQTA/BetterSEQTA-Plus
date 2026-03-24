@@ -11,6 +11,30 @@ import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
 
+function registerFetchSeqtaAppLinkListener() {
+  browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request?.type !== "fetchSeqtaAppLink") return false;
+    void (async () => {
+      try {
+        const res = await fetch(`${location.origin}/seqta/student/load/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        const statusOk = data?.status === "200" || data?.status === 200;
+        const raw = data?.payload?.app_link;
+        const appLink = typeof raw === "string" && raw.length > 0 ? raw : null;
+        sendResponse({ appLink: statusOk ? appLink : null });
+      } catch {
+        sendResponse({ appLink: null });
+      }
+    })();
+    return true;
+  });
+}
+
 export let MenuOptionsOpen = false;
 
 var IsSEQTAPage = false;
@@ -29,6 +53,8 @@ async function init() {
   if (hasSEQTAText && document.title.includes("SEQTA Learn") && !IsSEQTAPage) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
+
+    registerFetchSeqtaAppLinkListener();
 
     const documentLoadStyle = document.createElement("style");
     documentLoadStyle.textContent = documentLoadCSS;

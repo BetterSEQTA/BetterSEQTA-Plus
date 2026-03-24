@@ -15,7 +15,7 @@
       "64": "resources/icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage", "cookies"],
+  "permissions": ["tabs", "notifications", "storage"],
   "host_permissions": ["https://newsapi.org/", "https://betterseqta.org/", "https://accounts.betterseqta.org/", "*://*/*"],
   "background": {
     "service_worker": "background.ts"

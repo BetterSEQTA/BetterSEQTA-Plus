@@ -32,6 +32,9 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.5.1 - QR & session link fix</h1>
+      <li>Fixed DesQTA Connect Mobile App QR generation on Chrome</li>
+
       <h1>3.5.0 - Adaptive Theme, Timetable Editor & More</h1>
       <li>Added adaptive theme colour</li>
       <li>Added optional soft gradient for adaptive theme when viewing a class</li>

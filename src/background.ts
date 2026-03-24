@@ -167,8 +167,19 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
   return true;
 }
 
-/** Handler for a message type; receives request and sendResponse callback */
-type MessageHandler = { (request: any, sendResponse: MessageSender): boolean | void };
+/** Handler for a message type; receives request, sendResponse, and optional sender (for tab routing) */
+type MessageHandler = {
+  (request: any, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender): boolean | void;
+};
+
+function isSeqtaOrigin(origin: string): boolean {
+  try {
+    const u = new URL(origin);
+    return u.hostname.includes("seqta") || u.hostname.endsWith(".edu.au");
+  } catch {
+    return false;
+  }
+}
 
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   reloadTabs: () => reloadSeqtaPages(),
@@ -200,29 +211,38 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   cloudLogin: handleCloudLogin,
   cloudRefresh: handleCloudRefresh,
   cloudFavorite: handleCloudFavorite,
-  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender) => {
+  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender) => {
     (async () => {
       try {
-        let baseUrl = req.baseUrl;
-        if (!baseUrl) {
-          const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+        let tabId = sender?.tab?.id;
+        let originForCheck: string | undefined = req.baseUrl;
+
+        if (tabId == null) {
+          const tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true });
           const tab = tabs[0];
-          if (!tab?.url) {
-            sendResponse({ session: null });
+          if (!tab?.id || !tab.url) {
+            sendResponse({ appLink: null });
             return;
           }
-          baseUrl = new URL(tab.url).origin;
+          tabId = tab.id;
+          if (!originForCheck) originForCheck = new URL(tab.url).origin;
+        } else if (!originForCheck && sender?.tab?.url) {
+          originForCheck = new URL(sender.tab.url).origin;
         }
-        const cookies = await browser.cookies.getAll({ url: baseUrl });
-        const jsession = cookies.find((c) => c.name === "JSESSIONID");
-        if (jsession?.value) {
-          sendResponse({ session: { baseUrl, jsessionId: jsession.value } });
-        } else {
-          sendResponse({ session: null });
+
+        if (!originForCheck || !isSeqtaOrigin(originForCheck)) {
+          sendResponse({ appLink: null });
+          return;
         }
+
+        const reply = (await browser.tabs.sendMessage(tabId, { type: "fetchSeqtaAppLink" })) as
+          | { appLink?: string | null }
+          | undefined;
+        const appLink = typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
+        sendResponse({ appLink });
       } catch (err) {
         console.error("[Background] getSeqtaSession error:", err);
-        sendResponse({ session: null });
+        sendResponse({ appLink: null });
       }
     })();
     return true;
@@ -231,10 +251,10 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
 
 browser.runtime.onMessage.addListener(
   // @ts-ignore - OnMessageListener expects literal true for async, we return boolean
-  (request: any, _: any, sendResponse: MessageSender) => {
+  (request: any, sender: browser.Runtime.MessageSender, sendResponse: MessageSender) => {
     const handler = MESSAGE_HANDLERS[request.type];
     if (handler) {
-      const result = handler(request, sendResponse);
+      const result = handler(request, sendResponse, sender);
       return result === true;
     }
     console.log("Unknown request type");

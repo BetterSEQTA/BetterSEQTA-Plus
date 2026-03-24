@@ -4,11 +4,9 @@
   import QRCode from "qrcode";
   import { portal } from "../utils/portal";
 
-  const DEEPLINK_PREFIX = "desqta://connect/";
-
   let showQrModal = $state(false);
   let qrDataUrl = $state<string | null>(null);
-  let deeplink = $state<string | null>(null);
+  let appLink = $state<string | null>(null);
   let errorMessage = $state<string | null>(null);
   let isLoading = $state(false);
   let isStandalone = $state(false);
@@ -38,30 +36,21 @@
     }
   }
 
-  function buildDesqtaConnectPayload(baseUrl: string, jsessionId: string): string {
-    const payload = JSON.stringify({ u: baseUrl, s: jsessionId });
-    const base64 = btoa(unescape(encodeURIComponent(payload)));
-    const encoded = encodeURIComponent(base64);
-    return `${DEEPLINK_PREFIX}${encoded}`;
-  }
-
-  async function getSession(): Promise<{ baseUrl: string; jsessionId: string } | null> {
+  async function getAppLink(): Promise<string | null> {
     let baseUrl: string | undefined;
 
     if (isExtensionPage()) {
-      // Extension popup: background will get URL from active tab
       baseUrl = undefined;
     } else {
-      // In-page (settings inside SEQTA): pass current page URL (cookies API not available in content scripts)
       baseUrl = normalizeBaseUrl(window.location.href);
       if (!isSeqtaUrl(baseUrl)) return null;
     }
 
-    const { session } = (await browser.runtime.sendMessage({
+    const { appLink: link } = (await browser.runtime.sendMessage({
       type: "getSeqtaSession",
       baseUrl,
-    })) as { session: { baseUrl: string; jsessionId: string } | null };
-    return session ?? null;
+    })) as { appLink: string | null };
+    return link ?? null;
   }
 
   async function generateQrCode() {
@@ -71,9 +60,9 @@
 
     try {
       isStandalone = isExtensionPage();
-      const session = await getSession();
+      const link = await getAppLink();
 
-      if (!session) {
+      if (!link) {
         if (isStandalone) {
           errorMessage =
             "Open SEQTA Learn in a tab and log in, then open settings from that tab to generate a QR code.";
@@ -83,9 +72,8 @@
         return;
       }
 
-      const link = buildDesqtaConnectPayload(session.baseUrl, session.jsessionId);
       const dataUrl = await QRCode.toDataURL(link, { width: 256, margin: 2 });
-      deeplink = link;
+      appLink = link;
       qrDataUrl = dataUrl;
       showQrModal = true;
     } catch (err) {
@@ -99,12 +87,12 @@
   function closeModal() {
     showQrModal = false;
     qrDataUrl = null;
-    deeplink = null;
+    appLink = null;
     errorMessage = null;
   }
 
-  function openInDesqta() {
-    if (deeplink) window.location.href = deeplink;
+  function openAppLink() {
+    if (appLink) window.location.href = appLink;
   }
 
   function downloadQrImage() {
@@ -160,12 +148,12 @@
         </button>
       </div>
       <div class="flex justify-center p-4 bg-white rounded-xl dark:bg-zinc-900">
-        <img src={qrDataUrl} alt="DesQTA QR Code" class="w-64 h-64" />
+        <img src={qrDataUrl} alt="SEQTA Learn app link QR code" class="w-64 h-64" />
       </div>
       <div class="flex flex-col gap-2 mt-4">
         <button
           type="button"
-          onclick={openInDesqta}
+          onclick={openAppLink}
           class="px-4 py-2.5 w-full text-sm font-medium text-white bg-indigo-600 rounded-lg transition-colors dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600">
           Sign into DesQTA Desktop
         </button>
