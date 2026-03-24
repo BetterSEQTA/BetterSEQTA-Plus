@@ -184,6 +184,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       if (override) {
         if (override.room !== undefined && roomEl) roomEl.textContent = override.room;
         if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
+      }
 
       const captureClick = () => {
         lastClickedCi = ci;
@@ -314,6 +315,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
               processEntry(entry as HTMLElement);
             }
           });
+        });
         observer.observe(timetablePage, { childList: true, subtree: true });
       }
     };
