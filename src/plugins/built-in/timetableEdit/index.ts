@@ -186,7 +186,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
       }
 
-      const captureClick = () => {
+      const captureClick = (e: MouseEvent) => {
         lastClickedCi = ci;
         lastClickedEntry = { roomEl, teacherEl, item };
       };
