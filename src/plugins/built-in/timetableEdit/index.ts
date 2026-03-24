@@ -275,13 +275,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         const titleEl = quickbar.querySelector(".title");
         const roomEl = quickbar.querySelector(".meta .room");
         const teacherEl = quickbar.querySelector(".meta .teacher");
-        if (
-          titleEl &&
-          roomEl &&
-          teacherEl &&
-          lastClickedCi !== null &&
-          lastClickedEntry
-        ) {
+        if (titleEl && roomEl && teacherEl && lastClickedCi !== null && lastClickedEntry) {
           addEditButtonToQuickbar(quickbar as HTMLElement);
         }
       }
@@ -315,14 +309,11 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       const timetablePage = document.querySelector(".timetablepage");
       if (timetablePage && !observer) {
         observer = new MutationObserver(() => {
-          document
-            .querySelectorAll(".timetablepage .entry.class")
-            .forEach((entry) => {
-              if (!entry.hasAttribute("data-timetable-edit-processed")) {
-                processEntry(entry as HTMLElement);
-              }
-            });
-        });
+          document.querySelectorAll(".timetablepage .entry.class").forEach((entry) => {
+            if (!entry.hasAttribute("data-timetable-edit-processed")) {
+              processEntry(entry as HTMLElement);
+            }
+          });
         observer.observe(timetablePage, { childList: true, subtree: true });
       }
     };
