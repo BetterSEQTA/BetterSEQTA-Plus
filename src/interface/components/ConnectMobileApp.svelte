@@ -13,6 +13,13 @@
   let isLoading = $state(false);
   let isStandalone = $state(false);
 
+  function isExtensionPage(): boolean {
+    return (
+      window.location.protocol === "chrome-extension:" ||
+      window.location.protocol === "moz-extension:"
+    );
+  }
+
   function isSeqtaUrl(url: string): boolean {
     try {
       const u = new URL(url);
@@ -41,7 +48,7 @@
   async function getSession(): Promise<{ baseUrl: string; jsessionId: string } | null> {
     let baseUrl: string | undefined;
 
-    if (window.location.protocol === "chrome-extension:") {
+    if (isExtensionPage()) {
       // Extension popup: background will get URL from active tab
       baseUrl = undefined;
     } else {
@@ -63,7 +70,7 @@
     isLoading = true;
 
     try {
-      isStandalone = window.location.protocol === "chrome-extension:";
+      isStandalone = isExtensionPage();
       const session = await getSession();
 
       if (!session) {
@@ -125,7 +132,7 @@
 {#if showQrModal && qrDataUrl}
   <div
     use:portal
-    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 backdrop-blur-sm"
+    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''}"
     role="button"
     tabindex="-1"
     onclick={(e) => {
