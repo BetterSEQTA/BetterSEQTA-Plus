@@ -268,8 +268,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
             delete bySubject[item.description];
             api.storage.timetableOverridesBySubject = bySubject;
             if (entryData.roomEl) entryData.roomEl.textContent = item.room;
-            if (entryData.teacherEl)
-              entryData.teacherEl.textContent = item.staff;
+            if (entryData.teacherEl) entryData.teacherEl.textContent = item.staff;
             processAllEntries();
           },
         );
