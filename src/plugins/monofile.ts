@@ -17,6 +17,7 @@ import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 
 // UI and theme management
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
@@ -82,7 +83,12 @@ export function hideSideBar() {
   }
 }
 
+let betterSeqtaFinishLoadDone = false;
+
 export async function finishLoad() {
+  if (betterSeqtaFinishLoadDone) return;
+  betterSeqtaFinishLoadDone = true;
+
   try {
     document.querySelector(".legacy-root")?.classList.remove("hidden");
 
@@ -115,19 +121,19 @@ export function GetCSSElement(file: string) {
 }
 
 function removeThemeTagsFromNotices() {
-  // Grabs an array of the notice iFrames
   const userHTMLArray = document.getElementsByClassName("userHTML");
-  // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
-    // Grabs the HTML of the body tag
-    const item1 = item as HTMLIFrameElement;
-    const body = item1.contentWindow!.document.querySelectorAll("body")[0];
-    if (body) {
-      // Replaces the theme tag with nothing
+    const iframe = item as HTMLIFrameElement;
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc?.body) continue;
+      const body = doc.body;
       const bodyText = body.innerHTML;
       body.innerHTML = bodyText
         .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
         .replace(/ +/, " ");
+    } catch {
+      // Cross-origin or otherwise inaccessible iframe (common during Engage load / filter frames)
     }
   }
 }
@@ -296,6 +302,11 @@ async function handleNotices(node: Element): Promise<void> {
 }
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
+  if (isSeqtaEngageExperience()) {
+    finishLoad();
+    return;
+  }
+
   switch (sublink) {
     case "news":
       await handleNewsPage();
@@ -382,15 +393,22 @@ async function handleDashboard(node: Element): Promise<void> {
   document.head.append(style);
 
   await waitForElm(".dashlet", true, 10);
-  animate(
-    ".dashboard > *",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.1),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const children = document.querySelectorAll(".dashboard > *");
+    if (children.length) {
+      animate(
+        children,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.1),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // Avoid uncaught errors if motion hits an unexpected DOM state during load.
+  }
 
   document.head.querySelector("style.dashboardHider")?.remove();
 }
@@ -400,15 +418,22 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".document", true, 10);
-  animate(
-    ".documents tbody tr.document",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const rows = document.querySelectorAll(".documents tbody tr.document");
+    if (rows.length) {
+      animate(
+        rows,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 async function handleReports(node: Element): Promise<void> {
@@ -416,15 +441,22 @@ async function handleReports(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".report", true, 10);
-  animate(
-    ".reports .item",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05, { startDelay: 0.2 }),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const items = document.querySelectorAll(".reports .item");
+    if (items.length) {
+      animate(
+        items,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05, { startDelay: 0.2 }),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 function CheckNoticeTextColour(notice: any) {
@@ -449,6 +481,26 @@ function CheckNoticeTextColour(notice: any) {
 }
 
 export function tryLoad() {
+  if (isSeqtaEngageExperience()) {
+    updateIframesWithDarkMode();
+    window.addEventListener(
+      "load",
+      () => removeThemeTagsFromNotices(),
+      { once: true },
+    );
+    window.addEventListener(
+      "load",
+      () => void finishLoad(),
+      { once: true },
+    );
+    waitForElm(".login").then(() => void finishLoad());
+    waitForElm(".day-container").then(() => void finishLoad());
+    waitForElm(".code", true, 50).then((elm: any) => {
+      if (!elm.innerText.includes("BetterSEQTA")) void LoadPageElements();
+    });
+    return;
+  }
+
   waitForElm(".login").then(() => {
     finishLoad();
   });
@@ -466,13 +518,10 @@ export function tryLoad() {
   });
 
   updateIframesWithDarkMode();
-  // Waits for page to call on load, run scripts
-  document.addEventListener(
+  window.addEventListener(
     "load",
-    function () {
-      removeThemeTagsFromNotices();
-    },
-    true,
+    () => removeThemeTagsFromNotices(),
+    { once: true },
   );
 }
 
@@ -489,6 +538,7 @@ function ReplaceMenuSVG(element: HTMLElement, svg: string) {
 const processedSymbol = Symbol("processed");
 
 export async function ObserveMenuItemPosition() {
+  if (isSeqtaEngageExperience()) return;
   await waitForElm("#menu > ul > li");
 
   eventManager.register(

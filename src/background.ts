@@ -6,7 +6,10 @@ function reloadSeqtaPages() {
   const result = browser.tabs.query({});
   function open(tabs: any) {
     for (let tab of tabs) {
-      if (tab.title.includes("SEQTA Learn")) {
+      if (
+        tab.title?.includes("SEQTA Learn") ||
+        tab.title?.includes("SEQTA Engage")
+      ) {
         browser.tabs.reload(tab.id);
       }
     }

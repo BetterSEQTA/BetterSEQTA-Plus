@@ -1,4 +1,5 @@
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
@@ -42,6 +43,11 @@ export async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
+  if (isSeqtaEngageExperience()) {
+    addExtensionSettings();
+    return;
+  }
+
   if (settingsState.onoff) {
     if (settingsState.DarkMode) {
       document.documentElement.classList.add("dark");

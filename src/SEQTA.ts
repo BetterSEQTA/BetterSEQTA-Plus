@@ -50,7 +50,12 @@ if (document.childNodes[1]) {
 }
 
 async function init() {
-  if (hasSEQTAText && document.title.includes("SEQTA Learn") && !IsSEQTAPage) {
+  if (
+    hasSEQTAText &&
+    (document.title.includes("SEQTA Learn") ||
+      document.title.includes("SEQTA Engage")) &&
+    !IsSEQTAPage
+  ) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
