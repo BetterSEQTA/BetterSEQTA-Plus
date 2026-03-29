@@ -84,6 +84,24 @@ export default defineConfig(({ command }) => ({
         settings: join(__dirname, "src", "interface", "index.html"),
         pageState: join(__dirname, "src", "pageState.js"),
       },
+      output: {
+        assetFileNames(info) {
+          const labels = [
+            ...(info.names ?? []),
+            ...(info.originalFileNames ?? []),
+          ].join(" ");
+          if (
+            labels.includes("pdf.worker.min") ||
+            labels.includes("pdf.worker.mjs")
+          ) {
+            return "resources/pdfjs/pdf.worker.min.mjs";
+          }
+          if (labels.includes("legacy") && labels.includes("pdf.min")) {
+            return "resources/pdfjs/pdf.legacy.min.mjs";
+          }
+          return "assets/[name]-[hash][extname]";
+        },
+      },
       onwarn(warning, warn) {
         if (warning.code === "FILE_NAME_CONFLICT") return;
         warn(warning);

@@ -1,8 +1,12 @@
 import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
+import {
+  ensurePdfjsWorker,
+  getPdfjsPageContextUrls,
+} from "@/lib/pdfjsExtension.ts";
 import * as pdfjs from "pdfjs-dist";
-pdfjs.GlobalWorkerOptions.workerSrc =
-  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+ensurePdfjsWorker();
 
 export async function initStorage(api: any) {
   await api.storage.loaded;
@@ -219,6 +223,12 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
 export async function extractPDFText(url: string): Promise<string> {
   try {
     if (isFirefox) {
+      const { lib: pdfLibUrl, worker: pdfWorkerUrl } = getPdfjsPageContextUrls();
+      const escJsSingleQuoted = (s: string) =>
+        s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
+      const pdfWorkerInj = escJsSingleQuoted(pdfWorkerUrl);
+
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
         const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
@@ -232,13 +242,15 @@ export async function extractPDFText(url: string): Promise<string> {
           (function() {
             const requestId = '${requestId}';
             const url = '${escapedUrl}';
+            const pdfLibSrc = '${pdfLibInj}';
+            const pdfWorkerSrc = '${pdfWorkerInj}';
             
             if (window.pdfjsLib) {
               extractPDF();
             } else {
               const pdfjsScript = document.createElement('script');
-              pdfjsScript.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.min.js';
-              pdfjsScript.type = 'text/javascript';
+              pdfjsScript.src = pdfLibSrc;
+              pdfjsScript.type = 'module';
               
               pdfjsScript.onload = function() {
                 extractPDF();
@@ -256,7 +268,7 @@ export async function extractPDFText(url: string): Promise<string> {
             
             function extractPDF() {
               try {
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
                 
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);

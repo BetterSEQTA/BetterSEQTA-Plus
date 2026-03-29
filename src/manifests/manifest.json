@@ -32,7 +32,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["resources/icons/*", "resources/update-image.webp"],
+      "resources": [
+        "resources/icons/*",
+        "resources/update-image.webp",
+        "resources/pdfjs/pdf.worker.min.mjs",
+        "resources/pdfjs/pdf.legacy.min.mjs"
+      ],
       "matches": ["*://*/*"]
     }
   ]
