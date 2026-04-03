@@ -2,12 +2,17 @@ import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
 
 /**
  * Parses the current page from window.location.hash.
- * Returns { programme, metaclass } for /courses/SEMESTER/X:Y or /assessments/SEMESTER/X:Y, or null.
- * e.g. #?page=/courses/2023S/4804:11066 or #?page=/assessments/2023S/4621:10772
+ * Supports both old and current URL formats, e.g.
+ *   /courses/SEMESTER/X:Y and /courses/X:Y
+ *   /assessments/SEMESTER/X:Y and /assessments/X:Y
+ * e.g. #?page=/courses/2023S/4804:11066,
+ *      #?page=/courses/4804:11066,
+ *      #?page=/assessments/2023S/4621:10772,
+ *      #?page=/assessments/4621:10772
  */
 function parsePageContext(): { programme: number; metaclass: number } | null {
   const hash = window.location.hash || "";
-  const match = hash.match(/[?&]page=\/(courses|assessments)\/[^/]+\/(\d+):(\d+)/);
+  const match = hash.match(/[?&]page=\/(courses|assessments)\/(?:[^/]+\/)?(\d+):(\d+)/);
   if (!match) return null;
   const programme = parseInt(match[2], 10);
   const metaclass = parseInt(match[3], 10);
