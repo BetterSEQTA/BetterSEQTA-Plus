@@ -32,6 +32,9 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.5.3 - Adaptive theme updates</h1>
+      <li>Fixed adaptive theming on current-year course and assessment pages.</li>
+
       <h1>3.5.2 - PDF & store compliance</h1>
       <li>Put PDF.js with the extension so assessment weighting stays compatible with Chrome Web Store rules</li>
 
