@@ -1,11 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import CloudLoginForm from "./CloudLoginForm.svelte";
 
-  let username = $state("");
-  let password = $state("");
-  let loading = $state(false);
-  let error = $state<string | null>(null);
   let cloudState = $state(cloudAuth.state);
   let open = $state(false);
   let dropdownEl: HTMLElement;
@@ -34,27 +31,6 @@
       };
     }
   });
-
-  async function handleLogin() {
-    if (loading) return;
-    error = null;
-    if (!username.trim() || !password) {
-      error = "Please enter username and password";
-      return;
-    }
-    loading = true;
-    try {
-      const result = await cloudAuth.login(username.trim(), password);
-      if (result.success) {
-        password = "";
-        open = false;
-      } else {
-        error = result.error ?? "Login failed";
-      }
-    } finally {
-      loading = false;
-    }
-  }
 
   async function handleLogout() {
     await cloudAuth.logout();
@@ -142,58 +118,11 @@
             </button>
           </div>
         {:else}
-          <p class="mb-4 text-base text-zinc-600 dark:text-zinc-400">
-            Sign in to favorite themes. Your favorites sync across devices when logged in.
-          </p>
-          <form
-            class="flex flex-col gap-3"
-            autocomplete="off"
-            onsubmit={(e) => {
-              e.preventDefault();
-              handleLogin();
+          <CloudLoginForm
+            onSuccess={() => {
+              open = false;
             }}
-          >
-            <input
-              type="text"
-              name="betterseqta-cloud-username"
-              autocomplete="off"
-              placeholder="Email or username"
-              bind:value={username}
-              disabled={loading}
-              readonly
-              onfocus={(e) => e.currentTarget.removeAttribute('readonly')}
-              class="w-full px-4 py-3 text-base rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200"
-            />
-            <input
-              type="password"
-              name="betterseqta-cloud-password"
-              autocomplete="new-password"
-              placeholder="Password"
-              bind:value={password}
-              disabled={loading}
-              readonly
-              onfocus={(e) => e.currentTarget.removeAttribute('readonly')}
-              class="w-full px-4 py-3 text-base rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200"
-            />
-            {#if error}
-              <p class="text-base text-red-600 dark:text-red-400">{error}</p>
-            {/if}
-            <button
-              type="submit"
-              disabled={loading}
-              class="w-full px-4 py-3 text-base font-medium rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 disabled:opacity-50 transition-colors duration-200"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-            <a
-              href="https://accounts.betterseqta.org/register"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 px-4 py-3 text-base font-medium rounded-lg border border-zinc-200 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200"
-            >
-              Create account
-            </a>
-          </form>
+          />
         {/if}
       </div>
     </div>
