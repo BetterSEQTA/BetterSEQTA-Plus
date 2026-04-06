@@ -2,16 +2,14 @@
   import type { Theme } from '@/interface/types/Theme'
   import { fade } from 'svelte/transition';
   import { onMount } from 'svelte';
-  import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte';
-
-  let { theme, onClick, toggleFavorite, isLoggedIn } = $props<{
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn } = $props<{
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
     isLoggedIn: boolean;
+    onRequestSignIn?: () => void;
   }>();
   let menuOpen = $state(false);
-  let showSignInModal = $state(false);
   let menuRef: HTMLDivElement;
 
   onMount(() => {
@@ -34,14 +32,23 @@
     if (isLoggedIn) {
       toggleFavorite(theme);
     } else {
-      showSignInModal = true;
+      onRequestSignIn?.();
     }
     menuOpen = false;
   }
 </script>
 
-<div class="w-full cursor-pointer" role="button" tabindex="-1" onkeydown={onClick} onclick={handleCardClick}>
-  <div class="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border" transition:fade>
+<div
+  class="relative z-0 hover:z-20 w-full cursor-pointer"
+  role="button"
+  tabindex="-1"
+  onkeydown={onClick}
+  onclick={handleCardClick}
+>
+  <div
+    class="bg-gray-50 w-full transition-all duration-500 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
+    transition:fade
+  >
     <!-- Menu dropdown -->
     <div class="absolute top-2 right-2 z-20" data-theme-menu bind:this={menuRef}>
       <button
@@ -104,7 +111,3 @@
     </div>
   </div>
 </div>
-
-{#if showSignInModal}
-  <SignInToFavoriteModal onClose={() => (showSignInModal = false)} />
-{/if}
