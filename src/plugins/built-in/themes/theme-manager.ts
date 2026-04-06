@@ -2,8 +2,8 @@ import localforage from "localforage";
 import browser from "webextension-polyfill";
 import {
   type CustomTheme,
-  type LoadedCustomTheme,
   getForcedDarkMode,
+  type LoadedCustomTheme,
   shouldForceThemeAppearance,
 } from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
