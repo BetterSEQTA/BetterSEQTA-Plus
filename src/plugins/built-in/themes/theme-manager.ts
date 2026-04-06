@@ -8,6 +8,8 @@ import {
 } from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
+import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
+import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
   clearCustomThemeAdaptiveCssVariables,
@@ -24,6 +26,13 @@ type ThemeContent = {
   CustomCSS?: string;
   hideThemeName?: boolean;
   forceDark?: boolean;
+  images?: { id: string; variableName: string; data: string }[]; // data: base64
+};
+
+export type InstallThemeMeta = {
+  fromStore: boolean;
+  /** Server list `updated_at` (Unix seconds); set when installing from store. */
+  serverUpdatedAtSec?: number;
   forceTheme?: boolean;
   adaptiveCssVariables?: string[];
   images: { id: string; variableName: string; data: string }[]; // data: base64
@@ -39,6 +48,7 @@ export class ThemeManager {
   private originalPreviewTheme: boolean | null = null;
   private imageUrlCache: Map<string, string> = new Map();
   private lastTransitionPoint: { x: number; y: number } = { x: 0, y: 0 };
+  private storeUpdateCheckRunning = false;
 
   private constructor() {
     console.debug("[ThemeManager] Initializing...");
@@ -187,6 +197,8 @@ export class ThemeManager {
       }
     } catch (error) {
       console.error("[ThemeManager] Error during initialization:", error);
+    } finally {
+      void this.checkStoreThemeUpdates();
     }
   }
 
@@ -361,9 +373,18 @@ export class ThemeManager {
 
       if (this.currentTheme) {
         // Store the current color with the theme before removing it
+        const selectedColor = settingsState.selectedColor;
+        const markUserEditedForColor =
+          this.currentTheme.userEdited !== true &&
+          this.currentTheme.installedFromStore !== false &&
+          selectedColor &&
+          this.currentTheme.defaultColour &&
+          selectedColor.trim().toLowerCase() !==
+            this.currentTheme.defaultColour.trim().toLowerCase();
         await localforage.setItem(this.currentTheme.id, {
           ...this.currentTheme,
-          selectedColor: settingsState.selectedColor,
+          selectedColor,
+          ...(markUserEditedForColor ? { userEdited: true } : {}),
         });
       }
 
@@ -444,18 +465,24 @@ export class ThemeManager {
   public async saveTheme(theme: LoadedCustomTheme): Promise<void> {
     console.debug("[ThemeManager] Saving theme:", theme.name);
     try {
-      await localforage.setItem(theme.id, theme);
+      const existing = (await localforage.getItem(theme.id)) as CustomTheme | null;
+      let toSave = theme;
+      if (existing?.userEdited === true && theme.userEdited !== false) {
+        toSave = { ...theme, userEdited: true };
+      }
+
+      await localforage.setItem(toSave.id, toSave);
       const themeIds = (await localforage.getItem("customThemes")) as
         | string[]
         | null;
 
       if (themeIds) {
-        if (!themeIds.includes(theme.id)) {
-          themeIds.push(theme.id);
+        if (!themeIds.includes(toSave.id)) {
+          themeIds.push(toSave.id);
           await localforage.setItem("customThemes", themeIds);
         }
       } else {
-        await localforage.setItem("customThemes", [theme.id]);
+        await localforage.setItem("customThemes", [toSave.id]);
       }
     } catch (error) {
       console.error("[ThemeManager] Error saving theme:", error);
@@ -513,45 +540,71 @@ export class ThemeManager {
     description?: string;
     coverImage?: string;
     theme_json_url?: string;
+    updated_at?: number;
   }): Promise<void> {
-    console.debug("[ThemeManager] Downloading theme:", themeContent.name);
     try {
-      if (!themeContent.id) return;
-
-      let themeData: ThemeContent;
-
-      try {
-        // Try API first (increments download_count)
-        const downloadData = (await this.fetchFromUrl(
-          `${this.THEME_API_BASE}/themes/${themeContent.id}/download`
-        )) as { success?: boolean; data?: { theme_json_url: string } };
-        if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
-          throw new Error("Failed to get theme download URL");
-        }
-        themeData = (await this.fetchFromUrl(downloadData.data.theme_json_url)) as ThemeContent;
-      } catch (apiError) {
-        // Fallback to GitHub if API is unreachable
-        console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
-        const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
-        themeData = (await this.fetchFromUrl(githubUrl)) as ThemeContent;
-      }
-
-      await this.installTheme(themeData);
+      await this.downloadAndInstallStoreTheme(themeContent);
     } catch (error) {
       console.error("[ThemeManager] Error downloading theme:", error);
     }
   }
 
   /**
+   * Fetch theme.json from the store and install (throws on failure).
+   */
+  private async downloadAndInstallStoreTheme(themeContent: {
+    id: string;
+    name: string;
+    description?: string;
+    coverImage?: string;
+    theme_json_url?: string;
+    updated_at?: number;
+  }): Promise<void> {
+    console.debug("[ThemeManager] Downloading theme:", themeContent.name);
+    if (!themeContent.id) {
+      throw new Error("Missing theme id");
+    }
+
+    let themeData: ThemeContent;
+
+    try {
+      const downloadData = (await this.fetchFromUrl(
+        `${this.THEME_API_BASE}/themes/${themeContent.id}/download`,
+      )) as { success?: boolean; data?: { theme_json_url: string } };
+      if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+        throw new Error("Failed to get theme download URL");
+      }
+      themeData = (await this.fetchFromUrl(
+        downloadData.data.theme_json_url,
+      )) as ThemeContent;
+    } catch (apiError) {
+      console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
+      const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
+      themeData = (await this.fetchFromUrl(githubUrl)) as ThemeContent;
+    }
+
+    await this.installTheme(themeData, {
+      fromStore: true,
+      serverUpdatedAtSec: themeContent.updated_at,
+    });
+  }
+
+  /**
    * Install a theme from theme data
    */
-  public async installTheme(themeData: ThemeContent): Promise<void> {
+  public async installTheme(
+    themeData: ThemeContent,
+    meta?: InstallThemeMeta,
+  ): Promise<void> {
     console.debug("[ThemeManager] Installing theme:", themeData.name);
     try {
       // Validate required fields
       if (!themeData.id || !themeData.name) {
         throw new Error("Theme is missing required fields (id or name)");
       }
+
+      const fromStore = meta?.fromStore ?? false;
+      const serverUpdatedAtSec = meta?.serverUpdatedAtSec;
 
       // Handle cover image (optional)
       let coverImageBlob = null;
@@ -587,7 +640,6 @@ export class ThemeManager {
           })
           .filter((img) => img !== null) ?? [];
 
-      // Create theme with defaults for optional fields
       const theme: LoadedCustomTheme = {
         id: themeData.id,
         name: themeData.name,
@@ -602,6 +654,12 @@ export class ThemeManager {
         isEditable: false,
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
+        installedFromStore: fromStore,
+        userEdited: fromStore ? false : undefined,
+        storeSyncedAtSec:
+          fromStore && serverUpdatedAtSec != null
+            ? serverUpdatedAtSec
+            : undefined,
         forceTheme:
           themeData.forceTheme !== undefined
             ? themeData.forceTheme
@@ -615,6 +673,107 @@ export class ThemeManager {
     } catch (error) {
       console.error("[ThemeManager] Error installing theme:", error);
       throw error; // Re-throw to handle in UI
+    }
+  }
+
+  /**
+   * Compare installed store themes to GET /api/themes and refresh when the server is newer.
+   * Skips themes with userEdited: true (theme creator / popup save, or custom accent vs default).
+   */
+  public async checkStoreThemeUpdates(): Promise<void> {
+    if (this.storeUpdateCheckRunning) return;
+    this.storeUpdateCheckRunning = true;
+    try {
+      const token = await cloudAuth.getStoredToken();
+      const res = (await browser.runtime.sendMessage({
+        type: "fetchThemes",
+        token: token ?? undefined,
+      })) as {
+        success?: boolean;
+        data?: { themes?: Array<{ id: string; updated_at?: number }> };
+      };
+
+      if (!res?.success || !res.data?.themes?.length) return;
+
+      const serverById = new Map<string, number>();
+      for (const t of res.data.themes) {
+        if (
+          typeof t.id === "string" &&
+          typeof t.updated_at === "number"
+        ) {
+          serverById.set(t.id, t.updated_at);
+        }
+      }
+      if (serverById.size === 0) return;
+
+      const themeIds = (await localforage.getItem("customThemes")) as
+        | string[]
+        | null;
+      if (!themeIds?.length) return;
+
+      for (const id of themeIds) {
+        const theme = (await localforage.getItem(id)) as CustomTheme | null;
+        if (!theme || theme.userEdited === true) {
+          continue;
+        }
+
+        // File imports explicitly set installedFromStore: false — never auto-sync.
+        if (theme.installedFromStore === false) {
+          continue;
+        }
+
+        const serverUpdated = serverById.get(id);
+        if (serverUpdated == null) {
+          continue;
+        }
+
+        if (
+          theme.installedFromStore === true &&
+          theme.storeSyncedAtSec != null
+        ) {
+          if (serverUpdated <= theme.storeSyncedAtSec) {
+            continue;
+          }
+        }
+        // Else: legacy installs from before store metadata (installedFromStore/storeSyncedAtSec
+        // unset) or incomplete rows — still listed on the server, so sync to latest once.
+
+        const wasSelected = settingsState.selectedTheme === id;
+        try {
+          if (wasSelected) {
+            await this.disableTheme();
+          }
+          await this.downloadAndInstallStoreTheme({
+            id: theme.id,
+            name: theme.name,
+            updated_at: serverUpdated,
+          });
+          console.log(
+            "[ThemeManager] Theme auto-updated from store:",
+            theme.name,
+          );
+          if (wasSelected) {
+            await this.setTheme(id, false);
+          }
+          themeUpdates.triggerUpdate();
+        } catch (err) {
+          console.error("[ThemeManager] Store theme auto-update failed:", id, err);
+          if (wasSelected) {
+            try {
+              await this.setTheme(id, false);
+            } catch (restoreErr) {
+              console.error(
+                "[ThemeManager] Failed to restore theme after update error:",
+                restoreErr,
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[ThemeManager] checkStoreThemeUpdates error:", e);
+    } finally {
+      this.storeUpdateCheckRunning = false;
     }
   }
 
@@ -638,6 +797,9 @@ export class ThemeManager {
         isEditable,
         selectedColor,
         allowBackgrounds,
+        installedFromStore,
+        storeSyncedAtSec,
+        userEdited,
         ...themeBasics
       } = theme;
 
