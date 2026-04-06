@@ -6,6 +6,10 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 
+# PDF.js extension assets (copied by postinstall from pdfjs-dist)
+src/public/resources/pdfjs/pdf.worker.min.mjs
+src/public/resources/pdfjs/pdf.legacy.min.mjs
+
 # Build
 extension.zip
 build/

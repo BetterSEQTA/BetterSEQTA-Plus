@@ -5,6 +5,7 @@
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development and add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
+    "postinstall": "node scripts/copy-pdfjs-assets.mjs",
     "autoaudit": "npm audit && npm audit fix && npm run build",
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",

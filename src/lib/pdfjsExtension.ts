@@ -1,11 +1,12 @@
 import * as pdfjs from "pdfjs-dist";
 import browser from "webextension-polyfill";
-import pdfWorkerHref from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import pdfLegacyHref from "pdfjs-dist/legacy/build/pdf.min.mjs?url";
 
-function extensionAssetUrl(viteAssetHref: string): string {
-  const path = viteAssetHref.replace(/^\/+/, "");
-  return browser.runtime.getURL(path);
+/** Static copies in `src/public` (see `scripts/copy-pdfjs-assets.mjs`, manifest web_accessible_resources). */
+const PDF_WORKER_RESOURCE = "resources/pdfjs/pdf.worker.min.mjs";
+const PDF_LEGACY_RESOURCE = "resources/pdfjs/pdf.legacy.min.mjs";
+
+function extensionAssetUrl(relativePath: string): string {
+  return browser.runtime.getURL(relativePath.replace(/^\/+/, ""));
 }
 
 let workerConfigured = false;
@@ -13,14 +14,14 @@ let workerConfigured = false;
 /** Required before pdfjs spawns a worker (content-script / extension isolate). */
 export function ensurePdfjsWorker(): void {
   if (workerConfigured) return;
-  pdfjs.GlobalWorkerOptions.workerSrc = extensionAssetUrl(pdfWorkerHref);
+  pdfjs.GlobalWorkerOptions.workerSrc = extensionAssetUrl(PDF_WORKER_RESOURCE);
   workerConfigured = true;
 }
 
 /** Page-context script on Firefox must load these chrome-extension:// URLs (see web_accessible_resources). */
 export function getPdfjsPageContextUrls(): { lib: string; worker: string } {
   return {
-    lib: extensionAssetUrl(pdfLegacyHref),
-    worker: extensionAssetUrl(pdfWorkerHref),
+    lib: extensionAssetUrl(PDF_LEGACY_RESOURCE),
+    worker: extensionAssetUrl(PDF_WORKER_RESOURCE),
   };
 }

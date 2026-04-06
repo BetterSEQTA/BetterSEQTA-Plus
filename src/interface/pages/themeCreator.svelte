@@ -24,9 +24,9 @@
     handleImageVariableChange,
     handleCoverImageUpload
   } from '../utils/themeImageHandlers';
-  import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
-  import { themeUpdates } from '../hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+  import { themeUpdates } from '../hooks/ThemeUpdates'
+  import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
 
   const { themeID } = $props<{ themeID: string }>()
   const themeManager = ThemeManager.getInstance();

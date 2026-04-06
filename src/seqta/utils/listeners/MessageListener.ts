@@ -6,13 +6,13 @@ import {
   OpenMenuOptions,
 } from "@/seqta/utils/Openers/OpenMenuOptions";
 
+import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
 import {
   CloseThemeCreator,
   OpenThemeCreator,
 } from "@/plugins/built-in/themes/ThemeCreator";
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
-import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
 
 const themeManager = ThemeManager.getInstance();
 
