@@ -3,6 +3,11 @@ import browser from "webextension-polyfill";
 import type { CustomTheme, LoadedCustomTheme } from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
+import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import {
+  clearCustomThemeAdaptiveCssVariables,
+  setCustomThemeAdaptiveCssVariables,
+} from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
 type ThemeContent = {
   id: string;
@@ -14,6 +19,7 @@ type ThemeContent = {
   CustomCSS?: string;
   hideThemeName?: boolean;
   forceDark?: boolean;
+  adaptiveCssVariables?: string[];
   images: { id: string; variableName: string; data: string }[]; // data: base64
 };
 
@@ -240,6 +246,7 @@ export class ThemeManager {
         this.currentTheme = theme;
         settingsState.selectedTheme = themeId;
       }
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error setting theme:", error);
     }
@@ -289,6 +296,8 @@ export class ThemeManager {
         );
         settingsState.selectedColor = theme.defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
     } catch (error) {
       console.error("[ThemeManager] Error applying theme:", error);
     }
@@ -373,6 +382,7 @@ export class ThemeManager {
       if (clearSelectedTheme) {
         settingsState.selectedTheme = "";
       }
+      clearCustomThemeAdaptiveCssVariables();
     } catch (error) {
       console.error("[ThemeManager] Error removing theme:", error);
     }
@@ -585,6 +595,7 @@ export class ThemeManager {
         isEditable: false,
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
+        adaptiveCssVariables: themeData.adaptiveCssVariables,
       };
 
       await this.saveTheme(theme);
@@ -704,6 +715,9 @@ export class ThemeManager {
       if (defaultColour) {
         settingsState.selectedColor = defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error previewing theme:", error);
     }
@@ -778,6 +792,9 @@ export class ThemeManager {
       if (!theme.webURL && theme.defaultColour) {
         settingsState.selectedColor = theme.defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error updating theme preview:", error);
     }
@@ -815,6 +832,8 @@ export class ThemeManager {
         this.previewStyleElement = null;
       }
 
+      clearCustomThemeAdaptiveCssVariables();
+
       // Restore original settings
       const storedColor = localStorage.getItem("originalPreviewColor");
 
@@ -844,6 +863,8 @@ export class ThemeManager {
         settingsState.DarkMode = this.originalPreviewTheme;
         this.originalPreviewTheme = null;
       }
+
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error clearing preview:", error);
     }

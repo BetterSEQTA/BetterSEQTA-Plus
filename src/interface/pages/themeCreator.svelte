@@ -40,7 +40,8 @@
     coverImage: null,
     isEditable: true,
     hideThemeName: false,
-    forceDark: undefined
+    forceDark: undefined,
+    adaptiveCssVariables: [],
   })
   let closedAccordions = $state<string[]>([])
   let themeLoaded = $state(false);
@@ -80,7 +81,10 @@
         }))
       }
 
-      theme = loadedTheme
+      theme = {
+        ...loadedTheme,
+        adaptiveCssVariables: loadedTheme.adaptiveCssVariables ?? [],
+      }
       themeLoaded = true
     } else {
       themeLoaded = true
@@ -313,6 +317,27 @@
         <div class="absolute z-20 w-full h-full opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 bg-black/20"></div>
         <img src="{typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}" alt='Cover' class="object-cover absolute z-0 w-full h-full rounded" />
       {/if}
+    </div>
+
+    <Divider />
+
+    <div class="py-3">
+      <h2 class="text-sm font-bold">Adaptive CSS variables</h2>
+      <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        One per line, each must start with <code class="text-xs">--</code>. These receive the same colour as the adaptive accent when &quot;Adaptive theme colour&quot; is enabled in general settings. Use them in Custom CSS, e.g. <code class="text-xs">border-color: var(--my-accent);</code>
+      </p>
+      <textarea
+        placeholder="--my-accent&#10;--class-banner"
+        value={theme.adaptiveCssVariables?.join('\n') ?? ''}
+        oninput={(e) => {
+          const lines = e.currentTarget.value
+            .split(/\r?\n/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          theme = { ...theme, adaptiveCssVariables: lines };
+        }}
+        class="p-2 mt-2 w-full min-h-[5rem] font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+      ></textarea>
     </div>
 
     <Divider />

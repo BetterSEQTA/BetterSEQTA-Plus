@@ -13,6 +13,8 @@ export type CustomTheme = {
   webURL?: string;
   selectedColor?: string;
   forceDark?: boolean;
+  /** CSS custom property names (e.g. `--my-accent`) that receive the same value as `--better-main` when adaptive colours apply. */
+  adaptiveCssVariables?: string[];
 };
 
 export type LoadedCustomTheme = CustomTheme & {
