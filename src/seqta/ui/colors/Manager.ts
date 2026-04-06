@@ -5,6 +5,7 @@ import { lightenAndPaleColor } from "./lightenAndPaleColor";
 import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
+import { getCustomThemeAdaptiveCssVariables } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -126,6 +127,12 @@ function applyColorsWith(selectedColor: string) {
 
   // Apply all the properties
   applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
+
+  if (settingsState.selectedTheme) {
+    for (const name of getCustomThemeAdaptiveCssVariables()) {
+      setCSSVar(name, selectedColor);
+    }
+  }
 
   let alliframes = document.getElementsByTagName("iframe");
 

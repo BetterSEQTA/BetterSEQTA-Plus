@@ -12,7 +12,14 @@ export type CustomTheme = {
   hideThemeName: boolean;
   webURL?: string;
   selectedColor?: string;
+  /**
+   * When true, the theme forces light/dark via `forceDark` (`false` = light, `true` = dark).
+   * When false/omitted, use legacy rule: `forceDark !== undefined` still means "force" for old JSON.
+   */
+  forceTheme?: boolean;
   forceDark?: boolean;
+  /** CSS custom property names (e.g. `--my-accent`) that receive the same value as `--better-main` when adaptive colours apply. */
+  adaptiveCssVariables?: string[];
 };
 
 export type LoadedCustomTheme = CustomTheme & {
@@ -37,3 +44,18 @@ export type ThemeList = {
   themes: CustomTheme[];
   selectedTheme: string;
 };
+
+/** Whether the theme forces appearance (light vs dark). */
+export function shouldForceThemeAppearance(theme: {
+  forceTheme?: boolean;
+  forceDark?: boolean;
+}): boolean {
+  if (theme.forceTheme === true) return true;
+  if (theme.forceTheme === false) return false;
+  return theme.forceDark !== undefined;
+}
+
+/** Resolved forced dark mode when forcing is active. */
+export function getForcedDarkMode(theme: { forceDark?: boolean }): boolean {
+  return theme.forceDark === true;
+}

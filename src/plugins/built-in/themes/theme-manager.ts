@@ -1,8 +1,18 @@
 import localforage from "localforage";
 import browser from "webextension-polyfill";
-import type { CustomTheme, LoadedCustomTheme } from "@/types/CustomThemes";
+import {
+  type CustomTheme,
+  getForcedDarkMode,
+  type LoadedCustomTheme,
+  shouldForceThemeAppearance,
+} from "@/types/CustomThemes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
+import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import {
+  clearCustomThemeAdaptiveCssVariables,
+  setCustomThemeAdaptiveCssVariables,
+} from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
 type ThemeContent = {
   id: string;
@@ -14,6 +24,8 @@ type ThemeContent = {
   CustomCSS?: string;
   hideThemeName?: boolean;
   forceDark?: boolean;
+  forceTheme?: boolean;
+  adaptiveCssVariables?: string[];
   images: { id: string; variableName: string; data: string }[]; // data: base64
 };
 
@@ -209,7 +221,7 @@ export class ThemeManager {
         console.debug("[ThemeManager] Storing original settings");
         settingsState.originalSelectedColor = settingsState.selectedColor;
 
-        if (theme.forceDark) {
+        if (shouldForceThemeAppearance(theme)) {
           settingsState.originalDarkMode = settingsState.DarkMode;
         }
       }
@@ -240,6 +252,7 @@ export class ThemeManager {
         this.currentTheme = theme;
         settingsState.selectedTheme = themeId;
       }
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error setting theme:", error);
     }
@@ -270,9 +283,10 @@ export class ThemeManager {
       }
 
       // Apply theme settings
-      if (theme.forceDark !== undefined) {
-        console.debug("[ThemeManager] Setting dark mode:", theme.forceDark);
-        settingsState.DarkMode = theme.forceDark;
+      if (shouldForceThemeAppearance(theme)) {
+        const dark = getForcedDarkMode(theme);
+        console.debug("[ThemeManager] Setting dark mode:", dark);
+        settingsState.DarkMode = dark;
       }
 
       // Use the stored selected color if available, otherwise use the default
@@ -289,6 +303,8 @@ export class ThemeManager {
         );
         settingsState.selectedColor = theme.defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
     } catch (error) {
       console.error("[ThemeManager] Error applying theme:", error);
     }
@@ -373,6 +389,7 @@ export class ThemeManager {
       if (clearSelectedTheme) {
         settingsState.selectedTheme = "";
       }
+      clearCustomThemeAdaptiveCssVariables();
     } catch (error) {
       console.error("[ThemeManager] Error removing theme:", error);
     }
@@ -585,6 +602,13 @@ export class ThemeManager {
         isEditable: false,
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
+        forceTheme:
+          themeData.forceTheme !== undefined
+            ? themeData.forceTheme
+            : themeData.forceDark !== undefined
+              ? true
+              : undefined,
+        adaptiveCssVariables: themeData.adaptiveCssVariables,
       };
 
       await this.saveTheme(theme);
@@ -651,7 +675,7 @@ export class ThemeManager {
   public async previewTheme(theme: LoadedCustomTheme): Promise<void> {
     console.debug("[ThemeManager] Previewing theme:", theme.name);
     try {
-      const { CustomCSS, CustomImages, defaultColour, forceDark } = theme;
+      const { CustomCSS, CustomImages, defaultColour } = theme;
 
       // Store original settings only if this is a new theme
       if (!theme.webURL) {
@@ -697,13 +721,16 @@ export class ThemeManager {
       this.previousImageVariableNames = newImageVariableNames;
 
       // Apply theme settings
-      if (forceDark !== undefined) {
-        settingsState.DarkMode = forceDark;
+      if (shouldForceThemeAppearance(theme)) {
+        settingsState.DarkMode = getForcedDarkMode(theme);
       }
 
       if (defaultColour) {
         settingsState.selectedColor = defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error previewing theme:", error);
     }
@@ -769,15 +796,18 @@ export class ThemeManager {
         this.previousImageVariableNames = newImageVariableNames;
       }
 
-      // Always apply dark mode setting
-      if (theme.forceDark !== undefined) {
-        settingsState.DarkMode = theme.forceDark;
+      // Always apply dark mode setting when theme forces appearance
+      if (shouldForceThemeAppearance(theme as CustomTheme)) {
+        settingsState.DarkMode = getForcedDarkMode(theme as CustomTheme);
       }
 
       // Only apply color if this is a new theme
       if (!theme.webURL && theme.defaultColour) {
         settingsState.selectedColor = theme.defaultColour;
       }
+
+      setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error updating theme preview:", error);
     }
@@ -815,6 +845,8 @@ export class ThemeManager {
         this.previewStyleElement = null;
       }
 
+      clearCustomThemeAdaptiveCssVariables();
+
       // Restore original settings
       const storedColor = localStorage.getItem("originalPreviewColor");
 
@@ -844,6 +876,8 @@ export class ThemeManager {
         settingsState.DarkMode = this.originalPreviewTheme;
         this.originalPreviewTheme = null;
       }
+
+      void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error clearing preview:", error);
     }
