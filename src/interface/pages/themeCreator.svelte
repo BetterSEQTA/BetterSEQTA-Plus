@@ -114,6 +114,7 @@
       blob: image.blob
     }))
     themeClone.coverImage = theme.coverImage
+    themeClone.userEdited = true
 
     themeManager.clearPreview();
     await themeManager.saveTheme(themeClone);

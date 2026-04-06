@@ -8,4 +8,6 @@ export type Theme = {
   is_favorited?: boolean;
   favorite_count?: number;
   download_count?: number;
+  /** Unix seconds — last server update (GET /api/themes). */
+  updated_at?: number;
 };
