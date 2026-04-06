@@ -252,6 +252,18 @@
             />
           </div>
         </div>
+        <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">Smooth colour transition</h2>
+            <p class="text-xs">Ease between class/subject colours when navigating instead of switching instantly</p>
+          </div>
+          <div>
+            <Switch
+              state={$settingsState.adaptiveThemeColourTransition ?? true}
+              onChange={(isOn: boolean) => settingsState.adaptiveThemeColourTransition = isOn}
+            />
+          </div>
+        </div>
       {/if}
     </div>
   </div>

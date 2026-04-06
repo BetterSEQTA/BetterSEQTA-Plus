@@ -16,6 +16,7 @@
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import Backgrounds from '../components/store/Backgrounds.svelte'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
+  import SignInToFavoriteModal from '../components/SignInToFavoriteModal.svelte'
 
   const themeManager = ThemeManager.getInstance();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
@@ -34,6 +35,7 @@
   
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
+  let showSignInOverlay = $state(false);
 
   const fetchCurrentThemes = async () => {
     const themes = await themeManager.getAvailableThemes();
@@ -169,6 +171,7 @@
             {setDisplayTheme}
             {toggleFavorite}
             isLoggedIn={cloudLoggedIn}
+            onRequestSignIn={() => (showSignInOverlay = true)}
           />
     
           {#if displayTheme}
@@ -180,6 +183,7 @@
               {setDisplayTheme}
               {toggleFavorite}
               isLoggedIn={cloudLoggedIn}
+              onRequestSignIn={() => (showSignInOverlay = true)}
               onInstall={async () => {
                 if (displayTheme) {
                   await themeManager.downloadTheme(displayTheme);
@@ -204,4 +208,8 @@
       {/if}
     </div>
   </div>
+
+  {#if showSignInOverlay}
+    <SignInToFavoriteModal onClose={() => (showSignInOverlay = false)} />
+  {/if}
 </div>

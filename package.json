@@ -2,7 +2,7 @@
   "name": "betterseqtaplus",
   "version": "3.5.3",
   "type": "module",
-  "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development add add heaps more features!",
+  "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development and add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "autoaudit": "npm audit && npm audit fix && npm run build",

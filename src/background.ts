@@ -331,6 +331,7 @@ function getDefaultValues(): SettingsState {
     iconOnlySidebar: false,
     adaptiveThemeColour: false,
     adaptiveThemeGradient: false,
+    adaptiveThemeColourTransition: true,
   };
 }
 
