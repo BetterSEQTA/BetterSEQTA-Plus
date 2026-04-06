@@ -81,7 +81,9 @@ interface Plugin {
   styles?: string;               // CSS styles to inject
   disableToggle?: boolean;       // Show enable/disable toggle in settings
   defaultEnabled?: boolean;      // Start enabled/disabled (requires disableToggle)
-  beta?: boolean;               // Show "Beta" tag in settings UI
+  beta?: boolean;                // Show "Beta" tag in settings UI
+  defaultHidden?: boolean;       // Hide plugin by default (overridden by api.meta.hidden)
+  persistHidden?: boolean;       // Whether hidden metadata persists after extension reload
 }
 ```
 
@@ -91,6 +93,8 @@ interface Plugin {
 - **`defaultEnabled`**: When `false`, your plugin starts disabled by default (only works with `disableToggle: true`)
 - **`beta`**: When `true`, displays an orange "Beta" tag next to your plugin name in the settings UI
 - **`styles`**: CSS string that gets injected into the page when your plugin runs
+- **`defaultHidden`**: When `true`, your plugin will by default be hidden in the extension settings. Overriden by setting api.meta.hidden
+- **`persistHidden`**: When `true` (default), hidden metadata will persist across extension reloads
 
 ## SEQTA API
 
@@ -255,6 +259,59 @@ const storagePlugin: Plugin<typeof settings> = {
 
 export default storagePlugin;
 ```
+
+## Metadata API
+
+Here's how to use metadata in your plugin:
+
+```typescript
+import type { Plugin } from "@/plugins/core/types";
+
+const metadataPlugin: Plugin<typeof settings> = {
+  id: "metadata-example",
+  name: "Metadata Example",
+  description: "Shows how to use metadata",
+  version: "1.0.0",
+  settings: {},
+  disableToggle: true,
+  defaultHidden: false,
+
+  run: async (api) => {
+    // Wait for metadata to be ready
+    await api.meta.loaded;
+
+    // Set plugin to hidden
+    api.meta.hidden = true;
+    
+    // Discard hidden override, reverting to default
+    api.meta.hidden = undefined;
+    // Or:
+    await api.meta.clearHidden();
+    
+    // Get hidden state. true = hidden, false = visible, undefined = default
+    const hiddenOverrideState = api.meta.hidden;
+    // Or (returns true if an override is set):
+    const isHiddenSet = api.meta.isHiddenSet;
+
+    const cb = (newValue: boolean | undefined) => {
+      console.log("Hidden override updated:", newValue);
+    };
+    
+    // Listen for changes to 'hidden'
+    const { unregister } = api.meta.onChange("hidden", cb);
+
+    return () => {
+      // Unregister listener
+      unregister();
+      // Or:
+      api.meta.offChange("hidden", cb)
+    };
+  },
+};
+
+export default metadataPlugin;
+```
+
 
 ## Events API
 

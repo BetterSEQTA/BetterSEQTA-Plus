@@ -1,5 +1,6 @@
 import type {
   EventsAPI,
+  MetaAPI,
   Plugin,
   PluginAPI,
   PluginSettings,
@@ -45,6 +46,87 @@ function createSEQTAAPI(): SEQTAAPI {
           window.removeEventListener("hashchange", handler);
         },
       };
+    },
+  };
+}
+
+function createMetaAPI(plugin: Plugin<any>): MetaAPI {
+  const hiddenKey = `plugin.${plugin.id}.meta.hidden`;
+  const listeners = new Set<(hidden: boolean | undefined) => void>();
+
+  // cache: undefined means "not set, follow default"
+  let hidden: boolean | undefined = undefined;
+
+  const loaded = (async () => {
+    const stored = await browser.storage.local.get(hiddenKey);
+    if (stored[hiddenKey] !== undefined) {
+      hidden = Boolean(stored[hiddenKey]);
+    } else {
+      hidden = undefined;
+    }
+  })();
+
+  const handleStorageChange = (
+    changes: { [key: string]: browser.Storage.StorageChange },
+    area: string,
+  ) => {
+    if (area !== "local" || !(hiddenKey in changes)) return;
+
+    const next = changes[hiddenKey].newValue;
+    hidden = next === undefined ? undefined : Boolean(next);
+    listeners.forEach((cb) => cb(hidden));
+  };
+
+  browser.storage.onChanged.addListener(handleStorageChange);
+
+  return {
+    loaded,
+
+    // Subscribe to hidden changes. Callback receives:
+    // - true/false when explicitly stored
+    // - undefined when the key is removed (meaning "follow default")
+    onChange: (_key, callback) => {
+      listeners.add(callback);
+      return { unregister: () => listeners.delete(callback) };
+    },
+    offChange: (_key, callback) => {
+      listeners.delete(callback);
+    },
+
+    // Whether there is an explicit override stored.
+    // (Not reactive by itself; use onChange if you need updates.)
+    get isHiddenSet() {
+      return hidden !== undefined;
+    },
+
+    // The override value:
+    // - true/false => explicitly set
+    // - undefined  => not set, default enacted
+    get hidden() {
+      return hidden;
+    },
+
+    // Set override:
+    // - api.meta.hidden = true/false writes plugin.<id>.meta.hidden
+    // - api.meta.hidden = undefined removes plugin.<id>.meta.hidden (revert to default)
+    set hidden(value: boolean | undefined) {
+      if (value === undefined) {
+        hidden = undefined;
+        browser.storage.local.remove(hiddenKey); // fire-and-forget
+        listeners.forEach((cb) => cb(hidden));
+        return;
+      }
+
+      hidden = Boolean(value);
+      browser.storage.local.set({ [hiddenKey]: hidden }); // fire-and-forget
+      listeners.forEach((cb) => cb(hidden));
+    },
+
+    // Explicit helper to revert to default (delete the key) with an awaited remove.
+    async clearHidden() {
+      hidden = undefined;
+      await browser.storage.local.remove(hiddenKey);
+      listeners.forEach((cb) => cb(hidden));
     },
   };
 }
@@ -362,5 +444,6 @@ export function createPluginAPI<T extends PluginSettings, S = any>(
     settings: createSettingsAPI(plugin),
     storage: createStorageAPI<S>(plugin.id),
     events: createEventsAPI(plugin.id),
+    meta: createMetaAPI(plugin),
   };
 }
