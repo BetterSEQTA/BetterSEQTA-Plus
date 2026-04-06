@@ -8,4 +8,7 @@ export type Theme = {
   is_favorited?: boolean;
   favorite_count?: number;
   download_count?: number;
+  author?: string;
+  featured?: boolean;
+  tags?: string[];
 };
