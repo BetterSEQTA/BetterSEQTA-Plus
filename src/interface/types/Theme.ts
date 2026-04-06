@@ -11,4 +11,6 @@ export type Theme = {
   author?: string;
   featured?: boolean;
   tags?: string[];
+  /** Unix time in seconds (API list/detail). */
+  created_at?: number;
 };
