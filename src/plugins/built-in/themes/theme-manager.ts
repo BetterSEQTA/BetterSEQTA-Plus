@@ -356,9 +356,18 @@ export class ThemeManager {
 
       if (this.currentTheme) {
         // Store the current color with the theme before removing it
+        const selectedColor = settingsState.selectedColor;
+        const markUserEditedForColor =
+          this.currentTheme.userEdited !== true &&
+          this.currentTheme.installedFromStore !== false &&
+          selectedColor &&
+          this.currentTheme.defaultColour &&
+          selectedColor.trim().toLowerCase() !==
+            this.currentTheme.defaultColour.trim().toLowerCase();
         await localforage.setItem(this.currentTheme.id, {
           ...this.currentTheme,
-          selectedColor: settingsState.selectedColor,
+          selectedColor,
+          ...(markUserEditedForColor ? { userEdited: true } : {}),
         });
       }
 
@@ -644,6 +653,7 @@ export class ThemeManager {
 
   /**
    * Compare installed store themes to GET /api/themes and refresh when the server is newer.
+   * Skips themes with userEdited: true (theme creator / popup save, or custom accent vs default).
    */
   public async checkStoreThemeUpdates(): Promise<void> {
     if (this.storeUpdateCheckRunning) return;
