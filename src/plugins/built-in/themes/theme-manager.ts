@@ -723,6 +723,10 @@ export class ThemeManager {
             name: theme.name,
             updated_at: serverUpdated,
           });
+          console.log(
+            "[ThemeManager] Theme auto-updated from store:",
+            theme.name,
+          );
           if (wasSelected) {
             await this.setTheme(id, false);
           }
