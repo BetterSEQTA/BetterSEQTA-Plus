@@ -49,6 +49,19 @@
     class="bg-gray-50 w-full transition-all duration-500 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
     transition:fade
   >
+    {#if theme.featured === true}
+      <div class="absolute top-2 left-2 z-20 pointer-events-none">
+        <span
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-sm"
+          aria-label="Featured theme"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+          </svg>
+          Featured
+        </span>
+      </div>
+    {/if}
     <!-- Menu dropdown -->
     <div class="absolute top-2 right-2 z-20" data-theme-menu bind:this={menuRef}>
       <button
@@ -90,6 +103,9 @@
     </div>
     <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
       <span class="text-xl font-bold text-white drop-shadow-md">{theme.name}</span>
+      {#if theme.author}
+        <span class="text-xs text-white/85 drop-shadow-md line-clamp-1">By {theme.author}</span>
+      {/if}
       <div class="flex gap-3 text-xs font-medium text-white/90 drop-shadow-sm">
         <span class="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
