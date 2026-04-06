@@ -4,7 +4,10 @@
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
 
-  import { type LoadedCustomTheme } from '@/types/CustomThemes'
+  import {
+    type LoadedCustomTheme,
+    shouldForceThemeAppearance,
+  } from '@/types/CustomThemes'
 
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
@@ -40,6 +43,7 @@
     coverImage: null,
     isEditable: true,
     hideThemeName: false,
+    forceTheme: undefined,
     forceDark: undefined,
     adaptiveCssVariables: [],
   })
@@ -84,6 +88,9 @@
       theme = {
         ...loadedTheme,
         adaptiveCssVariables: loadedTheme.adaptiveCssVariables ?? [],
+        forceTheme:
+          loadedTheme.forceTheme ??
+          (loadedTheme.forceDark !== undefined ? true : undefined),
       }
       themeLoaded = true
     } else {
@@ -118,6 +125,13 @@
       blob: image.blob
     }))
     themeClone.coverImage = theme.coverImage
+
+    if (shouldForceThemeAppearance(themeClone)) {
+      themeClone.forceTheme = true;
+    } else {
+      themeClone.forceTheme = false;
+      themeClone.forceDark = undefined;
+    }
 
     themeManager.clearPreview();
     await themeManager.saveTheme(themeClone);
@@ -357,21 +371,28 @@
         title: 'Force Theme',
         description: 'Force users to use either dark or light mode',
         props: {
-          state: theme.forceDark !== undefined,
-          onChange: (value: boolean) => theme = { ...theme, forceDark: value ? false : undefined }
+          state: shouldForceThemeAppearance(theme),
+          onChange: (value: boolean) => {
+            if (value) {
+              theme = { ...theme, forceTheme: true, forceDark: false };
+            } else {
+              theme = { ...theme, forceTheme: false, forceDark: undefined };
+            }
+          }
         }
       },
       {
         type: 'conditional',
         props: {
-          condition: theme.forceDark !== undefined,
+          condition: shouldForceThemeAppearance(theme),
           children: {
             type: 'lightDarkToggle',
             title: 'Mode',
             description: 'Choose whether to force light or dark mode',
             props: {
               state: theme.forceDark === true,
-              onChange: (value: boolean) => theme = { ...theme, forceDark: value }
+              onChange: (value: boolean) =>
+                (theme = { ...theme, forceDark: value, forceTheme: true })
             }
           }
         }
