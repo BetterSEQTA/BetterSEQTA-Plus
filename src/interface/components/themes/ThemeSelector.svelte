@@ -85,7 +85,7 @@
       try {
         const result = JSON.parse(event.target?.result as string);
         tempTheme = result;
-        await themeManager.installTheme(result);
+        await themeManager.installTheme(result, { fromStore: false });
         await fetchThemes();
       } catch (error) {
         console.error('Error parsing file:', error);

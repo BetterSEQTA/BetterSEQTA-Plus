@@ -125,6 +125,7 @@
       blob: image.blob
     }))
     themeClone.coverImage = theme.coverImage
+    themeClone.userEdited = true
 
     if (shouldForceThemeAppearance(themeClone)) {
       themeClone.forceTheme = true;

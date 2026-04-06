@@ -13,4 +13,6 @@ export type Theme = {
   tags?: string[];
   /** Unix time in seconds (API list/detail). */
   created_at?: number;
+  /** Unix seconds — last server update (GET /api/themes). */
+  updated_at?: number;
 };

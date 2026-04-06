@@ -34,7 +34,10 @@ export class MessageHandler {
       case "UpdateThemePreview":
         if (request?.save == true) {
           const save = async () => {
-            await themeManager.saveTheme(request.body);
+            await themeManager.saveTheme({
+              ...request.body,
+              userEdited: true,
+            });
             if (request.body.enableTheme) {
               await themeManager.setTheme(request.body.id);
             }
