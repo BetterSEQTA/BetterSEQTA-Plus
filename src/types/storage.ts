@@ -43,6 +43,7 @@ export interface SettingsState {
   iconOnlySidebar?: boolean;
   adaptiveThemeColour?: boolean;
   adaptiveThemeGradient?: boolean;
+  adaptiveThemeColourTransition?: boolean;
 
   // depreciated keys
   animatedbk: boolean;

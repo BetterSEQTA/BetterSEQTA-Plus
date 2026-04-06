@@ -4,7 +4,10 @@
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
 
-  import { type LoadedCustomTheme } from '@/types/CustomThemes'
+  import {
+    type LoadedCustomTheme,
+    shouldForceThemeAppearance,
+  } from '@/types/CustomThemes'
 
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
@@ -40,7 +43,9 @@
     coverImage: null,
     isEditable: true,
     hideThemeName: false,
-    forceDark: undefined
+    forceTheme: undefined,
+    forceDark: undefined,
+    adaptiveCssVariables: [],
   })
   let closedAccordions = $state<string[]>([])
   let themeLoaded = $state(false);
@@ -80,7 +85,13 @@
         }))
       }
 
-      theme = loadedTheme
+      theme = {
+        ...loadedTheme,
+        adaptiveCssVariables: loadedTheme.adaptiveCssVariables ?? [],
+        forceTheme:
+          loadedTheme.forceTheme ??
+          (loadedTheme.forceDark !== undefined ? true : undefined),
+      }
       themeLoaded = true
     } else {
       themeLoaded = true
@@ -115,6 +126,13 @@
     }))
     themeClone.coverImage = theme.coverImage
     themeClone.userEdited = true
+
+    if (shouldForceThemeAppearance(themeClone)) {
+      themeClone.forceTheme = true;
+    } else {
+      themeClone.forceTheme = false;
+      themeClone.forceDark = undefined;
+    }
 
     themeManager.clearPreview();
     await themeManager.saveTheme(themeClone);
@@ -318,6 +336,27 @@
 
     <Divider />
 
+    <div class="py-3">
+      <h2 class="text-sm font-bold">Adaptive CSS variables</h2>
+      <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        One per line, each must start with <code class="text-xs">--</code>. These receive the same colour as the adaptive accent when &quot;Adaptive theme colour&quot; is enabled in general settings. Use them in Custom CSS, e.g. <code class="text-xs">border-color: var(--my-accent);</code>
+      </p>
+      <textarea
+        placeholder="--my-accent&#10;--class-banner"
+        value={theme.adaptiveCssVariables?.join('\n') ?? ''}
+        oninput={(e) => {
+          const lines = e.currentTarget.value
+            .split(/\r?\n/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          theme = { ...theme, adaptiveCssVariables: lines };
+        }}
+        class="p-2 mt-2 w-full min-h-[5rem] font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+      ></textarea>
+    </div>
+
+    <Divider />
+
     {#each [
       {
         type: 'switch',
@@ -333,21 +372,28 @@
         title: 'Force Theme',
         description: 'Force users to use either dark or light mode',
         props: {
-          state: theme.forceDark !== undefined,
-          onChange: (value: boolean) => theme = { ...theme, forceDark: value ? false : undefined }
+          state: shouldForceThemeAppearance(theme),
+          onChange: (value: boolean) => {
+            if (value) {
+              theme = { ...theme, forceTheme: true, forceDark: false };
+            } else {
+              theme = { ...theme, forceTheme: false, forceDark: undefined };
+            }
+          }
         }
       },
       {
         type: 'conditional',
         props: {
-          condition: theme.forceDark !== undefined,
+          condition: shouldForceThemeAppearance(theme),
           children: {
             type: 'lightDarkToggle',
             title: 'Mode',
             description: 'Choose whether to force light or dark mode',
             props: {
               state: theme.forceDark === true,
-              onChange: (value: boolean) => theme = { ...theme, forceDark: value }
+              onChange: (value: boolean) =>
+                (theme = { ...theme, forceDark: value, forceTheme: true })
             }
           }
         }

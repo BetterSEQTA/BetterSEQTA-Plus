@@ -2,12 +2,13 @@
   import type { Theme } from '@/interface/types/Theme'
   import ThemeCard from './ThemeCard.svelte';
 
-  let { themes, searchTerm, setDisplayTheme, toggleFavorite, isLoggedIn } = $props<{
+  let { themes, searchTerm, setDisplayTheme, toggleFavorite, isLoggedIn, onRequestSignIn } = $props<{
     themes: Theme[];
     searchTerm: string;
     setDisplayTheme: (theme: Theme) => void;
     toggleFavorite: (theme: Theme) => void;
     isLoggedIn: boolean;
+    onRequestSignIn?: () => void;
   }>();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) =>
@@ -23,12 +24,13 @@
         onClick={() => setDisplayTheme(theme)}
         {toggleFavorite}
         {isLoggedIn}
+        {onRequestSignIn}
       />
     {/each}
   
     {#if filteredThemes.length !== 0}
-      <a href="https://betterseqta.gitbook.io/betterseqta-docs" class='w-full cursor-pointer'>
-        <div class="bg-zinc-50 h-48 w-full transition-all hover:scale-105 duration-500 relative justify-center items-center group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] rounded-xl overflow-clip border">
+      <a href="https://betterseqta.gitbook.io/betterseqta-docs" class="block relative z-0 hover:z-20 w-full cursor-pointer">
+        <div class="bg-zinc-50 h-48 w-full transition-all duration-500 ease-out relative overflow-clip rounded-xl border group group/card flex flex-col justify-center items-center hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1]">
           <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
           <div class="text-xl font-bold text-center transition-all duration-500 dark:text-white">
             Got a Theme Idea?

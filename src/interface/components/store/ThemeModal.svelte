@@ -2,9 +2,7 @@
   import type { Theme } from '@/interface/types/Theme'
   import { fade } from 'svelte/transition';
   import { animate } from 'motion';
-  import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte';
-
-  let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme, toggleFavorite, isLoggedIn } = $props<{
+  let { theme, currentThemes, setDisplayTheme, onInstall, onRemove, allThemes, displayTheme, toggleFavorite, isLoggedIn, onRequestSignIn } = $props<{
     theme: Theme | null;
     currentThemes: string[];
     setDisplayTheme: (theme: Theme | null) => void;
@@ -14,16 +12,16 @@
     displayTheme: Theme | null;
     toggleFavorite?: (theme: Theme) => void;
     isLoggedIn?: boolean;
+    onRequestSignIn?: () => void;
   }>();
   let installing = $state(false);
-  let showSignInModal = $state(false);
   let modalElement: HTMLElement;
 
   function handleFavoriteClick() {
     if (isLoggedIn && toggleFavorite && theme) {
       toggleFavorite(theme);
     } else {
-      showSignInModal = true;
+      onRequestSignIn?.();
     }
   }
 
@@ -159,8 +157,8 @@
       </h3>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {#each getRelatedThemes() as relatedTheme (relatedTheme.id)}
-          <button onclick={() => { hideModal(relatedTheme) }} class="w-full cursor-pointer">
-            <div class="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group group/card flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
+          <button onclick={() => { hideModal(relatedTheme) }} class="relative z-0 hover:z-20 w-full cursor-pointer">
+            <div class="bg-gray-50 w-full transition-all duration-500 ease-out relative group group/card flex flex-col hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border">
               <div class="absolute bottom-1 left-3 z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-0.5">
                 {relatedTheme.name}
               </div>
@@ -180,7 +178,3 @@
     {/if}
   </div>
 </div>
-
-{#if showSignInModal}
-  <SignInToFavoriteModal onClose={() => (showSignInModal = false)} />
-{/if}
