@@ -120,7 +120,6 @@ export default defineLazyPlugin({
   settings,
   disableToggle: true,
   defaultEnabled: false,
-  beta: true,
   styles: styles,
   
   // Lazy loader - only imports the heavy plugin when actually needed

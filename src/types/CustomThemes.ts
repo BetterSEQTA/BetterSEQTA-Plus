@@ -18,6 +18,12 @@ export type CustomTheme = {
    */
   forceTheme?: boolean;
   forceDark?: boolean;
+  /** True if installed from the BetterSEQTA theme store (not file import). */
+  installedFromStore?: boolean;
+  /** Server `updated_at` (Unix seconds) when this copy was installed or last auto-updated. */
+  storeSyncedAtSec?: number;
+  /** User saved edits in theme creator or popup; blocks store auto-update. */
+  userEdited?: boolean;
   /** CSS custom property names (e.g. `--my-accent`) that receive the same value as `--better-main` when adaptive colours apply. */
   adaptiveCssVariables?: string[];
 };
