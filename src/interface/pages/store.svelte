@@ -54,6 +54,17 @@
     activeTab = tab;
   };
 
+  /** Featured themes first; within each group, newest by `created_at` (API: Unix seconds). */
+  function compareStoreThemes(a: Theme, b: Theme): number {
+    const fa = a.featured === true ? 1 : 0;
+    const fb = b.featured === true ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    const ca = a.created_at ?? 0;
+    const cb = b.created_at ?? 0;
+    if (ca !== cb) return cb - ca;
+    return a.name.localeCompare(b.name);
+  }
+
   const toggleFavorite = async (theme: Theme) => {
     const token = await cloudAuth.getStoredToken();
     if (!token) return;
@@ -96,11 +107,8 @@
       if (!data?.success || !data?.data?.themes) {
         throw new Error(data?.error || 'Failed to fetch themes');
       }
-      themes = data.data.themes;
-
-      // Shuffle for cover themes
-      const shuffled = [...themes].sort(() => 0.5 - Math.random());
-      coverThemes = shuffled.slice(0, 3);
+      themes = [...data.data.themes].sort(compareStoreThemes);
+      coverThemes = themes.slice(0, 3);
 
       loading = false;
     } catch (err) {
@@ -118,11 +126,14 @@
     darkMode = $settingsState.DarkMode;
   });
 
-  // Filter themes based on search term
-  let filteredThemes = $derived(themes.filter(theme =>
-    theme.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    theme.description.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  // Filter themes (list is already featured-first, then newest; filter preserves order)
+  let filteredThemes = $derived(
+    themes.filter(
+      (theme) =>
+        theme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        theme.description.toLowerCase().includes(searchTerm.toLowerCase()),
+    ),
+  );
 
   $effect(() => {
     loadBackground();
