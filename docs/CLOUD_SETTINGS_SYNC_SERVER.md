@@ -1,0 +1,122 @@
+# BetterSEQTA Cloud — settings sync (server specification)
+
+This document describes the HTTP API the BetterSEQTA+ extension expects for **cloud backup of extension settings**. The client is implemented in the extension repo; the accounts service (`accounts.betterseqta.org`) must implement these endpoints.
+
+## Purpose
+
+- Store **one JSON document per authenticated BetterSEQTA Cloud user** representing a snapshot of the extension’s `chrome.storage.local` data (theme, layout, plugin settings, `plugin.*` keys, etc.).
+- The extension **does not upload OAuth tokens** (`bsplus_token`, `bsplus_refresh_token`, `bsplus_client_id`, `bsplus_user`). Those remain only on the client.
+- **Download** replaces local storage with the stored snapshot, then the client reapplies the current device’s session tokens so the user stays signed in.
+
+## Base URL
+
+All routes below are relative to:
+
+`https://accounts.betterseqta.org`
+
+## Authentication
+
+Every request must include:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+Use the same **access tokens** issued by the existing BetterSEQTA+ OAuth flows (`/api/bsplus/login`, `/api/bsplus/refresh`). Resolve the user from the token; the document is scoped to that user.
+
+## Endpoints
+
+### `PUT /api/bsplus/settings/sync`
+
+Upserts the caller’s settings backup.
+
+**Request body (JSON):**
+
+```json
+{
+  "schemaVersion": 1,
+  "data": {
+    "...": "flat key-value map mirroring extension storage (see Payload shape)"
+  }
+}
+```
+
+- **`schemaVersion`**: integer. The extension currently sends `1`. The server may reject unknown major versions or store it for future migrations.
+- **`data`**: object whose keys are storage keys (strings) and values are JSON-serializable values (same types as stored in `chrome.storage.local`).
+
+**Success response:** HTTP `200` (or `201` if you prefer create semantics). Example:
+
+```json
+{
+  "updated_at": "2026-04-07T12:00:00.000Z"
+}
+```
+
+`updated_at` should be an ISO 8601 timestamp of the save time. The extension displays success without requiring extra fields.
+
+**Error responses:** Standard JSON error body if applicable, e.g. `{ "error": "message" }`, with appropriate HTTP status (`401`, `413`, `422`, etc.).
+
+---
+
+### `GET /api/bsplus/settings/sync`
+
+Returns the caller’s latest settings backup.
+
+**Success response:** HTTP `200` with body:
+
+```json
+{
+  "schemaVersion": 1,
+  "data": { },
+  "updated_at": "2026-04-07T12:00:00.000Z"
+}
+```
+
+- **`data`**: required for restore; must be the same shape as accepted in `PUT` (flat map of storage keys).
+- **`schemaVersion`**: optional but recommended; should match what was stored.
+- **`updated_at`**: optional; included for UX if the client shows “last backup” time.
+
+**No backup yet:** HTTP **`404`**. The extension treats this as “nothing in the cloud” and shows an error to the user.
+
+**Error responses:** `401` if the token is invalid, etc.
+
+---
+
+## Suggested database shape
+
+Example relational layout:
+
+| Column        | Type        | Notes |
+|---------------|-------------|--------|
+| `user_id`     | FK → users  | Unique per backup row (one row per user). |
+| `payload`     | JSON / JSONB| Store `{ "schemaVersion", "data" }` or only `data` + separate `schema_version` column. |
+| `updated_at`  | timestamptz | Set on each successful `PUT`. |
+
+Unique constraint on `user_id`.
+
+## Semantics
+
+- **Last write wins:** each `PUT` replaces the stored backup for that user.
+- **Optional later:** `If-Unmodified-Since` or a `revision` field for conflict detection (not required for v1).
+
+## Security and privacy
+
+- **Encryption at rest** for `payload` is recommended.
+- Payload may contain **school-related UI preferences** and plugin data; treat as **user data** under your privacy policy.
+- **Do not require or store** refresh/access tokens in the payload; the extension already strips them on upload.
+
+### Never included in the sync payload (`chrome.storage.local` only)
+
+The backup is a flat JSON map of **`chrome.storage.local`** keys. It does **not** include:
+
+- **IndexedDB** — e.g. the Global Search index (`betterseqta-index` and related DBs) lives outside extension storage and is never serialized here.
+- **OAuth / session keys** — `bsplus_token`, `bsplus_refresh_token`, `bsplus_client_id`, `bsplus_user`, plus legacy `cloudAccessToken` / `cloudUsername`.
+- **Assessment Averages caches** — `plugin.assessments-average.storage.assessments`, `plugin.assessments-average.storage.weightings` (school assessment data).
+- **Keys under** `plugin.global-search.storage.*` — reserved so any future plugin storage cache there is not synced.
+
+On restore, those keys are **not** taken from the server; the device keeps its current local values.
+
+## Client reference (extension)
+
+- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys and sensitive device keys above).
+- Download: `applyDownloadedEnvelope` after `GET`; local auth keys and sensitive device keys are merged back after `chrome.storage.local.clear()`.
