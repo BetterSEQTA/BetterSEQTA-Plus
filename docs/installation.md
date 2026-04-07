@@ -1,5 +1,7 @@
 # Installing BetterSEQTA+
 
+**Published version:** [docs.betterseqta.org/install/](https://docs.betterseqta.org/install/)
+
 This guide will walk you through the process of installing and setting up BetterSEQTA+ for development or usage.
 
 ## Prerequisites
@@ -178,5 +180,5 @@ bun run dev
 
 Now that you have BetterSEQTA+ installed, you can:
 
-- [Getting Started with Plugins](./plugins/getting-started.md)
-- [Contribute to the project](../CONTRIBUTING.md)
+- [Plugins](https://docs.betterseqta.org/plugins/)
+- [Contribute to the project](https://docs.betterseqta.org/contributing/) · [Repository CONTRIBUTING.md](../CONTRIBUTING.md)

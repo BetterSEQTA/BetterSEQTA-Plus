@@ -1,5 +1,7 @@
 # Creating Plugins for BetterSEQTA+
 
+**Published version:** [docs.betterseqta.org/plugins/](https://docs.betterseqta.org/plugins/) · [Plugin development](https://docs.betterseqta.org/plugin-development/) · [Plugin API](https://docs.betterseqta.org/plugin-api/)
+
 Hey there! 👋 So you want to create a plugin for BetterSEQTA+? That's awesome! This guide will walk you through everything you need to know, from the very basics to more advanced features. Don't worry if you're new to this - we'll explain everything step by step.
 
 ## What is a Plugin?
@@ -294,4 +296,4 @@ Got stuck? No worries! Here's where you can get help:
 - Check out the built-in plugins in the `src/plugins/built-in` folder
 - Open an issue on our [GitHub page](https://github.com/betterseqta/betterseqta-plus/issues)
 
-Happy coding and feel free to checkout the api reference [here](./api-reference.md)
+Happy coding and feel free to check out the [plugin API](https://docs.betterseqta.org/plugin-api/) on the documentation site.
