@@ -28,20 +28,27 @@ Includes:
 
 ## Features
 
-- Dark mode + custom themes
-- Improved UI / styling
-- Custom home page (lessons, notices, assessments, shortcuts)
-- Sidebar customisation
+- Dark mode
+  - Custom Background/Themes
+- Improved Styling/CSS
+  - Improved look for SEQTA Learn
+- Custom Home Page including:
+  - Daily Lessons
+  - Shortcuts
+  - Easier Access Notices
+  - Assessments
+- Options to remove certain items from the side menu
 - Grades calculator
-- Theme system + theme store
-- Lesson notifications
-- Cross-browser support (Chromium + Firefox)
-- Custom themes!
-
+- Fully customisable themes and an official theme store
+- Notification for next lesson (sent 5 minutes before end of the lesson)
+- Browser Support
+  - Chrome, Edge, Brave, Opera and other Chromium-Based browsers are supported
+  - Firefox Supported: [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)!
+  - Safari (Experimental and not recommended - only available via compilation)
 
 ## Creating Custom Themes
 
-If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://docs.betterseqta.org/). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator).
+If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://docs.betterseqta.org/theme-creation/). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator).
 
 Don't worry- if you get stuck feel free to ask around in the [discord](https://discord.gg/YzmbnCDkat). We're open and happy to help out! Happy creating :)
 
