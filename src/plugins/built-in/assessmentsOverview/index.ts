@@ -4,6 +4,7 @@ import { getAssessmentsData } from "./api";
 import { renderErrorState, renderSkeletonLoader } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const assessmentsOverviewPlugin: Plugin<{}> = {
   id: "assessments-overview",
@@ -16,6 +17,8 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
   styles,
 
   run: async () => {
+    if (isSeqtaEngageExperience()) return;
+
     const menu = (await waitForElm(
       '[data-key="assessments"] > .sub > ul',
       true,
