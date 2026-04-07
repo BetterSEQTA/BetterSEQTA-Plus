@@ -50,7 +50,7 @@
 
 ## Creating Custom Themes
 
-If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://betterseqta.gitbook.io/betterseqta-docs). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator).
+If you are looking to create custom themes, I would recommend you start at the official documentation [here](https://docs.betterseqta.org/). You can see some premade examples along with a compilation script that can be used to allow for CSS frameworks and libraries such as SCSS to be used [here](https://github.com/BetterSEQTA/BetterSEQTA-Theme-Generator).
 
 Don't worry- if you get stuck feel free to ask around in the [discord](https://discord.gg/YzmbnCDkat). We're open and happy to help out! Happy creating :)
 
@@ -88,7 +88,7 @@ npm run dev
 > [!WARNING]
 > Whenever you update the extension while not in dev mode, you will need to use the reload button on the extension page.
 
-📚 **Need more details?** Check our [detailed setup guide](./docs/GETTING_STARTED_CONTRIBUTING.md#your-first-30-minutes)
+📚 **Need more details?** Check our [detailed setup guide](https://docs.betterseqta.org/install/#for-developers-development-environment)
 
 ### Building for Production
 
@@ -115,7 +115,7 @@ The folder structure is as follows:
   <img src="https://contrib.rocks/image?repo=betterseqta/betterseqta-plus" />
 </a>
 
-Want to contribute? [Click Here!](https://github.com/BetterSEQTA/BetterSEQTA-Plus/blob/main/CONTRIBUTING.md)
+Want to contribute? [Click Here!](https://docs.betterseqta.org/contributing/)
 
 ## Credits
 
