@@ -16,37 +16,28 @@
   <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
 </div>
 
-## Table of contents
+## 📚 Documentation
+All documentation has been moved to the [official docs site](https://docs.betterseqta.org):
 
-- [Features](#features)
-- [Creating Custom Themes](#creating-custom-themes)
-- [Getting Started](#getting-started)
-  - [Running Development](#running-development)
-  - [Building for production](#building-for-production)
-  - [Folder Structure](#folder-structure)
-- [Contributors](#contributors)
-- [Credits](#credits)
-- [Star History](#star-history)
+Includes:
+- Getting started
+- Development setup
+- Architecture
+- Plugin system
+- Theme creation
 
 ## Features
 
-- Dark mode
-  - Custom Background/Themes
-- Improved Styling/CSS
-  - Improved look for SEQTA Learn
-- Custom Home Page including:
-  - Daily Lessons
-  - Shortcuts
-  - Easier Access Notices
-  - Assessments
-- Options to remove certain items from the side menu
+- Dark mode + custom themes
+- Improved UI / styling
+- Custom home page (lessons, notices, assessments, shortcuts)
+- Sidebar customisation
 - Grades calculator
-- Fully customisable themes and an official theme store
-- Notification for next lesson (sent 5 minutes before end of the lesson)
-- Browser Support
-  - Chrome, Edge, Brave, Opera and other Chromium-Based browsers are supported
-  - Firefox Supported: [here](https://addons.mozilla.org/en-US/firefox/addon/betterseqta-plus/)!
-  - Safari (Experimental and not recommended - only available via compilation)
+- Theme system + theme store
+- Lesson notifications
+- Cross-browser support (Chromium + Firefox)
+- Custom themes!
+
 
 ## Creating Custom Themes
 
@@ -54,60 +45,29 @@ If you are looking to create custom themes, I would recommend you start at the o
 
 Don't worry- if you get stuck feel free to ask around in the [discord](https://discord.gg/YzmbnCDkat). We're open and happy to help out! Happy creating :)
 
-## 🚀 Want to Contribute?
+## 🚀 Contributing
+**New contributors welcome!**
+- 📖 Start here: https://betterseqta.github.io/BetterSEQTA-Docs/getting-started/
+- 🧠 Architecture: https://betterseqta.github.io/BetterSEQTA-Docs/architecture/
+- 🧩 Plugins: https://betterseqta.github.io/BetterSEQTA-Docs/plugins/
+- 🐛 Issues: https://github.com/BetterSEQTA/BetterSEQTA-plus/issues
+- 💬 Discord: https://discord.gg/YzmbnCDkat
 
-**New contributors welcome!** 🎉 We've made it easy to get started:
 
-- **👋 New to the project?** Start with our [Getting Started Guide](./docs/GETTING_STARTED_CONTRIBUTING.md)
-- **🏗️ Want to understand the code?** Check out our [Architecture Guide](./docs/ARCHITECTURE.md)
-- **🧩 Interested in plugins?** Read our [Plugin Development Guide](./docs/plugins/README.md)
-- **🐛 Found a bug?** Open an [issue](https://github.com/BetterSEQTA/BetterSEQTA-plus/issues) or fix it yourself!
-- **💬 Need help?** Join our [Discord community](https://discord.gg/YzmbnCDkat)
+## ⚡ Quick Start
 
-We have lots of https://github.com/BetterSEQTA/BetterSEQTA-Plus/labels/good%20first%20issue labels perfect for beginners!
-
-## Quick Development Setup
-
-&nbsp;&nbsp;&nbsp; **1. Fork & Clone**
 ```bash
-git clone https://github.com/YOUR_USERNAME/BetterSEQTA-Plus
+git clone https://github.com/YOUR_USERNAME_FORKED_WITH/BetterSEQTA-Plus
 cd BetterSEQTA-Plus
-```
-
-&nbsp;&nbsp;&nbsp; **2. Install & Run**
-```bash
 npm install --legacy-peer-deps
 npm run dev
-```
+````
 
-&nbsp;&nbsp;&nbsp; **3. Load in Browser**
-1. Go to `chrome://extensions`
-2. Enable "Developer mode"
-3. Click "Load unpacked" → Select `dist` folder
-4. Visit a SEQTA page to see it work! 🎉
-> [!WARNING]
-> Whenever you update the extension while not in dev mode, you will need to use the reload button on the extension page.
+Then load `dist` in `chrome://extensions` (Developer Mode → Load unpacked).
 
-📚 **Need more details?** Check our [detailed setup guide](https://docs.betterseqta.org/install/#for-developers-development-environment)
 
-### Building for Production
-
-```bash
-npm run build     # Build for all browsers
-npm run zip       # Package for distribution (requires 7-Zip)
-```
-
-## Folder Structure
-
-The folder structure is as follows:
-
-- The `src` folder contains source files that are compiled to the build directory.
-
-- The `src/plugins` folder contains vital loaders required for BetterSEQTA+ functionality.
-
-- The `src/interface` folder contains source React & Svelte files that are required for the Settings page.
-
-- The `dist` folder is where the compiled code ends up, this is the folder what you need to load into chrome as an unpacked extension for development.
+Full setup guide:
+[https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment](https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment)
 
 ## Contributors
 
@@ -120,6 +80,9 @@ Want to contribute? [Click Here!](https://docs.betterseqta.org/contributing/)
 ## Credits
 
 This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development from lead developers [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph) with help from other volunteers.
+Originally developed by [Nulkem](https://github.com/Nulkem/betterseqta)
+Ported to Manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68)
+Maintained by [SethBurkart123](https://github.com/SethBurkart123), [Crazypersonalph](https://github.com/Crazypersonalph) & the rest of the BetterSEQTA team!
 
 ## Star History
 
