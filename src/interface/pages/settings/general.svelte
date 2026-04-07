@@ -11,6 +11,7 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
+  import CloudSettingsSync from "@/interface/components/CloudSettingsSync.svelte"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
@@ -398,6 +399,10 @@
       onChange: (isOn: boolean) => settingsState.onoff = isOn
     }
   })}
+
+  <div class="border-none py-3">
+    <CloudSettingsSync />
+  </div>
 
   {#if $settingsState.devMode}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">

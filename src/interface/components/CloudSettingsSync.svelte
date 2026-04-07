@@ -81,7 +81,7 @@
 </script>
 
 <div
-  class="w-full rounded-xl border border-zinc-200/60 bg-zinc-50/80 px-3 py-2.5 dark:border-zinc-700/50 dark:bg-zinc-900/40"
+  class="w-full rounded-xl border border-zinc-200/60 bg-zinc-50/80 px-4 py-2.5 dark:border-zinc-700/50 dark:bg-zinc-900/40"
 >
   <h3 class="text-xs font-bold text-zinc-800 dark:text-zinc-100">Cloud settings backup</h3>
   <p class="mt-0.5 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">

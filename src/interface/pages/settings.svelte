@@ -3,7 +3,6 @@
   import Settings from "./settings/general.svelte";
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
-  import CloudSync from "./settings/cloudSync.svelte";
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
@@ -279,7 +278,7 @@
     </div>
 
     <div
-      class="flex shrink-0 items-center justify-between gap-2 px-3 py-2.5 border-b border-zinc-200/40 dark:border-zinc-700/40"
+      class="flex shrink-0 items-center justify-between gap-2 px-4 py-2.5 border-b border-zinc-200/40 dark:border-zinc-700/40"
     >
       <div class="min-w-0 flex-1">
         <h2 class="text-sm font-bold text-zinc-900 dark:text-white">BetterSEQTA Cloud</h2>
@@ -300,7 +299,6 @@
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
-        { title: "Cloud", Content: CloudSync },
       ]}
     />
   </div>
