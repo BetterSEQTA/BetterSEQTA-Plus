@@ -32,6 +32,16 @@ export function OpenWhatsNewPopup() {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.6.0 - Cloud backup, various fixes & SEQTA Engage support</h1>
+      <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
+      <li>Optional automatic cloud sync if signed in (on by default).</li>
+      <li>Firefox: fixed the extension settings popup.</li>
+      <li>SEQTA Engage: Added BetterSEQTA Plus support for SEQTA Engage for Parents.</li>
+      <li>Improved how adaptive custom themes display on the page.</li>
+      <li>Fixed today's lessons on the homepage misbehaving in developer mode.</li>
+      <li>Reduced overlap between BetterSEQTA subject averages and SEQTA's built-in averages UI.</li>
+      <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
+
       <h1>3.5.3 - Adaptive theme updates</h1>
       <li>Fixed adaptive theming on current-year course and assessment pages.</li>
 
