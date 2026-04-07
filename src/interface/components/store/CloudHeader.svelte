@@ -3,6 +3,11 @@
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import CloudLoginForm from "./CloudLoginForm.svelte";
 
+  let { alwaysShowUserName = false } = $props<{
+    /** When true (e.g. narrow extension popup), show display name below sm breakpoint */
+    alwaysShowUserName?: boolean;
+  }>();
+
   let cloudState = $state(cloudAuth.state);
   let open = $state(false);
   let dropdownEl: HTMLElement;
@@ -65,7 +70,11 @@
           {getInitials()}
         </div>
       {/if}
-      <span class="hidden max-w-24 truncate sm:inline text-base">
+      <span
+        class={alwaysShowUserName
+          ? "inline max-w-[10rem] truncate text-sm"
+          : "hidden max-w-24 truncate sm:inline text-base"}
+      >
         {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
       </span>
     {:else}

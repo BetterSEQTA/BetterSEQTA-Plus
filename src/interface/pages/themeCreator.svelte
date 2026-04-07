@@ -289,7 +289,7 @@
 
 
     <h1 class='text-xl font-semibold'>Theme Creator</h1>
-    <a href='https://betterseqta.gitbook.io/betterseqta-docs' target='_blank' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
+    <a href='https://docs.betterseqta.org/theme-creation/' target='_blank' rel='noopener noreferrer' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
       <span class='pr-0.5 no-underline font-IconFamily'>{'\ueb44'}</span>
       <span class='underline'>
         Need help? Check out the docs!

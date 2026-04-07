@@ -6,9 +6,9 @@ Hey there! 👋 Thanks for your interest in contributing to BetterSEQTA+! We're 
 
 **Never contributed to an open source project before?** No worries! We've made it super easy to get started:
 
-- **📖 Read our [Getting Started Guide](./docs/GETTING_STARTED_CONTRIBUTING.md)** - This walks you through everything step-by-step, from setting up your development environment to making your first pull request.
-- **🏗️ Understand the codebase** with our [Architecture Guide](./docs/ARCHITECTURE.md)
-- **🔧 Having issues?** Check our [Troubleshooting Guide](./docs/TROUBLESHOOTING.md)
+- **📖 Read our [contributing guide](https://docs.betterseqta.org/contributing/)** - This walks you through everything step-by-step, from setting up your development environment to making your first pull request.
+- **🏗️ Understand the codebase** with the [architecture guide](https://docs.betterseqta.org/architecture/)
+- **🔧 Having issues?** Check the [troubleshooting guide](https://docs.betterseqta.org/troubleshooting/)
 
 We have lots of [`good first issue`](https://github.com/BetterSEQTA/BetterSEQTA-plus/labels/good%20first%20issue) labels that are perfect for beginners!
 
@@ -33,8 +33,8 @@ Join our community channels to discuss the project, get help, and connect with o
 
 If you're interested in creating plugins for BetterSEQTA+, check out our plugin development guides:
 
-- [Creating Your First Plugin](./docs/plugins/creating-plugins.md)
-- [Plugin API Reference](./docs/advanced/plugin-api.md)
+- [Plugin development](https://docs.betterseqta.org/plugin-development/)
+- [Plugin API](https://docs.betterseqta.org/plugin-api/)
 
 ## Pull Request Process
 
