@@ -480,24 +480,35 @@ function CheckNoticeTextColour(notice: any) {
   );
 }
 
+function watchForEngageLogin() {
+  const observer = new MutationObserver(() => {
+    if (!document.querySelector(".login")) {
+      observer.disconnect();
+      location.reload();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 export function tryLoad() {
   if (isSeqtaEngageExperience()) {
     updateIframesWithDarkMode();
-    window.addEventListener(
-      "load",
-      () => removeThemeTagsFromNotices(),
-      { once: true },
-    );
-    window.addEventListener(
-      "load",
-      () => void finishLoad(),
-      { once: true },
-    );
-    waitForElm(".login").then(() => void finishLoad());
-    waitForElm(".day-container").then(() => void finishLoad());
-    waitForElm(".code", true, 50).then((elm: any) => {
-      if (!elm.innerText.includes("BetterSEQTA")) void LoadPageElements();
-    });
+    window.addEventListener("load", () => removeThemeTagsFromNotices(), { once: true });
+
+    const runEngageLoad = () => {
+      if (document.querySelector(".login")) {
+        finishLoad();
+        watchForEngageLogin();
+        return;
+      }
+      void LoadPageElements();
+    };
+
+    if (document.readyState === "complete") {
+      runEngageLoad();
+    } else {
+      window.addEventListener("load", () => runEngageLoad(), { once: true });
+    }
     return;
   }
 
