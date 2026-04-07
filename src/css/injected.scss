@@ -555,6 +555,31 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
     flex-shrink: 0 !important;
   }
 
+  /* Engage: hide text nodes in labels via font-size trick, restore SVG size */
+  #menu .logo-link li > label,
+  #menu .logo-link section > label {
+    font-size: 0 !important;
+    justify-content: center !important;
+
+    svg {
+      width: 24px !important;
+      height: 24px !important;
+      font-size: initial !important;
+      flex-shrink: 0 !important;
+      margin: 0 auto !important;
+    }
+  }
+
+  /* Engage: hide chevron arrows on hasChildren items */
+  #menu .logo-link li > svg {
+    display: none !important;
+  }
+
+  /* Engage: hide the name/details in #userActions */
+  #menu #userActions .details {
+    display: none !important;
+  }
+
 }
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
@@ -3295,6 +3320,31 @@ div.day-empty {
   z-index: 21;
   position: absolute;
   right: 250px;
+}
+.engage-titlebar {
+  right: 250px;
+  top: 0;
+}
+#engage-logouttooltip {
+  width: 50px !important;
+  margin-left: -28px !important;
+  top: 105% !important;
+
+  .engage-logout {
+    background: none !important;
+    border: none;
+    cursor: pointer;
+    color: var(--background-primary) !important;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+
+    svg {
+      fill: var(--background-primary) !important;
+    }
+  }
 }
 .pagename {
   align-items: center;
