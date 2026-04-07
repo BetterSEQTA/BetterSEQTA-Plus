@@ -1,8 +1,10 @@
 <script lang="ts">
   import browser from "webextension-polyfill";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import DisclaimerModal from "./DisclaimerModal.svelte";
   import Button from "./Button.svelte";
+  import Switch from "./Switch.svelte";
 
   let cloudState = $state(cloudAuth.state);
   let busy = $state(false);
@@ -88,6 +90,37 @@
     Upload copies this browser’s BetterSEQTA+ settings to your account. Download replaces local settings with the
     cloud copy (your sign-in stays on this device).
   </p>
+
+  <div
+    class="mt-2 flex flex-col gap-2 rounded-lg border border-zinc-200/50 bg-white/60 px-3 py-2.5 dark:border-zinc-600/40 dark:bg-zinc-800/40"
+  >
+    <div class="flex items-start justify-between gap-3">
+      <p class="min-w-0 flex-1 pt-0.5 text-[11px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
+        Automatic sync
+      </p>
+      <div class="shrink-0">
+        <Switch
+          state={$settingsState.autoCloudSettingsSync !== false}
+          onChange={(isOn: boolean) => (settingsState.autoCloudSettingsSync = isOn)}
+        />
+      </div>
+    </div>
+    <p class="text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
+      When signed in, each time SEQTA loads and also hourly, if the cloud backup is newer it will replace local
+      settings. Settings you change will upload shortly after you adjust them.
+    </p>
+    <p class="text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
+      Passwords, tokens, and other sensitive data are not included in the backup.
+      <a
+        href="https://betterseqta.org/privacy"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-0.5 inline font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 transition-all duration-200 hover:text-emerald-700 hover:decoration-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-emerald-400 dark:decoration-emerald-400/50 dark:hover:text-emerald-300 dark:focus-visible:ring-offset-zinc-800 rounded-sm"
+      >
+        Privacy policy
+      </a>
+    </p>
+  </div>
 
   <div class="mt-2 flex flex-wrap gap-2">
     <Button

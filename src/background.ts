@@ -2,12 +2,11 @@ import browser from "webextension-polyfill";
 import type { SettingsState } from "@/types/storage";
 import { fetchNews } from "./background/news";
 import {
-  applyDownloadedEnvelope,
-  buildUploadPayload,
-} from "@/seqta/utils/cloudSettingsSync";
-
-const CLOUD_SETTINGS_SYNC_URL =
-  "https://accounts.betterseqta.org/api/bsplus/settings/sync";
+  initCloudSettingsAutoSync,
+  performCloudSettingsDownloadWithRetry,
+  performCloudSettingsUploadWithRetry,
+  runCloudSettingsPoll,
+} from "./background/cloudSettingsAutoSync";
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
@@ -165,25 +164,12 @@ function handleCloudSettingsUpload(request: any, sendResponse: MessageSender): b
         sendResponse({ success: false, error: "Not authenticated" });
         return;
       }
-      const all = await browser.storage.local.get();
-      const payload = buildUploadPayload(all as Record<string, unknown>);
-      const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      const res = await performCloudSettingsUploadWithRetry(token);
+      sendResponse({
+        success: res.success,
+        error: res.error,
+        updated_at: res.updated_at,
       });
-      const data = await parseJsonResponse(r);
-      if (!r.ok) {
-        sendResponse({
-          success: false,
-          error: data?.error ?? `Upload failed (${r.status})`,
-        });
-        return;
-      }
-      sendResponse({ success: true, updated_at: data?.updated_at });
     } catch (err) {
       console.error("[Background] cloudSettingsUpload error:", err);
       sendResponse({
@@ -203,30 +189,13 @@ function handleCloudSettingsDownload(request: any, sendResponse: MessageSender):
         sendResponse({ success: false, error: "Not authenticated" });
         return;
       }
-      const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
+      const res = await performCloudSettingsDownloadWithRetry(token);
+      sendResponse({
+        success: res.success,
+        notFound: res.notFound,
+        error: res.error,
+        updated_at: res.updated_at,
       });
-      const data = await parseJsonResponse(r);
-      if (r.status === 404) {
-        sendResponse({
-          success: false,
-          notFound: true,
-          error: "No settings backup found in the cloud",
-        });
-        return;
-      }
-      if (!r.ok) {
-        sendResponse({
-          success: false,
-          error: data?.error ?? `Download failed (${r.status})`,
-        });
-        return;
-      }
-      await applyDownloadedEnvelope(data);
-      reloadSeqtaPages();
-      sendResponse({ success: true, updated_at: data?.updated_at });
     } catch (err) {
       console.error("[Background] cloudSettingsDownload error:", err);
       sendResponse({
@@ -304,6 +273,10 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   cloudFavorite: handleCloudFavorite,
   cloudSettingsUpload: handleCloudSettingsUpload,
   cloudSettingsDownload: handleCloudSettingsDownload,
+  cloudSettingsPoll: () => {
+    void runCloudSettingsPoll();
+    return false;
+  },
   getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender) => {
     (async () => {
       try {
@@ -422,6 +395,7 @@ function getDefaultValues(): SettingsState {
     adaptiveThemeColour: false,
     adaptiveThemeGradient: false,
     adaptiveThemeColourTransition: true,
+    autoCloudSettingsSync: true,
   };
 }
 
@@ -439,3 +413,5 @@ browser.runtime.onInstalled.addListener(function (event) {
     browser.storage.local.set({ justupdated: true });
   }
 });
+
+initCloudSettingsAutoSync({ reloadSeqtaPages });

@@ -4,6 +4,13 @@ import browser from "webextension-polyfill";
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
 
 /**
+ * Client-only: last known remote `updated_at` for BS+ settings (from summary or sync responses).
+ * Never uploaded; preserved on restore; used to decide when to pull a newer cloud backup.
+ */
+export const BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY =
+  "bsplus_cloud_settings_known_remote_updated_at";
+
+/**
  * Never uploaded to the cloud backup (OAuth and legacy keys).
  * IndexedDB (e.g. Global Search’s `betterseqta-index` database) is not part of
  * `chrome.storage.local` and is never included in this payload.
@@ -29,6 +36,8 @@ export const SENSITIVE_DEVICE_STORAGE_KEYS_EXACT = [
 /** e.g. any future `plugin.global-search.storage.*` keys in chrome.storage */
 export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = ["plugin.global-search.storage."] as const;
 
+const CLIENT_ONLY_CLOUD_KEYS_EXACT = [BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY] as const;
+
 /** After restoring from cloud, keep local session so the user stays signed in. */
 const AUTH_KEYS_TO_PRESERVE = [
   "bsplus_token",
@@ -40,7 +49,13 @@ const AUTH_KEYS_TO_PRESERVE = [
 const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   ...KEYS_OMITTED_FROM_CLOUD_UPLOAD,
   ...SENSITIVE_DEVICE_STORAGE_KEYS_EXACT,
+  ...CLIENT_ONLY_CLOUD_KEYS_EXACT,
 ]);
+
+/** True if a storage key is part of the upload payload (and should trigger auto-upload when changed). */
+export function isKeyIncludedInCloudUploadPayload(key: string): boolean {
+  return !shouldOmitKeyFromCloudPayload(key);
+}
 
 function shouldOmitKeyFromCloudPayload(key: string): boolean {
   if (OMIT_FROM_UPLOAD_EXACT.has(key)) return true;
@@ -58,10 +73,13 @@ function isSensitiveDeviceKey(key: string): boolean {
   return false;
 }
 
-/** Auth + device-only caches to keep when merging a downloaded snapshot. */
+/** Auth + device-only caches + client-only cloud metadata to keep when merging a downloaded snapshot. */
 function collectLocalKeysToPreserve(local: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const k of AUTH_KEYS_TO_PRESERVE) {
+    if (local[k] !== undefined) out[k] = local[k];
+  }
+  for (const k of CLIENT_ONLY_CLOUD_KEYS_EXACT) {
     if (local[k] !== undefined) out[k] = local[k];
   }
   for (const [k, v] of Object.entries(local)) {
@@ -98,6 +116,11 @@ export async function getSnapshotForUpload(): Promise<{
 }> {
   const all = await browser.storage.local.get();
   return buildUploadPayload(all as Record<string, unknown>);
+}
+
+export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<void> {
+  if (!iso || typeof iso !== "string") return;
+  await browser.storage.local.set({ [BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY]: iso });
 }
 
 /**

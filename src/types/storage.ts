@@ -57,6 +57,8 @@ export interface SettingsState {
   bsplus_token?: string;
   bsplus_refresh_token?: string;
   bsplus_user?: { id: string; email?: string; username?: string; displayName?: string; pfpUrl?: string; admin_level?: number };
+  /** When not `false`, automatic cloud settings sync is enabled (default-on). */
+  autoCloudSettingsSync?: boolean;
 }
 
 interface ToggleItem {

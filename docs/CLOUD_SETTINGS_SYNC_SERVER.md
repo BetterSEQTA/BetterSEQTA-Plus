@@ -113,10 +113,21 @@ The backup is a flat JSON map of **`chrome.storage.local`** keys. It does **not*
 - **OAuth / session keys** — `bsplus_token`, `bsplus_refresh_token`, `bsplus_client_id`, `bsplus_user`, plus legacy `cloudAccessToken` / `cloudUsername`.
 - **Assessment Averages caches** — `plugin.assessments-average.storage.assessments`, `plugin.assessments-average.storage.weightings` (school assessment data).
 - **Keys under** `plugin.global-search.storage.*` — reserved so any future plugin storage cache there is not synced.
+- **`bsplus_cloud_settings_known_remote_updated_at`** — client-only watermark for auto-sync (not part of the cloud backup blob).
 
 On restore, those keys are **not** taken from the server; the device keeps its current local values.
 
+## Related endpoint: `GET /api/user/cloud-summary`
+
+The extension may call **`GET /api/user/cloud-summary`** (same host, `Authorization: Bearer`) for a **small** JSON summary (e.g. whether DesQTA / BetterSEQTA+ cloud settings exist and **`bsplus.updated_at`** / **`schemaVersion`**). It does **not** return the large settings `data` blob.
+
+- **Auto-sync flow:** compare `bsplus.updated_at` to a **client-only** watermark stored in extension storage as **`bsplus_cloud_settings_known_remote_updated_at`** (never uploaded, never applied from the server payload; preserved on restore).
+- If the server timestamp is newer (and `schemaVersion` is not ahead of the client), the client then calls **`GET /api/bsplus/settings/sync`** and applies the full envelope as usual.
+
+This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, `storage`) and works on **Chromium and Firefox** builds (see `webextension-polyfill`).
+
 ## Client reference (extension)
 
-- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys and sensitive device keys above).
-- Download: `applyDownloadedEnvelope` after `GET`; local auth keys and sensitive device keys are merged back after `chrome.storage.local.clear()`.
+- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys, sensitive device keys, and **`bsplus_cloud_settings_known_remote_updated_at`**).
+- Download: `applyDownloadedEnvelope` after `GET`; local auth keys, sensitive device keys, and the client-only watermark key are merged back after `chrome.storage.local.clear()`.
+- Auto sync (summary, debounced upload, alarms): `src/background/cloudSettingsAutoSync.ts`; content script triggers a poll on each verified SEQTA Learn/Engage page load (top frame) via `cloudSettingsPoll`.
