@@ -54,10 +54,9 @@ Don't worry- if you get stuck feel free to ask around in the [discord](https://d
 
 ## 🚀 Contributing
 **New contributors welcome!**
-- 📖 Start here: https://betterseqta.github.io/BetterSEQTA-Docs/getting-started/
-- 🧠 Architecture: https://betterseqta.github.io/BetterSEQTA-Docs/architecture/
-- 🧩 Plugins: https://betterseqta.github.io/BetterSEQTA-Docs/plugins/
-- 🐛 Issues: https://github.com/BetterSEQTA/BetterSEQTA-plus/issues
+- 📖 Start here: https://docs.betterseqta.org/install/
+- 🧠 Architecture: https://docs.betterseqta.org/architecture/
+- 🧩 Plugins: https://docs.betterseqta.org/plugins/
 - 💬 Discord: https://discord.gg/YzmbnCDkat
 
 
