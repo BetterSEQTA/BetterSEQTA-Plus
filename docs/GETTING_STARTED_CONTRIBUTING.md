@@ -1,5 +1,7 @@
 # Getting Started as a Contributor
 
+**Published version:** [docs.betterseqta.org/contributing/](https://docs.betterseqta.org/contributing/)
+
 Welcome to BetterSEQTA+! 🎉 This guide will walk you through making your first contribution, even if you're completely new to the project.
 
 ## Table of Contents
@@ -222,7 +224,7 @@ git push origin your-branch-name
 
 ### Stuck? Here's How to Get Unstuck
 
-1. **Check the docs** - [Architecture guide](./ARCHITECTURE.md) explains everything
+1. **Check the docs** - The [architecture guide](https://docs.betterseqta.org/architecture/) explains everything
 2. **Search existing issues** - Someone might have had the same problem
 3. **Ask in Discord** - Our community is super helpful
 4. **Create an issue** - If you found a bug or need help

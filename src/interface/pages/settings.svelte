@@ -16,6 +16,7 @@
 
   import ColourPicker from "../components/ColourPicker.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
+  import CloudHeader from "@/interface/components/store/CloudHeader.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
 
   let devModeSequence = "";
@@ -274,6 +275,18 @@
         </button> -->
         </div>
       {/if}
+    </div>
+
+    <div
+      class="flex shrink-0 items-center justify-between gap-2 px-3 py-2.5 border-b border-zinc-200/40 dark:border-zinc-700/40"
+    >
+      <div class="min-w-0 flex-1">
+        <h2 class="text-sm font-bold text-zinc-900 dark:text-white">BetterSEQTA Cloud</h2>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400">Account & sync</p>
+      </div>
+      <div class="shrink-0">
+        <CloudHeader alwaysShowUserName />
+      </div>
     </div>
 
     <TabbedContainer
