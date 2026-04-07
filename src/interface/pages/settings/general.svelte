@@ -13,6 +13,7 @@
   import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
+  import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
@@ -97,6 +98,19 @@
     showColourPicker: () => void;
     showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
   }>();
+
+  async function exportCloudSettingsJsonToFile() {
+    const payload = await getSnapshotForUpload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `betterseqta-plus-settings-export-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -437,6 +451,15 @@
             }}
             text="Show Now"
           />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Export cloud settings JSON</h2>
+          <p class="text-xs">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
+        </div>
+        <div>
+          <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
         </div>
       </div>
     </div>

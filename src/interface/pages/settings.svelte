@@ -3,6 +3,7 @@
   import Settings from "./settings/general.svelte";
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
+  import CloudSync from "./settings/cloudSync.svelte";
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
@@ -299,6 +300,7 @@
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
+        { title: "Cloud", Content: CloudSync },
       ]}
     />
   </div>
