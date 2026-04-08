@@ -196,22 +196,23 @@
     },
     {
       title: "Default Page",
-      description: "The page to load when SEQTA Learn is opened",
+      description:
+        "The page to load when SEQTA Learn or SEQTA Engage opens (uses the same #?page=/… URL as SEQTA). BetterSEQTA home on Engage only applies when Home is selected.",
       id: 10,
       Component: Select,
       props: {
         state: $settingsState.defaultPage,
-        onChange: (value: string) => settingsState.defaultPage = value,
+        onChange: (value: string) => (settingsState.defaultPage = value),
         options: [
-          { value: 'home', label: 'Home' },
-          { value: 'dashboard', label: 'Dashboard' },
-          { value: 'timetable', label: 'Timetable' },
-          { value: 'welcome', label: 'Welcome' },
-          { value: 'messages', label: 'Messages' },
-          { value: 'documents', label: 'Documents' },
-          { value: 'reports', label: 'Reports' },
-        ]
-      }
+          { value: "home", label: "Home" },
+          { value: "dashboard", label: "Dashboard" },
+          { value: "timetable", label: "Timetable" },
+          { value: "welcome", label: "Welcome" },
+          { value: "messages", label: "Messages" },
+          { value: "documents", label: "Documents" },
+          { value: "reports", label: "Reports" },
+        ],
+      },
     },
     {
       title: "News Feed Source",

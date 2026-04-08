@@ -23,6 +23,11 @@ import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
+import {
+  loadEngageHomePage,
+  updateEngageHomeMenuActive,
+} from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
@@ -84,6 +89,7 @@ export function hideSideBar() {
 }
 
 let betterSeqtaFinishLoadDone = false;
+let engageHashListenerAttached = false;
 
 export async function finishLoad() {
   if (betterSeqtaFinishLoadDone) return;
@@ -208,7 +214,20 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
-  const sublink: string | undefined = window.location.href.split("/")[4];
+  const sublink: string | undefined = isSeqtaEngageExperience()
+    ? getEngageRoutePage()
+    : window.location.href.split("/")[4];
+
+  if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
+    engageHashListenerAttached = true;
+    window.addEventListener("hashchange", () => {
+      if (getEngageRoutePage() === "home") {
+        void loadEngageHomePage();
+      } else {
+        updateEngageHomeMenuActive(false);
+      }
+    });
+  }
 
   eventManager.register(
     "messagesAdded",
@@ -303,7 +322,24 @@ async function handleNotices(node: Element): Promise<void> {
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
   if (isSeqtaEngageExperience()) {
-    finishLoad();
+    switch (sublink) {
+      case undefined:
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+        if (settingsState.defaultPage === "home") void loadEngageHomePage();
+        finishLoad();
+        break;
+      case "home":
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init (SEQTA Engage home)");
+        if (settingsState.onoff) void loadEngageHomePage();
+        finishLoad();
+        break;
+      default:
+        finishLoad();
+        break;
+    }
     return;
   }
 

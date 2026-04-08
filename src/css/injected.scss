@@ -3325,6 +3325,63 @@ div.day-empty {
   right: 250px;
   top: 0;
 }
+
+/* Engage parent home: same timetable DOM as Learn; title+student replace the lone h2 — give the cluster Learn’s h2 margin/inset. */
+.timetable-container .home-subtitle > .engage-timetable-title-cluster {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: 20px;
+  min-width: 0;
+}
+
+.timetable-container .engage-timetable-title-cluster > h2 {
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 !important;
+}
+
+#engage-home-root.home-root {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+.engage-child-select {
+  background: var(--background-primary);
+  border: 1px solid var(--border-primary, rgba(128, 128, 128, 0.35));
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  max-width: 16rem;
+  min-width: 10rem;
+  padding: 0.35rem 0.6rem;
+  transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.engage-child-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px rgba(59, 130, 246, 0.45);
+}
+
+#engage-day-container:has(> .day-empty) {
+  align-content: center;
+  display: flex;
+  grid-auto-columns: unset;
+  grid-auto-flow: unset;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 1.5rem;
+}
+
+#engage-day-container .day-empty {
+  text-align: center;
+}
+
 #engage-logouttooltip {
   width: 50px !important;
   margin-left: -28px !important;

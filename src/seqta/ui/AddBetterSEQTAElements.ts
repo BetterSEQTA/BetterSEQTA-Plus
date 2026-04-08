@@ -1,5 +1,6 @@
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { loadEngageHomePage } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
@@ -47,6 +48,9 @@ export async function AddBetterSEQTAElements() {
   if (isSeqtaEngageExperience()) {
     await waitForElm("#content");
     addExtensionSettings();
+    if (settingsState.onoff) {
+      await injectEngageHomeButton();
+    }
     void setupEngageSettingsButton();
     void addEngageUserInfo();
     return;
@@ -279,6 +283,68 @@ async function createSettingsButton(parent?: Element) {
       </button>
     `).firstChild!,
   );
+}
+
+/** Engage mounts the sidebar inside batched React trees; EventManager-based waitForElm can miss `#menu`. Polling `waitForElm` matches the real DOM reliably. */
+async function waitForEngageMenuList(): Promise<HTMLElement | null> {
+  const poll = true as const;
+  const interval = 100;
+  const trySelectors: { selector: string; maxIterations: number }[] = [
+    { selector: "#menu > ul > li", maxIterations: 500 },
+    { selector: "#menu ul", maxIterations: 350 },
+    { selector: "#menu", maxIterations: 350 },
+  ];
+
+  for (const { selector, maxIterations } of trySelectors) {
+    try {
+      await waitForElm(selector, poll, interval, maxIterations);
+    } catch {
+      continue;
+    }
+
+    if (selector === "#menu > ul > li") {
+      const ul = document.querySelector("#menu > ul") as HTMLElement | null;
+      if (ul) return ul;
+    } else if (selector === "#menu ul") {
+      const ul = document.querySelector("#menu ul") as HTMLElement | null;
+      if (ul) return ul;
+    } else {
+      const menu = document.getElementById("menu");
+      const ul =
+        (menu?.querySelector("ul") as HTMLElement | null) ??
+        (menu?.firstElementChild as HTMLElement | null);
+      if (ul) return ul;
+    }
+  }
+
+  console.warn(
+    "[BetterSEQTA+] Engage: could not find a menu list to inject the home button",
+  );
+  return null;
+}
+
+async function injectEngageHomeButton() {
+  if (document.getElementById("homebutton")) return;
+
+  const menuList = await waitForEngageMenuList();
+  if (!menuList || document.getElementById("homebutton")) return;
+
+  const li = stringToHTML(
+    /* html */ `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>`,
+  ).firstChild as HTMLElement;
+  menuList.insertBefore(li, menuList.firstElementChild);
+
+  document.getElementById("homebutton")?.addEventListener("click", () => {
+    const btn = document.getElementById("homebutton") as HTMLElement;
+    if (
+      btn.classList.contains("draggable") ||
+      btn.classList.contains("active")
+    ) {
+      return;
+    }
+    window.location.replace(`${location.origin}/#?page=/home`);
+    void loadEngageHomePage();
+  });
 }
 
 async function getEngageUserInfo() {
