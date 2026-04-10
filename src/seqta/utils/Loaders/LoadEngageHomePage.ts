@@ -6,6 +6,7 @@ import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import debounce from "@/seqta/utils/debounce";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
+import { waitForElm } from "@/seqta/utils/waitForElm";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import {
   type EngageParentChild,
@@ -717,17 +718,30 @@ function showEngageTimetableError(message: string): void {
     </div>`;
 }
 
+function showEngageNoticesSectionError(message: string): void {
+  const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
+  if (!noticeContainer) return;
+  noticeContainer.classList.remove("loading");
+  noticeContainer.innerHTML = `
+    <div class="day-empty">
+      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <p>${message}</p>
+    </div>`;
+}
+
 /** SEQTA Engage parent home: child timetable (today view) using parent APIs. */
-export async function loadEngageHomePage(allowRetry = true): Promise<void> {
+export async function loadEngageHomePage(): Promise<void> {
   updateEngageHomeMenuActive(true);
   document.title = "Home ― SEQTA Engage";
 
-  const main = document.getElementById("main");
-  if (!main) {
-    if (allowRetry) {
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-      return loadEngageHomePage(false);
-    }
+  let main: HTMLElement;
+  try {
+    /* Engage mounts `#main` after React hydrates; a single rAF often loses the race on cold load. */
+    main = (await waitForElm("#main", true, 100, 200)) as HTMLElement;
+  } catch {
+    console.warn(
+      "[BetterSEQTA+] Engage home: timed out waiting for #main (shell not ready).",
+    );
     return;
   }
 
@@ -773,6 +787,7 @@ export async function loadEngageHomePage(allowRetry = true): Promise<void> {
     console.error(
       "[BetterSEQTA+] Engage home: parsed markup had no root element (check DOMPurify / stringToHTML).",
     );
+    return;
   }
 
   bindEngageTimetableUi();
@@ -794,7 +809,11 @@ export async function loadEngageHomePage(allowRetry = true): Promise<void> {
       return;
     }
 
-    if (!select) return;
+    if (!select) {
+      showEngageTimetableError("Could not initialize the home view.");
+      showEngageNoticesSectionError("Could not initialize notices.");
+      return;
+    }
 
     if (children.length === 0) {
       select.disabled = true;
