@@ -20,7 +20,7 @@ export function OpenWhatsNewPopup() {
 
   source.setAttribute(
     "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm",
   );
   video.autoplay = true;
   video.muted = true;
@@ -35,9 +35,11 @@ export function OpenWhatsNewPopup() {
       <h1>3.6.0 - Cloud backup, various fixes & SEQTA Engage support</h1>
       <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
       <li>Optional automatic cloud sync if signed in (on by default).</li>
+      <li>Option to use cloud profile photo as the local SEQTA profile picture</li>
       <li>Firefox: fixed the extension settings popup.</li>
       <li>SEQTA Engage: Added BetterSEQTA Plus support for SEQTA Engage for Parents.</li>
-      <li>Improved how adaptive custom themes display on the page.</li>
+      <li>Added smooth transitions to adaptive themes (on by default)</li>
+      <li>Added adaptive theme variables to custom themes (try it out with the Xp theme)</li>
       <li>Fixed today's lessons on the homepage misbehaving in developer mode.</li>
       <li>Reduced overlap between BetterSEQTA subject averages and SEQTA's built-in averages UI.</li>
       <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
