@@ -29,8 +29,7 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -106,14 +105,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Check and show privacy statement notification (before what's new)
-  if (!document.getElementById("privacy-notification")) {
-    await showPrivacyNotification();
-  }
-
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
-    OpenWhatsNewPopup();
-  }
+  runStartupPopupQueue();
 }
 
 export function GetCSSElement(file: string) {

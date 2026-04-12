@@ -3524,6 +3524,26 @@ div.day-empty {
   font-size: 1em;
   color: var(--text-primary);
 }
+.whatsnewHeader.engageParentsAnnouncementHeader {
+  height: auto;
+  min-height: unset;
+}
+.whatsnewHeader.engageParentsAnnouncementHeader h1 {
+  line-height: 1.2;
+}
+.whatsnewHeader.engageParentsAnnouncementHeader .engageParentsSubheading {
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  opacity: 0.92;
+}
+.seqtaEngageAccent {
+  color: #ea580c;
+  font-weight: 700;
+}
+.dark .seqtaEngageAccent {
+  color: #fb923c;
+}
 .whatsnewBackground {
   width: 100%;
   height: 100%;
@@ -3651,6 +3671,25 @@ div.day-empty {
   aspect-ratio: 16/9;
   object-fit: cover;
   margin-bottom: 12px;
+}
+.whatsnewTextContainer .engageParentsPromoWrap {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.28);
+  background: color-mix(in srgb, var(--background-secondary) 88%, var(--text-primary) 12%);
+}
+.whatsnewTextContainer .engageParentsPromoWrap .engageParentsPromoImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  aspect-ratio: unset;
+  object-fit: contain;
+  object-position: center;
 }
 
 @keyframes shimmer {

@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
 import { openPopup } from "./PopupManager";
 
-export function OpenWhatsNewPopup() {
+export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
@@ -362,5 +362,7 @@ export function OpenWhatsNewPopup() {
   openPopup({
     header,
     content: [imageContainer, text, footer],
+    afterClose: onDismissed,
+    clearJustUpdated: true,
   });
 }

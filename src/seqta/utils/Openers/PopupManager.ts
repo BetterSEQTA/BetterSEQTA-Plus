@@ -4,6 +4,13 @@ import { animate as motionAnimate, stagger } from "motion";
 type AnimationTarget = string | Element | Element[] | NodeList | null;
 
 let isClosing = false;
+let pendingAfterClose: (() => void) | undefined;
+
+function invokeAfterClose() {
+  const fn = pendingAfterClose;
+  pendingAfterClose = undefined;
+  fn?.();
+}
 
 export async function closePopup() {
   if (isClosing) return;
@@ -16,12 +23,14 @@ export async function closePopup() {
 
   if (!background || !popup) {
     isClosing = false;
+    invokeAfterClose();
     return;
   }
 
   if (!settingsState.animations) {
     background.remove();
     isClosing = false;
+    invokeAfterClose();
     return;
   }
 
@@ -33,19 +42,28 @@ export async function closePopup() {
 
   background.remove();
   isClosing = false;
+  invokeAfterClose();
 }
 
 interface OpenPopupOptions {
   header?: Node | null;
   content?: (Node | null | undefined)[];
   animateSelector?: AnimationTarget;
+  /** Called once after this popup is fully closed (including skip-animation path). */
+  afterClose?: () => void;
+  /** When true, clears the post-update flag when this popup opens (What's New only). */
+  clearJustUpdated?: boolean;
 }
 
 export function openPopup({
   header,
   content = [],
   animateSelector = ".whatsnewTextContainer *",
+  afterClose,
+  clearJustUpdated = false,
 }: OpenPopupOptions = {}) {
+  pendingAfterClose = afterClose;
+
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");
@@ -88,7 +106,9 @@ export function openPopup({
     }
   }
 
-  delete settingsState.justupdated;
+  if (clearJustUpdated) {
+    delete settingsState.justupdated;
+  }
 
   background.addEventListener("click", (event) => {
     if (event.target === background) void closePopup();

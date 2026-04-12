@@ -32,6 +32,8 @@ export interface SettingsState {
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
+  /** One-time announcement: SEQTA Engage support for parents (dismissed popup queue). */
+  engageParentsAnnouncementShown?: boolean;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
