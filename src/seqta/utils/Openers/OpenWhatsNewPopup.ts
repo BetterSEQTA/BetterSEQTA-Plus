@@ -2,6 +2,7 @@ import stringToHTML from "../stringToHTML";
 import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 
 export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
@@ -28,6 +29,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   video.appendChild(source);
   video.classList.add("whatsnewImg");
   imageContainer.appendChild(video);
+  attachPopupMediaFullscreen(video);
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">

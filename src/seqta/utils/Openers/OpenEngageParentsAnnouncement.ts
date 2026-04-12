@@ -1,6 +1,7 @@
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreenIfPresent } from "./attachPopupMediaFullscreen";
 
 /** Same hosting pattern as the privacy statement branding images (avoids page-relative extension URLs on Engage). */
 const ENGAGE_PROMO_IMG_URL =
@@ -48,6 +49,8 @@ export function showEngageParentsAnnouncement(onDismissed?: () => void) {
       </p>
     </div>
   `).firstChild as HTMLElement;
+
+  attachPopupMediaFullscreenIfPresent(text, ".engageParentsPromoImg");
 
   settingsState.engageParentsAnnouncementShown = true;
 

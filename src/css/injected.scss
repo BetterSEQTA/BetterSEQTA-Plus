@@ -3692,6 +3692,93 @@ div.day-empty {
   object-position: center;
 }
 
+.popup-media-fullscreenable {
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.popup-media-fullscreenable:hover {
+  opacity: 0.95;
+}
+.popup-media-fullscreenable:focus {
+  outline: none;
+}
+.popup-media-fullscreenable:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--text-primary) 70%, transparent);
+  outline-offset: 4px;
+}
+
+.bsplus-popup-media-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 48px);
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.28s cubic-bezier(0.22, 0.03, 0.26, 1);
+}
+
+.bsplus-popup-media-overlay-backdrop.bsplus-popup-media-overlay-backdrop--visible {
+  opacity: 1;
+}
+
+.bsplus-popup-media-overlay-backdrop.bsplus-popup-media-overlay--instant {
+  transition: none;
+}
+
+.bsplus-popup-media-overlay-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: min(96vw, 1320px);
+  max-height: calc(100vh - clamp(40px, 10vw, 96px));
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--background-primary);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: scale(0.94) translateY(12px);
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 0.03, 0.26, 1),
+    transform 0.28s cubic-bezier(0.22, 0.03, 0.26, 1);
+}
+
+.bsplus-popup-media-overlay-backdrop.bsplus-popup-media-overlay-backdrop--visible
+  .bsplus-popup-media-overlay-inner {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.bsplus-popup-media-overlay-backdrop.bsplus-popup-media-overlay--instant
+  .bsplus-popup-media-overlay-inner {
+  transition: none;
+}
+
+.bsplus-popup-media-overlay-slot {
+  width: 100%;
+  max-height: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 28px);
+  box-sizing: border-box;
+}
+
+.bsplus-popup-media-overlay-media {
+  max-width: 100%;
+  max-height: calc(100vh - clamp(120px, 22vh, 200px));
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;

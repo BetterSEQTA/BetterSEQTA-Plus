@@ -1,6 +1,7 @@
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreenIfPresent } from "./attachPopupMediaFullscreen";
 
 const PRIVACY_STATEMENT_VERSION = "2025-12-19";
 
@@ -58,6 +59,8 @@ export function showPrivacyNotification(onDismissed?: () => void) {
       </p>
     </div>
   `).firstChild as HTMLElement;
+
+  attachPopupMediaFullscreenIfPresent(text, "img.aboutImg");
 
   settingsState.privacyStatementLastUpdated = "2025-12-20";
   settingsState.privacyStatementShown = true;
