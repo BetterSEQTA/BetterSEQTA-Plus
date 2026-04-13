@@ -38,8 +38,7 @@ export function showEngageParentsAnnouncement(onDismissed?: () => void) {
         <img class="engageParentsPromoImg" src="${ENGAGE_PROMO_IMG_URL}" width="1920" height="1080" alt="BetterSEQTA Plus now supports SEQTA Engage" />
       </div>
       <p>
-        <strong class="seqtaEngageAccent">SEQTA Engage</strong> is the portal many parents use for notices, messages, and day-to-day school info.
-        Before anything else: BetterSEQTA Plus now supports <strong class="seqtaEngageAccent">SEQTA Engage</strong>, so parents get the same kinds of improvements you are used to on SEQTA Learn—themes, a clearer home experience, and other Plus polish while browsing Engage.
+        BetterSEQTA Plus now supports <strong class="seqtaEngageAccent">SEQTA Engage</strong>, so parents get the same kinds of improvements you are used to on SEQTA Learn—themes, a clearer home experience, and other Plus polish while browsing Engage.
       </p>
       <p>
         The title is a bit of fun; if the extension saves you time, you can always support development via Open Collective or Ko-fi from the What is New changelog or related links in settings.
