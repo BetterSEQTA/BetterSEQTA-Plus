@@ -8,12 +8,17 @@ import {
   shouldShowEngageParentsAnnouncement,
   showEngageParentsAnnouncement,
 } from "./OpenEngageParentsAnnouncement";
+import {
+  shouldShowBsCloudAutoSyncAnnouncement,
+  showBsCloudAutoSyncAnnouncement,
+} from "./OpenBsCloudAutoSyncAnnouncement";
 
 type QueueStep = (goNext: () => void) => void;
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * privacy statement (if required), then the SEQTA Engage announcement (once).
+ * privacy statement (if required), SEQTA Engage announcement (once), then BS Cloud
+ * auto-sync (once, last).
  */
 export function runStartupPopupQueue() {
   const steps: QueueStep[] = [];
@@ -28,6 +33,10 @@ export function runStartupPopupQueue() {
 
   if (shouldShowEngageParentsAnnouncement()) {
     steps.push((goNext) => showEngageParentsAnnouncement(goNext));
+  }
+
+  if (shouldShowBsCloudAutoSyncAnnouncement()) {
+    steps.push((goNext) => showBsCloudAutoSyncAnnouncement(goNext));
   }
 
   function runNext() {

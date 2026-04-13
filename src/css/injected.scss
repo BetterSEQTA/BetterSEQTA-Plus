@@ -3692,6 +3692,32 @@ div.day-empty {
   object-position: center;
 }
 
+.whatsnewHeader.bsCloudAutoSyncAnnouncementHeader {
+  height: auto;
+  min-height: unset;
+}
+.whatsnewHeader.bsCloudAutoSyncAnnouncementHeader h1 {
+  line-height: 1.2;
+}
+.bsCloudAccent {
+  color: #059669;
+  font-weight: 700;
+}
+.dark .bsCloudAccent {
+  color: #34d399;
+}
+.whatsnewTextContainer .bsCloudAutoSyncSignupCallout {
+  margin: 1.5rem 0 0;
+  padding: 1.25rem 1rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  font-size: clamp(1.35rem, 3.8vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--text-primary);
+}
+
 .popup-media-fullscreenable {
   cursor: pointer;
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
