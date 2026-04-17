@@ -271,7 +271,9 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const syncQuickbarFromDOM = () => {
-      const quickbar = document.querySelector(".timetablepage .quickbar.visible");
+      const quickbar = document.querySelector(
+        ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.visible",
+      );
       if (quickbar && quickbar.getAttribute("data-type") === "class") {
         const titleEl = quickbar.querySelector(".title");
         const roomEl = quickbar.querySelector(".meta .room");
@@ -287,7 +289,9 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       if (!timetablePage || quickbarObserver) return;
 
       quickbarObserver = new MutationObserver(() => {
-        const quickbar = document.querySelector(".timetablepage .quickbar.visible");
+        const quickbar = document.querySelector(
+          ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.visible",
+        );
         if (quickbar?.getAttribute("data-type") === "class") {
           addEditButtonToQuickbar(quickbar as HTMLElement);
         }
@@ -302,7 +306,13 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const handleTimetable = async () => {
-      await waitForElm(".timetablepage .entry", true, 10, 100);
+      // Class entries (`div.entry.class`) load after the page shell; don't fail the whole
+      // setup if they are slow or briefly absent (e.g. navigation). Observers still catch them.
+      try {
+        await waitForElm(".timetablepage .entry.class", true, 50, 300);
+      } catch {
+        /* entries may appear later */
+      }
       processAllEntries();
       setupQuickbarObserver();
       syncQuickbarFromDOM();
