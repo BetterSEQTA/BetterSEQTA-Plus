@@ -1,6 +1,22 @@
 import type { Plugin } from "../../core/types";
+import { booleanSetting } from "@/plugins/core/settingsHelpers";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import styles from "./styles.css?inline";
+
+const messageFoldersSettings = {
+  showTagsInAllMessages: booleanSetting({
+    default: true,
+    title: "Show folder tags in All Messages",
+    description:
+      "When off, folder tags are not shown on the message list until you select a folder.",
+  }),
+  hideFolderedMessagesInAll: booleanSetting({
+    default: true,
+    title: "Hide foldered messages in All Messages",
+    description:
+      "When on, messages assigned to a custom folder are hidden from the inbox until you open that folder.",
+  }),
+} as const;
 
 interface Folder {
   id: string;
@@ -20,7 +36,6 @@ const FOLDER_COLORS = [
 
 const FOLDER_ICON_SVG = `<svg style="width:24px;height:24px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
 const PLUS_SVG = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`;
-const CHECK_SVG_DARK = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
 const CHECK_SVG_WHITE = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#fff" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
 const CLOSE_SVG = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>`;
 const EDIT_SVG = `<svg style="width:12px;height:12px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
@@ -30,12 +45,12 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
+const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFoldersStorage> = {
   id: "messageFolders",
   name: "Message Folders",
   description: "Organize direct messages into custom folders",
   version: "1.0.0",
-  settings: {},
+  settings: messageFoldersSettings,
   disableToggle: true,
   defaultEnabled: true,
 
@@ -93,6 +108,25 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
 
     const getFolderMessageCount = (folderId: string): number => {
       return (getAssignments()[folderId] ?? []).length;
+    };
+
+    const restoreSubjectPlain = (subject: Element) => {
+      subject.querySelector(".bsplus-msg-badges")?.remove();
+      const textWrap = subject.querySelector(".bsplus-subject-text");
+      if (textWrap) {
+        subject.textContent = textWrap.textContent ?? "";
+      }
+    };
+
+    const isMessageInAnyCustomFolder = (messageId: string): boolean => {
+      for (const msgIds of Object.values(getAssignments())) {
+        if (msgIds.includes(messageId)) return true;
+      }
+      return false;
+    };
+
+    const shouldShowBadgesInList = (): boolean => {
+      return api.settings.showTagsInAllMessages || activeFolderId !== null;
     };
 
     // ── Confirm modal ──
@@ -190,6 +224,7 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
       allItem.addEventListener("click", () => {
         activeFolderId = null;
         applyFolderFilter();
+        applyBadges();
         renderSidebarFolders();
       });
       section.appendChild(allItem);
@@ -258,6 +293,7 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
         item.addEventListener("click", () => {
           activeFolderId = folder.id;
           applyFolderFilter();
+          applyBadges();
           renderSidebarFolders();
         });
 
@@ -372,6 +408,7 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
           if (activeFolderId !== null) {
             activeFolderId = null;
             applyFolderFilter();
+            applyBadges();
             renderSidebarFolders();
           }
         }
@@ -496,9 +533,22 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
     // ── Message badges ──
 
     const applyBadges = () => {
+      const messageItems = document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]");
+
+      if (!shouldShowBadgesInList()) {
+        for (const li of messageItems) {
+          const subject = li.querySelector("[class*='MessageList__subject___']");
+          if (subject && (subject.querySelector(".bsplus-msg-badges") || subject.querySelector(".bsplus-subject-text"))) {
+            restoreSubjectPlain(subject);
+          } else {
+            li.querySelector(".bsplus-msg-badges")?.remove();
+          }
+        }
+        return;
+      }
+
       const folders = getFolders();
       const assignments = getAssignments();
-      const messageItems = document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]");
 
       for (const li of messageItems) {
         const msgId = li.getAttribute("data-message");
@@ -547,6 +597,7 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
             e.stopPropagation();
             activeFolderId = folder.id;
             applyFolderFilter();
+            applyBadges();
             renderSidebarFolders();
           });
           badgeContainer.appendChild(badge);
@@ -561,8 +612,19 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
       const moreBtn = document.querySelector("[class*='MessageList__MessageList___'] ol > button");
 
       if (activeFolderId === null) {
-        for (const li of messageItems) {
-          li.classList.remove("bsplus-folder-hidden");
+        if (api.settings.hideFolderedMessagesInAll) {
+          for (const li of messageItems) {
+            const msgId = li.getAttribute("data-message");
+            if (msgId && isMessageInAnyCustomFolder(msgId)) {
+              li.classList.add("bsplus-folder-hidden");
+            } else {
+              li.classList.remove("bsplus-folder-hidden");
+            }
+          }
+        } else {
+          for (const li of messageItems) {
+            li.classList.remove("bsplus-folder-hidden");
+          }
         }
         if (moreBtn) (moreBtn as HTMLElement).classList.remove("bsplus-folder-hidden");
         return;
@@ -649,6 +711,17 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
     const mountUnsub = api.seqta.onMount("div.messages", handleMessagesPage);
     unregisters.push(mountUnsub);
 
+    unregisters.push(
+      api.settings.onChange("showTagsInAllMessages", () => {
+        applyBadges();
+      }),
+    );
+    unregisters.push(
+      api.settings.onChange("hideFolderedMessagesInAll", () => {
+        applyFolderFilter();
+      }),
+    );
+
     return () => {
       for (const u of unregisters) u.unregister();
       messageListObserver?.disconnect();
@@ -659,6 +732,11 @@ const messageFoldersPlugin: Plugin<{}, MessageFoldersStorage> = {
       document.querySelectorAll(".bsplus-folders-section").forEach((el) => el.remove());
       document.querySelectorAll(".bsplus-folder-btn").forEach((el) => el.remove());
       document.querySelectorAll(".bsplus-msg-badges").forEach((el) => el.remove());
+      document.querySelectorAll("[class*='MessageList__subject___']").forEach((subject) => {
+        if (subject.querySelector(".bsplus-subject-text")) {
+          restoreSubjectPlain(subject);
+        }
+      });
       document.querySelectorAll(".bsplus-folder-hidden").forEach((el) =>
         el.classList.remove("bsplus-folder-hidden"),
       );
