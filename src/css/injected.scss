@@ -1653,6 +1653,13 @@ html.transparencyEffects
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
 
+/* Smoothed by attachNotificationsPanelAnimation (matches #ExtensionPopup spring) */
+.bsplus-notifications-panel {
+  transform-origin: top right;
+  will-change: opacity, transform;
+  filter: drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.35));
+}
+
 #menu li.active {
   color: #ffffff !important;
   background: rgba(0, 0, 0, 0.35);

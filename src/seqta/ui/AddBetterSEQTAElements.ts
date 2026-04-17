@@ -3,6 +3,7 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { loadEngageHomePage } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
@@ -89,6 +90,7 @@ export async function AddBetterSEQTAElements() {
   addExtensionSettings();
   await createSettingsButton();
   setupSettingsButton();
+  attachNotificationsPanelAnimation();
 }
 
 function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
@@ -423,10 +425,12 @@ async function setupEngageSettingsButton() {
     await addDarkLightToggle(parent);
     await createSettingsButton(parent);
     setupSettingsButton();
+    attachNotificationsPanelAnimation();
   } catch {
     await addDarkLightToggle();
     await createSettingsButton();
     setupSettingsButton();
+    attachNotificationsPanelAnimation();
   }
 }
 
