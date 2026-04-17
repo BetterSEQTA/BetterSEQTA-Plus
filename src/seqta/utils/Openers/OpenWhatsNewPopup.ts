@@ -45,7 +45,8 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
       <li>Fixed today's lessons on the homepage misbehaving in developer mode.</li>
       <li>Reduced overlap between BetterSEQTA subject averages and SEQTA's built-in averages UI.</li>
       <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
-
+      <li>Added a notifications panel animation to work like settings.</li>
+      <li>Fix timetable edit plugin not working correctly.</li>
       <h1>3.5.3 - Adaptive theme updates</h1>
       <li>Fixed adaptive theming on current-year course and assessment pages.</li>
 
