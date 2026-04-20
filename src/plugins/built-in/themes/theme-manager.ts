@@ -680,9 +680,17 @@ export class ThemeManager {
    * Compare installed store themes to GET /api/themes and refresh when the server is newer.
    * Skips themes with userEdited: true (theme creator / popup save, or custom accent vs default).
    */
+  private static STORE_CHECK_KEY = "bsplus_lastStoreThemeCheck";
+  private static STORE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
   public async checkStoreThemeUpdates(): Promise<void> {
     if (this.storeUpdateCheckRunning) return;
+
+    const lastCheck = Number(localStorage.getItem(ThemeManager.STORE_CHECK_KEY) || 0);
+    if (Date.now() - lastCheck < ThemeManager.STORE_CHECK_INTERVAL_MS) return;
+
     this.storeUpdateCheckRunning = true;
+    localStorage.setItem(ThemeManager.STORE_CHECK_KEY, String(Date.now()));
     try {
       const token = await cloudAuth.getStoredToken();
       const res = (await browser.runtime.sendMessage({
