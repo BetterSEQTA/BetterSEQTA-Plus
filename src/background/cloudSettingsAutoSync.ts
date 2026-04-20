@@ -13,9 +13,9 @@ export const CLOUD_SUMMARY_URL = `${ACCOUNTS_BASE}/api/user/cloud-summary`;
 const CLOUD_SETTINGS_SYNC_URL = `${ACCOUNTS_BASE}/api/bsplus/settings/sync`;
 const REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/refresh`;
 
-const ALARM_NAME = "bsplus_cloud_settings_auto_sync";
-const PERIOD_MINUTES = 60;
 const UPLOAD_DEBOUNCE_MS = 2000;
+const POLL_THROTTLE_MS = 24 * 60 * 60 * 1000;
+const POLL_THROTTLE_KEY = "bsplus_lastCloudPoll";
 
 type CloudSummaryResponse = {
   desqta?: unknown;
@@ -323,6 +323,9 @@ export function runCloudSettingsPoll(): Promise<void> {
   if (pollInFlight) return pollInFlight;
   pollInFlight = (async () => {
     try {
+      const { [POLL_THROTTLE_KEY]: last } = await browser.storage.local.get(POLL_THROTTLE_KEY);
+      if (Date.now() - (Number(last) || 0) < POLL_THROTTLE_MS) return;
+      await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
       await runCloudSettingsPollInner();
     } catch (e) {
       console.error("[BS+ cloud sync] Poll error:", e);
@@ -360,14 +363,11 @@ async function runDebouncedUploadJob(): Promise<void> {
   }
 }
 
-async function syncAlarmWithStorage(): Promise<void> {
+async function syncAutoUploadWithStorage(): Promise<void> {
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) {
-    await browser.alarms.clear(ALARM_NAME);
     clearUploadDebounce();
-    return;
   }
-  await browser.alarms.create(ALARM_NAME, { periodInMinutes: PERIOD_MINUTES });
 }
 
 function onStorageChanged(
@@ -377,7 +377,7 @@ function onStorageChanged(
   if (area !== "local") return;
 
   if (Object.prototype.hasOwnProperty.call(changes, "autoCloudSettingsSync")) {
-    void syncAlarmWithStorage();
+    void syncAutoUploadWithStorage();
   }
 
   const keys = Object.keys(changes);
@@ -392,15 +392,8 @@ function onStorageChanged(
   })();
 }
 
-function onAlarm(alarm: browser.Alarms.Alarm): void {
-  if (alarm.name !== ALARM_NAME) return;
-  void runCloudSettingsPoll();
-}
-
 export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }): void {
   reloadSeqtaPagesFn = deps.reloadSeqtaPages;
-  browser.alarms.onAlarm.addListener(onAlarm);
   browser.storage.onChanged.addListener(onStorageChanged);
-  void syncAlarmWithStorage();
 }
 

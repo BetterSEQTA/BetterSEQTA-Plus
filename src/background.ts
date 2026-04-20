@@ -133,6 +133,74 @@ function handleCloudLogin(request: any, sendResponse: MessageSender): boolean {
   return true;
 }
 
+function handleCloudStartLogin(request: any, sendResponse: MessageSender): boolean {
+  const { client_id, redirect_uri } = request;
+  if (!client_id || !redirect_uri) {
+    sendResponse({ error: "Missing client_id or redirect_uri" });
+    return true;
+  }
+  const authorizeUrl = `https://accounts.betterseqta.org/login?redirect=${encodeURIComponent(`/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}`)}`;
+  browser.tabs.create({ url: authorizeUrl }).then(() => {
+    sendResponse({ success: true });
+  }).catch((err) => {
+    console.error("[Background] cloudStartLogin error:", err);
+    sendResponse({ error: err?.message ?? "Failed to open login page" });
+  });
+  return true;
+}
+
+const CALLBACK_URL_PREFIX = "https://accounts.betterseqta.org/auth/bsplus/callback";
+
+function initCloudLoginCallbackListener() {
+  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.url && changeInfo.url.startsWith(CALLBACK_URL_PREFIX)) {
+      try {
+        const url = new URL(changeInfo.url);
+        const token = url.searchParams.get("token");
+        const refreshToken = url.searchParams.get("refresh_token");
+        const userId = url.searchParams.get("user_id");
+
+        if (token && refreshToken) {
+          // Store tokens
+          void (async () => {
+            try {
+              await browser.storage.local.set({
+                bsplus_token: token,
+                bsplus_refresh_token: refreshToken,
+              });
+
+              // Fetch full user info
+              const userRes = await fetch("https://accounts.betterseqta.org/api/auth/me", {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (userRes.ok) {
+                const user = await userRes.json();
+                await browser.storage.local.set({ bsplus_user: user });
+              } else if (userId) {
+                await browser.storage.local.set({ bsplus_user: { id: userId } });
+              }
+
+              // Trigger cloud settings download
+              void performCloudSettingsDownloadWithRetry(token).catch((err) => {
+                console.warn("[Background] Cloud settings download after login:", err);
+              });
+            } catch (err) {
+              console.error("[Background] Failed to process login callback:", err);
+            }
+          })();
+
+          // Close the callback tab
+          void browser.tabs.remove(tabId);
+        }
+      } catch (err) {
+        console.error("[Background] Error parsing callback URL:", err);
+      }
+    }
+  });
+}
+
+initCloudLoginCallbackListener();
+
 function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean {
   const { refresh_token, client_id } = request;
   if (!refresh_token || !client_id) {
@@ -269,6 +337,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   fetchFromUrl: handleFetchFromUrl,
   cloudReserveClient: handleCloudReserveClient,
   cloudLogin: handleCloudLogin,
+  cloudStartLogin: handleCloudStartLogin,
   cloudRefresh: handleCloudRefresh,
   cloudFavorite: handleCloudFavorite,
   cloudSettingsUpload: handleCloudSettingsUpload,

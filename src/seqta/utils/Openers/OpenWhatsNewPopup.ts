@@ -2,8 +2,9 @@ import stringToHTML from "../stringToHTML";
 import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 
-export function OpenWhatsNewPopup() {
+export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
@@ -28,11 +29,12 @@ export function OpenWhatsNewPopup() {
   video.appendChild(source);
   video.classList.add("whatsnewImg");
   imageContainer.appendChild(video);
+  attachPopupMediaFullscreen(video);
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.6.0 - Cloud backup, various fixes & SEQTA Engage support</h1>
+      <h1>3.6.2 - Cloud backup, various fixes & SEQTA Engage support</h1>
       <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
       <li>Optional automatic cloud sync if signed in (on by default).</li>
       <li>Option to use cloud profile photo as the local SEQTA profile picture</li>
@@ -43,7 +45,8 @@ export function OpenWhatsNewPopup() {
       <li>Fixed today's lessons on the homepage misbehaving in developer mode.</li>
       <li>Reduced overlap between BetterSEQTA subject averages and SEQTA's built-in averages UI.</li>
       <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
-
+      <li>Added a notifications panel animation to work like settings.</li>
+      <li>Fix timetable edit plugin not working correctly.</li>
       <h1>3.5.3 - Adaptive theme updates</h1>
       <li>Fixed adaptive theming on current-year course and assessment pages.</li>
 
@@ -364,5 +367,7 @@ export function OpenWhatsNewPopup() {
   openPopup({
     header,
     content: [imageContainer, text, footer],
+    afterClose: onDismissed,
+    clearJustUpdated: true,
   });
 }

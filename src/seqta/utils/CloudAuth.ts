@@ -83,6 +83,25 @@ class CloudAuthService {
     }
   }
 
+  /** Pull cloud settings backup after a fresh sign-in (matches manual “Download from cloud”). */
+  private triggerCloudSettingsDownloadAfterLogin(accessToken: string): void {
+    void browser.runtime
+      .sendMessage({
+        type: "cloudSettingsDownload",
+        token: accessToken,
+      })
+      .then((res: unknown) => {
+        const r = res as { success?: boolean; notFound?: boolean; error?: string } | undefined;
+        if (r?.success || r?.notFound) return;
+        if (r?.error) {
+          console.warn("[BetterSEQTA+] Cloud settings download after login:", r.error);
+        }
+      })
+      .catch((err) => {
+        console.warn("[BetterSEQTA+] Cloud settings download after login failed:", err);
+      });
+  }
+
   public async getStoredToken(): Promise<string | null> {
     const result = await browser.storage.local.get(STORAGE_KEYS.accessToken);
     return (result[STORAGE_KEYS.accessToken] as string) ?? null;
@@ -106,6 +125,26 @@ class CloudAuthService {
       (settingsState as any).setKey(STORAGE_KEYS.clientId, clientId);
     }
     return clientId;
+  }
+
+  public async startLogin(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const clientId = await this.getClientId();
+      const result = (await browser.runtime.sendMessage({
+        type: "cloudStartLogin",
+        client_id: clientId,
+        redirect_uri: REDIRECT_URI,
+      })) as { success?: boolean; error?: string };
+      if (result?.success) {
+        return { success: true };
+      }
+      return { success: false, error: result?.error ?? "Failed to open login page" };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to open login page",
+      };
+    }
   }
 
   public async login(
@@ -135,6 +174,7 @@ class CloudAuthService {
           user: result.user ?? null,
         };
         this.notify();
+        this.triggerCloudSettingsDownloadAfterLogin(result.access_token);
         return { success: true };
       }
       return {

@@ -29,8 +29,7 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -106,14 +105,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Check and show privacy statement notification (before what's new)
-  if (!document.getElementById("privacy-notification")) {
-    await showPrivacyNotification();
-  }
-
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
-    OpenWhatsNewPopup();
-  }
+  runStartupPopupQueue();
 }
 
 export function GetCSSElement(file: string) {
@@ -517,6 +509,9 @@ function CheckNoticeTextColour(notice: any) {
 }
 
 function watchForEngageLogin() {
+  if (!document.querySelector(".login")) {
+    return;
+  }
   const observer = new MutationObserver(() => {
     if (!document.querySelector(".login")) {
       observer.disconnect();
@@ -526,24 +521,69 @@ function watchForEngageLogin() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+/** Wait until Engage shows either the login shell or the main app (`#content`), so we never call `LoadPageElements` while still on login (which would hang on `waitForElm("#content")`). */
+function waitForEngageLoginOrContent(): Promise<"login" | "app" | "timeout"> {
+  if (document.querySelector(".login")) {
+    return Promise.resolve("login");
+  }
+  if (document.getElementById("content")) {
+    return Promise.resolve("app");
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (mode: "login" | "app") => {
+      if (settled) return;
+      settled = true;
+      mo.disconnect();
+      window.clearTimeout(tid);
+      resolve(mode);
+    };
+    const check = () => {
+      if (document.querySelector(".login")) finish("login");
+      else if (document.getElementById("content")) finish("app");
+    };
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { subtree: true, childList: true });
+    const tid = window.setTimeout(() => {
+      if (settled) return;
+      mo.disconnect();
+      settled = true;
+      if (document.querySelector(".login")) resolve("login");
+      else if (document.getElementById("content")) resolve("app");
+      else {
+        console.warn(
+          "[BetterSEQTA+] Engage: timed out waiting for .login or #content; unblocking load UI.",
+        );
+        resolve("timeout");
+      }
+    }, 120_000);
+  });
+}
+
 export function tryLoad() {
   if (isSeqtaEngageExperience()) {
     updateIframesWithDarkMode();
     window.addEventListener("load", () => removeThemeTagsFromNotices(), { once: true });
 
-    const runEngageLoad = () => {
-      if (document.querySelector(".login")) {
+    const runEngageLoad = async () => {
+      const mode = await waitForEngageLoginOrContent();
+      if (mode === "login") {
         finishLoad();
         watchForEngageLogin();
         return;
       }
-      void LoadPageElements();
+      if (mode === "timeout") {
+        finishLoad();
+        void waitForElm("#content").then(() => void LoadPageElements());
+        return;
+      }
+      await LoadPageElements();
     };
 
     if (document.readyState === "complete") {
-      runEngageLoad();
+      void runEngageLoad();
     } else {
-      window.addEventListener("load", () => runEngageLoad(), { once: true });
+      window.addEventListener("load", () => void runEngageLoad(), { once: true });
     }
     return;
   }

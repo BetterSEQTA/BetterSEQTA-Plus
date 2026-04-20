@@ -12,6 +12,8 @@
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
   import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
   import CloudSettingsSync from "@/interface/components/CloudSettingsSync.svelte"
+  import CloudHeader from "@/interface/components/store/CloudHeader.svelte"
+  import { cloudAuth } from "@/seqta/utils/CloudAuth"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
@@ -53,6 +55,12 @@
 
   const pluginSettings = getAllPluginSettings() as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
+
+  let cloudState = $state(cloudAuth.state);
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => { cloudState = s; });
+    return unsub;
+  });
   
   async function loadPluginSettings() {
     for (const plugin of pluginSettings) {
@@ -95,9 +103,10 @@
     loadPluginSettings();
   })
 
-  const { showColourPicker, showDisclaimer } = $props<{ 
+  const { showColourPicker, showDisclaimer, showCloudPanel } = $props<{ 
     showColourPicker: () => void;
-    showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
+    showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
+    showCloudPanel: () => void;
   }>();
 
   async function exportCloudSettingsJsonToFile() {
@@ -196,12 +205,11 @@
     },
     {
       title: "Default Page",
-      description:
-        "The page to load when SEQTA Learn or SEQTA Engage opens (uses the same #?page=/… URL as SEQTA). BetterSEQTA home on Engage only applies when Home is selected.",
+      description: "Choose which page loads first when you open SEQTA",
       id: 10,
       Component: Select,
       props: {
-        state: $settingsState.defaultPage,
+        state: $settingsState.defaultPage ?? "home",
         onChange: (value: string) => (settingsState.defaultPage = value),
         options: [
           { value: "home", label: "Home" },
@@ -310,8 +318,9 @@
                       async () => {
                         await updatePluginSetting(plugin.pluginId, 'enabled', true);
                       },
-                      () => {
-                      }
+                      () => {},
+                      "Assessment Averages Disclaimer",
+                      "This feature calculates a simple average of your assessment grades. It does not take into account:\n• Assessment weightings\n• Different grading scales\n• Other factors used in official reports\n\nThe displayed average may be inaccurate compared to your actual marks found in reports.\n\nDo you want to enable this feature?"
                     );
                     return;
                   }
@@ -324,8 +333,8 @@
   
         {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
           {#each Object.entries(plugin.settings) as [key, setting]}
-            <!-- Skip the 'enabled' setting if it's part of the settings object -->
-            {#if key !== 'enabled'}
+            <!-- Skip the 'enabled' setting and hide cloud-only settings when not signed in -->
+            {#if key !== 'enabled' && !(key === 'useCloudPfp' && !cloudState.isLoggedIn)}
               <div class="flex justify-between items-center px-4 py-3">
                 <div class="pr-4">
                   <h2 class="text-sm font-bold">{setting.title || key}</h2>
@@ -388,6 +397,25 @@
   </div>
   {/each}
 
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">BetterSEQTA Cloud</h2>
+          <p class="text-xs">Account & sync</p>
+        </div>
+        <div>
+          <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
+        </div>
+      </div>
+      {#if cloudState.isLoggedIn}
+        <div class="px-3 pb-3">
+          <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
+        </div>
+      {/if}
+    </div>
+  </div>
+
   <div class="p-1 border-none"></div>
 
   {@render Setting({
@@ -400,10 +428,6 @@
       onChange: (isOn: boolean) => settingsState.onoff = isOn
     }
   })}
-
-  <div class="border-none py-3">
-    <CloudSettingsSync />
-  </div>
 
   {#if $settingsState.devMode}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">

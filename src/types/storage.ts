@@ -32,6 +32,10 @@ export interface SettingsState {
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
+  /** One-time announcement: SEQTA Engage support for parents (dismissed popup queue). */
+  engageParentsAnnouncementShown?: boolean;
+  /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
+  bsCloudAutoSyncAnnouncementShown?: boolean;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;

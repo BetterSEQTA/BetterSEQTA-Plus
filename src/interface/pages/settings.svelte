@@ -15,14 +15,16 @@
   //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
+  import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
-  import CloudHeader from "@/interface/components/store/CloudHeader.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
 
   let devModeSequence = "";
   let settingsActiveTab = $state(0);
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
+  let disclaimerTitle = $state("Confirm");
+  let disclaimerMessage = $state("");
 
   const handleDevModeToggle = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -67,15 +69,23 @@
 
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
+  let showCloudPanel = $state<boolean>(false);
 
-  const showDisclaimer = (onConfirm: () => void, onCancel: () => void) => {
+  const openCloudPanel = () => {
+    showCloudPanel = true;
+  };
+
+  const showDisclaimer = (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => {
     disclaimerCallbacks = { onConfirm, onCancel };
+    disclaimerTitle = title ?? "Confirm";
+    disclaimerMessage = message ?? "";
     showDisclaimerModal = true;
   };
 
   onMount(() => {
     settingsPopup.addListener(() => {
       showColourPicker = false;
+      showCloudPanel = false;
     });
 
     if (standalone) {
@@ -277,25 +287,13 @@
       {/if}
     </div>
 
-    <div
-      class="flex shrink-0 items-center justify-between gap-2 px-4 py-2.5 border-b border-zinc-200/40 dark:border-zinc-700/40"
-    >
-      <div class="min-w-0 flex-1">
-        <h2 class="text-sm font-bold text-zinc-900 dark:text-white">BetterSEQTA Cloud</h2>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400">Account & sync</p>
-      </div>
-      <div class="shrink-0">
-        <CloudHeader alwaysShowUserName />
-      </div>
-    </div>
-
     <TabbedContainer
       bind:activeTab={settingsActiveTab}
       tabs={[
         {
           title: "Settings",
           Content: Settings,
-          props: { showColourPicker: openColourPicker, showDisclaimer },
+          props: { showColourPicker: openColourPicker, showDisclaimer, showCloudPanel: openCloudPanel },
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
@@ -310,19 +308,20 @@
       }}
     />
   {/if}
+
+  {#if showCloudPanel}
+    <CloudPanel
+      hidePanel={() => {
+        showCloudPanel = false;
+      }}
+    />
+  {/if}
 </div>
 
 {#if showDisclaimerModal && disclaimerCallbacks}
   <DisclaimerModal
-    title="Assessment Averages Disclaimer"
-    message="This feature calculates a simple average of your assessment grades. It does not take into account:
-• Assessment weightings
-• Different grading scales
-• Other factors used in official reports
-
-The displayed average may be inaccurate compared to your actual marks found in reports.
-
-Do you want to enable this feature?"
+    title={disclaimerTitle}
+    message={disclaimerMessage}
     onConfirm={() => {
       disclaimerCallbacks?.onConfirm();
       showDisclaimerModal = false;

@@ -14,8 +14,7 @@ const settings = defineSettings({
   useCloudPfp: booleanSetting({
     default: false,
     title: "Use BetterSEQTA Cloud profile picture",
-    description:
-      "When enabled, uses the avatar from your BetterSEQTA Cloud account (sign in from the extension store). Otherwise uses the uploaded image below.",
+    description: "Use your cloud account avatar instead of the uploaded image below",
   }),
   picture: componentSetting({
     title: "Profile Picture",

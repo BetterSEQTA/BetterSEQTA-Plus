@@ -1,11 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import CloudLoginForm from "./CloudLoginForm.svelte";
 
-  let { alwaysShowUserName = false } = $props<{
-    /** When true (e.g. narrow extension popup), show display name below sm breakpoint */
+  let { alwaysShowUserName = false, onClick = undefined } = $props<{
     alwaysShowUserName?: boolean;
+    onClick?: () => void;
   }>();
 
   let cloudState = $state(cloudAuth.state);
@@ -42,6 +41,19 @@
     open = false;
   }
 
+  async function handleSignIn() {
+    await cloudAuth.startLogin();
+    open = false;
+  }
+
+  function handleButtonClick() {
+    if (onClick) {
+      onClick();
+    } else {
+      open = !open;
+    }
+  }
+
   function getInitials(): string {
     const u = cloudState.user;
     if (!u) return "?";
@@ -55,35 +67,35 @@
 <div class="relative flex items-center" bind:this={dropdownEl}>
   <button
     type="button"
-    onclick={() => (open = !open)}
-    class="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-100/80 dark:bg-zinc-700/80 hover:bg-zinc-200/80 dark:hover:bg-zinc-600/80 transition-colors duration-200 text-base font-medium text-zinc-900 dark:text-white"
+    onclick={handleButtonClick}
+    class="flex items-center gap-2 px-3 py-1.5 text-[0.75rem] rounded-lg shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white transition-colors duration-200"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
         <img
           src={cloudState.user.pfpUrl}
           alt=""
-          class="w-8 h-8 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-600"
+          class="w-5 h-5 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-600"
         />
       {:else}
-        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-sm">
+        <div class="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-[0.6rem]">
           {getInitials()}
         </div>
       {/if}
       <span
         class={alwaysShowUserName
-          ? "inline max-w-[10rem] truncate text-sm"
-          : "hidden max-w-24 truncate sm:inline text-base"}
+          ? "inline max-w-[10rem] truncate text-[0.75rem]"
+          : "hidden max-w-24 truncate sm:inline text-[0.75rem]"}
       >
         {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
       </span>
     {:else}
-      <span class="text-xl font-IconFamily" aria-hidden="true">{'\ued53'}</span>
-      <span class="text-base font-medium">Sign in</span>
+      <span class="text-sm font-IconFamily" aria-hidden="true">{'\ued53'}</span>
+      <span class="text-[0.75rem]">Sign in</span>
     {/if}
   </button>
 
-  {#if open}
+  {#if !onClick && open}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
@@ -127,11 +139,21 @@
             </button>
           </div>
         {:else}
-          <CloudLoginForm
-            onSuccess={() => {
-              open = false;
-            }}
-          />
+          <div class="flex flex-col gap-3">
+            <p class="text-sm text-zinc-600 dark:text-zinc-400">
+              Sign in to sync favorites across devices.
+            </p>
+            <button
+              type="button"
+              onclick={handleSignIn}
+              class="w-full px-4 py-3 text-base font-medium rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors duration-200"
+            >
+              Sign in with BetterSEQTA Cloud
+            </button>
+            <p class="text-xs text-center text-zinc-400 dark:text-zinc-500">
+              Opens accounts.betterseqta.org in a new tab
+            </p>
+          </div>
         {/if}
       </div>
     </div>

@@ -3,7 +3,6 @@
   import { animate } from "motion";
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import CloudLoginForm from "@/interface/components/store/CloudLoginForm.svelte";
 
   let { onClose } = $props<{ onClose: () => void }>();
   let modalElement: HTMLElement;
@@ -23,6 +22,10 @@
       );
     }
   });
+
+  async function handleSignIn() {
+    await cloudAuth.startLogin();
+  }
 </script>
 
 <div
@@ -52,7 +55,16 @@
       Sign in to the Theme Store to save favorites across devices, or create an account to get started.
     </p>
 
-    <CloudLoginForm compact onSuccess={onClose} />
+    <button
+      type="button"
+      onclick={handleSignIn}
+      class="w-full px-4 py-2.5 text-sm font-medium rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors duration-200"
+    >
+      Sign in with BetterSEQTA Cloud
+    </button>
+    <p class="mt-2 text-xs text-center text-zinc-400 dark:text-zinc-500">
+      Opens accounts.betterseqta.org in a new tab
+    </p>
 
     <div class="flex justify-end mt-4">
       <button
