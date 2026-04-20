@@ -4371,3 +4371,41 @@ h2.home-subtitle {
   font-size: 20px;
   font-weight: 400;
 }
+
+.bsplus-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 380px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--background-secondary, #fff);
+  color: var(--text-primary, #1a1a1a);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.bsplus-toast-content p {
+  margin: 6px 0 0;
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+.bsplus-toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-primary, #1a1a1a);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.bsplus-toast-close:hover {
+  opacity: 1;
+}

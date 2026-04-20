@@ -1,24 +1,15 @@
 import { settingsState } from "../listeners/SettingsState";
 import { OpenWhatsNewPopup } from "./OpenWhatsNewPopup";
 import {
-  shouldShowPrivacyNotification,
-  showPrivacyNotification,
-} from "./OpenPrivacyNotification";
-import {
   shouldShowEngageParentsAnnouncement,
-  showEngageParentsAnnouncement,
+  showEngageParentsToast,
 } from "./OpenEngageParentsAnnouncement";
-import {
-  shouldShowBsCloudAutoSyncAnnouncement,
-  showBsCloudAutoSyncAnnouncement,
-} from "./OpenBsCloudAutoSyncAnnouncement";
 
 type QueueStep = (goNext: () => void) => void;
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * privacy statement (if required), SEQTA Engage announcement (once), then BS Cloud
- * auto-sync (once, last).
+ * then shows the SEQTA Engage toast (once, non-blocking).
  */
 export function runStartupPopupQueue() {
   const steps: QueueStep[] = [];
@@ -27,21 +18,14 @@ export function runStartupPopupQueue() {
     steps.push((goNext) => OpenWhatsNewPopup(goNext));
   }
 
-  if (shouldShowPrivacyNotification()) {
-    steps.push((goNext) => showPrivacyNotification(goNext));
-  }
-
-  if (shouldShowEngageParentsAnnouncement()) {
-    steps.push((goNext) => showEngageParentsAnnouncement(goNext));
-  }
-
-  if (shouldShowBsCloudAutoSyncAnnouncement()) {
-    steps.push((goNext) => showBsCloudAutoSyncAnnouncement(goNext));
-  }
-
   function runNext() {
     const step = steps.shift();
     if (step) step(runNext);
+    else {
+      if (shouldShowEngageParentsAnnouncement()) {
+        showEngageParentsToast();
+      }
+    }
   }
 
   runNext();

@@ -1,61 +1,54 @@
-import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
-import { openPopup } from "./PopupManager";
-import { attachPopupMediaFullscreenIfPresent } from "./attachPopupMediaFullscreen";
-
-/** Same hosting pattern as the privacy statement branding images (avoids page-relative extension URLs on Engage). */
-const ENGAGE_PROMO_IMG_URL =
-  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/bq%2Bengage.png";
+import { animate as motionAnimate } from "motion";
 
 export function shouldShowEngageParentsAnnouncement(): boolean {
   return !settingsState.engageParentsAnnouncementShown;
 }
 
 /**
- * One-time announcement that BetterSEQTA Plus works on SEQTA Engage (parents).
+ * Non-blocking bottom-right toast announcing SEQTA Engage support. Shown once.
  */
-export function showEngageParentsAnnouncement(onDismissed?: () => void) {
-  if (document.getElementById("whatsnewbk")) {
-    onDismissed?.();
-    return;
-  }
-  if (!shouldShowEngageParentsAnnouncement()) {
-    onDismissed?.();
-    return;
-  }
-
-  const header = stringToHTML(
-    /* html */
-    `<div class="whatsnewHeader engageParentsAnnouncementHeader">
-      <h1>BetterSEQTA Plus now supports <span class="seqtaEngageAccent">SEQTA Engage</span></h1>
-      <p class="engageParentsSubheading">Buy your mom a BetterSEQTA Plus</p>
-    </div>`,
-  ).firstChild as HTMLElement;
-
-  const text = stringToHTML(/* html */ `
-    <div class="whatsnewTextContainer privacyStatement" style="overflow-y: auto; font-size: 1.2rem; line-height: 1.6;">
-      <div class="engageParentsPromoWrap">
-        <img class="engageParentsPromoImg" src="${ENGAGE_PROMO_IMG_URL}" width="1920" height="1080" alt="BetterSEQTA Plus now supports SEQTA Engage" />
-      </div>
-      <p>
-        BetterSEQTA Plus now supports <strong class="seqtaEngageAccent">SEQTA Engage</strong>, so parents get the same kinds of improvements you are used to on SEQTA Learn—themes, a clearer home experience, and other Plus polish while browsing Engage.
-      </p>
-      <p>
-        The title is a bit of fun; if the extension saves you time, you can always support development via Open Collective or Ko-fi from the What is New changelog or related links in settings.
-      </p>
-      <p>
-        Close this dialog when you are done. We will not show this announcement again.
-      </p>
-    </div>
-  `).firstChild as HTMLElement;
-
-  attachPopupMediaFullscreenIfPresent(text, ".engageParentsPromoImg");
+export function showEngageParentsToast() {
+  if (!shouldShowEngageParentsAnnouncement()) return;
 
   settingsState.engageParentsAnnouncementShown = true;
 
-  openPopup({
-    header,
-    content: [text],
-    afterClose: onDismissed,
-  });
+  const toast = document.createElement("div");
+  toast.className = "bsplus-toast";
+  toast.innerHTML = /* html */ `
+    <div class="bsplus-toast-content">
+      <strong>BetterSEQTA+ now supports <span class="seqtaEngageAccent">SEQTA Engage</span></strong>
+      <p>Buy your mum a BetterSEQTA Plus! Parents now get themes, a cleaner home page, and all the Plus polish on SEQTA Engage.</p>
+    </div>
+    <button class="bsplus-toast-close" aria-label="Dismiss">&times;</button>
+  `;
+
+  toast.style.opacity = "0";
+  document.getElementById("container")?.append(toast);
+
+  if (settingsState.animations) {
+    (motionAnimate as any)(
+      toast,
+      { opacity: [0, 1], y: [40, 0] },
+      { duration: 0.35, easing: [0.22, 0.03, 0.26, 1] },
+    );
+  } else {
+    toast.style.opacity = "1";
+  }
+
+  const dismiss = () => {
+    if (settingsState.animations) {
+      (motionAnimate as any)(
+        toast,
+        { opacity: [1, 0], y: [0, 40] },
+        { duration: 0.2, easing: [0.22, 0.03, 0.26, 1] },
+      ).then(() => toast.remove());
+    } else {
+      toast.remove();
+    }
+  };
+
+  toast.querySelector(".bsplus-toast-close")!.addEventListener("click", dismiss);
+
+  setTimeout(dismiss, 10000);
 }
