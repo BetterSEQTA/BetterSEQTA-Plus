@@ -5,7 +5,7 @@ import { lightenAndPaleColor } from "./lightenAndPaleColor";
 import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
-import { getCustomThemeAdaptiveCssVariables } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -84,6 +84,21 @@ function cancelColorTransition() {
   }
 }
 
+function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: number } | null {
+  const parsedHex = parseRepresentativeHex(s);
+  if (!parsedHex) return null;
+  try {
+    const [r, g, b] = Color(parsedHex).rgb().array();
+    return {
+      r: Math.round(r),
+      g: Math.round(g),
+      b: Math.round(b),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function applyColorsWith(selectedColor: string) {
   if (settingsState.transparencyEffects) {
     document.documentElement.classList.add("transparencyEffects");
@@ -129,8 +144,24 @@ function applyColorsWith(selectedColor: string) {
   applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
 
   if (settingsState.selectedTheme) {
-    for (const name of getCustomThemeAdaptiveCssVariables()) {
-      setCSSVar(name, selectedColor);
+    const channels = getRepresentativeRgbChannels(selectedColor);
+    for (const binding of getCustomThemeAdaptiveCssVariableBindings()) {
+      if (!binding.channel) {
+        setCSSVar(binding.cssVarName, selectedColor);
+        continue;
+      }
+
+      if (!channels) {
+        continue;
+      }
+
+      if (binding.channel === "r") {
+        setCSSVar(binding.cssVarName, String(channels.r));
+      } else if (binding.channel === "g") {
+        setCSSVar(binding.cssVarName, String(channels.g));
+      } else {
+        setCSSVar(binding.cssVarName, String(channels.b));
+      }
     }
   }
 
