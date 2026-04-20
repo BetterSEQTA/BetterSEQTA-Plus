@@ -34,7 +34,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.6.0 - Cloud backup, various fixes & SEQTA Engage support</h1>
+      <h1>3.6.1 - Cloud backup, various fixes & SEQTA Engage support</h1>
       <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
       <li>Optional automatic cloud sync if signed in (on by default).</li>
       <li>Option to use cloud profile photo as the local SEQTA profile picture</li>
