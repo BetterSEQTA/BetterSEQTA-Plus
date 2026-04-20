@@ -165,6 +165,17 @@ function applyColorsWith(selectedColor: string) {
     }
   }
 
+  // Let themes opt-in to overriding only adaptive accent output.
+  // A theme can define `--adaptive-better-main` from adaptive channel bindings.
+  if (settingsState.selectedTheme && settingsState.adaptiveThemeColour) {
+    const adaptiveOverride = getComputedStyle(document.documentElement)
+      .getPropertyValue("--adaptive-better-main")
+      .trim();
+    if (adaptiveOverride) {
+      setCSSVar("--better-main", adaptiveOverride);
+    }
+  }
+
   let alliframes = document.getElementsByTagName("iframe");
 
   for (let i = 0; i < alliframes.length; i++) {
