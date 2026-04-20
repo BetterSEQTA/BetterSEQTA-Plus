@@ -59,6 +59,10 @@ async function init() {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
+    if (typeof window !== "undefined" && window === window.top) {
+      void browser.runtime.sendMessage({ type: "cloudSettingsPoll" }).catch(() => {});
+    }
+
     registerFetchSeqtaAppLinkListener();
 
     const documentLoadStyle = document.createElement("style");

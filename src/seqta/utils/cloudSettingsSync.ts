@@ -36,7 +36,10 @@ export const SENSITIVE_DEVICE_STORAGE_KEYS_EXACT = [
 /** e.g. any future `plugin.global-search.storage.*` keys in chrome.storage */
 export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = ["plugin.global-search.storage."] as const;
 
-const CLIENT_ONLY_CLOUD_KEYS_EXACT = [BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY] as const;
+const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
+  BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
+  "bsplus_lastCloudPoll",
+] as const;
 
 /** After restoring from cloud, keep local session so the user stays signed in. */
 const AUTH_KEYS_TO_PRESERVE = [
