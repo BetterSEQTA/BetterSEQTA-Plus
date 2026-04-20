@@ -2,17 +2,17 @@
   import browser from "webextension-polyfill";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import DisclaimerModal from "./DisclaimerModal.svelte";
   import Button from "./Button.svelte";
   import Switch from "./Switch.svelte";
+
+  let { showDisclaimer } = $props<{
+    showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
+  }>();
 
   let cloudState = $state(cloudAuth.state);
   let busy = $state(false);
   let statusMessage = $state<string | null>(null);
   let statusError = $state<string | null>(null);
-  let lastUploadAt = $state<string | null>(null);
-  let lastDownloadAt = $state<string | null>(null);
-  let showRestoreConfirm = $state(false);
 
   $effect(() => {
     const unsub = cloudAuth.subscribe((s) => {
@@ -20,13 +20,6 @@
     });
     return unsub;
   });
-
-  function formatNow(): string {
-    return new Date().toLocaleString(undefined, {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-  }
 
   async function upload() {
     const token = await cloudAuth.getStoredToken();
@@ -40,8 +33,7 @@
         token,
       })) as { success?: boolean; error?: string };
       if (res?.success) {
-        statusMessage = "Settings saved to the cloud.";
-        lastUploadAt = formatNow();
+        statusMessage = "Settings uploaded.";
       } else {
         statusError = res?.error ?? "Upload failed";
       }
@@ -53,11 +45,10 @@
   }
 
   function promptDownload() {
-    showRestoreConfirm = true;
+    showDisclaimer(confirmDownload, () => {});
   }
 
   async function confirmDownload() {
-    showRestoreConfirm = false;
     const token = await cloudAuth.getStoredToken();
     if (!token) return;
     busy = true;
@@ -69,8 +60,7 @@
         token,
       })) as { success?: boolean; error?: string; notFound?: boolean };
       if (res?.success) {
-        statusMessage = "Settings restored from the cloud. SEQTA tabs were reloaded.";
-        lastDownloadAt = formatNow();
+        statusMessage = "Settings restored.";
       } else {
         statusError = res?.error ?? "Download failed";
       }
@@ -82,22 +72,13 @@
   }
 </script>
 
-<div
-  class="w-full rounded-xl border border-zinc-200/60 bg-zinc-50/80 px-4 py-2.5 dark:border-zinc-700/50 dark:bg-zinc-900/40"
->
-  <h3 class="text-xs font-bold text-zinc-800 dark:text-zinc-100">Cloud settings backup</h3>
-  <p class="mt-0.5 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
-    Upload copies this browser’s BetterSEQTA+ settings to your account. Download replaces local settings with the
-    cloud copy (your sign-in stays on this device).
-  </p>
-
-  <div
-    class="mt-2 flex flex-col gap-2 rounded-lg border border-zinc-200/50 bg-white/60 px-3 py-2.5 dark:border-zinc-600/40 dark:bg-zinc-800/40"
-  >
-    <div class="flex items-start justify-between gap-3">
-      <p class="min-w-0 flex-1 pt-0.5 text-[11px] font-semibold leading-tight text-zinc-800 dark:text-zinc-100">
-        Automatic sync
-      </p>
+{#if cloudState.isLoggedIn}
+  <div class="flex flex-col gap-2.5">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <p class="text-[11px] font-semibold text-zinc-800 dark:text-zinc-100">Automatic sync</p>
+        <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Syncs settings when SEQTA loads and when you make changes</p>
+      </div>
       <div class="shrink-0">
         <Switch
           state={$settingsState.autoCloudSettingsSync !== false}
@@ -105,62 +86,35 @@
         />
       </div>
     </div>
-    <p class="text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
-      When signed in, each time SEQTA loads and also hourly, if the cloud backup is newer it will replace local
-      settings. Settings you change will upload shortly after you adjust them.
-    </p>
-    <p class="text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
-      Passwords, tokens, and other sensitive data are not included in the backup.
+
+    <div class="flex flex-wrap gap-2">
+      <Button
+        text={busy ? "Please wait\u2026" : "Upload"}
+        onClick={upload}
+        disabled={busy}
+      />
+      <Button
+        text={busy ? "Please wait\u2026" : "Download"}
+        onClick={promptDownload}
+        disabled={busy}
+      />
+    </div>
+
+    {#if statusMessage}
+      <p class="text-[11px] text-emerald-600 dark:text-emerald-400">{statusMessage}</p>
+    {/if}
+    {#if statusError}
+      <p class="text-[11px] text-red-600 dark:text-red-400">{statusError}</p>
+    {/if}
+
+    <p class="text-[10px] text-zinc-400 dark:text-zinc-500">
+      Passwords and tokens are never synced.
       <a
         href="https://betterseqta.org/privacy"
         target="_blank"
         rel="noopener noreferrer"
-        class="ml-0.5 inline font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 transition-all duration-200 hover:text-emerald-700 hover:decoration-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-emerald-400 dark:decoration-emerald-400/50 dark:hover:text-emerald-300 dark:focus-visible:ring-offset-zinc-800 rounded-sm"
-      >
-        Privacy policy
-      </a>
+        class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-sm"
+      >Privacy policy</a>
     </p>
   </div>
-
-  <div class="mt-2 flex flex-wrap gap-2">
-    <Button
-      text={busy ? "Please wait…" : "Upload to cloud"}
-      onClick={upload}
-      disabled={busy || !cloudState.isLoggedIn}
-    />
-    <Button
-      text={busy ? "Please wait…" : "Download from cloud"}
-      onClick={promptDownload}
-      disabled={busy || !cloudState.isLoggedIn}
-    />
-  </div>
-
-  {#if !cloudState.isLoggedIn}
-    <p class="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
-      Sign in from the BetterSEQTA Cloud header above to sync settings.
-    </p>
-  {/if}
-
-  {#if statusMessage}
-    <p class="mt-2 text-[11px] text-emerald-600 dark:text-emerald-400">{statusMessage}</p>
-  {/if}
-  {#if statusError}
-    <p class="mt-2 text-[11px] text-red-600 dark:text-red-400">{statusError}</p>
-  {/if}
-  {#if lastUploadAt || lastDownloadAt}
-    <p class="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
-      {#if lastUploadAt}<span>Last upload: {lastUploadAt}</span>{/if}
-      {#if lastUploadAt && lastDownloadAt}<span class="mx-1">·</span>{/if}
-      {#if lastDownloadAt}<span>Last download: {lastDownloadAt}</span>{/if}
-    </p>
-  {/if}
-</div>
-
-{#if showRestoreConfirm}
-  <DisclaimerModal
-    title="Restore from cloud?"
-    message="This will replace BetterSEQTA+ settings in this browser with your cloud backup. Your BetterSEQTA Cloud sign-in on this device will be kept. Continue?"
-    onConfirm={confirmDownload}
-    onCancel={() => (showRestoreConfirm = false)}
-  />
 {/if}

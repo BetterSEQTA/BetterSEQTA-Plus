@@ -127,6 +127,26 @@ class CloudAuthService {
     return clientId;
   }
 
+  public async startLogin(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const clientId = await this.getClientId();
+      const result = (await browser.runtime.sendMessage({
+        type: "cloudStartLogin",
+        client_id: clientId,
+        redirect_uri: REDIRECT_URI,
+      })) as { success?: boolean; error?: string };
+      if (result?.success) {
+        return { success: true };
+      }
+      return { success: false, error: result?.error ?? "Failed to open login page" };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to open login page",
+      };
+    }
+  }
+
   public async login(
     login: string,
     password: string

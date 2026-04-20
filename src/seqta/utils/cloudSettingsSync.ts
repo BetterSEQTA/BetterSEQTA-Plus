@@ -102,11 +102,12 @@ export function buildUploadPayload(all: Record<string, unknown>): {
   schemaVersion: number;
   data: Record<string, unknown>;
 } {
-  const data: Record<string, unknown> = {};
+  const filtered: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(all)) {
     if (shouldOmitKeyFromCloudPayload(k)) continue;
-    data[k] = v;
+    filtered[k] = v;
   }
+  const data = migrateLegacyToPluginSettings(filtered);
   return { schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION, data };
 }
 
@@ -124,8 +125,77 @@ export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<
 }
 
 /**
- * Replace local extension storage with the downloaded snapshot, except auth keys
- * and device-only sensitive caches, which are preserved from the current device.
+ * Migrate legacy storage keys to plugin settings format.
+ * Only applies migrations for keys present in the data; does not overwrite
+ * existing plugin settings if the legacy key is absent.
+ */
+function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...data };
+
+  function ensurePluginSettings(pluginId: string): Record<string, unknown> {
+    const key = `plugin.${pluginId}.settings`;
+    if (!result[key] || typeof result[key] !== "object") {
+      result[key] = {};
+    }
+    return result[key] as Record<string, unknown>;
+  }
+
+  // animatedbk -> plugin.animated-background.settings.enabled
+  if ("animatedbk" in result) {
+    const settings = ensurePluginSettings("animated-background");
+    if (settings.enabled === undefined) {
+      settings.enabled = !!result.animatedbk;
+    }
+    delete result.animatedbk;
+  }
+
+  // bksliderinput -> plugin.animated-background.settings.speed
+  // Legacy: string "0"-"100", New: float 0.1-2.0
+  if ("bksliderinput" in result) {
+    const settings = ensurePluginSettings("animated-background");
+    if (settings.speed === undefined) {
+      const legacy = parseFloat(String(result.bksliderinput));
+      if (!isNaN(legacy)) {
+        settings.speed = Math.round((0.1 + (legacy / 100) * 1.9) * 100) / 100;
+      }
+    }
+    delete result.bksliderinput;
+  }
+
+  // assessmentsAverage -> plugin.assessments-average.settings.enabled
+  if ("assessmentsAverage" in result) {
+    const settings = ensurePluginSettings("assessments-average");
+    if (settings.enabled === undefined) {
+      settings.enabled = !!result.assessmentsAverage;
+    }
+    delete result.assessmentsAverage;
+  }
+
+  // lettergrade -> plugin.assessments-average.settings.lettergrade
+  if ("lettergrade" in result) {
+    const settings = ensurePluginSettings("assessments-average");
+    if (settings.lettergrade === undefined) {
+      settings.lettergrade = !!result.lettergrade;
+    }
+    delete result.lettergrade;
+  }
+
+  // notificationCollector -> plugin.notificationCollector.settings.enabled
+  if ("notificationCollector" in result && typeof result.notificationCollector === "boolean") {
+    const settings = ensurePluginSettings("notificationCollector");
+    if (settings.enabled === undefined) {
+      settings.enabled = result.notificationCollector;
+    }
+    delete result.notificationCollector;
+  }
+
+  return result;
+}
+
+/**
+ * Apply the downloaded cloud snapshot by setting each key individually,
+ * preserving auth keys and device-only sensitive caches.
+ * Legacy keys are automatically migrated to plugin settings format.
  */
 export async function applyDownloadedEnvelope(envelope: unknown): Promise<void> {
   let remoteFlat: Record<string, unknown>;
@@ -145,10 +215,7 @@ export async function applyDownloadedEnvelope(envelope: unknown): Promise<void> 
     throw new Error("Invalid cloud settings payload");
   }
 
-  const local = await browser.storage.local.get();
-  const preserved = collectLocalKeysToPreserve(local);
-  const remoteSanitized = stripExcludedKeysFromRemoteData(remoteFlat);
-
-  await browser.storage.local.clear();
-  await browser.storage.local.set({ ...remoteSanitized, ...preserved });
+  const migrated = migrateLegacyToPluginSettings(remoteFlat);
+  const remoteSanitized = stripExcludedKeysFromRemoteData(migrated);
+  await browser.storage.local.set(remoteSanitized);
 }
