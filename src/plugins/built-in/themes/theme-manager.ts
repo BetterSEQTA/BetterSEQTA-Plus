@@ -25,7 +25,9 @@ type ThemeContent = {
   CanChangeColour?: boolean;
   CustomCSS?: string;
   hideThemeName?: boolean;
+  forceTheme?: boolean;
   forceDark?: boolean;
+  adaptiveCssVariables?: string[];
   images?: { id: string; variableName: string; data: string }[]; // data: base64
 };
 
@@ -35,7 +37,7 @@ export type InstallThemeMeta = {
   serverUpdatedAtSec?: number;
   forceTheme?: boolean;
   adaptiveCssVariables?: string[];
-  images: { id: string; variableName: string; data: string }[]; // data: base64
+  images?: { id: string; variableName: string; data: string }[]; // data: base64
 };
 
 export class ThemeManager {
