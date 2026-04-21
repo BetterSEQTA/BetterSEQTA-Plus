@@ -34,9 +34,12 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.6.3 - Adaptive theme channel bindings & Alpine refresh</h1>
+
+      <h1>3.6.4 - Adaptive theme channel bindings</h1>
       <li>Added adaptive CSS variable channel bindings for custom themes: use <code>--my-var:r</code>, <code>--my-var:g</code>, or <code>--my-var:b</code> in <code>adaptiveCssVariables</code>.</li>
       <li>Adaptive theme bindings now support both full-colour and single-channel values, enabling more reliable theme math without fragile CSS colour parsing.</li>
+      <h1>3.6.3 - Assessment overview fix</h1>
+      <li>Fixed assessments overview failing to load.</li>
       <h1>3.6.2 - Cloud backup, various fixes & SEQTA Engage support</h1>
       <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
       <li>Optional automatic cloud sync if signed in (on by default).</li>
