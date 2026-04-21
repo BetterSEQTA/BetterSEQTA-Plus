@@ -36,8 +36,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
 
 
       <h1>3.6.4 - Adaptive theme channel bindings</h1>
-      <li>Added adaptive CSS variable channel bindings for custom themes: use <code>--my-var:r</code>, <code>--my-var:g</code>, or <code>--my-var:b</code> in <code>adaptiveCssVariables</code>.</li>
-      <li>Adaptive theme bindings now support both full-colour and single-channel values, enabling more reliable theme math without fragile CSS colour parsing.</li>
+      <li>Added adaptive CSS variable single channel support (r/g/b)</li>
       <h1>3.6.3 - Assessment overview fix</h1>
       <li>Fixed assessments overview failing to load.</li>
       <h1>3.6.2 - Cloud backup, various fixes & SEQTA Engage support</h1>
