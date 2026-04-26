@@ -113,17 +113,14 @@ function createWeightLabel(
         ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
         : "N/A";
   }
-
-  // Stack weight under Max/native stats — absolute right:0 overlapped the max column (#414).
+  
   statsContainer.style.display = "flex";
-  statsContainer.style.flexDirection = "column";
-  statsContainer.style.alignItems = "flex-end";
-  statsContainer.style.gap = "2px";
-  statsContainer.style.justifyContent = "center";
+  statsContainer.style.alignItems = "center";
+  statsContainer.style.justifyContent = "space-between";
+  statsContainer.style.width = "100%";
 
-  weightLabel.style.position = "relative";
-  weightLabel.style.inset = "unset";
-  weightLabel.style.transform = "none";
+  weightLabel.style.flex = "none";
+  weightLabel.style.width = "fit-content";
 
   statsContainer.appendChild(weightLabel);
 }
