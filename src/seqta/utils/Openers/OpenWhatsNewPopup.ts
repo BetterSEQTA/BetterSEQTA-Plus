@@ -39,6 +39,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
       <li>Added advanced colour adjustments variables for theme customisation.</li>
       <li>Improved logic for upcoming assements dashlet to improve compatibility.</li>
       <li>BS Cloud can now automatically download themes from other devices.</li>
+      <li>Added theme flavour's for multiple colour variations of the same theme.</li>
       
       <h1>3.6.3 - Assessment overview fix</h1>
       <li>Fixed assessments overview failing to load.</li>
