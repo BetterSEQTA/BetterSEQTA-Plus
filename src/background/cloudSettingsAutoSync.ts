@@ -362,6 +362,17 @@ function scheduleDebouncedUpload(): void {
   }, UPLOAD_DEBOUNCE_MS);
 }
 
+/** Call after store theme install (and similar) so cloud upload runs even if storage events are flaky. */
+export function requestCloudSettingsDebouncedUpload(): void {
+  void (async () => {
+    const all = (await browser.storage.local.get()) as Record<string, unknown>;
+    if (!isAutoCloudSyncEnabled(all)) return;
+    if (suppressAutoUploadDuringRestore) return;
+    if (!(await getAccessToken())) return;
+    scheduleDebouncedUpload();
+  })();
+}
+
 async function runDebouncedUploadJob(): Promise<void> {
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) return;

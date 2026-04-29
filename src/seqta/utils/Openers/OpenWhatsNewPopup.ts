@@ -38,6 +38,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
       <h1>3.6.4 - Fix for alpine theme & Assement dashlet improvement</h1>
       <li>Added advanced colour adjustments variables for theme customisation.</li>
       <li>Improved logic for assement dashlet to improve compatibility.</li>
+      <li>BS Cloud can now automatically download themes from other devices.</li>
       
       <h1>3.6.3 - Assessment overview fix</h1>
       <li>Fixed assessments overview failing to load.</li>

@@ -201,6 +201,7 @@
                   await themeManager.setTheme(displayTheme.id);
                   themeUpdates.triggerUpdate();
                   await fetchCurrentThemes();
+                  void browser.runtime.sendMessage({ type: 'cloudSettingsRequestDebouncedUpload' }).catch(() => {});
                 }
               }}
               onRemove={async () => {
