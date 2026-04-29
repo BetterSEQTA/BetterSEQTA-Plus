@@ -1,3 +1,4 @@
+
 @use "sass:meta";
 @import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600,700");
 
@@ -2609,7 +2610,7 @@ body {
 
 [class*="MessageList__unread___"] {
   position: relative;
-  background: rgb(228 225 225);
+  background: var(--background-secondary, rgb(228 225 225));
 }
 
 .dark [class*="MessageList__unread___"] {
@@ -2735,7 +2736,7 @@ body {
 [class*="MessageList__MessageList___"]
   > ol
   > li[class*="MessageList__selected___"] {
-  background: rgb(228 225 225);
+  background: var(--background-secondary, rgb(228 225 225));
   color: var(--text-primary);
   box-shadow: none !important;
   position: relative;
