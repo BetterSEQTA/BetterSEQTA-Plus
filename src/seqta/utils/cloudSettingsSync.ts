@@ -11,6 +11,13 @@ export const BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY =
   "bsplus_cloud_settings_known_remote_updated_at";
 
 /**
+ * Written by the service worker after applying a cloud settings envelope; the SEQTA page’s
+ * ThemeManager reads and clears it (SW cannot share localforage/IndexedDB with the page).
+ */
+export const BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY =
+  "bsplus_pending_theme_ensure_after_cloud";
+
+/**
  * Never uploaded to the cloud backup (OAuth and legacy keys).
  * IndexedDB (e.g. Global Search’s `betterseqta-index` database) is not part of
  * `chrome.storage.local` and is never included in this payload.
@@ -39,6 +46,7 @@ export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = ["plugin.global-search.stor
 const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
   "bsplus_lastCloudPoll",
+  BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
 ] as const;
 
 /** After restoring from cloud, keep local session so the user stays signed in. */
@@ -101,8 +109,15 @@ function stripExcludedKeysFromRemoteData(remote: Record<string, unknown>): Recor
   return out;
 }
 
+/** Stored theme id (`selectedTheme`); trims whitespace; empty string clears. */
+export function normalizeThemeIdForSync(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.trim();
+}
+
 export function buildUploadPayload(all: Record<string, unknown>): {
   schemaVersion: number;
+  themeId: string;
   data: Record<string, unknown>;
 } {
   const filtered: Record<string, unknown> = {};
@@ -111,15 +126,52 @@ export function buildUploadPayload(all: Record<string, unknown>): {
     filtered[k] = v;
   }
   const data = migrateLegacyToPluginSettings(filtered);
-  return { schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION, data };
+  const themeId = normalizeThemeIdForSync(all.selectedTheme);
+  return {
+    schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
+    themeId,
+    data,
+  };
 }
 
 export async function getSnapshotForUpload(): Promise<{
   schemaVersion: number;
+  themeId: string;
   data: Record<string, unknown>;
 }> {
   const all = await browser.storage.local.get();
   return buildUploadPayload(all as Record<string, unknown>);
+}
+
+/** Theme to ensure is installed locally after a downloaded envelope (explicit field overrides `data.selectedTheme`). */
+export function resolveThemeIdForPostSyncDownload(envelope: unknown): string | undefined {
+  if (envelope && typeof envelope === "object" && "themeId" in envelope) {
+    const top = normalizeThemeIdForSync(
+      (envelope as Record<string, unknown>).themeId,
+    );
+    if (top) return top;
+  }
+
+  let remoteFlat: Record<string, unknown>;
+  if (
+    envelope &&
+    typeof envelope === "object" &&
+    "data" in envelope &&
+    (envelope as { data?: unknown }).data !== undefined &&
+    typeof (envelope as { data?: unknown }).data === "object" &&
+    (envelope as { data?: unknown }).data !== null &&
+    !Array.isArray((envelope as { data?: unknown }).data)
+  ) {
+    remoteFlat = (envelope as { data: Record<string, unknown> }).data;
+  } else if (envelope && typeof envelope === "object" && !Array.isArray(envelope)) {
+    remoteFlat = envelope as Record<string, unknown>;
+  } else {
+    return undefined;
+  }
+
+  const migrated = migrateLegacyToPluginSettings(remoteFlat);
+  const fromData = normalizeThemeIdForSync(migrated.selectedTheme);
+  return fromData === "" ? undefined : fromData;
 }
 
 export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<void> {

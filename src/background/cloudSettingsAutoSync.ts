@@ -3,8 +3,10 @@ import {
   applyDownloadedEnvelope,
   buildUploadPayload,
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
+  BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
   CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
   isKeyIncludedInCloudUploadPayload,
+  resolveThemeIdForPostSyncDownload,
   setKnownRemoteUpdatedAt,
 } from "@/seqta/utils/cloudSettingsSync";
 
@@ -220,7 +222,15 @@ async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
         error: data?.error ?? `Download failed (${r.status})`,
       };
     }
+    const themeIdToEnsure = resolveThemeIdForPostSyncDownload(data);
     await applyDownloadedEnvelope(data);
+    if (themeIdToEnsure) {
+      await browser.storage.local.set({
+        [BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY]: themeIdToEnsure,
+      });
+    } else {
+      await browser.storage.local.remove(BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY);
+    }
     reloadSeqtaPagesFn?.();
     const updated_at = data?.updated_at as string | undefined;
     await setKnownRemoteUpdatedAt(updated_at);
