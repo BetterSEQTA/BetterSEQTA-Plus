@@ -143,7 +143,10 @@ export async function getSnapshotForUpload(): Promise<{
   return buildUploadPayload(all as Record<string, unknown>);
 }
 
-/** Theme to ensure is installed locally after a downloaded envelope (explicit field overrides `data.selectedTheme`). */
+/**
+ * Theme to ensure is installed locally after a downloaded envelope (explicit `themeId` overrides `data.selectedTheme`).
+ * Works for any store-backed id, including **flavour (slave) variants** nested under masters in the catalogue.
+ */
 export function resolveThemeIdForPostSyncDownload(envelope: unknown): string | undefined {
   if (envelope && typeof envelope === "object" && "themeId" in envelope) {
     const top = normalizeThemeIdForSync(

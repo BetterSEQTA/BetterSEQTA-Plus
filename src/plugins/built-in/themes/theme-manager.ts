@@ -170,6 +170,8 @@ export class ThemeManager {
   /**
    * After cloud restore, IndexedDB/theme storage is only reachable from page context (not MV3 SW).
    * Background sets BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY; we fetch the store JSON here before setTheme().
+   * The resolved id matches cloud sync **`themeId` / `selectedTheme`**: it may be a standard theme uuid or a
+   * flavour (slave) variant id — **`downloadAndInstallStoreTheme`** is the same code path as the theme store installer.
    */
   public async prepareThemeAfterCloudSync(): Promise<void> {
     try {
