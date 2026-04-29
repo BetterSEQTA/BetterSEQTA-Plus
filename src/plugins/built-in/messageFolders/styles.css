@@ -1,0 +1,491 @@
+/* ── Sidebar folder section ── */
+.bsplus-folders-section {
+  border-top: 1px solid var(--background-secondary, rgba(128, 128, 128, 0.2));
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.bsplus-folders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 2px;
+  user-select: none;
+}
+
+.bsplus-folders-header span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary, #666);
+  opacity: 0.5;
+}
+
+.bsplus-folders-add-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all 0.2s ease;
+  text-align: center !important;
+}
+
+.bsplus-folders-add-btn:hover {
+  opacity: 1;
+  background: var(--background-secondary, rgba(128, 128, 128, 0.1)) !important;
+}
+
+/* ── Folder list items ── */
+.bsplus-folder-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+  gap: 8px;
+  user-select: none;
+}
+
+.bsplus-folder-item:hover {
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08));
+}
+
+.bsplus-folder-item.bsplus-folder-active {
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.12));
+}
+
+.bsplus-folder-item.bsplus-folder-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--better-main, #007bff);
+  border-radius: 0 2px 2px 0;
+}
+
+.bsplus-folder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bsplus-folder-name {
+  font-size: 13px;
+  color: var(--text-primary, #333);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsplus-folder-count {
+  font-size: 11px;
+  color: var(--text-primary, #999);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.bsplus-folder-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.bsplus-folder-item:hover .bsplus-folder-actions {
+  opacity: 1;
+}
+
+.bsplus-folder-action-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all 0.15s ease;
+}
+
+.bsplus-folder-action-btn:hover {
+  opacity: 1;
+  background: var(--background-secondary, rgba(128, 128, 128, 0.15)) !important;
+}
+
+/* ── Inline folder name input ── */
+.bsplus-folder-input {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 6px;
+}
+
+.bsplus-folder-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid var(--background-secondary, #ccc);
+  border-radius: 6px;
+  background: var(--background-secondary, #f5f5f5);
+  color: var(--text-primary, #333);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bsplus-folder-input input:focus {
+  border-color: var(--better-main, #007bff);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.bsplus-folder-input-confirm,
+.bsplus-folder-input-cancel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 0 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all 0.15s ease;
+}
+
+.bsplus-folder-input-confirm {
+  background: var(--better-main, #007bff) !important;
+}
+
+.bsplus-folder-input-confirm:hover {
+  transform: scale(1.1);
+}
+
+.bsplus-folder-input-cancel {
+  background: transparent !important;
+  opacity: 0.6;
+}
+
+.bsplus-folder-input-cancel:hover {
+  opacity: 1;
+  background: var(--background-secondary, rgba(128, 128, 128, 0.1)) !important;
+}
+
+/* ── Color picker row ── */
+.bsplus-folder-colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 4px 12px 6px;
+  max-width: 120px;
+}
+
+.bsplus-folder-color-opt {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease,
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  background: none;
+  box-sizing: border-box;
+}
+
+.bsplus-folder-color-opt:hover {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 3px rgba(128, 128, 128, 0.15);
+}
+
+.bsplus-folder-color-opt.bsplus-color-selected {
+  border-color: var(--text-primary, #333);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px rgba(128, 128, 128, 0.2);
+}
+
+.bsplus-folder-color-opt.bsplus-color-selected:hover {
+  transform: scale(1.25);
+}
+
+/* ── "Add to folder" button in message actions bar ── */
+.bsplus-folder-btn {
+  position: relative;
+}
+
+.bsplus-folder-btn svg {
+  fill: currentColor;
+}
+
+/* ── Folder dropdown ── */
+.bsplus-folder-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: var(--background-primary, #fff);
+  border: 1px solid var(--background-secondary, #e0e0e0);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: bsplus-dropdown-in 0.15s ease-out;
+}
+
+@keyframes bsplus-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bsplus-folder-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary, #333);
+  font-size: 13px;
+}
+
+.bsplus-folder-dropdown-item:hover {
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08));
+}
+
+.bsplus-folder-dropdown-check {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--background-secondary, #ccc);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.bsplus-folder-dropdown-item.bsplus-checked .bsplus-folder-dropdown-check {
+  background: var(--better-main, #007bff);
+  border-color: var(--better-main, #007bff);
+}
+
+.bsplus-folder-dropdown-check svg {
+  width: 10px;
+  height: 10px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.bsplus-folder-dropdown-item.bsplus-checked .bsplus-folder-dropdown-check svg {
+  opacity: 1;
+}
+
+.bsplus-folder-dropdown-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-primary, #999);
+  opacity: 0.5;
+}
+
+/* ── Let primary column use available space instead of being clipped ── */
+[class*='MessageList__primary___'] {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ── Make subject line a flex row so badges sit inline ── */
+[class*='MessageList__subject___'] {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ── Subject text truncates to make room for badges ── */
+.bsplus-subject-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* ── Shrink the secondary column to its content ── */
+[class*='MessageList__secondary___'] {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 200px !important;
+}
+
+/* ── Constrain the flags/attachment icon column ── */
+[class*='MessageList__flags___'] {
+  width: 24px !important;
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── Message list folder badges ── */
+.bsplus-msg-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.bsplus-msg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bsplus-msg-badge:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+/* ── Folder filtering (hide messages not in active folder) ── */
+.bsplus-folder-hidden {
+  display: none !important;
+}
+
+/* ── Delete confirmation modal ── */
+@keyframes bsplus-modal-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bsplus-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.bsplus-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: bsplus-modal-overlay-in 0.2s ease-out forwards;
+}
+
+.bsplus-modal {
+  padding: 1rem 1.5rem;
+  margin: 0 1rem;
+  min-width: 16rem;
+  max-width: 22rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--background-primary, #fff);
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--background-secondary, #e0e0e0);
+  animation: bsplus-modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.bsplus-modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.bsplus-modal p {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #666);
+  opacity: 0.8;
+}
+
+.bsplus-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.bsplus-modal-actions button {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bsplus-modal-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--background-secondary, #ccc);
+  color: var(--text-primary, #333);
+}
+
+.bsplus-modal-btn-cancel:hover {
+  background: var(--background-secondary, rgba(128, 128, 128, 0.1));
+}
+
+.bsplus-modal-btn-danger {
+  background: #e53e3e;
+  border: none;
+  color: white;
+}
+
+.bsplus-modal-btn-danger:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.35);
+}

@@ -113,7 +113,16 @@ export async function loadHomePage() {
   callHomeTimetable(TodayFormatted, true);
 
   const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
-  const activeSubjects = activeClass?.subjects || [];
+  const activeYear = activeClass?.year;
+  const allSubjectsInYear = classes
+    .filter((c: any) => c.year === activeYear)
+    .flatMap((c: any) => c.subjects || []);
+  const seen = new Set<string>();
+  const activeSubjects = allSubjectsInYear.filter((s: any) => {
+    if (seen.has(s.code)) return false;
+    seen.add(s.code);
+    return true;
+  });
   const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
   const currentAssessments = assessments
     .filter((a: any) => activeSubjectCodes.includes(a.code))

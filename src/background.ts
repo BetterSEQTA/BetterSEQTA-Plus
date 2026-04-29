@@ -5,6 +5,7 @@ import {
   initCloudSettingsAutoSync,
   performCloudSettingsDownloadWithRetry,
   performCloudSettingsUploadWithRetry,
+  requestCloudSettingsDebouncedUpload,
   runCloudSettingsPoll,
 } from "./background/cloudSettingsAutoSync";
 
@@ -344,6 +345,10 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   cloudSettingsDownload: handleCloudSettingsDownload,
   cloudSettingsPoll: () => {
     void runCloudSettingsPoll();
+    return false;
+  },
+  cloudSettingsRequestDebouncedUpload: () => {
+    requestCloudSettingsDebouncedUpload();
     return false;
   },
   getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender) => {

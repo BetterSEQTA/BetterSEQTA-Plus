@@ -1,14 +1,54 @@
 <script lang="ts">
   import type { Theme } from '@/interface/types/Theme'
+  import {
+    masterGridDisplayDownloadCount,
+    gridCardPreviewImageUrls,
+  } from '@/interface/utils/themeStoreFlavours'
   import { fade } from 'svelte/transition';
   import { onMount } from 'svelte';
-  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn } = $props<{
+  import emblaCarouselSvelte from 'embla-carousel-svelte';
+  import Autoplay from 'embla-carousel-autoplay';
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows } = $props<{
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
     isLoggedIn: boolean;
     onRequestSignIn?: () => void;
+    /** Raw API themes (includes hidden slaves) for aggregated master download totals */
+    allStoreThemeRows?: Theme[];
   }>();
+
+  const displayDownloadCount = $derived(
+    allStoreThemeRows != null
+      ? masterGridDisplayDownloadCount(theme, allStoreThemeRows)
+      : (theme.download_count ?? 0),
+  );
+
+  const gridRotatorUrls = $derived(gridCardPreviewImageUrls(theme, allStoreThemeRows));
+
+  /** Mirrors CoverSwiper (featured bar): horizontal slides + autoplay */
+  function prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /** Read once synchronously where `window` exists so reduced-motion doesn’t briefly mount carousel */
+  let allowSlideAutoplay = $state(!prefersReducedMotion());
+
+  const gridEmblaKey = $derived(gridRotatorUrls.join('|'));
+
+  const gridEmblaOptions = $derived({ loop: gridRotatorUrls.length > 1 });
+
+  const gridEmblaPlugins = $derived.by(() => {
+    if (!allowSlideAutoplay || gridRotatorUrls.length <= 1) return [];
+    return [
+      Autoplay({
+        delay: 2000,
+        stopOnInteraction: false,
+        stopOnMouseEnter: true,
+      }),
+    ];
+  });
+
   let menuOpen = $state(false);
   let menuRef: HTMLDivElement;
 
@@ -111,7 +151,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          {(theme.download_count ?? 0).toLocaleString()}
+          {displayDownloadCount.toLocaleString()}
         </span>
         <span class="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5">
@@ -122,8 +162,40 @@
       </div>
     </div>
     <div class='absolute bottom-0 z-0 w-full h-3/4 bg-linear-to-t to-transparent from-black/80'></div>
-    <div class='w-full'>
-      <img src={theme.marqueeImage || theme.coverImage} alt="Theme Preview" class="object-cover w-full h-48 rounded-md" />
-    </div>
+    {#if gridRotatorUrls.length === 0}
+      <div class="relative w-full h-48 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></div>
+    {:else if !allowSlideAutoplay || gridRotatorUrls.length === 1}
+      <div class="relative w-full h-48 overflow-hidden rounded-md">
+        <img
+          src={gridRotatorUrls[0] ?? theme.marqueeImage ?? theme.coverImage}
+          alt=""
+          class="object-cover w-full h-full"
+          draggable="false"
+        />
+      </div>
+    {:else}
+      {#key gridEmblaKey}
+        <div
+          class="relative w-full h-48 overflow-hidden rounded-md"
+          use:emblaCarouselSvelte={{
+            options: gridEmblaOptions,
+            plugins: gridEmblaPlugins,
+          }}
+        >
+          <div class="flex h-full">
+            {#each gridRotatorUrls as url (url)}
+              <div class="relative flex-[0_0_100%] min-w-0 h-full shrink-0">
+                <img
+                  src={url}
+                  alt=""
+                  class="object-cover w-full h-full select-none"
+                  draggable="false"
+                />
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/key}
+    {/if}
   </div>
 </div>
