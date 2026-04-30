@@ -19,6 +19,8 @@ export class VectorWorkerManager {
   private initializationMutex = false;
   private idleTimer: NodeJS.Timeout | null = null;
   private unloadTimer: NodeJS.Timeout | null = null;
+  /** Non-streaming `process` jobs must not hit the idle shutdown mid-flight. */
+  private vectorizationLockCount = 0;
 
   private streamingSession: {
     isActive: boolean;
@@ -92,6 +94,12 @@ export class VectorWorkerManager {
             break;
 
           case "progress":
+            if (
+              data.status === "processing" ||
+              data.status === "started"
+            ) {
+              this.bumpActivityDuringVectorization();
+            }
             if (this.progressCallback) {
               this.progressCallback(data);
 
@@ -120,6 +128,7 @@ export class VectorWorkerManager {
             break;
 
           case "streamingProgress":
+            this.bumpActivityDuringVectorization();
             if (this.progressCallback && this.streamingSession?.isActive) {
               const { processed } = data;
               this.progressCallback({
@@ -150,6 +159,7 @@ export class VectorWorkerManager {
     this.readyPromise = null;
     this.progressCallback = null;
     this.initializationMutex = false;
+    this.vectorizationLockCount = 0;
     this.clearIdleTimer();
     this.clearUnloadTimer();
     if (this.streamingSession?.isActive) {
@@ -158,13 +168,25 @@ export class VectorWorkerManager {
   }
 
   private startIdleTimer() {
+    if (this.vectorizationLockCount > 0 || this.streamingSession?.isActive) {
+      return;
+    }
     this.clearIdleTimer();
     this.idleTimer = setTimeout(() => {
-      if (!this.streamingSession?.isActive && this.isInitialized) {
-        console.debug("[VectorWorker] Auto-shutting down due to 2 minutes of inactivity");
-        this.resetWorkerState();
-      }
+      if (this.vectorizationLockCount > 0) return;
+      if (this.streamingSession?.isActive) return;
+      if (!this.isInitialized) return;
+      console.debug("[VectorWorker] Auto-shutting down due to 2 minutes of inactivity");
+      this.resetWorkerState();
     }, 120000); // 2 minutes
+  }
+
+  /** Extends idle deadline while embeddings run; cheap if no idle timer is scheduled. */
+  private bumpActivityDuringVectorization() {
+    if (this.vectorizationLockCount > 0 || this.streamingSession?.isActive) {
+      this.clearIdleTimer();
+    }
+    this.updateActivity();
   }
 
   private clearIdleTimer() {
@@ -184,6 +206,7 @@ export class VectorWorkerManager {
   private scheduleUnload(delay: number = 10000) {
     this.clearUnloadTimer();
     this.unloadTimer = setTimeout(() => {
+      if (this.vectorizationLockCount > 0) return;
       if (!this.streamingSession?.isActive && this.isInitialized) {
         console.debug("[VectorWorker] Auto-unloading after processing complete");
         this.resetWorkerState();
@@ -193,6 +216,9 @@ export class VectorWorkerManager {
 
   private updateActivity() {
     this.clearUnloadTimer();
+    if (this.vectorizationLockCount > 0 || this.streamingSession?.isActive) {
+      return;
+    }
     this.startIdleTimer();
   }
 
@@ -303,32 +329,45 @@ export class VectorWorkerManager {
     // stopHeartbeat/loadAll/loadDynamicItems on the main thread while
     // vectorization was still running — blocking indexing-progress handlers
     // and freezing the chip on “Vectorization in progress”.
-    await new Promise<void>((resolve) => {
-      let settled = false;
-      const wrap: ProgressCallback = (data) => {
-        onProgress?.(data);
-        if (
-          !settled &&
-          (data.status === "complete" ||
-            data.status === "error" ||
-            data.status === "cancelled")
-        ) {
-          settled = true;
-          resolve();
-        }
-      };
-      this.progressCallback = wrap;
-      this.updateActivity();
+    this.vectorizationLockCount++;
+    this.clearIdleTimer();
+    this.clearUnloadTimer();
 
-      console.debug(
-        `Sending ${uniqueItems.length} unique items to worker for processing.`,
-      );
+    try {
+      await new Promise<void>((resolve) => {
+        let settled = false;
+        const wrap: ProgressCallback = (data) => {
+          onProgress?.(data);
+          if (
+            !settled &&
+            (data.status === "complete" ||
+              data.status === "error" ||
+              data.status === "cancelled")
+          ) {
+            settled = true;
+            resolve();
+          }
+        };
+        this.progressCallback = wrap;
 
-      this.worker!.postMessage({
-        type: "process",
-        data: { items: uniqueItems },
+        console.debug(
+          `Sending ${uniqueItems.length} unique items to worker for processing.`,
+        );
+
+        this.worker!.postMessage({
+          type: "process",
+          data: { items: uniqueItems },
+        });
       });
-    });
+    } finally {
+      this.vectorizationLockCount = Math.max(0, this.vectorizationLockCount - 1);
+      if (
+        this.vectorizationLockCount === 0 &&
+        !this.streamingSession?.isActive
+      ) {
+        this.startIdleTimer();
+      }
+    }
   }
 
   async startStreamingSession(
