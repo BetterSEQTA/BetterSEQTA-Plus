@@ -35,11 +35,12 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
 
-      <h1>3.6.5 - Seek and CTRL-Found: Global Search won’t CTRL-fuse you anymore</h1>
-      <li>Global Search: hybrid search and indexing tuned so vector + keyword results behave more reliably and stop past assessments/courses from disappearing from results.</li>
-      <li>Indexing progress bar/status cleaned up—with a cheeky green “Done!” when a pass actually finishes—and vectorisation no longer ghosts the UI on “still in progress.”</li>
-      <li>Duplicate course tiles that opened the same page are folded into one result (indexed job vs passive SEQTA captures vs subjects shortcut).</li>
-      <li>Reset Index now tells you to reload the SEQTA tab so everything can regenerate from scratch.</li>
+      <h1>3.6.5 – Tamed the Beast: Global Search improvements</h1>
+      <li>Tuned hybrid search and indexing reliability.</li>
+      <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
+      <li>Merged duplicate course hits that opened the same page.</li>
+      <li>Reset Index reminds you to reload the tab to rebuild.</li>
+      <li>Index now captures all content accross the site, not just assessments and courses.</li>
       
       <h1>3.6.4 - DM Folders, Theme flavours and fixes, Upcoming Assements improvement</h1>
       <li>Added advanced colour adjustments variables for theme customisation.</li>
