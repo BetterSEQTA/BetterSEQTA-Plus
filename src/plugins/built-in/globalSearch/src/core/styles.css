@@ -1,13 +1,36 @@
+/*
+ * Wrapper that owns the auto-margin so the whole search-trigger-and-progress
+ * group sits at the left of the SEQTA topbar. Previously, only the
+ * `.search-trigger` had `margin-right: auto`, which pushed the progress text
+ * all the way to the far right of the screen.
+ */
+.search-trigger-wrapper {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  margin-left: 10px;
+  margin-right: auto !important;
+  /* Allow the bar's bottom portion to peek out below the wrapper without
+     getting clipped by the topbar's flex line. */
+  overflow: visible;
+}
+
+.search-trigger-anchor {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate; /* new stacking context so the bar's z-index is local */
+}
+
 .search-trigger {
+  position: relative;
+  z-index: 2; /* sits above the progress bar so the bar tucks under */
   display: flex;
   align-items: center;
   justify-content: center;
   height: 32px;
-  margin-left: 10px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-right: auto !important;
   padding: 3px 12px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
@@ -83,29 +106,45 @@
   animation: shimmer 2s infinite;
 }
 
-/* Progress indicator next to search trigger */
-.search-progress-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 8px;
-  min-width: 120px;
-  max-width: 200px;
-  height: 32px;
+/*
+ * Progress bar that hugs the bottom of the search button like the next
+ * card peeking from a small stack. The bar is intentionally inset on the
+ * sides and slightly shorter than the button so it reads as a stacked
+ * shadow card rather than a separate, floating element.
+ */
+.search-progress-bar-wrapper {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  /*
+   * `top: 100%; margin-top: -6px;` makes the bar slide UP into the button
+   * by 6px while still extending below it. Combined with z-index: 1 (vs
+   * the button's z-index: 2), the bar's top edge tucks under the button
+   * so only the bottom portion peeks out — the card-stack look.
+   */
+  top: 100%;
+  margin-top: -6px;
+  height: 10px;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 7px 7px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-3px) scaleX(0.94);
+  transform-origin: top center;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+  pointer-events: none;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
-.search-progress-bar-wrapper {
-  flex: 1;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  display: none;
-  min-width: 60px;
+.search-progress-bar-wrapper.is-active {
+  opacity: 1;
+  transform: translateY(0) scaleX(1);
 }
 
 .dark .search-progress-bar-wrapper {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 .search-progress-bar {
@@ -114,26 +153,46 @@
   transition: width 0.3s ease-out;
   width: 0%;
   position: relative;
-  border-radius: 2px;
+  border-radius: 0 0 6px 6px;
 }
 
 .search-progress-bar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   animation: shimmer 2s infinite;
-  border-radius: 2px;
+  border-radius: 0 0 6px 6px;
 }
 
+/*
+ * Progress label sits as a flex child immediately to the right of the
+ * search button (gap is provided by .search-trigger-wrapper). It's hidden
+ * by default and fades in once an indexing pass is active.
+ */
 .search-progress-text {
-  font-size: 11px;
-  color: #666;
+  display: block;
+  font-size: 12px;
+  color: #475569;
   white-space: nowrap;
-  display: none;
   font-weight: 500;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 32px;
+  letter-spacing: 0.01em;
+  flex: 0 0 auto;
+}
+
+.search-progress-text.is-active {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .dark .search-progress-text {
-  color: #999;
+  color: #cbd5e1;
 }

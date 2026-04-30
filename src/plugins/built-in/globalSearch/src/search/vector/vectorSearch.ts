@@ -40,7 +40,6 @@ export interface VectorSearchResult extends SearchResult {
 
 // Cache for query embeddings to avoid recomputing
 const embeddingCache = new Map<string, number[]>();
-const EMBEDDING_CACHE_TTL = 1000 * 60 * 30; // 30 minutes
 const MAX_EMBEDDING_CACHE_SIZE = 50;
 
 function getCachedEmbedding(query: string): number[] | null {
@@ -55,7 +54,9 @@ function setCachedEmbedding(query: string, embedding: number[]) {
   // Limit cache size
   if (embeddingCache.size >= MAX_EMBEDDING_CACHE_SIZE) {
     const firstKey = embeddingCache.keys().next().value;
-    embeddingCache.delete(firstKey);
+    if (firstKey !== undefined) {
+      embeddingCache.delete(firstKey);
+    }
   }
   embeddingCache.set(query, embedding);
 }

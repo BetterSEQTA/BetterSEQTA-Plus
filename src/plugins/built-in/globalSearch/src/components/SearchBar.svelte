@@ -48,6 +48,13 @@
   let calculatorResult = $state<string | null>(null);
   let resultsList = $state<HTMLUListElement>();
 
+  // Monotonic counter so a slow async search (vector reranking) cannot
+  // overwrite results from a newer keystroke. Without this guard, the user
+  // observes results "flickering" — e.g. typing `world w` finds the assessment
+  // but `world wa` triggers a new search whose vector pass returns later than
+  // the `world w` pass and clobbers the more relevant matches.
+  let searchRequestId = 0;
+
   const updateCalculatorState = (hasResult: string | null) => {
     calculatorResult = hasResult;
   };
@@ -166,20 +173,30 @@
     });
 
     const term = searchTerm.trim().toLowerCase();
-    
+    const requestId = ++searchRequestId;
+
     if (commandsFuse && dynamicContentFuse) {
-      combinedResults = await doSearch(
-        term, 
-        commandsFuse, 
+      const results = await doSearch(
+        term,
+        commandsFuse,
         commandIdToItemMap,
         dynamicContentFuse,
         dynamicIdToItemMap,
         true, // sortByRecent
       );
+
+      // Drop the result if the user has typed since this search started, or
+      // if the current term no longer matches what we searched for. This
+      // keeps the visible list anchored to the latest query.
+      if (requestId !== searchRequestId) return;
+      if (searchTerm.trim().toLowerCase() !== term) return;
+
+      combinedResults = results;
     } else {
+      if (requestId !== searchRequestId) return;
       combinedResults = [];
     }
-    
+
     isLoading = false;
   };
 

@@ -3,10 +3,12 @@ import { getStaticCommands, type StaticCommandItem } from "../core/commands";
 import { getDynamicItems } from "../utils/dynamicItems";
 import type { CombinedResult } from "../core/types";
 import type { IndexItem } from "../indexing/types";
-import { searchVectors } from "./vector/vectorSearch";
-import type { VectorSearchResult } from "./vector/vectorTypes";
-import { jobs } from "../indexing/jobs";
 import { hybridSearchWithExpansion } from "./hybridSearch";
+import {
+  getLexicalMatchQuality,
+  isStrongLexicalMatch,
+  STRONG_LEXICAL_THRESHOLD,
+} from "./lexicalMatch";
 
 // Search result cache for better performance
 const searchCache = new Map<string, { results: CombinedResult[]; timestamp: number }>();
@@ -25,7 +27,9 @@ function setCachedResults(query: string, results: CombinedResult[]) {
   // Limit cache size
   if (searchCache.size >= MAX_CACHE_SIZE) {
     const firstKey = searchCache.keys().next().value;
-    searchCache.delete(firstKey);
+    if (firstKey !== undefined) {
+      searchCache.delete(firstKey);
+    }
   }
   searchCache.set(query, { results, timestamp: Date.now() });
 }
@@ -61,23 +65,40 @@ export function createSearchIndexes() {
     findAllMatches: false, // Performance optimization
   };
 
-  // Optimized dynamic content search options
+  // Optimized dynamic content search options.
+  // The expanded corpus mixes structured entities (assessments, subjects)
+  // with free-form text (course content, notices, folio bodies, passive
+  // captures) so we list a broad set of metadata keys while keeping titles
+  // dominant in the ranking.
+  // NOTE: metadata.route is intentionally excluded. Raw API paths like
+  // `/seqta/student/load/message/people` should never influence ranking — they
+  // historically caused passive-capture support records to bubble up above
+  // real assessments when the user typed substrings that happened to appear in
+  // the path.
   const dynamicOptions = {
     keys: [
-      { name: "text", weight: 3 }, // Increased weight for title matches
+      { name: "text", weight: 3 }, // Title is king
       { name: "content", weight: 1 },
-      { name: "category", weight: 0.5 }, // Lower weight for category
-      { name: "metadata.subjectName", weight: 1.5 }, // Boost subject name matches
-      { name: "metadata.subjectCode", weight: 1.5 }, // Boost subject code matches
+      { name: "category", weight: 0.4 },
+      { name: "metadata.subjectName", weight: 1.6 },
+      { name: "metadata.subjectCode", weight: 1.6 },
+      { name: "metadata.subject", weight: 1.4 },
+      { name: "metadata.courseCode", weight: 1.2 },
+      { name: "metadata.filename", weight: 1.2 },
+      { name: "metadata.author", weight: 0.8 },
+      { name: "metadata.authorName", weight: 0.8 },
+      { name: "metadata.label", weight: 0.6 },
+      { name: "metadata.categoryName", weight: 0.6 },
+      { name: "metadata.entityType", weight: 0.4 },
     ],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.5, // More permissive for better partial word matching (increased from 0.4)
-    minMatchCharLength: 2, // Minimum 2 characters for Fuse.js matches (substring fallback handles shorter queries)
-    distance: 100, // Increased to allow matches across longer strings
+    threshold: 0.5,
+    minMatchCharLength: 2,
+    distance: 100,
     useExtendedSearch: true,
-    ignoreLocation: true, // Allow matches anywhere in the string for better partial word matching
-    findAllMatches: true, // Enable to find all matches for better partial word support
+    ignoreLocation: true,
+    findAllMatches: true,
     shouldSort: true,
   };
 
@@ -189,23 +210,32 @@ export function searchDynamicItems(
   const results = searchResults.map((result: FuseResult<IndexItem>) => {
     const item = result.item;
     const fuseScore = 10 * (1 - (result.score || 0.5));
-    
+
     let score = fuseScore;
 
     // Recency boost
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
     const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0;
     score += recencyBoost;
-    
-    // Boost for exact text matches (especially at the start)
-    const textLower = item.text.toLowerCase();
-    if (textLower.startsWith(queryLower)) {
-      score += 5; // Strong boost for prefix matches
-    } else if (textLower.includes(queryLower)) {
-      score += 2; // Boost for substring matches
+
+    // Lexical title bonus — sticky across adjacent keystrokes so a strong
+    // title prefix match like `world wa` doesn't disappear from the top once
+    // vector reranking kicks in.
+    const lexicalQuality = getLexicalMatchQuality(item, queryLower);
+    if (lexicalQuality > 0) {
+      score += lexicalQuality;
+      // Curated-content boost: assessments and assignments with a strong
+      // title match should be elevated further, since they are the items
+      // users are most often hunting for.
+      if (
+        lexicalQuality >= STRONG_LEXICAL_THRESHOLD &&
+        (item.category === "assignments" || item.category === "assessments")
+      ) {
+        score += 4;
+      }
     }
-    
-    // Boost for category matches
+
+    // Category match (small nudge)
     if (item.category.toLowerCase().includes(queryLower)) {
       score += 1;
     }
@@ -218,36 +248,33 @@ export function searchDynamicItems(
       matches: result.matches,
     };
   });
-  
+
   // Add additional matches from simple substring search
   additionalMatches.forEach((item) => {
-    // Check if already in results
     if (!results.find(r => r.id === item.id)) {
-      const textLower = item.text.toLowerCase();
       let score = 5; // Base score for substring matches
-      
-      // Boost for prefix matches
-      if (textLower.startsWith(queryLower)) {
-        score += 5;
-      }
-      
-      // Recency boost
+
+      const lexicalQuality = getLexicalMatchQuality(item, queryLower);
+      score += lexicalQuality;
+
       const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
       const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0;
       score += recencyBoost;
-      
+
       results.push({
         id: item.id,
         type: "dynamic" as const,
         score,
         item,
+        matches: undefined,
       });
     }
   });
-  
+
   // Sort by score and return top results
   return results.sort((a, b) => b.score - a.score).slice(0, limit);
 }
+
 
 export async function performSearch(
   query: string,
@@ -286,12 +313,37 @@ export async function performSearch(
       sortByRecent,
     );
 
+    // Step 2b: Always include strong lexical title matches, even if Fuse
+    // missed them with the current threshold. This is the safety net that
+    // stops `world wa` from dropping a `World War 2 Essay` assessment that
+    // `world w` happily showed.
+    const allItems = Array.from(dynamicIdToItemMap.values());
+    const seen = new Set(bm25Results.map((r) => r.id));
+    const lexicalAdds: CombinedResult[] = [];
+    for (const item of allItems) {
+      if (seen.has(item.id)) continue;
+      if (!isStrongLexicalMatch(item, trimmedQuery)) continue;
+      const quality = getLexicalMatchQuality(item, trimmedQuery);
+      let score = 6 + quality;
+      if (item.category === "assignments" || item.category === "assessments") {
+        score += 4;
+      }
+      lexicalAdds.push({
+        id: item.id,
+        type: "dynamic" as const,
+        score,
+        item,
+        matches: undefined,
+      });
+    }
+    if (lexicalAdds.length > 0) {
+      bm25Results.push(...lexicalAdds);
+      bm25Results.sort((a, b) => b.score - a.score);
+    }
+
     // Step 3: Apply hybrid search (BM25 + Vector reranking + boosting)
     if (trimmedQuery.length > 2 && bm25Results.length > 0) {
       try {
-        // Get all items for expansion
-        const allItems = Array.from(dynamicIdToItemMap.values());
-        
         // Apply hybrid search with expansion
         dynamicResults = await hybridSearchWithExpansion(
           bm25Results,

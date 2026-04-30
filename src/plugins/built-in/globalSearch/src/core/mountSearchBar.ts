@@ -18,62 +18,68 @@ export function mountSearchBar(
   let currentHotkey = isValidHotkey(api.settings.searchHotkey) ? api.settings.searchHotkey : "ctrl+k";
   let hotkeyDisplay = formatHotkeyForDisplay(currentHotkey);
 
+  // Search trigger + progress UI live in one wrapper so the auto-margin
+  // pushes the whole group to the left edge of the topbar instead of
+  // stranding the progress text on the far right of the screen.
+  const searchWrapper = document.createElement("div");
+  searchWrapper.className = "search-trigger-wrapper";
+
+  // Anchor lets us absolutely position the progress bar directly beneath
+  // the search button without disturbing the topbar's vertical rhythm.
+  const searchAnchor = document.createElement("div");
+  searchAnchor.className = "search-trigger-anchor";
+
   const searchButton = document.createElement("div");
   searchButton.className = "search-trigger";
-  
-  // Create progress indicator container
-  const progressContainer = document.createElement("div");
-  progressContainer.className = "search-progress-container";
-  progressContainer.style.cssText = "display: flex; align-items: center; gap: 8px; margin-left: 8px; min-width: 120px;";
-  
-  // Create progress bar
+
   const progressBarWrapper = document.createElement("div");
   progressBarWrapper.className = "search-progress-bar-wrapper";
-  progressBarWrapper.style.cssText = "flex: 1; height: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 2px; overflow: hidden; display: none;";
-  
+
   const progressBar = document.createElement("div");
   progressBar.className = "search-progress-bar";
-  progressBar.style.cssText = "height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb, #3b82f6); transition: width 0.3s ease-out; width: 0%; position: relative;";
-  
-  // Add shimmer effect
-  const shimmer = document.createElement("div");
-  shimmer.style.cssText = "position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite;";
-  progressBar.appendChild(shimmer);
   progressBarWrapper.appendChild(progressBar);
-  
-  // Create progress text
-  const progressText = document.createElement("span");
+
+  // Use a block-level <div> so the label reliably participates in flex
+  // layout. A <span> defaults to `display: inline`, which silently ignores
+  // `max-width`, `overflow`, and `text-overflow: ellipsis`, and was the
+  // reason the label appeared blank when the bar was visible.
+  const progressText = document.createElement("div");
   progressText.className = "search-progress-text";
-  progressText.style.cssText = "font-size: 11px; color: #666; white-space: nowrap; display: none;";
-  
-  progressContainer.appendChild(progressBarWrapper);
-  progressContainer.appendChild(progressText);
-  
+  progressText.setAttribute("aria-live", "polite");
+
+  searchAnchor.appendChild(searchButton);
+  searchAnchor.appendChild(progressBarWrapper);
+  searchWrapper.appendChild(searchAnchor);
+  searchWrapper.appendChild(progressText);
+
   // Indexing state
   let isIndexing = false;
   let completedJobs = 0;
   let totalJobs = 0;
   let indexingStatus: string | null = null;
-  
+
   const updateProgressDisplay = () => {
     if (isIndexing && totalJobs > 0) {
       const percentage = Math.round((completedJobs / totalJobs) * 100);
       progressBar.style.width = `${Math.max(2, percentage)}%`;
-      progressBarWrapper.style.display = "block";
-      
+      progressBarWrapper.classList.add("is-active");
+
       if (indexingStatus) {
-        progressText.textContent = indexingStatus.length > 20 ? indexingStatus.substring(0, 20) + "..." : indexingStatus;
-        progressText.style.display = "block";
+        const statusText =
+          indexingStatus.length > 28
+            ? indexingStatus.substring(0, 28) + "…"
+            : indexingStatus;
+        progressText.textContent = `${statusText} · ${percentage}%`;
       } else {
-        progressText.textContent = `${completedJobs}/${totalJobs} (${percentage}%)`;
-        progressText.style.display = "block";
+        progressText.textContent = `Indexing ${completedJobs}/${totalJobs} (${percentage}%)`;
       }
+      progressText.classList.add("is-active");
     } else {
-      progressBarWrapper.style.display = "none";
-      progressText.style.display = "none";
+      progressBarWrapper.classList.remove("is-active");
+      progressText.classList.remove("is-active");
     }
   };
-  
+
   // Listen for indexing progress events
   const progressHandler = (event: CustomEvent) => {
     const { completed, total, indexing, status } = event.detail;
@@ -83,7 +89,7 @@ export function mountSearchBar(
     indexingStatus = status || null;
     updateProgressDisplay();
   };
-  
+
   window.addEventListener('indexing-progress', progressHandler as EventListener);
   appRef.progressHandler = progressHandler;
   
@@ -99,8 +105,7 @@ export function mountSearchBar(
   };
 
   updateSearchButtonDisplay();
-  titleElement.appendChild(searchButton);
-  titleElement.appendChild(progressContainer);
+  titleElement.appendChild(searchWrapper);
 
   // Listen for hotkey setting changes
   const handleStorageChange = (changes: any, area: string) => {
@@ -155,17 +160,16 @@ export function cleanupSearchBar(appRef: { current: any; storageChangeHandler?: 
     appRef.progressHandler = null;
   }
 
-  // Remove search trigger button
-  const searchTrigger = document.querySelector(".search-trigger");
-  if (searchTrigger) {
-    searchTrigger.remove();
+  // Remove search trigger wrapper (which contains the button and progress UI)
+  const searchWrapper = document.querySelector(".search-trigger-wrapper");
+  if (searchWrapper) {
+    searchWrapper.remove();
   }
-  
-  // Remove progress container
-  const progressContainer = document.querySelector(".search-progress-container");
-  if (progressContainer) {
-    progressContainer.remove();
-  }
+
+  // Defensive cleanup for older mounts that may have left the trigger or
+  // progress container as direct children of the topbar.
+  document.querySelector(".search-trigger")?.remove();
+  document.querySelector(".search-progress-container")?.remove();
 
   // Remove search root
   const searchRoot = document.querySelector("div[data-search-root]");

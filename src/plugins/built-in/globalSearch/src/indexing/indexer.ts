@@ -1,16 +1,61 @@
-import { clear, get, getAll, put, remove } from "./db";
+import { clear, get, getAll, put, remove, resetDatabase } from "./db";
 import { jobs } from "./jobs";
 import { renderComponentMap } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
 import { getVectorizedItemIds } from "./utils";
+import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
 const LOCK_TIMEOUT = 20000;
 const LOCK_ACQUIRE_TIMEOUT = 5000;
+
+let schemaCheckPromise: Promise<void> | null = null;
+
+async function ensureSchemaCurrent(): Promise<void> {
+  if (schemaCheckPromise) return schemaCheckPromise;
+  schemaCheckPromise = (async () => {
+    let storedRaw: string | null = null;
+    try {
+      storedRaw = localStorage.getItem(SCHEMA_VERSION_KEY);
+    } catch {
+      return;
+    }
+    const stored = storedRaw ? parseInt(storedRaw, 10) : 0;
+    if (stored === INDEX_SCHEMA_VERSION) return;
+
+    console.warn(
+      `[Indexer] Schema version changed (${stored} -> ${INDEX_SCHEMA_VERSION}); resetting structured + vector indexes.`,
+    );
+
+    try {
+      await resetDatabase();
+    } catch (e) {
+      console.warn("[Indexer] Failed to reset structured database:", e);
+    }
+
+    try {
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.deleteDatabase("embeddiaDB");
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+      });
+    } catch (e) {
+      console.warn("[Indexer] Failed to reset embeddiaDB:", e);
+    }
+
+    try {
+      localStorage.setItem(SCHEMA_VERSION_KEY, String(INDEX_SCHEMA_VERSION));
+    } catch {
+      /* ignore */
+    }
+  })();
+  return schemaCheckPromise;
+}
 
 /* ─────────── Progress‑meta helpers ─────────── */
 async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
@@ -162,6 +207,8 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
 }
 
 export async function runIndexing(): Promise<void> {
+  await ensureSchemaCurrent();
+
   if (!(await acquireLock())) {
     console.debug(
       "%c[Indexer] Could not acquire lock - another tab is indexing or this tab is already indexing",
@@ -177,8 +224,6 @@ export async function runIndexing(): Promise<void> {
   let completedJobs = 0;
   const totalSteps = jobIds.length + 1;
   dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
-
-  let hasStreamingJobs = false;
 
   for (const jobId of jobIds) {
     dispatchProgress(
@@ -254,10 +299,6 @@ export async function runIndexing(): Promise<void> {
       
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);
-
-      if (jobId === 'messages' || jobId === 'notifications') {
-        hasStreamingJobs = true;
-      }
 
       console.debug(
         `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items reported by run, ${merged.length} total items now in '${jobId}' store.`,
