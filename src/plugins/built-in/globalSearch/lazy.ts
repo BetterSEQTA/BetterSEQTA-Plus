@@ -46,7 +46,7 @@ const settings = defineSettings({
     description: "Reset the search index and storage",
     trigger: async () => {
       const confirmed = confirm(
-        "Are you sure you want to reset the search index and storage?",
+        "Reset the search index and all stored Global Search data?\n\nAfter this, reload this SEQTA tab so indexing can run again and rebuild the index.",
       );
       if (!confirmed) return;
 
@@ -55,7 +55,9 @@ const settings = defineSettings({
         // dynamic chunks to chase, so the button keeps working even when
         // the settings page has been open across an extension update.
         await resetSearchIndexes();
-        alert("Search index and storage have been reset successfully.");
+        alert(
+          "Search index and storage were reset.\n\nReload this tab to regenerate the index.",
+        );
       } catch (e) {
         alert(
           "Failed to reset index: " +

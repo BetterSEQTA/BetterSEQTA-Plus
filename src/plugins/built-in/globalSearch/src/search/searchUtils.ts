@@ -3,6 +3,7 @@ import { getStaticCommands, type StaticCommandItem } from "../core/commands";
 import { getDynamicItems } from "../utils/dynamicItems";
 import type { CombinedResult } from "../core/types";
 import type { IndexItem } from "../indexing/types";
+import { dedupeCombinedResultsByCourseNav, dedupeIndexItemsForSearch } from "./dedupeIndexItems";
 import { hybridSearchWithExpansion } from "./hybridSearch";
 import {
   getLexicalMatchQuality,
@@ -50,8 +51,9 @@ if (typeof window !== 'undefined') {
 }
 
 export function createSearchIndexes() {
+  clearSearchCache();
   const commands = getStaticCommands();
-  const dynamicItems = getDynamicItems();
+  const dynamicItems = dedupeIndexItemsForSearch(getDynamicItems());
 
   // Optimized command search options
   const commandOptions = {
@@ -384,10 +386,21 @@ export async function performSearch(
     return b.score - a.score;
   });
 
+  const dedupedResults = dedupeCombinedResultsByCourseNav(allResults);
+  dedupedResults.sort((a, b) => {
+    if (a.type === "command" && b.type === "dynamic") {
+      return b.score - a.score - 10;
+    }
+    if (a.type === "dynamic" && b.type === "command") {
+      return b.score - a.score + 10;
+    }
+    return b.score - a.score;
+  });
+
   // Cache results for queries longer than 2 chars
   if (trimmedQuery.length > 2) {
-    setCachedResults(trimmedQuery, allResults);
+    setCachedResults(trimmedQuery, dedupedResults);
   }
 
-  return allResults;
+  return dedupedResults;
 }

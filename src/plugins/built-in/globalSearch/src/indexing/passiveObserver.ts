@@ -133,6 +133,49 @@ function sourcePageForRoute(route: string): string | undefined {
   return undefined;
 }
 
+/** Programme + metaclass for `/load/courses` POST body or embedded course JSON. */
+function extractProgrammeMetaclass(
+  requestBody: unknown,
+  entity: unknown,
+): { programme: number; metaclass: number } | null {
+  const coerce = (value: unknown): number | undefined => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string") {
+      const t = value.trim();
+      if (!t) return undefined;
+      const n = Number(t);
+      return Number.isFinite(n) ? n : undefined;
+    }
+    return undefined;
+  };
+
+  const read = (
+    src: Record<string, unknown> | null,
+  ): { programme: number; metaclass: number } | null => {
+    if (!src) return null;
+    const programme = coerce(
+      src.programme ?? src.programmeId ?? src.programmeID,
+    );
+    const metaclass = coerce(
+      src.metaclass ?? src.metaclassId ?? src.metaclassID ?? src.subjectId,
+    );
+    if (programme !== undefined && metaclass !== undefined) {
+      return { programme, metaclass };
+    }
+    return null;
+  };
+
+  if (requestBody && typeof requestBody === "object" && !Array.isArray(requestBody)) {
+    const r = read(requestBody as Record<string, unknown>);
+    if (r) return r;
+  }
+  if (entity && typeof entity === "object" && !Array.isArray(entity)) {
+    const r = read(entity as Record<string, unknown>);
+    if (r) return r;
+  }
+  return null;
+}
+
 function entitiesFromPayload(payload: unknown): unknown[] {
   if (Array.isArray(payload)) return payload;
   if (payload && typeof payload === "object") {
@@ -294,6 +337,9 @@ function synthesizeItems(
 
     const deepLinkHints = pickDeepLinkHints(entity);
     const sourcePage = sourcePageForRoute(ctx.route);
+    const coursePm = ctx.route.includes("/load/courses")
+      ? extractProgrammeMetaclass(ctx.requestBody, entity)
+      : null;
 
     out.push(
       buildIndexItem({
@@ -314,6 +360,9 @@ function synthesizeItems(
           // assessments, courses, etc.
           ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
           ...deepLinkHints,
+          ...(coursePm
+            ? { programme: coursePm.programme, metaclass: coursePm.metaclass }
+            : {}),
         },
         actionId: "passive",
         renderComponentId: "passive",

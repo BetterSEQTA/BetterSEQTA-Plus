@@ -298,16 +298,36 @@ export class VectorWorkerManager {
       return;
     }
 
-    this.progressCallback = onProgress || null;
-    this.updateActivity();
+    // Wait until the worker reports a terminal status. Previously this method
+    // returned as soon as the job was queued, so indexers.ts continued into
+    // stopHeartbeat/loadAll/loadDynamicItems on the main thread while
+    // vectorization was still running — blocking indexing-progress handlers
+    // and freezing the chip on “Vectorization in progress”.
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const wrap: ProgressCallback = (data) => {
+        onProgress?.(data);
+        if (
+          !settled &&
+          (data.status === "complete" ||
+            data.status === "error" ||
+            data.status === "cancelled")
+        ) {
+          settled = true;
+          resolve();
+        }
+      };
+      this.progressCallback = wrap;
+      this.updateActivity();
 
-    console.debug(
-      `Sending ${uniqueItems.length} unique items to worker for processing.`,
-    );
+      console.debug(
+        `Sending ${uniqueItems.length} unique items to worker for processing.`,
+      );
 
-    this.worker!.postMessage({
-      type: "process",
-      data: { items: uniqueItems },
+      this.worker!.postMessage({
+        type: "process",
+        data: { items: uniqueItems },
+      });
     });
   }
 

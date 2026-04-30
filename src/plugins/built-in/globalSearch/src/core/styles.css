@@ -15,24 +15,58 @@
   overflow: visible;
 }
 
+/*
+ * Stacks the clickable row and the progress strip as one visual “chip”
+ * so the bar is flush under the button (no floating gap).
+ */
 .search-trigger-anchor {
-  position: relative;
   display: inline-flex;
-  isolation: isolate; /* new stacking context so the bar's z-index is local */
+  flex-direction: column;
+  align-items: stretch;
+  vertical-align: middle;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.dark .search-trigger-anchor {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+.search-trigger-anchor.is-indexing {
+  /* Very soft “rear card” edge — tweak opacity if SEQTA chrome is noisy */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 3px 8px rgba(0, 0, 0, 0.14),
+    1px 3px 0 rgba(139, 92, 246, 0.14),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.dark .search-trigger-anchor.is-indexing {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    1px 3px 0 rgba(167, 139, 250, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .search-trigger {
-  position: relative;
-  z-index: 2; /* sits above the progress bar so the bar tucks under */
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   padding: 3px 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   backdrop-filter: blur(4px);
   user-select: none;
 
@@ -51,10 +85,12 @@
   }
 }
 
-/* Light mode styles */
+/* Light mode chip */
 .search-trigger {
-  background-color: rgba(248, 250, 252, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background-color: rgba(248, 250, 252, 0.94) !important;
   color: #555 !important;
 
   p {
@@ -67,8 +103,10 @@
 }
 
 .dark .search-trigger {
-  background-color: rgba(0, 0, 0, 0.03) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background-color: rgba(24, 24, 27, 0.92) !important;
   color: #aaa !important;
 
   p {
@@ -80,7 +118,17 @@
   }
 }
 
+/*
+ * Idle: full pill rounding + closed bottom border on the anchor chip.
+ */
+.search-trigger-anchor:not(.is-indexing) .search-trigger {
+  border-radius: 8px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
 
+.dark .search-trigger-anchor:not(.is-indexing) .search-trigger {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
 .highlight {
   background-color: rgba(255, 213, 0, 0.3);
   font-weight: 500;
@@ -107,64 +155,74 @@
 }
 
 /*
- * Progress bar that hugs the bottom of the search button like the next
- * card peeking from a small stack. The bar is intentionally inset on the
- * sides and slightly shorter than the button so it reads as a stacked
- * shadow card rather than a separate, floating element.
+ * Thin track flush under `.search-trigger` — same width as chip, shared
+ * `overflow:hidden` rounding on `.search-trigger-anchor`.
  */
 .search-progress-bar-wrapper {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  /*
-   * `top: 100%; margin-top: -6px;` makes the bar slide UP into the button
-   * by 6px while still extending below it. Combined with z-index: 1 (vs
-   * the button's z-index: 2), the bar's top edge tucks under the button
-   * so only the bottom portion peeks out — the card-stack look.
-   */
-  top: 100%;
-  margin-top: -6px;
-  height: 10px;
-  z-index: 1;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 7px 7px;
+  flex: none;
+  height: 0;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(-3px) scaleX(0.94);
-  transform-origin: top center;
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+  opacity: 1;
+  transform: none;
   pointer-events: none;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+  transition: height 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
 .search-progress-bar-wrapper.is-active {
-  opacity: 1;
-  transform: translateY(0) scaleX(1);
+  height: 4px;
 }
 
-.dark .search-progress-bar-wrapper {
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+.search-progress-track {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.dark .search-progress-track {
+  background: rgba(248, 250, 252, 0.1);
 }
 
 .search-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #2563eb, #3b82f6);
-  transition: width 0.3s ease-out;
-  width: 0%;
   position: relative;
-  border-radius: 0 0 6px 6px;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #38bdf8, #2563eb);
+  transition:
+    width 0.35s cubic-bezier(0.2, 0.7, 0.35, 1),
+    background 0.25s ease;
+}
+
+.search-progress-bar-wrapper.is-rough-complete .search-progress-track {
+  background: rgba(185, 28, 28, 0.12);
+}
+
+.dark .search-progress-bar-wrapper.is-rough-complete .search-progress-track {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.search-progress-bar-wrapper.is-rough-complete .search-progress-bar {
+  background: linear-gradient(90deg, #f87171, #dc2626);
 }
 
 .search-progress-bar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.28),
+    transparent
+  );
   animation: shimmer 2s infinite;
-  border-radius: 0 0 6px 6px;
 }
-
 /*
  * Progress label sits as a flex child immediately to the right of the
  * search button (gap is provided by .search-trigger-wrapper). It's hidden
@@ -178,21 +236,57 @@
   font-weight: 500;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.25s ease;
   pointer-events: none;
   max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 32px;
+  line-height: 1.35;
   letter-spacing: 0.01em;
   flex: 0 0 auto;
+  align-self: center;
 }
 
+/* While indexing: same neutral label colour as default (only “Done!” is green). */
 .search-progress-text.is-active {
   opacity: 1;
   transform: translateX(0);
+  color: #475569;
+}
+
+/* Completed pass — green text only here, not on the strip or chip */
+.search-progress-text.is-active.is-done-message {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #15803d !important;
+}
+
+.dark .search-progress-text.is-active.is-done-message {
+  color: #4ade80 !important;
+}
+
+/* After DONE_HOLD_MS, fade out before DOM teardown */
+.search-progress-text.is-active.is-fading-done {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.45s ease,
+    color 0.25s ease;
 }
 
 .dark .search-progress-text {
   color: #cbd5e1;
+}
+
+.dark .search-progress-text.is-active {
+  color: #cbd5e1;
+}
+
+.search-progress-text.is-active.is-rough {
+  color: #b91c1c;
+}
+
+.dark .search-progress-text.is-active.is-rough {
+  color: #fca5a5;
 }

@@ -57,7 +57,9 @@ const settings = defineSettings({
     title: "Reset Index",
     description: "Reset the search index and storage",
     trigger: async () => {
-      const confirmed = confirm("Are you sure you want to reset the search index and storage?");
+      const confirmed = confirm(
+        "Reset the search index and all stored Global Search data?\n\nAfter this, reload this SEQTA tab so indexing can run again and rebuild the index.",
+      );
 
       if (confirmed) {
         try {
@@ -116,7 +118,9 @@ const settings = defineSettings({
           try {
             await deleteDb("embeddiaDB");
             await deleteDb("betterseqta-index");
-            alert("Search index and storage have been reset successfully.");
+            alert(
+              "Search index and storage were reset.\n\nReload this tab to regenerate the index.",
+            );
           } catch (e) {
             alert("Failed to reset one or more databases: " + String(e) + "\n\nTry closing other browser tabs and try again.");
           }
