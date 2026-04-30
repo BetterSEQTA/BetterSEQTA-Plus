@@ -1,7 +1,6 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { getCurrentStudentId } from "../indexing/api";
 
 export interface BaseCommandItem {
   id: string;
@@ -24,11 +23,6 @@ async function getCurrentLesson() {
   const todayFormatted = formatDate(date);
   
   try {
-    const student = await getCurrentStudentId();
-    if (typeof student !== "number") {
-      alert("Could not determine the active SEQTA student.");
-      return null;
-    }
     const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
       method: "POST",
       credentials: "include",
@@ -36,7 +30,6 @@ async function getCurrentLesson() {
       body: JSON.stringify({
         from: todayFormatted,
         until: todayFormatted,
-        student,
       }),
     });
     

@@ -1,67 +1,41 @@
 import type { IndexItem, Job } from "../types";
-import { getCurrentStudentId, seqtaFetchPayload } from "../api";
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
 
-/**
- * Resolves the active student id from whatever source is available.
- *
- * The shared `getCurrentStudentId()` calls `/seqta/student/login` with a
- * specific body shape; on some SEQTA installs that endpoint can return a
- * response that confuses the helper (no `id`, or a non-"200" envelope).
- * To make sure we never silently skip the entire assignments pass, we
- * also fall back to `getUserInfo()` from `AddBetterSEQTAElements.ts` —
- * it's the same handshake the host page uses to render the avatar, so
- * if the user is logged in at all this path resolves.
- */
-async function resolveStudentId(): Promise<number | undefined> {
+const fetchJSON = async (url: string, body: any) => {
+  const res = await fetch(`${location.origin}${url}`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+};
+
+const fetchUpcomingAssessments = async (student: number = 69) => {
   try {
-    const direct = await getCurrentStudentId();
-    if (typeof direct === "number" && Number.isFinite(direct)) return direct;
+    const res = await fetchJSON("/seqta/student/assessment/list/upcoming?", {
+      student,
+    });
+    // Match analytics.rs: payload is an array, return empty array if not found
+    return Array.isArray(res.payload) ? res.payload : [];
   } catch (e) {
-    console.warn(
-      "[Assignments job] getCurrentStudentId() threw, falling back to getUserInfo()",
-      e,
-    );
+    console.error("[Assignments job] Failed to fetch upcoming assessments:", e);
+    return [];
   }
-
-  try {
-    const info = (await getUserInfo()) as { id?: unknown } | null;
-    const id = info?.id;
-    if (typeof id === "number" && Number.isFinite(id)) return id;
-    if (typeof id === "string" && id && Number.isFinite(Number(id))) {
-      return Number(id);
-    }
-  } catch (e) {
-    console.warn("[Assignments job] getUserInfo() fallback failed:", e);
-  }
-
-  return undefined;
-}
-
-const fetchUpcomingAssessments = async (student: number) => {
-  const payload = await seqtaFetchPayload<any[]>(
-    "/seqta/student/assessment/list/upcoming",
-    { student },
-  );
-  return Array.isArray(payload) ? payload : [];
 };
 
 const fetchSubjects = async () => {
-  // SEQTA accepts both `{}` and `{ mode: "list" }` here; the latter is the
-  // shape every BetterSEQTA-Plus path uses elsewhere and is the more
-  // reliable response format on schools that customize the `student/load`
-  // endpoint.
-  const payload = await seqtaFetchPayload<any[]>(
-    "/seqta/student/load/subjects",
-    { mode: "list" },
-  );
-  if (!Array.isArray(payload)) return [];
-  return payload
-    .filter((s: any) => s && s.active === 1)
-    .flatMap((s: any) => (Array.isArray(s.subjects) ? s.subjects : []));
+  try {
+    const res = await fetchJSON("/seqta/student/load/subjects?", {});
+    return res.payload
+      ?.filter((s: any) => s.active === 1)
+      ?.flatMap((s: any) => s.subjects) || [];
+  } catch (e) {
+    console.error("[Assignments job] Failed to fetch subjects:", e);
+    return [];
+  }
 };
 
-const fetchPastAssessments = async (student: number, subjects: any[]) => {
+const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
   const map: Record<number, any> = {};
 
   // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
@@ -69,16 +43,12 @@ const fetchPastAssessments = async (student: number, subjects: any[]) => {
   await Promise.all(
     subjects.map(async (subject) => {
       try {
-        const payload = await seqtaFetchPayload<any>(
-          "/seqta/student/assessment/list/past",
-          {
-            programme: subject.programme,
-            metaclass: subject.metaclass,
-            student,
-          },
-        );
-
-        if (!payload) return;
+        // Match analytics.rs exactly: parameter order is programme, metaclass, student
+        const res = await fetchJSON("/seqta/student/assessment/list/past?", {
+          programme: subject.programme,
+          metaclass: subject.metaclass,
+          student,
+        });
 
         // Past assessments API can return data in payload.tasks OR payload.pending (or both)
         // Based on analytics.rs fetch_past_assessments, we need to check both arrays
@@ -98,13 +68,13 @@ const fetchPastAssessments = async (student: number, subjects: any[]) => {
 
         // Match analytics.rs: Check both pending and tasks arrays
         // Check for pending array first (matching Rust code order)
-        if (payload?.pending && Array.isArray(payload.pending)) {
-          payload.pending.forEach(processAssessment);
+        if (res.payload?.pending && Array.isArray(res.payload.pending)) {
+          res.payload.pending.forEach(processAssessment);
         }
 
         // Check for tasks array
-        if (payload?.tasks && Array.isArray(payload.tasks)) {
-          payload.tasks.forEach(processAssessment);
+        if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
+          res.payload.tasks.forEach(processAssessment);
         }
       } catch (e) {
         console.warn(`[Assignments job] Failed to fetch past assessments for subject ${subject.code || subject.subject || 'unknown'}:`, e);
@@ -156,27 +126,9 @@ export const assignmentsJob: Job = {
     const existingItems = await ctx.getStoredItems("assignments");
     const existingIds = new Set(existingItems.map((i) => i.id));
 
-    // Resolve the active student id from the live SEQTA session. Historically
-    // this was hard-coded to 69, which only happens to be correct on a few
-    // local dev instances; the shared helper now reuses the same `login`
-    // handshake that the host page performs so every install gets the right
-    // value without configuration.
-    //
-    // We *throw* instead of returning [] when resolution fails, so the
-    // indexer's "lastRun" meta is NOT updated. Otherwise the job would be
-    // marked complete (with zero items) and `shouldRun` would skip it for
-    // the entire 24h frequency window — meaning a single bad page load
-    // could leave the user without any assessment results until tomorrow.
-    const student = await resolveStudentId();
-    if (typeof student !== "number") {
-      throw new Error(
-        "[Assignments job] Could not resolve current student id from /seqta/student/login. The job will retry on the next page load.",
-      );
-    }
+    const student = 69; // TODO: Get from context if available
 
-    console.debug(
-      `[Assignments job] Starting indexing for student=${student} - fetching all assessments (upcoming and past)...`,
-    );
+    console.debug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     
     // Fetch data in parallel
     const [upcoming, subjects] = await Promise.all([
