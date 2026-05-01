@@ -197,11 +197,13 @@ export async function hybridSearch(
           }
         }
 
-        // Lexical guardrail: a strong title match is worth a meaningful
-        // bonus so vector reranking can't quietly drop an exact assessment
-        // title between adjacent keystrokes. Scale is roughly 0..0.18.
+        // Lexical guardrail: title matches must outweigh fuzzy vector/content
+        // overlap so exact titles lead the list.
         const lexicalQuality = getLexicalMatchQuality(item, trimmedQuery);
-        const lexicalBonus = lexicalQuality > 0 ? lexicalQuality / 80 : 0;
+        let lexicalBonus = lexicalQuality > 0 ? lexicalQuality / 80 : 0;
+        if (lexicalQuality >= 12) lexicalBonus += 0.42;
+        else if (lexicalQuality >= 10) lexicalBonus += 0.24;
+        else if (lexicalQuality >= 8) lexicalBonus += 0.14;
 
         const hybridScore =
           (normalizedBm25Score * opts.bm25Weight) +

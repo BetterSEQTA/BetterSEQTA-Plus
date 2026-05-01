@@ -11,6 +11,57 @@ import {
   STRONG_LEXICAL_THRESHOLD,
 } from "./lexicalMatch";
 
+/** Same normalization as lexical matching (trim + lowercase). */
+function normSearchKey(s: string): string {
+  return s.trim().toLowerCase();
+}
+
+/**
+ * Exact title tiers so palette navigation (e.g. "Home", "Assessments") always
+ * wins over hybrid-scored body matches. Higher = sort earlier.
+ */
+function exactTitleSortTier(r: CombinedResult, queryNorm: string): number {
+  if (!queryNorm) return 0;
+  if (r.type === "command") {
+    const cmd = r.item as StaticCommandItem;
+    if (normSearchKey(cmd.text) !== queryNorm) return 0;
+    return cmd.category === "navigation" ? 3 : 2;
+  }
+  const ix = r.item as IndexItem;
+  if (normSearchKey(ix.text) === queryNorm) return 1;
+  return 0;
+}
+
+function compareCombinedSearchResults(
+  a: CombinedResult,
+  b: CombinedResult,
+  queryNorm: string,
+): number {
+  const tierDiff = exactTitleSortTier(b, queryNorm) - exactTitleSortTier(a, queryNorm);
+  if (tierDiff !== 0) return tierDiff;
+
+  if (a.type === "command" && b.type === "dynamic") {
+    return b.score - a.score - 10;
+  }
+  if (a.type === "dynamic" && b.type === "command") {
+    return b.score - a.score + 10;
+  }
+  return b.score - a.score;
+}
+
+function syntheticIndexFromCommand(cmd: StaticCommandItem): IndexItem {
+  return {
+    id: cmd.id,
+    text: cmd.text,
+    category: cmd.category,
+    content: "",
+    dateAdded: 0,
+    metadata: {},
+    actionId: "",
+    renderComponentId: "",
+  };
+}
+
 // Search result cache for better performance
 const searchCache = new Map<string, { results: CombinedResult[]; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
@@ -140,7 +191,19 @@ export function searchCommands(
   return searchResults.map((result: FuseResult<StaticCommandItem>) => {
     const item = result.item;
     const fuseScore = 15 * (1 - (result.score || 0.5));
-    const score = fuseScore + (item.priority ?? 0);
+    let score = fuseScore + (item.priority ?? 0);
+
+    // Static palette titles share the same lexical tiers as index titles, but
+    // Fuse scores are tiny versus hybrid dynamic scores — scale title matches
+    // up so "Assessments" / prefix matches stay competitive with body hits.
+    const titleLex = getLexicalMatchQuality(syntheticIndexFromCommand(item), query);
+    if (titleLex >= 12) score += 240;
+    else if (titleLex >= 10) score += 195;
+    else if (titleLex >= 9) score += 165;
+    else if (titleLex >= 8) score += 140;
+    else if (titleLex >= 7) score += 120;
+    else if (titleLex >= 6) score += 100;
+    else if (titleLex > 0) score += titleLex * 14;
 
     return {
       id: item.id,
@@ -373,29 +436,15 @@ export async function performSearch(
 
   // Step 4: Combine command and dynamic results
   const allResults = [...commandResults, ...dynamicResults];
-  
-  // Sort by score (commands typically have higher priority)
-  allResults.sort((a, b) => {
-    // Commands always come first if scores are similar
-    if (a.type === "command" && b.type === "dynamic") {
-      return b.score - a.score - 10; // Commands get +10 boost
-    }
-    if (a.type === "dynamic" && b.type === "command") {
-      return b.score - a.score + 10; // Commands get +10 boost
-    }
-    return b.score - a.score;
-  });
+
+  allResults.sort((a, b) =>
+    compareCombinedSearchResults(a, b, trimmedQuery),
+  );
 
   const dedupedResults = dedupeCombinedResultsByCourseNav(allResults);
-  dedupedResults.sort((a, b) => {
-    if (a.type === "command" && b.type === "dynamic") {
-      return b.score - a.score - 10;
-    }
-    if (a.type === "dynamic" && b.type === "command") {
-      return b.score - a.score + 10;
-    }
-    return b.score - a.score;
-  });
+  dedupedResults.sort((a, b) =>
+    compareCombinedSearchResults(a, b, trimmedQuery),
+  );
 
   // Cache results for queries longer than 2 chars
   if (trimmedQuery.length > 2) {
