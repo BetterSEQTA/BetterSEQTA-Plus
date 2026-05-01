@@ -25,11 +25,11 @@ async function getCurrentLesson() {
   try {
     const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         from: todayFormatted,
         until: todayFormatted,
-        student: 69,
       }),
     });
     

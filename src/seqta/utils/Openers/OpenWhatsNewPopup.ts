@@ -35,6 +35,13 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
 
+      <h1>3.6.5 – Tamed the Beast: Global Search improvements</h1>
+      <li>Tuned hybrid search and indexing reliability.</li>
+      <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
+      <li>Merged duplicate course hits that opened the same page.</li>
+      <li>Reset Index reminds you to reload the tab to rebuild.</li>
+      <li>Index now captures all content accross the site, not just assessments and courses.</li>
+      
       <h1>3.6.4 - DM Folders, Theme flavours and fixes, Upcoming Assements improvement</h1>
       <li>Added advanced colour adjustments variables for theme customisation.</li>
       <li>Improved logic for upcoming assements dashlet to improve compatibility.</li>

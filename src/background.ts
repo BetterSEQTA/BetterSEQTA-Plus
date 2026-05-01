@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import semver from "semver";
 import type { SettingsState } from "@/types/storage";
 import { fetchNews } from "./background/news";
 import {
@@ -479,12 +480,60 @@ function SetStorageValue(object: any) {
   }
 }
 
+/** One-time migration for 3.6.5: opt upgraders into Global Search + indexing + transparency defaults. */
+const GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY = "plugin.global-search.settings";
+const GLOBAL_SEARCH_MIGRATION_VERSION = "3.6.5";
+
+async function migrateGlobalSearchDefaultsFor365Upgrade(
+  previousVersion: string,
+): Promise<void> {
+  try {
+    const currRaw = browser.runtime.getManifest().version;
+    const prev = semver.coerce(previousVersion);
+    const curr = semver.coerce(currRaw);
+    if (
+      prev == null ||
+      curr == null ||
+      semver.lt(curr, GLOBAL_SEARCH_MIGRATION_VERSION) ||
+      !semver.lt(prev, GLOBAL_SEARCH_MIGRATION_VERSION)
+    ) {
+      return;
+    }
+
+    const got = await browser.storage.local.get(GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY);
+    const existing = (got[GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY] ?? {}) as Record<
+      string,
+      unknown
+    >;
+
+    await browser.storage.local.set({
+      [GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY]: {
+        ...existing,
+        enabled: true,
+        transparencyEffects: true,
+        runIndexingOnLoad: true,
+        passiveIndexing: true,
+      },
+    });
+
+    console.info(
+      `[BetterSEQTA+] Migration ${GLOBAL_SEARCH_MIGRATION_VERSION}: Global Search and related settings enabled (from ${previousVersion}).`,
+    );
+  } catch (e) {
+    console.warn("[BetterSEQTA+] Global Search 3.6.5 settings migration failed:", e);
+  }
+}
+
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(["justupdated"]);
   browser.storage.local.remove(["data"]);
 
   if (event.reason == "install" || event.reason == "update") {
     browser.storage.local.set({ justupdated: true });
+  }
+
+  if (event.reason === "update" && event.previousVersion) {
+    void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
   }
 });
 
