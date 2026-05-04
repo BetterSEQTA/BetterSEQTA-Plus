@@ -10,6 +10,7 @@ const themesPlugin: Plugin = {
 
   run: async (_) => {
     const themeManager = ThemeManager.getInstance();
+    await themeManager.prepareThemeAfterCloudSync();
     await themeManager.initialize();
   },
 };

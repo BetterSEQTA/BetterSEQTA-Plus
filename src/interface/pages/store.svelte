@@ -7,6 +7,7 @@
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import type { Theme } from '../types/Theme'
+  import { visibleStoreThemes, buildCoverSlidesForThemes } from '@/interface/utils/themeStoreFlavours'
   import browser from 'webextension-polyfill'
   import ThemeModal from '../components/store/ThemeModal.svelte'
   import Header from '../components/store/Header.svelte'
@@ -26,7 +27,12 @@
   // State variables
   let searchTerm = $state('');
   let themes = $state<Theme[]>([]);
-  let coverThemes = $state<Theme[]>([]);
+
+  /** Grid/search/cover: hides flat-listed slaves when API sends them */
+  let listThemes = $derived(visibleStoreThemes(themes));
+
+  /** Cover marquee slides (master + flavour imagery for top masters) */
+  let coverSlides = $derived(buildCoverSlidesForThemes(listThemes.slice(0, 3)));
   let loading = $state(true);
   let darkMode = $state(false);
   let displayTheme = $state<Theme | null>(null);
@@ -108,7 +114,6 @@
         throw new Error(data?.error || 'Failed to fetch themes');
       }
       themes = [...data.data.themes].sort(compareStoreThemes);
-      coverThemes = themes.slice(0, 3);
 
       loading = false;
     } catch (err) {
@@ -128,12 +133,35 @@
 
   // Filter themes (list is already featured-first, then newest; filter preserves order)
   let filteredThemes = $derived(
-    themes.filter(
+    listThemes.filter(
       (theme) =>
         theme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         theme.description.toLowerCase().includes(searchTerm.toLowerCase()),
     ),
   );
+
+  async function installThemeFromStore(themeId: string, meta: Theme) {
+    const fullRow = themes.find((x) => x.id === themeId);
+    if (fullRow) {
+      await themeManager.downloadTheme(fullRow);
+    } else {
+      const flavour = meta.flavours?.find((f) => f.id === themeId);
+      await themeManager.downloadTheme({
+        id: themeId,
+        name: flavour?.name ?? meta.name,
+      } as Theme);
+    }
+    await themeManager.setTheme(themeId);
+    themeUpdates.triggerUpdate();
+    await fetchCurrentThemes();
+    void browser.runtime.sendMessage({ type: 'cloudSettingsRequestDebouncedUpload' }).catch(() => {});
+  }
+
+  async function removeThemeFromStore(themeId: string) {
+    await themeManager.deleteTheme(themeId);
+    themeUpdates.triggerUpdate();
+    await fetchCurrentThemes();
+  }
 
   $effect(() => {
     loadBackground();
@@ -172,12 +200,13 @@
         <!-- Themes Tab Content -->
         {#if activeTab === 'themes'}
           {#if searchTerm === ''}
-            <CoverSwiper {coverThemes} {setDisplayTheme} />
+            <CoverSwiper slides={coverSlides} {setDisplayTheme} />
           {/if}
     
           <!-- ThemeGrid to display filtered themes -->
           <ThemeGrid
             themes={filteredThemes}
+            allStoreThemeRows={themes}
             {searchTerm}
             {setDisplayTheme}
             {toggleFavorite}
@@ -188,28 +217,20 @@
           {#if displayTheme}
             <ThemeModal
               currentThemes={currentThemes}
-              allThemes={themes}
+              allThemes={listThemes}
+              allStoreThemeRows={themes}
               theme={displayTheme}
               {displayTheme}
               {setDisplayTheme}
               {toggleFavorite}
               isLoggedIn={cloudLoggedIn}
               onRequestSignIn={() => (showSignInOverlay = true)}
-              onInstall={async () => {
-                if (displayTheme) {
-                  await themeManager.downloadTheme(displayTheme);
-                  await themeManager.setTheme(displayTheme.id);
-                  themeUpdates.triggerUpdate();
-                  await fetchCurrentThemes();
-                }
+              onInstall={async (themeId: string) => {
+                if (displayTheme) await installThemeFromStore(themeId, displayTheme);
               }}
-              onRemove={async () => {
-                if (displayTheme?.id) {
-                  console.debug('deleting theme', displayTheme.id);
-                  await themeManager.deleteTheme(displayTheme.id);
-                  themeUpdates.triggerUpdate();
-                  await fetchCurrentThemes();
-                }
+              onRemove={async (themeId: string) => {
+                console.debug('deleting theme', themeId);
+                await removeThemeFromStore(themeId);
               }}
             />
           {/if}

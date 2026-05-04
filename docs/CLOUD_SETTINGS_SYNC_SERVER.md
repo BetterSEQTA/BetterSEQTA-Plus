@@ -35,13 +35,16 @@ Upserts the caller’s settings backup.
 ```json
 {
   "schemaVersion": 1,
+  "themeId": "uuid-string-or-empty",
   "data": {
-    "...": "flat key-value map mirroring extension storage (see Payload shape)"
+    "...": "flat key-value map mirroring extension storage (see Payload shape)",
+    "selectedTheme": "uuid-or-empty-string"
   }
 }
 ```
 
 - **`schemaVersion`**: integer. The extension currently sends `1`. The server may reject unknown major versions or store it for future migrations.
+- **`themeId`**: optional but recommended duplicate of **`data.selectedTheme`**. Should be the UUID of the **installed** BetterSEQTA store theme (`selectedTheme`). This may be a normal theme id **or** a **flavour (slave) variant** id from themes with **`flavours[]`** — the extension uses it after restore to prefetch `theme.json` when missing locally (same **`GET …/themes/{id}/download`** as the store UI). Persist and return **`themeId`** in sync with **`data.selectedTheme`**.
 - **`data`**: object whose keys are storage keys (strings) and values are JSON-serializable values (same types as stored in `chrome.storage.local`).
 
 **Success response:** HTTP `200` (or `201` if you prefer create semantics). Example:
@@ -67,14 +70,18 @@ Returns the caller’s latest settings backup.
 ```json
 {
   "schemaVersion": 1,
+  "themeId": "uuid-string-or-empty",
   "data": { },
   "updated_at": "2026-04-07T12:00:00.000Z"
 }
 ```
 
 - **`data`**: required for restore; must be the same shape as accepted in `PUT` (flat map of storage keys).
+- **`themeId`**: optional; if present must match **`data.selectedTheme`** (see `PUT`).
 - **`schemaVersion`**: optional but recommended; should match what was stored.
 - **`updated_at`**: optional; included for UX if the client shows “last backup” time.
+
+The extension resolves **`themeId`** (if non-empty), else **`data.selectedTheme`,** to [`resolveThemeIdForPostSyncDownload`](../src/seqta/utils/cloudSettingsSync.ts) after downloading the envelope — used only to reinstall theme assets from **`betterseqta.org`** when IndexedDB lacks that id (see **BetterSEQTA Cloud** flavour note in **[THEME_STORE_FLAVOURS_API](./THEME_STORE_FLAVOURS_API.md)** section “Cloud settings sync compatibility”).
 
 **No backup yet:** HTTP **`404`**. The extension treats this as “nothing in the cloud” and shows an error to the user.
 
@@ -128,6 +135,6 @@ This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, 
 
 ## Client reference (extension)
 
-- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys, sensitive device keys, and **`bsplus_cloud_settings_known_remote_updated_at`**).
-- Download: `applyDownloadedEnvelope` after `GET`; local auth keys, sensitive device keys, and the client-only watermark key are merged back after `chrome.storage.local.clear()`.
+- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys, sensitive device keys, **`bsplus_pending_theme_ensure_after_cloud`**, and **`bsplus_cloud_settings_known_remote_updated_at`** — includes **`themeId`** aligned with **`selectedTheme`**).
+- Download: resolve id via **`resolveThemeIdForPostSyncDownload`** → **`applyDownloadedEnvelope`** after `GET` → prefetch theme blobs in page context if needed (**`prepareThemeAfterCloudSync`** in **`ThemeManager`**) → reload SEQTA tabs; local auth keys, sensitive device keys, client-only watermark, and **`bsplus_pending_theme_ensure_after_cloud`** semantics preserved as documented above.
 - Auto sync (summary, debounced upload, alarms): `src/background/cloudSettingsAutoSync.ts`; content script triggers a poll on each verified SEQTA Learn/Engage page load (top frame) via `cloudSettingsPoll`.

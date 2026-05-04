@@ -2,13 +2,23 @@
   import type { Theme } from '@/interface/types/Theme'
   import ThemeCard from './ThemeCard.svelte';
 
-  let { themes, searchTerm, setDisplayTheme, toggleFavorite, isLoggedIn, onRequestSignIn } = $props<{
+  let {
+    themes,
+    searchTerm,
+    setDisplayTheme,
+    toggleFavorite,
+    isLoggedIn,
+    onRequestSignIn,
+    allStoreThemeRows,
+  } = $props<{
     themes: Theme[];
     searchTerm: string;
     setDisplayTheme: (theme: Theme) => void;
     toggleFavorite: (theme: Theme) => void;
     isLoggedIn: boolean;
     onRequestSignIn?: () => void;
+    /** Raw API list (includes `slave` rows) for master download aggregation */
+    allStoreThemeRows?: Theme[];
   }>();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) =>
@@ -25,6 +35,7 @@
         {toggleFavorite}
         {isLoggedIn}
         {onRequestSignIn}
+        {allStoreThemeRows}
       />
     {/each}
   

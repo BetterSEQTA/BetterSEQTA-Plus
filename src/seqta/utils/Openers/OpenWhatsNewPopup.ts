@@ -34,14 +34,20 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.6.4 - Assessment weighting override & fixes</h1>
+      <h1>3.6.5 - Assessment weighting override & fixes</h1>
       <li>Added the ability to override/add weightings to assessments (on assessment page).</li>
       <li>Fixed the display of weightings that could not automatically be discovered.</li>
       <li>Fixed the formatting of the weighting tag that was broken due to a SEQTA update.</li>
 
+      <h1>3.6.4 - Theme flavours and fixes, Upcoming Assements improvement</h1>
+      <li>Added advanced colour adjustments variables for theme customisation.</li>
+      <li>Improved logic for upcoming assements dashlet to improve compatibility.</li>
+      <li>BS Cloud can now automatically download themes from other devices.</li>
+      <li>Added theme flavours for multiple colour variations of the same theme.</li>
+      
       <h1>3.6.3 - Assessment overview fix</h1>
       <li>Fixed assessments overview failing to load.</li>
-
+      
       <h1>3.6.2 - Cloud backup, various fixes & SEQTA Engage support</h1>
       <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
       <li>Optional automatic cloud sync if signed in (on by default).</li>
@@ -55,6 +61,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
       <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
       <li>Added a notifications panel animation to work like settings.</li>
       <li>Fix timetable edit plugin not working correctly.</li>
+      
       <h1>3.5.3 - Adaptive theme updates</h1>
       <li>Fixed adaptive theming on current-year course and assessment pages.</li>
 
