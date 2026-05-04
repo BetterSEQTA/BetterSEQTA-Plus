@@ -88,7 +88,7 @@ function createWeightLabel(
   if (!statsContainer) return;
 
   const displayText =
-    weighting && weighting !== "processing"
+    weighting && weighting !== "processing" && weighting !== "N/A"
       ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
       : "N/A";
 
@@ -698,7 +698,7 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
     <div style="padding:16px;max-width:360px">
       <h2 style="margin:0 0 4px;font-size:15px;font-weight:600">Weighting Override</h2>
       <p style="margin:0 0 16px;font-size:12px;opacity:0.6">
-        Set the weighting for this assessment manually.
+        Set the weighting for this assessment.
         ${statusNote}
       </p>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
