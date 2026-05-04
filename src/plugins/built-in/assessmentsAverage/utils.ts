@@ -17,6 +17,9 @@ export async function initStorage(api: any) {
   if (!api.storage.assessments) {
     api.storage.assessments = {};
   }
+  if (!api.storage.weightingOverrides) {
+    api.storage.weightingOverrides = {};
+  }
 }
 
 export function clearStuck(api: any) {
@@ -82,12 +85,24 @@ function createWeightLabel(
   const statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___']`,
   ) as HTMLElement;
+  if (!statsContainer) return;
 
-  if (
-    !statsContainer ||
-    statsContainer.querySelector(".betterseqta-weight-label")
-  )
+  const displayText =
+    weighting && weighting !== "processing"
+      ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
+      : "N/A";
+
+  const existingLabel = statsContainer.querySelector(
+    ".betterseqta-weight-label",
+  ) as HTMLElement | null;
+
+  if (existingLabel) {
+    const textNodes = Array.from(existingLabel.childNodes).filter(
+      (node) => node.nodeType === Node.TEXT_NODE,
+    );
+    if (textNodes.length) textNodes[0].textContent = displayText;
     return;
+  }
 
   const label = statsContainer.querySelector(
     `[class*='Label__Label___']`,
@@ -106,14 +121,7 @@ function createWeightLabel(
   const textNodes = Array.from(weightLabel.childNodes).filter(
     (node) => node.nodeType === Node.TEXT_NODE,
   );
-
-  if (textNodes.length) {
-    textNodes[0].textContent =
-      weighting && weighting !== "processing"
-        ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
-        : "N/A";
-  }
-  
+  if (textNodes.length) textNodes[0].textContent = displayText;
   statsContainer.style.display = "flex";
   statsContainer.style.alignItems = "center";
   statsContainer.style.justifyContent = "space-between";
@@ -225,7 +233,8 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
 export async function extractPDFText(url: string): Promise<string> {
   try {
     if (isFirefox) {
-      const { lib: pdfLibUrl, worker: pdfWorkerUrl } = getPdfjsPageContextUrls();
+      const { lib: pdfLibUrl, worker: pdfWorkerUrl } =
+        getPdfjsPageContextUrls();
       const escJsSingleQuoted = (s: string) =>
         s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
@@ -547,9 +556,13 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     if (!title) continue;
 
     const assessmentID = api.storage.assessments?.[title];
-    const weighting = assessmentID
+    const autoWeighting = assessmentID
       ? api.storage.weightings?.[assessmentID]
       : undefined;
+    const override = assessmentID
+      ? api.storage.weightingOverrides?.[assessmentID]
+      : undefined;
+    const weighting = override ?? autoWeighting;
 
     createWeightLabel(assessmentItem, weighting);
 
@@ -583,4 +596,273 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     hasInaccurateWeighting,
     count,
   };
+}
+
+// Add this above injectWeightingsTab in utils.ts
+function resolveTabSetClasses(): Record<string, string> {
+  const patterns = [
+    "TabSet__tabsheet___",
+    "TabSet__hidden___",
+    "TabSet__selected___",
+    "TabSet__disappearToLeft___",
+    "TabSet__disappearToRight___",
+    "TabSet__appearFromRight___",
+    "TabSet__appearFromLeft___",
+  ];
+
+  const resolved: Record<string, string> = {};
+
+  // First pass: scan live DOM elements (fast, covers currently-applied classes)
+  const allClasses = Array.from(
+    document.querySelectorAll('[class*="TabSet__"]'),
+  ).flatMap((el) => Array.from(el.classList));
+
+  for (const pattern of patterns) {
+    const found = allClasses.find((c) => c.startsWith(pattern));
+    if (found) resolved[pattern] = found;
+  }
+
+  // Second pass: scan stylesheets for any classes not yet in the DOM
+  // (e.g. animation classes that haven't been applied yet)
+  const missing = patterns.filter((p) => !resolved[p]);
+  if (missing.length > 0) {
+    try {
+      for (const sheet of Array.from(document.styleSheets)) {
+        if (missing.every((p) => resolved[p])) break;
+        try {
+          for (const rule of Array.from(sheet.cssRules ?? [])) {
+            if (!(rule instanceof CSSStyleRule)) continue;
+            const selectorClasses =
+              rule.selectorText.match(/\.([\w-]+)/g) ?? [];
+            for (const pattern of missing) {
+              if (!resolved[pattern]) {
+                const match = selectorClasses.find((c) =>
+                  c.slice(1).startsWith(pattern),
+                );
+                if (match) resolved[pattern] = match.slice(1);
+              }
+            }
+          }
+        } catch {
+          // Cross-origin stylesheet — skip
+        }
+      }
+    } catch {}
+  }
+
+  // Fallback: use the base pattern as-is so the function doesn't crash,
+  // though styles won't apply if the hash is truly unknown.
+  for (const pattern of patterns) {
+    if (!resolved[pattern]) resolved[pattern] = pattern;
+  }
+
+  return resolved;
+}
+
+function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+  const titleEl = document.querySelector(
+    "[class*='AssessmentItem__AssessmentItem___'][class*='selected___'] [class*='AssessmentItem__title___']",
+  );
+  const title = titleEl?.textContent?.trim();
+  const assessmentID = title ? api.storage.assessments?.[title] : undefined;
+
+  const rawWeight = assessmentID
+    ? api.storage.weightings?.[assessmentID]
+    : undefined;
+
+  const weightingUnavailable = rawWeight === "N/A";
+
+  const autoWeight =
+    rawWeight && rawWeight !== "processing" && rawWeight !== "N/A"
+      ? rawWeight
+      : undefined;
+
+  const override = assessmentID
+    ? api.storage.weightingOverrides?.[assessmentID]
+    : undefined;
+
+  const statusNote = !assessmentID
+    ? ""
+    : rawWeight === "processing"
+      ? "Weighting is still being detected."
+      : weightingUnavailable
+        ? "No weighting was found in the marksheet. Set one manually."
+        : "Overrides the auto-detected value.";
+
+  sheet.innerHTML = `
+    <style>
+      #betterseqta-weight-override::placeholder {
+        opacity: 0.4;
+      }
+    </style>
+    <div style="padding:16px;max-width:360px">
+      <h2 style="margin:0 0 4px;font-size:15px;font-weight:600">Weighting Override</h2>
+      <p style="margin:0 0 16px;font-size:12px;opacity:0.6">
+        Set the weighting for this assessment manually.
+        ${statusNote}
+      </p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <label style="font-size:13px;opacity:0.7;flex-shrink:0">Auto-detected</label>
+        <span style="font-size:13px;opacity:${autoWeight != null ? "1" : "0.4"}">${autoWeight != null ? `${autoWeight}%` : "none"}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label for="betterseqta-weight-override" style="font-size:13px;opacity:0.7;flex-shrink:0">Override %</label>
+        <input
+          id="betterseqta-weight-override"
+          type="number"
+          min="0"
+          step="5"
+          placeholder="${autoWeight ?? ""}"
+          value="${override ?? ""}"
+          ${!assessmentID ? "disabled" : ""}
+          style="
+            width:90px;
+            padding:5px 8px;
+            border-radius:6px;
+            border:1px solid rgba(128,128,128,0.3);
+            background:rgba(128,128,128,0.08);
+            color:inherit;
+            font-size:13px;
+            outline:none;
+          "
+        />
+      </div>
+      <div style="margin-top:10px;min-height:18px">
+        <span class="betterseqta-save-status" style="font-size:12px;opacity:0.5"></span>
+      </div>
+      ${!assessmentID ? `<p style="font-size:12px;color:rgba(255,80,80,0.8);margin-top:8px">Assessment not yet indexed — try refreshing.</p>` : ""}
+    </div>
+  `;
+
+  if (!assessmentID) return;
+
+  const input = sheet.querySelector(
+    "#betterseqta-weight-override",
+  ) as HTMLInputElement;
+  const statusEl = sheet.querySelector(
+    ".betterseqta-save-status",
+  ) as HTMLElement;
+
+  const save = () => {
+    const raw = input.value.trim();
+    if (raw === "") {
+      const { [assessmentID]: _, ...rest } = api.storage.weightingOverrides;
+      api.storage.weightingOverrides = rest;
+    } else {
+      const val = parseFloat(raw);
+      if (isNaN(val) || val < 0) {
+        input.style.borderColor = "rgba(255,80,80,0.6)";
+        statusEl.textContent = "Invalid. Must be 0 or greater";
+        statusEl.style.color = "rgba(255,80,80,0.8)";
+        return;
+      }
+      input.style.borderColor = "rgba(128,128,128,0.3)";
+      api.storage.weightingOverrides = {
+        ...api.storage.weightingOverrides,
+        [assessmentID]: String(val),
+      };
+    }
+    statusEl.textContent = "Saved";
+    statusEl.style.color = "";
+    setTimeout(() => (statusEl.textContent = ""), 2000);
+    document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
+  };
+
+  input.addEventListener("blur", save);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      input.blur();
+      save();
+    }
+  });
+  input.addEventListener("input", () => {
+    input.style.borderColor = "rgba(128,128,128,0.3)";
+    if (statusEl.textContent === "Invalid. Must be 0 or greater.")
+      statusEl.textContent = "";
+  });
+}
+
+export function injectWeightingsTab(api: any) {
+  const tabList = document.querySelector(
+    '[class*="TabSet__tabs___"]',
+  ) as HTMLElement;
+  const container = document.querySelector(
+    '[class*="TabSet__tabContainer___"]',
+  ) as HTMLElement;
+  if (!tabList || !container) return;
+  if (tabList.querySelector(".betterseqta-weightings-tab")) return;
+
+  const cls = resolveTabSetClasses();
+
+  const prefix = (tabList.querySelector("li") as HTMLElement).id.replace(
+    /-tab-\d+$/,
+    "",
+  );
+  const newIndex = tabList.querySelectorAll("li").length;
+
+  const newTab = document.createElement("li");
+  newTab.id = `${prefix}-tab-${newIndex}`;
+  newTab.className = "";
+  newTab.setAttribute("aria-selected", "false");
+  newTab.setAttribute("aria-controls", `${prefix}-tabsheet-${newIndex}`);
+  newTab.classList.add("betterseqta-weightings-tab");
+  newTab.textContent = "Weightings";
+  tabList.appendChild(newTab);
+
+  const newSheet = document.createElement("div");
+  newSheet.id = `${prefix}-tabsheet-${newIndex}`;
+  newSheet.setAttribute("aria-labelledby", `${prefix}-tab-${newIndex}`);
+  newSheet.className = [
+    cls["TabSet__tabsheet___"],
+    cls["TabSet__hidden___"],
+    cls["TabSet__disappearToRight___"],
+  ].join(" ");
+  container.appendChild(newSheet);
+
+  let populated = false;
+  newTab.addEventListener("click", () => {
+    if (!populated) {
+      buildWeightingsTabContent(api, newSheet);
+      populated = true;
+    }
+  });
+
+  const allTabs = Array.from(tabList.querySelectorAll("li"));
+  const allSheets = Array.from(
+    container.querySelectorAll('[class*="tabsheet"]'),
+  );
+
+  allTabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => {
+      const currentIndex = allTabs.findIndex((t) =>
+        t.className.includes("TabSet__selected___"),
+      );
+      if (i === currentIndex) return;
+      const goingRight = i > currentIndex;
+
+      allTabs.forEach((t) => {
+        t.className = "";
+        t.setAttribute("aria-selected", "false");
+      });
+
+      allSheets[currentIndex].className = [
+        cls["TabSet__tabsheet___"],
+        cls["TabSet__hidden___"],
+        goingRight
+          ? cls["TabSet__disappearToLeft___"]
+          : cls["TabSet__disappearToRight___"],
+      ].join(" ");
+
+      allSheets[i].className = [
+        cls["TabSet__tabsheet___"],
+        cls["TabSet__selected___"],
+        goingRight
+          ? cls["TabSet__appearFromRight___"]
+          : cls["TabSet__appearFromLeft___"],
+      ].join(" ");
+
+      tab.className = cls["TabSet__selected___"];
+      tab.setAttribute("aria-selected", "true");
+    });
+  });
 }
