@@ -34,6 +34,11 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.6.4 - Assessment weighting override & fixes</h1>
+      <li>Added the ability to override/add weightings to assessments (on assessment page).</li>
+      <li>Fixed the display of weightings that could not automatically be discovered.</li>
+      <li>Fixed the formatting of the weighting tag that was broken due to a SEQTA update.</li>
+
       <h1>3.6.3 - Assessment overview fix</h1>
       <li>Fixed assessments overview failing to load.</li>
 
