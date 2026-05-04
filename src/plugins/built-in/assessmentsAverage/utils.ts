@@ -598,7 +598,6 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
   };
 }
 
-// Add this above injectWeightingsTab in utils.ts
 function resolveTabSetClasses(): Record<string, string> {
   const patterns = [
     "TabSet__tabsheet___",
@@ -644,7 +643,7 @@ function resolveTabSetClasses(): Record<string, string> {
             }
           }
         } catch {
-          // Cross-origin stylesheet — skip
+          // Cross-origin stylesheet
         }
       }
     } catch {}
