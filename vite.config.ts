@@ -28,6 +28,9 @@ const mode = process.env.MODE || "chrome"; // Check the environment variable to 
 const useMillion = mode.toLowerCase() !== "firefox";
 
 export default defineConfig(({ command }) => ({
+  // Default "/" makes Vite's modulepreload helper resolve deps as "/assets/…", which loads from the
+  // page origin in content scripts. Relative base uses `new URL(dep, import.meta.url)` instead.
+  base: "./",
   plugins: [
     base64Loader,
     InlineWorkerPlugin(),

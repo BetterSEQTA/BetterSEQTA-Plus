@@ -1,5 +1,4 @@
 import { animate } from "motion";
-import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
@@ -17,6 +16,7 @@ import {
   toISODate,
   weekRangeContaining,
 } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { extensionAssetUrl } from "@/seqta/utils/extensionAsset";
 
 export function updateEngageHomeMenuActive(isHome: boolean): void {
   const home = document.getElementById("homebutton");
@@ -128,7 +128,7 @@ function renderEngageDayLessons(): void {
   if (lessons.length === 0) {
     dayContainer.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+        <img src="${extensionAssetUrl(LogoLight)}" alt="" />
         <p>No lessons for this day.</p>
       </div>`;
   } else {
@@ -273,7 +273,7 @@ function processEngageNotices(response: any, labelArray: string[]): void {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
+    img.src = extensionAssetUrl(LogoLight);
     const text = document.createElement("p");
     text.innerText = "No notices for today.";
     emptyState.append(img, text);
@@ -285,7 +285,7 @@ function processEngageNotices(response: any, labelArray: string[]): void {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
+    img.src = extensionAssetUrl(LogoLight);
     const text = document.createElement("p");
     text.innerText = "No notices for today.";
     emptyState.append(img, text);
@@ -713,7 +713,7 @@ function showEngageTimetableError(message: string): void {
   dayContainer.classList.remove("loading");
   dayContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${extensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }
@@ -724,7 +724,7 @@ function showEngageNoticesSectionError(message: string): void {
   noticeContainer.classList.remove("loading");
   noticeContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${extensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }

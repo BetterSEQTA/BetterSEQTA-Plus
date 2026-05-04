@@ -1,4 +1,9 @@
 import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import {
+  isBetterseqtaWasmReady,
+  normalizeSeqtaSubjectHexColour,
+  parseSeqtaCoursesAssessmentsPageJson,
+} from "@/wasm/init";
 
 /**
  * Parses the current page from window.location.hash.
@@ -12,6 +17,24 @@ import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
  */
 function parsePageContext(): { programme: number; metaclass: number } | null {
   const hash = window.location.hash || "";
+  if (isBetterseqtaWasmReady()) {
+    try {
+      const json = parseSeqtaCoursesAssessmentsPageJson(hash);
+      if (json) {
+        const o = JSON.parse(json) as { programme: number; metaclass: number };
+        if (
+          typeof o.programme === "number" &&
+          typeof o.metaclass === "number" &&
+          !Number.isNaN(o.programme) &&
+          !Number.isNaN(o.metaclass)
+        ) {
+          return { programme: o.programme, metaclass: o.metaclass };
+        }
+      }
+    } catch {
+      /* fall through */
+    }
+  }
   const match = hash.match(/[?&]page=\/(courses|assessments)\/(?:[^/]+\/)?(\d+):(\d+)/);
   if (!match) return null;
   const programme = parseInt(match[2], 10);
@@ -112,6 +135,14 @@ export async function getAdaptiveColour(): Promise<string | null> {
   const colour = await getSubjectColour(subjectCode, userId);
   if (!colour || typeof colour !== "string") return null;
 
+  if (isBetterseqtaWasmReady()) {
+    try {
+      const normalized = normalizeSeqtaSubjectHexColour(colour);
+      if (normalized) return normalized;
+    } catch {
+      /* fall through */
+    }
+  }
   // Basic hex validation
   if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(colour)) return colour;
   if (/^[0-9A-Fa-f]{6}$/.test(colour)) return `#${colour}`;

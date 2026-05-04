@@ -10,6 +10,12 @@ import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
+import {
+  childTextHasSeqtaCopyright,
+  initBetterseqtaWasm,
+  isBetterseqtaWasmReady,
+  titleIsSeqtaLearnOrEngage,
+} from "@/wasm/init";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -35,27 +41,67 @@ function registerFetchSeqtaAppLinkListener() {
   });
 }
 
+function scheduleDeferredPluginInitialization() {
+  const start = () => {
+    void plugins.initializePlugins().catch((error) => {
+      console.error("[BetterSEQTA+] Deferred plugin initialization failed:", error);
+    });
+  };
+
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    const idle = window.requestIdleCallback as (
+      callback: IdleRequestCallback,
+      options?: IdleRequestOptions,
+    ) => number;
+    idle(() => start(), { timeout: 1200 });
+    return;
+  }
+
+  // Fallback for browsers without requestIdleCallback.
+  setTimeout(start, 0);
+}
+
 export let MenuOptionsOpen = false;
 
 var IsSEQTAPage = false;
 let hasSEQTAText = false;
 
+function childTextLooksLikeSeqtaCopyright(text: string): boolean {
+  return text.includes("Copyright (c) SEQTA Software");
+}
+
+function titleLooksLikeSeqtaLearnOrEngage(title: string): boolean {
+  return title.includes("SEQTA Learn") || title.includes("SEQTA Engage");
+}
+
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
 if (document.childNodes[1]) {
+  void bootstrap();
+}
+
+async function bootstrap() {
+  try {
+    await initBetterseqtaWasm();
+  } catch (e) {
+    console.warn("[BetterSEQTA+] WASM init failed, using JS fallbacks:", e);
+  }
+
+  const childText = document.childNodes[1]?.textContent;
   hasSEQTAText =
-    document.childNodes[1].textContent?.includes(
-      "Copyright (c) SEQTA Software",
-    ) ?? false;
-  init();
+    typeof childText === "string" &&
+    (isBetterseqtaWasmReady()
+      ? childTextHasSeqtaCopyright(childText)
+      : childTextLooksLikeSeqtaCopyright(childText));
+
+  await init();
 }
 
 async function init() {
-  if (
-    hasSEQTAText &&
-    (document.title.includes("SEQTA Learn") ||
-      document.title.includes("SEQTA Engage")) &&
-    !IsSEQTAPage
-  ) {
+  const titleOk = isBetterseqtaWasmReady()
+    ? titleIsSeqtaLearnOrEngage(document.title)
+    : titleLooksLikeSeqtaLearnOrEngage(document.title);
+
+  if (hasSEQTAText && titleOk && !IsSEQTAPage) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
@@ -107,7 +153,7 @@ async function init() {
       plugins.Monofile();
 
       if (settingsState.onoff) {
-        await plugins.initializePlugins();
+        scheduleDeferredPluginInitialization();
       }
 
       if (settingsState.devMode) {

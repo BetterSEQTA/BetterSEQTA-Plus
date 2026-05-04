@@ -1,5 +1,4 @@
 // Third-party libraries
-import browser from "webextension-polyfill";
 import { animate, stagger } from "motion";
 
 // Internal utilities and functions
@@ -30,6 +29,7 @@ import {
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
+import { extensionAssetUrl } from "@/seqta/utils/extensionAsset";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -109,7 +109,7 @@ export async function finishLoad() {
 }
 
 export function GetCSSElement(file: string) {
-  const cssFile = browser.runtime.getURL(file);
+  const cssFile = extensionAssetUrl(file);
   const fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
   fileref.setAttribute("type", "text/css");
@@ -866,7 +866,7 @@ function InjectCustomIcons() {
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
+      src: url('${extensionAssetUrl(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`;

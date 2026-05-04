@@ -1,38 +1,44 @@
 import Color from "color";
+import {
+  colorCssThresholdDistance,
+  isBetterseqtaWasmReady,
+} from "@/wasm/init";
+
 export function GetThresholdOfColor(color: any) {
   if (!color) return 0;
-  // Case-insensitive regular expression for matching RGBA colors
+  const s = typeof color === "string" ? color : String(color);
+
+  if (isBetterseqtaWasmReady()) {
+    try {
+      const v = colorCssThresholdDistance(s);
+      if (v >= 0 && Number.isFinite(v)) return v;
+    } catch {
+      /* fall through to Color */
+    }
+  }
+
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
-  // Check if the color string is a gradient (linear or radial)
-  if (color.includes("gradient")) {
-    let gradientThresholds = [];
-
-    // Find and replace all instances of RGBA in the gradient
+  if (s.includes("gradient")) {
+    const gradientThresholds = [];
     let match;
-    while ((match = rgbaRegex.exec(color)) !== null) {
-      // Extract the individual components (r, g, b, a)
+    while ((match = rgbaRegex.exec(s)) !== null) {
       const rgbaString = match[1];
       const [r, g, b] = rgbaString.split(",").map((str) => str.trim());
-
-      // Compute the threshold using your existing algorithm
       const threshold = Math.sqrt(
-        parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2,
+        parseInt(r, 10) ** 2 + parseInt(g, 10) ** 2 + parseInt(b, 10) ** 2,
       );
-
-      // Store the computed threshold
       gradientThresholds.push(threshold);
     }
-
-    // Calculate the average threshold
-    const averageThreshold =
+    if (gradientThresholds.length === 0) {
+      return 0;
+    }
+    return (
       gradientThresholds.reduce((acc, val) => acc + val, 0) /
-      gradientThresholds.length;
-
-    return averageThreshold;
-  } else {
-    // Handle the color as a simple RGBA (or hex, or whatever the Color library supports)
-    const rgb = Color.rgb(color).object();
-    return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
+      gradientThresholds.length
+    );
   }
+
+  const rgb = Color.rgb(s).object();
+  return Math.sqrt(rgb.r ** 2 + rgb.g ** 2 + rgb.b ** 2);
 }

@@ -1,8 +1,8 @@
 // Third-party libraries
-import browser from "webextension-polyfill";
 
 // Internal utilities and functions
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { extensionAssetUrl } from "@/seqta/utils/extensionAsset";
 
 // UI and theme management
 import pageState from "@/pageState.js?url";
@@ -34,7 +34,12 @@ export async function main() {
 }
 
 function injectPageState() {
+  const scriptUrl = extensionAssetUrl(pageState);
+  if (!scriptUrl) {
+    console.warn("[BetterSEQTA+] Could not resolve pageState script URL.");
+    return;
+  }
   const mainScript = document.createElement("script");
-  mainScript.src = browser.runtime.getURL(pageState);
+  mainScript.src = scriptUrl;
   document.head.appendChild(mainScript);
 }

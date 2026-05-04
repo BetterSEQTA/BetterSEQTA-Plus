@@ -1,5 +1,4 @@
 import { animate, stagger } from "motion";
-import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import assessmentsicon from "@/seqta/icons/assessmentsIcon";
 import coursesicon from "@/seqta/icons/coursesIcon";
@@ -13,6 +12,7 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import { extensionAssetUrl } from "@/seqta/utils/extensionAsset";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
@@ -155,7 +155,7 @@ export async function loadHomePage() {
       const emptyState = document.createElement("div");
       emptyState.classList.add("day-empty");
       const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
+      img.src = extensionAssetUrl(LogoLight);
       const text = document.createElement("p");
       text.innerText = "No notices available.";
       emptyState.append(img, text);
@@ -304,7 +304,7 @@ function processNotices(response: any, labelArray: string[]) {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
+    img.src = extensionAssetUrl(LogoLight);
     const text = document.createElement("p");
     text.innerText = "No notices for today.";
     emptyState.append(img, text);
@@ -316,7 +316,7 @@ function processNotices(response: any, labelArray: string[]) {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
+    img.src = extensionAssetUrl(LogoLight);
     const text = document.createElement("p");
     text.innerText = "No notices for today.";
     emptyState.append(img, text);
@@ -735,7 +735,7 @@ function callHomeTimetable(date: string, change?: any) {
       const dummyDay = document.createElement("div");
       dummyDay.classList.add("day-empty");
       const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
+      img.src = extensionAssetUrl(LogoLight);
       const text = document.createElement("p");
       text.innerText = "No lessons available.";
       dummyDay.append(img, text);
@@ -987,7 +987,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" />
+        <img src="${extensionAssetUrl(LogoLight)}" />
         <p>No assessments available.</p>
       </div>`;
   }

@@ -1,4 +1,8 @@
 import browser from "webextension-polyfill";
+import {
+  isBetterseqtaWasmReady,
+  isFirefoxUserAgent,
+} from "@/wasm/init";
 
 /**
  * Detects if the current browser is Firefox
@@ -11,6 +15,13 @@ export function isFirefox(): boolean {
     }
     // Fallback: check user agent
     if (typeof navigator !== "undefined") {
+      if (isBetterseqtaWasmReady()) {
+        try {
+          return isFirefoxUserAgent(navigator.userAgent);
+        } catch {
+          /* fall through */
+        }
+      }
       return navigator.userAgent.toLowerCase().includes("firefox");
     }
     return false;

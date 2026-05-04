@@ -10,6 +10,11 @@ bun.lock
 src/public/resources/pdfjs/pdf.worker.min.mjs
 src/public/resources/pdfjs/pdf.legacy.min.mjs
 
+# Rust / wasm
+/target/
+# wasm-pack output (regenerate with `npm run build:wasm`)
+src/wasm/pkg/
+
 # Build
 extension.zip
 build/

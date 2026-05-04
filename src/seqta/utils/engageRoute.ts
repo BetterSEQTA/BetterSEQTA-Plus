@@ -1,8 +1,26 @@
+import {
+  isBetterseqtaWasmReady,
+  parseEngageRoutePage,
+} from "@/wasm/init";
+
 /**
  * Learn-style hash routes on Engage: `#?page=/home` → `"home"`.
  * Falls back to the legacy path segment used by classic Learn routing.
  */
 export function getEngageRoutePage(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return parseEngageRoutePage(
+        window.location.hash,
+        window.location.href,
+      );
+    } catch {
+      /* fall through */
+    }
+  }
+
   const hash = window.location.hash.replace(/^#/, "");
   if (hash) {
     const qs = hash.startsWith("?") ? hash : `?${hash}`;

@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import Color from "color";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { lightenAndPaleColor } from "./lightenAndPaleColor";
@@ -6,6 +5,7 @@ import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import { extensionAssetUrl } from "@/seqta/utils/extensionAsset";
 
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -115,11 +115,11 @@ function applyColorsWith(selectedColor: string) {
   let modeProps = {};
   modeProps = settingsState.DarkMode
     ? {
-        "--betterseqta-logo": `url(${browser.runtime.getURL(darkLogo)})`,
+        "--betterseqta-logo": `url(${extensionAssetUrl(darkLogo)})`,
       }
     : {
         "--better-pale": lightenAndPaleColor(selectedColor),
-        "--betterseqta-logo": `url(${browser.runtime.getURL(lightLogo)})`,
+        "--betterseqta-logo": `url(${extensionAssetUrl(lightLogo)})`,
       };
 
   if (settingsState.DarkMode) {

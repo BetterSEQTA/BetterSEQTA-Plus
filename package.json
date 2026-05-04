@@ -6,6 +6,12 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "postinstall": "node scripts/copy-pdfjs-assets.mjs",
+    "build:wasm": "npx --yes wasm-pack@0.13.1 build wasm/betterseqta-wasm --target web --out-dir ../../src/wasm/pkg --release && node scripts/rm-wasm-pkg-gitignore.mjs",
+    "prebuild": "npm run build:wasm",
+    "prebuild:chrome": "npm run build:wasm",
+    "prebuild:firefox": "npm run build:wasm",
+    "prebuild:safari": "npm run build:wasm",
+    "prebuild:dev": "npm run build:wasm",
     "autoaudit": "npm audit && npm audit fix && npm run build",
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",

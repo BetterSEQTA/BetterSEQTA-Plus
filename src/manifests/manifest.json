@@ -21,7 +21,7 @@
     "service_worker": "background.ts"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http: https: https://betterseqta.org https://accounts.betterseqta.org https://raw.githubusercontent.com https://newsapi.org"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http: https: https://betterseqta.org https://accounts.betterseqta.org https://raw.githubusercontent.com https://newsapi.org"
   },
   "content_scripts": [
     {
@@ -33,6 +33,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "assets/*",
         "resources/icons/*",
         "resources/update-image.webp",
         "resources/pdfjs/pdf.worker.min.mjs",

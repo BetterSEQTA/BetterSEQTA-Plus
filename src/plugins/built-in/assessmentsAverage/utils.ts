@@ -5,8 +5,56 @@ import {
   getPdfjsPageContextUrls,
 } from "@/lib/pdfjsExtension.ts";
 import * as pdfjs from "pdfjs-dist";
+import {
+  escapeJsForInlineScript,
+  escapeJsSingleQuotedString,
+  extractWeightFromPdfText,
+  isBetterseqtaWasmReady,
+  isFirefoxUserAgent,
+  parseGradeToPercent,
+} from "@/wasm/init";
 
 ensurePdfjsWorker();
+
+function escJsSingleQuoted(s: string): string {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return escapeJsSingleQuotedString(s);
+    } catch {
+      /* fall through */
+    }
+  }
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function escJsInlineUrl(s: string): string {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return escapeJsForInlineScript(s);
+    } catch {
+      /* fall through */
+    }
+  }
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function detectFirefox(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return isFirefoxUserAgent(ua);
+    } catch {
+      /* fall through */
+    }
+  }
+  const u = ua.toLowerCase();
+  return (
+    u.indexOf("firefox") > -1 &&
+    !u.includes("seamonkey") &&
+    !u.includes("waterfox")
+  );
+}
 
 export async function initStorage(api: any) {
   await api.storage.loaded;
@@ -63,7 +111,7 @@ export const letterToNumber: Record<string, number> = {
   F: 0,
 };
 
-function parseGrade(text: string): number {
+function parseGradeTs(text: string): number {
   const str = text.trim().toUpperCase();
   if (str.includes("/")) {
     const [raw, max] = str.split("/").map((n) => parseFloat(n));
@@ -73,6 +121,17 @@ function parseGrade(text: string): number {
     return parseFloat(str.replace("%", "")) || 0;
   }
   return letterToNumber[str] ?? 0;
+}
+
+function parseGrade(text: string): number {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return parseGradeToPercent(text);
+    } catch {
+      /* fall through */
+    }
+  }
+  return parseGradeTs(text);
 }
 
 function createWeightLabel(
@@ -128,19 +187,14 @@ function createWeightLabel(
   statsContainer.appendChild(weightLabel);
 }
 
-export const isFirefox =
-  navigator.userAgent.toLowerCase().indexOf("firefox") > -1 &&
-  !navigator.userAgent.toLowerCase().includes("seamonkey") &&
-  !navigator.userAgent.toLowerCase().includes("waterfox");
-
 async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
   const isBlobUrl = url.startsWith("blob:");
 
-  if (isBlobUrl || isFirefox) {
+  if (isBlobUrl || detectFirefox()) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       const requestId = `pdf-fetch-${Date.now()}-${Math.random()}`;
-      const escapedUrl = url.replace(/'/g, "\\'");
+      const escapedUrl = escJsSingleQuoted(url);
 
       script.textContent = `
         (function() {
@@ -227,10 +281,8 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
 
 export async function extractPDFText(url: string): Promise<string> {
   try {
-    if (isFirefox) {
+    if (detectFirefox()) {
       const { lib: pdfLibUrl, worker: pdfWorkerUrl } = getPdfjsPageContextUrls();
-      const escJsSingleQuoted = (s: string) =>
-        s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
       const pdfWorkerInj = escJsSingleQuoted(pdfWorkerUrl);
 
@@ -238,10 +290,7 @@ export async function extractPDFText(url: string): Promise<string> {
         const script = document.createElement("script");
         const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
 
-        const escapedUrl = url
-          .replace(/\\/g, "\\\\")
-          .replace(/'/g, "\\'")
-          .replace(/"/g, '\\"');
+        const escapedUrl = escJsInlineUrl(url);
 
         script.textContent = `
           (function() {
@@ -488,7 +537,7 @@ async function handleWeightings(mark: any, api: any) {
       text = await extractPDFText(pdfUrl);
     } catch (error: any) {
       if (
-        isFirefox &&
+        detectFirefox() &&
         (error?.message?.includes("blob") ||
           error?.message?.includes("Security") ||
           error?.message?.includes("CSP"))
@@ -500,11 +549,22 @@ async function handleWeightings(mark: any, api: any) {
       }
     }
 
-    const match = text.match(/weight:\s*(\d+\.?\d*)/i);
+    let weight: string | undefined;
+    if (isBetterseqtaWasmReady()) {
+      try {
+        weight = extractWeightFromPdfText(text);
+      } catch {
+        weight = undefined;
+      }
+    }
+    if (weight === undefined) {
+      const match = text.match(/weight:\s*(\d+\.?\d*)/i);
+      weight = match ? match[1] : undefined;
+    }
 
     api.storage.weightings = {
       ...api.storage.weightings,
-      [assessmentID]: match ? match[1] : "N/A",
+      [assessmentID]: weight ?? "N/A",
     };
   } catch (error: any) {
     api.storage.weightings = {

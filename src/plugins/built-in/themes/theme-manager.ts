@@ -16,6 +16,11 @@ import {
   clearCustomThemeAdaptiveCssVariables,
   setCustomThemeAdaptiveCssVariables,
 } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import {
+  decodeBase64,
+  isBetterseqtaWasmReady,
+  stripDataUrlBase64Payload,
+} from "@/wasm/init";
 
 type ThemeContent = {
   id: string;
@@ -1087,8 +1092,15 @@ export class ThemeManager {
   private stripBase64Prefix(base64String: string): string {
     if (!base64String) return "";
 
-    const prefixRegex = /^data:[^;]+;base64,/;
     try {
+      if (isBetterseqtaWasmReady()) {
+        try {
+          return stripDataUrlBase64Payload(base64String);
+        } catch {
+          /* fall through */
+        }
+      }
+      const prefixRegex = /^data:[^;]+;base64,/;
       return prefixRegex.test(base64String)
         ? base64String.replace(prefixRegex, "")
         : base64String;
@@ -1100,6 +1112,16 @@ export class ThemeManager {
 
   private base64ToBlob(base64: string): Blob {
     try {
+      if (isBetterseqtaWasmReady()) {
+        try {
+          const bytes = decodeBase64(base64.trim());
+          if (bytes.byteLength > 0) {
+            return new Blob([bytes], { type: "image/png" });
+          }
+        } catch {
+          /* fall through */
+        }
+      }
       const byteString = atob(base64);
       const ab = new ArrayBuffer(byteString.length);
       const ia = new Uint8Array(ab);

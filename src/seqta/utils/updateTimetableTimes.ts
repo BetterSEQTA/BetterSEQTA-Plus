@@ -1,6 +1,40 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import {
+  formatTimetableTimeLabel,
+  formatTimetableTimeRange,
+  isBetterseqtaWasmReady,
+  locationHashIncludesTimetablePage,
+} from "@/wasm/init";
 import { convertTo12HourFormat } from "./convertTo12HourFormat";
 import { waitForElm } from "./waitForElm";
+
+function timetableLabel12(original: string, noMinutes: boolean): string {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return formatTimetableTimeLabel(original, noMinutes);
+    } catch {
+      /* fall through */
+    }
+  }
+  return convertTo12HourFormat(original, noMinutes)
+    .toLowerCase()
+    .replace(" ", "");
+}
+
+function timetableRange12(original: string): string | undefined {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      const r = formatTimetableTimeRange(original);
+      if (r) return r;
+    } catch {
+      /* fall through */
+    }
+  }
+  if (!original.includes("–") && !original.includes("-")) return undefined;
+  const [start, end] = original.split(/[-–]/).map((p) => p.trim());
+  if (!start || !end) return undefined;
+  return `${timetableLabel12(start, false)}–${timetableLabel12(end, false)}`;
+}
 
 let timetableObserver: MutationObserver | null = null;
 let isOnTimetablePage = false;
@@ -19,9 +53,7 @@ function updateTimeElements(): void {
     const original = el.dataset.original;
     if (!original) return;
 
-    el.textContent = convertTo12HourFormat(original, true)
-      .toLowerCase()
-      .replace(" ", "");
+    el.textContent = timetableLabel12(original, true);
   });
 
   const entryTimes = timetablePage.querySelectorAll<HTMLElement>(".entry .times");
@@ -30,30 +62,30 @@ function updateTimeElements(): void {
     const original = el.dataset.original || "";
     if (!original.includes("–") && !original.includes("-")) return;
 
-    const [start, end] = original.split(/[-–]/).map((p) => p.trim());
-    if (!start || !end) return;
-
-    const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
-    const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
-    el.textContent = `${start12}–${end12}`;
+    const ranged = timetableRange12(original);
+    if (ranged) el.textContent = ranged;
   });
 
-    const quickbarTimes = document.querySelectorAll<HTMLElement>(".quickbar .meta .times");
+  const quickbarTimes = document.querySelectorAll<HTMLElement>(
+    ".quickbar .meta .times",
+  );
   quickbarTimes.forEach((el) => {
     if (!el.dataset.original) el.dataset.original = el.textContent || "";
     const original = el.dataset.original || "";
 
-    if (!original.includes("–") && !original.includes("-")) return;
-    const [start, end] = original.split(/[-–]/).map((p) => p.trim());
-    
-    if (!start || !end) return;
-    const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
-    const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
-    el.textContent = `${start12}–${end12}`;
+    const ranged = timetableRange12(original);
+    if (ranged) el.textContent = ranged;
   });
 }
 
 function checkIfOnTimetablePage(): boolean {
+  if (isBetterseqtaWasmReady()) {
+    try {
+      return locationHashIncludesTimetablePage(window.location.hash);
+    } catch {
+      /* fall through */
+    }
+  }
   return window.location.hash.includes("page=/timetable");
 }
 

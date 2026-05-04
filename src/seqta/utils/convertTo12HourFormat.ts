@@ -1,4 +1,9 @@
-export function convertTo12HourFormat(
+import {
+  convertTo12HourFormatWasm,
+  isBetterseqtaWasmReady,
+} from "@/wasm/init";
+
+function convertTo12HourFormatTs(
   time: string,
   noMinutes: boolean = false,
 ): string {
@@ -18,4 +23,19 @@ export function convertTo12HourFormat(
   }
 
   return `${hoursStr}${noMinutes ? "" : `:${minutes.toString().padStart(2, "0")}`}${period}`;
+}
+
+/** 12-hour time label; Rust/WASM when initialized, else TypeScript. */
+export function convertTo12HourFormat(
+  time: string,
+  noMinutes: boolean = false,
+): string {
+  if (!isBetterseqtaWasmReady()) {
+    return convertTo12HourFormatTs(time, noMinutes);
+  }
+  try {
+    return convertTo12HourFormatWasm(time, noMinutes);
+  } catch {
+    return convertTo12HourFormatTs(time, noMinutes);
+  }
 }
