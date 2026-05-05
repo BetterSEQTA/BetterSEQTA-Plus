@@ -10,6 +10,7 @@ import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
 import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
+import AIPlugin from "@/plugins/built-in/AI";
 //import messageFoldersPlugin from "./built-in/messageFolders";
 //import testPlugin from './built-in/test';
 
@@ -29,6 +30,7 @@ pluginManager.registerPlugin(timetableEditPlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
+pluginManager.registerPlugin(AIPlugin);
 //pluginManager.registerPlugin(messageFoldersPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
