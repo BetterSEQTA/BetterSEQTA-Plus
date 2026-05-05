@@ -1,0 +1,172 @@
+<script lang="ts">
+  import { fade } from "svelte/transition";
+  import browser from "webextension-polyfill";
+  import QRCode from "qrcode";
+  import { portal } from "../utils/portal";
+
+  let showQrModal = $state(false);
+  let qrDataUrl = $state<string | null>(null);
+  let appLink = $state<string | null>(null);
+  let errorMessage = $state<string | null>(null);
+  let isLoading = $state(false);
+  let isStandalone = $state(false);
+
+  function isExtensionPage(): boolean {
+    return (
+      window.location.protocol === "chrome-extension:" ||
+      window.location.protocol === "moz-extension:"
+    );
+  }
+
+  function isSeqtaUrl(url: string): boolean {
+    try {
+      const u = new URL(url);
+      return u.hostname.includes("seqta") || u.hostname.endsWith(".edu.au");
+    } catch {
+      return false;
+    }
+  }
+
+  function normalizeBaseUrl(url: string): string {
+    try {
+      const u = new URL(url);
+      return u.origin;
+    } catch {
+      return url;
+    }
+  }
+
+  async function getAppLink(): Promise<string | null> {
+    let baseUrl: string | undefined;
+
+    if (isExtensionPage()) {
+      baseUrl = undefined;
+    } else {
+      baseUrl = normalizeBaseUrl(window.location.href);
+      if (!isSeqtaUrl(baseUrl)) return null;
+    }
+
+    const { appLink: link } = (await browser.runtime.sendMessage({
+      type: "getSeqtaSession",
+      baseUrl,
+    })) as { appLink: string | null };
+    return link ?? null;
+  }
+
+  async function generateQrCode() {
+    errorMessage = null;
+    qrDataUrl = null;
+    isLoading = true;
+
+    try {
+      isStandalone = isExtensionPage();
+      const link = await getAppLink();
+
+      if (!link) {
+        if (isStandalone) {
+          errorMessage =
+            "Open SEQTA Learn in a tab and log in, then open settings from that tab to generate a QR code.";
+        } else {
+          errorMessage = "Please log in to SEQTA Learn first.";
+        }
+        return;
+      }
+
+      const dataUrl = await QRCode.toDataURL(link, { width: 256, margin: 2 });
+      appLink = link;
+      qrDataUrl = dataUrl;
+      showQrModal = true;
+    } catch (err) {
+      console.error("[ConnectMobileApp] Failed to generate QR:", err);
+      errorMessage = "Failed to generate QR code. Please try again.";
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function closeModal() {
+    showQrModal = false;
+    qrDataUrl = null;
+    appLink = null;
+    errorMessage = null;
+  }
+
+  function openAppLink() {
+    if (appLink) window.location.href = appLink;
+  }
+
+  function downloadQrImage() {
+    if (!qrDataUrl) return;
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = "desqta-login-qr.png";
+    link.click();
+  }
+</script>
+
+<div class="flex flex-col gap-1 items-end">
+  <button
+    type="button"
+    onclick={generateQrCode}
+    disabled={isLoading}
+    class="px-5 py-1.5 text-[0.75rem] text-nowrap shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
+    {isLoading ? "Generating..." : "Generate QR"}
+  </button>
+  {#if errorMessage}
+    <p class="text-xs text-right text-amber-600 dark:text-amber-400">{errorMessage}</p>
+  {/if}
+</div>
+
+{#if showQrModal && qrDataUrl}
+  <div
+    use:portal
+    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''}"
+    role="button"
+    tabindex="-1"
+    onclick={(e) => {
+      if (e.target === e.currentTarget) closeModal();
+    }}
+    onkeydown={(e) => {
+      if (e.key === "Escape") closeModal();
+    }}
+    transition:fade={{ duration: 150 }}>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="p-6 mx-4 w-full max-w-sm bg-white rounded-2xl shadow-2xl dark:bg-zinc-800"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => e.stopPropagation()}>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-zinc-900 dark:text-white">Scan with DesQTA</h2>
+        <button
+          type="button"
+          onclick={closeModal}
+          class="p-2 rounded-lg transition-colors text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-400 dark:hover:bg-zinc-700"
+          aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex justify-center p-4 bg-white rounded-xl dark:bg-zinc-900">
+        <img src={qrDataUrl} alt="SEQTA Learn app link QR code" class="w-64 h-64" />
+      </div>
+      <div class="flex flex-col gap-2 mt-4">
+        <button
+          type="button"
+          onclick={openAppLink}
+          class="px-4 py-2.5 w-full text-sm font-medium text-white bg-indigo-600 rounded-lg transition-colors dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600">
+          Sign into DesQTA Desktop
+        </button>
+        <button
+          type="button"
+          onclick={downloadQrImage}
+          class="px-4 py-2 w-full text-xs font-medium rounded-lg border transition-colors text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+          Download QR as image
+        </button>
+      </div>
+      <p class="mt-2 text-sm text-center text-zinc-600 dark:text-zinc-400">
+        Or scan this QR code with DesQTA on your phone.
+      </p>
+    </div>
+  </div>
+{/if}

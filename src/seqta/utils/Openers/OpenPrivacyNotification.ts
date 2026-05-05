@@ -1,13 +1,31 @@
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreenIfPresent } from "./attachPopupMediaFullscreen";
 
-export function showPrivacyNotification() {
-  const lastUpdated = "2025-12-19";
+const PRIVACY_STATEMENT_VERSION = "2025-12-19";
 
-  if (document.getElementById("whatsnewbk")) return;
-  if (settingsState.privacyStatementShown) return;
-  if (settingsState.privacyStatementLastUpdated && new Date(settingsState.privacyStatementLastUpdated) > new Date(lastUpdated)) return;
+export function shouldShowPrivacyNotification(): boolean {
+  if (settingsState.privacyStatementShown) return false;
+  if (
+    settingsState.privacyStatementLastUpdated &&
+    new Date(settingsState.privacyStatementLastUpdated) >
+      new Date(PRIVACY_STATEMENT_VERSION)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function showPrivacyNotification(onDismissed?: () => void) {
+  if (document.getElementById("whatsnewbk")) {
+    onDismissed?.();
+    return;
+  }
+  if (!shouldShowPrivacyNotification()) {
+    onDismissed?.();
+    return;
+  }
 
   const header = stringToHTML(
     /* html */
@@ -42,11 +60,14 @@ export function showPrivacyNotification() {
     </div>
   `).firstChild as HTMLElement;
 
+  attachPopupMediaFullscreenIfPresent(text, "img.aboutImg");
+
   settingsState.privacyStatementLastUpdated = "2025-12-20";
   settingsState.privacyStatementShown = true;
 
   openPopup({
     header,
     content: [text],
+    afterClose: onDismissed,
   });
 }

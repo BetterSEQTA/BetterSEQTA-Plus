@@ -1,11 +1,21 @@
 import type { Plugin } from "@/plugins/core/types";
-import { defineSettings, componentSetting } from "@/plugins/core/settingsHelpers";
+import {
+  booleanSetting,
+  componentSetting,
+  defineSettings,
+} from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import styles from "./styles.css?inline";
 import localforage from "localforage";
 
 const settings = defineSettings({
+  useCloudPfp: booleanSetting({
+    default: false,
+    title: "Use BetterSEQTA Cloud profile picture",
+    description: "Use your cloud account avatar instead of the uploaded image below",
+  }),
   picture: componentSetting({
     title: "Profile Picture",
     description: "Upload or remove your custom profile image",
@@ -13,12 +23,11 @@ const settings = defineSettings({
   }),
 });
 
-
 const profilePicturePlugin: Plugin<typeof settings> = {
   id: "profile-picture",
   name: "Custom Profile Picture",
   description: "Use your own image in place of the profile icon",
-  version: "1.1.0",
+  version: "1.2.0",
   settings: settings,
   disableToggle: true,
   defaultEnabled: false,
@@ -37,14 +46,12 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     let img: HTMLImageElement | null = null;
     let currentBlobUrl: string | undefined;
 
-    // Setup localforage instance
     const store = localforage.createInstance({
       name: "profile-picture-store",
       storeName: "profilePicture",
     });
 
-    async function updateImageFromStore() {
-      // Remove old image if present
+    async function applyProfileImage() {
       if (img) {
         img.remove();
         img = null;
@@ -53,6 +60,19 @@ const profilePicturePlugin: Plugin<typeof settings> = {
         URL.revokeObjectURL(currentBlobUrl);
         currentBlobUrl = undefined;
       }
+
+      const useCloud = api.settings.useCloudPfp;
+      const pfpUrl = cloudAuth.state.user?.pfpUrl;
+
+      if (useCloud && pfpUrl) {
+        img = document.createElement("img");
+        img.className = "userInfoImg";
+        img.src = pfpUrl;
+        if (svg) svg.style.display = "none";
+        container.appendChild(img);
+        return;
+      }
+
       const blob = await store.getItem<Blob>("profile-picture");
       if (blob && blob instanceof Blob) {
         currentBlobUrl = URL.createObjectURL(blob);
@@ -66,15 +86,25 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       }
     }
 
-    // Initial load
-    await updateImageFromStore();
+    await applyProfileImage();
 
-    // Listen for profile picture updates
-    const handler = () => { updateImageFromStore(); };
-    window.addEventListener('profile-picture-updated', handler);
+    const onLocalPictureUpdated = () => {
+      void applyProfileImage();
+    };
+    window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
+
+    const cloudUnsub = cloudAuth.subscribe(() => {
+      void applyProfileImage();
+    });
+
+    const useCloudUnreg = api.settings.onChange("useCloudPfp", () => {
+      void applyProfileImage();
+    });
 
     return () => {
-      window.removeEventListener('profile-picture-updated', handler);
+      useCloudUnreg.unregister();
+      cloudUnsub();
+      window.removeEventListener("profile-picture-updated", onLocalPictureUpdated);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
@@ -83,4 +113,3 @@ const profilePicturePlugin: Plugin<typeof settings> = {
 };
 
 export default profilePicturePlugin;
-

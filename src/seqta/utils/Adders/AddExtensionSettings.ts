@@ -9,21 +9,8 @@ import Settings from "@/interface/pages/settings.svelte";
 
 let isSettingsRendered = false;
 
-export function addExtensionSettings() {
-  const extensionPopup = document.createElement("div");
-  extensionPopup.classList.add("outside-container", "hide");
-  extensionPopup.id = "ExtensionPopup";
-
-  const extensionContainer = document.querySelector(
-    "#container",
-  ) as HTMLDivElement;
-  if (extensionContainer) extensionContainer.appendChild(extensionPopup);
-
-  const container = document.getElementById("container");
-
-  new SettingsResizer();
-
-  container!.onclick = (event) => {
+function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
+  return (event: MouseEvent) => {
     if (!SettingsClicked) return;
 
     if (!(event.target as HTMLElement).closest("#AddedSettings")) {
@@ -31,6 +18,24 @@ export function addExtensionSettings() {
       changeSettingsClicked(closeExtensionPopup());
     }
   };
+}
+
+export function addExtensionSettings() {
+  if (document.getElementById("ExtensionPopup")) return;
+
+  const extensionPopup = document.createElement("div");
+  extensionPopup.classList.add("outside-container", "hide");
+  extensionPopup.id = "ExtensionPopup";
+
+  const extensionContainer =
+    document.querySelector("#container") ?? document.getElementById("container");
+  const mountParent = extensionContainer ?? document.body;
+  mountParent.appendChild(extensionPopup);
+
+  new SettingsResizer();
+
+  const handler = extensionOutsideClickHandler(extensionPopup);
+  (extensionContainer ?? document.body).addEventListener("click", handler, false);
 }
 
 export function renderSettingsIfNeeded() {

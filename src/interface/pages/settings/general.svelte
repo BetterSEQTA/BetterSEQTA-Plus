@@ -10,8 +10,13 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
+  import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
+  import CloudSettingsSync from "@/interface/components/CloudSettingsSync.svelte"
+  import CloudHeader from "@/interface/components/store/CloudHeader.svelte"
+  import { cloudAuth } from "@/seqta/utils/CloudAuth"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
+  import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
 
   import { getAllPluginSettings } from "@/plugins"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
@@ -50,6 +55,12 @@
 
   const pluginSettings = getAllPluginSettings() as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
+
+  let cloudState = $state(cloudAuth.state);
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => { cloudState = s; });
+    return unsub;
+  });
   
   async function loadPluginSettings() {
     for (const plugin of pluginSettings) {
@@ -92,10 +103,24 @@
     loadPluginSettings();
   })
 
-  const { showColourPicker, showDisclaimer } = $props<{ 
+  const { showColourPicker, showDisclaimer, showCloudPanel } = $props<{ 
     showColourPicker: () => void;
-    showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
+    showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
+    showCloudPanel: () => void;
   }>();
+
+  async function exportCloudSettingsJsonToFile() {
+    const payload = await getSnapshotForUpload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `betterseqta-plus-settings-export-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
@@ -113,27 +138,15 @@
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
   {#each [
     {
-      title: "Transparency Effects",
-      description: "Enables transparency effects on certain elements such as blur. (May impact battery life)",
-      id: 1,
-      Component: Switch,
-      props: {
-        state: $settingsState.transparencyEffects,
-        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
-      }
-    },
-    {
-      title: "Custom Theme Colour",
-      description: "Customise the overall theme colour of SEQTA Learn.",
-      id: 4,
-      Component: PickerSwatch,
-      props: {
-        onClick: showColourPicker
-      }
+      title: "Connect Mobile App",
+      description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn",
+      id: 0,
+      Component: ConnectMobileApp,
+      props: {}
     },
     {
       title: "Edit Sidebar Layout",
-      description: "Customise the sidebar layout.",
+      description: "Reorder pages on the sidebar",
       id: 5,
       Component: Button,
       props: {
@@ -142,8 +155,27 @@
       }
     },
     {
+      title: "Custom Theme Colour",
+      description: "Customise the overall theme colour of SEQTA Learn",
+      id: 4,
+      Component: PickerSwatch,
+      props: {
+        onClick: showColourPicker
+      }
+    },
+    {
+      title: "Icon Only Sidebar",
+      description: "Show only icons in the sidebar for a compact layout",
+      id: 14,
+      Component: Switch,
+      props: {
+        state: $settingsState.iconOnlySidebar ?? false,
+        onChange: (isOn: boolean) => settingsState.iconOnlySidebar = isOn
+      }
+    },
+    {
       title: "Animations",
-      description: "Enables animations on certain pages.",
+      description: "Enable animations on certain pages",
       id: 6,
       Component: Switch,
       props: {
@@ -162,27 +194,37 @@
       }
     },
     {
-      title: "Default Page",
-      description: "The page to load when SEQTA Learn is opened.",
-      id: 10,
-      Component: Select,
+      title: "Transparency Effects",
+      description: "Enable transparency effects on certain elements, such as blur (May impact battery life)",
+      id: 1,
+      Component: Switch,
       props: {
-        state: $settingsState.defaultPage,
-        onChange: (value: string) => settingsState.defaultPage = value,
-        options: [
-          { value: 'home', label: 'Home' },
-          { value: 'dashboard', label: 'Dashboard' },
-          { value: 'timetable', label: 'Timetable' },
-          { value: 'welcome', label: 'Welcome' },
-          { value: 'messages', label: 'Messages' },
-          { value: 'documents', label: 'Documents' },
-          { value: 'reports', label: 'Reports' },
-        ]
+        state: $settingsState.transparencyEffects,
+        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
       }
     },
     {
+      title: "Default Page",
+      description: "Choose which page loads first when you open SEQTA",
+      id: 10,
+      Component: Select,
+      props: {
+        state: $settingsState.defaultPage ?? "home",
+        onChange: (value: string) => (settingsState.defaultPage = value),
+        options: [
+          { value: "home", label: "Home" },
+          { value: "dashboard", label: "Dashboard" },
+          { value: "timetable", label: "Timetable" },
+          { value: "welcome", label: "Welcome" },
+          { value: "messages", label: "Messages" },
+          { value: "documents", label: "Documents" },
+          { value: "reports", label: "Reports" },
+        ],
+      },
+    },
+    {
       title: "News Feed Source",
-      description: "Choose sources of your news feed.",
+      description: "Choose the sources for your news feed",
       id: 11,
       Component: Select,
       props: {
@@ -206,7 +248,50 @@
   ] as option}
     {@render Setting(option)}
   {/each}
-  
+
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
+          <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.adaptiveThemeColour ?? false}
+            onChange={(isOn: boolean) => settingsState.adaptiveThemeColour = isOn}
+          />
+        </div>
+      </div>
+      {#if $settingsState.adaptiveThemeColour}
+        <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">Soft Gradient</h2>
+            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class</p>
+          </div>
+          <div>
+            <Switch
+              state={$settingsState.adaptiveThemeGradient ?? false}
+              onChange={(isOn: boolean) => settingsState.adaptiveThemeGradient = isOn}
+            />
+          </div>
+        </div>
+        <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">Smooth colour transition</h2>
+            <p class="text-xs">Ease between class/subject colours when navigating instead of switching instantly</p>
+          </div>
+          <div>
+            <Switch
+              state={$settingsState.adaptiveThemeColourTransition ?? true}
+              onChange={(isOn: boolean) => settingsState.adaptiveThemeColourTransition = isOn}
+            />
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+
   {#each pluginSettings as plugin}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
@@ -233,9 +318,9 @@
                       async () => {
                         await updatePluginSetting(plugin.pluginId, 'enabled', true);
                       },
-                      () => {
-                        // Do nothing on cancel
-                      }
+                      () => {},
+                      "Assessment Averages Disclaimer",
+                      "This feature calculates a simple average of your assessment grades. It does not take into account:\n• Assessment weightings\n• Different grading scales\n• Other factors used in official reports\n\nThe displayed average may be inaccurate compared to your actual marks found in reports.\n\nDo you want to enable this feature?"
                     );
                     return;
                   }
@@ -248,8 +333,8 @@
   
         {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
           {#each Object.entries(plugin.settings) as [key, setting]}
-            <!-- Skip the 'enabled' setting if it's part of the settings object -->
-            {#if key !== 'enabled'}
+            <!-- Skip the 'enabled' setting and hide cloud-only settings when not signed in -->
+            {#if key !== 'enabled' && !(key === 'useCloudPfp' && !cloudState.isLoggedIn)}
               <div class="flex justify-between items-center px-4 py-3">
                 <div class="pr-4">
                   <h2 class="text-sm font-bold">{setting.title || key}</h2>
@@ -262,13 +347,15 @@
                       onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     />
                   {:else if setting.type === 'number'}
-                    <Slider
-                      state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
-                      onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
-                      min={setting.min}
-                      max={setting.max}
-                      step={setting.step}
-                    />
+                    <div class="w-28 shrink-0">
+                      <Slider
+                        state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                        onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
+                        min={setting.min}
+                        max={setting.max}
+                        step={setting.step}
+                      />
+                    </div>
                   {:else if setting.type === 'string'}
                     <input
                       type="text"
@@ -310,6 +397,25 @@
       </div>
   </div>
   {/each}
+
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">BetterSEQTA Cloud</h2>
+          <p class="text-xs">Account & sync</p>
+        </div>
+        <div>
+          <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
+        </div>
+      </div>
+      {#if cloudState.isLoggedIn}
+        <div class="px-3 pb-3">
+          <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
+        </div>
+      {/if}
+    </div>
+  </div>
 
   <div class="p-1 border-none"></div>
 
@@ -376,6 +482,15 @@
             }}
             text="Show Now"
           />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Export cloud settings JSON</h2>
+          <p class="text-xs">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
+        </div>
+        <div>
+          <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
         </div>
       </div>
     </div>

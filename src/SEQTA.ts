@@ -11,6 +11,30 @@ import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
 
+function registerFetchSeqtaAppLinkListener() {
+  browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request?.type !== "fetchSeqtaAppLink") return false;
+    void (async () => {
+      try {
+        const res = await fetch(`${location.origin}/seqta/student/load/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        const statusOk = data?.status === "200" || data?.status === 200;
+        const raw = data?.payload?.app_link;
+        const appLink = typeof raw === "string" && raw.length > 0 ? raw : null;
+        sendResponse({ appLink: statusOk ? appLink : null });
+      } catch {
+        sendResponse({ appLink: null });
+      }
+    })();
+    return true;
+  });
+}
+
 export let MenuOptionsOpen = false;
 
 var IsSEQTAPage = false;
@@ -25,35 +49,50 @@ if (document.childNodes[1]) {
   init();
 }
 
-/**
- * Initializes BetterSEQTA+ on a SEQTA page.
- *
- * This function performs the following steps:
- * 1. Verifies that the current page is a SEQTA page.
- * 2. Injects CSS styles for document loading.
- * 3. Changes the page's favicon.
- * 4. Initializes the extension's settings state.
- * 5. Sets default storage if settings are not already defined.
- * 6. Calls the main function to apply core BetterSEQTA+ modifications.
- * 7. Initializes legacy and new plugins if the extension is enabled.
- * 8. Logs success or error messages during initialization.
- */
 async function init() {
-  const hasSEQTATitle = document.title.includes("SEQTA Learn");
-
-  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
-    // Verify we are on a SEQTA page
+  if (
+    hasSEQTAText &&
+    (document.title.includes("SEQTA Learn") ||
+      document.title.includes("SEQTA Engage")) &&
+    !IsSEQTAPage
+  ) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
+
+    if (typeof window !== "undefined" && window === window.top) {
+      void browser.runtime.sendMessage({ type: "cloudSettingsPoll" }).catch(() => {});
+    }
+
+    registerFetchSeqtaAppLinkListener();
 
     const documentLoadStyle = document.createElement("style");
     documentLoadStyle.textContent = documentLoadCSS;
     document.head.appendChild(documentLoadStyle);
 
-    const icon = document.querySelector(
-      'link[rel*="icon"]',
-    )! as HTMLLinkElement;
-    icon.href = icon48; // Change the icon
+    replaceIcons();
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+
+        if (
+          mutation.type === "attributes" &&
+          mutation.target instanceof HTMLLinkElement &&
+          mutation.target.rel.includes("icon") &&
+          mutation.attributeName === "href"
+        ) {
+          replaceIcons();
+          return;
+        }
+      }
+    });
+
+    observer.observe(document.head, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href"],
+    });
+
+
 
     try {
       await initializeSettingsState();
@@ -78,8 +117,18 @@ async function init() {
       console.info(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
     }
   }
+}
+
+function replaceIcons() {
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
+    .forEach((link) => {
+      if (link.href !== icon48) {
+        link.href = icon48;
+      }
+    });
 }

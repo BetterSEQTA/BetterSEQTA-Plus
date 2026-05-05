@@ -28,9 +28,17 @@ async function fetchJSON(url: string, body: any) {
 
 async function loadSubjects() {
   const res = await fetchJSON("/seqta/student/load/subjects?", {});
-  return res.payload
-    .filter((s: any) => s.active === 1)
+  const activeGroup = res.payload.find((s: any) => s.active === 1);
+  const activeYear = activeGroup?.year;
+  const allSubjects = res.payload
+    .filter((s: any) => s.year === activeYear)
     .flatMap((s: any) => s.subjects);
+  const seen = new Set<string>();
+  return allSubjects.filter((s: Subject) => {
+    if (seen.has(s.code)) return false;
+    seen.add(s.code);
+    return true;
+  });
 }
 
 async function loadPrefs(student: number) {
@@ -56,6 +64,18 @@ async function loadUpcoming(student: number) {
   return res.payload;
 }
 
+function normalizeAssessmentDates(t: any, subject: Subject): any {
+  const normalized = { ...t };
+  // Past API may use different date fields - ensure we have 'due' for year filter & display
+  if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
+    normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
+  }
+  if (!normalized.programmeID) normalized.programmeID = subject.programme;
+  if (!normalized.metaclassID) normalized.metaclassID = subject.metaclass;
+  if (!normalized.code && t.subject) normalized.code = t.subject;
+  return normalized;
+}
+
 async function loadPast(student: number, subjects: Subject[]) {
   const map: Record<number, any> = {};
   await Promise.all(
@@ -65,10 +85,22 @@ async function loadPast(student: number, subjects: Subject[]) {
         metaclass: s.metaclass,
         student,
       });
-      if (res.payload.tasks) {
-        res.payload.tasks.forEach((t: any) => {
-          map[t.id] = t;
-        });
+      const processAssessment = (t: any) => {
+        if (t && t.id) {
+          const merged = {
+            ...t,
+            programmeID: t.programmeID || t.programme || s.programme,
+            metaclassID: t.metaclassID || t.metaclass || s.metaclass,
+            code: t.code || t.subject || s.code,
+          };
+          map[t.id] = normalizeAssessmentDates(merged, s);
+        }
+      };
+      if (res.payload?.pending && Array.isArray(res.payload.pending)) {
+        res.payload.pending.forEach(processAssessment);
+      }
+      if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
+        res.payload.tasks.forEach(processAssessment);
       }
     }),
   );

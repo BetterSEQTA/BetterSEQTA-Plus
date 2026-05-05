@@ -1,5 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import { componentSetting, defineSettings, numberSetting, booleanSetting } from "@/plugins/core/settingsHelpers";
+import { booleanSetting, componentSetting, defineSettings, numberSetting } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
@@ -7,7 +7,7 @@ import localforage from "localforage";
 const settings = defineSettings({
   uploader: componentSetting({
     title: "Background Music",
-    description: "Upload a .wav or .mp3 audio file to play in the background.",
+    description: "Upload a .wav or .mp3 audio file to play in the background",
     component: BackgroundMusicSetting,
   }),
   volume: numberSetting({
@@ -99,7 +99,7 @@ async function startPlayback(volume: number): Promise<void> {
 const backgroundMusicPlugin: Plugin<typeof settings> = {
   id: "background-music",
   name: "Background Music",
-  description: "Play your own music in the background while SEQTA is open.",
+  description: "Play your own music in the background while SEQTA is open",
   version: "1.0.0",
   settings,
   styles,
@@ -142,7 +142,6 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       if (!currentAudio) return;
       const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
       if (!pauseOnHidden) return;
-      
       if (document.visibilityState === "hidden") {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);
@@ -183,5 +182,3 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
 };
 
 export default backgroundMusicPlugin;
-
-

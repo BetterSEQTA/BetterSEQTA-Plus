@@ -32,6 +32,10 @@ export interface SettingsState {
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
+  /** One-time announcement: SEQTA Engage support for parents (dismissed popup queue). */
+  engageParentsAnnouncementShown?: boolean;
+  /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
+  bsCloudAutoSyncAnnouncementShown?: boolean;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
@@ -40,6 +44,10 @@ export interface SettingsState {
   newsSource?: string;
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
+  iconOnlySidebar?: boolean;
+  adaptiveThemeColour?: boolean;
+  adaptiveThemeGradient?: boolean;
+  adaptiveThemeColourTransition?: boolean;
 
   // depreciated keys
   animatedbk: boolean;
@@ -47,6 +55,14 @@ export interface SettingsState {
   lettergrade: boolean;
   assessmentsAverage?: boolean;
   notificationCollector?: boolean;
+
+  // BetterSEQTA Cloud (accounts.betterseqta.org)
+  bsplus_client_id?: string;
+  bsplus_token?: string;
+  bsplus_refresh_token?: string;
+  bsplus_user?: { id: string; email?: string; username?: string; displayName?: string; pfpUrl?: string; admin_level?: number };
+  /** When not `false`, automatic cloud settings sync is enabled (default-on). */
+  autoCloudSettingsSync?: boolean;
 }
 
 interface ToggleItem {

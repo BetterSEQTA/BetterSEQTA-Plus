@@ -6,13 +6,13 @@ import {
   OpenMenuOptions,
 } from "@/seqta/utils/Openers/OpenMenuOptions";
 
+import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
 import {
   CloseThemeCreator,
   OpenThemeCreator,
 } from "@/plugins/built-in/themes/ThemeCreator";
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
-import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
 
 const themeManager = ThemeManager.getInstance();
 
@@ -34,7 +34,10 @@ export class MessageHandler {
       case "UpdateThemePreview":
         if (request?.save == true) {
           const save = async () => {
-            await themeManager.saveTheme(request.body);
+            await themeManager.saveTheme({
+              ...request.body,
+              userEdited: true,
+            });
             if (request.body.enableTheme) {
               await themeManager.setTheme(request.body.id);
             }

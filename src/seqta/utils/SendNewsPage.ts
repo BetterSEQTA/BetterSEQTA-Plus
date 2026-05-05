@@ -53,11 +53,22 @@ export async function SendNewsPage() {
   const newscontainer = document.querySelector("#news-container");
   document.getElementById("newsloading")?.remove();
 
-  // Create a document fragment to batch DOM operations
+  const articles = response?.news?.articles;
+  if (!Array.isArray(articles) || articles.length === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLightOutline);
+    const text = document.createElement("p");
+    text.innerText = "No news articles available right now.";
+    emptyState.append(img, text);
+    newscontainer?.append(emptyState);
+    return;
+  }
+
   const fragment = document.createDocumentFragment();
 
-  // Map over articles to create elements
-  response.news.articles.forEach((article: any) => {
+  articles.forEach((article: any) => {
     const newsarticle = document.createElement("a");
     newsarticle.classList.add("NewsArticle");
     newsarticle.href = article.url;
@@ -85,12 +96,14 @@ export async function SendNewsPage() {
     title.target = "_blank";
 
     const description = document.createElement("p");
+    const articleDescription = typeof article.description === "string"
+      ? article.description
+      : "No description available.";
 
-    article.description =
-      article.description.length > 400
-        ? article.description.substring(0, 400) + "..."
-        : article.description;
-    description.innerHTML = article.description;
+    description.innerHTML =
+      articleDescription.length > 400
+        ? articleDescription.substring(0, 400) + "..."
+        : articleDescription;
 
     articletext.append(title, description);
     newsarticle.append(articleimage, articletext);
@@ -102,10 +115,10 @@ export async function SendNewsPage() {
 
   if (!settingsState.animations) return;
 
-  const articles = Array.from(document.querySelectorAll(".NewsArticle"));
+  const animatedArticles = Array.from(document.querySelectorAll(".NewsArticle"));
 
   animate(
-    articles.slice(0, 20),
+    animatedArticles.slice(0, 20),
     { opacity: [0, 1], y: [10, 0], scale: [0.99, 1] },
     {
       delay: stagger(0.1),

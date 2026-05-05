@@ -17,14 +17,19 @@ import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 
 // UI and theme management
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
+import {
+  loadEngageHomePage,
+  updateEngageHomeMenuActive,
+} from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
@@ -82,7 +87,13 @@ export function hideSideBar() {
   }
 }
 
+let betterSeqtaFinishLoadDone = false;
+let engageHashListenerAttached = false;
+
 export async function finishLoad() {
+  if (betterSeqtaFinishLoadDone) return;
+  betterSeqtaFinishLoadDone = true;
+
   try {
     document.querySelector(".legacy-root")?.classList.remove("hidden");
 
@@ -94,14 +105,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Check and show privacy statement notification (before what's new)
-  if (!document.getElementById("privacy-notification")) {
-    await showPrivacyNotification();
-  }
-
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
-    OpenWhatsNewPopup();
-  }
+  runStartupPopupQueue();
 }
 
 export function GetCSSElement(file: string) {
@@ -115,19 +119,19 @@ export function GetCSSElement(file: string) {
 }
 
 function removeThemeTagsFromNotices() {
-  // Grabs an array of the notice iFrames
   const userHTMLArray = document.getElementsByClassName("userHTML");
-  // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
-    // Grabs the HTML of the body tag
-    const item1 = item as HTMLIFrameElement;
-    const body = item1.contentWindow!.document.querySelectorAll("body")[0];
-    if (body) {
-      // Replaces the theme tag with nothing
+    const iframe = item as HTMLIFrameElement;
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc?.body) continue;
+      const body = doc.body;
       const bodyText = body.innerHTML;
       body.innerHTML = bodyText
         .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
         .replace(/ +/, " ");
+    } catch {
+      // Cross-origin or otherwise inaccessible iframe (common during Engage load / filter frames)
     }
   }
 }
@@ -202,7 +206,20 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
-  const sublink: string | undefined = window.location.href.split("/")[4];
+  const sublink: string | undefined = isSeqtaEngageExperience()
+    ? getEngageRoutePage()
+    : window.location.href.split("/")[4];
+
+  if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
+    engageHashListenerAttached = true;
+    window.addEventListener("hashchange", () => {
+      if (getEngageRoutePage() === "home") {
+        void loadEngageHomePage();
+      } else {
+        updateEngageHomeMenuActive(false);
+      }
+    });
+  }
 
   eventManager.register(
     "messagesAdded",
@@ -296,6 +313,28 @@ async function handleNotices(node: Element): Promise<void> {
 }
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
+  if (isSeqtaEngageExperience()) {
+    switch (sublink) {
+      case undefined:
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+        if (settingsState.defaultPage === "home") void loadEngageHomePage();
+        finishLoad();
+        break;
+      case "home":
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init (SEQTA Engage home)");
+        if (settingsState.onoff) void loadEngageHomePage();
+        finishLoad();
+        break;
+      default:
+        finishLoad();
+        break;
+    }
+    return;
+  }
+
   switch (sublink) {
     case "news":
       await handleNewsPage();
@@ -382,15 +421,22 @@ async function handleDashboard(node: Element): Promise<void> {
   document.head.append(style);
 
   await waitForElm(".dashlet", true, 10);
-  animate(
-    ".dashboard > *",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.1),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const children = document.querySelectorAll(".dashboard > *");
+    if (children.length) {
+      animate(
+        children,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.1),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // Avoid uncaught errors if motion hits an unexpected DOM state during load.
+  }
 
   document.head.querySelector("style.dashboardHider")?.remove();
 }
@@ -400,15 +446,22 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".document", true, 10);
-  animate(
-    ".documents tbody tr.document",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const rows = document.querySelectorAll(".documents tbody tr.document");
+    if (rows.length) {
+      animate(
+        rows,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 async function handleReports(node: Element): Promise<void> {
@@ -416,15 +469,22 @@ async function handleReports(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".report", true, 10);
-  animate(
-    ".reports .item",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05, { startDelay: 0.2 }),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const items = document.querySelectorAll(".reports .item");
+    if (items.length) {
+      animate(
+        items,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05, { startDelay: 0.2 }),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 function CheckNoticeTextColour(notice: any) {
@@ -448,7 +508,86 @@ function CheckNoticeTextColour(notice: any) {
   );
 }
 
+function watchForEngageLogin() {
+  if (!document.querySelector(".login")) {
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (!document.querySelector(".login")) {
+      observer.disconnect();
+      location.reload();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/** Wait until Engage shows either the login shell or the main app (`#content`), so we never call `LoadPageElements` while still on login (which would hang on `waitForElm("#content")`). */
+function waitForEngageLoginOrContent(): Promise<"login" | "app" | "timeout"> {
+  if (document.querySelector(".login")) {
+    return Promise.resolve("login");
+  }
+  if (document.getElementById("content")) {
+    return Promise.resolve("app");
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (mode: "login" | "app") => {
+      if (settled) return;
+      settled = true;
+      mo.disconnect();
+      window.clearTimeout(tid);
+      resolve(mode);
+    };
+    const check = () => {
+      if (document.querySelector(".login")) finish("login");
+      else if (document.getElementById("content")) finish("app");
+    };
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { subtree: true, childList: true });
+    const tid = window.setTimeout(() => {
+      if (settled) return;
+      mo.disconnect();
+      settled = true;
+      if (document.querySelector(".login")) resolve("login");
+      else if (document.getElementById("content")) resolve("app");
+      else {
+        console.warn(
+          "[BetterSEQTA+] Engage: timed out waiting for .login or #content; unblocking load UI.",
+        );
+        resolve("timeout");
+      }
+    }, 120_000);
+  });
+}
+
 export function tryLoad() {
+  if (isSeqtaEngageExperience()) {
+    updateIframesWithDarkMode();
+    window.addEventListener("load", () => removeThemeTagsFromNotices(), { once: true });
+
+    const runEngageLoad = async () => {
+      const mode = await waitForEngageLoginOrContent();
+      if (mode === "login") {
+        finishLoad();
+        watchForEngageLogin();
+        return;
+      }
+      if (mode === "timeout") {
+        finishLoad();
+        void waitForElm("#content").then(() => void LoadPageElements());
+        return;
+      }
+      await LoadPageElements();
+    };
+
+    if (document.readyState === "complete") {
+      void runEngageLoad();
+    } else {
+      window.addEventListener("load", () => void runEngageLoad(), { once: true });
+    }
+    return;
+  }
+
   waitForElm(".login").then(() => {
     finishLoad();
   });
@@ -466,13 +605,10 @@ export function tryLoad() {
   });
 
   updateIframesWithDarkMode();
-  // Waits for page to call on load, run scripts
-  document.addEventListener(
+  window.addEventListener(
     "load",
-    function () {
-      removeThemeTagsFromNotices();
-    },
-    true,
+    () => removeThemeTagsFromNotices(),
+    { once: true },
   );
 }
 
@@ -489,6 +625,7 @@ function ReplaceMenuSVG(element: HTMLElement, svg: string) {
 const processedSymbol = Symbol("processed");
 
 export async function ObserveMenuItemPosition() {
+  if (isSeqtaEngageExperience()) return;
   await waitForElm("#menu > ul > li");
 
   eventManager.register(
@@ -612,6 +749,15 @@ export function init() {
   if (settingsState.onoff) {
     console.info("[BetterSEQTA+] Enabled");
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
+    if (settingsState.iconOnlySidebar) {
+      if (document.body) {
+        document.body.classList.add("icon-only-sidebar");
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          document.body?.classList.add("icon-only-sidebar");
+        });
+      }
+    }
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
     ObserveMenuItemPosition();
@@ -619,11 +765,82 @@ export function init() {
     new StorageChangeHandler();
     new MessageHandler();
 
-    updateAllColors();
+    void updateAllColors();
+
+    window.addEventListener("hashchange", () => {
+      if (settingsState.adaptiveThemeColour) void updateAllColors();
+    });
     loading();
     InjectCustomIcons();
     HideMenuItems();
     tryLoad();
+
+    // Auto-focus WISP direct online submission editor when pane opens
+    eventManager.register(
+      "wispassessmentAdded",
+      {
+        customCheck: (el) =>
+          el.classList.contains("wispassessment") ||
+          el.querySelector(".wispassessment") !== null,
+      },
+      (element) => {
+        const wispassessment = element.classList.contains("wispassessment")
+          ? (element as Element)
+          : element.querySelector(".wispassessment");
+        if (!wispassessment) return;
+
+        const focusEditableBody = (iframe: HTMLIFrameElement) => {
+          try {
+            const doc = iframe.contentDocument;
+            const win = iframe.contentWindow;
+            if (doc?.body && win) {
+              const editable =
+                doc.body.querySelector(".cke_editable") || doc.body;
+              const el = editable as HTMLElement;
+              el.focus();
+              const range = doc.createRange();
+              range.selectNodeContents(el);
+              range.collapse(true);
+              const sel = win.getSelection();
+              if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+              }
+              return true;
+            }
+          } catch (_) {}
+          return false;
+        };
+
+        const focusEditor = () => {
+          const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+          if (iframe instanceof HTMLIFrameElement) {
+            if (focusEditableBody(iframe)) return;
+            iframe.focus();
+            return;
+          }
+          const ckeditor = (window as any).CKEDITOR;
+          if (ckeditor?.instances?.editor1) {
+            try {
+              ckeditor.instances.editor1.focus();
+            } catch (_) {}
+          }
+        };
+
+        const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+        if (iframe instanceof HTMLIFrameElement) {
+          iframe.addEventListener(
+            "load",
+            () => focusEditableBody(iframe),
+            { once: true },
+          );
+        }
+
+        [1000, 1200, 1500].forEach((delay) =>
+          setTimeout(focusEditor, delay),
+        );
+      },
+    );
 
     setTimeout(() => {
       const legacyElement = document.querySelector(

@@ -1,9 +1,10 @@
 import type { Plugin } from "../../core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { getAssessmentsData } from "./api";
-import { renderSkeletonLoader, renderErrorState } from "./ui";
+import { renderErrorState, renderGrid, renderSkeletonLoader } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const assessmentsOverviewPlugin: Plugin<{}> = {
   id: "assessments-overview",
@@ -16,6 +17,8 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
   styles,
 
   run: async () => {
+    if (isSeqtaEngageExperience()) return;
+
     const menu = (await waitForElm(
       '[data-key="assessments"] > .sub > ul',
       true,
@@ -65,7 +68,6 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
       try {
         const data = await getAssessmentsData();
-        const { renderGrid } = await import("./ui");
         renderGrid(container, data);
       } catch (err) {
         console.error("Failed to load assessments:", err);

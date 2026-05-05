@@ -4,12 +4,11 @@ package-lock.json
 bun.lockb
 pnpm-lock.yaml
 yarn.lock
+bun.lock
 
-.parcel-cache
-.env
-.env.submit
-
-dependency-graph.svg
+# PDF.js extension assets (copied by postinstall from pdfjs-dist)
+src/public/resources/pdfjs/pdf.worker.min.mjs
+src/public/resources/pdfjs/pdf.legacy.min.mjs
 
 # Build
 extension.zip
@@ -20,5 +19,8 @@ betterseqtaplus-safari/
 .million/
 .vscode/
 .idea/
-
 **/.DS_Store
+.parcel-cache
+.env
+.env.submit
+dependency-graph.svg

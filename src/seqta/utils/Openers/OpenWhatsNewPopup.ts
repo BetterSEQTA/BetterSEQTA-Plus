@@ -2,8 +2,9 @@ import stringToHTML from "../stringToHTML";
 import browser from "webextension-polyfill";
 import kofi from "@/resources/kofi.png?base64";
 import { openPopup } from "./PopupManager";
+import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 
-export function OpenWhatsNewPopup() {
+export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">
@@ -20,7 +21,7 @@ export function OpenWhatsNewPopup() {
 
   source.setAttribute(
     "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.mp4",
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm",
   );
   video.autoplay = true;
   video.muted = true;
@@ -28,9 +29,84 @@ export function OpenWhatsNewPopup() {
   video.appendChild(source);
   video.classList.add("whatsnewImg");
   imageContainer.appendChild(video);
+  attachPopupMediaFullscreen(video);
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
+
+
+      <h1>3.6.4 - Theme flavours and fixes, Upcoming Assements improvement</h1>
+      <li>Added advanced colour adjustments variables for theme customisation.</li>
+      <li>Improved logic for upcoming assements dashlet to improve compatibility.</li>
+      <li>BS Cloud can now automatically download themes from other devices.</li>
+      <li>Added theme flavours for multiple colour variations of the same theme.</li>
+      
+      <h1>3.6.3 - Assessment overview fix</h1>
+      <li>Fixed assessments overview failing to load.</li>
+      
+      <h1>3.6.2 - Cloud backup, various fixes & SEQTA Engage support</h1>
+      <li>BetterSEQTA Cloud: back up and restore extension settings from your account (General settings).</li>
+      <li>Optional automatic cloud sync if signed in (on by default).</li>
+      <li>Option to use cloud profile photo as the local SEQTA profile picture</li>
+      <li>Firefox: fixed the extension settings popup.</li>
+      <li>SEQTA Engage: Added BetterSEQTA Plus support for SEQTA Engage for Parents.</li>
+      <li>Added smooth transitions to adaptive themes (on by default)</li>
+      <li>Added adaptive theme variables to custom themes (try it out with the Windows XP theme)</li>
+      <li>Fixed today's lessons on the homepage misbehaving in developer mode.</li>
+      <li>Reduced overlap between BetterSEQTA subject averages and SEQTA's built-in averages UI.</li>
+      <li>Updated outdated in-app links and update some under the hood code (Vite 8).</li>
+      <li>Added a notifications panel animation to work like settings.</li>
+      <li>Fix timetable edit plugin not working correctly.</li>
+      
+      <h1>3.5.3 - Adaptive theme updates</h1>
+      <li>Fixed adaptive theming on current-year course and assessment pages.</li>
+
+      <h1>3.5.2 - PDF & store compliance</h1>
+      <li>Put PDF.js with the extension so assessment weighting stays compatible with Chrome Web Store rules</li>
+
+      <h1>3.5.1 - QR & session link fix</h1>
+      <li>Fixed DesQTA Connect Mobile App QR generation on Chrome</li>
+
+      <h1>3.5.0 - Adaptive Theme, Timetable Editor & More</h1>
+      <li>Added adaptive theme colour</li>
+      <li>Added optional soft gradient for adaptive theme when viewing a class</li>
+      <li>Added timetable editor</li>
+      <li>Added icon-only sidebar option for a compact layout</li>
+      <li>Added empty states for notices and homepage cards</li>
+      <li>Added BetterSEQTA Cloud sign-in and improved store browsing details</li>
+      <li>Improved popup rendering to better handle floating UI elements</li>
+      <li>Fixed assessment colouring issues</li>
+      <li>Fixed icon loading on SEQTA pages and improved Windows dropdown styling</li>
+      <li>Fixed sidebar issues with compact mode, keyboard focus, and tab navigation</li>
+      <li>Fixed unnecessary notice modal scrolling and other popup styling issues</li>
+      <li>Added new kanban categories to the assessments overview</li>
+      <li>Added DesQTA QR code generation in settings for linking to the DesQTA (BetterSEQTA) mobile app</li>
+      <li>New store with improved theme browsing and backgrounds</li>
+      <li>Other minor bug fixes and improvements</li>
+
+      <h1>3.4.16 - Subject Averages Fixes</h1>
+      <li>Fixed subject averages not showing correctly with letter grades and weighted marks</li>
+
+      <h1>3.4.15 - SEQTA New UI Patch</h1>
+      <li>Fixed compatibility issues caused by the new SEQTA UI update</li>
+      <li>Adjusted styling to match updated SEQTA layout changes</li>
+      <li>Other minor bug fixes and stability improvements</li>
+
+      <h1>3.4.14 - Search & Assessments Update</h1>
+      <li>Global Search improvements: indexing progress, more accurate results, and now includes past assessments/assignments</li>
+      <li>Assessment Averages now parse weightings when possible for more accurate subject averages</li>
+      <li>Added weight labels to assessment items (including proper handling of 0% and missing weights)</li>
+      <li>Fixed homepage tutor lesson colours and assessments/courses visibility issues</li>
+      <li>Fixed upcoming lessons tutorial room not displaying</li>
+      <li>Fixed favicon not showing / race condition issues</li>
+      <li>Other minor styling and stability improvements</li>
+
+      <h1>3.4.13 - Bug Fixes & Styling Improvements</h1>
+      <li>Fixed house/year box hard failing when house_colour does not exist</li>
+      <li>Fixed message of the day being unreadable in light mode</li>
+      <li>Fixed global font styling issues due to SEQTA updates</li>
+      <li>Fixed styling issues with title bar and other elements</li>
+      <li>Other minor bug fixes and improvements</li>
 
       <h1>3.4.12 - Privacy Updates & Bug Fixes</h1>
       <li>Added privacy statement</li>
@@ -302,5 +378,7 @@ export function OpenWhatsNewPopup() {
   openPopup({
     header,
     content: [imageContainer, text, footer],
+    afterClose: onDismissed,
+    clearJustUpdated: true,
   });
 }
