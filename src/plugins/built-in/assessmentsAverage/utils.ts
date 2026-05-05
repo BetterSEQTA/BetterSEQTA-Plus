@@ -605,8 +605,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
       weighting === "processing"
     ) {
       hasInaccurateWeighting = true;
-      weightedTotal += grade;
-      totalWeight += 1;
+      continue
     } else {
       const weight = parseFloat(weighting);
 
