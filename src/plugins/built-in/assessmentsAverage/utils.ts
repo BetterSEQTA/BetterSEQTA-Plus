@@ -791,6 +791,19 @@ export function injectWeightingsTab(api: any) {
   if (!tabList || !container) return;
   if (tabList.querySelector(".betterseqta-weightings-tab")) return;
 
+  const selectedTitle = document
+    .querySelector(
+      "[class*='AssessmentItem__AssessmentItem___'][class*='selected___'] [class*='AssessmentItem__title___']",
+    )
+    ?.textContent?.trim();
+  const selectedAssessmentID = selectedTitle
+    ? api.storage.assessments?.[selectedTitle]
+    : undefined;
+
+  // Only inject for assessments that exist in the marks/task dataset.
+  // This avoids showing the tab on PENDING/UPCOMING "details-only" assessments.
+  if (!selectedAssessmentID) return;
+
   const cls = resolveTabSetClasses();
 
   const prefix = (tabList.querySelector("li") as HTMLElement).id.replace(
