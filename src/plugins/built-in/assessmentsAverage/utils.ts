@@ -82,10 +82,24 @@ function createWeightLabel(
   assessmentItem: Element,
   weighting: string | undefined,
 ) {
-  const statsContainer = assessmentItem.querySelector(
+  let statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___']`,
-  ) as HTMLElement;
-  if (!statsContainer) return;
+  ) as HTMLElement | null;
+
+  if (!statsContainer) {
+    const statsClass = getClassByPattern(document, "AssessmentItem__stats___");
+    statsContainer = document.createElement("div");
+    statsContainer.className = statsClass;
+    statsContainer.style.justifyContent = "flex-end";
+    const thermoscore = assessmentItem.querySelector(`[class*='Thermoscore__Thermoscore___']`);
+    if (thermoscore) {
+      thermoscore.insertAdjacentElement("afterend", statsContainer);
+    } else {
+      assessmentItem.appendChild(statsContainer);
+    }
+  } else {
+    statsContainer.style.justifyContent = "space-between";
+  }
 
   const displayText =
     weighting && weighting !== "processing" && weighting !== "N/A"
@@ -104,31 +118,42 @@ function createWeightLabel(
     return;
   }
 
-  const label = statsContainer.querySelector(
+  statsContainer.style.display = "flex";
+  statsContainer.style.alignItems = "center";
+  statsContainer.style.width = "100%";
+
+  // Try to clone an existing label from the stats container first,
+  // fall back to building from scratch if none exists
+  const existingNativeLabel = statsContainer.querySelector(
     `[class*='Label__Label___']`,
-  ) as HTMLElement;
+  ) as HTMLElement | null;
 
-  if (!label) return;
+  const weightLabel = existingNativeLabel
+    ? (existingNativeLabel.cloneNode(true) as HTMLElement)
+    : (() => {
+      const labelClass = getClassByPattern(document, "Label__Label___");
+      const innerTextClass = getClassByPattern(document, "Label__innerText___");
+      const el = document.createElement("label");
+      el.className = labelClass;
+      el.innerHTML = `<div class="${innerTextClass}">Weight</div>`;
+      return el;
+    })();
 
-  const weightLabel = label.cloneNode(true) as HTMLElement;
   weightLabel.classList.add("betterseqta-weight-label");
+  weightLabel.style.flex = "none";
+  weightLabel.style.width = "fit-content";
 
-  const innerTextDiv = weightLabel.querySelector(
-    `[class*='Label__innerText___']`,
-  );
+  const innerTextDiv = weightLabel.querySelector(`[class*='Label__innerText___']`);
   if (innerTextDiv) innerTextDiv.textContent = "Weight";
 
   const textNodes = Array.from(weightLabel.childNodes).filter(
     (node) => node.nodeType === Node.TEXT_NODE,
   );
-  if (textNodes.length) textNodes[0].textContent = displayText;
-  statsContainer.style.display = "flex";
-  statsContainer.style.alignItems = "center";
-  statsContainer.style.justifyContent = "space-between";
-  statsContainer.style.width = "100%";
-
-  weightLabel.style.flex = "none";
-  weightLabel.style.width = "fit-content";
+  if (textNodes.length) {
+    textNodes[0].textContent = displayText;
+  } else {
+    weightLabel.appendChild(document.createTextNode(displayText));
+  }
 
   statsContainer.appendChild(weightLabel);
 }
@@ -525,7 +550,11 @@ export async function parseAssessments(api: any) {
     "[class*='AssessmentList__items___']",
   ).getState();
 
-  const marks = state["marks"];
+  const marks = [
+    ...(state["marks"] ?? []),
+    ...(state["upcoming"] ?? []),
+    ...(state["pending"] ?? []),
+  ];
   if (!marks) return;
 
   await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
@@ -538,15 +567,6 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
   let count = 0;
 
   for (const assessmentItem of assessmentItems) {
-    const gradeElement = assessmentItem.querySelector(
-      `[class*='Thermoscore__text___']`,
-    );
-
-    if (!gradeElement) continue;
-
-    const grade = parseGrade(gradeElement.textContent || "");
-    if (grade <= 0) continue;
-
     const titleEl = assessmentItem.querySelector(
       `[class*='AssessmentItem__title___']`,
     );
@@ -565,6 +585,13 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     const weighting = override ?? autoWeighting;
 
     createWeightLabel(assessmentItem, weighting);
+
+    const gradeElement = assessmentItem.querySelector(
+      `[class*='Thermoscore__text___']`,
+    );
+    if (!gradeElement) continue;
+    const grade = parseGrade(gradeElement.textContent || "");
+    if (grade <= 0) continue;
 
     if (
       weighting === null ||

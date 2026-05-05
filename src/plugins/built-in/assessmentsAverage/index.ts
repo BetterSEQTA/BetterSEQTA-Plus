@@ -7,7 +7,6 @@ import {
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import ReactFiber from "@/seqta/utils/ReactFiber.ts";
 import {
   clearStuck,
   getClassByPattern,
@@ -128,6 +127,22 @@ async function renderSubjectAverage(api: any) {
       sampleAssessmentItem,
       "AssessmentItem__title___",
     );
+
+    const assessmentItems = Array.from(
+      assessmentsList.querySelectorAll(
+        `[class*='AssessmentItem__AssessmentItem___']`,
+      ),
+    ).filter(
+      (item) =>
+        !item
+          .querySelector(`[class*='AssessmentItem__title___']`)
+          ?.textContent?.includes("Subject Average"),
+    );
+
+    const { weightedTotal, totalWeight, hasInaccurateWeighting, count } =
+      await processAssessments(api, assessmentItems);
+    if (!count || totalWeight === 0) return;
+
     const thermoscoreElement = document.querySelector(
       "[class*='Thermoscore__Thermoscore___']",
     );
@@ -144,24 +159,7 @@ async function renderSubjectAverage(api: any) {
       thermoscoreElement,
       "Thermoscore__text___",
     );
-    const state = await ReactFiber.find(
-      "[class*='AssessmentList__items___']",
-    ).getState();
-    const marks = state["marks"];
-    if (!marks || !marks.length) return;
-    const assessmentItems = Array.from(
-      assessmentsList.querySelectorAll(
-        `[class*='AssessmentItem__AssessmentItem___']`,
-      ),
-    ).filter(
-      (item) =>
-        !item
-          .querySelector(`[class*='AssessmentItem__title___']`)
-          ?.textContent?.includes("Subject Average"),
-    );
-    const { weightedTotal, totalWeight, hasInaccurateWeighting, count } =
-      await processAssessments(api, assessmentItems);
-    if (!count || totalWeight === 0) return;
+
     const avg = weightedTotal / totalWeight;
     const rounded = Math.ceil(avg / 5) * 5;
     const numberToLetter = Object.entries(letterToNumber).reduce(
