@@ -83,23 +83,28 @@ function createWeightLabel(
   weighting: string | undefined,
 ) {
   let statsContainer = assessmentItem.querySelector(
-    `[class*='AssessmentItem__stats___']`,
+    `[class*='AssessmentItem__stats___'],  .betterseqta-stats-container`,
   ) as HTMLElement | null;
 
   if (!statsContainer) {
     const statsClass = getClassByPattern(document, "AssessmentItem__stats___");
     statsContainer = document.createElement("div");
     statsContainer.className = statsClass;
-    statsContainer.style.justifyContent = "flex-end";
+    statsContainer.classList.add("betterseqta-stats-container");
     const thermoscore = assessmentItem.querySelector(`[class*='Thermoscore__Thermoscore___']`);
     if (thermoscore) {
       thermoscore.insertAdjacentElement("afterend", statsContainer);
     } else {
       assessmentItem.appendChild(statsContainer);
     }
-  } else {
-    statsContainer.style.justifyContent = "space-between";
   }
+
+  const hasNativeLabel = !!statsContainer.querySelector(
+    `[class*='Label__Label___']:not(.betterseqta-weight-label)`,
+  );
+  statsContainer.style.justifyContent = hasNativeLabel
+    ? "space-between"
+    : "flex-end";
 
   const displayText =
     weighting && weighting !== "processing" && weighting !== "N/A"
