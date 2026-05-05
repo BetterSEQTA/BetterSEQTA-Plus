@@ -227,8 +227,6 @@ export function buildSummaryContainer(summary: string): HTMLDivElement {
   // Styling
   const container = document.createElement("div");
   container.className = "ai-summary-content";
-  container.style.fontSize = "14px";
-  container.style.lineHeight = "2.0";
   container.style.whiteSpace = "pre-line";
 
   // Adds text to container
@@ -275,15 +273,16 @@ export function onIframeReady(
 export function createSummaryBar(): HTMLDivElement {
   const bar = document.createElement("div");
   bar.className = "ai-summary-bar";
-  bar.style.display = "inline-flex";
-  bar.style.gap = "8px";
-  bar.style.margin = "8px 8px 8px 8px";
-  bar.style.padding = "6px";
-  bar.style.background = "rgba(0, 0, 0, 0.25)";
-  bar.style.borderRadius = "16px";
-  bar.style.alignItems = "center";
-  bar.style.alignSelf = "flex-start";
-  bar.style.boxSizing = "border-box";
-
   return bar;
+}
+
+export function createSummaryButton(
+  variant: "primary" | "secondary",
+  text: string,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `ai-summary-btn ai-summary-btn-${variant}`;
+  button.textContent = text;
+  return button;
 }

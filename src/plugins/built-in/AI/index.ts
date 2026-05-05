@@ -15,6 +15,7 @@ import {
   ask,
   autosizeIframe,
   buildSummaryContainer,
+  createSummaryButton,
   createSummaryBar,
   extractAttachmentLinks,
   hashText,
@@ -126,6 +127,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     const disposables: Array<() => void> = [];
     const handledEditors = new WeakSet<HTMLElement>();
     const handledIframes = new WeakSet<HTMLIFrameElement>();
+    const handledHosts = new WeakSet<HTMLElement>();
     const watchedNoticeContainers = new WeakSet<HTMLElement>();
     const watchedNotices = new WeakSet<HTMLElement>();
 
@@ -150,6 +152,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       opts?: { resize?: () => void },
     ) {
       if (disposed) return;
+      if (handledHosts.has(hostEl)) return;
 
       const initialTarget = resolveTarget();
       if (!initialTarget) {
@@ -159,6 +162,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
         );
         return;
       }
+      handledHosts.add(hostEl);
 
       const originalDisplay = initialTarget.style.display;
       const originalNodes = Array.from(initialTarget.childNodes).map((n) =>
@@ -187,10 +191,13 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
       // Bar with same parent as iframe. Contains buttons for controlling the plugin.
       const buttonBar = createSummaryBar();
+      const statusText = document.createElement("span");
+      statusText.className = "ai-summary-status";
 
       // Remove buttonBar and reinstate the original content upon disposal.
       disposables.push(() => {
         buttonBar.remove();
+        handledHosts.delete(hostEl);
         const targetDiv = getLiveTarget();
         if (targetDiv) {
           targetDiv.replaceChildren(...cloneOriginalNodes());
@@ -199,20 +206,14 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       });
 
       // Button that only shows when a summary does NOT exist. Creates a summary.
-      const summariseBtn = document.createElement("button");
-      summariseBtn.style.borderRadius = "16px";
-      summariseBtn.textContent = "Summarise";
+      const summariseBtn = createSummaryButton("primary", "Summarise");
 
       // Toggles between viewing the summarised text and original text. Only shows if a summary already exists.
-      const toggleBtn = document.createElement("button");
-      toggleBtn.textContent = "Show original";
-      toggleBtn.style.borderRadius = "16px";
+      const toggleBtn = createSummaryButton("secondary", "Show original");
       toggleBtn.style.display = "none";
 
       // Scrap the current summary, and generate a new one. Only shows if a summary already exists.
-      const resummariseBtn = document.createElement("button");
-      resummariseBtn.textContent = "Re-summarise";
-      resummariseBtn.style.borderRadius = "16px";
+      const resummariseBtn = createSummaryButton("secondary", "Re-summarise");
       resummariseBtn.style.display = "none";
 
       // Updates button states (text, disabled/enabled, etc)
@@ -227,6 +228,22 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
         summariseBtn.disabled = state.isLoading;
         resummariseBtn.disabled = state.isLoading;
+        toggleBtn.disabled = state.isLoading;
+        buttonBar.classList.toggle("ai-summary-bar-loading", state.isLoading);
+        statusText.textContent = state.isLoading
+          ? "Generating summary..."
+          : "";
+      }
+
+      function animateContentSwap(targetDiv: HTMLElement) {
+        if (!targetDiv.animate) return;
+        targetDiv.animate(
+          [
+            { opacity: 0, transform: "translateY(4px)" },
+            { opacity: 1, transform: "translateY(0)" },
+          ],
+          { duration: 190, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+        );
       }
 
       // Executed upon pressing the 'Show Original' button. Replaces summary text with the original text.
@@ -236,6 +253,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
         targetDiv.replaceChildren(...cloneOriginalNodes());
         targetDiv.style.display = originalDisplay;
+        animateContentSwap(targetDiv);
         state.isShowingSummary = false;
         updateUI();
         opts?.resize?.();
@@ -250,6 +268,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
         targetDiv.replaceChildren(
           ...summaryNodes.map((node) => node.cloneNode(true)),
         );
+        animateContentSwap(targetDiv);
         state.isShowingSummary = true;
         updateUI();
         opts?.resize?.();
@@ -334,6 +353,10 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
           showSummary();
         } catch (err) {
           console.error("[AI Plugin] Failed to generate summary", err);
+          statusText.textContent = "Could not generate summary. Check AI settings.";
+          setTimeout(() => {
+            if (!disposed) statusText.textContent = "";
+          }, 3500);
         } finally {
           // Reset loading state
           if (!disposed) {
@@ -352,7 +375,7 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
         state.isShowingSummary ? showOriginal() : showSummary();
 
       // Appends buttons to the button bar
-      buttonBar.append(summariseBtn, toggleBtn, resummariseBtn);
+      buttonBar.append(summariseBtn, toggleBtn, resummariseBtn, statusText);
 
       // Prepends button bar to specified host, so long as the bar does not already exist.
       if (!hostEl.querySelector(".ai-summary-bar")) {
@@ -376,21 +399,40 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
 
       onIframeReady(iframe, () => {
         if (disposed) return;
-
-        if (!resolveTarget()) {
-          handledIframes.delete(iframe);
-          return;
-        }
-
         const host = iframe.parentElement;
         if (!host) {
           handledIframes.delete(iframe);
           return;
         }
 
-        handleSummarisableContainer(resolveTarget, host, {
-          resize: () => autosizeIframe(iframe),
-        });
+        const tryAttach = () => {
+          if (!resolveTarget()) return false;
+          handleSummarisableContainer(resolveTarget, host, {
+            resize: () => autosizeIframe(iframe),
+          });
+          return true;
+        };
+
+        if (tryAttach()) return;
+
+        // Some pages render iframe content after load; retry briefly.
+        let attempts = 0;
+        const maxAttempts = 25;
+        const interval = window.setInterval(() => {
+          if (disposed || !iframe.isConnected) {
+            window.clearInterval(interval);
+            handledIframes.delete(iframe);
+            return;
+          }
+          attempts++;
+          const attached = tryAttach();
+          if (attached || attempts >= maxAttempts) {
+            window.clearInterval(interval);
+            if (!attached) handledIframes.delete(iframe);
+          }
+        }, 200);
+
+        disposables.push(() => window.clearInterval(interval));
       });
     }
 
@@ -427,6 +469,17 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
       handleSummarisableContainer(resolveTarget, buttonBarLocation);
     }
 
+    // Fallback scanner for dynamic pages where mount hooks can be skipped.
+    function runFallbackScan() {
+      if (disposed) return;
+      document.querySelectorAll("iframe.userHTML").forEach((iframe) => {
+        if (iframe instanceof HTMLIFrameElement) handleIframe(iframe);
+      });
+      document.querySelectorAll(".content").forEach((contentEl) => {
+        tryHandleDraftEditor(contentEl as HTMLElement);
+      });
+    }
+
     // Handles DraftEditor instances. Differs from standard userHTML iframes.
     const { unregister: unregisterCourses } = api.seqta.onMount(
       ".content",
@@ -451,6 +504,15 @@ const AIPlugin: Plugin<typeof settings, AIPluginStorage> = {
     );
 
     disposables.push(unregisterCourses);
+    runFallbackScan();
+
+    const fallbackObserver = new MutationObserver(() => {
+      runFallbackScan();
+    });
+    if (document.body) {
+      fallbackObserver.observe(document.body, { childList: true, subtree: true });
+      disposables.push(() => fallbackObserver.disconnect());
+    }
 
     function initNoticesTracking() {
       if (disposed) return;
