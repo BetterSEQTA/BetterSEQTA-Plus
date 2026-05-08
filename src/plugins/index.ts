@@ -10,6 +10,7 @@ import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
 import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
+import betterSeqtaSecurityPlugin from "./built-in/betterSeqtaSecurity";
 //import messageFoldersPlugin from "./built-in/messageFolders";
 //import testPlugin from './built-in/test';
 
@@ -21,6 +22,7 @@ const pluginManager = PluginManager.getInstance();
 
 // Register built-in plugins
 pluginManager.registerPlugin(themesPlugin);
+pluginManager.registerPlugin(betterSeqtaSecurityPlugin);
 pluginManager.registerPlugin(animatedBackgroundPlugin);
 pluginManager.registerPlugin(assessmentsAveragePlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);

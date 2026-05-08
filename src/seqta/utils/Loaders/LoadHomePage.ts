@@ -13,6 +13,8 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import { analyzeHtmlThreats } from "@/seqta/security/analyzeHtmlThreats";
+import { mountBlockedContentUi } from "@/seqta/security/blockedContentUi";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
@@ -384,6 +386,12 @@ function openNoticeModal(
     .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
     .replace(/ +/, " ");
 
+  const threatAnalysis = analyzeHtmlThreats(cleanContent);
+  const noticeBlocked = threatAnalysis.blocked;
+  const noticeBodyInner = noticeBlocked
+    ? `<div class="notice-content-body bss-security-notice-mount"></div>`
+    : `<div class="notice-content-body">${cleanContent}</div>`;
+
   document.getElementById("notice-modal")?.remove();
 
   const sourceRect = sourceElement.getBoundingClientRect();
@@ -417,7 +425,7 @@ function openNoticeModal(
               <button class="notice-close-btn">&times;</button>
             </div>
             <h2 class="notice-content-title">${notice.title}</h2>
-            <div class="notice-content-body">${cleanContent}</div>
+            ${noticeBodyInner}
           </div>
         </div>
       </div>
@@ -433,6 +441,23 @@ function openNoticeModal(
   const closeBtn = modal.querySelector(".notice-close-btn") as HTMLElement;
 
   document.body.appendChild(modal);
+
+  if (noticeBlocked) {
+    const mountEl = modal.querySelector(
+      ".bss-security-notice-mount",
+    ) as HTMLElement | null;
+    if (mountEl) {
+      mountBlockedContentUi(mountEl, {
+        surface: "notice",
+        analysis: threatAnalysis,
+        rawSnippet: cleanContent.slice(0, 50_000),
+        contextTitle: String(notice.title ?? ""),
+        contextSubtitle: [notice.staff, notice.label_title]
+          .filter(Boolean)
+          .join(" · "),
+      });
+    }
+  }
 
   sourceElement.setAttribute("data-transitioning", "true");
   sourceElement.style.opacity = "0";
@@ -459,7 +484,11 @@ function openNoticeModal(
         <button class="notice-close-btn">&times;</button>
       </div>
       <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${cleanContent}</div>
+      ${
+        noticeBlocked
+          ? `<div class="notice-content-body bss-security-notice-mount" style="min-height:280px;"></div>`
+          : `<div class="notice-content-body">${cleanContent}</div>`
+      }
     </div>
   `;
   document.body.appendChild(tempMeasureDiv);
