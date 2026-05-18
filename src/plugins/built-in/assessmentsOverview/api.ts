@@ -28,17 +28,9 @@ async function fetchJSON(url: string, body: any) {
 
 async function loadSubjects() {
   const res = await fetchJSON("/seqta/student/load/subjects?", {});
-  const activeGroup = res.payload.find((s: any) => s.active === 1);
-  const activeYear = activeGroup?.year;
-  const allSubjects = res.payload
-    .filter((s: any) => s.year === activeYear)
+  return res.payload
+    .filter((s: any) => s.active === 1)
     .flatMap((s: any) => s.subjects);
-  const seen = new Set<string>();
-  return allSubjects.filter((s: Subject) => {
-    if (seen.has(s.code)) return false;
-    seen.add(s.code);
-    return true;
-  });
 }
 
 async function loadPrefs(student: number) {
