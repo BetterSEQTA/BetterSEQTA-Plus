@@ -18,6 +18,7 @@
   import Backgrounds from '../components/store/Backgrounds.svelte'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '../components/SignInToFavoriteModal.svelte'
+  import { consumePendingHighlightThemeId } from '@/seqta/utils/openThemeStoreWithHighlight'
 
   const themeManager = ThemeManager.getInstance();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
@@ -122,13 +123,39 @@
     }
   };
 
+  function focusThemeById(themeId: string) {
+    const match = themes.find((t) => t.id === themeId)
+      ?? themes.find((t) => t.flavours?.some((f) => f.id === themeId));
+    if (match) {
+      activeTab = 'themes';
+      searchTerm = '';
+      displayTheme = match;
+    }
+  }
+
+  function onHighlightThemeEvent(e: Event) {
+    const detail = (e as CustomEvent).detail;
+    if (detail?.themeId && typeof detail.themeId === 'string') {
+      focusThemeById(detail.themeId);
+    }
+  }
+
   // On mount
   onMount(async () => {
+    window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+
     await fetchThemes();
     await fetchCurrentThemes();
     
     darkMode = (await browser.storage.local.get('DarkMode')).DarkMode === 'true';
     darkMode = $settingsState.DarkMode;
+
+    const pending = consumePendingHighlightThemeId();
+    if (pending) focusThemeById(pending);
+
+    return () => {
+      window.removeEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+    };
   });
 
   // Filter themes (list is already featured-first, then newest; filter preserves order)

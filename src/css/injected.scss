@@ -3726,6 +3726,59 @@ div.day-empty {
   color: var(--text-primary);
 }
 
+.whatsnewHeader.themeOfTheMonthHeader {
+  height: auto;
+  min-height: unset;
+}
+.whatsnewHeader.themeOfTheMonthHeader h1 {
+  line-height: 1.2;
+}
+.themeOfTheMonthSubtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-primary) 65%, transparent);
+}
+.themeOfTheMonthFooter {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+.themeOfTheMonthViewButton {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.65rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--better-pri, #6366f1);
+  color: white;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.themeOfTheMonthViewButton:hover {
+  filter: brightness(1.1);
+  transform: scale(1.03);
+}
+.themeOfTheMonthViewButton:active {
+  transform: scale(0.98);
+}
+
+.bsplus-theme-highlight {
+  animation: bsplusThemeHighlightPulse 1.4s ease-in-out 2;
+}
+@keyframes bsplusThemeHighlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--better-pri, #6366f1) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--better-pri, #6366f1) 60%, transparent);
+  }
+}
+
 .popup-media-fullscreenable {
   cursor: pointer;
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
