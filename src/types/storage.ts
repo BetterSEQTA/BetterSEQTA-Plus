@@ -36,6 +36,8 @@ export interface SettingsState {
   engageParentsAnnouncementShown?: boolean;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
+  /** ID of the last Theme of the Month entry shown to the user (shows once per new entry). */
+  themeOfTheMonthLastSeenId?: string;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;

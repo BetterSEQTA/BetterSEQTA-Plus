@@ -11,6 +11,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { getApiBase } from "@/seqta/utils/DevApiBase";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
   clearCustomThemeAdaptiveCssVariables,
@@ -545,7 +546,10 @@ export class ThemeManager {
     }
   }
 
-  private readonly THEME_API_BASE = 'https://betterseqta.org/api';
+  /** Use a getter so dev-mode session-only base URL overrides take effect immediately. */
+  private get THEME_API_BASE(): string {
+    return `${getApiBase()}/api`;
+  }
   private readonly GITHUB_THEMES_BASE = 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes';
 
   /**

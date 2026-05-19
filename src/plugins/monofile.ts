@@ -105,7 +105,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  runStartupPopupQueue();
+  void runStartupPopupQueue();
 }
 
 export function GetCSSElement(file: string) {

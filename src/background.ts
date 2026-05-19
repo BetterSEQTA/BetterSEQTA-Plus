@@ -9,6 +9,21 @@ import {
   runCloudSettingsPoll,
 } from "./background/cloudSettingsAutoSync";
 
+/**
+ * Session-only dev-mode override of the content API base.
+ *
+ * Stored in a module-level variable (not `chrome.storage`) so it is wiped
+ * automatically when the browser/service-worker process restarts. Content
+ * scripts re-sync this on every page load via `setDevApiBase` so the value
+ * survives transient service-worker terminations within the same browser
+ * session.
+ */
+const DEFAULT_API_BASE = "https://betterseqta.org";
+let DEV_API_BASE: string | null = null;
+function apiBase(): string {
+  return DEV_API_BASE ?? DEFAULT_API_BASE;
+}
+
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
   function open(tabs: any) {
@@ -29,7 +44,7 @@ type MessageSender = { (response?: unknown): void };
 
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   const { token } = request;
-  const apiUrl = `https://betterseqta.org/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+  const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
   const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -57,7 +72,7 @@ function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boo
   }
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  fetch(`https://betterseqta.org/api/themes/${themeId}`, { cache: "no-store", headers })
+  fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
     .then((r) => r.json())
     .then(sendResponse)
     .catch((err) => {
@@ -283,7 +298,7 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
     return false;
   }
   const isFavorite = action === "favorite";
-  fetch(`https://betterseqta.org/api/themes/${themeId}/favorite`, {
+  fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
     method: isFavorite ? "POST" : "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -310,8 +325,19 @@ function isSeqtaOrigin(origin: string): boolean {
   }
 }
 
+function handleSetDevApiBase(request: any): boolean {
+  const url = typeof request?.url === "string" ? request.url.trim() : null;
+  if (url && /^https?:\/\//.test(url)) {
+    DEV_API_BASE = url.replace(/\/$/, "");
+  } else {
+    DEV_API_BASE = null;
+  }
+  return false;
+}
+
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   reloadTabs: () => reloadSeqtaPages(),
+  setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {
     browser.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
