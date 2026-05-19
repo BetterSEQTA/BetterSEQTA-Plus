@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
-import { openPopup, closePopup } from "./PopupManager";
+import { closePopup, openPopup } from "./PopupManager";
 import { getApiBase } from "../DevApiBase";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
 import { cloudAuth } from "../CloudAuth";
