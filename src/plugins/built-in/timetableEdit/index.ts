@@ -145,8 +145,10 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
 
     let observer: MutationObserver | null = null;
     let quickbarObserver: MutationObserver | null = null;
+    let quickbarSyncTimer: ReturnType<typeof setTimeout> | null = null;
     let lastClickedCi: number | null = null;
     let lastClickedEntry: { roomEl: HTMLElement; teacherEl: HTMLElement; item: TimetableEntryData } | null = null;
+    let lastSyncedQuickbarCi: number | null = null;
 
     const getOverrides = (): TimetableOverrides =>
       api.storage.timetableOverrides ?? {};
@@ -186,9 +188,11 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
       }
 
-      const captureClick = (e: MouseEvent) => {
+      const captureClick = () => {
         lastClickedCi = ci;
         lastClickedEntry = { roomEl, teacherEl, item };
+        lastSyncedQuickbarCi = null;
+        scheduleQuickbarSync();
       };
       entry.addEventListener("click", captureClick, true);
     };
@@ -197,6 +201,76 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       document.querySelectorAll(".timetablepage .entry.class").forEach((entry) => {
         processEntry(entry as HTMLElement);
       });
+    };
+
+    const getVisibleClassQuickbar = (): HTMLElement | null => {
+      const quickbar = document.querySelector(
+        ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.above.visible, .timetablepage .quickbar.visible",
+      );
+      if (!quickbar || quickbar.getAttribute("data-type") !== "class") return null;
+      return quickbar as HTMLElement;
+    };
+
+    const applyOverridesToQuickbar = (quickbar: HTMLElement): void => {
+      if (lastClickedCi === null) return;
+      if (lastSyncedQuickbarCi === lastClickedCi) return;
+
+      const description =
+        quickbar.querySelector(".title")?.textContent?.trim() ??
+        lastClickedEntry?.item.description ??
+        "";
+      const override = getEffectiveOverride(lastClickedCi, description);
+      if (!override) {
+        lastSyncedQuickbarCi = lastClickedCi;
+        return;
+      }
+
+      const roomEl = quickbar.querySelector(".meta .room");
+      const teacherEl = quickbar.querySelector(".meta .teacher");
+      if (override.room !== undefined && !roomEl) return;
+      if (override.staff !== undefined && !teacherEl) return;
+
+      if (override.room !== undefined && roomEl && roomEl.textContent !== override.room) {
+        roomEl.textContent = override.room;
+      }
+      if (override.staff !== undefined && teacherEl && teacherEl.textContent !== override.staff) {
+        teacherEl.textContent = override.staff;
+      }
+
+      lastSyncedQuickbarCi = lastClickedCi;
+    };
+
+    const updateVisibleQuickbar = (room: string, staff: string): void => {
+      const quickbar = getVisibleClassQuickbar();
+      if (!quickbar) return;
+      const roomEl = quickbar.querySelector(".meta .room");
+      const teacherEl = quickbar.querySelector(".meta .teacher");
+      if (roomEl && roomEl.textContent !== room) roomEl.textContent = room;
+      if (teacherEl && teacherEl.textContent !== staff) teacherEl.textContent = staff;
+      if (lastClickedCi !== null) lastSyncedQuickbarCi = lastClickedCi;
+    };
+
+    const syncClassQuickbar = (quickbar: HTMLElement): void => {
+      applyOverridesToQuickbar(quickbar);
+      addEditButtonToQuickbar(quickbar);
+    };
+
+    const scheduleQuickbarSync = (): void => {
+      if (quickbarSyncTimer !== null) clearTimeout(quickbarSyncTimer);
+
+      let attempts = 0;
+      const trySync = (): void => {
+        const quickbar = getVisibleClassQuickbar();
+        if (quickbar && lastClickedCi !== null) {
+          syncClassQuickbar(quickbar);
+          return;
+        }
+        if (++attempts < 6) {
+          quickbarSyncTimer = setTimeout(trySync, 50);
+        }
+      };
+
+      requestAnimationFrame(trySync);
     };
 
     const addEditButtonToQuickbar = (quickbar: HTMLElement) => {
@@ -251,6 +325,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
             }
             if (entryData.roomEl) entryData.roomEl.textContent = room;
             if (entryData.teacherEl) entryData.teacherEl.textContent = staff;
+            updateVisibleQuickbar(room, staff);
             processAllEntries();
           },
           (ci) => {
@@ -262,6 +337,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
             api.storage.timetableOverridesBySubject = bySubject;
             if (entryData.roomEl) entryData.roomEl.textContent = item.room;
             if (entryData.teacherEl) entryData.teacherEl.textContent = item.staff;
+            updateVisibleQuickbar(item.room, item.staff);
             processAllEntries();
           },
         );
@@ -271,34 +347,30 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const syncQuickbarFromDOM = () => {
-      const quickbar = document.querySelector(
-        ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.visible",
-      );
-      if (quickbar && quickbar.getAttribute("data-type") === "class") {
-        const titleEl = quickbar.querySelector(".title");
-        const roomEl = quickbar.querySelector(".meta .room");
-        const teacherEl = quickbar.querySelector(".meta .teacher");
-        if (titleEl && roomEl && teacherEl && lastClickedCi !== null && lastClickedEntry) {
-          addEditButtonToQuickbar(quickbar as HTMLElement);
-        }
-      }
+      const quickbar = getVisibleClassQuickbar();
+      if (!quickbar || lastClickedCi === null || !lastClickedEntry) return;
+      syncClassQuickbar(quickbar);
     };
 
     const setupQuickbarObserver = () => {
       const timetablePage = document.querySelector(".timetablepage");
       if (!timetablePage || quickbarObserver) return;
 
-      quickbarObserver = new MutationObserver(() => {
-        const quickbar = document.querySelector(
-          ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.visible",
+      quickbarObserver = new MutationObserver((mutations) => {
+        const quickbarBecameVisible = mutations.some(
+          (mutation) =>
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class" &&
+            (mutation.target as HTMLElement).classList.contains("quickbar") &&
+            (mutation.target as HTMLElement).classList.contains("visible"),
         );
-        if (quickbar?.getAttribute("data-type") === "class") {
-          addEditButtonToQuickbar(quickbar as HTMLElement);
-        }
+        if (!quickbarBecameVisible || lastClickedCi === null) return;
+
+        const quickbar = getVisibleClassQuickbar();
+        if (quickbar) syncClassQuickbar(quickbar);
       });
 
       quickbarObserver.observe(timetablePage, {
-        childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ["class"],
@@ -336,6 +408,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       unregister();
       observer?.disconnect();
       quickbarObserver?.disconnect();
+      if (quickbarSyncTimer !== null) clearTimeout(quickbarSyncTimer);
       styleEl.remove();
       document.querySelectorAll("[data-timetable-edit-processed]").forEach((el) => {
         el.removeAttribute("data-timetable-edit-processed");
