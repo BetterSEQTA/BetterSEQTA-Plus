@@ -38,6 +38,8 @@ export interface SettingsState {
   bsCloudAutoSyncAnnouncementShown?: boolean;
   /** ID of the last Theme of the Month entry shown to the user (shows once per new entry). */
   themeOfTheMonthLastSeenId?: string;
+  /** Permanently disables Theme of the Month startup prompts. */
+  themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;

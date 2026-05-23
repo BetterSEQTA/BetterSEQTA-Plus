@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
-import { closePopup, openPopup } from "./PopupManager";
+import { closePopup } from "./PopupManager";
 import { getApiBase } from "../DevApiBase";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
 import { cloudAuth } from "../CloudAuth";
@@ -47,7 +47,7 @@ export async function fetchThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | nul
 
 /** True when we have a new monthly entry the user hasn't dismissed yet. */
 export function shouldShowThemeOfTheMonth(entry: ThemeOfTheMonthEntry | null): boolean {
-  if (!entry) return false;
+  if (!entry || settingsState.themeOfTheMonthDisabled) return false;
   return settingsState.themeOfTheMonthLastSeenId !== entry.id;
 }
 
@@ -108,82 +108,90 @@ async function resolvePopupHeroImageUrl(entry: ThemeOfTheMonthEntry): Promise<st
   return fallback || null;
 }
 
-function createHeroImageContainer(imageUrl: string, alt: string): HTMLElement {
-  const container = document.createElement("div");
-  container.classList.add("whatsnewImgContainer");
+function closeThemeOfTheMonthCard(
+  card: HTMLElement,
+  onDismissed?: () => void,
+  markSeen = true,
+) {
+  if (card.classList.contains("themeOfTheMonthCardClosing")) return;
 
-  const img = document.createElement("img");
-  img.src = imageUrl;
-  img.alt = alt;
-  img.classList.add("whatsnewImg");
-  container.appendChild(img);
+  if (markSeen) {
+    const entryId = card.dataset.entryId;
+    if (entryId) settingsState.themeOfTheMonthLastSeenId = entryId;
+  }
 
-  return container;
+  card.classList.add("themeOfTheMonthCardClosing");
+  window.setTimeout(() => {
+    card.remove();
+    onDismissed?.();
+  }, 180);
 }
 
 /**
- * Renders the Theme of the Month announcement popup.
+ * Renders the Theme of the Month announcement card.
  */
 export async function OpenThemeOfTheMonthPopup(
   entry: ThemeOfTheMonthEntry,
   onDismissed?: () => void,
 ) {
-  if (document.getElementById("whatsnewbk")) {
-    onDismissed?.();
-    return;
-  }
+  document.getElementById("theme-of-the-month-card")?.remove();
 
   const monthLabel = formatMonthLabel(entry.month);
-
-  const header = stringToHTML(
-    /* html */ `
-    <div class="whatsnewHeader themeOfTheMonthHeader">
-      <h1>${escapeHTML(entry.title)}</h1>
-      <p class="themeOfTheMonthSubtitle">Theme of the Month · ${escapeHTML(monthLabel)}</p>
-    </div>`,
-  ).firstChild as HTMLElement;
-
   const heroUrl = await resolvePopupHeroImageUrl(entry);
-  const imageContainer = heroUrl ? createHeroImageContainer(heroUrl, entry.title) : null;
+  const description = escapeHTML(entry.description).replace(/\n/g, " ");
+  const linkedThemeId = entry.theme_id ?? entry.theme?.id;
 
-  const descriptionHTML = escapeHTML(entry.description).replace(/\n/g, "<br />");
-  const text = stringToHTML(/* html */ `
-    <div class="whatsnewTextContainer themeOfTheMonthDescription" style="height: 50%; overflow-y: auto; font-size: 1.2rem; line-height: 1.6;">
-      <p>${descriptionHTML}</p>
-    </div>
+  const card = stringToHTML(/* html */ `
+    <aside id="theme-of-the-month-card" class="themeOfTheMonthCard" role="dialog" aria-label="Theme of the Month">
+      <button type="button" class="themeOfTheMonthCardClose" aria-label="Close Theme of the Month">×</button>
+      ${
+        heroUrl
+          ? `<img class="themeOfTheMonthCardImage" src="${escapeHTML(heroUrl)}" alt="${escapeHTML(entry.title)}" />`
+          : ""
+      }
+      <div class="themeOfTheMonthCardBody">
+        <p class="themeOfTheMonthCardEyebrow">Theme of the Month · ${escapeHTML(monthLabel)}</p>
+        <h2>${escapeHTML(entry.title)}</h2>
+        <p class="themeOfTheMonthCardDescription">${description}</p>
+        <div class="themeOfTheMonthCardActions">
+          ${
+            linkedThemeId
+              ? `<button type="button" class="themeOfTheMonthCardPrimary">Open Store</button>`
+              : ""
+          }
+          <button type="button" class="themeOfTheMonthCardSecondary">Don't show again</button>
+        </div>
+      </div>
+    </aside>
   `).firstChild as HTMLElement;
 
-  let footer: HTMLElement | null = null;
-  const linkedThemeId = entry.theme_id ?? entry.theme?.id;
-  const linkedThemeName = entry.theme?.name;
-  if (linkedThemeId && linkedThemeName) {
-    footer = document.createElement("div");
-    footer.classList.add("whatsnewFooter", "themeOfTheMonthFooter");
+  card.dataset.entryId = entry.id;
+  const autoCloseTimeout = window.setTimeout(() => {
+    closeThemeOfTheMonthCard(card, onDismissed);
+  }, 12000);
 
-    const viewBtn = document.createElement("button");
-    viewBtn.type = "button";
-    viewBtn.classList.add("themeOfTheMonthViewButton");
-    viewBtn.textContent = `View "${linkedThemeName}" in the Theme Store`;
-    viewBtn.addEventListener("click", () => {
-      void closePopup();
-      openThemeStoreWithHighlight(linkedThemeId);
-    });
+  const dismiss = (markSeen = true) => {
+    window.clearTimeout(autoCloseTimeout);
+    closeThemeOfTheMonthCard(card, onDismissed, markSeen);
+  };
 
-    footer.appendChild(viewBtn);
-  }
+  card.addEventListener("mouseenter", () => window.clearTimeout(autoCloseTimeout), { once: true });
 
-  settingsState.themeOfTheMonthLastSeenId = entry.id;
-
-  const content: (Node | null)[] = [];
-  if (imageContainer) content.push(imageContainer);
-  content.push(text);
-  if (footer) content.push(footer);
-
-  openPopup({
-    header,
-    content,
-    afterClose: onDismissed,
+  card.querySelector(".themeOfTheMonthCardClose")?.addEventListener("click", () => {
+    dismiss();
   });
+
+  card.querySelector(".themeOfTheMonthCardPrimary")?.addEventListener("click", () => {
+    dismiss();
+    openThemeStoreWithHighlight(linkedThemeId!);
+  });
+
+  card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", () => {
+    settingsState.themeOfTheMonthDisabled = true;
+    dismiss();
+  });
+
+  document.body.appendChild(card);
 }
 
 /**

@@ -495,6 +495,7 @@ function getDefaultValues(): SettingsState {
     adaptiveThemeColour: false,
     adaptiveThemeGradient: false,
     adaptiveThemeColourTransition: true,
+    themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
   };
 }
