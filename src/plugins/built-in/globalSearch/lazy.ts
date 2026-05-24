@@ -5,6 +5,7 @@ import {
   defineSettings,
   hotkeySetting,
 } from "../../core/settingsHelpers";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
 
 // Platform-aware default hotkey
@@ -112,7 +113,7 @@ const settings = defineSettings({
 });
 
 // Create the lazy plugin definition - this loads immediately but doesn't import heavy dependencies
-export default defineLazyPlugin({
+const globalSearchPlugin = defineLazyPlugin({
   id: "global-search",
   name: "Global Search",
   description: "Quick search for everything in SEQTA",
@@ -125,3 +126,15 @@ export default defineLazyPlugin({
   // Lazy loader - only imports the heavy plugin when actually needed
   loader: () => import("./src/core/index")
 });
+
+const runGlobalSearch = globalSearchPlugin.run!;
+
+globalSearchPlugin.run = async (api) => {
+  if (isSeqtaEngageExperience()) {
+    return () => {};
+  }
+
+  return runGlobalSearch(api);
+};
+
+export default globalSearchPlugin;
