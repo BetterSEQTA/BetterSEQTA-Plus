@@ -8,6 +8,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
+import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import {
   type EngageParentChild,
   type EngageParentTimetableItem,
@@ -753,6 +754,9 @@ export async function loadEngageHomePage(): Promise<void> {
   const engageHomeBody = stringToHTML(/* html */ `
       <div class="home-root" id="engage-home-root">
         <div class="home-container" id="engage-home-container">
+          <div class="border shortcut-container">
+            <div class="border shortcuts" id="shortcuts"></div>
+          </div>
           <div class="border timetable-container">
             <div class="home-subtitle">
               <div class="engage-timetable-title-cluster">
@@ -792,6 +796,7 @@ export async function loadEngageHomePage(): Promise<void> {
 
   bindEngageTimetableUi();
   setEngageTimetableSubtitle();
+  renderShortcuts();
 
   const select = document.getElementById(
     "engage-child-selector",
