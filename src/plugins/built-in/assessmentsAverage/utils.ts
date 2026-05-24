@@ -1,5 +1,11 @@
 import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import {
+  getEngageAssessmentReportUrl,
+  getEngageAssessmentStudentId,
+  requestEngageAssessmentPdf,
+} from "./engage.ts";
 import {
   ensurePdfjsWorker,
   getPdfjsPageContextUrls,
@@ -464,8 +470,6 @@ export async function extractPDFText(url: string): Promise<string> {
 async function handleWeightings(mark: any, api: any) {
   const assessmentID = mark.id;
   const metaclassID = mark.metaclassID;
-  const userInfo = await getUserInfo();
-  const userID = userInfo.id;
   const title = mark.title;
 
   if (
@@ -486,34 +490,54 @@ async function handleWeightings(mark: any, api: any) {
   };
 
   try {
-    const filename =
-      "BetterSEQTA-" +
-      String(Math.floor(Math.random() * 1e15)).padStart(15, "0");
+    let pdfUrl: string;
 
-    const printResponse = await fetch(
-      `${location.origin}/seqta/student/print/assessment`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        credentials: "include",
-        body: JSON.stringify({
-          fileName: filename,
-          id: assessmentID,
-          metaclass: metaclassID,
-          student: userID,
-        }),
-      },
-    );
+    if (isSeqtaEngageExperience()) {
+      const studentID = getEngageAssessmentStudentId();
+      if (!studentID) {
+        throw new Error("Could not resolve Engage student ID from URL or storage");
+      }
 
-    if (!printResponse.ok) {
-      throw new Error(
-        `Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`,
+      const reportFile = await requestEngageAssessmentPdf({
+        assessmentID,
+        metaclassID,
+        studentID,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      pdfUrl = getEngageAssessmentReportUrl(reportFile);
+    } else {
+      const userInfo = await getUserInfo();
+      const userID = userInfo.id;
+
+      const filename =
+        "BetterSEQTA-" +
+        String(Math.floor(Math.random() * 1e15)).padStart(15, "0");
+
+      const printResponse = await fetch(
+        `${location.origin}/seqta/student/print/assessment`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          credentials: "include",
+          body: JSON.stringify({
+            fileName: filename,
+            id: assessmentID,
+            metaclass: metaclassID,
+            student: userID,
+          }),
+        },
       );
+
+      if (!printResponse.ok) {
+        throw new Error(
+          `Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`,
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      pdfUrl = `${location.origin}/seqta/student/report/get?file=${filename}`;
     }
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const pdfUrl = `${location.origin}/seqta/student/report/get?file=${filename}`;
 
     if (pdfUrl.startsWith("blob:")) {
       throw new Error(`Cannot fetch blob URL from extension: ${pdfUrl}`);
