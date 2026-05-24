@@ -29,6 +29,12 @@
   }
 }
 
+@mixin engage-only {
+  body[data-seqta-platform="engage"] & {
+    @content;
+  }
+}
+
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;
@@ -137,16 +143,6 @@ select option {
   --theme-fg-parts: white;
 }
 
-// Global text selection styles for dark mode
-::selection {
-  background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
-  color: white !important;
-}
-
-::-moz-selection {
-  background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
-  color: white !important;
-}
 .extension-editor {
   background: var(--background-primary);
   border-radius: 16px;
@@ -268,21 +264,13 @@ select option {
 [class*="LegacyModuleBody__LegacyModule___"] {
   background: transparent;
 }
-// Removed fixed positioning for Teach - buttons now flow in Spine
-// #AddedSettings positioning handled by Spine-specific styles
+#AddedSettings {
+  top: 17.5px !important;
+  z-index: 21 !important;
+}
 .addedButton {
-  // Only apply absolute positioning for Learn platform, not Teach Spine
-  &:not([data-betterseqta="true"]) {
-    position: absolute !important;
-    right: 105px;
-  }
-  
-  // Override for Teach Spine buttons
-  &[data-betterseqta="true"] {
-    position: static !important;
-    right: auto !important;
-    top: auto !important;
-  }
+  position: absolute !important;
+  right: 105px;
   padding: 6px !important;
   overflow: unset !important;
   border-radius: 10px !important;
@@ -294,12 +282,6 @@ select option {
   display: flex !important;
   align-items: center;
   justify-content: center;
-}
-
-// Specific positioning for settings button on Learn platform
-#AddedSettings:not([data-betterseqta="true"]) {
-  top: 10px !important;
-  z-index: 1000 !important;
 }
 [style="background-color: rgb(255, 255, 255);"] {
   color: black;
@@ -442,7 +424,9 @@ select option {
 .dashlet-summary-homework > .summary > .subject > .item {
   color: var(--text-primary) !important;
 }
-.dashlet-notes > ul,
+.dashlet-notes > ul {
+  background: var(--background-primary);
+}
 .dashlet-tasks > ul {
   background: transparent !important;
 }
@@ -480,37 +464,33 @@ ul.magicDelete > li.deleting {
   object-fit: cover;
 }
 
-// Background image container styling
-.imageBackground {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: -1 !important;
-  pointer-events: none !important;
-  overflow: hidden !important;
-  
-  #media-container {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    
-    video.background,
-    img.background {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
-      object-position: center !important;
-    }
-  }
-}
-
 // Teach-specific background positioning
 body[data-seqta-platform="teach"] {
   .imageBackground {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+
+    #media-container {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+
+      video.background,
+      img.background {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+      }
+    }
     // Ensure background is behind all Teach content
     z-index: -999 !important;
     
@@ -1360,13 +1340,19 @@ html.transparencyEffects
 }
 .home-root {
   width: 100%;
-  height: 100vh;
-  max-height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   color: var(--text-primary);
   font-size: unset;
+}
+
+body[data-seqta-platform="teach"] #teach-home-root.home-root {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .home-subtitle {
   display: flex;
@@ -1942,26 +1928,77 @@ iframe.userHTML {
   stroke: var(--text-primary) !important;
 }
 
-// Hide SEQTA's loading indicators when on BetterSEQTA+ home page
-// This prevents SEQTA from showing a loading spinner while waiting for welcome page
-body:has(#betterseqta-teach-home),
-body:has([data-betterseqta-homepage="true"]) {
+// BetterSEQTA+ Teach home — dedicated route (/betterseqta-home)
+body[data-seqta-platform="teach"][data-betterseqta-home-active="true"],
+body[data-betterseqta-home-active="true"] {
   // Hide SEQTA's loading spinner
   [class*="Spinner__Spinner___"],
   [class*="Loading__Loading___"],
   [class*="Loader__Loader___"] {
     display: none !important;
   }
-  
+
   // Hide any loading overlays
   [class*="Overlay__Overlay___"]:has([class*="Spinner"]),
   [class*="Overlay__Overlay___"]:has([class*="Loading"]),
   [class*="Overlay__Overlay___"]:has([class*="Loader"]) {
     display: none !important;
   }
-  
-  // Ensure widget titles change color with theme
-  #betterseqta-teach-home {
+
+  // Hide native SEQTA chrome (unknown page, quick links bar, etc.)
+  main > *:not(#teach-home-root) {
+    display: none !important;
+  }
+
+  [class*="Chrome__Chrome"],
+  [class*="Chrome__content"],
+  main,
+  main > section,
+  main > section > div {
+    background: var(--auto-background) !important;
+    background-image: none !important;
+  }
+
+  main {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+  }
+
+  #teach-home-root {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    background: var(--auto-background) !important;
+    position: relative;
+    z-index: 1;
+
+    .home-container {
+      padding: 32px 64px 48px;
+      gap: 28px;
+    }
+
+    // Greeting hero — matches Learn home h1
+    .teach-home-greeting,
+    #home-greeting {
+      text-align: center;
+      font-size: 3em !important;
+      font-weight: 300;
+      margin: 0 auto;
+      background: var(--background-primary);
+      height: 3em;
+      align-items: center;
+      justify-content: center;
+      display: flex;
+      width: 100%;
+      border-radius: 16px;
+      color: var(--text-primary) !important;
+      box-shadow: 0 5px 16px 6px rgba(0, 0, 0, 0.3);
+    }
+
     .home-subtitle h2,
     h2.home-subtitle,
     #home-lesson-subtitle,
@@ -1969,36 +2006,89 @@ body:has([data-betterseqta-homepage="true"]) {
     .messages-container h2,
     .notices-container h2 {
       color: var(--text-primary) !important;
+      margin: 20px;
+      font-size: 20px;
+      font-weight: 400;
     }
 
-    // Stats summary bar
+    .timetable-container,
+    .upcoming-container,
+    .messages-container,
+    .notices-container,
+    .shortcut-container {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .timetable-container {
+      border-radius: 16px;
+    }
+
+    .shortcuts {
+      background: var(--background-primary);
+      border-radius: 0 0 16px 16px;
+    }
+
+    .notice-container {
+      background: var(--background-primary) !important;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .messages-items,
+    .upcoming-items,
+    .day-container {
+      border-radius: 0 0 16px 16px;
+    }
+
+    .message-card {
+      margin-bottom: 0;
+    }
+
     .stats-summary {
       display: flex;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 4px;
       flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
 
       .stats-pill {
         display: inline-flex;
         align-items: center;
         padding: 8px 16px;
-        border-radius: 8px;
-        background: var(--accent-bg, rgba(76, 175, 80, 0.2));
-        color: var(--text-primary, white);
+        border-radius: 999px;
+        background: var(--background-primary);
+        color: var(--text-primary);
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
         transition: all 0.2s ease;
-        border: 1px solid var(--accent-ring, rgba(76, 175, 80, 0.4));
+        border: 1px solid var(--border-secondary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
         &:hover {
           transform: scale(1.02);
-          opacity: 0.95;
+          border-color: var(--accent-ring);
+          background: var(--button-hover);
         }
 
         &:active {
           transform: scale(0.98);
         }
+      }
+    }
+
+    @media (max-width: 650px) {
+      .home-container {
+        padding: 24px 16px 32px;
+      }
+
+      .teach-home-greeting,
+      #home-greeting {
+        font-size: 2em !important;
+        height: auto;
+        min-height: 2.5em;
+        padding: 16px;
       }
     }
   }
@@ -5595,6 +5685,13 @@ h2.home-subtitle {
 // SEQTA Teach main layout improvements
 body[data-seqta-platform="teach"] {
   
+  // BetterSEQTA+ home on /welcome — solid background (other pages stay transparent for blur)
+  &[data-betterseqta-home-active="true"] {
+    main > section > div {
+      background: var(--auto-background) !important;
+    }
+  }
+
   // Target main section div container (AssessmentManager and other pages)
   // This ensures styles apply to the direct path: #root > div.Chrome__Chrome___AyWT1 > main > section > div
   main > section > div {

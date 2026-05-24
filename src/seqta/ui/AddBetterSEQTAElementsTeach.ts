@@ -11,7 +11,7 @@ import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
-import { loadTeachHomePage } from "@/seqta/utils/Loaders/LoadTeachHomePage";
+import { navigateToTeachHome } from "@/seqta/home/teach/mountTeachHomePage";
 import { updateAllColors } from "./colors/Manager";
 import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { applySavedSubPageOrders, ChangeSpineItemPositions } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
@@ -447,16 +447,7 @@ function setupTeachEventListeners() {
 
   homebutton?.addEventListener("click", function (e) {
     e.preventDefault();
-    // Navigate to welcome page (keep valid route) but show BetterSEQTA+ homepage content
-    const currentPath = window.location.pathname;
-    if (currentPath !== '/welcome' && !currentPath.endsWith('/welcome')) {
-      // Use pushState to change URL to /welcome (valid route) without reloading
-      window.history.pushState({}, '', '/welcome');
-      // Trigger popstate event so route listener picks it up
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-    // Load homepage (will check if already loaded)
-    loadTeachHomePage();
+    navigateToTeachHome();
   });
   
   // Settings button click handler is set up by setupSettingsButton()

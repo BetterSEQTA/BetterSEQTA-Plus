@@ -14,19 +14,13 @@ import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessmen
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 
-// Flag to prevent multiple simultaneous loads
-let isLoadingHomePage = false;
-let routeListenerSetup = false;
+// Flag to prevent multiple simultaneous loads — routing handled in mountTeachHomePage.ts
 let LessonInterval: any;
 let currentSelectedDate = new Date();
 let loadingTimeout: any;
 let cachedStaffId: number | null = null;
 let cachedStaffName: string | null = null;
 let loadingIndicatorObserver: MutationObserver | null = null;
-let showingOriginalWelcome = false; // Track if we're showing original welcome page
-
-// BetterSEQTA+ homepage route (separate from Teach's welcome page)
-const BETTERSEQTA_HOME_ROUTE = '/betterseqta-home';
 
 const DEFAULT_TEACH_HOME_WIDGETS: Record<string, { toggle: boolean }> = {
   shortcuts: { toggle: true },
@@ -117,7 +111,7 @@ function getTimeBasedGreeting(): string {
 /**
  * Applies widget visibility based on teachHomeWidgets settings
  */
-function applyWidgetVisibility() {
+export function applyWidgetVisibility() {
   const widgets = settingsState.teachHomeWidgets ?? DEFAULT_TEACH_HOME_WIDGETS;
   const homeContainer = document.getElementById("home-container");
   if (!homeContainer) return;
@@ -148,7 +142,7 @@ function hideSEQTALoadingIndicators() {
     
     // Only hide if we're actually on the BetterSEQTA home page
     const currentPath = window.location.pathname;
-    if (!currentPath.includes(BETTERSEQTA_HOME_ROUTE)) {
+    if (!currentPath.includes("/betterseqta-home")) {
       return;
     }
     
@@ -198,19 +192,15 @@ function hideSEQTALoadingIndicators() {
 /**
  * Sets up a persistent MutationObserver to hide loading indicators while on BetterSEQTA home page
  */
-function setupLoadingIndicatorObserver() {
+export function setupLoadingIndicatorObserver() {
   // Disconnect existing observer if any
   if (loadingIndicatorObserver) {
     loadingIndicatorObserver.disconnect();
     loadingIndicatorObserver = null;
   }
   
-  // Only set up observer if we're on welcome page (where we show BetterSEQTA home) or betterseqta-home route
-  const currentPath = window.location.pathname;
-  const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
-  const isOnHomeRoute = currentPath.includes(BETTERSEQTA_HOME_ROUTE);
-  
-  if (!isOnWelcomePage && !isOnHomeRoute) {
+  // Only set up observer on the dedicated home route
+  if (!window.location.pathname.includes("/betterseqta-home")) {
     return;
   }
   
@@ -219,12 +209,7 @@ function setupLoadingIndicatorObserver() {
   
   // Create persistent observer that stays active while on home page
   loadingIndicatorObserver = new MutationObserver((mutations) => {
-    // Only process if we're still on welcome page or home route
-    const currentPath = window.location.pathname;
-    const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
-    const isOnHomeRoute = currentPath.includes(BETTERSEQTA_HOME_ROUTE);
-    
-    if (!isOnWelcomePage && !isOnHomeRoute) {
+    if (!window.location.pathname.includes("/betterseqta-home")) {
       if (loadingIndicatorObserver) {
         loadingIndicatorObserver.disconnect();
         loadingIndicatorObserver = null;
@@ -266,7 +251,7 @@ function setupLoadingIndicatorObserver() {
 /**
  * Disconnects the loading indicator observer
  */
-function disconnectLoadingIndicatorObserver() {
+export function disconnectLoadingIndicatorObserver() {
   if (loadingIndicatorObserver) {
     loadingIndicatorObserver.disconnect();
     loadingIndicatorObserver = null;
@@ -275,500 +260,10 @@ function disconnectLoadingIndicatorObserver() {
 }
 
 /**
- * Sets up the toggle button to switch between BetterSEQTA+ home and original welcome page
+ * Initializes widget data after the Svelte home shell is mounted.
+ * Called from TeachHomePage.svelte onMount.
  */
-function setupWelcomeToggleButton() {
-  const toggleButton = document.getElementById('toggle-welcome-view');
-  if (!toggleButton) {
-    console.debug("[BetterSEQTA+] Toggle button not found");
-    return;
-  }
-
-  // Update button text based on current state
-  const updateButtonText = () => {
-    if (toggleButton) {
-      toggleButton.textContent = showingOriginalWelcome 
-        ? 'View BetterSEQTA+ Home' 
-        : 'View Original Welcome';
-    }
-  };
-
-  toggleButton.addEventListener('click', () => {
-    showingOriginalWelcome = !showingOriginalWelcome;
-    updateButtonText();
-    
-    const homeElement = document.getElementById("betterseqta-teach-home");
-    const chromeContent = document.querySelector('[class*="Chrome__content"]');
-    
-    if (showingOriginalWelcome) {
-      // Show original welcome, hide BetterSEQTA+ home
-      if (homeElement) {
-        homeElement.style.display = 'none';
-      }
-      
-      // Show all children of Chrome__content except our home element
-      if (chromeContent) {
-        Array.from(chromeContent.children).forEach(child => {
-          const htmlChild = child as HTMLElement;
-          if (htmlChild.id !== 'betterseqta-teach-home') {
-            htmlChild.style.display = '';
-          }
-        });
-      }
-      
-      console.debug("[BetterSEQTA+] Showing original welcome page");
-    } else {
-      // Show BetterSEQTA+ home, hide original welcome
-      if (homeElement) {
-        homeElement.style.display = '';
-      }
-      
-      // Hide all children of Chrome__content except our home element
-      if (chromeContent) {
-        Array.from(chromeContent.children).forEach(child => {
-          const htmlChild = child as HTMLElement;
-          if (htmlChild.id !== 'betterseqta-teach-home') {
-            htmlChild.style.display = 'none';
-          }
-        });
-      }
-      
-      console.debug("[BetterSEQTA+] Showing BetterSEQTA+ home");
-    }
-  });
-
-  updateButtonText();
-}
-
-/**
- * Waits for SEQTA's welcome page to finish loading completely
- * Returns true when welcome page has fully loaded, false if timeout
- * Uses multiple checks to ensure the page is truly ready
- */
-async function waitForWelcomePageToLoad(): Promise<boolean> {
-  return new Promise((resolve) => {
-    let stableChecks = 0;
-    const requiredStableChecks = 5; // Page must be stable for 5 consecutive checks (500ms)
-    let lastState = false;
-    
-    const checkWelcomeLoaded = (): boolean => {
-      // 1. Check for visible loading spinners - none should be visible
-      const visibleSpinners = Array.from(document.querySelectorAll(
-        '[class*="Spinner__Spinner___"], ' +
-        '[class*="Loading__Loading___"], ' +
-        '[class*="Loader__Loader___"]'
-      )).filter(el => {
-        const style = window.getComputedStyle(el);
-        return style.display !== 'none' && 
-               style.visibility !== 'hidden' && 
-               style.opacity !== '0' &&
-               style.opacity !== '0';
-      });
-      
-      // 2. Check for main content container
-      const mainContent = document.querySelector('[class*="Chrome__content"]');
-      const hasMainContent = mainContent && window.getComputedStyle(mainContent).display !== 'none';
-      
-      // 3. Check for welcome page specific content (cards, widgets, etc.)
-      const welcomeContent = document.querySelector('[class*="Welcome"], [class*="Dashboard"], [class*="Card"]');
-      const hasWelcomeContent = welcomeContent !== null;
-      
-      // 4. Check that React has finished rendering (no pending updates)
-      // Look for elements that are typically rendered after initial load
-      const hasRenderedContent = document.querySelectorAll('[class*="Chrome__content"] > *').length > 0;
-      
-      // 5. Check for loading overlays
-      const loadingOverlays = Array.from(document.querySelectorAll('[class*="Overlay__Overlay___"]'))
-        .filter(overlay => {
-          const hasSpinner = overlay.querySelector('[class*="Spinner"], [class*="Loading"], [class*="Loader"]');
-          if (!hasSpinner) return false;
-          const style = window.getComputedStyle(overlay);
-          return style.display !== 'none' && style.visibility !== 'hidden';
-        });
-      
-      // Page is loaded if:
-      // - No visible spinners
-      // - No loading overlays
-      // - Main content exists and is visible
-      // - Some welcome content exists OR rendered content exists
-      const isLoaded = visibleSpinners.length === 0 && 
-                      loadingOverlays.length === 0 &&
-                      !!hasMainContent && 
-                      (!!hasWelcomeContent || !!hasRenderedContent);
-      
-      return Boolean(isLoaded);
-    };
-    
-    // Check immediately
-    const initialCheck = checkWelcomeLoaded();
-    if (initialCheck) {
-      console.debug("[BetterSEQTA+] Welcome page appears loaded, verifying stability...");
-    }
-    
-    // Wait for welcome page to finish loading with stability check
-    let attempts = 0;
-    const maxAttempts = 200; // 20 seconds max
-    const checkInterval = setInterval(() => {
-      attempts++;
-      
-      const welcomeLoaded = checkWelcomeLoaded();
-      
-      // Stability check: page must be loaded for consecutive checks
-      if (welcomeLoaded) {
-        if (lastState === true) {
-          stableChecks++;
-        } else {
-          stableChecks = 1; // Reset counter if state changed
-        }
-        lastState = true;
-        
-        // Page is stable and loaded
-        if (stableChecks >= requiredStableChecks) {
-          clearInterval(checkInterval);
-          console.debug(`[BetterSEQTA+] Welcome page fully loaded and stable after ${attempts * 100}ms`);
-          // Additional delay to ensure SEQTA's internal state is settled
-          setTimeout(() => {
-            resolve(true);
-          }, 300);
-          return;
-        }
-      } else {
-        stableChecks = 0;
-        lastState = false;
-      }
-      
-      // Timeout fallback
-      if (attempts >= maxAttempts) {
-        clearInterval(checkInterval);
-        const finalCheck = checkWelcomeLoaded();
-        console.debug(`[BetterSEQTA+] Welcome page check timeout after ${attempts * 100}ms, final state: ${finalCheck ? 'loaded' : 'still loading'}`);
-        // Even on timeout, wait a bit more to let SEQTA finish
-        setTimeout(() => {
-          resolve(finalCheck);
-        }, 500);
-      }
-    }, 100);
-  });
-}
-
-/**
- * Sets up route listener to show/hide homepage based on current route
- * Exported so it can be called early to set up routing
- */
-export function setupRouteListener() {
-  if (routeListenerSetup) {
-    console.debug("[BetterSEQTA+] Route listener already setup");
-    return;
-  }
-  routeListenerSetup = true;
-  console.debug("[BetterSEQTA+] Setting up route listener");
-
-  // Listen for route changes
-  const checkRoute = () => {
-    const currentPath = window.location.pathname;
-    const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
-    const isOnHomeRoute = currentPath.includes(BETTERSEQTA_HOME_ROUTE);
-    
-    console.debug("[BetterSEQTA+] Route check:", currentPath, "isWelcome:", isOnWelcomePage, "isHomeRoute:", isOnHomeRoute);
-    
-    const homeElement = document.getElementById("betterseqta-teach-home");
-    
-    // Show BetterSEQTA home if on welcome page OR on betterseqta-home route
-    // We keep URL as /welcome to prevent SEQTA from showing "Unknown page"
-    if (isOnWelcomePage || isOnHomeRoute) {
-      console.debug("[BetterSEQTA+] On welcome/home route - showing BetterSEQTA+ homepage");
-      
-      // Set up observer to hide loading indicators and "Unknown page" UI
-      setupLoadingIndicatorObserver();
-      
-      // Hide SEQTA's welcome page content if it exists (unless showing original welcome)
-      if (!showingOriginalWelcome) {
-        const chromeContent = document.querySelector('[class*="Chrome__content"]');
-        if (chromeContent) {
-          Array.from(chromeContent.children).forEach(child => {
-            const htmlChild = child as HTMLElement;
-            if (htmlChild.id !== 'betterseqta-teach-home') {
-              htmlChild.style.display = 'none';
-            }
-          });
-          console.debug("[BetterSEQTA+] Hidden SEQTA welcome content");
-        }
-      }
-      
-      // Hide any "Unknown page" or 404 elements
-      const unknownPageElements = document.querySelectorAll('[class*="Unknown"], [class*="NotFound"], [class*="404"]');
-      unknownPageElements.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.display = 'none';
-      });
-      
-      // Show homepage if on the route
-      if (homeElement) {
-        homeElement.style.display = '';
-        console.debug("[BetterSEQTA+] Homepage element displayed");
-      } else {
-        console.debug("[BetterSEQTA+] Homepage element not found, loading content");
-        // Load homepage if element doesn't exist
-        loadTeachHomePageContent();
-      }
-    } else {
-      // Disconnect observer when navigating away from home page
-      disconnectLoadingIndicatorObserver();
-      
-      console.debug("[BetterSEQTA+] Not on homepage route - cleaning up homepage");
-      // Clean up homepage when navigating away
-      if (homeElement) {
-        console.debug("[BetterSEQTA+] Found homepage element, cleaning up");
-        console.debug("[BetterSEQTA+] Homepage element details:", {
-          id: homeElement.id,
-          tagName: homeElement.tagName,
-          parentElement: homeElement.parentElement?.tagName,
-          parentId: homeElement.parentElement?.id,
-          isConnected: homeElement.isConnected,
-          children: homeElement.children.length,
-        });
-        
-        try {
-          // Check if element is still in the DOM
-          if (!homeElement.isConnected) {
-            console.debug("[BetterSEQTA+] Homepage element already disconnected from DOM");
-            return;
-          }
-          
-          const parent = homeElement.parentElement;
-          if (!parent) {
-            console.warn("[BetterSEQTA+] Homepage element has no parent, already removed?");
-            return;
-          }
-          
-          console.debug("[BetterSEQTA+] Parent element details:", {
-            tagName: parent.tagName,
-            id: parent.id,
-            className: parent.className,
-            children: parent.children.length,
-            containsHomeElement: parent.contains(homeElement),
-          });
-          
-          // Since we're inserting as a sibling (not inside React's container),
-          // we can safely remove it without React conflicts
-          if (parent.contains(homeElement)) {
-            console.debug("[BetterSEQTA+] Removing homepage element from parent");
-            parent.removeChild(homeElement);
-            console.debug("[BetterSEQTA+] Homepage element removed successfully");
-          } else {
-            console.warn("[BetterSEQTA+] Homepage element is not a child of its parent");
-          }
-          
-        } catch (error) {
-          console.error("[BetterSEQTA+] Error during cleanup:", error);
-          console.error("[BetterSEQTA+] Error stack:", error instanceof Error ? error.stack : 'No stack');
-          
-          // Fallback: just hide it (safer than removing)
-          try {
-            homeElement.style.display = 'none';
-            console.debug("[BetterSEQTA+] Fallback: homepage hidden via display:none");
-          } catch (hideError) {
-            console.error("[BetterSEQTA+] Failed to hide homepage:", hideError);
-          }
-        }
-      } else {
-        console.debug("[BetterSEQTA+] No homepage element found to clean up");
-      }
-    }
-  };
-
-  // Listen to popstate (back/forward navigation)
-  window.addEventListener('popstate', checkRoute);
-  
-  // Also check periodically in case Teach uses other navigation methods
-  // Use a longer interval to reduce overhead
-  let lastPath = window.location.pathname;
-  setInterval(() => {
-    const currentPath = window.location.pathname;
-    if (currentPath !== lastPath) {
-      lastPath = currentPath;
-      checkRoute();
-    }
-  }, 1000); // Increased from 500ms to reduce overhead
-
-  // Initial check (but debounce to avoid conflicts with initial load)
-  // Use requestAnimationFrame to ensure DOM is ready
-  requestAnimationFrame(() => {
-    setTimeout(checkRoute, 100);
-  });
-}
-
-/**
- * Loads the BetterSEQTA+ homepage content into the page
- */
-async function loadTeachHomePageContent() {
-  console.debug("[BetterSEQTA+] loadTeachHomePageContent called");
-  
-  // Prevent multiple simultaneous loads
-  if (isLoadingHomePage) {
-    console.debug("[BetterSEQTA+] Already loading homepage, skipping");
-    return;
-  }
-
-  // Check if homepage already exists
-  const existingHome = document.getElementById("betterseqta-teach-home");
-  if (existingHome) {
-    console.debug("[BetterSEQTA+] Homepage already exists, showing it");
-    existingHome.style.display = '';
-    return;
-  }
-
-  isLoadingHomePage = true;
-  console.info("[BetterSEQTA+] Loading BetterSEQTA+ Home Page Content");
-
-  // Wait for Teach's main content area to be available
-  // IMPORTANT: We need to insert into a container that React doesn't manage
-  // Instead of inserting into React's managed container, we'll insert as a sibling
-  let insertionPoint: HTMLElement | null = null;
-  let attempts = 0;
-  const maxAttempts = 50;
-
-  while (!insertionPoint && attempts < maxAttempts) {
-    await delay(100);
-    
-    // Find the React-managed content container
-    const reactContent = document.querySelector("[class*='Chrome__content']") as HTMLElement;
-    const main = document.querySelector("#root > div > main");
-    
-    if (reactContent && main) {
-      // Instead of inserting INTO the React container, insert AS A SIBLING
-      // This way React won't try to manage our content
-      insertionPoint = reactContent.parentElement as HTMLElement;
-      console.debug("[BetterSEQTA+] Found insertion point (React container parent):", insertionPoint?.tagName);
-    } else if (main) {
-      // Fallback: use main element directly
-      insertionPoint = main as HTMLElement;
-      console.debug("[BetterSEQTA+] Using main element as insertion point");
-    }
-    
-    attempts++;
-  }
-
-  if (!insertionPoint) {
-    console.error("[BetterSEQTA+] Could not find insertion point for Teach homepage after", attempts, "attempts");
-    isLoadingHomePage = false;
-    return;
-  }
-  
-  console.debug("[BetterSEQTA+] Found insertionPoint:", {
-    tagName: insertionPoint.tagName,
-    id: insertionPoint.id,
-    className: insertionPoint.className,
-    children: insertionPoint.children.length,
-  });
-
-  // Create homepage root container with scrollable styling
-  const homeRoot = stringToHTML(`<div id="betterseqta-teach-home" class="home-root" style="overflow-y: auto; height: 100vh; max-height: 100vh;"></div>`);
-  const homeContainer = homeRoot.firstChild as HTMLElement;
-  
-  if (!homeContainer) {
-    console.error("[BetterSEQTA+] Failed to create homepage container");
-    isLoadingHomePage = false;
-    return;
-  }
-
-  // Create skeleton structure with all widgets (similar to Learn but adapted for Teach)
-  const skeletonStructure = stringToHTML(/* html */`
-    <div class="home-container" id="home-container">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 8px 0;">
-        <h2 id="home-greeting" style="margin: 0; font-size: 20px; font-weight: 600;">BetterSEQTA+ Home</h2>
-        <button id="toggle-welcome-view" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-secondary, rgba(255,255,255,0.1)); background: var(--button-hover, rgba(255,255,255,0.05)); color: var(--text-primary, white); cursor: pointer; font-size: 14px; transition: all 0.2s ease; font-weight: 500;">
-          View Original Welcome
-        </button>
-      </div>
-      <div class="stats-summary" id="stats-summary"></div>
-      <div class="border shortcut-container" data-home-widget="shortcuts">
-        <div class="border shortcuts" id="shortcuts"></div>
-      </div>
-      <div class="border timetable-container" data-home-widget="timetable">
-        <div class="home-subtitle">
-          <h2 id="home-lesson-subtitle">Today's Lessons</h2>
-          <div class="timetable-arrows">
-            <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back">
-              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-            </svg>
-            <svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward">
-              <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-            </svg>
-          </div>
-        </div>
-        <div class="day-container loading" id="day-container">
-        </div>
-      </div>
-      <div class="border upcoming-container" data-home-widget="upcomingAssessments">
-        <div class="upcoming-title">
-          <h2 class="home-subtitle">Upcoming Assessments to Mark</h2>
-          <div class="upcoming-filters" id="upcoming-filters"></div>
-        </div>
-        <div class="upcoming-items loading" id="upcoming-items">
-        </div>
-      </div>
-      <div class="border messages-container" data-home-widget="messages">
-        <div class="home-subtitle" style="margin-bottom: 12px;">
-          <h2>Direqt Messages</h2>
-          <a href="/messages" style="color: var(--text-secondary, rgba(255,255,255,0.7)); text-decoration: none; font-size: 14px; transition: color 0.2s ease; margin-right: 20px;">View All</a>
-        </div>
-        <div class="messages-items loading" id="messages-container">
-        </div>
-      </div>
-      <div class="border notices-container" data-home-widget="notices">
-        <div class="home-subtitle">
-          <h2>Notices</h2>
-          <input type="date" style="margin-right: 20px;" />
-        </div>
-        <div class="notice-container upcoming-items loading" id="notice-container">
-        </div>
-      </div>
-    </div>
-  `);
-
-  homeContainer.appendChild(skeletonStructure.firstChild!);
-
-  // Insert homepage as a sibling to React's content container, not inside it
-  // This prevents React from trying to manage our DOM
-  try {
-    console.debug("[BetterSEQTA+] Preparing to insert homepage");
-    
-    // Find the React content container to insert after it
-    const reactContent = document.querySelector("[class*='Chrome__content']") as HTMLElement;
-    
-    if (reactContent && reactContent.parentElement === insertionPoint) {
-      // Insert our homepage AFTER the React container
-      // This way React won't try to manage it
-      console.debug("[BetterSEQTA+] Inserting homepage after React content container");
-      insertionPoint.insertBefore(homeContainer, reactContent.nextSibling);
-      console.debug("[BetterSEQTA+] Homepage inserted successfully as sibling");
-    } else {
-      // Fallback: append to insertion point
-      console.debug("[BetterSEQTA+] React container not found, appending to insertion point");
-      insertionPoint.appendChild(homeContainer);
-      console.debug("[BetterSEQTA+] Homepage appended successfully");
-    }
-    
-    // Mark our container
-    homeContainer.setAttribute('data-betterseqta-homepage', 'true');
-    
-  } catch (error) {
-    console.error("[BetterSEQTA+] Error inserting homepage:", error);
-    console.error("[BetterSEQTA+] Error details:", {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      insertionPoint: {
-        tagName: insertionPoint.tagName,
-        id: insertionPoint.id,
-        className: insertionPoint.className,
-      }
-    });
-    isLoadingHomePage = false;
-    return;
-  }
-
-  // Animate homepage elements
+export async function initTeachHomeWidgets(): Promise<(() => void) | void> {
   if (settingsState.animations) {
     animate(
       ".home-container > div",
@@ -783,27 +278,9 @@ async function loadTeachHomePageContent() {
     );
   }
 
-  // Render shortcuts
   renderShortcuts();
-
-  // Set up toggle button to switch between BetterSEQTA+ home and original welcome
-  setupWelcomeToggleButton();
-
-  // Set up persistent observer to hide loading indicators while on BetterSEQTA home page
-  setupLoadingIndicatorObserver();
-
-  // Apply widget visibility from settings
   applyWidgetVisibility();
 
-  // Listen for widget visibility changes (e.g. from settings popup)
-  settingsState.register("teachHomeWidgets", () => {
-    applyWidgetVisibility();
-  });
-
-  // Update page title
-  document.title = "Home ― BetterSEQTA+";
-
-  // Update greeting with staff name (in parallel with widget load)
   getStaffName().then((name) => {
     const greetingEl = document.getElementById("home-greeting");
     if (greetingEl) {
@@ -811,11 +288,8 @@ async function loadTeachHomePageContent() {
       greetingEl.textContent = name ? `${greeting}, ${name}!` : `${greeting}!`;
     }
   });
-  
-  // Load all widget data
-  await loadHomePageWidgets();
-  
-  isLoadingHomePage = false;
+
+  return await loadHomePageWidgets();
 }
 
 /**
@@ -2358,50 +1832,5 @@ function openNoticeModal(notice: any) {
   }
 
   alert(`${notice.title || "Notice"}\n\n${cleanContent.substring(0, 500)}`);
-}
-
-/**
- * Loads the BetterSEQTA+ homepage for SEQTA Teach
- * Navigates to /betterseqta-home and sets up route listener
- */
-export async function loadTeachHomePage() {
-  // Set up route listener to handle show/hide (only once)
-  setupRouteListener();
-
-  // Check if we're already on the homepage route
-  const currentPath = window.location.pathname;
-  const isOnHomePage = currentPath.includes(BETTERSEQTA_HOME_ROUTE);
-  const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
-  
-  // Only redirect if we're on the welcome page (not other pages like /messages, /timetable, etc.)
-  if (!isOnHomePage && isOnWelcomePage) {
-    console.debug("[BetterSEQTA+] On welcome page, waiting for it to fully load...");
-    const welcomeLoaded = await waitForWelcomePageToLoad();
-    
-    if (welcomeLoaded) {
-      console.debug("[BetterSEQTA+] Welcome page fully loaded and stable");
-    } else {
-      console.warn("[BetterSEQTA+] Welcome page load timeout, but proceeding");
-    }
-    
-    // Don't change the URL - keep it as /welcome so SEQTA's router thinks we're on a valid route
-    // This prevents SEQTA from showing "Unknown page" loading state
-    // We'll just load our custom content and hide SEQTA's welcome content
-    console.debug("[BetterSEQTA+] Loading BetterSEQTA+ home content (keeping URL as /welcome)");
-  } else if (!isOnHomePage && !isOnWelcomePage) {
-    // Not on welcome page and not on home page - don't redirect, just return
-    console.debug("[BetterSEQTA+] Not on welcome page, skipping redirect");
-    return;
-  }
-
-  // Load the homepage content (route listener will handle showing it)
-  // But only if it doesn't already exist (to prevent double loading)
-  const existingHome = document.getElementById("betterseqta-teach-home");
-  if (!existingHome) {
-    await loadTeachHomePageContent();
-  } else {
-    // Just show it if it exists
-    existingHome.style.display = '';
-  }
 }
 

@@ -14,7 +14,7 @@ import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessmen
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 import { isSeqtaTeachExperience } from "../isSeqtaTeach";
-import { loadTeachHomePage } from "./LoadTeachHomePage";
+import { loadTeachHomePage } from "@/seqta/home/teach/mountTeachHomePage";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();

@@ -26,7 +26,7 @@ import {
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
-import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
+import { setupRouteListener, BETTERSEQTA_HOME_ROUTE, TEACH_HOME_ROOT_ID } from "@/seqta/home/teach/mountTeachHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
@@ -344,22 +344,13 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       await handleNewsPage();
       break;
     case undefined: {
-      // Use platform-specific navigation for home page
-      // Only redirect if we're on the welcome page (not other pages like /messages, /timetable, etc.)
-      const currentPath = window.location.pathname;
-      const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
-      
       if (settingsState.defaultPage === "home") {
         if (isSeqtaTeachExperience()) {
-          // Only redirect from welcome page to BetterSEQTA+ home
-          if (isOnWelcomePage) {
-            // For Teach, wait for welcome page to load first, then navigate to BetterSEQTA+ home
-            // This ensures SEQTA's loading state is satisfied
-            await loadHomePage(); // This will wait for welcome page and then navigate
-          } else {
-            // Not on welcome page, just finish loading without redirecting
-            console.debug("[BetterSEQTA+] Not on welcome page, skipping redirect");
+          if (!window.location.pathname.includes(BETTERSEQTA_HOME_ROUTE)) {
+            window.history.pushState({}, "", BETTERSEQTA_HOME_ROUTE);
+            window.dispatchEvent(new PopStateEvent("popstate"));
           }
+          if (settingsState.onoff) await loadHomePage();
         } else {
           window.location.replace(`${location.origin}/#?page=/home`);
           loadHomePage();
@@ -380,23 +371,17 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       break;
     }
     case "home":
-    case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
-      // Use platform-specific navigation
+    case "betterseqta-home":
       if (isSeqtaTeachExperience()) {
-        // Check if homepage is already loaded
-        const existingHome = document.getElementById("betterseqta-teach-home");
-        const isOnHomePage = window.location.pathname.includes('/betterseqta-home');
-        
-        // Only navigate and load if not already done
+        const existingHome = document.getElementById(TEACH_HOME_ROOT_ID);
+        const isOnHomePage = window.location.pathname.includes(BETTERSEQTA_HOME_ROUTE);
+
         if (!isOnHomePage) {
-          // Use pushState to change URL without reloading
-          window.history.pushState({}, '', '/betterseqta-home');
-          // Trigger popstate event so route listener picks it up
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.history.pushState({}, "", BETTERSEQTA_HOME_ROUTE);
+          window.dispatchEvent(new PopStateEvent("popstate"));
           console.info("[BetterSEQTA+] Started Init");
           if (settingsState.onoff) loadHomePage();
         } else if (!existingHome && settingsState.onoff) {
-          // On BetterSEQTA+ homepage but content not loaded yet
           console.info("[BetterSEQTA+] On BetterSEQTA+ homepage, loading content");
           loadHomePage();
         } else {
