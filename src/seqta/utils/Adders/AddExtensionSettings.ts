@@ -7,7 +7,7 @@ import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 import Settings from "@/interface/pages/settings.svelte";
 import SettingsTeach from "@/interface/pages/settings-teach.svelte";
-import { isSEQTATeachSync } from "../platformDetection";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 let isSettingsRendered = false;
 
@@ -29,7 +29,7 @@ export function addExtensionSettings() {
   extensionPopup.classList.add("outside-container", "hide");
   extensionPopup.id = "ExtensionPopup";
 
-  const mountParent = isSEQTATeachSync()
+  const mountParent = isSeqtaTeachExperience()
     ? document.body
     : ((document.querySelector("#container") ??
         document.getElementById("container") ??
@@ -38,7 +38,7 @@ export function addExtensionSettings() {
 
   new SettingsResizer();
 
-  const clickTarget = isSEQTATeachSync()
+  const clickTarget = isSeqtaTeachExperience()
     ? document.body
     : (document.getElementById("container") ?? document.body);
   clickTarget.addEventListener(
@@ -56,7 +56,7 @@ export function renderSettingsIfNeeded() {
 
   try {
     const shadow = extensionPopup.attachShadow({ mode: "open" });
-    const SettingsComponent = isSEQTATeachSync() ? SettingsTeach : Settings;
+    const SettingsComponent = isSeqtaTeachExperience() ? SettingsTeach : Settings;
 
     if ("requestIdleCallback" in window) {
       requestIdleCallback(() => renderSvelte(SettingsComponent, shadow));

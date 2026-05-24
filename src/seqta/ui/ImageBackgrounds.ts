@@ -2,13 +2,13 @@ import {
   getDataById,
   isIndexedDBSupported,
 } from "@/interface/hooks/BackgroundDataLoader";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 export async function appendBackgroundToUI() {
   // For Learn, use #container; for Teach, use #root or body
   let parent: HTMLElement | null = null;
   
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     // Try #root first, then fall back to body
     parent = document.getElementById("root") || document.body;
   } else {
@@ -68,7 +68,7 @@ export async function loadBackground() {
       
       // For Learn, use #container; for Teach, use #root or body
       let parent: HTMLElement | null = null;
-      if (isSEQTATeachSync()) {
+      if (isSeqtaTeachExperience()) {
         parent = document.getElementById("root") || document.body;
       } else {
         parent = document.getElementById("container");

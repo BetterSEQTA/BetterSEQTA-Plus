@@ -25,7 +25,7 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
@@ -206,7 +206,7 @@ async function LoadPageElements(): Promise<void> {
   console.log("[BetterSEQTA+] LoadPageElements called");
   await AddBetterSEQTAElements();
 
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     setupRouteListener();
   }
 
@@ -350,7 +350,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       const isOnWelcomePage = currentPath === '/welcome' || currentPath.endsWith('/welcome');
       
       if (settingsState.defaultPage === "home") {
-        if (isSEQTATeachSync()) {
+        if (isSeqtaTeachExperience()) {
           // Only redirect from welcome page to BetterSEQTA+ home
           if (isOnWelcomePage) {
             // For Teach, wait for welcome page to load first, then navigate to BetterSEQTA+ home
@@ -382,7 +382,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case "home":
     case "betterseqta-home": // Handle BetterSEQTA+ homepage route for Teach
       // Use platform-specific navigation
-      if (isSEQTATeachSync()) {
+      if (isSeqtaTeachExperience()) {
         // Check if homepage is already loaded
         const existingHome = document.getElementById("betterseqta-teach-home");
         const isOnHomePage = window.location.pathname.includes('/betterseqta-home');
@@ -683,7 +683,7 @@ export function tryLoad() {
       console.log(
         "[BetterSEQTA+] .code element not found, checking if Teach platform...",
       );
-      if (isSEQTATeachSync() && !loadPageElementsCalled) {
+      if (isSeqtaTeachExperience() && !loadPageElementsCalled) {
         console.log(
           "[BetterSEQTA+] Teach platform detected, calling LoadPageElements",
         );
@@ -701,7 +701,7 @@ export function tryLoad() {
   )
     .then(() => {
       console.log("[BetterSEQTA+] Main content element found");
-      const isTeach = isSEQTATeachSync();
+      const isTeach = isSeqtaTeachExperience();
       if (isTeach && !loadPageElementsCalled) {
         const codeElement = document.querySelector(".code");
         if (!codeElement) {

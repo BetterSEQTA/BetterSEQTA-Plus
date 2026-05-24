@@ -1,6 +1,6 @@
 import renderSvelte from "@/interface/main";
 import Store from "@/interface/pages/store.svelte";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 import { unmount } from "svelte";
 
@@ -16,7 +16,7 @@ export function renderStore() {
   // For Learn, use #container; for Teach, use #root or body
   let container: HTMLElement | null = null;
   
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     container = document.getElementById("root") || document.body;
   } else {
     container = document.querySelector("#container");

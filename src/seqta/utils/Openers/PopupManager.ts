@@ -1,6 +1,6 @@
 import { settingsState } from "../listeners/SettingsState";
 import { animate as motionAnimate, stagger } from "motion";
-import { isSEQTATeachSync } from "../platformDetection";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 type AnimationTarget = string | Element | Element[] | NodeList | null;
 
@@ -89,7 +89,7 @@ export function openPopup({
   
   // Find the appropriate container based on platform
   let parentContainer: HTMLElement | null = null;
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     // For Teach, try #root first, then fall back to body
     parentContainer = document.getElementById("root") || document.body;
   } else {

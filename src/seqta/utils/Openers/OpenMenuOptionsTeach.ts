@@ -2,7 +2,7 @@ import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
-import { isSEQTATeachSync } from "../platformDetection";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 export let SpineMenuOptionsOpen = false;
 
@@ -269,7 +269,7 @@ function getSpineItemKey(item: HTMLElement): string {
 }
 
 export async function OpenMenuOptionsTeach() {
-  if (!isSEQTATeachSync()) {
+  if (!isSeqtaTeachExperience()) {
     console.warn("[BetterSEQTA+] OpenMenuOptionsTeach called but not on Teach platform");
     return;
   }

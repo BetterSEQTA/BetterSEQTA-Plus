@@ -15,7 +15,7 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 let cachedUserInfo: any = null;
 
@@ -49,7 +49,7 @@ export async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     return AddBetterSEQTAElementsTeach();
   }
 

@@ -13,7 +13,7 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
-import { isSEQTATeachSync } from "../platformDetection";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 import { loadTeachHomePage } from "./LoadTeachHomePage";
 
 let LessonInterval: any;
@@ -22,7 +22,7 @@ let loadingTimeout: any;
 
 export async function loadHomePage() {
   // Route to Teach-specific homepage if on Teach platform
-  if (isSEQTATeachSync()) {
+  if (isSeqtaTeachExperience()) {
     return loadTeachHomePage();
   }
 

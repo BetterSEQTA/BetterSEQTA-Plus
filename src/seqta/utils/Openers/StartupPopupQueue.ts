@@ -10,12 +10,12 @@ import {
   shouldShowThemeOfTheMonth,
 } from "./OpenThemeOfTheMonthPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
-import { isSEQTATeachSync } from "../platformDetection";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 type QueueStep = (goNext: () => void) => void;
 
 function waitForTeachSpineReady(): Promise<void> {
-  if (!isSEQTATeachSync()) {
+  if (!isSeqtaTeachExperience()) {
     return Promise.resolve();
   }
 
@@ -60,7 +60,7 @@ export async function runStartupPopupQueue() {
   const steps: QueueStep[] = [];
 
   if (settingsState.justupdated) {
-    if (isSEQTATeachSync()) {
+    if (isSeqtaTeachExperience()) {
       steps.push((goNext) => {
         void waitForTeachSpineReady().then(() => OpenWhatsNewPopupTeach(goNext));
       });

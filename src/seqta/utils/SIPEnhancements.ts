@@ -4,7 +4,7 @@
  * in SEQTA Teach platform
  */
 
-import { isSEQTATeachSync } from "./platformDetection";
+import { isSeqtaTeachExperience } from "./isSeqtaTeach";
 import { settingsState } from "./listeners/SettingsState";
 import { delay } from "./delay";
 
@@ -255,7 +255,7 @@ async function monitorStudentChanges(): Promise<void> {
  */
 export async function initializeSIPEnhancements(): Promise<void> {
   // Only run on Teach platform
-  if (!isSEQTATeachSync()) {
+  if (!isSeqtaTeachExperience()) {
     console.debug("[BetterSEQTA+] Not on Teach platform, skipping SIP enhancements");
     return;
   }

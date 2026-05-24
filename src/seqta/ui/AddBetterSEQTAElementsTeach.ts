@@ -7,7 +7,7 @@
 import { delay } from "@/seqta/utils/delay";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
@@ -405,7 +405,7 @@ async function initializeTeachFeatures() {
  */
 function checkAndShowChangelog() {
   // Only run on Teach platform
-  if (!isSEQTATeachSync()) {
+  if (!isSeqtaTeachExperience()) {
     console.debug("[BetterSEQTA+] Not on Teach platform, skipping changelog check");
     return;
   }

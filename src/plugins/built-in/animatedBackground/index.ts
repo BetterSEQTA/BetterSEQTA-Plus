@@ -5,7 +5,7 @@ import {
   numberSetting,
   Setting,
 } from "@/plugins/core/settingsHelpers";
-import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
@@ -40,7 +40,7 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
     let container: HTMLElement;
     let insertBefore: HTMLElement | null = null;
 
-    if (isSEQTATeachSync()) {
+    if (isSeqtaTeachExperience()) {
       container =
         document.getElementById("root") ||
         ((await waitForElm("#root", true)) as HTMLElement);

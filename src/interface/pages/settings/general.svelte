@@ -47,10 +47,8 @@
 
   import { getAllPluginSettings } from "@/plugins"
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage"
+  import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
-  import { isSEQTATeachSync } from "@/seqta/utils/platformDetection"
-
-  // Union type representing all possible settings
   type SettingType =
     (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
     (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
@@ -89,7 +87,7 @@
         return false;
       }
       if (
-        isSEQTATeachSync() &&
+        isSeqtaTeachExperience() &&
         (plugin.pluginId === "assessments-average" ||
           plugin.pluginId === "global-search")
       ) {
@@ -98,7 +96,7 @@
       return true;
     })
     .map((plugin) => {
-      if (isSEQTATeachSync() && plugin.settings && "lettergrade" in plugin.settings) {
+      if (isSeqtaTeachExperience() && plugin.settings && "lettergrade" in plugin.settings) {
         const { lettergrade, ...restSettings } = plugin.settings;
         return { ...plugin, settings: restSettings };
       }
@@ -194,7 +192,7 @@
       Component: ConnectMobileApp,
       props: {}
     },
-    ...(!isSEQTATeachSync() ? [{
+    ...(!isSeqtaTeachExperience() ? [{
       title: "Edit Sidebar Layout",
       description: "Reorder pages on the sidebar",
       id: 5,
@@ -204,7 +202,7 @@
         text: "Edit"
       }
     }] : []),
-    ...(isSEQTATeachSync() ? [
+    ...(isSeqtaTeachExperience() ? [
       {
         title: "Reorder Spine Navigation",
         description: "Drag and drop to reorder items in the Spine navigation menu.",
