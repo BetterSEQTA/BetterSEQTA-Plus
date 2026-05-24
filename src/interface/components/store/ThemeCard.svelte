@@ -1,19 +1,201 @@
 <script lang="ts">
   import type { Theme } from '@/interface/types/Theme'
-
-  let { theme, onClick } = $props<{ theme: Theme; onClick: () => void }>();
-
+  import {
+    masterGridDisplayDownloadCount,
+    gridCardPreviewImageUrls,
+  } from '@/interface/utils/themeStoreFlavours'
   import { fade } from 'svelte/transition';
+  import { onMount } from 'svelte';
+  import emblaCarouselSvelte from 'embla-carousel-svelte';
+  import Autoplay from 'embla-carousel-autoplay';
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows } = $props<{
+    theme: Theme;
+    onClick: () => void;
+    toggleFavorite: (theme: Theme) => void;
+    isLoggedIn: boolean;
+    onRequestSignIn?: () => void;
+    /** Raw API themes (includes hidden slaves) for aggregated master download totals */
+    allStoreThemeRows?: Theme[];
+  }>();
+
+  const displayDownloadCount = $derived(
+    allStoreThemeRows != null
+      ? masterGridDisplayDownloadCount(theme, allStoreThemeRows)
+      : (theme.download_count ?? 0),
+  );
+
+  const gridRotatorUrls = $derived(gridCardPreviewImageUrls(theme, allStoreThemeRows));
+
+  /** Mirrors CoverSwiper (featured bar): horizontal slides + autoplay */
+  function prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /** Read once synchronously where `window` exists so reduced-motion doesn’t briefly mount carousel */
+  let allowSlideAutoplay = $state(!prefersReducedMotion());
+
+  const gridEmblaKey = $derived(gridRotatorUrls.join('|'));
+
+  const gridEmblaOptions = $derived({ loop: gridRotatorUrls.length > 1 });
+
+  const gridEmblaPlugins = $derived.by(() => {
+    if (!allowSlideAutoplay || gridRotatorUrls.length <= 1) return [];
+    return [
+      Autoplay({
+        delay: 2000,
+        stopOnInteraction: false,
+        stopOnMouseEnter: true,
+      }),
+    ];
+  });
+
+  let menuOpen = $state(false);
+  let menuRef: HTMLDivElement;
+
+  onMount(() => {
+    const closeMenu = (e: MouseEvent) => {
+      if (menuOpen && menuRef && !menuRef.contains(e.target as Node)) {
+        menuOpen = false;
+      }
+    };
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  });
+
+  function handleCardClick(e: MouseEvent) {
+    if ((e.target as HTMLElement).closest('[data-theme-menu]')) return;
+    onClick();
+  }
+
+  function handleFavoriteClick(e: MouseEvent) {
+    e.stopPropagation();
+    if (isLoggedIn) {
+      toggleFavorite(theme);
+    } else {
+      onRequestSignIn?.();
+    }
+    menuOpen = false;
+  }
 </script>
 
-<div class="w-full cursor-pointer" role="button" tabindex="-1" onkeydown={onClick} onclick={onClick}>
-  <div class="bg-gray-50 w-full transition-all hover:scale-105 duration-500 relative group flex flex-col hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border" transition:fade>
-    <div class="absolute bottom-1 left-3 z-10 mb-1 text-xl font-bold text-white">
-      {theme.name}
+<div
+  class="relative z-0 hover:z-20 w-full cursor-pointer"
+  role="button"
+  tabindex="-1"
+  onkeydown={onClick}
+  onclick={handleCardClick}
+>
+  <div
+    class="bg-gray-50 w-full transition-all duration-500 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
+    transition:fade
+  >
+    {#if theme.featured === true}
+      <div class="absolute top-2 left-2 z-20 pointer-events-none">
+        <span
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-sm"
+          aria-label="Featured theme"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+          </svg>
+          Featured
+        </span>
+      </div>
+    {/if}
+    <!-- Menu dropdown -->
+    <div class="absolute top-2 right-2 z-20" data-theme-menu bind:this={menuRef}>
+      <button
+        type="button"
+        class="flex justify-center items-center w-8 h-8 rounded-lg bg-black/40 hover:bg-black/60 text-white transition-all"
+        onclick={(e) => { e.stopPropagation(); menuOpen = !menuOpen; }}
+        aria-label="Theme options"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+      {#if menuOpen}
+        <div
+          class="absolute right-0 top-full mt-1 py-1 min-w-[140px] rounded-lg bg-white dark:bg-zinc-800 shadow-lg border border-zinc-200 dark:border-zinc-700"
+          role="menu"
+        >
+          <button
+            type="button"
+            class="flex gap-2 items-center w-full px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700"
+            role="menuitem"
+            onclick={handleFavoriteClick}
+            title={isLoggedIn ? (theme.is_favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill={theme.is_favorited ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5 {theme.is_favorited ? 'text-red-500' : ''}"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            {theme.is_favorited ? 'Favorited' : 'Favorite'}
+          </button>
+        </div>
+      {/if}
+    </div>
+    <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
+      <span class="text-xl font-bold text-white drop-shadow-md">{theme.name}</span>
+      {#if theme.author}
+        <span class="text-xs text-white/85 drop-shadow-md line-clamp-1">By {theme.author}</span>
+      {/if}
+      <div class="flex gap-3 text-xs font-medium text-white/90 drop-shadow-sm">
+        <span class="flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          {displayDownloadCount.toLocaleString()}
+        </span>
+        <span class="flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          {(theme.favorite_count ?? 0).toLocaleString()}
+        </span>
+      </div>
     </div>
     <div class='absolute bottom-0 z-0 w-full h-3/4 bg-linear-to-t to-transparent from-black/80'></div>
-    <div class='w-full'>
-      <img src={theme.marqueeImage} alt="Theme Preview" class="object-cover w-full h-48 rounded-md" />
-    </div>
+    {#if gridRotatorUrls.length === 0}
+      <div class="relative w-full h-48 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></div>
+    {:else if !allowSlideAutoplay || gridRotatorUrls.length === 1}
+      <div class="relative w-full h-48 overflow-hidden rounded-md">
+        <img
+          src={gridRotatorUrls[0] ?? theme.marqueeImage ?? theme.coverImage}
+          alt=""
+          class="object-cover w-full h-full"
+          draggable="false"
+        />
+      </div>
+    {:else}
+      {#key gridEmblaKey}
+        <div
+          class="relative w-full h-48 overflow-hidden rounded-md"
+          use:emblaCarouselSvelte={{
+            options: gridEmblaOptions,
+            plugins: gridEmblaPlugins,
+          }}
+        >
+          <div class="flex h-full">
+            {#each gridRotatorUrls as url (url)}
+              <div class="relative flex-[0_0_100%] min-w-0 h-full shrink-0">
+                <img
+                  src={url}
+                  alt=""
+                  class="object-cover w-full h-full select-none"
+                  draggable="false"
+                />
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/key}
+    {/if}
   </div>
 </div>

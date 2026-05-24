@@ -1,5 +1,7 @@
 # Example Plugin Template
 
+**Published version:** [docs.betterseqta.org/example-plugin/](https://docs.betterseqta.org/example-plugin/)
+
 This is a complete, working example of a simple BetterSEQTA+ plugin. You can copy this code and modify it to create your own plugin!
 
 ## What This Example Does
@@ -328,8 +330,8 @@ Once you've got this working:
 ## Need Help?
 
 - 💬 Ask in our [Discord server](https://discord.gg/YzmbnCDkat)
-- 📚 Read our [Plugin Development Guide](./README.md)
-- 🐛 Check the [Troubleshooting Guide](../TROUBLESHOOTING.md)
+- 📚 Read the [plugin documentation](https://docs.betterseqta.org/plugins/)
+- 🐛 Check the [troubleshooting guide](https://docs.betterseqta.org/troubleshooting/)
 - 📝 Open an issue on GitHub
 
 Happy coding! 🎉 

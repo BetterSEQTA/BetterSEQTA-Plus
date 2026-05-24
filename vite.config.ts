@@ -6,6 +6,7 @@ import InlineWorkerPlugin from "./lib/inlineWorker";
 import { base64Loader } from "./lib/base64loader";
 import type { BuildTarget } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
+import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 
 import million from "million/compiler";
 
@@ -23,6 +24,9 @@ const targets: BuildTarget[] = [chrome, brave, edge, firefox, opera, safari];
 
 const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
 //const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
+/** Million's compiler can emit `new Function()`, which Firefox extension pages block (strict CSP, no unsafe-eval). */
+const useMillion = mode.toLowerCase() !== "firefox";
+
 export default defineConfig(({ command }) => ({
   plugins: [
     base64Loader,
@@ -30,7 +34,7 @@ export default defineConfig(({ command }) => ({
     svelte({
       emitCss: false,
     }),
-    million.vite({ auto: true }),
+    ...(useMillion ? [million.vite({ auto: true })] : []),
     crx({
       manifest:
         targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??
@@ -38,7 +42,7 @@ export default defineConfig(({ command }) => ({
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
     }),
     touchGlobalCSSPlugin(),
-    ...(command === "build" ? [ClosePlugin()] : []),
+    ...(command === "build" ? [ClosePlugin(), firefoxStripFunctionProbe()] : []),
   ],
   root: resolve(__dirname, "./src"),
   resolve: {
@@ -56,9 +60,7 @@ export default defineConfig(({ command }) => ({
   },
   css: {
     preprocessorOptions: {
-      scss: {
-        api: "modern",
-      },
+      scss: {},
     },
   },
   optimizeDeps: {
@@ -83,6 +85,9 @@ export default defineConfig(({ command }) => ({
       input: {
         settings: join(__dirname, "src", "interface", "index.html"),
         pageState: join(__dirname, "src", "pageState.js"),
+      },
+      output: {
+        assetFileNames: "assets/[name]-[hash][extname]",
       },
       onwarn(warning, warn) {
         if (warning.code === "FILE_NAME_CONFLICT") return;

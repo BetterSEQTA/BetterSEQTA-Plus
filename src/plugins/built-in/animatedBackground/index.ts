@@ -7,6 +7,7 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 import styles from "./styles.css?inline";
+import { waitForElm } from "@/seqta/utils/waitForElm";
 
 const settings = defineSettings({
   speed: numberSetting({
@@ -36,41 +37,35 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
-    const isTeach = isSEQTATeachSync();
-    let container: HTMLElement | null = null;
+    let container: HTMLElement;
     let insertBefore: HTMLElement | null = null;
 
-    if (isTeach) {
-      // For Teach, use #root or body, and insert before the first child or at the beginning
-      container = document.getElementById("root") || document.body;
-      if (container) {
-        // Find the Spine navigation or first child to insert before
-        const spine = document.querySelector("[class*='Spine__Spine']");
-        insertBefore = (spine as HTMLElement) || container.firstElementChild as HTMLElement;
-      }
+    if (isSEQTATeachSync()) {
+      container =
+        document.getElementById("root") ||
+        ((await waitForElm("#root", true)) as HTMLElement);
+      const spine = document.querySelector("[class*='Spine__Spine']");
+      insertBefore =
+        (spine as HTMLElement) ||
+        (container.firstElementChild as HTMLElement);
     } else {
-      // For Learn, use #container and #menu
-      container = document.getElementById("container");
-      insertBefore = document.getElementById("menu");
+      const [learnContainer, menu] = await Promise.all([
+        waitForElm("#container", true),
+        waitForElm("#menu", true),
+      ]);
+      container = learnContainer as HTMLElement;
+      insertBefore = menu as HTMLElement;
     }
 
-    if (!container) {
-      console.warn("[AnimatedBackground] Container not found, cannot create animated background");
-      return () => {};
-    }
-
-    // Check if backgrounds already exist
     const existingBgs = document.getElementsByClassName("bg");
     if (existingBgs.length > 0) {
-      // Backgrounds already exist, just update speed
       updateAnimationSpeed(api.settings.speed);
-      
-      // Listen for speed changes
+
       const speedUnregister = api.settings.onChange(
         "speed",
         updateAnimationSpeed,
       );
-      
+
       return () => {
         speedUnregister.unregister();
       };
@@ -85,28 +80,23 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
     backgrounds.forEach(({ classes }) => {
       const bk = document.createElement("div");
       classes.forEach((cls) => bk.classList.add(cls));
-      
+
       if (insertBefore && insertBefore.parentElement === container) {
         container.insertBefore(bk, insertBefore);
       } else {
-        // Fallback: insert at the beginning
         container.insertBefore(bk, container.firstChild);
       }
     });
 
-    // Set initial speed
     updateAnimationSpeed(api.settings.speed);
 
-    // Listen for speed changes
     const speedUnregister = api.settings.onChange(
       "speed",
       updateAnimationSpeed,
     );
 
-    // Return cleanup function
     return () => {
       speedUnregister.unregister();
-      // Remove background elements
       const backgrounds = document.getElementsByClassName("bg");
       Array.from(backgrounds).forEach((element) => element.remove());
     };

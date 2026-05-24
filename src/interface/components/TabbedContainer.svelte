@@ -3,8 +3,7 @@
   import './TabbedContainer.css';
   import { onMount } from 'svelte';
 
-  let { tabs } = $props<{ tabs: { title: string, Content: any, props?: any }[] }>();
-  let activeTab = $state(0);
+  let { tabs, activeTab = $bindable(0) } = $props<{ tabs: { title: string, Content: any, props?: any }[]; activeTab?: number }>();
   let containerRef: HTMLElement | null = null;
   let tabWidth = $state(0);
 

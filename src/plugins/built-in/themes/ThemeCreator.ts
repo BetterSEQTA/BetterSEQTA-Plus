@@ -1,11 +1,10 @@
 import renderSvelte from "@/interface/main";
-import themeCreator from "@/interface/pages/themeCreator.svelte";
-import { unmount } from "svelte";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
+import { unmount } from "svelte";
+import themeCreator from "@/interface/pages/themeCreator.svelte";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 let themeCreatorSvelteApp: any = null;
-const themeManager = ThemeManager.getInstance();
 
 /**
  * Open the Theme Creator sidebar, it is an embedded page loaded similar to the extension popup
@@ -41,7 +40,7 @@ export function OpenThemeCreator(themeID: string = "") {
   closeButton.textContent = "×";
   closeButton.addEventListener("click", () => {
     CloseThemeCreator();
-    themeManager.clearPreview();
+    ThemeManager.getInstance().clearPreview();
   });
 
   document.body.appendChild(closeButton);

@@ -3,6 +3,7 @@
   import logoDark from '@/resources/icons/betterseqta-light-full.png';
   import { closeStore } from '@/seqta/ui/renderStore'
   import browser from 'webextension-polyfill';
+  import CloudHeader from './CloudHeader.svelte';
 
   // Props
   let { searchTerm, setSearchTerm, darkMode, activeTab, setActiveTab } = $props<{
@@ -39,6 +40,8 @@
       >
         Backgrounds
       </button>
+
+      <CloudHeader />
     </div>
 
     <div class="flex relative gap-2">

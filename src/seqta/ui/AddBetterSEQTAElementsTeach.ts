@@ -377,9 +377,6 @@ async function createTeachSettingsButton() {
  * Initialize Teach-specific features
  */
 async function initializeTeachFeatures() {
-  // Check for Spine elements and show changelog if visible
-  checkAndShowChangelog();
-  
   // Apply saved spine order if available
   if (settingsState.teachspineorder && settingsState.teachspineorder.length > 0) {
     // Wait a bit for Spine to be fully rendered

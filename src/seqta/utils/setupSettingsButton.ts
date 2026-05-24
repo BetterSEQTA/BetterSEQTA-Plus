@@ -9,18 +9,9 @@ import { renderSettingsIfNeeded } from "./Adders/AddExtensionSettings";
 import { delay } from "./delay";
 
 export function setupSettingsButton() {
-  var AddedSettings = document.getElementById("AddedSettings");
-  var extensionPopup = document.getElementById("ExtensionPopup");
-
-  if (!AddedSettings) {
-    console.error("[BetterSEQTA+] AddedSettings button not found, cannot setup click handler");
-    return;
-  }
-
-  if (!extensionPopup) {
-    console.error("[BetterSEQTA+] ExtensionPopup not found, cannot setup click handler");
-    return;
-  }
+  const AddedSettings = document.getElementById("AddedSettings");
+  const extensionPopup = document.getElementById("ExtensionPopup");
+  if (!AddedSettings || !extensionPopup) return;
 
   AddedSettings.addEventListener("click", async () => {
     if (SettingsClicked) {

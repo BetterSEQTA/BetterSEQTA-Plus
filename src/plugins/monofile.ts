@@ -3,10 +3,6 @@ import browser from "webextension-polyfill";
 import { animate, stagger } from "motion";
 
 // Internal utilities and functions
-import {
-  ChangeMenuItemPositions,
-  MenuOptionsOpen,
-} from "@/seqta/utils/Openers/OpenMenuOptions";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
@@ -17,21 +13,26 @@ import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 
 // UI and theme management
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
+import {
+  loadEngageHomePage,
+  updateEngageHomeMenuActive,
+} from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 import { setupRouteListener } from "@/seqta/utils/Loaders/LoadTeachHomePage";
-import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
 // JSON content
-import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
+import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
 // Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff";
@@ -84,7 +85,13 @@ export function hideSideBar() {
   }
 }
 
+let betterSeqtaFinishLoadDone = false;
+let engageHashListenerAttached = false;
+
 export async function finishLoad() {
+  if (betterSeqtaFinishLoadDone) return;
+  betterSeqtaFinishLoadDone = true;
+
   try {
     document.querySelector(".legacy-root")?.classList.remove("hidden");
 
@@ -96,14 +103,7 @@ export async function finishLoad() {
     console.error("Error during loading cleanup:", err);
   }
 
-  // Check and show privacy statement notification (before what's new)
-  if (!document.getElementById("privacy-notification")) {
-    await showPrivacyNotification();
-  }
-
-  if (settingsState.justupdated && !document.getElementById("whatsnewbk") && !document.getElementById("privacy-notification")) {
-    OpenWhatsNewPopup();
-  }
+  void runStartupPopupQueue();
 }
 
 export function GetCSSElement(file: string) {
@@ -117,19 +117,19 @@ export function GetCSSElement(file: string) {
 }
 
 function removeThemeTagsFromNotices() {
-  // Grabs an array of the notice iFrames
   const userHTMLArray = document.getElementsByClassName("userHTML");
-  // Iterates through the array, applying the iFrame css
   for (const item of userHTMLArray) {
-    // Grabs the HTML of the body tag
-    const item1 = item as HTMLIFrameElement;
-    const body = item1.contentWindow!.document.querySelectorAll("body")[0];
-    if (body) {
-      // Replaces the theme tag with nothing
+    const iframe = item as HTMLIFrameElement;
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc?.body) continue;
+      const body = doc.body;
       const bodyText = body.innerHTML;
       body.innerHTML = bodyText
         .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
         .replace(/ +/, " ");
+    } catch {
+      // Cross-origin or otherwise inaccessible iframe (common during Engage load / filter frames)
     }
   }
 }
@@ -205,13 +205,25 @@ function SortMessagePageItems(messagesParentElement: any) {
 async function LoadPageElements(): Promise<void> {
   console.log("[BetterSEQTA+] LoadPageElements called");
   await AddBetterSEQTAElements();
-  
-  // Set up route listener for Teach homepage early
+
   if (isSEQTATeachSync()) {
     setupRouteListener();
   }
-  
-  const sublink: string | undefined = window.location.href.split("/")[4];
+
+  const sublink: string | undefined = isSeqtaEngageExperience()
+    ? getEngageRoutePage()
+    : window.location.href.split("/")[4];
+
+  if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
+    engageHashListenerAttached = true;
+    window.addEventListener("hashchange", () => {
+      if (getEngageRoutePage() === "home") {
+        void loadEngageHomePage();
+      } else {
+        updateEngageHomeMenuActive(false);
+      }
+    });
+  }
 
   eventManager.register(
     "messagesAdded",
@@ -305,6 +317,28 @@ async function handleNotices(node: Element): Promise<void> {
 }
 
 async function handleSublink(sublink: string | undefined): Promise<void> {
+  if (isSeqtaEngageExperience()) {
+    switch (sublink) {
+      case undefined:
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+        if (settingsState.defaultPage === "home") void loadEngageHomePage();
+        finishLoad();
+        break;
+      case "home":
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init (SEQTA Engage home)");
+        if (settingsState.onoff) void loadEngageHomePage();
+        finishLoad();
+        break;
+      default:
+        finishLoad();
+        break;
+    }
+    return;
+  }
+
   switch (sublink) {
     case "news":
       await handleNewsPage();
@@ -437,15 +471,22 @@ async function handleDashboard(node: Element): Promise<void> {
   document.head.append(style);
 
   await waitForElm(".dashlet", true, 10);
-  animate(
-    ".dashboard > *",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.1),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const children = document.querySelectorAll(".dashboard > *");
+    if (children.length) {
+      animate(
+        children,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.1),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // Avoid uncaught errors if motion hits an unexpected DOM state during load.
+  }
 
   document.head.querySelector("style.dashboardHider")?.remove();
 }
@@ -455,15 +496,22 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".document", true, 10);
-  animate(
-    ".documents tbody tr.document",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const rows = document.querySelectorAll(".documents tbody tr.document");
+    if (rows.length) {
+      animate(
+        rows,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 async function handleReports(node: Element): Promise<void> {
@@ -471,15 +519,22 @@ async function handleReports(node: Element): Promise<void> {
   if (!settingsState.animations) return;
 
   await waitForElm(".report", true, 10);
-  animate(
-    ".reports .item",
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.05, { startDelay: 0.2 }),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
+  try {
+    const items = document.querySelectorAll(".reports .item");
+    if (items.length) {
+      animate(
+        items,
+        { opacity: [0, 1], y: [10, 0] },
+        {
+          delay: stagger(0.05, { startDelay: 0.2 }),
+          duration: 0.5,
+          ease: [0.22, 0.03, 0.26, 1],
+        },
+      );
+    }
+  } catch {
+    // ignore
+  }
 }
 
 function CheckNoticeTextColour(notice: any) {
@@ -503,104 +558,168 @@ function CheckNoticeTextColour(notice: any) {
   );
 }
 
+function watchForEngageLogin() {
+  if (!document.querySelector(".login")) {
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (!document.querySelector(".login")) {
+      observer.disconnect();
+      location.reload();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/** Wait until Engage shows either the login shell or the main app (`#content`), so we never call `LoadPageElements` while still on login (which would hang on `waitForElm("#content")`). */
+function waitForEngageLoginOrContent(): Promise<"login" | "app" | "timeout"> {
+  if (document.querySelector(".login")) {
+    return Promise.resolve("login");
+  }
+  if (document.getElementById("content")) {
+    return Promise.resolve("app");
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (mode: "login" | "app") => {
+      if (settled) return;
+      settled = true;
+      mo.disconnect();
+      window.clearTimeout(tid);
+      resolve(mode);
+    };
+    const check = () => {
+      if (document.querySelector(".login")) finish("login");
+      else if (document.getElementById("content")) finish("app");
+    };
+    const mo = new MutationObserver(check);
+    mo.observe(document.documentElement, { subtree: true, childList: true });
+    const tid = window.setTimeout(() => {
+      if (settled) return;
+      mo.disconnect();
+      settled = true;
+      if (document.querySelector(".login")) resolve("login");
+      else if (document.getElementById("content")) resolve("app");
+      else {
+        console.warn(
+          "[BetterSEQTA+] Engage: timed out waiting for .login or #content; unblocking load UI.",
+        );
+        resolve("timeout");
+      }
+    }, 120_000);
+  });
+}
+
 export function tryLoad() {
+  if (isSeqtaEngageExperience()) {
+    updateIframesWithDarkMode();
+    window.addEventListener("load", () => removeThemeTagsFromNotices(), {
+      once: true,
+    });
+
+    const runEngageLoad = async () => {
+      const mode = await waitForEngageLoginOrContent();
+      if (mode === "login") {
+        finishLoad();
+        watchForEngageLogin();
+        return;
+      }
+      if (mode === "timeout") {
+        finishLoad();
+        void waitForElm("#content").then(() => void LoadPageElements());
+        return;
+      }
+      await LoadPageElements();
+    };
+
+    if (document.readyState === "complete") {
+      void runEngageLoad();
+    } else {
+      window.addEventListener("load", () => void runEngageLoad(), { once: true });
+    }
+    return;
+  }
+
   console.log("[BetterSEQTA+] tryLoad() called");
   let loadFinished = false;
-  // Track if LoadPageElements has been called to prevent duplicate calls
   let loadPageElementsCalled = false;
-  
+
   const finishLoadOnce = () => {
     if (!loadFinished) {
       loadFinished = true;
       finishLoad();
     }
   };
-  
-  waitForElm(".login").then(() => {
-    finishLoadOnce();
-  }).catch(() => {});
 
-  waitForElm(".day-container").then(() => {
-    finishLoadOnce();
-  }).catch(() => {});
+  waitForElm(".login")
+    .then(() => {
+      finishLoadOnce();
+    })
+    .catch(() => {});
 
-  waitForElm("[data-key=welcome]").then((elm: any) => {
-    elm.classList.remove("active");
-  }).catch(() => {});
+  waitForElm(".day-container")
+    .then(() => {
+      finishLoadOnce();
+    })
+    .catch(() => {});
 
-  waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
-      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
-      loadPageElementsCalled = true;
-      LoadPageElements();
-    }
-  }).catch(() => {
-    // On Teach, .code might not exist, so call LoadPageElements directly
-    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
-    if (isSEQTATeachSync() && !loadPageElementsCalled) {
-      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
-      loadPageElementsCalled = true;
-      LoadPageElements().catch((err) => {
-        console.error("[BetterSEQTA+] Error loading page elements:", err);
-      });
-    } else {
-      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
-    }
-  });
-  
-  // Fallback: Check for common elements that indicate page has loaded
-  waitForElm("#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header", true, 30).then(() => {
-    console.log("[BetterSEQTA+] Main content element found");
-    // On Teach, ensure LoadPageElements is called if it hasn't been already
-    const isTeach = isSEQTATeachSync();
-    console.log("[BetterSEQTA+] Platform check in fallback - isTeach:", isTeach, "loadPageElementsCalled:", loadPageElementsCalled);
-    if (isTeach && !loadPageElementsCalled) {
-      const codeElement = document.querySelector(".code");
-      console.log("[BetterSEQTA+] .code element check:", codeElement ? "found" : "not found");
-      // Only call if .code doesn't exist (meaning the first waitForElm failed)
-      if (!codeElement) {
-        console.log("[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback");
+  waitForElm("[data-key=welcome]")
+    .then((elm: any) => {
+      elm.classList.remove("active");
+    })
+    .catch(() => {});
+
+  waitForElm(".code", true, 50)
+    .then((elm: any) => {
+      if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
+        console.log(
+          "[BetterSEQTA+] .code element found, calling LoadPageElements",
+        );
+        loadPageElementsCalled = true;
+        LoadPageElements();
+      }
+    })
+    .catch(() => {
+      console.log(
+        "[BetterSEQTA+] .code element not found, checking if Teach platform...",
+      );
+      if (isSEQTATeachSync() && !loadPageElementsCalled) {
+        console.log(
+          "[BetterSEQTA+] Teach platform detected, calling LoadPageElements",
+        );
         loadPageElementsCalled = true;
         LoadPageElements().catch((err) => {
           console.error("[BetterSEQTA+] Error loading page elements:", err);
         });
-      } else {
-        console.log("[BetterSEQTA+] .code element exists, skipping LoadPageElements");
       }
-    } else if (!isTeach) {
-      console.log("[BetterSEQTA+] Not Teach platform, skipping LoadPageElements");
-    } else {
-      console.log("[BetterSEQTA+] LoadPageElements already called, skipping");
-    }
-    finishLoadOnce();
-  }).catch(() => {
-    console.log("[BetterSEQTA+] Main content element not found");
-  });
-  
-  // Also update the .code catch block to track when it's called
-  waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA")) {
-      console.log("[BetterSEQTA+] .code element found, calling LoadPageElements");
-      if (!loadPageElementsCalled) {
-        loadPageElementsCalled = true;
-        LoadPageElements();
+    });
+
+  waitForElm(
+    "#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header",
+    true,
+    30,
+  )
+    .then(() => {
+      console.log("[BetterSEQTA+] Main content element found");
+      const isTeach = isSEQTATeachSync();
+      if (isTeach && !loadPageElementsCalled) {
+        const codeElement = document.querySelector(".code");
+        if (!codeElement) {
+          console.log(
+            "[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback",
+          );
+          loadPageElementsCalled = true;
+          LoadPageElements().catch((err) => {
+            console.error("[BetterSEQTA+] Error loading page elements:", err);
+          });
+        }
       }
-    }
-  }).catch(() => {
-    // On Teach, .code might not exist, so call LoadPageElements directly
-    console.log("[BetterSEQTA+] .code element not found, checking if Teach platform...");
-    if (isSEQTATeachSync() && !loadPageElementsCalled) {
-      console.log("[BetterSEQTA+] Teach platform detected, calling LoadPageElements");
-      loadPageElementsCalled = true;
-      LoadPageElements().catch((err) => {
-        console.error("[BetterSEQTA+] Error loading page elements:", err);
-      });
-    } else {
-      console.log("[BetterSEQTA+] Not Teach platform or already called, skipping LoadPageElements");
-    }
-  });
-  
-  // Fallback timeout: If none of the above elements appear, finish loading after 3 seconds
+      finishLoadOnce();
+    })
+    .catch(() => {
+      console.log("[BetterSEQTA+] Main content element not found");
+    });
+
   setTimeout(() => {
     if (!loadFinished) {
       finishLoadOnce();
@@ -608,82 +727,9 @@ export function tryLoad() {
   }, 3000);
 
   updateIframesWithDarkMode();
-  // Waits for page to call on load, run scripts
-  document.addEventListener(
-    "load",
-    function () {
-      removeThemeTagsFromNotices();
-    },
-    true,
-  );
-}
-
-function ReplaceMenuSVG(element: HTMLElement, svg: string) {
-  let item = element.firstChild as HTMLElement;
-  item!.firstChild!.remove();
-
-  item.innerHTML = `<span>${item.innerHTML}</span>`;
-
-  let newsvg = stringToHTML(svg).firstChild;
-  item.insertBefore(newsvg as Node, item.firstChild);
-}
-
-const processedSymbol = Symbol("processed");
-
-export async function ObserveMenuItemPosition() {
-  await waitForElm("#menu > ul > li");
-
-  eventManager.register(
-    "menuList",
-    {
-      parentElement: document.querySelector("#menu")!.firstChild as Element,
-    },
-    (element: Element) => {
-      const node = element as HTMLElement;
-
-      // Only process top-level menu items and skip everything else
-      if (
-        !node.classList.contains("item") ||
-        node.nodeName !== "LI" ||
-        node.parentElement?.parentElement?.id !== "menu"
-      ) {
-        return;
-      }
-
-      // Early exit if already processed
-      if ((element as any)[processedSymbol]) {
-        return;
-      }
-
-      if (!MenuOptionsOpen) {
-        const key =
-          MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
-        if (key) {
-          ReplaceMenuSVG(
-            node,
-            MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-          );
-        } else if (node?.firstChild?.nodeName === "LABEL") {
-          const label = node.firstChild as HTMLElement;
-          let textNode = label.lastChild as HTMLElement;
-
-          if (
-            textNode.nodeType === 3 &&
-            textNode.parentNode &&
-            textNode.parentNode.nodeName !== "SPAN"
-          ) {
-            const span = document.createElement("span");
-            span.textContent = textNode.nodeValue;
-
-            label.replaceChild(span, textNode);
-          }
-        }
-        ChangeMenuItemPositions(settingsState.menuorder);
-
-        (element as any)[processedSymbol] = true;
-      }
-    },
-  );
+  window.addEventListener("load", () => removeThemeTagsFromNotices(), {
+    once: true,
+  });
 }
 
 export function showConflictPopup() {
@@ -755,18 +801,98 @@ export function init() {
   if (settingsState.onoff) {
     console.info("[BetterSEQTA+] Enabled");
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
+    if (settingsState.iconOnlySidebar) {
+      if (document.body) {
+        document.body.classList.add("icon-only-sidebar");
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          document.body?.classList.add("icon-only-sidebar");
+        });
+      }
+    }
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
-    ObserveMenuItemPosition();
+    void observeMenuItemPosition();
 
     new StorageChangeHandler();
     new MessageHandler();
 
-    updateAllColors();
+    void updateAllColors();
+
+    window.addEventListener("hashchange", () => {
+      if (settingsState.adaptiveThemeColour) void updateAllColors();
+    });
     loading();
     InjectCustomIcons();
     HideMenuItems();
     tryLoad();
+
+    // Auto-focus WISP direct online submission editor when pane opens
+    eventManager.register(
+      "wispassessmentAdded",
+      {
+        customCheck: (el) =>
+          el.classList.contains("wispassessment") ||
+          el.querySelector(".wispassessment") !== null,
+      },
+      (element) => {
+        const wispassessment = element.classList.contains("wispassessment")
+          ? (element as Element)
+          : element.querySelector(".wispassessment");
+        if (!wispassessment) return;
+
+        const focusEditableBody = (iframe: HTMLIFrameElement) => {
+          try {
+            const doc = iframe.contentDocument;
+            const win = iframe.contentWindow;
+            if (doc?.body && win) {
+              const editable =
+                doc.body.querySelector(".cke_editable") || doc.body;
+              const el = editable as HTMLElement;
+              el.focus();
+              const range = doc.createRange();
+              range.selectNodeContents(el);
+              range.collapse(true);
+              const sel = win.getSelection();
+              if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+              }
+              return true;
+            }
+          } catch (_) {}
+          return false;
+        };
+
+        const focusEditor = () => {
+          const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+          if (iframe instanceof HTMLIFrameElement) {
+            if (focusEditableBody(iframe)) return;
+            iframe.focus();
+            return;
+          }
+          const ckeditor = (window as any).CKEDITOR;
+          if (ckeditor?.instances?.editor1) {
+            try {
+              ckeditor.instances.editor1.focus();
+            } catch (_) {}
+          }
+        };
+
+        const iframe = wispassessment.querySelector(".cke_wysiwyg_frame");
+        if (iframe instanceof HTMLIFrameElement) {
+          iframe.addEventListener(
+            "load",
+            () => focusEditableBody(iframe),
+            { once: true },
+          );
+        }
+
+        [1000, 1200, 1500].forEach((delay) =>
+          setTimeout(focusEditor, delay),
+        );
+      },
+    );
 
     setTimeout(() => {
       const legacyElement = document.querySelector(

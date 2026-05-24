@@ -1,4 +1,5 @@
 import type { Plugin } from "../../core/types";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { isSEQTATeachSync } from "@/seqta/utils/platformDetection";
 
 interface NotificationCollectorStorage {
@@ -16,6 +17,10 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
   disableToggle: true,
 
   run: async (api) => {
+    if (isSeqtaEngageExperience()) {
+      return () => {};
+    }
+
     let pollInterval: number | null = null;
     let isVisible = !document.hidden;
     let baseInterval = 30000; // 30 seconds

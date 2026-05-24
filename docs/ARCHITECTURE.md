@@ -1,5 +1,7 @@
 # BetterSEQTA+ Architecture
 
+**Published version:** [docs.betterseqta.org/architecture/](https://docs.betterseqta.org/architecture/)
+
 Hey there! 👋 New to the codebase and feeling a bit lost? Don't worry - this guide will help you understand how everything fits together!
 
 ## Table of Contents
@@ -221,7 +223,7 @@ console.log(settingsState.[the setting name])
 Ready to contribute? Here's what to do next:
 
 1. **Read the code**: Start with `src/SEQTA.ts` and follow the flow
-2. **Try creating a simple plugin**: Follow our [plugin guide](./plugins/README.md)
+2. **Try creating a simple plugin**: Follow the [plugin documentation](https://docs.betterseqta.org/plugins/)
 3. **Look at existing issues**: Check our [GitHub issues](https://github.com/BetterSEQTA/BetterSEQTA-plus/issues) for "good first issue" labels
 4. **Join our Discord**: Get help from the community!
 

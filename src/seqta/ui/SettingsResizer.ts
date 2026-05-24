@@ -18,12 +18,9 @@ export class SettingsResizer {
     if (!iframePopup) return;
 
     const viewportHeight = window.innerHeight;
-    const idealHeight = viewportHeight - 80 - 15; // -80px for the top of the popup
+    const rawIdeal = viewportHeight - 80 - 15; // room below top chrome
+    const idealHeight = Math.min(Math.max(rawIdeal, 280), 600);
 
-    if (idealHeight > 600) {
-      iframePopup.style.height = "600px";
-    } else {
-      iframePopup.style.height = `${idealHeight}px`;
-    }
+    iframePopup.style.height = `${idealHeight}px`;
   }
 }

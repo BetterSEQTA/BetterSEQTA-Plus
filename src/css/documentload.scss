@@ -17,10 +17,42 @@
 
 @use "injected/popup.scss";
 
+@font-face {
+  font-family: "Roboto";
+  src: url("https://fonts.gstatic.com/s/roboto/v50/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IconFamily";
+  src: url("@/resources/fonts/IconFamily.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@layer base, override;
+
+@layer override {
+  * {
+    font-family: Rubik, sans-serif !important;
+  }
+
+  .iconFamily,
+  .iconFamily *,
+  [class~="iconFamily"],
+  [class~="iconFamily"] * {
+    font-family: "IconFamily" !important;
+  }
+}
+
 html {
   background: #161616 !important;
   background-color: #161616;
-  font-family: Rubik, Roboto !important;
+  font-family: Roboto, system-ui, -apple-system, sans-serif !important;
 }
 
 .tooltip svg {

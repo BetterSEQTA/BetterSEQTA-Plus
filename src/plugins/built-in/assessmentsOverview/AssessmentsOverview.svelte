@@ -1,14 +1,19 @@
 <script lang="ts">
   import { determineStatus, formatDate, getGradeValue } from "./utils";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+  import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
   import confetti from "canvas-confetti";
 
   export let data: any;
 
   interface FilterOptions {
     subject: string;
-    sortBy: "due" | "grade" | "subject" | "title";
+    student: string;
+    sortBy: "due" | "grade" | "subject" | "title" | "year";
   }
+
+  const HIDDEN_ASSESSMENTS_KEY = "betterseqta-hidden-assessments";
 
   function percentageToLetter(percentage: number): string {
     const letterMap: Record<number, string> = {
@@ -36,53 +41,127 @@
 
   let currentFilters: FilterOptions = {
     subject: "all",
+    student: "all",
     sortBy: "due",
   };
 
+  const isEngage = isSeqtaEngageExperience();
+  $: showStudentFilter = isEngage && (data?.students?.length ?? 0) > 1;
+
   let filteredAssessments: any[] = [];
   let statusGroups: Record<string, any[]> = {};
+  let columns: { key: string; title: string; className: string; icon: string }[] = [];
+
+  function getAssessmentYear(a: any): number {
+    const dateStr = a.due || a.date || a.dueDate || a.created;
+    return dateStr ? new Date(dateStr).getFullYear() : 0;
+  }
+
+  function getAssessmentType(a: any): string {
+    return (a.type || a.assessmentType || a.taskType || "Other").toString();
+  }
+
+  function getAssessmentGrade(a: any): string {
+    const val = getGradeValue(a);
+    if (val === null) return "No grade";
+    return percentageToLetter(val);
+  }
+
+  function getGroupKey(assessment: any): string {
+    switch (currentFilters.sortBy) {
+      case "due":
+        return determineStatus(assessment);
+      case "year":
+        return String(getAssessmentYear(assessment) || "Unknown");
+      case "subject":
+        return assessment.code || "Unknown";
+      case "grade":
+        return getAssessmentGrade(assessment);
+      case "title":
+        const first = (assessment.title || "?")[0].toUpperCase();
+        return /[A-Z0-9]/.test(first) ? first : "#";
+      default:
+        return determineStatus(assessment);
+    }
+  }
+
+  function sortCompare(a: any, b: any): number {
+    return new Date(a.due || a.date || 0).getTime() - new Date(b.due || b.date || 0).getTime();
+  }
+
+  const STATUS_COLUMNS = [
+    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: "📅" },
+    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: "⏰" },
+    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: "🚨" },
+    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: "📝" },
+    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: "✅" },
+  ];
+
+  function buildGroupsAndColumns() {
+    if (!data?.assessments) return { filteredAssessments: [], statusGroups: {}, columns: [] };
+    const subjectFilters = settingsState.subjectfilters || {};
+    const hiddenAssessmentIds = new Set(
+      (JSON.parse(localStorage.getItem(HIDDEN_ASSESSMENTS_KEY) || "[]")).map(String)
+    );
+
+    const filtered = data.assessments.filter((a: any) => {
+      if (hiddenAssessmentIds.has(String(a.id))) return false;
+      if (subjectFilters[a.code] === false) return false;
+      if (currentFilters.subject !== "all" && a.code !== currentFilters.subject) {
+        return false;
+      }
+      if (
+        isEngage &&
+        currentFilters.student !== "all" &&
+        String(a.studentId) !== currentFilters.student
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    const groups: Record<string, any[]> = {};
+    filtered.forEach((assessment) => {
+      const key = getGroupKey(assessment);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(assessment);
+    });
+
+    Object.keys(groups).forEach((key) => {
+      groups[key].sort(sortCompare);
+    });
+
+    let cols: { key: string; title: string; className: string; icon: string }[];
+    if (currentFilters.sortBy === "due") {
+      cols = STATUS_COLUMNS;
+    } else {
+      const keys = Object.keys(groups).filter((k) => groups[k]?.length > 0);
+      if (currentFilters.sortBy === "year") {
+        cols = keys.sort((a, b) => Number(b) - Number(a)).map((k) => ({ key: k, title: k, className: "column-custom", icon: "📆" }));
+      } else if (currentFilters.sortBy === "subject") {
+        const subjectTitles = new Map(data?.subjects?.map((s: any) => [s.code, `${s.code} - ${s.title}`]) || []);
+        cols = keys.sort().map((k) => ({ key: k, title: subjectTitles.get(k) || k, className: "column-custom", icon: "📚" }));
+      } else {
+        cols = keys.sort().map((k) => ({ key: k, title: k, className: "column-custom", icon: "📋" }));
+      }
+    }
+
+    return { filteredAssessments: filtered, statusGroups: groups, columns: cols };
+  }
+
+  $: if (data) {
+    const _ = currentFilters.sortBy && currentFilters.subject;
+    const result = buildGroupsAndColumns();
+    filteredAssessments = result.filteredAssessments;
+    statusGroups = result.statusGroups;
+    columns = result.columns;
+  }
 
   function updateAssessments() {
-    filteredAssessments = data.assessments.filter((a: any) => {
-      const subjectMatch =
-        currentFilters.subject === "all" || a.code === currentFilters.subject;
-      return subjectMatch;
-    });
-
-    filteredAssessments.sort((a: any, b: any) => {
-      switch (currentFilters.sortBy) {
-        case "due":
-          return new Date(a.due).getTime() - new Date(b.due).getTime();
-        case "grade":
-          const gradeA = getGradeValue(a);
-          const gradeB = getGradeValue(b);
-          if (gradeA === null && gradeB === null) return 0;
-          if (gradeA === null) return 1;
-          if (gradeB === null) return -1;
-          return gradeB - gradeA;
-        case "subject":
-          return a.code.localeCompare(b.code);
-        case "title":
-          return a.title.localeCompare(b.title);
-        default:
-          return 0;
-      }
-    });
-
-    statusGroups = {
-      UPCOMING: [],
-      DUE_SOON: [],
-      OVERDUE: [],
-      SUBMITTED: [],
-      MARKS_RELEASED: [],
-    };
-
-    filteredAssessments.forEach((assessment) => {
-      const status = determineStatus(assessment);
-      if (statusGroups[status]) {
-        statusGroups[status].push(assessment);
-      }
-    });
+    const result = buildGroupsAndColumns();
+    filteredAssessments = result.filteredAssessments;
+    statusGroups = result.statusGroups;
+    columns = result.columns;
   }
 
   function getDueDateClass(assessment: any): string {
@@ -120,6 +199,56 @@
       completed.splice(index, 1);
       localStorage.setItem(completedKey, JSON.stringify(completed));
       updateAssessments();
+    }
+  }
+
+  function hideAssessment(assessment: any) {
+    const hidden = JSON.parse(localStorage.getItem(HIDDEN_ASSESSMENTS_KEY) || "[]");
+    const id = String(assessment.id);
+    if (!hidden.includes(id)) {
+      hidden.push(id);
+      localStorage.setItem(HIDDEN_ASSESSMENTS_KEY, JSON.stringify(hidden));
+      visibilityRefresh++;
+      closeAllMenus();
+      updateAssessments();
+    }
+  }
+
+  function hideSubject(subjectCode: string) {
+    const filters = { ...(settingsState.subjectfilters || {}) };
+    filters[subjectCode] = false;
+    settingsState.subjectfilters = filters;
+    closeAllMenus();
+    updateAssessments();
+  }
+
+  function unhideSubject(subjectCode: string) {
+    const filters = { ...(settingsState.subjectfilters || {}) };
+    filters[subjectCode] = true;
+    settingsState.subjectfilters = filters;
+    updateAssessments();
+  }
+
+  function unhideAssessment(assessmentId: string) {
+    const hidden = JSON.parse(localStorage.getItem(HIDDEN_ASSESSMENTS_KEY) || "[]");
+    const idStr = String(assessmentId);
+    const filtered = hidden.filter((id: string) => id !== idStr);
+    localStorage.setItem(HIDDEN_ASSESSMENTS_KEY, JSON.stringify(filtered));
+    visibilityRefresh++;
+    updateAssessments();
+  }
+
+  function initSubjectFilters() {
+    const filters = settingsState.subjectfilters || {};
+    let updated = false;
+    data.subjects.forEach((s: any) => {
+      if (!Object.prototype.hasOwnProperty.call(filters, s.code)) {
+        filters[s.code] = true;
+        updated = true;
+      }
+    });
+    if (updated) {
+      settingsState.subjectfilters = filters;
     }
   }
 
@@ -197,10 +326,37 @@
     if ((event.target as HTMLElement).closest(".card-menu")) {
       return;
     }
+
+    if (isSeqtaEngageExperience()) {
+      const studentId = assessment.studentId ?? data?.studentId;
+      if (!studentId) return;
+      window.location.hash = buildEngageAssessmentPagePath(
+        studentId,
+        assessment.programmeID,
+        assessment.metaclassID,
+        assessment.id,
+      );
+      return;
+    }
+
     window.location.hash = `#?page=/assessments/${assessment.programmeID}:${assessment.metaclassID}&item=${assessment.id}`;
   }
 
   let openMenuId: string | null = null;
+  let showVisibilityPanel = false;
+  let visibilityRefresh = 0;
+
+  $: hiddenSubjects = data?.subjects?.filter(
+    (s: any) => (settingsState.subjectfilters || {})[s.code] === false
+  ) || [];
+  $: hiddenAssessmentIds = (() => {
+    visibilityRefresh; // Dependency for reactivity
+    return new Set((JSON.parse(localStorage.getItem(HIDDEN_ASSESSMENTS_KEY) || "[]")).map(String));
+  })();
+  $: hiddenAssessmentsWithInfo = data?.assessments?.filter(
+    (a: any) => hiddenAssessmentIds.has(String(a.id))
+  ) || [];
+  $: hasHiddenItems = hiddenSubjects.length > 0 || hiddenAssessmentsWithInfo.length > 0;
 
   function toggleMenu(assessmentId: string, event: Event) {
     event.stopPropagation();
@@ -211,44 +367,14 @@
     openMenuId = null;
   }
 
-  $: {
-    if (data) {
-      updateAssessments();
-    }
+  $: if (data) {
+    initSubjectFilters();
+    updateAssessments();
+    void currentFilters.sortBy;
+    void currentFilters.subject;
+    void currentFilters.student;
   }
 
-  const columns = [
-    {
-      key: "UPCOMING",
-      title: "Upcoming",
-      className: "column-upcoming",
-      icon: "📅",
-    },
-    {
-      key: "DUE_SOON",
-      title: "Due Soon",
-      className: "column-due-soon",
-      icon: "⏰",
-    },
-    {
-      key: "OVERDUE",
-      title: "Overdue",
-      className: "column-overdue",
-      icon: "🚨",
-    },
-    {
-      key: "SUBMITTED",
-      title: "Submitted",
-      className: "column-submitted",
-      icon: "📝",
-    },
-    {
-      key: "MARKS_RELEASED",
-      title: "Marked",
-      className: "column-marked",
-      icon: "✅",
-    },
-  ];
 </script>
 
 <svelte:window on:click={closeAllMenus} />
@@ -257,20 +383,71 @@
   <div class="grid-view-header">
     <h1 class="grid-view-title">Assessments</h1>
     <div class="grid-view-filters">
+      {#if showStudentFilter}
+        <select class="filter-select" bind:value={currentFilters.student}>
+          <option value="all">All Students</option>
+          {#each data.students as student}
+            <option value={String(student.id)}>{student.name}</option>
+          {/each}
+        </select>
+      {/if}
       <select class="filter-select" bind:value={currentFilters.subject}>
         <option value="all">All Subjects</option>
         {#each data.subjects as subject}
           <option value={subject.code}>{subject.code} - {subject.title}</option>
         {/each}
       </select>
-      <select class="filter-select" bind:value={currentFilters.sortBy}>
-        <option value="due">Sort by Due Date</option>
-        <option value="grade">Sort by Grade</option>
-        <option value="subject">Sort by Subject</option>
-        <option value="title">Sort by Title</option>
+      <select class="filter-select" bind:value={currentFilters.sortBy} title="Group by - columns change based on this">
+        <option value="due">Group: Status</option>
+        <option value="year">Group: Year</option>
+        <option value="subject">Group: Subject</option>
+        <option value="grade">Group: Grade</option>
+        <option value="title">Group: Title (A-Z)</option>
       </select>
+      {#if hasHiddenItems}
+        <button
+          class="visibility-toggle"
+          class:active={showVisibilityPanel}
+          on:click={() => (showVisibilityPanel = !showVisibilityPanel)}
+          title="Manage hidden subjects and assessments"
+        >
+          👁 Visibility ({hiddenSubjects.length + hiddenAssessmentsWithInfo.length})
+        </button>
+      {/if}
     </div>
   </div>
+
+  {#if showVisibilityPanel && hasHiddenItems}
+    <div class="visibility-panel">
+      <h4 class="visibility-panel-title">Hidden items</h4>
+      {#if hiddenSubjects.length > 0}
+        <div class="visibility-section">
+          <span class="visibility-label">Subjects:</span>
+          <div class="visibility-chips">
+            {#each hiddenSubjects as subject}
+              <span class="visibility-chip">
+                {subject.code}
+                <button class="visibility-unhide" on:click={() => unhideSubject(subject.code)}>Show</button>
+              </span>
+            {/each}
+          </div>
+        </div>
+      {/if}
+      {#if hiddenAssessmentsWithInfo.length > 0}
+        <div class="visibility-section">
+          <span class="visibility-label">Assessments:</span>
+          <div class="visibility-chips">
+            {#each hiddenAssessmentsWithInfo as assessment}
+              <span class="visibility-chip">
+                {assessment.title}
+                <button class="visibility-unhide" on:click={() => unhideAssessment(assessment.id)}>Show</button>
+              </span>
+            {/each}
+          </div>
+        </div>
+      {/if}
+    </div>
+  {/if}
 
   <div id="main-grid-content">
     {#if filteredAssessments.length === 0}
@@ -307,6 +484,9 @@
                       on:keydown={(e) => e.key === 'Enter' && handleCardClick(assessment, e)}
                     >
                       <div class="card-labels">
+                        {#if isEngage && assessment.studentName}
+                          <span class="card-label label-student">{assessment.studentName}</span>
+                        {/if}
                         <span class="card-label label-subject">{assessment.code}</span>
                         {#if assessment.submitted}
                           <span class="card-label label-submitted" style="background: #10b981; color: white;">Submitted</span>
@@ -340,6 +520,12 @@
                                 Mark as Not Complete
                               </button>
                             {/if}
+                            <button class="menu-item menu-item-hide" on:click={() => hideAssessment(assessment)}>
+                              Hide assessment
+                            </button>
+                            <button class="menu-item menu-item-hide" on:click={() => hideSubject(assessment.code)}>
+                              Hide subject ({assessment.code})
+                            </button>
                           </div>
                         </div>
                       {/if}
@@ -349,7 +535,7 @@
                       {#if !assessment.results && !isCompleted}
                         <div class="assessment-meta">
                           <div class="due-date {dueDateClass}">
-                            📅 {formatDate(assessment.due, assessment.submitted)}
+                            📅 {formatDate(assessment.due || assessment.date || assessment.dueDate || "", assessment.submitted)}
                           </div>
                         </div>
                       {/if}

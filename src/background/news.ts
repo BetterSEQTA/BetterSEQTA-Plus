@@ -92,8 +92,12 @@ const rssFeedsByCountry: Record<string, string[]> = {
  *                           used to send the fetched news data back to the caller.
  *                           It's called with an object like `{ news: { articles: [...] } }`.
  */
-export async function fetchNews(source: string, sendResponse: any) {
-  if (source === "australia") {
+export async function fetchNews(source: string | undefined, sendResponse: any) {
+  const normalizedSource = typeof source === "string" && source.trim()
+    ? source.trim()
+    : "australia";
+
+  if (normalizedSource === "australia") {
     const date = new Date();
 
     const from =
@@ -111,18 +115,15 @@ export async function fetchNews(source: string, sendResponse: any) {
 
   const parser = new Parser();
   let feeds: string[];
-  console.log("fetchNews", source);
+  console.log("fetchNews", normalizedSource);
 
-  if (rssFeedsByCountry[source.toLowerCase()]) {
-    // If the source is a country, fetch from predefined feeds
-    feeds = rssFeedsByCountry[source.toLowerCase()];
-  } else if (source.startsWith("http")) {
-    // If the source is a URL, use it directly
-    feeds = [source];
+  if (rssFeedsByCountry[normalizedSource.toLowerCase()]) {
+    feeds = rssFeedsByCountry[normalizedSource.toLowerCase()];
+  } else if (normalizedSource.startsWith("http")) {
+    feeds = [normalizedSource];
   } else {
-    throw new Error(
-      "Invalid source. Provide a country code or a valid RSS feed URL.",
-    );
+    console.warn("[BetterSEQTA+] Invalid news source, falling back to Australia", normalizedSource);
+    return fetchNews("australia", sendResponse);
   }
 
   const articlesPromises = feeds.map(async (feedUrl) => {

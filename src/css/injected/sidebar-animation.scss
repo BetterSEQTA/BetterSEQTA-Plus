@@ -35,9 +35,19 @@
 }
 
 #menu .sub {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #menu > ul:has(li.hasChildren.active) > li.active {
   background: transparent !important;
+}
+
+/* Icon-only collapsed: submenu slides over narrow icons */
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li > svg,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > svg {
+  transform: translateX(-70px);
 }

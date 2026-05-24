@@ -12,6 +12,30 @@ import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
 import { detectSEQTAPlatform } from "@/seqta/utils/platformDetection";
 
+function registerFetchSeqtaAppLinkListener() {
+  browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request?.type !== "fetchSeqtaAppLink") return false;
+    void (async () => {
+      try {
+        const res = await fetch(`${location.origin}/seqta/student/load/profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        const statusOk = data?.status === "200" || data?.status === 200;
+        const raw = data?.payload?.app_link;
+        const appLink = typeof raw === "string" && raw.length > 0 ? raw : null;
+        sendResponse({ appLink: statusOk ? appLink : null });
+      } catch {
+        sendResponse({ appLink: null });
+      }
+    })();
+    return true;
+  });
+}
+
 export let MenuOptionsOpen = false;
 
 var IsSEQTAPage = false;
@@ -30,7 +54,9 @@ async function init() {
   // Use improved platform detection instead of just checking title format
   // This handles cases where title is "In brief - Student summary - SEQTA" etc.
   const platform = await detectSEQTAPlatform();
-  const hasSEQTATitle = document.title.includes("SEQTA") || platform !== 'unknown';
+  const isEngage = document.title.includes("SEQTA Engage");
+  const hasSEQTATitle =
+    document.title.includes("SEQTA") || platform !== "unknown" || isEngage;
 
   if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     IsSEQTAPage = true;
@@ -40,14 +66,24 @@ async function init() {
     let headWaitAttempts = 0;
     const maxHeadWaitAttempts = 50; // 5 seconds max
     while (!document.head && headWaitAttempts < maxHeadWaitAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       headWaitAttempts++;
     }
-    
+
     if (!document.head) {
-      console.error('[BetterSEQTA+] document.head is still null after waiting, cannot inject styles');
+      console.error(
+        "[BetterSEQTA+] document.head is still null after waiting, cannot inject styles",
+      );
       return;
     }
+
+    if (typeof window !== "undefined" && window === window.top) {
+      void browser.runtime
+        .sendMessage({ type: "cloudSettingsPoll" })
+        .catch(() => {});
+    }
+
+    registerFetchSeqtaAppLinkListener();
 
     const documentLoadStyle = document.createElement("style");
     documentLoadStyle.textContent = documentLoadCSS;
@@ -57,7 +93,6 @@ async function init() {
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-
         if (
           mutation.type === "attributes" &&
           mutation.target instanceof HTMLLinkElement &&
@@ -75,8 +110,6 @@ async function init() {
       attributes: true,
       attributeFilter: ["href"],
     });
-
-
 
     try {
       await initializeSettingsState();

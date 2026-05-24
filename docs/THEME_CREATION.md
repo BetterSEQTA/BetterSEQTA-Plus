@@ -1,5 +1,7 @@
 # Theme Creation Guide
 
+**Published version:** [docs.betterseqta.org/theme-creation/](https://docs.betterseqta.org/theme-creation/)
+
 This guide covers everything you need to know about creating custom themes for BetterSEQTA+.
 
 ## Table of Contents

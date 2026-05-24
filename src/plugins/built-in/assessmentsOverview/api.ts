@@ -9,12 +9,17 @@ interface PrefItem {
   value: string;
 }
 
+import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import {
+  getEngageAssessmentsData,
+} from "./engageApi";
 
-let cache: { time: number; data: any } | null = null;
+let cache: { time: number; engageAll?: boolean; studentId: number; data: any } | null =
+  null;
 const CACHE_MS = 10 * 60 * 1000;
-const student = 69;
 
 async function fetchJSON(url: string, body: any) {
   const res = await fetch(`${location.origin}${url}`, {
@@ -56,6 +61,17 @@ async function loadUpcoming(student: number) {
   return res.payload;
 }
 
+function normalizeAssessmentDates(t: any, subject: Subject): any {
+  const normalized = { ...t };
+  if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
+    normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
+  }
+  if (!normalized.programmeID) normalized.programmeID = subject.programme;
+  if (!normalized.metaclassID) normalized.metaclassID = subject.metaclass;
+  if (!normalized.code && t.subject) normalized.code = t.subject;
+  return normalized;
+}
+
 async function loadPast(student: number, subjects: Subject[]) {
   const map: Record<number, any> = {};
   await Promise.all(
@@ -65,10 +81,22 @@ async function loadPast(student: number, subjects: Subject[]) {
         metaclass: s.metaclass,
         student,
       });
-      if (res.payload.tasks) {
-        res.payload.tasks.forEach((t: any) => {
-          map[t.id] = t;
-        });
+      const processAssessment = (t: any) => {
+        if (t && t.id) {
+          const merged = {
+            ...t,
+            programmeID: t.programmeID || t.programme || s.programme,
+            metaclassID: t.metaclassID || t.metaclass || s.metaclass,
+            code: t.code || t.subject || s.code,
+          };
+          map[t.id] = normalizeAssessmentDates(merged, s);
+        }
+      };
+      if (res.payload?.pending && Array.isArray(res.payload.pending)) {
+        res.payload.pending.forEach(processAssessment);
+      }
+      if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
+        res.payload.tasks.forEach(processAssessment);
       }
     }),
   );
@@ -104,18 +132,13 @@ async function loadSubmissions(student: number, assessments: any[]) {
   return submissionMap;
 }
 
-export async function getAssessmentsData() {
-  if (settingsState.mockNotices) {
-    return getMockAssessmentsData();
-  }
-
-  if (cache && Date.now() - cache.time < CACHE_MS) return cache.data;
+async function getLearnAssessmentsData(studentId: number) {
   const [subjects, colors, upcoming] = await Promise.all([
     loadSubjects(),
-    loadPrefs(student),
-    loadUpcoming(student),
+    loadPrefs(studentId),
+    loadUpcoming(studentId),
   ]);
-  const pastMap = await loadPast(student, subjects);
+  const pastMap = await loadPast(studentId, subjects);
   const map: Record<number, any> = {};
   upcoming.forEach((a: any) => {
     map[a.id] = { ...a };
@@ -126,13 +149,42 @@ export async function getAssessmentsData() {
   });
 
   const allAssessments = Object.values(map);
-  const submissions = await loadSubmissions(student, allAssessments);
+  const submissions = await loadSubmissions(studentId, allAssessments);
 
   allAssessments.forEach((assessment: any) => {
     assessment.submitted = submissions[assessment.id] || false;
   });
 
-  const data = { assessments: allAssessments, subjects, colors };
-  cache = { time: Date.now(), data };
+  return { assessments: allAssessments, subjects, colors, studentId };
+}
+
+export async function getAssessmentsData() {
+  if (settingsState.mockNotices) {
+    return getMockAssessmentsData();
+  }
+
+  if (isSeqtaEngageExperience()) {
+    if (cache && Date.now() - cache.time < CACHE_MS && cache.engageAll) {
+      return cache.data;
+    }
+
+    const data = await getEngageAssessmentsData();
+    cache = { time: Date.now(), studentId: 0, engageAll: true, data };
+    return data;
+  }
+
+  const studentId = (await getUserInfo()).id;
+
+  if (
+    cache &&
+    Date.now() - cache.time < CACHE_MS &&
+    cache.studentId === studentId
+  ) {
+    return cache.data;
+  }
+
+  const data = await getLearnAssessmentsData(studentId);
+
+  cache = { time: Date.now(), studentId, data };
   return data;
 }

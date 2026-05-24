@@ -14,7 +14,13 @@ export class StorageChangeHandler {
   }
 
   private registerHandlers() {
-    settingsState.register("selectedColor", updateAllColors.bind(this));
+    settingsState.register("selectedColor", () => void updateAllColors());
+    settingsState.register("adaptiveThemeColour", () => void updateAllColors());
+    settingsState.register("adaptiveThemeGradient", () => void updateAllColors());
+    settingsState.register("adaptiveThemeColourTransition", () =>
+      void updateAllColors(),
+    );
+    settingsState.register("selectedTheme", () => void updateAllColors());
     settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
     settingsState.register("onoff", this.handleOnOffChange.bind(this));
     settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
@@ -30,10 +36,23 @@ export class StorageChangeHandler {
       "subjectfilters",
       FilterUpcomingAssessments.bind(this),
     );
+    settingsState.register(
+      "iconOnlySidebar",
+      this.handleIconOnlySidebarChange.bind(this),
+    );
+  }
+
+  private handleIconOnlySidebarChange(newValue: boolean | undefined) {
+    if (!document.body) return;
+    if (newValue) {
+      document.body.classList.add("icon-only-sidebar");
+    } else {
+      document.body.classList.remove("icon-only-sidebar");
+    }
   }
 
   private handleDarkModeChange() {
-    updateAllColors();
+    void updateAllColors();
   }
 
   private handleOnOffChange(newValue: boolean) {

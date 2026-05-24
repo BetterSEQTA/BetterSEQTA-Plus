@@ -1,5 +1,7 @@
 # Contributing to BetterSEQTA+
 
+**Published version:** [docs.betterseqta.org/contributing/](https://docs.betterseqta.org/contributing/)
+
 Thank you for your interest in contributing to BetterSEQTA+! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
@@ -57,7 +59,7 @@ Key points:
 
 5. **Install in Chrome/Firefox**
 
-   Follow the [installation instructions](./installation.md#development-installation) to load the development version into your browser.
+   Follow the [installation instructions](https://docs.betterseqta.org/install/) to load the development version into your browser.
 
 ### Project Structure
 
@@ -246,8 +248,8 @@ Join our community channels to discuss the project, get help, and connect with o
 
 If you're interested in creating plugins for BetterSEQTA+, check out our plugin development guides:
 
-- [Creating Your First Plugin](./plugins/creating-plugins.md)
-- [Plugin API Reference](./advanced/plugin-api.md)
+- [Plugin development](https://docs.betterseqta.org/plugin-development/)
+- [Plugin API](https://docs.betterseqta.org/plugin-api/)
 
 ## Recognition
 

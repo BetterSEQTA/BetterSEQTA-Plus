@@ -1,5 +1,7 @@
 # Troubleshooting Guide
 
+**Published version:** [docs.betterseqta.org/troubleshooting/](https://docs.betterseqta.org/troubleshooting/)
+
 Having issues with BetterSEQTA+ development? This guide covers the most common problems and their solutions.
 
 ## Table of Contents

@@ -63,7 +63,12 @@ function resetTimetableStyles(): void {
 }
 
 async function handleTimetable(): Promise<void> {
-  await waitForElm(".time", true, 10);
+  // SEQTA uses `.times` blocks on entries, not necessarily `.time`; avoid infinite polling on a missing selector.
+  try {
+    await waitForElm(".timetablepage .times, .timetablepage .entry.class", true, 50, 200);
+  } catch {
+    /* timetable body may render after the shell */
+  }
 
   // Convert time format if needed
   if (settingsState.timeFormat == "12") {
@@ -130,7 +135,7 @@ function handleTimetableAssessmentHide(): void {
 
   const hideOn = document.createElement("button");
   hideOn.className = "uiButton timetable-hide iconFamily";
-  hideOn.innerHTML = "&#128065;";
+  hideOn.innerHTML = "&#xeab3;";
 
   hideControls.appendChild(hideOn);
 

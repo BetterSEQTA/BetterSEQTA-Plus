@@ -136,9 +136,9 @@ export async function loadHomePage() {
     .filter((item: any) => item.name === "notices.filters")
     .map((item: any) => item.value);
 
-  if (labelArray.length > 0) {
-    const noticeContainer = document.getElementById("notice-container");
-    if (noticeContainer) {
+  const noticeContainer = document.getElementById("notice-container");
+  if (noticeContainer) {
+    if (labelArray.length > 0) {
       const dateControl = document.querySelector(
         'input[type="date"]',
       ) as HTMLInputElement;
@@ -147,6 +147,17 @@ export async function loadHomePage() {
         setupNotices(labelArray[0].split(" "), TodayFormatted);
       }
       noticeContainer.classList.remove("loading");
+    } else {
+      noticeContainer.classList.remove("loading");
+      noticeContainer.innerHTML = "";
+      const emptyState = document.createElement("div");
+      emptyState.classList.add("day-empty");
+      const img = document.createElement("img");
+      img.src = browser.runtime.getURL(LogoLight);
+      const text = document.createElement("p");
+      text.innerText = "No notices available.";
+      emptyState.append(img, text);
+      noticeContainer.append(emptyState);
     }
   }
 
@@ -250,8 +261,9 @@ function setupNotices(labelArray: string[], date: string) {
           ).json();
 
       processNotices(data, labelArray);
-    } catch (error) {
-      console.error("[BetterSEQTA+] Failed to fetch notices:", error);
+    } catch {
+      // Notices failed to load; processNotices will show empty state if container exists
+      processNotices({ payload: [] }, labelArray);
     }
   };
 
@@ -285,12 +297,28 @@ function processNotices(response: any, labelArray: string[]) {
 
   NoticeContainer.innerHTML = "";
 
-  const notices = response.payload;
+  const notices = response?.payload;
+  if (!Array.isArray(notices)) {
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No notices for today.";
+    emptyState.append(img, text);
+    NoticeContainer.append(emptyState);
+    return;
+  }
+
   if (!notices.length) {
-    const dummyNotice = document.createElement("div");
-    dummyNotice.textContent = "No notices for today.";
-    dummyNotice.classList.add("dummynotice");
-    NoticeContainer.append(dummyNotice);
+    const emptyState = document.createElement("div");
+    emptyState.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No notices for today.";
+    emptyState.append(img, text);
+    NoticeContainer.append(emptyState);
     return;
   }
 
@@ -447,7 +475,7 @@ function openNoticeModal(
   document.body.removeChild(tempMeasureDiv);
 
   let targetHeight = Math.round(
-    Math.min(Math.max(measuredHeight, 200), viewportHeight * 0.85),
+    Math.min(Math.max(measuredHeight + 32, 200), viewportHeight * 0.9),
   );
   let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
   let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
@@ -559,7 +587,7 @@ function openNoticeModal(
     );
     const currentHeight = unifiedContent.getBoundingClientRect().height;
     const newTargetHeight = Math.round(
-      Math.min(Math.max(currentHeight, 200), newViewportHeight * 0.85),
+      Math.min(Math.max(currentHeight + 32, 200), newViewportHeight * 0.9),
     );
     const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
     const newTargetTop =
