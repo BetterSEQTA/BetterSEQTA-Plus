@@ -1,3 +1,4 @@
+import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
 import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { loadEngageHomePage } from "@/seqta/utils/Loaders/LoadEngageHomePage";
@@ -285,44 +286,6 @@ async function createSettingsButton(parent?: Element) {
       </button>
     `).firstChild!,
   );
-}
-
-/** Engage mounts the sidebar inside batched React trees; EventManager-based waitForElm can miss `#menu`. Polling `waitForElm` matches the real DOM reliably. */
-async function waitForEngageMenuList(): Promise<HTMLElement | null> {
-  const poll = true as const;
-  const interval = 100;
-  const trySelectors: { selector: string; maxIterations: number }[] = [
-    { selector: "#menu > ul > li", maxIterations: 500 },
-    { selector: "#menu ul", maxIterations: 350 },
-    { selector: "#menu", maxIterations: 350 },
-  ];
-
-  for (const { selector, maxIterations } of trySelectors) {
-    try {
-      await waitForElm(selector, poll, interval, maxIterations);
-    } catch {
-      continue;
-    }
-
-    if (selector === "#menu > ul > li") {
-      const ul = document.querySelector("#menu > ul") as HTMLElement | null;
-      if (ul) return ul;
-    } else if (selector === "#menu ul") {
-      const ul = document.querySelector("#menu ul") as HTMLElement | null;
-      if (ul) return ul;
-    } else {
-      const menu = document.getElementById("menu");
-      const ul =
-        (menu?.querySelector("ul") as HTMLElement | null) ??
-        (menu?.firstElementChild as HTMLElement | null);
-      if (ul) return ul;
-    }
-  }
-
-  console.warn(
-    "[BetterSEQTA+] Engage: could not find a menu list to inject the home button",
-  );
-  return null;
 }
 
 async function injectEngageHomeButton() {

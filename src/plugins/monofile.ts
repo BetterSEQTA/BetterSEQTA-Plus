@@ -3,10 +3,6 @@ import browser from "webextension-polyfill";
 import { animate, stagger } from "motion";
 
 // Internal utilities and functions
-import {
-  ChangeMenuItemPositions,
-  MenuOptionsOpen,
-} from "@/seqta/utils/Openers/OpenMenuOptions";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
@@ -34,7 +30,7 @@ import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
 
 // JSON content
-import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
+import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
 // Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff";
@@ -612,75 +608,6 @@ export function tryLoad() {
   );
 }
 
-function ReplaceMenuSVG(element: HTMLElement, svg: string) {
-  let item = element.firstChild as HTMLElement;
-  item!.firstChild!.remove();
-
-  item.innerHTML = `<span>${item.innerHTML}</span>`;
-
-  let newsvg = stringToHTML(svg).firstChild;
-  item.insertBefore(newsvg as Node, item.firstChild);
-}
-
-const processedSymbol = Symbol("processed");
-
-export async function ObserveMenuItemPosition() {
-  if (isSeqtaEngageExperience()) return;
-  await waitForElm("#menu > ul > li");
-
-  eventManager.register(
-    "menuList",
-    {
-      parentElement: document.querySelector("#menu")!.firstChild as Element,
-    },
-    (element: Element) => {
-      const node = element as HTMLElement;
-
-      // Only process top-level menu items and skip everything else
-      if (
-        !node.classList.contains("item") ||
-        node.nodeName !== "LI" ||
-        node.parentElement?.parentElement?.id !== "menu"
-      ) {
-        return;
-      }
-
-      // Early exit if already processed
-      if ((element as any)[processedSymbol]) {
-        return;
-      }
-
-      if (!MenuOptionsOpen) {
-        const key =
-          MenuitemSVGKey[node?.dataset?.key! as keyof typeof MenuitemSVGKey];
-        if (key) {
-          ReplaceMenuSVG(
-            node,
-            MenuitemSVGKey[node.dataset.key as keyof typeof MenuitemSVGKey],
-          );
-        } else if (node?.firstChild?.nodeName === "LABEL") {
-          const label = node.firstChild as HTMLElement;
-          let textNode = label.lastChild as HTMLElement;
-
-          if (
-            textNode.nodeType === 3 &&
-            textNode.parentNode &&
-            textNode.parentNode.nodeName !== "SPAN"
-          ) {
-            const span = document.createElement("span");
-            span.textContent = textNode.nodeValue;
-
-            label.replaceChild(span, textNode);
-          }
-        }
-        ChangeMenuItemPositions(settingsState.menuorder);
-
-        (element as any)[processedSymbol] = true;
-      }
-    },
-  );
-}
-
 export function showConflictPopup() {
   if (document.getElementById("conflict-popup")) return;
   document.body.classList.remove("hidden");
@@ -760,7 +687,7 @@ export function init() {
     }
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
-    ObserveMenuItemPosition();
+    void observeMenuItemPosition();
 
     new StorageChangeHandler();
     new MessageHandler();
