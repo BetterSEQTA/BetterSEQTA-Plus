@@ -1,13 +1,4 @@
-const ENGAGE_STUDENT_STORAGE_KEY = () =>
-  `bsplus.engageTimetable.student.${location.origin}`;
-
-/** Engage assessments URLs: /#?page=/assessments/{studentId}/{programme}:{metaclass}:{studentId} */
-export function getEngageAssessmentStudentId(): string | null {
-  const hashMatch = window.location.hash.match(/\/assessments\/(\d+)/);
-  if (hashMatch?.[1]) return hashMatch[1];
-
-  return localStorage.getItem(ENGAGE_STUDENT_STORAGE_KEY());
-}
+import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";
 
 function randomEngagePdfFileName(): string {
   const token = Math.random().toString(36).slice(2, 10);

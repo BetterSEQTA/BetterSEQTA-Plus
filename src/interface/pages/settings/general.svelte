@@ -45,6 +45,7 @@
   }
 
   import { getAllPluginSettings } from "@/plugins"
+  import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
@@ -79,7 +80,9 @@
     settings: Record<string, SettingType>;
   }
 
-  const pluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettings = getAllPluginSettings().filter(
+    (plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
+  ) as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
 
   let cloudState = $state(cloudAuth.state);
