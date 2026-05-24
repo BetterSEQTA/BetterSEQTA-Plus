@@ -26,7 +26,7 @@ import {
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
-import { setupRouteListener, BETTERSEQTA_HOME_ROUTE, TEACH_HOME_ROOT_ID } from "@/seqta/home/teach/mountTeachHomePage";
+import { BETTERSEQTA_HOME_ROUTE, setupRouteListener, TEACH_HOME_ROOT_ID } from "@/seqta/home/teach/mountTeachHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";

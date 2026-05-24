@@ -4,8 +4,8 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
   applyWidgetVisibility,
-  setupLoadingIndicatorObserver,
   disconnectLoadingIndicatorObserver,
+  setupLoadingIndicatorObserver,
 } from "@/seqta/utils/Loaders/LoadTeachHomePage";
 import TeachHomePage from "./TeachHomePage.svelte";
 

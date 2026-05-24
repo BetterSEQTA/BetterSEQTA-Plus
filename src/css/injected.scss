@@ -467,12 +467,6 @@ ul.magicDelete > li.deleting {
 // Teach-specific background positioning
 body[data-seqta-platform="teach"] {
   .imageBackground {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: -1 !important;
     pointer-events: none !important;
     overflow: hidden !important;
 
