@@ -13,12 +13,19 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
+import { loadTeachHomePage } from "@/seqta/home/teach/mountTeachHomePage";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
 let loadingTimeout: any;
 
 export async function loadHomePage() {
+  // Route to Teach-specific homepage if on Teach platform
+  if (isSeqtaTeachExperience()) {
+    return loadTeachHomePage();
+  }
+
   console.info("[BetterSEQTA+] Started Loading Home Page");
 
   currentSelectedDate = new Date();

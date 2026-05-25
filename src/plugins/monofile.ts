@@ -25,6 +25,8 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
+import { BETTERSEQTA_HOME_ROUTE, setupRouteListener, TEACH_HOME_ROOT_ID } from "@/seqta/home/teach/mountTeachHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
@@ -201,7 +203,13 @@ function SortMessagePageItems(messagesParentElement: any) {
 }
 
 async function LoadPageElements(): Promise<void> {
+  console.log("[BetterSEQTA+] LoadPageElements called");
   await AddBetterSEQTAElements();
+
+  if (isSeqtaTeachExperience()) {
+    setupRouteListener();
+  }
+
   const sublink: string | undefined = isSeqtaEngageExperience()
     ? getEngageRoutePage()
     : window.location.href.split("/")[4];
@@ -335,11 +343,23 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
     case "news":
       await handleNewsPage();
       break;
-    case undefined:
-      window.location.replace(
-        `${location.origin}/#?page=/${settingsState.defaultPage}`,
-      );
-      if (settingsState.defaultPage === "home") loadHomePage();
+    case undefined: {
+      if (settingsState.defaultPage === "home") {
+        if (isSeqtaTeachExperience()) {
+          if (!window.location.pathname.includes(BETTERSEQTA_HOME_ROUTE)) {
+            window.history.pushState({}, "", BETTERSEQTA_HOME_ROUTE);
+            window.dispatchEvent(new PopStateEvent("popstate"));
+          }
+          if (settingsState.onoff) await loadHomePage();
+        } else {
+          window.location.replace(`${location.origin}/#?page=/home`);
+          loadHomePage();
+        }
+      } else {
+        window.location.replace(
+          `${location.origin}/#?page=/${settingsState.defaultPage}`,
+        );
+      }
       if (settingsState.defaultPage === "documents")
         handleDocuments(document.querySelector(".documents")!);
       if (settingsState.defaultPage === "reports")
@@ -349,10 +369,29 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 
       finishLoad();
       break;
+    }
     case "home":
-      window.location.replace(`${location.origin}/#?page=/home`);
-      console.info("[BetterSEQTA+] Started Init");
-      if (settingsState.onoff) loadHomePage();
+    case "betterseqta-home":
+      if (isSeqtaTeachExperience()) {
+        const existingHome = document.getElementById(TEACH_HOME_ROOT_ID);
+        const isOnHomePage = window.location.pathname.includes(BETTERSEQTA_HOME_ROUTE);
+
+        if (!isOnHomePage) {
+          window.history.pushState({}, "", BETTERSEQTA_HOME_ROUTE);
+          window.dispatchEvent(new PopStateEvent("popstate"));
+          console.info("[BetterSEQTA+] Started Init");
+          if (settingsState.onoff) loadHomePage();
+        } else if (!existingHome && settingsState.onoff) {
+          console.info("[BetterSEQTA+] On BetterSEQTA+ homepage, loading content");
+          loadHomePage();
+        } else {
+          console.info("[BetterSEQTA+] Homepage already loaded");
+        }
+      } else {
+        window.location.replace(`${location.origin}/#?page=/home`);
+        console.info("[BetterSEQTA+] Started Init");
+        if (settingsState.onoff) loadHomePage();
+      }
       finishLoad();
       break;
 
@@ -559,7 +598,9 @@ function waitForEngageLoginOrContent(): Promise<"login" | "app" | "timeout"> {
 export function tryLoad() {
   if (isSeqtaEngageExperience()) {
     updateIframesWithDarkMode();
-    window.addEventListener("load", () => removeThemeTagsFromNotices(), { once: true });
+    window.addEventListener("load", () => removeThemeTagsFromNotices(), {
+      once: true,
+    });
 
     const runEngageLoad = async () => {
       const mode = await waitForEngageLoginOrContent();
@@ -584,28 +625,96 @@ export function tryLoad() {
     return;
   }
 
-  waitForElm(".login").then(() => {
-    finishLoad();
-  });
+  console.log("[BetterSEQTA+] tryLoad() called");
+  let loadFinished = false;
+  let loadPageElementsCalled = false;
 
-  waitForElm(".day-container").then(() => {
-    finishLoad();
-  });
+  const finishLoadOnce = () => {
+    if (!loadFinished) {
+      loadFinished = true;
+      finishLoad();
+    }
+  };
 
-  waitForElm("[data-key=welcome]").then((elm: any) => {
-    elm.classList.remove("active");
-  });
+  waitForElm(".login")
+    .then(() => {
+      finishLoadOnce();
+    })
+    .catch(() => {});
 
-  waitForElm(".code", true, 50).then((elm: any) => {
-    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
-  });
+  waitForElm(".day-container")
+    .then(() => {
+      finishLoadOnce();
+    })
+    .catch(() => {});
+
+  waitForElm("[data-key=welcome]")
+    .then((elm: any) => {
+      elm.classList.remove("active");
+    })
+    .catch(() => {});
+
+  waitForElm(".code", true, 50)
+    .then((elm: any) => {
+      if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
+        console.log(
+          "[BetterSEQTA+] .code element found, calling LoadPageElements",
+        );
+        loadPageElementsCalled = true;
+        LoadPageElements();
+      }
+    })
+    .catch(() => {
+      console.log(
+        "[BetterSEQTA+] .code element not found, checking if Teach platform...",
+      );
+      if (isSeqtaTeachExperience() && !loadPageElementsCalled) {
+        console.log(
+          "[BetterSEQTA+] Teach platform detected, calling LoadPageElements",
+        );
+        loadPageElementsCalled = true;
+        LoadPageElements().catch((err) => {
+          console.error("[BetterSEQTA+] Error loading page elements:", err);
+        });
+      }
+    });
+
+  waitForElm(
+    "#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header",
+    true,
+    30,
+  )
+    .then(() => {
+      console.log("[BetterSEQTA+] Main content element found");
+      const isTeach = isSeqtaTeachExperience();
+      if (isTeach && !loadPageElementsCalled) {
+        const codeElement = document.querySelector(".code");
+        if (!codeElement) {
+          console.log(
+            "[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback",
+          );
+          loadPageElementsCalled = true;
+          LoadPageElements().catch((err) => {
+            console.error("[BetterSEQTA+] Error loading page elements:", err);
+          });
+        }
+      }
+      finishLoadOnce();
+    })
+    .catch(() => {
+      console.log("[BetterSEQTA+] Main content element not found");
+    });
+
+  setTimeout(() => {
+    if (!loadFinished) {
+      finishLoadOnce();
+    }
+  }, 3000);
 
   updateIframesWithDarkMode();
-  window.addEventListener(
-    "load",
-    () => removeThemeTagsFromNotices(),
-    { once: true },
-  );
+  window.addEventListener("load", () => removeThemeTagsFromNotices(), {
+    once: true,
+  });
 }
 
 export function showConflictPopup() {
@@ -651,7 +760,8 @@ export function showConflictPopup() {
 
   background.append(container);
 
-  document.getElementById("container")?.append(background);
+  const containerElement = document.getElementById("container") || document.body;
+  containerElement.append(background);
 
   if (settingsState.animations) {
     animate([background as HTMLElement], { opacity: [0, 1] });

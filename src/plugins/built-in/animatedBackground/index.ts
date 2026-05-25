@@ -5,6 +5,7 @@ import {
   numberSetting,
   Setting,
 } from "@/plugins/core/settingsHelpers";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
@@ -36,10 +37,39 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
-    const [container, menu] = await Promise.all([
-      waitForElm("#container", true),
-      waitForElm("#menu", true),
-    ]);
+    let container: HTMLElement;
+    let insertBefore: HTMLElement | null = null;
+
+    if (isSeqtaTeachExperience()) {
+      container =
+        document.getElementById("root") ||
+        ((await waitForElm("#root", true)) as HTMLElement);
+      const spine = document.querySelector("[class*='Spine__Spine']");
+      insertBefore =
+        (spine as HTMLElement) ||
+        (container.firstElementChild as HTMLElement);
+    } else {
+      const [learnContainer, menu] = await Promise.all([
+        waitForElm("#container", true),
+        waitForElm("#menu", true),
+      ]);
+      container = learnContainer as HTMLElement;
+      insertBefore = menu as HTMLElement;
+    }
+
+    const existingBgs = document.getElementsByClassName("bg");
+    if (existingBgs.length > 0) {
+      updateAnimationSpeed(api.settings.speed);
+
+      const speedUnregister = api.settings.onChange(
+        "speed",
+        updateAnimationSpeed,
+      );
+
+      return () => {
+        speedUnregister.unregister();
+      };
+    }
 
     const backgrounds = [
       { classes: ["bg"] },
@@ -50,22 +80,23 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
     backgrounds.forEach(({ classes }) => {
       const bk = document.createElement("div");
       classes.forEach((cls) => bk.classList.add(cls));
-      container.insertBefore(bk, menu);
+
+      if (insertBefore && insertBefore.parentElement === container) {
+        container.insertBefore(bk, insertBefore);
+      } else {
+        container.insertBefore(bk, container.firstChild);
+      }
     });
 
-    // Set initial speed
     updateAnimationSpeed(api.settings.speed);
 
-    // Listen for speed changes
     const speedUnregister = api.settings.onChange(
       "speed",
       updateAnimationSpeed,
     );
 
-    // Return cleanup function
     return () => {
       speedUnregister.unregister();
-      // Remove background elements
       const backgrounds = document.getElementsByClassName("bg");
       Array.from(backgrounds).forEach((element) => element.remove());
     };

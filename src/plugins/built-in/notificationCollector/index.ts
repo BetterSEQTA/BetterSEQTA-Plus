@@ -1,5 +1,6 @@
 import type { Plugin } from "../../core/types";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 interface NotificationCollectorStorage {
   lastNotificationCount: number;
@@ -57,7 +58,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
             },
             body: JSON.stringify({
               timestamp: "1970-01-01 00:00:00.0",
-              hash: "#?page=/home",
+              hash: isSeqtaTeachExperience() ? "/betterseqta-home" : "#?page=/home",
             }),
           },
         );

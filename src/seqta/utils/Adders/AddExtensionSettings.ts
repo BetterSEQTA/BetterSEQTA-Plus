@@ -6,6 +6,8 @@ import {
 import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 import Settings from "@/interface/pages/settings.svelte";
+import SettingsTeach from "@/interface/pages/settings-teach.svelte";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 let isSettingsRendered = false;
 
@@ -27,29 +29,39 @@ export function addExtensionSettings() {
   extensionPopup.classList.add("outside-container", "hide");
   extensionPopup.id = "ExtensionPopup";
 
-  const extensionContainer =
-    document.querySelector("#container") ?? document.getElementById("container");
-  const mountParent = extensionContainer ?? document.body;
+  const mountParent = isSeqtaTeachExperience()
+    ? document.body
+    : ((document.querySelector("#container") ??
+        document.getElementById("container") ??
+        document.body) as HTMLElement);
   mountParent.appendChild(extensionPopup);
 
   new SettingsResizer();
 
-  const handler = extensionOutsideClickHandler(extensionPopup);
-  (extensionContainer ?? document.body).addEventListener("click", handler, false);
+  const clickTarget = isSeqtaTeachExperience()
+    ? document.body
+    : (document.getElementById("container") ?? document.body);
+  clickTarget.addEventListener(
+    "click",
+    extensionOutsideClickHandler(extensionPopup),
+    false,
+  );
 }
 
 export function renderSettingsIfNeeded() {
   if (isSettingsRendered) return;
-  
+
   const extensionPopup = document.getElementById("ExtensionPopup");
   if (!extensionPopup) return;
 
   try {
     const shadow = extensionPopup.attachShadow({ mode: "open" });
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => renderSvelte(Settings, shadow));
+    const SettingsComponent = isSeqtaTeachExperience() ? SettingsTeach : Settings;
+
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => renderSvelte(SettingsComponent, shadow));
     } else {
-      renderSvelte(Settings, shadow);
+      renderSvelte(SettingsComponent, shadow);
     }
     isSettingsRendered = true;
   } catch (err) {

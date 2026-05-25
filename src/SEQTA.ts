@@ -10,6 +10,7 @@ import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
+import { detectSEQTAPlatform } from "@/seqta/utils/platformDetection";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -50,17 +51,34 @@ if (document.childNodes[1]) {
 }
 
 async function init() {
-  if (
-    hasSEQTAText &&
-    (document.title.includes("SEQTA Learn") ||
-      document.title.includes("SEQTA Engage")) &&
-    !IsSEQTAPage
-  ) {
+  // Use improved platform detection instead of just checking title format
+  // This handles cases where title is "In brief - Student summary - SEQTA" etc.
+  const platform = await detectSEQTAPlatform();
+  const hasSEQTATitle = document.title.includes("SEQTA") || platform !== "unknown";
+
+  if (hasSEQTAText && hasSEQTATitle && !IsSEQTAPage) {
     IsSEQTAPage = true;
     console.info("[BetterSEQTA+] Verified SEQTA Page");
 
+    // Wait for document.head if it doesn't exist yet
+    let headWaitAttempts = 0;
+    const maxHeadWaitAttempts = 50; // 5 seconds max
+    while (!document.head && headWaitAttempts < maxHeadWaitAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      headWaitAttempts++;
+    }
+
+    if (!document.head) {
+      console.error(
+        "[BetterSEQTA+] document.head is still null after waiting, cannot inject styles",
+      );
+      return;
+    }
+
     if (typeof window !== "undefined" && window === window.top) {
-      void browser.runtime.sendMessage({ type: "cloudSettingsPoll" }).catch(() => {});
+      void browser.runtime
+        .sendMessage({ type: "cloudSettingsPoll" })
+        .catch(() => {});
     }
 
     registerFetchSeqtaAppLinkListener();
@@ -73,7 +91,6 @@ async function init() {
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-
         if (
           mutation.type === "attributes" &&
           mutation.target instanceof HTMLLinkElement &&
@@ -92,14 +109,11 @@ async function init() {
       attributeFilter: ["href"],
     });
 
-
-
     try {
       await initializeSettingsState();
 
       if (typeof settingsState.onoff === "undefined") {
         await browser.runtime.sendMessage({ type: "setDefaultStorage" });
-
         await delay(5);
       }
 

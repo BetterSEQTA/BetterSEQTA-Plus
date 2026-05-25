@@ -6,6 +6,7 @@ import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
+import { AddBetterSEQTAElementsTeach } from "./AddBetterSEQTAElementsTeach";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
@@ -14,6 +15,7 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 let cachedUserInfo: any = null;
 
@@ -47,6 +49,10 @@ export async function getUserInfo() {
 }
 
 export async function AddBetterSEQTAElements() {
+  if (isSeqtaTeachExperience()) {
+    return AddBetterSEQTAElementsTeach();
+  }
+
   if (isSeqtaEngageExperience()) {
     await waitForElm("#content");
     addExtensionSettings();
@@ -266,8 +272,14 @@ function setupEventListeners() {
   });
 
   menuCover?.addEventListener("click", function () {
-    location.href = "../#?page=/home";
-    loadHomePage();
+    try {
+      location.href = "../#?page=/home";
+      loadHomePage();
+    } catch (error) {
+      // Fallback: just load homepage without navigation
+      console.warn("[BetterSEQTA+] Navigation failed, loading homepage directly");
+      loadHomePage();
+    }
     (
       document.getElementById("menu")!.firstChild! as HTMLElement
     ).classList.remove("noscroll");

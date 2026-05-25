@@ -31,7 +31,8 @@ function reloadSeqtaPages() {
     for (let tab of tabs) {
       if (
         tab.title?.includes("SEQTA Learn") ||
-        tab.title?.includes("SEQTA Engage")
+        tab.title?.includes("SEQTA Engage") ||
+        tab.title?.includes("SEQTA Teach")
       ) {
         browser.tabs.reload(tab.id);
       }
@@ -498,6 +499,13 @@ function getDefaultValues(): SettingsState {
     adaptiveThemeColourTransition: true,
     themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
+    teachHomeWidgets: {
+      shortcuts: { toggle: true },
+      timetable: { toggle: true },
+      upcomingAssessments: { toggle: true },
+      messages: { toggle: true },
+      notices: { toggle: true },
+    },
   };
 }
 
