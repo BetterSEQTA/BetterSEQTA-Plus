@@ -5,6 +5,46 @@ import { renderErrorState, renderGrid, renderSkeletonLoader } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import {
+  isEngageAssessmentOverviewRoute,
+} from "@/seqta/utils/engageAssessmentStudent";
+import { resolveEngageStudentId } from "./engageApi";
+
+const OVERVIEW_MENU_CLASS = "betterseqta-assessments-overview-item";
+
+function ensureOverviewMenuPosition(
+  menu: HTMLElement,
+  gridItem: HTMLElement,
+) {
+  if (menu.firstElementChild !== gridItem) {
+    menu.insertBefore(gridItem, menu.firstChild);
+  }
+}
+
+function isOverviewRoute() {
+  if (isSeqtaEngageExperience()) {
+    return isEngageAssessmentOverviewRoute();
+  }
+  return window.location.hash.includes("/assessments/overview");
+}
+
+async function waitForAssessmentsSubmenu(): Promise<HTMLElement> {
+  if (!isSeqtaEngageExperience()) {
+    return (await waitForElm(
+      '[data-key="assessments"] > .sub > ul',
+      true,
+      100,
+      60,
+    )) as HTMLElement;
+  }
+
+  return (await waitForElm(
+    '[data-key="assessments"] .sub ul, [data-key="assessments"] ul',
+    true,
+    100,
+    350,
+  )) as HTMLElement;
+}
 
 const assessmentsOverviewPlugin: Plugin<{}> = {
   id: "assessments-overview",
@@ -17,35 +57,46 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
   styles,
 
   run: async () => {
-    if (isSeqtaEngageExperience()) return;
-
-    const menu = (await waitForElm(
-      '[data-key="assessments"] > .sub > ul',
-      true,
-      100,
-      60,
-    )) as HTMLElement;
+    const menu = await waitForAssessmentsSubmenu();
     const gridItem = document.createElement("li");
     gridItem.className = "item";
+    gridItem.classList.add(OVERVIEW_MENU_CLASS);
     const label = document.createElement("label");
     label.textContent = "Overview";
     gridItem.appendChild(label);
-    menu.insertBefore(gridItem, menu.children[1] || null);
+    menu.insertBefore(gridItem, menu.firstChild);
 
-    if (window.location.hash.includes("/assessments/overview")) {
-      loadGridView();
+    const menuObserver = new MutationObserver(() => {
+      ensureOverviewMenuPosition(menu, gridItem);
+    });
+    menuObserver.observe(menu, { childList: true });
+
+    if (isOverviewRoute()) {
+      void loadGridView();
     }
 
     const clickHandler = (e: Event) => {
       e.preventDefault();
-      loadGridView();
+      void loadGridView();
     };
     gridItem.addEventListener("click", clickHandler);
 
     async function loadGridView() {
       await delay(1);
-      window.history.pushState({}, "", "/#?page=/assessments/overview");
-      document.title = "Overview ― SEQTA Learn";
+
+      if (isSeqtaEngageExperience()) {
+        const studentId = await resolveEngageStudentId();
+        window.history.pushState(
+          {},
+          "",
+          `/#?page=/assessments/${studentId}/overview`,
+        );
+        document.title = "Overview ― SEQTA Engage";
+      } else {
+        window.history.pushState({}, "", "/#?page=/assessments/overview");
+        document.title = "Overview ― SEQTA Learn";
+      }
+
       const main = document.getElementById("main");
       if (!main) return;
 
@@ -79,6 +130,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
     }
 
     return () => {
+      menuObserver.disconnect();
       gridItem.removeEventListener("click", clickHandler);
       gridItem.remove();
     };

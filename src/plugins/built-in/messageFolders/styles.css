@@ -3,12 +3,21 @@
   border-top: 1px solid var(--background-secondary, rgba(128, 128, 128, 0.2));
   margin-top: 4px;
   padding-top: 4px;
+  transition: opacity .2s;
+}
+
+.bsplus-folders-section.bsplus-section-folded .bsplus-folder-item,
+.bsplus-folders-section.bsplus-section-folded .bsplus-folder-input,
+.bsplus-folders-section.bsplus-section-folded .bsplus-folder-colors,
+.bsplus-folders-section.bsplus-section-folded .bsplus-emoji-picker,
+.bsplus-folders-section.bsplus-section-folded .bsplus-all-msgs {
+  display: none !important;
 }
 
 .bsplus-folders-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
   padding: 6px 12px 2px;
   user-select: none;
 }
@@ -20,6 +29,33 @@
   letter-spacing: 0.5px;
   color: var(--text-primary, #666);
   opacity: 0.5;
+  flex: 1;
+}
+
+.bsplus-folders-collapse {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  opacity: 0.4;
+  cursor: pointer;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all .2s;
+}
+
+.bsplus-folders-collapse:hover {
+  opacity: 0.8;
+  background: var(--background-secondary, rgba(128, 128, 128, 0.1)) !important;
+}
+
+.bsplus-folders-collapse.bsplus-folded svg {
+  transform: rotate(-90deg);
 }
 
 .bsplus-folders-add-btn {
@@ -51,10 +87,19 @@
   align-items: center;
   padding: 6px 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, opacity 0.2s;
   position: relative;
-  gap: 8px;
+  gap: 6px;
   user-select: none;
+}
+
+.bsplus-folder-item.bsplus-dragging {
+  opacity: 0.4;
+}
+
+.bsplus-folder-item.bsplus-drag-over {
+  background: var(--better-main, #007bff22) !important;
+  border-radius: 4px;
 }
 
 .bsplus-folder-item:hover {
@@ -76,11 +121,40 @@
   border-radius: 0 2px 2px 0;
 }
 
+.bsplus-folder-drag {
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity .15s;
+  margin-right: -4px;
+}
+
+.bsplus-folder-item:hover .bsplus-folder-drag {
+  opacity: 0.5;
+}
+
 .bsplus-folder-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.bsplus-folder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-primary, #333);
+}
+
+.bsplus-folder-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
 }
 
 .bsplus-folder-name {
@@ -97,6 +171,8 @@
   color: var(--text-primary, #999);
   opacity: 0.5;
   flex-shrink: 0;
+  min-width: 16px;
+  text-align: right;
 }
 
 .bsplus-folder-actions {
@@ -158,6 +234,35 @@
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 
+.bsplus-folder-icon-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 0 !important;
+  border: 1px solid var(--background-secondary, #ccc) !important;
+  border-radius: 6px !important;
+  background: var(--background-secondary, #f5f5f5) !important;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all .15s;
+  color: var(--text-primary, #333);
+}
+
+.bsplus-folder-icon-btn:hover {
+  transform: scale(1.1);
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.1)) !important;
+}
+
+.bsplus-folder-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+}
+
 .bsplus-folder-input-confirm,
 .bsplus-folder-input-cancel {
   display: flex !important;
@@ -190,6 +295,43 @@
 .bsplus-folder-input-cancel:hover {
   opacity: 1;
   background: var(--background-secondary, rgba(128, 128, 128, 0.1)) !important;
+}
+
+/* ── Icon picker ── */
+.bsplus-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px 12px 6px;
+  max-width: 140px;
+}
+
+.bsplus-icon-opt {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 0 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  cursor: pointer;
+  padding: 0 !important;
+  transition: all .15s;
+  color: var(--text-primary, #333);
+}
+
+.bsplus-icon-opt svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.bsplus-icon-opt:hover {
+  transform: scale(1.3);
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.1)) !important;
 }
 
 /* ── Color picker row ── */
@@ -322,14 +464,113 @@
   opacity: 0.5;
 }
 
-/* ── Let primary column use available space instead of being clipped ── */
+/* ── Context menu ── */
+.bsplus-context-menu {
+  position: fixed;
+  min-width: 160px;
+  background: var(--background-primary, #fff) !important;
+  border: 1px solid var(--background-secondary, #e0e0e0) !important;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 2147483646;
+  overflow: hidden;
+  animation: bsplus-dropdown-in 0.12s ease-out;
+  padding: 4px 0;
+}
+
+.bsplus-context-title {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary, #999) !important;
+  opacity: 0.5;
+  user-select: none;
+}
+
+.bsplus-context-item:hover {
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08)) !important;
+}
+
+.bsplus-context-item span {
+  flex: 1;
+}
+
+.bsplus-context-checkmark {
+  color: var(--better-main, #007bff) !important;
+  font-weight: bold;
+  flex: 0 !important;
+}
+
+.bsplus-context-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px;
+  padding: 7px 12px !important;
+  font-size: 13px;
+  cursor: pointer;
+  border: none !important;
+  background: transparent !important;
+  width: 100%;
+  text-align: left !important;
+  color: var(--text-primary, #333) !important;
+  transition: background .1s;
+  font-family: inherit;
+}
+
+.bsplus-context-item .bsplus-folder-icon {
+  color: var(--text-primary, #333) !important;
+  width: 16px;
+  height: 16px;
+}
+
+.bsplus-context-item .bsplus-folder-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.bsplus-context-item:hover {
+  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08));
+}
+
+.bsplus-context-item span {
+  flex: 1;
+}
+
+.bsplus-context-checkmark {
+  color: var(--better-main, #007bff) !important;
+  font-weight: bold;
+  flex: 0 !important;
+}
+
+.bsplus-context-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-primary, #999);
+  opacity: 0.5;
+}
+
+/* ── Drag feedback ── */
+.bsplus-msg-dragging {
+  opacity: 0.4;
+}
+
+[class*='MessageList__MessageList___'] ol > li[data-message] {
+  transition: opacity .15s;
+}
+
+/* ── Layout fixes ── */
 [class*='MessageList__primary___'] {
   flex: 1 1 0% !important;
   min-width: 0 !important;
   overflow: hidden !important;
 }
 
-/* ── Make subject line a flex row so badges sit inline ── */
 [class*='MessageList__subject___'] {
   display: flex !important;
   align-items: center;
@@ -338,7 +579,6 @@
   overflow: hidden !important;
 }
 
-/* ── Subject text truncates to make room for badges ── */
 .bsplus-subject-text {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -347,7 +587,6 @@
   flex: 1 1 auto;
 }
 
-/* ── Shrink the secondary column to its content ── */
 [class*='MessageList__secondary___'] {
   flex: 0 0 auto !important;
   width: auto !important;
@@ -355,7 +594,6 @@
   max-width: 200px !important;
 }
 
-/* ── Constrain the flags/attachment icon column ── */
 [class*='MessageList__flags___'] {
   width: 24px !important;
   min-width: 0 !important;
@@ -391,7 +629,7 @@
   transform: scale(1.05);
 }
 
-/* ── Folder filtering (hide messages not in active folder) ── */
+/* ── Folder filtering ── */
 .bsplus-folder-hidden {
   display: none !important;
 }
@@ -489,3 +727,5 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.35);
 }
+
+

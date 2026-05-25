@@ -15,10 +15,37 @@
   import CloudHeader from "@/interface/components/store/CloudHeader.svelte"
   import { cloudAuth } from "@/seqta/utils/CloudAuth"
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
+  import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/Openers/OpenThemeOfTheMonthPopup"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
+  import { getStoredOverride, setApiBase } from "@/seqta/utils/DevApiBase"
+
+  let devApiBaseInput = $state<string>(getStoredOverride() ?? "")
+  let devApiBaseActive = $state<string | null>(getStoredOverride())
+
+  function applyDevApiBase() {
+    const trimmed = devApiBaseInput.trim()
+    if (trimmed === "") {
+      setApiBase(null)
+      devApiBaseActive = null
+      return
+    }
+    if (!/^https?:\/\//.test(trimmed)) {
+      alert("Please enter a full URL starting with http:// or https://")
+      return
+    }
+    setApiBase(trimmed)
+    devApiBaseActive = trimmed.replace(/\/$/, "")
+  }
+
+  function clearDevApiBase() {
+    devApiBaseInput = ""
+    setApiBase(null)
+    devApiBaseActive = null
+  }
 
   import { getAllPluginSettings } from "@/plugins"
+  import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
@@ -53,7 +80,9 @@
     settings: Record<string, SettingType>;
   }
 
-  const pluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettings = getAllPluginSettings().filter(
+    (plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
+  ) as Plugin[];
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
 
   let cloudState = $state(cloudAuth.state);
@@ -485,11 +514,52 @@
       </div>
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
+          <h2 class="text-sm font-bold">Show Theme of the Month</h2>
+          <p class="text-xs">Fetch and show the current month's popup now (ignores dismissed state)</p>
+        </div>
+        <div>
+          <Button
+            onClick={async () => {
+              closeExtensionPopup();
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              await showThemeOfTheMonthPopupNow();
+            }}
+            text="Show Now"
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
           <h2 class="text-sm font-bold">Export cloud settings JSON</h2>
           <p class="text-xs">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
         </div>
         <div>
           <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
+        </div>
+      </div>
+      <div class="flex flex-col gap-2 px-4 py-3">
+        <div class="flex justify-between items-start gap-3">
+          <div class="pr-4">
+            <h2 class="text-sm font-bold">API Base URL (session only)</h2>
+            <p class="text-xs">Override the content API host for this browser session. Cleared on restart. Affects themes, theme of the month, and other server-driven content.</p>
+            {#if devApiBaseActive}
+              <p class="text-xs mt-1 text-amber-600 dark:text-amber-400">
+                Override active: <span class="font-mono">{devApiBaseActive}</span>
+              </p>
+            {/if}
+          </div>
+        </div>
+        <div class="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="https://betterseqta.org"
+            bind:value={devApiBaseInput}
+            class="flex-1 px-2 py-1 text-xs rounded border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+          />
+          <Button onClick={applyDevApiBase} text="Apply" />
+          {#if devApiBaseActive}
+            <Button onClick={clearDevApiBase} text="Clear" />
+          {/if}
         </div>
       </div>
     </div>

@@ -14,13 +14,14 @@ export function showEngageParentsToast() {
   settingsState.engageParentsAnnouncementShown = true;
 
   const toast = document.createElement("div");
-  toast.className = "bsplus-toast";
+  toast.className = "bsplus-toast engageParentsToast";
   toast.innerHTML = /* html */ `
+    <button class="bsplus-toast-close" aria-label="Dismiss">&times;</button>
     <div class="bsplus-toast-content">
+      <p class="bsplus-toast-eyebrow">SEQTA Engage support</p>
       <strong>BetterSEQTA+ now supports <span class="seqtaEngageAccent">SEQTA Engage</span></strong>
       <p>Buy your mum a BetterSEQTA Plus! Parents now get themes, a cleaner home page, and all the Plus polish on SEQTA Engage.</p>
     </div>
-    <button class="bsplus-toast-close" aria-label="Dismiss">&times;</button>
   `;
 
   toast.style.opacity = "0";

@@ -9,12 +9,17 @@ interface PrefItem {
   value: string;
 }
 
+import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
+import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import {
+  getEngageAssessmentsData,
+} from "./engageApi";
 
-let cache: { time: number; data: any } | null = null;
+let cache: { time: number; engageAll?: boolean; studentId: number; data: any } | null =
+  null;
 const CACHE_MS = 10 * 60 * 1000;
-const student = 69;
 
 async function fetchJSON(url: string, body: any) {
   const res = await fetch(`${location.origin}${url}`, {
@@ -28,17 +33,9 @@ async function fetchJSON(url: string, body: any) {
 
 async function loadSubjects() {
   const res = await fetchJSON("/seqta/student/load/subjects?", {});
-  const activeGroup = res.payload.find((s: any) => s.active === 1);
-  const activeYear = activeGroup?.year;
-  const allSubjects = res.payload
-    .filter((s: any) => s.year === activeYear)
+  return res.payload
+    .filter((s: any) => s.active === 1)
     .flatMap((s: any) => s.subjects);
-  const seen = new Set<string>();
-  return allSubjects.filter((s: Subject) => {
-    if (seen.has(s.code)) return false;
-    seen.add(s.code);
-    return true;
-  });
 }
 
 async function loadPrefs(student: number) {
@@ -66,7 +63,6 @@ async function loadUpcoming(student: number) {
 
 function normalizeAssessmentDates(t: any, subject: Subject): any {
   const normalized = { ...t };
-  // Past API may use different date fields - ensure we have 'due' for year filter & display
   if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
     normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
   }
@@ -136,18 +132,13 @@ async function loadSubmissions(student: number, assessments: any[]) {
   return submissionMap;
 }
 
-export async function getAssessmentsData() {
-  if (settingsState.mockNotices) {
-    return getMockAssessmentsData();
-  }
-
-  if (cache && Date.now() - cache.time < CACHE_MS) return cache.data;
+async function getLearnAssessmentsData(studentId: number) {
   const [subjects, colors, upcoming] = await Promise.all([
     loadSubjects(),
-    loadPrefs(student),
-    loadUpcoming(student),
+    loadPrefs(studentId),
+    loadUpcoming(studentId),
   ]);
-  const pastMap = await loadPast(student, subjects);
+  const pastMap = await loadPast(studentId, subjects);
   const map: Record<number, any> = {};
   upcoming.forEach((a: any) => {
     map[a.id] = { ...a };
@@ -158,13 +149,42 @@ export async function getAssessmentsData() {
   });
 
   const allAssessments = Object.values(map);
-  const submissions = await loadSubmissions(student, allAssessments);
+  const submissions = await loadSubmissions(studentId, allAssessments);
 
   allAssessments.forEach((assessment: any) => {
     assessment.submitted = submissions[assessment.id] || false;
   });
 
-  const data = { assessments: allAssessments, subjects, colors };
-  cache = { time: Date.now(), data };
+  return { assessments: allAssessments, subjects, colors, studentId };
+}
+
+export async function getAssessmentsData() {
+  if (settingsState.mockNotices) {
+    return getMockAssessmentsData();
+  }
+
+  if (isSeqtaEngageExperience()) {
+    if (cache && Date.now() - cache.time < CACHE_MS && cache.engageAll) {
+      return cache.data;
+    }
+
+    const data = await getEngageAssessmentsData();
+    cache = { time: Date.now(), studentId: 0, engageAll: true, data };
+    return data;
+  }
+
+  const studentId = (await getUserInfo()).id;
+
+  if (
+    cache &&
+    Date.now() - cache.time < CACHE_MS &&
+    cache.studentId === studentId
+  ) {
+    return cache.data;
+  }
+
+  const data = await getLearnAssessmentsData(studentId);
+
+  cache = { time: Date.now(), studentId, data };
   return data;
 }

@@ -1,12 +1,15 @@
 <script lang="ts">
   import { determineStatus, formatDate, getGradeValue } from "./utils";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+  import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
   import confetti from "canvas-confetti";
 
   export let data: any;
 
   interface FilterOptions {
     subject: string;
+    student: string;
     sortBy: "due" | "grade" | "subject" | "title" | "year";
   }
 
@@ -38,8 +41,12 @@
 
   let currentFilters: FilterOptions = {
     subject: "all",
+    student: "all",
     sortBy: "due",
   };
+
+  const isEngage = isSeqtaEngageExperience();
+  $: showStudentFilter = isEngage && (data?.students?.length ?? 0) > 1;
 
   let filteredAssessments: any[] = [];
   let statusGroups: Record<string, any[]> = {};
@@ -100,7 +107,17 @@
     const filtered = data.assessments.filter((a: any) => {
       if (hiddenAssessmentIds.has(String(a.id))) return false;
       if (subjectFilters[a.code] === false) return false;
-      return currentFilters.subject === "all" || a.code === currentFilters.subject;
+      if (currentFilters.subject !== "all" && a.code !== currentFilters.subject) {
+        return false;
+      }
+      if (
+        isEngage &&
+        currentFilters.student !== "all" &&
+        String(a.studentId) !== currentFilters.student
+      ) {
+        return false;
+      }
+      return true;
     });
 
     const groups: Record<string, any[]> = {};
@@ -309,6 +326,19 @@
     if ((event.target as HTMLElement).closest(".card-menu")) {
       return;
     }
+
+    if (isSeqtaEngageExperience()) {
+      const studentId = assessment.studentId ?? data?.studentId;
+      if (!studentId) return;
+      window.location.hash = buildEngageAssessmentPagePath(
+        studentId,
+        assessment.programmeID,
+        assessment.metaclassID,
+        assessment.id,
+      );
+      return;
+    }
+
     window.location.hash = `#?page=/assessments/${assessment.programmeID}:${assessment.metaclassID}&item=${assessment.id}`;
   }
 
@@ -342,6 +372,7 @@
     updateAssessments();
     void currentFilters.sortBy;
     void currentFilters.subject;
+    void currentFilters.student;
   }
 
 </script>
@@ -352,6 +383,14 @@
   <div class="grid-view-header">
     <h1 class="grid-view-title">Assessments</h1>
     <div class="grid-view-filters">
+      {#if showStudentFilter}
+        <select class="filter-select" bind:value={currentFilters.student}>
+          <option value="all">All Students</option>
+          {#each data.students as student}
+            <option value={String(student.id)}>{student.name}</option>
+          {/each}
+        </select>
+      {/if}
       <select class="filter-select" bind:value={currentFilters.subject}>
         <option value="all">All Subjects</option>
         {#each data.subjects as subject}
@@ -445,6 +484,9 @@
                       on:keydown={(e) => e.key === 'Enter' && handleCardClick(assessment, e)}
                     >
                       <div class="card-labels">
+                        {#if isEngage && assessment.studentName}
+                          <span class="card-label label-student">{assessment.studentName}</span>
+                        {/if}
                         <span class="card-label label-subject">{assessment.code}</span>
                         {#if assessment.submitted}
                           <span class="card-label label-submitted" style="background: #10b981; color: white;">Submitted</span>

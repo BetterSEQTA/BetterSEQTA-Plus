@@ -3726,6 +3726,150 @@ div.day-empty {
   color: var(--text-primary);
 }
 
+.themeOfTheMonthCard {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 48;
+  width: min(360px, calc(100vw - 36px));
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 20px;
+  background: var(--background-primary);
+  color: var(--text-primary);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+  animation: themeOfTheMonthCardIn 0.24s ease-out;
+}
+.themeOfTheMonthCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: inherit;
+}
+.themeOfTheMonthCardClosing {
+  pointer-events: none;
+  animation: themeOfTheMonthCardOut 0.18s ease-in forwards;
+}
+.themeOfTheMonthCardClose {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 16px !important;
+  background: rgba(0, 0, 0, 0.42);
+  color: white;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.themeOfTheMonthCardImage {
+  display: block;
+  width: 100%;
+  height: 150px;
+  margin: 0;
+  border-radius: 20px 20px 0 0;
+  object-fit: cover;
+}
+.themeOfTheMonthCardBody {
+  padding: 14px 16px 16px;
+}
+.themeOfTheMonthCardEyebrow {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--better-pri, #6366f1) 82%, var(--text-primary) 18%);
+}
+.themeOfTheMonthCard h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+.themeOfTheMonthCardDescription {
+  display: -webkit-box;
+  margin: 8px 0 14px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
+}
+.themeOfTheMonthCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.themeOfTheMonthCardPrimary,
+.themeOfTheMonthCardSecondary {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 0.58rem 0.9rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+}
+.themeOfTheMonthCardPrimary {
+  background: var(--better-pri, #6366f1);
+  color: white;
+}
+.themeOfTheMonthCardSecondary {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
+}
+.themeOfTheMonthCardPrimary:hover,
+.themeOfTheMonthCardSecondary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.themeOfTheMonthCardPrimary:active,
+.themeOfTheMonthCardSecondary:active {
+  transform: translateY(0);
+}
+@keyframes themeOfTheMonthCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes themeOfTheMonthCardOut {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+@media (max-width: 900px) {
+  .themeOfTheMonthCard {
+    z-index: 2147483645;
+  }
+}
+
+.bsplus-theme-highlight {
+  animation: bsplusThemeHighlightPulse 1.4s ease-in-out 2;
+}
+@keyframes bsplusThemeHighlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--better-pri, #6366f1) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--better-pri, #6366f1) 60%, transparent);
+  }
+}
+
 .popup-media-fullscreenable {
   cursor: pointer;
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
@@ -4375,38 +4519,63 @@ h2.home-subtitle {
 
 .bsplus-toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 10000;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  max-width: 380px;
-  padding: 16px 18px;
-  border-radius: 12px;
-  background: var(--background-secondary, #fff);
+  width: min(360px, calc(100vw - 36px));
+  padding: 14px 16px 16px;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-radius: 20px;
+  background: var(--background-primary, #fff);
   color: var(--text-primary, #1a1a1a);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
   font-size: 0.9rem;
-  line-height: 1.5;
+  line-height: 1.45;
 }
-.bsplus-toast-content p {
-  margin: 6px 0 0;
-  opacity: 0.8;
-  font-size: 0.85rem;
+.bsplus-toast-eyebrow {
+  margin: 0 0 6px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #ea580c 82%, var(--text-primary) 18%);
+  opacity: 1 !important;
+}
+.dark .bsplus-toast-eyebrow {
+  color: color-mix(in srgb, #fb923c 82%, var(--text-primary) 18%);
+}
+.bsplus-toast-content strong {
+  display: block;
+  padding-right: 34px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+.bsplus-toast-content p:not(.bsplus-toast-eyebrow) {
+  display: -webkit-box;
+  margin: 8px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 .bsplus-toast-close {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  color: var(--text-primary, #1a1a1a);
-  font-size: 1.3rem;
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 16px !important;
+  background: rgba(0, 0, 0, 0.42);
+  color: white;
   cursor: pointer;
-  padding: 0 2px;
+  font-size: 1.35rem;
   line-height: 1;
-  opacity: 0.5;
-  transition: opacity 0.15s;
+  transition: filter 0.15s ease;
 }
 .bsplus-toast-close:hover {
-  opacity: 1;
+  filter: brightness(1.08);
 }

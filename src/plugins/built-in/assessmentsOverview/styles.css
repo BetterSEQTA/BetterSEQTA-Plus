@@ -245,6 +245,15 @@
   background: var(--subject-color, #d41e3a);
 }
 
+.label-student {
+  background: rgba(99, 102, 241, 0.9);
+  text-transform: none;
+}
+
+.dark .label-student {
+  background: rgba(99, 102, 241, 0.75);
+}
+
 .card-menu {
   position: absolute;
   top: 0.75rem;
