@@ -458,6 +458,17 @@
     }
   })}
 
+  {@render Setting({
+    title: "Theme of the Month",
+    description: "Show the monthly featured theme popup when a new entry is available",
+    id: 15,
+    Component: Switch,
+    props: {
+      state: !($settingsState.themeOfTheMonthDisabled ?? false),
+      onChange: (isOn: boolean) => settingsState.themeOfTheMonthDisabled = !isOn
+    }
+  })}
+
   {#if $settingsState.devMode}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-4 py-3">

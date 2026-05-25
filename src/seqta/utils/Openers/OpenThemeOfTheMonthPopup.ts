@@ -143,7 +143,7 @@ export async function OpenThemeOfTheMonthPopup(
 
   const card = stringToHTML(/* html */ `
     <aside id="theme-of-the-month-card" class="themeOfTheMonthCard" role="dialog" aria-label="Theme of the Month">
-      <button type="button" class="themeOfTheMonthCardClose" aria-label="Close Theme of the Month">×</button>
+      <button type="button" class="themeOfTheMonthCardDisable" aria-label="Don't show Theme of the Month again" title="Don't show again">×</button>
       ${
         heroUrl
           ? `<img class="themeOfTheMonthCardImage" src="${escapeHTML(heroUrl)}" alt="${escapeHTML(entry.title)}" />`
@@ -159,7 +159,17 @@ export async function OpenThemeOfTheMonthPopup(
               ? `<button type="button" class="themeOfTheMonthCardPrimary">Open Store</button>`
               : ""
           }
-          <button type="button" class="themeOfTheMonthCardSecondary">Don't show again</button>
+          <button type="button" class="themeOfTheMonthCardSecondary">Close</button>
+        </div>
+      </div>
+      <div class="themeOfTheMonthCardConfirm" hidden>
+        <div class="themeOfTheMonthCardConfirmInner">
+          <h3>Don't show again?</h3>
+          <p>You can re-enable Theme of the Month from BetterSEQTA+ settings.</p>
+          <div class="themeOfTheMonthCardConfirmActions">
+            <button type="button" class="themeOfTheMonthCardConfirmCancel">Cancel</button>
+            <button type="button" class="themeOfTheMonthCardConfirmAccept">Don't show again</button>
+          </div>
         </div>
       </div>
     </aside>
@@ -177,7 +187,9 @@ export async function OpenThemeOfTheMonthPopup(
 
   card.addEventListener("mouseenter", () => window.clearTimeout(autoCloseTimeout), { once: true });
 
-  card.querySelector(".themeOfTheMonthCardClose")?.addEventListener("click", () => {
+  const confirmEl = card.querySelector<HTMLElement>(".themeOfTheMonthCardConfirm");
+
+  card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", () => {
     dismiss();
   });
 
@@ -186,7 +198,24 @@ export async function OpenThemeOfTheMonthPopup(
     openThemeStoreWithHighlight(linkedThemeId!);
   });
 
-  card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", () => {
+  card.querySelector(".themeOfTheMonthCardDisable")?.addEventListener("click", () => {
+    window.clearTimeout(autoCloseTimeout);
+    if (confirmEl) {
+      confirmEl.hidden = false;
+      // allow CSS transition by toggling on next frame
+      requestAnimationFrame(() => confirmEl.classList.add("themeOfTheMonthCardConfirmVisible"));
+    }
+  });
+
+  card.querySelector(".themeOfTheMonthCardConfirmCancel")?.addEventListener("click", () => {
+    if (!confirmEl) return;
+    confirmEl.classList.remove("themeOfTheMonthCardConfirmVisible");
+    window.setTimeout(() => {
+      confirmEl.hidden = true;
+    }, 160);
+  });
+
+  card.querySelector(".themeOfTheMonthCardConfirmAccept")?.addEventListener("click", () => {
     settingsState.themeOfTheMonthDisabled = true;
     dismiss();
   });
