@@ -37,7 +37,7 @@ const fetchSubjects = async () => {
 
 const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
   const map: Record<number, any> = {};
-  
+
   // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
   // This is much faster than sequential fetching
   await Promise.all(
@@ -49,7 +49,7 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
           metaclass: subject.metaclass,
           student,
         });
-        
+
         // Past assessments API can return data in payload.tasks OR payload.pending (or both)
         // Based on analytics.rs fetch_past_assessments, we need to check both arrays
         const processAssessment = (assessment: any) => {
@@ -65,13 +65,13 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
             };
           }
         };
-        
+
         // Match analytics.rs: Check both pending and tasks arrays
         // Check for pending array first (matching Rust code order)
         if (res.payload?.pending && Array.isArray(res.payload.pending)) {
           res.payload.pending.forEach(processAssessment);
         }
-        
+
         // Check for tasks array
         if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
           res.payload.tasks.forEach(processAssessment);
@@ -81,7 +81,7 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
       }
     })
   );
-  
+
   return Object.values(map);
 };
 
@@ -127,7 +127,7 @@ export const assignmentsJob: Job = {
     const existingIds = new Set(existingItems.map((i) => i.id));
 
     const student = 69; // TODO: Get from context if available
-    
+
     console.debug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     
     // Fetch data in parallel

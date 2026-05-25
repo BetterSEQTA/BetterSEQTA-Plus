@@ -33,6 +33,14 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
+
+      <h1>3.6.6 – Global Search improvements!</h1>
+      <li>Tuned hybrid search and indexing reliability.</li>
+      <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
+      <li>Merged duplicate course hits that opened the same page.</li>
+      <li>Reset Index reminds you to reload the tab to rebuild.</li>
+      <li>Index now captures all content accross the site, not just assessments and courses.</li>
+
       <h1>3.6.5 - Theme of the Month, custom message folders & assessment weighting overrides</h1>
       <li>Added Theme of the Month — a monthly featured theme popup with a link to view it in the theme store.</li>
       <li>Added custom message folders for organising direct DM's with drag to reorder.</li>

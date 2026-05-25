@@ -15,6 +15,10 @@ import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 import { checkAndHandleUpdate } from "../utils/versionCheck";
+import {
+  getStoredPassiveItems,
+  installPassiveObserver,
+} from "../indexing/passiveObserver";
 
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
@@ -43,11 +47,19 @@ const settings = defineSettings({
     title: "Index on Page Load",
     description: "Run content indexing when SEQTA loads",
   }),
+  passiveIndexing: booleanSetting({
+    default: true,
+    title: "Index Browsed Content",
+    description:
+      "Capture safe text from SEQTA pages you visit so they're searchable. Sensitive routes (settings, files, login) are always excluded.",
+  }),
   resetIndex: buttonSetting({
     title: "Reset Index",
     description: "Reset the search index and storage",
     trigger: async () => {
-      const confirmed = confirm("Are you sure you want to reset the search index and storage?");
+      const confirmed = confirm(
+        "Reset the search index and all stored Global Search data?\n\nAfter this, reload this SEQTA tab so indexing can run again and rebuild the index.",
+      );
 
       if (confirmed) {
         try {
@@ -106,7 +118,9 @@ const settings = defineSettings({
           try {
             await deleteDb("embeddiaDB");
             await deleteDb("betterseqta-index");
-            alert("Search index and storage have been reset successfully.");
+            alert(
+              "Search index and storage were reset.\n\nReload this tab to regenerate the index.",
+            );
           } catch (e) {
             alert("Failed to reset one or more databases: " + String(e) + "\n\nTry closing other browser tabs and try again.");
           }
@@ -131,6 +145,9 @@ class GlobalSearchPlugin extends BasePlugin<typeof settings> {
   @Setting(settings.runIndexingOnLoad)
   runIndexingOnLoad!: boolean;
 
+  @Setting(settings.passiveIndexing)
+  passiveIndexing!: boolean;
+
   @Setting(settings.resetIndex)
   resetIndex!: () => void;
 }
@@ -150,26 +167,35 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
-    // Check for extension updates and clear caches if needed
-    // Use a timeout to avoid blocking initialization
-    setTimeout(async () => {
-      try {
-        const wasUpdated = await checkAndHandleUpdate();
-        if (wasUpdated) {
-          console.log("[Global Search] Extension updated - caches cleared");
-        }
-      } catch (error: any) {
-        // Handle CSS preload errors and other failures gracefully
-        // These can happen in Firefox or when assets aren't available
-        if (error?.message?.includes("preload CSS") || 
-            error?.message?.includes("MIME type") || 
-            error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
-          console.debug("[Global Search] Version check skipped due to asset loading restrictions:", error.message);
-        } else {
-          console.warn("[Global Search] Failed to check for updates:", error);
-        }
+    // Run the version check BEFORE we open any IndexedDB connections.
+    // On a normal load (no version change) this is just a string compare
+    // and a manifest read, so the cost is negligible. On a real update,
+    // we want the database wipe to complete before `IndexedDbManager`
+    // grabs a handle on `embeddiaDB`, otherwise the delete request comes
+    // back blocked.
+    try {
+      const wasUpdated = await checkAndHandleUpdate();
+      if (wasUpdated) {
+        console.log(
+          "[Global Search] Extension updated — search index reset; the next indexing pass will repopulate.",
+        );
       }
-    }, 100);
+    } catch (error: any) {
+      // Firefox sometimes refuses CSS preloads or asset reads; we never
+      // want this path to take the whole plugin down.
+      if (
+        error?.message?.includes("preload CSS") ||
+        error?.message?.includes("MIME type") ||
+        error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")
+      ) {
+        console.debug(
+          "[Global Search] Version check skipped due to asset loading restrictions:",
+          error.message,
+        );
+      } else {
+        console.warn("[Global Search] Failed to check for updates:", error);
+      }
+    }
 
     try {
       await IndexedDbManager.create("embeddiaDB", "embeddiaObjectStore", {
@@ -210,6 +236,17 @@ const globalSearchPlugin: Plugin<typeof settings> = {
         const workerManager = VectorWorkerManager.getInstance();
         console.log("Streaming active:", workerManager.isStreamingActive());
       },
+      passiveItems: async () => {
+        const items = await getStoredPassiveItems();
+        console.log(`Captured ${items.length} passive items`);
+        return items;
+      },
+      runSelfTests: async () => {
+        const { runGlobalSearchSelfTests } = await import(
+          "../indexing/selfTests"
+        );
+        return runGlobalSearchSelfTests();
+      },
       checkIndexedDBSize: async () => {
         try {
           const estimate = await navigator.storage.estimate();
@@ -231,6 +268,14 @@ const globalSearchPlugin: Plugin<typeof settings> = {
         }
       }
     };
+
+    if (api.settings.passiveIndexing) {
+      try {
+        installPassiveObserver();
+      } catch (error) {
+        console.warn("[Global Search] Passive observer install failed:", error);
+      }
+    }
 
     if (api.settings.runIndexingOnLoad) {
       setTimeout(async () => {
