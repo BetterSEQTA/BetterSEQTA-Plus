@@ -35,12 +35,21 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
 
-      <h1>3.6.5 – Tamed the Beast: Global Search improvements</h1>
+      <h1>3.6.6 – Global Search improvements!</h1>
       <li>Tuned hybrid search and indexing reliability.</li>
       <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
       <li>Merged duplicate course hits that opened the same page.</li>
       <li>Reset Index reminds you to reload the tab to rebuild.</li>
       <li>Index now captures all content accross the site, not just assessments and courses.</li>
+
+      <h1>3.6.5 - Theme of the Month, custom message folders & assessment weighting overrides</h1>
+      <li>Added Theme of the Month — a monthly featured theme popup with a link to view it in the theme store.</li>
+      <li>Added custom message folders for organising direct DM's with drag to reorder.</li>
+      <li>Added the ability to override/add weightings to assessments (on assessment page).</li>
+      <li>Fixed custom room and teacher names not showing in the timetable popup.</li>
+      <li>Fixed assessment averages treating N/A weightings incorrectly in subject average calculations.</li>
+      <li>Fixed the display of weightings that could not automatically be discovered.</li>
+      <li>Fixed the formatting of the weighting tag that was broken due to a SEQTA update.</li>
       
       <h1>3.6.4 - DM Folders, Theme flavours and fixes, Upcoming Assements improvement</h1>
       <li>Added advanced colour adjustments variables for theme customisation.</li>
