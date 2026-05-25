@@ -3757,27 +3757,36 @@ div.day-empty {
   position: absolute !important;
   top: 6px !important;
   right: 6px !important;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
+  z-index: 3 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
   padding: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
   border-radius: 9px !important;
-  background: rgba(0, 0, 0, 0.42);
-  color: white;
-  cursor: pointer;
-  font-size: 0.78rem;
-  line-height: 1;
+  background: rgba(0, 0, 0, 0.42) !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  text-align: center !important;
   opacity: 0.75;
   transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
 }
 .themeOfTheMonthCardDisable:hover {
   opacity: 1;
   transform: scale(1.08);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6) !important;
 }
 .themeOfTheMonthCardConfirm {
   position: absolute;
@@ -3792,10 +3801,15 @@ div.day-empty {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.16s ease;
+}
+.themeOfTheMonthCardConfirm[hidden] {
+  display: none;
 }
 .themeOfTheMonthCardConfirmVisible {
   opacity: 1;
+  pointer-events: auto;
 }
 .themeOfTheMonthCardConfirmInner {
   width: 100%;
