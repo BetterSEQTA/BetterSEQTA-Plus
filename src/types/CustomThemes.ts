@@ -26,6 +26,18 @@ export type CustomTheme = {
   userEdited?: boolean;
   /** CSS custom property names (e.g. `--my-accent`) that receive the same value as `--better-main` when adaptive colours apply. */
   adaptiveCssVariables?: string[];
+  /** Optional runtime hook for themes that need clock-driven CSS variables. See `theme-runtime.ts`. */
+  themeScript?: {
+    onLoad?: string;
+    interval?: number;
+    onInterval?: string;
+  };
+  /** Optional decorative DOM injection (e.g. animated cars). See `theme-runtime.ts`. */
+  themeDom?: {
+    roadStrip?: boolean;
+    cars?: number;
+    flickers?: number;
+  };
 };
 
 export type LoadedCustomTheme = CustomTheme & {

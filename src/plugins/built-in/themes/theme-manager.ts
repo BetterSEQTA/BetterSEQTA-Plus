@@ -17,6 +17,15 @@ import {
   clearCustomThemeAdaptiveCssVariables,
   setCustomThemeAdaptiveCssVariables,
 } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import {
+  clearThemeRuntime,
+  injectThemeDom,
+  runThemeScript,
+  validateThemeDom,
+  validateThemeScript,
+  type ThemeDomSpec,
+  type ThemeScriptSpec,
+} from "./theme-runtime";
 
 type ThemeContent = {
   id: string;
@@ -31,6 +40,8 @@ type ThemeContent = {
   forceDark?: boolean;
   adaptiveCssVariables?: string[];
   images?: { id: string; variableName: string; data: string }[]; // data: base64
+  themeScript?: ThemeScriptSpec;
+  themeDom?: ThemeDomSpec;
 };
 
 export type InstallThemeMeta = {
@@ -53,6 +64,7 @@ export class ThemeManager {
   private imageUrlCache: Map<string, string> = new Map();
   private lastTransitionPoint: { x: number; y: number } = { x: 0, y: 0 };
   private storeUpdateCheckRunning = false;
+  private headObserver: MutationObserver | null = null;
 
   private constructor() {
     console.debug("[ThemeManager] Initializing...");
@@ -307,6 +319,13 @@ export class ThemeManager {
   private async applyTheme(theme: CustomTheme): Promise<void> {
     console.debug("[ThemeManager] Applying theme:", theme.name);
     try {
+      // Run the theme script BEFORE injecting CustomCSS so any state the
+      // script publishes (e.g. `data-city-state` and `--city-sky-color` for
+      // Noir City) is already on <html> when the new CSS rules paint.
+      // Otherwise the CSS lands with var() unresolved and the page flashes
+      // its previous state before snapping to the right colour.
+      runThemeScript(theme.themeScript);
+
       // Apply custom CSS
       if (theme.CustomCSS) {
         console.debug("[ThemeManager] Applying custom CSS");
@@ -348,6 +367,8 @@ export class ThemeManager {
       }
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+
+      injectThemeDom(theme.themeDom);
     } catch (error) {
       console.error("[ThemeManager] Error applying theme:", error);
     }
@@ -379,6 +400,13 @@ export class ThemeManager {
   ): Promise<void> {
     console.debug("[ThemeManager] Removing theme:", theme.name);
     try {
+      clearThemeRuntime();
+
+      // Disconnect the head observer BEFORE removing the style element,
+      // otherwise the removal fires the observer and it would no-op only
+      // because the style is already gone — wasted work, but harmless.
+      this.disconnectStyleObserver();
+
       // Remove custom CSS
       if (this.styleElement) {
         console.debug("[ThemeManager] Removing custom CSS");
@@ -448,7 +476,13 @@ export class ThemeManager {
   }
 
   /**
-   * Apply custom CSS to the document
+   * Apply custom CSS to the document. The `<style>` element is always
+   * re-appended to the end of `<head>` so it wins specificity ties
+   * against any styles SEQTA's late-loading injected.scss adds in dev
+   * mode (where `import("@/css/injected.scss")` is fire-and-forget and
+   * can resolve after the theme has already been applied). The head
+   * observer below keeps us at the end if anything else gets appended
+   * later (Vite HMR, another script-injected stylesheet, etc.).
    */
   private applyCustomCSS(css: string): void {
     console.debug("[ThemeManager] Applying custom CSS");
@@ -456,11 +490,36 @@ export class ThemeManager {
       if (!this.styleElement) {
         this.styleElement = document.createElement("style");
         this.styleElement.id = "custom-theme";
-        document.head.appendChild(this.styleElement);
       }
       this.styleElement.textContent = css;
+      document.head.appendChild(this.styleElement);
+      this.ensureStyleStaysLast();
     } catch (error) {
       console.error("[ThemeManager] Error applying custom CSS:", error);
+    }
+  }
+
+  /**
+   * Watch `<head>` for any child-list changes and re-append the theme
+   * style element if anything has been added after it. Idempotent: the
+   * observer's own re-append fires the callback again, but the early
+   * `lastElementChild === style` check short-circuits the second pass.
+   */
+  private ensureStyleStaysLast(): void {
+    if (this.headObserver) return;
+    this.headObserver = new MutationObserver(() => {
+      const style = this.styleElement;
+      if (!style || !document.head.contains(style)) return;
+      if (document.head.lastElementChild === style) return;
+      document.head.appendChild(style);
+    });
+    this.headObserver.observe(document.head, { childList: true });
+  }
+
+  private disconnectStyleObserver(): void {
+    if (this.headObserver) {
+      this.headObserver.disconnect();
+      this.headObserver = null;
     }
   }
 
@@ -637,6 +696,15 @@ export class ThemeManager {
         throw new Error("Theme is missing required fields (id or name)");
       }
 
+      // Validate optional runtime hooks. Reject the install if either is
+      // malformed so a tampered theme cannot smuggle in unsafe values.
+      if (!validateThemeScript(themeData.themeScript)) {
+        throw new Error("Theme has invalid themeScript");
+      }
+      if (!validateThemeDom(themeData.themeDom)) {
+        throw new Error("Theme has invalid themeDom");
+      }
+
       const fromStore = meta?.fromStore ?? false;
       const serverUpdatedAtSec = meta?.serverUpdatedAtSec;
 
@@ -701,6 +769,8 @@ export class ThemeManager {
               ? true
               : undefined,
         adaptiveCssVariables: themeData.adaptiveCssVariables,
+        themeScript: themeData.themeScript,
+        themeDom: themeData.themeDom,
       };
 
       await this.saveTheme(theme);
