@@ -34,7 +34,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.7.0 – Global Search improvements!</h1>
+      <h1>3.6.6 – Global Search improvements!</h1>
       <li>Tuned hybrid search and indexing reliability.</li>
       <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
       <li>Merged duplicate course hits that opened the same page.</li>
