@@ -134,7 +134,6 @@ export async function OpenThemeOfTheMonthPopup(
 
   const card = stringToHTML(/* html */ `
     <aside id="theme-of-the-month-card" class="themeOfTheMonthCard" role="dialog" aria-label="Theme of the Month">
-      <button type="button" class="themeOfTheMonthCardDisable" aria-label="Don't show Theme of the Month again" title="Don't show again">×</button>
       ${
         heroUrl
           ? `<img class="themeOfTheMonthCardImage" src="${escapeHTML(heroUrl)}" alt="${escapeHTML(entry.title)}" />`
@@ -145,18 +144,23 @@ export async function OpenThemeOfTheMonthPopup(
         <h2>${escapeHTML(entry.title)}</h2>
         <p class="themeOfTheMonthCardDescription">${description}</p>
         <div class="themeOfTheMonthCardActions">
-          ${
-            linkedThemeId
-              ? `<button type="button" class="themeOfTheMonthCardPrimary">Open Store</button>`
-              : ""
-          }
-          <button type="button" class="themeOfTheMonthCardSecondary">Close</button>
+          <div class="themeOfTheMonthCardActionsStart">
+            ${
+              linkedThemeId
+                ? `<button type="button" class="themeOfTheMonthCardPrimary">Open Store</button>`
+                : ""
+            }
+          </div>
+          <div class="themeOfTheMonthCardActionsEnd">
+            <button type="button" class="themeOfTheMonthCardSecondary">Close</button>
+            <button type="button" class="themeOfTheMonthCardDontShow">Don't show again</button>
+          </div>
         </div>
       </div>
       <div class="themeOfTheMonthCardConfirm" hidden>
         <div class="themeOfTheMonthCardConfirmInner">
           <h3>Don't show again?</h3>
-          <p>You won't see this month's announcement again until next month. Re-enable monthly popups in BetterSEQTA+ settings.</p>
+          <p>Theme of the Month popups will be turned off. You can turn them back on in BetterSEQTA+ settings.</p>
           <div class="themeOfTheMonthCardConfirmActions">
             <button type="button" class="themeOfTheMonthCardConfirmCancel">Cancel</button>
             <button type="button" class="themeOfTheMonthCardConfirmAccept">Don't show again</button>
@@ -168,7 +172,7 @@ export async function OpenThemeOfTheMonthPopup(
 
   const autoCloseTimeout = window.setTimeout(() => {
     closeThemeOfTheMonthCard(card, onDismissed);
-  }, 12000);
+  }, 30_000);
 
   const dismiss = () => {
     window.clearTimeout(autoCloseTimeout);
@@ -180,22 +184,24 @@ export async function OpenThemeOfTheMonthPopup(
   const confirmEl = card.querySelector<HTMLElement>(".themeOfTheMonthCardConfirm");
 
   card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", () => {
+    settingsState.themeOfTheMonthDismissedMonth = entry.month;
     dismiss();
   });
 
   card.querySelector(".themeOfTheMonthCardPrimary")?.addEventListener("click", () => {
+    settingsState.themeOfTheMonthDismissedMonth = entry.month;
     dismiss();
     openThemeStoreWithHighlight(linkedThemeId!);
   });
 
-  card.querySelector(".themeOfTheMonthCardDisable")?.addEventListener("click", () => {
+  const openDontShowConfirm = () => {
     window.clearTimeout(autoCloseTimeout);
-    if (confirmEl) {
-      confirmEl.hidden = false;
-      // allow CSS transition by toggling on next frame
-      requestAnimationFrame(() => confirmEl.classList.add("themeOfTheMonthCardConfirmVisible"));
-    }
-  });
+    if (!confirmEl) return;
+    confirmEl.hidden = false;
+    requestAnimationFrame(() => confirmEl.classList.add("themeOfTheMonthCardConfirmVisible"));
+  };
+
+  card.querySelector(".themeOfTheMonthCardDontShow")?.addEventListener("click", openDontShowConfirm);
 
   card.querySelector(".themeOfTheMonthCardConfirmCancel")?.addEventListener("click", () => {
     if (!confirmEl) return;
@@ -206,7 +212,7 @@ export async function OpenThemeOfTheMonthPopup(
   });
 
   card.querySelector(".themeOfTheMonthCardConfirmAccept")?.addEventListener("click", () => {
-    settingsState.themeOfTheMonthDismissedMonth = entry.month;
+    settingsState.themeOfTheMonthDisabled = true;
     dismiss();
   });
 

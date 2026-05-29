@@ -37,8 +37,8 @@ export interface SettingsState {
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
   /**
-   * Calendar month (`YYYY-MM`) for which the user dismissed the Theme of the Month
-   * popup via "Don't show again" (not a normal Close).
+   * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
+   * Cleared automatically when a new month's entry is fetched (different `month`).
    */
   themeOfTheMonthDismissedMonth?: string;
   /** @deprecated Migrated away; no longer read. */

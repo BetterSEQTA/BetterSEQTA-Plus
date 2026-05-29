@@ -3753,41 +3753,6 @@ div.day-empty {
   pointer-events: none;
   animation: themeOfTheMonthCardOut 0.18s ease-in forwards;
 }
-.themeOfTheMonthCardDisable {
-  position: absolute !important;
-  top: 6px !important;
-  right: 6px !important;
-  z-index: 3 !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: 18px !important;
-  max-height: 18px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  border-radius: 9px !important;
-  background: rgba(0, 0, 0, 0.42) !important;
-  color: white !important;
-  cursor: pointer !important;
-  font-family: inherit !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  line-height: 1 !important;
-  text-align: center !important;
-  opacity: 0.75;
-  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
-}
-.themeOfTheMonthCardDisable:hover {
-  opacity: 1;
-  transform: scale(1.08);
-  background: rgba(0, 0, 0, 0.6) !important;
-}
 .themeOfTheMonthCardConfirm {
   position: absolute;
   inset: 0;
@@ -3897,11 +3862,34 @@ div.day-empty {
 .themeOfTheMonthCardActions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.themeOfTheMonthCardActionsStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.themeOfTheMonthCardActionsEnd {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  margin-left: auto;
+  padding: 3px;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(
+    in srgb,
+    var(--background-secondary, var(--text-primary)) 28%,
+    var(--background-primary)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 .themeOfTheMonthCardPrimary,
-.themeOfTheMonthCardSecondary {
+.themeOfTheMonthCardSecondary,
+.themeOfTheMonthCardDontShow {
   appearance: none;
   border: none;
   cursor: pointer;
@@ -3909,23 +3897,49 @@ div.day-empty {
   padding: 0.58rem 0.9rem;
   font-size: 0.86rem;
   font-weight: 700;
-  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .themeOfTheMonthCardPrimary {
   background: var(--better-pri, #6366f1);
   color: white;
 }
-.themeOfTheMonthCardSecondary {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary {
   color: var(--text-primary);
 }
-.themeOfTheMonthCardPrimary:hover,
-.themeOfTheMonthCardSecondary:hover {
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  color: color-mix(in srgb, var(--text-primary) 58%, transparent);
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:focus-visible,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:focus-visible {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent) !important;
+  border-radius: 9999px !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:active,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:active {
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent) !important;
+  border-radius: 9999px !important;
+}
+.themeOfTheMonthCardPrimary:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
-.themeOfTheMonthCardPrimary:active,
-.themeOfTheMonthCardSecondary:active {
+.themeOfTheMonthCardPrimary:active {
   transform: translateY(0);
 }
 @keyframes themeOfTheMonthCardIn {
