@@ -21,10 +21,10 @@ import {
   clearThemeRuntime,
   injectThemeDom,
   runThemeScript,
-  validateThemeDom,
-  validateThemeScript,
   type ThemeDomSpec,
   type ThemeScriptSpec,
+  validateThemeDom,
+  validateThemeScript,
 } from "./theme-runtime";
 
 type ThemeContent = {
