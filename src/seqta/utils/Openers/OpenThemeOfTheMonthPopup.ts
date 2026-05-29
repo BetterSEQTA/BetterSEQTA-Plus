@@ -45,10 +45,10 @@ export async function fetchThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | nul
   }
 }
 
-/** True when we have a new monthly entry the user hasn't dismissed yet. */
+/** True when the current month's entry should appear in the startup queue. */
 export function shouldShowThemeOfTheMonth(entry: ThemeOfTheMonthEntry | null): boolean {
   if (!entry || settingsState.themeOfTheMonthDisabled) return false;
-  return settingsState.themeOfTheMonthLastSeenId !== entry.id;
+  return settingsState.themeOfTheMonthDismissedMonth !== entry.month;
 }
 
 function escapeHTML(str: string): string {
@@ -108,17 +108,8 @@ async function resolvePopupHeroImageUrl(entry: ThemeOfTheMonthEntry): Promise<st
   return fallback || null;
 }
 
-function closeThemeOfTheMonthCard(
-  card: HTMLElement,
-  onDismissed?: () => void,
-  markSeen = true,
-) {
+function closeThemeOfTheMonthCard(card: HTMLElement, onDismissed?: () => void) {
   if (card.classList.contains("themeOfTheMonthCardClosing")) return;
-
-  if (markSeen) {
-    const entryId = card.dataset.entryId;
-    if (entryId) settingsState.themeOfTheMonthLastSeenId = entryId;
-  }
 
   card.classList.add("themeOfTheMonthCardClosing");
   window.setTimeout(() => {
@@ -165,7 +156,7 @@ export async function OpenThemeOfTheMonthPopup(
       <div class="themeOfTheMonthCardConfirm" hidden>
         <div class="themeOfTheMonthCardConfirmInner">
           <h3>Don't show again?</h3>
-          <p>You can re-enable Theme of the Month from BetterSEQTA+ settings.</p>
+          <p>You won't see this month's announcement again until next month. Re-enable monthly popups in BetterSEQTA+ settings.</p>
           <div class="themeOfTheMonthCardConfirmActions">
             <button type="button" class="themeOfTheMonthCardConfirmCancel">Cancel</button>
             <button type="button" class="themeOfTheMonthCardConfirmAccept">Don't show again</button>
@@ -175,14 +166,13 @@ export async function OpenThemeOfTheMonthPopup(
     </aside>
   `).firstChild as HTMLElement;
 
-  card.dataset.entryId = entry.id;
   const autoCloseTimeout = window.setTimeout(() => {
     closeThemeOfTheMonthCard(card, onDismissed);
   }, 12000);
 
-  const dismiss = (markSeen = true) => {
+  const dismiss = () => {
     window.clearTimeout(autoCloseTimeout);
-    closeThemeOfTheMonthCard(card, onDismissed, markSeen);
+    closeThemeOfTheMonthCard(card, onDismissed);
   };
 
   card.addEventListener("mouseenter", () => window.clearTimeout(autoCloseTimeout), { once: true });
@@ -216,7 +206,7 @@ export async function OpenThemeOfTheMonthPopup(
   });
 
   card.querySelector(".themeOfTheMonthCardConfirmAccept")?.addEventListener("click", () => {
-    settingsState.themeOfTheMonthDisabled = true;
+    settingsState.themeOfTheMonthDismissedMonth = entry.month;
     dismiss();
   });
 
@@ -225,7 +215,7 @@ export async function OpenThemeOfTheMonthPopup(
 
 /**
  * Dev helper: fetch the current month's entry and show the popup immediately,
- * even if the user has already dismissed it this month.
+ * even if the user dismissed it for this calendar month.
  */
 export async function showThemeOfTheMonthPopupNow(): Promise<void> {
   const entry = await fetchThemeOfTheMonth();
@@ -236,7 +226,7 @@ export async function showThemeOfTheMonthPopupNow(): Promise<void> {
     return;
   }
 
-  settingsState.themeOfTheMonthLastSeenId = undefined;
+  settingsState.themeOfTheMonthDismissedMonth = undefined;
 
   if (document.getElementById("whatsnewbk")) {
     await closePopup();
