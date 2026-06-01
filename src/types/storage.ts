@@ -36,7 +36,12 @@ export interface SettingsState {
   engageParentsAnnouncementShown?: boolean;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
-  /** ID of the last Theme of the Month entry shown to the user (shows once per new entry). */
+  /**
+   * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
+   * Cleared automatically when a new month's entry is fetched (different `month`).
+   */
+  themeOfTheMonthDismissedMonth?: string;
+  /** @deprecated Migrated away; no longer read. */
   themeOfTheMonthLastSeenId?: string;
   /** Permanently disables Theme of the Month startup prompts. */
   themeOfTheMonthDisabled?: boolean;

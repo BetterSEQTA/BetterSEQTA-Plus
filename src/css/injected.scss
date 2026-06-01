@@ -455,6 +455,58 @@ ul.magicDelete > li.deleting {
   top: 71.5px;
   margin-top: -2px;
 }
+
+/* Drill-in stack: only the current list + folder header stay clickable.
+   Class is toggled by updateSidebarAccessibility (never touches aria-hidden). */
+#menu .bsplus-sidebar-offscreen,
+#menu .bsplus-sidebar-offscreen * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+#menu > ul > .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  opacity: 0 !important;
+}
+
+#menu .sub .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Only the frontmost open .sub panel receives pointer events */
+#menu .sub {
+  pointer-events: none;
+}
+
+#menu li.hasChildren.active > .sub {
+  pointer-events: auto;
+}
+
+#menu li.hasChildren.active > .sub:has(.hasChildren.active) {
+  pointer-events: none !important;
+}
+
+#menu li.hasChildren.active .hasChildren.active > .sub {
+  pointer-events: auto !important;
+}
+
+#menu:has(> ul > li.hasChildren.active) > ul > li:not(.hasChildren.active) {
+  pointer-events: none !important;
+}
 #menu section > label {
   align-items: center;
   box-sizing: border-box;
@@ -2326,6 +2378,10 @@ blurred {
   height: 64px;
   cursor: pointer;
 }
+/* While a drill-in submenu is open, don't steal clicks meant for folder rows. */
+#menu:has(li.hasChildren.active) > .icon-cover {
+  pointer-events: none;
+}
 .uiSlidePane > .pane > .header button {
   color: var(--text-color) !important;
 }
@@ -3753,20 +3809,77 @@ div.day-empty {
   pointer-events: none;
   animation: themeOfTheMonthCardOut 0.18s ease-in forwards;
 }
-.themeOfTheMonthCardClose {
-  position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px !important;
-  background: rgba(0, 0, 0, 0.42);
-  color: white;
+.themeOfTheMonthCardConfirm {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+.themeOfTheMonthCardConfirm[hidden] {
+  display: none;
+}
+.themeOfTheMonthCardConfirmVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.themeOfTheMonthCardConfirmInner {
+  width: 100%;
+  text-align: center;
+}
+.themeOfTheMonthCardConfirmInner h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.themeOfTheMonthCardConfirmInner p {
+  margin: 0 0 14px;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
+}
+.themeOfTheMonthCardConfirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.themeOfTheMonthCardConfirmCancel,
+.themeOfTheMonthCardConfirmAccept {
+  appearance: none;
+  border: none;
   cursor: pointer;
-  font-size: 1.35rem;
-  line-height: 1;
+  border-radius: 9999px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+}
+.themeOfTheMonthCardConfirmCancel {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
+}
+.themeOfTheMonthCardConfirmAccept {
+  background: var(--better-pri, #6366f1);
+  color: white;
+}
+.themeOfTheMonthCardConfirmCancel:hover,
+.themeOfTheMonthCardConfirmAccept:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.themeOfTheMonthCardConfirmCancel:active,
+.themeOfTheMonthCardConfirmAccept:active {
+  transform: translateY(0);
 }
 .themeOfTheMonthCardImage {
   display: block;
@@ -3805,11 +3918,34 @@ div.day-empty {
 .themeOfTheMonthCardActions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.themeOfTheMonthCardActionsStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.themeOfTheMonthCardActionsEnd {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  margin-left: auto;
+  padding: 3px;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(
+    in srgb,
+    var(--background-secondary, var(--text-primary)) 28%,
+    var(--background-primary)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 .themeOfTheMonthCardPrimary,
-.themeOfTheMonthCardSecondary {
+.themeOfTheMonthCardSecondary,
+.themeOfTheMonthCardDontShow {
   appearance: none;
   border: none;
   cursor: pointer;
@@ -3817,23 +3953,49 @@ div.day-empty {
   padding: 0.58rem 0.9rem;
   font-size: 0.86rem;
   font-weight: 700;
-  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .themeOfTheMonthCardPrimary {
   background: var(--better-pri, #6366f1);
   color: white;
 }
-.themeOfTheMonthCardSecondary {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary {
   color: var(--text-primary);
 }
-.themeOfTheMonthCardPrimary:hover,
-.themeOfTheMonthCardSecondary:hover {
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  color: color-mix(in srgb, var(--text-primary) 58%, transparent);
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:focus-visible,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:focus-visible {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent) !important;
+  border-radius: 9999px !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:active,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:active {
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent) !important;
+  border-radius: 9999px !important;
+}
+.themeOfTheMonthCardPrimary:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
-.themeOfTheMonthCardPrimary:active,
-.themeOfTheMonthCardSecondary:active {
+.themeOfTheMonthCardPrimary:active {
   transform: translateY(0);
 }
 @keyframes themeOfTheMonthCardIn {

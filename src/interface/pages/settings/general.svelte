@@ -423,6 +423,18 @@
           {/each}
         {/if}
       </div>
+      {#if plugin.pluginId === 'global-search'}
+        {@render Setting({
+          title: "Theme of the Month",
+          description: "Show the monthly featured theme popup when a new entry is available",
+          id: 15,
+          Component: Switch,
+          props: {
+            state: !($settingsState.themeOfTheMonthDisabled ?? false),
+            onChange: (isOn: boolean) => settingsState.themeOfTheMonthDisabled = !isOn
+          }
+        })}
+      {/if}
   </div>
   {/each}
 
