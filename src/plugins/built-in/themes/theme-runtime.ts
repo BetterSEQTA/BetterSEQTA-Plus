@@ -69,6 +69,8 @@ let intervalHandle: ReturnType<typeof setInterval> | null = null;
 let lastTimeState: TimeState | null = null;
 let lastDomSpec: ThemeDomSpec | null = null;
 let bodyObserver: MutationObserver | null = null;
+let pageshowListenerAttached = false;
+let repaintScheduled = false;
 
 type TimeState = "night" | "dawn" | "day" | "dusk" | "evening";
 
@@ -422,6 +424,61 @@ function getOrCreateWallpaper(): HTMLElement {
   return wallpaper;
 }
 
+/** Content scripts run at `document_start`; defer until `<body>` exists. */
+function whenBodyReady(run: () => void): void {
+  if (document.body) {
+    run();
+    return;
+  }
+  document.addEventListener("DOMContentLoaded", run, { once: true });
+}
+
+function runtimeRootNeedsContent(spec: ThemeDomSpec): boolean {
+  const root = document.getElementById(ROOT_ID);
+  if (!root) return true;
+  if (spec.roadStrip && !document.getElementById("city-road")) return true;
+  const carCount = Math.min(spec.cars ?? 0, MAX_CARS);
+  if (carCount > 0 && root.querySelector(".city-car") === null) return true;
+  return false;
+}
+
+function cityWallpaperNeedsLayers(): boolean {
+  if (!lastDomSpec?.cityLayers) return false;
+  const wallpaper = document.getElementById(WALLPAPER_ID);
+  if (!wallpaper) return true;
+  return wallpaper.querySelector("#city-buildings") === null;
+}
+
+function repaintThemeDomIfNeeded(): void {
+  if (!lastDomSpec || !document.body) return;
+  if (runtimeRootNeedsContent(lastDomSpec)) {
+    const root = getOrCreateRoot();
+    populateRoot(root, lastDomSpec);
+  }
+  if (cityWallpaperNeedsLayers()) {
+    const wallpaper = getOrCreateWallpaper();
+    populateWallpaper(wallpaper);
+  }
+}
+
+function scheduleRepaintThemeDomIfNeeded(): void {
+  if (repaintScheduled) return;
+  repaintScheduled = true;
+  requestAnimationFrame(() => {
+    repaintScheduled = false;
+    repaintThemeDomIfNeeded();
+  });
+}
+
+function themeDomNeedsRepaint(): boolean {
+  if (!lastDomSpec) return false;
+  if (!document.getElementById(ROOT_ID)) return true;
+  if (lastDomSpec.cityLayers && !document.getElementById(WALLPAPER_ID)) {
+    return true;
+  }
+  return runtimeRootNeedsContent(lastDomSpec) || cityWallpaperNeedsLayers();
+}
+
 function populateWallpaper(wallpaper: HTMLElement): void {
   while (wallpaper.firstChild) wallpaper.removeChild(wallpaper.firstChild);
   for (const id of CITY_LAYER_IDS) {
@@ -490,18 +547,28 @@ function populateRoot(root: HTMLElement, dom: ThemeDomSpec): void {
  */
 function ensureBodyObserver(): void {
   if (bodyObserver) return;
-  bodyObserver = new MutationObserver(() => {
-    if (!lastDomSpec) return;
-    if (!document.getElementById(ROOT_ID)) {
-      const root = getOrCreateRoot();
-      populateRoot(root, lastDomSpec);
-    }
-    if (lastDomSpec.cityLayers && !document.getElementById(WALLPAPER_ID)) {
-      const wallpaper = getOrCreateWallpaper();
-      populateWallpaper(wallpaper);
-    }
-  });
-  bodyObserver.observe(document.body, { childList: true });
+  const attach = () => {
+    if (!document.body || bodyObserver) return;
+    bodyObserver = new MutationObserver(() => {
+      if (themeDomNeedsRepaint()) scheduleRepaintThemeDomIfNeeded();
+    });
+    // Only direct children of <body>: the theme nodes are appended there.
+    // Watching the full subtree fired on every SEQTA menu/content mutation and
+    // could repaint decorative layers mid-navigation (felt like a page reload).
+    bodyObserver.observe(document.body, { childList: true });
+  };
+  whenBodyReady(attach);
+
+  if (!pageshowListenerAttached && typeof window !== "undefined") {
+    pageshowListenerAttached = true;
+    window.addEventListener(
+      "pageshow",
+      (event) => {
+        if (event.persisted) repaintThemeDomIfNeeded();
+      },
+      { capture: true },
+    );
+  }
 }
 
 /**
@@ -513,34 +580,45 @@ function ensureBodyObserver(): void {
 export function injectThemeDom(dom: ThemeDomSpec | undefined): void {
   if (!dom || !validateThemeDom(dom)) return;
   lastDomSpec = dom;
-  const root = getOrCreateRoot();
-  populateRoot(root, dom);
-  if (dom.cityLayers) {
-    const wallpaper = getOrCreateWallpaper();
-    populateWallpaper(wallpaper);
-  } else {
-    // Theme switched from a cityLayers theme to one without — tear down
-    // any leftover wallpaper so we don't paint stale buildings/sun.
-    document.getElementById(WALLPAPER_ID)?.remove();
-  }
   ensureBodyObserver();
 
-  // Suppress the slow `transition: background-color` for the very first
-  // frame after the theme CSS lands. Without this, the browser
-  // interpolates from SEQTA's pre-theme `background: unset` (light) to
-  // var(--city-sky-color) over 30s on every page load. Double rAF: the
-  // first runs after the next layout, the second after that frame has
-  // actually been painted with the attribute set, so we can safely
-  // remove it and let real state changes (night -> dawn etc.) animate.
-  const html = document.documentElement;
-  html.setAttribute("data-city-just-applied", "");
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      html.removeAttribute("data-city-just-applied");
-    });
-  });
+  const mount = () => {
+    if (!lastDomSpec) return;
+    const spec = lastDomSpec;
+    if (runtimeRootNeedsContent(spec)) {
+      const root = getOrCreateRoot();
+      populateRoot(root, spec);
+    }
+    if (spec.cityLayers) {
+      if (cityWallpaperNeedsLayers()) {
+        const wallpaper = getOrCreateWallpaper();
+        populateWallpaper(wallpaper);
+      }
+    } else {
+      // Theme switched from a cityLayers theme to one without — tear down
+      // any leftover wallpaper so we don't paint stale buildings/sun.
+      document.getElementById(WALLPAPER_ID)?.remove();
+    }
 
-  mountDevTimePicker();
+    // Suppress the slow `transition: background-color` for the very first
+    // frame after the theme CSS lands. Without this, the browser
+    // interpolates from SEQTA's pre-theme `background: unset` (light) to
+    // var(--city-sky-color) over 30s on every page load. Double rAF: the
+    // first runs after the next layout, the second after that frame has
+    // actually been painted with the attribute set, so we can safely
+    // remove it and let real state changes (night -> dawn etc.) animate.
+    const html = document.documentElement;
+    html.setAttribute("data-city-just-applied", "");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        html.removeAttribute("data-city-just-applied");
+      });
+    });
+
+    mountDevTimePicker();
+  };
+
+  whenBodyReady(mount);
 }
 
 /**

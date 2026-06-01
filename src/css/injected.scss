@@ -455,6 +455,58 @@ ul.magicDelete > li.deleting {
   top: 71.5px;
   margin-top: -2px;
 }
+
+/* Drill-in stack: only the current list + folder header stay clickable.
+   Class is toggled by updateSidebarAccessibility (never touches aria-hidden). */
+#menu .bsplus-sidebar-offscreen,
+#menu .bsplus-sidebar-offscreen * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+#menu > ul > .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  opacity: 0 !important;
+}
+
+#menu .sub .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Only the frontmost open .sub panel receives pointer events */
+#menu .sub {
+  pointer-events: none;
+}
+
+#menu li.hasChildren.active > .sub {
+  pointer-events: auto;
+}
+
+#menu li.hasChildren.active > .sub:has(.hasChildren.active) {
+  pointer-events: none !important;
+}
+
+#menu li.hasChildren.active .hasChildren.active > .sub {
+  pointer-events: auto !important;
+}
+
+#menu:has(> ul > li.hasChildren.active) > ul > li:not(.hasChildren.active) {
+  pointer-events: none !important;
+}
 #menu section > label {
   align-items: center;
   box-sizing: border-box;
@@ -2325,6 +2377,10 @@ blurred {
   width: 70%;
   height: 64px;
   cursor: pointer;
+}
+/* While a drill-in submenu is open, don't steal clicks meant for folder rows. */
+#menu:has(li.hasChildren.active) > .icon-cover {
+  pointer-events: none;
 }
 .uiSlidePane > .pane > .header button {
   color: var(--text-color) !important;

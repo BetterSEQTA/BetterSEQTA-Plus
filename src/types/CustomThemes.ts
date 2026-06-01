@@ -37,6 +37,7 @@ export type CustomTheme = {
     roadStrip?: boolean;
     cars?: number;
     flickers?: number;
+    cityLayers?: boolean;
   };
 };
 

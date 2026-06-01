@@ -22,6 +22,9 @@ let sidebarAccessibilityObserver: MutationObserver | null = null;
 let sidebarTabOrderAnimationFrame: number | null = null;
 let sidebarAccessibilityListenersAttached = false;
 
+/** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
+const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
+
 export async function getUserInfo() {
   if (cachedUserInfo) return cachedUserInfo;
 
@@ -493,9 +496,15 @@ function scheduleSidebarAccessibilityUpdate() {
     cancelAnimationFrame(sidebarTabOrderAnimationFrame);
   }
 
+  // Double rAF: SEQTA applies `.active` / updates `.sub` on the next frame
+  // after a click. Running earlier hid the submenu with `aria-hidden` while
+  // focus was still on a <label> inside it, which broke routing and sent
+  // the SPA back to home.
   sidebarTabOrderAnimationFrame = requestAnimationFrame(() => {
-    sidebarTabOrderAnimationFrame = null;
-    updateSidebarAccessibility();
+    requestAnimationFrame(() => {
+      sidebarTabOrderAnimationFrame = null;
+      updateSidebarAccessibility();
+    });
   });
 }
 
@@ -506,9 +515,10 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   const menuItem = target.closest("#menu li, #menu section") as
     | HTMLElement
     | null;
-  if (!menuItem || target !== menuItem) return;
+  if (!menuItem) return;
 
   if (event.key === "Tab") {
+    if (target !== menuItem) return;
     const menu = document.getElementById("menu");
     if (!menu) return;
 
@@ -552,11 +562,52 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   }
 }
 
+/**
+ * Keyboard tab order for the drilled-in sidebar only.
+ * SEQTA already sets `aria-hidden` on off-screen menu rows; we must not
+ * override that or hide `.sub` ourselves — doing so while a <label> inside
+ * the submenu still has focus breaks SEQTA's router and navigates to home.
+ */
+/** Every folder row on the path to the open list (e.g. Assessments → 2026_S1). */
+function getDrillFolderChain(
+  menu: HTMLElement,
+  visibleList: HTMLElement | null,
+): Set<HTMLElement> {
+  const chain = new Set<HTMLElement>();
+  let list: HTMLElement | null = visibleList;
+
+  while (list && menu.contains(list)) {
+    const folder = getSidebarListParentEntry(list);
+    if (!folder || !menu.contains(folder)) break;
+    chain.add(folder);
+
+    const containerUl = folder.parentElement;
+    if (!(containerUl instanceof HTMLElement)) break;
+    const parentSub = containerUl.closest(".sub");
+    if (!parentSub || !menu.contains(parentSub)) break;
+    const parentFolder = parentSub.parentElement;
+    if (!(parentFolder instanceof HTMLElement) || !menu.contains(parentFolder)) {
+      break;
+    }
+    chain.add(parentFolder);
+    list =
+      parentFolder.parentElement instanceof HTMLElement
+        ? parentFolder.parentElement
+        : null;
+  }
+
+  return chain;
+}
+
 function updateSidebarAccessibility() {
   const menu = document.getElementById("menu");
   if (!menu) return;
 
-  const visibleEntries = new Set(getVisibleSidebarEntries(menu));
+  const visibleList = getVisibleSidebarList(menu);
+  const visibleEntries = new Set(
+    visibleList ? getDirectSidebarEntries(visibleList) : [],
+  );
+  const drillFolders = getDrillFolderChain(menu, visibleList);
   const menuEntries = menu.querySelectorAll("li.item, section.item, li, section");
 
   for (const entry of menuEntries) {
@@ -565,28 +616,19 @@ function updateSidebarAccessibility() {
     const label = entry.querySelector(":scope > label") as HTMLLabelElement | null;
     if (!label) continue;
 
-    const childSubmenu = entry.querySelector(":scope > .sub") as HTMLElement | null;
-    const isHidden =
-      entry.offsetParent === null ||
-      window.getComputedStyle(entry).display === "none" ||
-      window.getComputedStyle(label).display === "none" ||
-      !visibleEntries.has(entry);
+    const interactive =
+      visibleEntries.has(entry) || drillFolders.has(entry);
 
-    if (isHidden) {
+    if (!interactive) {
+      entry.classList.add(BSPLUS_SIDEBAR_OFFSCREEN);
       entry.tabIndex = -1;
       label.tabIndex = -1;
-      entry.setAttribute("aria-hidden", "true");
-      label.setAttribute("aria-hidden", "true");
-      if (childSubmenu) {
-        childSubmenu.setAttribute("aria-hidden", "true");
-      }
       continue;
     }
 
+    entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
     entry.tabIndex = 0;
     label.tabIndex = -1;
-    entry.removeAttribute("aria-hidden");
-    label.removeAttribute("aria-hidden");
 
     if (!entry.hasAttribute("role")) {
       entry.setAttribute("role", "button");
@@ -595,14 +637,6 @@ function updateSidebarAccessibility() {
     const accessibleLabel = label.textContent?.trim();
     if (accessibleLabel) {
       entry.setAttribute("aria-label", accessibleLabel);
-    }
-
-    if (childSubmenu) {
-      const isExpanded = entry.classList.contains("active");
-      entry.setAttribute("aria-expanded", String(isExpanded));
-      childSubmenu.setAttribute("aria-hidden", String(!isExpanded));
-    } else {
-      entry.removeAttribute("aria-expanded");
     }
   }
 }
