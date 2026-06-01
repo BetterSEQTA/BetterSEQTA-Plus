@@ -551,6 +551,76 @@ async function migrateGlobalSearchDefaultsFor365Upgrade(
   }
 }
 
+/** One-time reset for 3.6.6: re-enable Theme of the Month for existing users. */
+const THEME_OF_THE_MONTH_RESET_VERSION = "3.6.6";
+
+async function resetThemeOfTheMonthDisabledFor366Upgrade(
+  previousVersion: string,
+): Promise<void> {
+  try {
+    const currRaw = browser.runtime.getManifest().version;
+    const prev = semver.coerce(previousVersion);
+    const curr = semver.coerce(currRaw);
+    if (
+      prev == null ||
+      curr == null ||
+      semver.lt(curr, THEME_OF_THE_MONTH_RESET_VERSION) ||
+      !semver.lt(prev, THEME_OF_THE_MONTH_RESET_VERSION)
+    ) {
+      return;
+    }
+
+    await browser.storage.local.set({
+      themeOfTheMonthDisabled: false,
+      themeOfTheMonthLastSeenId: undefined,
+    });
+
+    console.info(
+      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RESET_VERSION}: Theme of the Month re-enabled (from ${previousVersion}).`,
+    );
+  } catch (e) {
+    console.warn(
+      "[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:",
+      e,
+    );
+  }
+}
+
+/** 3.7.0: Close no longer marks entries seen — clear legacy dismissal keys. */
+const THEME_OF_THE_MONTH_RELOAD_VERSION = "3.7.0";
+
+async function resetThemeOfTheMonthDismissalFor370Upgrade(
+  previousVersion: string,
+): Promise<void> {
+  try {
+    const currRaw = browser.runtime.getManifest().version;
+    const prev = semver.coerce(previousVersion);
+    const curr = semver.coerce(currRaw);
+    if (
+      prev == null ||
+      curr == null ||
+      semver.lt(curr, THEME_OF_THE_MONTH_RELOAD_VERSION) ||
+      !semver.lt(prev, THEME_OF_THE_MONTH_RELOAD_VERSION)
+    ) {
+      return;
+    }
+
+    await browser.storage.local.set({
+      themeOfTheMonthLastSeenId: undefined,
+      themeOfTheMonthDismissedMonth: undefined,
+    });
+
+    console.info(
+      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RELOAD_VERSION}: Theme of the Month shows again until dismissed for the month (from ${previousVersion}).`,
+    );
+  } catch (e) {
+    console.warn(
+      "[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:",
+      e,
+    );
+  }
+}
+
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(["justupdated"]);
   browser.storage.local.remove(["data"]);
@@ -561,6 +631,8 @@ browser.runtime.onInstalled.addListener(function (event) {
 
   if (event.reason === "update" && event.previousVersion) {
     void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
+    void resetThemeOfTheMonthDisabledFor366Upgrade(event.previousVersion);
+    void resetThemeOfTheMonthDismissalFor370Upgrade(event.previousVersion);
   }
 });
 

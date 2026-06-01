@@ -15,7 +15,7 @@ type QueueStep = (goNext: () => void) => void;
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * Theme of the Month (when a new monthly entry hasn't been seen), then shows
+ * Theme of the Month (when the user hasn't dismissed this calendar month), then shows
  * the SEQTA Engage toast (once, non-blocking).
  */
 export async function runStartupPopupQueue() {
