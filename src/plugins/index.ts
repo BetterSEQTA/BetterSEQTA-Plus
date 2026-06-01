@@ -15,6 +15,7 @@ import messageFoldersPlugin from "./built-in/messageFolders";
 
 // Heavy plugins (lazy-loaded only when enabled)
 import globalSearchPluginLazy from "./built-in/globalSearch/lazy";
+import gradeAnalyticsPluginLazy from "./built-in/gradeAnalytics/lazy";
 
 // Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
@@ -34,6 +35,7 @@ pluginManager.registerPlugin(messageFoldersPlugin);
 
 // Register heavy plugins with lazy loading
 pluginManager.registerPlugin(globalSearchPluginLazy);
+pluginManager.registerPlugin(gradeAnalyticsPluginLazy);
 
 export { init as Monofile } from "./monofile";
 

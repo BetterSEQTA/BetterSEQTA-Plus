@@ -25,6 +25,7 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { loadAnalyticsPage } from "@/plugins/built-in/gradeAnalytics/loadAnalyticsPage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
@@ -202,9 +203,7 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
-  const sublink: string | undefined = isSeqtaEngageExperience()
-    ? getEngageRoutePage()
-    : window.location.href.split("/")[4];
+  const sublink: string | undefined = getEngageRoutePage();
 
   if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
     engageHashListenerAttached = true;
@@ -334,6 +333,11 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
   switch (sublink) {
     case "news":
       await handleNewsPage();
+      break;
+    case "analytics":
+      console.info("[BetterSEQTA+] Started Init (Analytics)");
+      if (settingsState.onoff) void loadAnalyticsPage();
+      finishLoad();
       break;
     case undefined:
       window.location.replace(
