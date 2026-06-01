@@ -1,8 +1,12 @@
 import type { Plugin } from "@/plugins/core/types";
+import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
 import { loadAnalyticsPage } from "../loadAnalyticsPage";
 import styles from "../styles.css?inline";
+
+const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 
 const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 
@@ -30,7 +34,7 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     analyticsItem.dataset.key = "analytics";
     analyticsItem.dataset.path = "/analytics";
     analyticsItem.dataset.betterseqta = "true";
-    analyticsItem.innerHTML = `<label><svg style="width:24px;height:24px" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 8h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg><span>Analytics</span></label>`;
+    analyticsItem.innerHTML = `<label>${ANALYTICS_MENU_ICON}<span>Analytics</span></label>`;
 
     const homeButton = document.getElementById("homebutton");
     if (homeButton?.parentElement === menuList) {
@@ -39,6 +43,8 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
       menuList.insertBefore(analyticsItem, menuList.firstChild);
     }
 
+    processMenuItemNode(analyticsItem);
+
     const menuObserver = new MutationObserver(() => {
       if (!menuList.contains(analyticsItem)) {
         if (homeButton?.parentElement === menuList) {
@@ -46,6 +52,7 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
         } else {
           menuList.insertBefore(analyticsItem, menuList.firstChild);
         }
+        processMenuItemNode(analyticsItem);
       }
     });
     menuObserver.observe(menuList, { childList: true });

@@ -53,6 +53,8 @@ interface OpenPopupOptions {
   afterClose?: () => void;
   /** When true, clears the post-update flag when this popup opens (What's New only). */
   clearJustUpdated?: boolean;
+  /** Extra classes on `.whatsnewContainer` (e.g. `whatsnewContainer--scrollBody`). */
+  containerClass?: string;
 }
 
 export function openPopup({
@@ -61,6 +63,7 @@ export function openPopup({
   animateSelector = ".whatsnewTextContainer *",
   afterClose,
   clearJustUpdated = false,
+  containerClass,
 }: OpenPopupOptions = {}) {
   pendingAfterClose = afterClose;
 
@@ -70,6 +73,11 @@ export function openPopup({
 
   const container = document.createElement("div");
   container.classList.add("whatsnewContainer");
+  if (containerClass) {
+    for (const name of containerClass.split(/\s+/)) {
+      if (name) container.classList.add(name);
+    }
+  }
 
   if (header) container.append(header);
   for (const node of content) if (node) container.append(node);

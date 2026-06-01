@@ -120,6 +120,7 @@ The backup is a flat JSON map of **`chrome.storage.local`** keys. It does **not*
 - **OAuth / session keys** — `bsplus_token`, `bsplus_refresh_token`, `bsplus_client_id`, `bsplus_user`, plus legacy `cloudAccessToken` / `cloudUsername`.
 - **Assessment Averages caches** — `plugin.assessments-average.storage.assessments`, `plugin.assessments-average.storage.weightings` (school assessment data).
 - **Keys under** `plugin.global-search.storage.*` — reserved so any future plugin storage cache there is not synced.
+- **Grade Analytics** — keys under `bsplus.analytics.*` (synced assessment cache and per-school chart preferences).
 - **`bsplus_cloud_settings_known_remote_updated_at`** — client-only watermark for auto-sync (not part of the cloud backup blob).
 
 On restore, those keys are **not** taken from the server; the device keeps its current local values.

@@ -19,27 +19,40 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const video = document.createElement("video");
   const source = document.createElement("source");
 
-  source.setAttribute(
-    "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm",
-  );
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.appendChild(source);
-  video.classList.add("whatsnewImg");
-  imageContainer.appendChild(video);
-  attachPopupMediaFullscreen(video);
+  //source.setAttribute(
+  //  "src",
+  //  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm",
+  //);
+  //video.autoplay = true;
+  //video.muted = true;
+  //video.loop = true;
+  //video.appendChild(source);
+  //video.classList.add("whatsnewImg");
+  //imageContainer.appendChild(video);
+  //attachPopupMediaFullscreen(video);
+
+  const heroImage = document.createElement("img");
+  heroImage.src =
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/updateimage1.webp";
+  heroImage.alt = "BetterSEQTA+ update preview";
+  heroImage.classList.add("whatsnewImg");
+  imageContainer.appendChild(heroImage);
+  attachPopupMediaFullscreen(heroImage);
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.6.6 – Global Search improvements!</h1>
-      <li>Tuned hybrid search and indexing reliability.</li>
-      <li>Clearer progress UI and green “Done!” when a pass finishes.</li>
-      <li>Merged duplicate course hits that opened the same page.</li>
-      <li>Reset Index reminds you to reload the tab to rebuild.</li>
-      <li>Index now captures all content accross the site, not just assessments and courses.</li>
+      <h1>3.7.0 – Grade Analytics, Global Search & SEQTA Engage Improvements</h1>
+      <li>Added Grade Analytics, new sidebar page with grade trend charts synced from SEQTA.</li>
+      <li>Added Grade distribution auto-detects your school’s letter scale from released marks for analytics page.</li>
+      <li>Added documents, notices, portals, folios, goals, and more to Global Search.</li>
+      <li>Added shortcuts to SEQTA Engage home page.</li>
+      <li>Added assessments overview and assessment weighting overrides for SEQTA Engage.</li>
+      <li>Added BetterSEQTA sidebar icons to SEQTA Engage.</li>
+      <li>Added runtime handlers for upcoming interactive theme.</li>
+      <li>Fixed BetterSEQTA sidebar injection issues on some pages.</li>
+      <li>Tweak Theme of the Month popup making it more clear about dismissals and respecting “Don’t show again”.</li>
+      <li>Fixed duplicate-result fixes.</li>
 
       <h1>3.6.5 - Theme of the Month, custom message folders & assessment weighting overrides</h1>
       <li>Added Theme of the Month — a monthly featured theme popup with a link to view it in the theme store.</li>

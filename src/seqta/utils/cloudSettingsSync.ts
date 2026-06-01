@@ -40,8 +40,11 @@ export const SENSITIVE_DEVICE_STORAGE_KEYS_EXACT = [
   "plugin.assessments-average.storage.weightings",
 ] as const;
 
-/** e.g. any future `plugin.global-search.storage.*` keys in chrome.storage */
-export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = ["plugin.global-search.storage."] as const;
+/** School-specific caches; never sync across devices. */
+export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = [
+  "plugin.global-search.storage.",
+  "bsplus.analytics.",
+] as const;
 
 const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,

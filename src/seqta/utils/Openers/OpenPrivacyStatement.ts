@@ -11,7 +11,7 @@ export function OpenPrivacyStatement() {
   ).firstChild as HTMLElement;
 
   const text = stringToHTML(/* html */ `
-      <div class="whatsnewTextContainer" style="overflow-y: auto; max-height: 60vh;">
+      <div class="whatsnewTextContainer privacyStatement">
         <h2 style="margin-top: 0;">Privacy Policy</h2>
         <p>At BetterSEQTA+, we take your privacy seriously. We want to be completely transparent about how we handle your data.</p>
         
@@ -43,6 +43,7 @@ export function OpenPrivacyStatement() {
   openPopup({
     header,
     content: [text],
+    containerClass: "whatsnewContainer--scrollBody",
   });
 }
 

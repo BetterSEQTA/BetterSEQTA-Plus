@@ -3558,6 +3558,32 @@ div.day-empty {
   color: var(--text-primary);
   transform-origin: center center;
 }
+
+/* Text-only popups (privacy notices): body fills remaining height, scrolls inside */
+.whatsnewContainer.whatsnewContainer--scrollBody {
+  .whatsnewHeader {
+    flex-shrink: 0;
+    height: auto;
+    min-height: 3em;
+  }
+
+  > .whatsnewTextContainer {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: none;
+    width: 90%;
+    margin: 0 auto 0.75rem;
+    padding-bottom: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  > .whatsnewTextContainer.privacyStatement {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+}
 .whatsnewTextContainer.privacyStatement p {
   margin-bottom: 1.5ex;
 

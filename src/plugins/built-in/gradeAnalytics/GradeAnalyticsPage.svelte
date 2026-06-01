@@ -16,6 +16,7 @@
     TIME_RANGE_OPTIONS,
     type TimeRange,
   } from "./timeRange";
+  import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
 
   let analyticsData: Assessment[] | null = $state(null);
   let loading = $state(true);
@@ -208,14 +209,23 @@
         <p class="bsplus-analytics-meta">Last updated: {formattedTimestamp()}</p>
       {/if}
     </div>
-    <button
-      type="button"
-      class="bsplus-analytics-btn bsplus-analytics-btn-primary"
-      disabled={syncing}
-      onclick={() => runSync()}
-    >
-      {syncing ? "Syncing…" : "Refresh data"}
-    </button>
+    <div class="bsplus-analytics-header-actions">
+      <button
+        type="button"
+        class="bsplus-analytics-btn bsplus-analytics-btn-primary"
+        disabled={syncing}
+        onclick={() => runSync()}
+      >
+        {syncing ? "Syncing…" : "Refresh data"}
+      </button>
+      <button
+        type="button"
+        class="bsplus-analytics-btn bsplus-analytics-btn-ghost"
+        onclick={() => openAnalyticsPrivacyPopup()}
+      >
+        Privacy notice
+      </button>
+    </div>
   </header>
 
   {#if error}
