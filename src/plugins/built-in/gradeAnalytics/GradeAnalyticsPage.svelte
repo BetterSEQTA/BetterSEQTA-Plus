@@ -213,18 +213,18 @@
     <div class="bsplus-analytics-header-actions">
       <button
         type="button"
+        class="bsplus-analytics-btn bsplus-analytics-btn-privacy"
+        onclick={() => openAnalyticsPrivacyPopup()}
+      >
+        Privacy notice
+      </button>
+      <button
+        type="button"
         class="bsplus-analytics-btn bsplus-analytics-btn-primary"
         disabled={syncing}
         onclick={() => runSync()}
       >
         {syncing ? "Syncing…" : "Refresh data"}
-      </button>
-      <button
-        type="button"
-        class="bsplus-analytics-btn bsplus-analytics-btn-ghost"
-        onclick={() => openAnalyticsPrivacyPopup()}
-      >
-        Privacy notice
       </button>
     </div>
   </header>
