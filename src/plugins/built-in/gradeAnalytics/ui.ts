@@ -62,7 +62,15 @@ function extractSolidColor(value: string): string | null {
   return null;
 }
 
+const THEME_ACCENT_OVERRIDES: Record<string, string> = {
+  "bb0aaf40-55ef-40f7-bc64-93b67ef96c01": "#4ade80",
+};
+
 function resolvePageAccentColor(): string {
+  const themeId = settingsState.selectedTheme;
+  if (themeId && themeId in THEME_ACCENT_OVERRIDES) {
+    return THEME_ACCENT_OVERRIDES[themeId];
+  }
   const computed = getComputedStyle(document.documentElement);
   for (const name of ACCENT_CSS_VARS) {
     const solid = extractSolidColor(computed.getPropertyValue(name));

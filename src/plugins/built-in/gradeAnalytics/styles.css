@@ -112,15 +112,17 @@
 }
 
 .bsplus-analytics-btn-privacy {
-  background: transparent;
-  color: var(--bsplus-analytics-text);
-  border: none;
+  background: var(--bsplus-theme-btn-privacy-bg, transparent);
+  color: var(--bsplus-theme-btn-privacy-color, var(--bsplus-analytics-text));
+  border: var(--bsplus-theme-btn-privacy-border, none);
+  box-shadow: var(--bsplus-theme-btn-privacy-shadow, none);
   padding: 0.65rem 0.75rem;
 }
 
 .bsplus-analytics-btn-privacy:hover:not(:disabled) {
   transform: scale(1.02);
-  color: var(--bsplus-analytics-accent);
+  color: var(--bsplus-theme-btn-privacy-hover-color, var(--bsplus-analytics-accent));
+  box-shadow: var(--bsplus-theme-btn-privacy-hover-shadow, none);
 }
 
 .bsplus-analytics-header-text h1 {
@@ -201,9 +203,9 @@
 }
 
 .bsplus-analytics-btn-primary {
-  background: var(--bsplus-analytics-accent);
-  color: #fff;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent);
+  background: var(--bsplus-theme-btn-primary-bg, var(--bsplus-analytics-accent));
+  color: var(--bsplus-theme-btn-primary-color, #fff);
+  box-shadow: var(--bsplus-theme-btn-primary-shadow, 0 2px 8px color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent));
 }
 
 .bsplus-analytics-btn-primary:hover:not(:disabled) {
@@ -216,9 +218,10 @@
 }
 
 .bsplus-analytics-btn-ghost {
-  background: transparent;
-  color: var(--bsplus-analytics-text);
-  border: 2px solid var(--bsplus-analytics-border);
+  background: var(--bsplus-theme-btn-ghost-bg, transparent);
+  color: var(--bsplus-theme-btn-ghost-color, var(--bsplus-analytics-text));
+  border: var(--bsplus-theme-btn-ghost-border, 2px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-btn-ghost-shadow, none);
 }
 
 .bsplus-analytics-btn-ghost:hover:not(:disabled) {
@@ -247,10 +250,10 @@
 
 .bsplus-analytics-stat {
   padding: 1.1rem 1.25rem;
-  border-radius: var(--bsplus-analytics-radius);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow);
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
+  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   transition:
     transform 0.25s var(--bsplus-analytics-ease),
     box-shadow 0.25s var(--bsplus-analytics-ease);
@@ -258,7 +261,7 @@
 
 .bsplus-analytics-stat:hover {
   transform: translateY(-2px);
-  box-shadow: var(--bsplus-analytics-shadow-hover);
+  box-shadow: var(--bsplus-theme-card-shadow-hover, var(--bsplus-analytics-shadow-hover));
 }
 
 .bsplus-analytics-stat-label {
@@ -288,10 +291,10 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.15rem;
-  border-radius: var(--bsplus-analytics-radius);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow);
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
+  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   overflow: visible;
   position: relative;
   z-index: 40;
@@ -552,10 +555,10 @@
 .bsplus-analytics-card {
   display: flex;
   flex-direction: column;
-  border-radius: var(--bsplus-analytics-radius);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow);
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
+  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   overflow: hidden;
   transition:
     transform 0.3s var(--bsplus-analytics-ease),
@@ -563,7 +566,7 @@
 }
 
 .bsplus-analytics-card:hover {
-  box-shadow: var(--bsplus-analytics-shadow-hover);
+  box-shadow: var(--bsplus-theme-card-shadow-hover, var(--bsplus-analytics-shadow-hover));
 }
 
 .bsplus-analytics-card-header {
@@ -780,10 +783,10 @@
 
 /* ─── Table ─── */
 .bsplus-analytics-table-wrap {
-  border-radius: var(--bsplus-analytics-radius);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow);
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
+  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   overflow: hidden;
 }
 
@@ -932,10 +935,10 @@
   gap: 1rem;
   padding: 3rem 2rem;
   text-align: center;
-  border-radius: var(--bsplus-analytics-radius);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow);
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
+  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
+  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
 }
 
 .bsplus-analytics-empty h2 {
