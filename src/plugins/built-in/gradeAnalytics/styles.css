@@ -254,6 +254,7 @@
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
   border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
+  backdrop-filter: var(--bsplus-theme-card-blur, none);
   transition:
     transform 0.25s var(--bsplus-analytics-ease),
     box-shadow 0.25s var(--bsplus-analytics-ease);
@@ -295,6 +296,7 @@
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
   border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
+  backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: visible;
   position: relative;
   z-index: 40;
@@ -559,6 +561,7 @@
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
   border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
+  backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: hidden;
   transition:
     transform 0.3s var(--bsplus-analytics-ease),
@@ -787,6 +790,7 @@
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
   border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
+  backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: hidden;
 }
 
@@ -939,6 +943,7 @@
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
   border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
+  backdrop-filter: var(--bsplus-theme-card-blur, none);
 }
 
 .bsplus-analytics-empty h2 {
