@@ -234,7 +234,7 @@
 
   $effect(() => {
 
-    if (displayTheme) {
+    if (displayTheme && modalElement) {
 
       animate(
 

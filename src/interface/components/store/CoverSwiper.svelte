@@ -10,14 +10,18 @@
   }>();
   let emblaApi = $state();
 
-  const options = { loop: true };
-  const plugins = [
-    Autoplay({
-      delay: 5000,
-      stopOnInteraction: false,
-      stopOnMouseEnter: true,
-    }),
-  ];
+  const options = $derived({ loop: slides.length > 1 });
+  const plugins = $derived(
+    slides.length > 1
+      ? [
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: false,
+            stopOnMouseEnter: true,
+          }),
+        ]
+      : [],
+  );
 
   function onInit(event: CustomEvent) {
     emblaApi = event.detail;

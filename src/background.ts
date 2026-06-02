@@ -43,6 +43,39 @@ function reloadSeqtaPages() {
 /** Callback for sending a response back to the message sender */
 type MessageSender = { (response?: unknown): void };
 
+/** Accept API + GitHub fallback shapes; always return `{ success, data?: { themes } }`. */
+function normalizeFetchThemesResponse(json: unknown): {
+  success: boolean;
+  data?: { themes: unknown[] };
+  error?: string;
+} {
+  if (!json || typeof json !== "object") {
+    return { success: false, error: "Invalid themes response" };
+  }
+  const body = json as Record<string, unknown>;
+  if (body.success === false) {
+    return {
+      success: false,
+      error: typeof body.error === "string" ? body.error : "Failed to fetch themes",
+    };
+  }
+  const data = body.data;
+  let themes: unknown[] | null = null;
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const nested = (data as Record<string, unknown>).themes;
+    if (Array.isArray(nested)) themes = nested;
+  } else if (Array.isArray(data)) {
+    themes = data;
+  }
+  if (!themes && Array.isArray(body.themes)) {
+    themes = body.themes;
+  }
+  if (!themes) {
+    return { success: false, error: "Themes list missing from response" };
+  }
+  return { success: true, data: { themes } };
+}
+
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   const { token } = request;
   const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
@@ -50,13 +83,28 @@ function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
   fetch(apiUrl, { cache: "no-store", headers })
-    .then((r) => r.json())
+    .then(async (r) => {
+      const json = await r.json();
+      if (!r.ok) {
+        throw new Error(
+          (json && typeof json === "object" && "error" in json && typeof (json as { error?: string }).error === "string"
+            ? (json as { error: string }).error
+            : null) ?? `Themes API HTTP ${r.status}`,
+        );
+      }
+      return normalizeFetchThemesResponse(json);
+    })
     .then(sendResponse)
     .catch((err) => {
       console.warn("[Background] fetchThemes API failed, trying GitHub fallback:", err?.message);
       fetch(githubUrl, { cache: "no-store" })
-        .then((r) => r.json())
-        .then((data) => sendResponse({ success: true, data: { themes: data.themes ?? [] } }))
+        .then(async (r) => {
+          if (!r.ok) throw new Error(`GitHub fallback HTTP ${r.status}`);
+          const data = await r.json();
+          const themes = Array.isArray(data) ? data : (data?.themes ?? []);
+          return normalizeFetchThemesResponse({ success: true, data: { themes } });
+        })
+        .then(sendResponse)
         .catch((fallbackErr) => {
           console.error("[Background] fetchThemes GitHub fallback error:", fallbackErr);
           sendResponse({ success: false, error: fallbackErr?.message });

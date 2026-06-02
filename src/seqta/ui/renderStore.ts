@@ -15,6 +15,9 @@ export function renderStore() {
     throw new Error("Container not found");
   }
 
+  // Avoid stacking multiple store roots if opened repeatedly without close.
+  document.getElementById("store")?.remove();
+
   const child = document.createElement("div");
   child.id = "store";
   container!.appendChild(child);
