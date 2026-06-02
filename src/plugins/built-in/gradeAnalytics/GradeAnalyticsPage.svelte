@@ -10,6 +10,7 @@
   import AnalyticsAreaChart from "./AnalyticsAreaChart.svelte";
   import AnalyticsBarChart from "./AnalyticsBarChart.svelte";
   import AssessmentTable from "./AssessmentTable.svelte";
+  import GradeRangeSlider from "./GradeRangeSlider.svelte";
   import {
     filterAssessmentsByTimeRange,
     getTimeRangeLabel,
@@ -365,13 +366,7 @@
 
       <div class="bsplus-analytics-field bsplus-analytics-grade-range">
         <span class="bsplus-analytics-field-label">Grade range</span>
-        <div class="bsplus-analytics-range-row">
-          <input type="range" min="0" max="100" bind:value={gradeRange[0]} />
-          <input type="range" min="0" max="100" bind:value={gradeRange[1]} />
-          <span class="bsplus-analytics-range-value"
-            >{gradeRange[0]}% – {gradeRange[1]}%</span
-          >
-        </div>
+        <GradeRangeSlider bind:value={gradeRange} />
       </div>
 
       <div class="bsplus-analytics-field bsplus-analytics-toolbar-search">
