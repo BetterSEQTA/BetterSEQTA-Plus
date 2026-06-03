@@ -88,7 +88,8 @@ function syncThemeFromPage(target: HTMLElement) {
   const computed = getComputedStyle(document.documentElement);
 
   for (const name of THEME_CSS_VARS) {
-    const value = computed.getPropertyValue(name).trim();
+    let value = computed.getPropertyValue(name).trim();
+    value = document.documentElement.style.getPropertyValue(name).trim();
     if (value) {
       target.style.setProperty(name, value);
     }
