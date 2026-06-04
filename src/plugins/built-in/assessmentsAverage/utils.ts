@@ -84,9 +84,111 @@ function parseGrade(text: string): number {
   return letterToNumber[str] ?? 0;
 }
 
+function formatWeightDisplay(weighting: string): string {
+  return `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`;
+}
+
+function saveWeightingOverride(
+  api: any,
+  assessmentID: string,
+  raw: string,
+): { ok: boolean; error?: string } {
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    const { [assessmentID]: _, ...rest } = api.storage.weightingOverrides;
+    api.storage.weightingOverrides = rest;
+    document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
+    return { ok: true };
+  }
+
+  const val = parseFloat(trimmed);
+  if (isNaN(val) || val < 0) {
+    return { ok: false, error: "Invalid. Must be 0 or greater" };
+  }
+
+  api.storage.weightingOverrides = {
+    ...api.storage.weightingOverrides,
+    [assessmentID]: String(val),
+  };
+  document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
+  return { ok: true };
+}
+
+function attachWeightInputListeners(
+  input: HTMLInputElement,
+  api: any,
+  assessmentID: string,
+) {
+  const save = () => {
+    const result = saveWeightingOverride(api, assessmentID, input.value);
+    input.style.borderColor = result.ok
+      ? "rgba(128,128,128,0.35)"
+      : "rgba(255,80,80,0.6)";
+  };
+
+  input.addEventListener("blur", save);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") input.blur();
+  });
+}
+
+function updateWeightLabelContent(
+  weightLabel: HTMLElement,
+  weighting: string | undefined,
+  assessmentID: string | undefined,
+  api: any,
+) {
+  const existingInput = weightLabel.querySelector(
+    ".betterseqta-weight-input",
+  ) as HTMLInputElement | null;
+  if (existingInput && document.activeElement === existingInput) return;
+
+  weightLabel.querySelector(".betterseqta-weight-value")?.remove();
+  weightLabel.querySelector(".betterseqta-weight-input")?.remove();
+  Array.from(weightLabel.childNodes)
+    .filter((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim())
+    .forEach((node) => node.remove());
+
+  weightLabel.title = "";
+
+  if (weighting === "processing") {
+    const span = document.createElement("span");
+    span.className = "betterseqta-weight-value";
+    span.textContent = "...";
+    span.style.opacity = "0.5";
+    weightLabel.appendChild(span);
+    return;
+  }
+
+  if (weighting === "N/A" && assessmentID) {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "0";
+    input.step = "5";
+    input.className = "betterseqta-weight-input";
+    input.placeholder = "Set %";
+    input.setAttribute("aria-label", "Assessment weighting percentage");
+    input.style.cssText =
+      "width:52px;padding:1px 4px;border-radius:4px;border:1px solid rgba(128,128,128,0.35);background:rgba(128,128,128,0.08);color:inherit;font-size:inherit;outline:none;";
+    attachWeightInputListeners(input, api, assessmentID);
+    weightLabel.appendChild(input);
+    weightLabel.title = "Enter assessment weighting %";
+    return;
+  }
+
+  const span = document.createElement("span");
+  span.className = "betterseqta-weight-value";
+  span.textContent =
+    weighting && weighting !== "N/A"
+      ? formatWeightDisplay(weighting)
+      : "N/A";
+  weightLabel.appendChild(span);
+}
+
 function createWeightLabel(
   assessmentItem: Element,
   weighting: string | undefined,
+  api: any,
 ) {
   let statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___'],  .betterseqta-stats-container`,
@@ -112,20 +214,17 @@ function createWeightLabel(
     ? "space-between"
     : "flex-end";
 
-  const displayText =
-    weighting && weighting !== "processing" && weighting !== "N/A"
-      ? `${Number(weighting) % 1 === 0 ? Number(weighting) : weighting}%`
-      : "N/A";
+  const title = assessmentItem
+    .querySelector(`[class*='AssessmentItem__title___']`)
+    ?.textContent?.trim();
+  const assessmentID = title ? api.storage.assessments?.[title] : undefined;
 
   const existingLabel = statsContainer.querySelector(
     ".betterseqta-weight-label",
   ) as HTMLElement | null;
 
   if (existingLabel) {
-    const textNodes = Array.from(existingLabel.childNodes).filter(
-      (node) => node.nodeType === Node.TEXT_NODE,
-    );
-    if (textNodes.length) textNodes[0].textContent = displayText;
+    updateWeightLabelContent(existingLabel, weighting, assessmentID, api);
     return;
   }
 
@@ -157,15 +256,7 @@ function createWeightLabel(
   const innerTextDiv = weightLabel.querySelector(`[class*='Label__innerText___']`);
   if (innerTextDiv) innerTextDiv.textContent = "Weight";
 
-  const textNodes = Array.from(weightLabel.childNodes).filter(
-    (node) => node.nodeType === Node.TEXT_NODE,
-  );
-  if (textNodes.length) {
-    textNodes[0].textContent = displayText;
-  } else {
-    weightLabel.appendChild(document.createTextNode(displayText));
-  }
-
+  updateWeightLabelContent(weightLabel, weighting, assessmentID, api);
   statsContainer.appendChild(weightLabel);
 }
 
@@ -613,7 +704,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
       : undefined;
     const weighting = override ?? autoWeighting;
 
-    createWeightLabel(assessmentItem, weighting);
+    createWeightLabel(assessmentItem, weighting, api);
 
     const gradeElement = assessmentItem.querySelector(
       `[class*='Thermoscore__text___']`,
@@ -760,13 +851,13 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
         <span style="font-size:13px;opacity:${autoWeight != null ? "1" : "0.4"}">${autoWeight != null ? `${autoWeight}%` : "none"}</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
-        <label for="betterseqta-weight-override" style="font-size:13px;opacity:0.7;flex-shrink:0">Override %</label>
+        <label for="betterseqta-weight-override" style="font-size:13px;opacity:0.7;flex-shrink:0">${weightingUnavailable ? "Weight %" : "Override %"}</label>
         <input
           id="betterseqta-weight-override"
           type="number"
           min="0"
           step="5"
-          placeholder="${autoWeight ?? ""}"
+          placeholder="${weightingUnavailable ? "Enter weight" : autoWeight ?? ""}"
           value="${override ?? ""}"
           ${!assessmentID ? "disabled" : ""}
           style="
@@ -800,26 +891,22 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
   const save = () => {
     const raw = input.value.trim();
     if (raw === "") {
-      const { [assessmentID]: _, ...rest } = api.storage.weightingOverrides;
-      api.storage.weightingOverrides = rest;
+      const result = saveWeightingOverride(api, assessmentID, "");
+      if (!result.ok) return;
+      input.style.borderColor = "rgba(128,128,128,0.3)";
     } else {
-      const val = parseFloat(raw);
-      if (isNaN(val) || val < 0) {
+      const result = saveWeightingOverride(api, assessmentID, raw);
+      if (!result.ok) {
         input.style.borderColor = "rgba(255,80,80,0.6)";
-        statusEl.textContent = "Invalid. Must be 0 or greater";
+        statusEl.textContent = result.error ?? "Invalid. Must be 0 or greater";
         statusEl.style.color = "rgba(255,80,80,0.8)";
         return;
       }
       input.style.borderColor = "rgba(128,128,128,0.3)";
-      api.storage.weightingOverrides = {
-        ...api.storage.weightingOverrides,
-        [assessmentID]: String(val),
-      };
     }
     statusEl.textContent = "Saved";
     statusEl.style.color = "";
     setTimeout(() => (statusEl.textContent = ""), 2000);
-    document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
   };
 
   input.addEventListener("blur", save);
@@ -873,12 +960,8 @@ export function injectWeightingsTab(api: any) {
   ].join(" ");
   container.appendChild(newSheet);
 
-  let populated = false;
   newTab.addEventListener("click", () => {
-    if (!populated) {
-      buildWeightingsTabContent(api, newSheet);
-      populated = true;
-    }
+    buildWeightingsTabContent(api, newSheet);
   });
 
   const allTabs = Array.from(tabList.querySelectorAll("li"));
