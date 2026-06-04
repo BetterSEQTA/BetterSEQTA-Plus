@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
 
   let { alwaysShowUserName = false, onClick = undefined } = $props<{
     alwaysShowUserName?: boolean;
@@ -72,12 +73,12 @@
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
-        <img
-          src={cloudState.user.pfpUrl}
-          alt=""
+        <CloudPfpAvatar
+          user={cloudState.user}
           class="w-5 h-5 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-600"
         />
-      {:else}
+      {/if}
+      {#if !cloudState.user?.pfpUrl}
         <div class="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-[0.6rem]">
           {getInitials()}
         </div>
@@ -111,12 +112,12 @@
           <div class="flex flex-col gap-3">
             <div class="flex items-center gap-3">
               {#if cloudState.user?.pfpUrl}
-                <img
-                  src={cloudState.user.pfpUrl}
-                  alt=""
+                <CloudPfpAvatar
+                  user={cloudState.user}
                   class="w-12 h-12 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-600"
                 />
-              {:else}
+              {/if}
+              {#if !cloudState.user?.pfpUrl}
                 <div class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base">
                   {getInitials()}
                 </div>

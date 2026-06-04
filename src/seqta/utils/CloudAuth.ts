@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import { clearCloudPfpCache } from "@/seqta/utils/cloudPfpCache";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 const REDIRECT_URI = "https://accounts.betterseqta.org/auth/bsplus/callback";
@@ -16,6 +17,7 @@ export type CloudUser = {
   username?: string;
   displayName?: string;
   pfpUrl?: string;
+  pfpHash?: string | null;
   admin_level?: number;
 };
 
@@ -201,6 +203,8 @@ class CloudAuthService {
   }
 
   public async logout(): Promise<void> {
+    const userId = this._state.user?.id;
+    if (userId) await clearCloudPfpCache(userId);
     await browser.storage.local.remove([
       STORAGE_KEYS.accessToken,
       STORAGE_KEYS.refreshToken,
