@@ -6,6 +6,7 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import browser from "webextension-polyfill";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import styles from "./styles.css?inline";
 import localforage from "localforage";
@@ -67,7 +68,8 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       if (useCloud && pfpUrl) {
         img = document.createElement("img");
         img.className = "userInfoImg";
-        img.src = pfpUrl;
+        const base = pfpUrl.split("?")[0]!;
+        img.src = `${base}?v=${Date.now()}`;
         if (svg) svg.style.display = "none";
         container.appendChild(img);
         return;
@@ -93,11 +95,26 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     };
     window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
 
+    const onStorageRevision = (
+      changes: Record<string, browser.Storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName === "local" && changes.profile_picture_revision) {
+        void applyProfileImage();
+      }
+    };
+    browser.storage.onChanged.addListener(onStorageRevision);
+
     const cloudUnsub = cloudAuth.subscribe(() => {
       void applyProfileImage();
     });
 
-    const useCloudUnreg = api.settings.onChange("useCloudPfp", () => {
+    const useCloudUnreg = api.settings.onChange("useCloudPfp", (enabled: boolean) => {
+      if (enabled) {
+        void import("@/seqta/utils/cloudPfpSync").then(({ syncLocalProfilePictureToCloud }) =>
+          syncLocalProfilePictureToCloud(),
+        );
+      }
       void applyProfileImage();
     });
 
@@ -105,6 +122,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       useCloudUnreg.unregister();
       cloudUnsub();
       window.removeEventListener("profile-picture-updated", onLocalPictureUpdated);
+      browser.storage.onChanged.removeListener(onStorageRevision);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
