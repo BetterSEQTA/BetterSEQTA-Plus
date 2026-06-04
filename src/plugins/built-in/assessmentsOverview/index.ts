@@ -110,7 +110,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
         .querySelector('[data-key="assessments"]')
         ?.classList.add("active");
 
-      main.innerHTML = '<div id="grid-view-container"></div>';
+  main.innerHTML = '<div id="grid-view-container" class="bsplus-overview-host"></div>';
       const container = document.getElementById(
         "grid-view-container",
       ) as HTMLElement;

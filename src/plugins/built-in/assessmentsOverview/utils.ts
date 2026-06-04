@@ -1,3 +1,115 @@
+export interface OverviewSubject {
+  code: string;
+  programme: number;
+  metaclass: number;
+  title: string;
+}
+
+function isActiveTermFlag(active: unknown): boolean {
+  return active === 1 || active === true;
+}
+
+export function normalizeOverviewSubject(raw: unknown): OverviewSubject | null {
+  if (!raw || typeof raw !== "object") return null;
+
+  const subject = raw as Record<string, unknown>;
+  const programme = Number(subject.programme ?? subject.programmeID);
+  const metaclass = Number(subject.metaclass ?? subject.metaclassID);
+  if (!programme || !metaclass || Number.isNaN(programme) || Number.isNaN(metaclass)) {
+    return null;
+  }
+
+  const code = String(subject.code ?? subject.subject ?? "").trim();
+  if (!code) return null;
+
+  return {
+    code,
+    programme,
+    metaclass,
+    title: String(subject.title ?? subject.description ?? code),
+  };
+}
+
+/** Subjects from the active programme-year folder(s) in `/seqta/student/load/subjects`. */
+export function activeSubjectsFromLearnPayload(payload: unknown): OverviewSubject[] {
+  if (!Array.isArray(payload)) return [];
+
+  const subjects: OverviewSubject[] = [];
+  const seen = new Set<string>();
+
+  for (const folder of payload) {
+    if (!folder || typeof folder !== "object") continue;
+    const term = folder as { active?: unknown; subjects?: unknown[] };
+    if (!isActiveTermFlag(term.active) || !Array.isArray(term.subjects)) continue;
+
+    for (const raw of term.subjects) {
+      const subject = normalizeOverviewSubject(raw);
+      if (!subject) continue;
+      const key = `${subject.programme}-${subject.metaclass}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      subjects.push(subject);
+    }
+  }
+
+  return subjects;
+}
+
+export function activeSubjectsFromEngageChild(child: {
+  terms?: { active?: number; subjects?: unknown[] }[];
+}): OverviewSubject[] {
+  const subjects: OverviewSubject[] = [];
+  const seen = new Set<string>();
+
+  for (const term of child.terms ?? []) {
+    if (term.active !== 1) continue;
+    for (const raw of term.subjects ?? []) {
+      const subject = normalizeOverviewSubject(raw);
+      if (!subject) continue;
+      const key = `${subject.programme}-${subject.metaclass}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      subjects.push(subject);
+    }
+  }
+
+  return subjects;
+}
+
+export function assessmentBelongsToActiveSubjects(
+  assessment: Record<string, unknown>,
+  activeSubjects: OverviewSubject[],
+): boolean {
+  if (!activeSubjects.length) return false;
+
+  const programme = Number(
+    assessment.programmeID ?? assessment.programme,
+  );
+  const metaclass = Number(
+    assessment.metaclassID ?? assessment.metaclass,
+  );
+
+  if (programme && metaclass && !Number.isNaN(programme) && !Number.isNaN(metaclass)) {
+    return activeSubjects.some(
+      (subject) =>
+        subject.programme === programme && subject.metaclass === metaclass,
+    );
+  }
+
+  const code = String(assessment.code ?? assessment.subject ?? "").trim();
+  if (!code) return false;
+  return activeSubjects.some((subject) => subject.code === code);
+}
+
+export function filterAssessmentsForActiveSubjects<T extends Record<string, unknown>>(
+  assessments: T[],
+  activeSubjects: OverviewSubject[],
+): T[] {
+  return assessments.filter((assessment) =>
+    assessmentBelongsToActiveSubjects(assessment, activeSubjects),
+  );
+}
+
 export function formatDate(dateStr: string, submitted?: boolean): string {
   const d = new Date(dateStr);
   const now = new Date();

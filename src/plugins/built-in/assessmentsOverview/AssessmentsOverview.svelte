@@ -3,6 +3,12 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
+  import OverviewIcon from "./OverviewIcon.svelte";
+  import {
+    GROUP_SORT_ICONS,
+    STATUS_COLUMN_ICONS,
+    type OverviewIconName,
+  } from "./icons";
   import confetti from "canvas-confetti";
 
   export let data: any;
@@ -50,7 +56,12 @@
 
   let filteredAssessments: any[] = [];
   let statusGroups: Record<string, any[]> = {};
-  let columns: { key: string; title: string; className: string; icon: string }[] = [];
+  let columns: {
+    key: string;
+    title: string;
+    className: string;
+    icon: OverviewIconName;
+  }[] = [];
 
   function getAssessmentYear(a: any): number {
     const dateStr = a.due || a.date || a.dueDate || a.created;
@@ -89,13 +100,22 @@
     return new Date(a.due || a.date || 0).getTime() - new Date(b.due || b.date || 0).getTime();
   }
 
-  const STATUS_COLUMNS = [
-    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: "📅" },
-    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: "⏰" },
-    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: "🚨" },
-    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: "📝" },
-    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: "✅" },
+  const STATUS_COLUMNS: {
+    key: string;
+    title: string;
+    className: string;
+    icon: OverviewIconName;
+  }[] = [
+    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: "calendar-days" },
+    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: "clock" },
+    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: "exclamation-triangle" },
+    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: "document-check" },
+    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: "check-circle" },
   ];
+
+  function groupSortIcon(): OverviewIconName {
+    return GROUP_SORT_ICONS[currentFilters.sortBy] ?? "queue-list";
+  }
 
   function buildGroupsAndColumns() {
     if (!data?.assessments) return { filteredAssessments: [], statusGroups: {}, columns: [] };
@@ -131,18 +151,19 @@
       groups[key].sort(sortCompare);
     });
 
-    let cols: { key: string; title: string; className: string; icon: string }[];
+    let cols: { key: string; title: string; className: string; icon: OverviewIconName }[];
     if (currentFilters.sortBy === "due") {
       cols = STATUS_COLUMNS;
     } else {
       const keys = Object.keys(groups).filter((k) => groups[k]?.length > 0);
+      const sortIcon = groupSortIcon();
       if (currentFilters.sortBy === "year") {
-        cols = keys.sort((a, b) => Number(b) - Number(a)).map((k) => ({ key: k, title: k, className: "column-custom", icon: "📆" }));
+        cols = keys.sort((a, b) => Number(b) - Number(a)).map((k) => ({ key: k, title: k, className: "column-custom", icon: sortIcon }));
       } else if (currentFilters.sortBy === "subject") {
         const subjectTitles = new Map(data?.subjects?.map((s: any) => [s.code, `${s.code} - ${s.title}`]) || []);
-        cols = keys.sort().map((k) => ({ key: k, title: subjectTitles.get(k) || k, className: "column-custom", icon: "📚" }));
+        cols = keys.sort().map((k) => ({ key: k, title: subjectTitles.get(k) || k, className: "column-custom", icon: sortIcon }));
       } else {
-        cols = keys.sort().map((k) => ({ key: k, title: k, className: "column-custom", icon: "📋" }));
+        cols = keys.sort().map((k) => ({ key: k, title: k, className: "column-custom", icon: sortIcon }));
       }
     }
 
@@ -379,10 +400,13 @@
 
 <svelte:window on:click={closeAllMenus} />
 
-<div id="grid-view-container">
-  <div class="grid-view-header">
-    <h1 class="grid-view-title">Assessments</h1>
-    <div class="grid-view-filters">
+<div class="bsplus-overview-page">
+  <header class="grid-view-header bsplus-overview-animate">
+    <div class="grid-view-header-text">
+      <h1 class="grid-view-title">Assessments</h1>
+      <p class="grid-view-subtitle">Track upcoming tasks, submissions, and released marks</p>
+    </div>
+    <div class="grid-view-filters bsplus-overview-toolbar">
       {#if showStudentFilter}
         <select class="filter-select" bind:value={currentFilters.student}>
           <option value="all">All Students</option>
@@ -411,14 +435,15 @@
           on:click={() => (showVisibilityPanel = !showVisibilityPanel)}
           title="Manage hidden subjects and assessments"
         >
-          👁 Visibility ({hiddenSubjects.length + hiddenAssessmentsWithInfo.length})
+          <OverviewIcon name="eye" size={18} />
+          <span>Visibility ({hiddenSubjects.length + hiddenAssessmentsWithInfo.length})</span>
         </button>
       {/if}
     </div>
-  </div>
+  </header>
 
   {#if showVisibilityPanel && hasHiddenItems}
-    <div class="visibility-panel">
+    <div class="visibility-panel bsplus-overview-animate">
       <h4 class="visibility-panel-title">Hidden items</h4>
       {#if hiddenSubjects.length > 0}
         <div class="visibility-section">
@@ -449,10 +474,10 @@
     </div>
   {/if}
 
-  <div id="main-grid-content">
+  <div id="main-grid-content" class="bsplus-overview-animate bsplus-overview-delay-1">
     {#if filteredAssessments.length === 0}
       <div class="empty-state">
-        <div class="empty-icon">📋</div>
+        <OverviewIcon name="clipboard-document-list" size={40} class="empty-icon" />
         <p>No assessments found matching your filters</p>
       </div>
     {:else}
@@ -463,9 +488,15 @@
               <div class="kanban-column {column.className}">
                 <div class="column-header">
                   <div class="column-title">
-                    {column.icon} {column.title}
-                    <span class="column-count">{statusGroups[column.key].length}</span>
-                  </div>
+                  <span class="column-title-main">
+                    <OverviewIcon
+                      name={column.icon ?? STATUS_COLUMN_ICONS[column.key] ?? "queue-list"}
+                      size={18}
+                    />
+                    {column.title}
+                  </span>
+                  <span class="column-count">{statusGroups[column.key].length}</span>
+                </div>
                 </div>
                 <div class="column-cards" id="{column.key.toLowerCase()}-cards">
                   {#each statusGroups[column.key] as assessment}
@@ -504,11 +535,7 @@
                             on:click={(e) => toggleMenu(assessment.id, e)}
                             aria-label="Open menu"
                           >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <circle cx="12" cy="5" r="2"/>
-                              <circle cx="12" cy="12" r="2"/>
-                              <circle cx="12" cy="19" r="2"/>
-                            </svg>
+                            <OverviewIcon name="ellipsis-vertical" size={16} />
                           </button>
                           <div class="menu-dropdown" style="display: {openMenuId === assessment.id ? 'block' : 'none'};">
                             {#if status !== "MARKS_RELEASED"}
@@ -535,7 +562,8 @@
                       {#if !assessment.results && !isCompleted}
                         <div class="assessment-meta">
                           <div class="due-date {dueDateClass}">
-                            📅 {formatDate(assessment.due || assessment.date || assessment.dueDate || "", assessment.submitted)}
+                            <OverviewIcon name="calendar-days" size={14} />
+                            {formatDate(assessment.due || assessment.date || assessment.dueDate || "", assessment.submitted)}
                           </div>
                         </div>
                       {/if}
