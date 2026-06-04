@@ -107,6 +107,17 @@ class CloudAuthService {
     return (result[STORAGE_KEYS.accessToken] as string) ?? null;
   }
 
+  /** Persist an updated user object (e.g. after cloud profile picture sync). */
+  public async setUser(user: CloudUser | null): Promise<void> {
+    (settingsState as any).setKey(STORAGE_KEYS.user, user);
+    await browser.storage.local.set({ [STORAGE_KEYS.user]: user });
+    this._state = {
+      isLoggedIn: this._state.isLoggedIn,
+      user,
+    };
+    this.notify();
+  }
+
   private async getClientId(): Promise<string> {
     let clientId = (settingsState as any)[STORAGE_KEYS.clientId] as string | undefined;
     if (!clientId) {

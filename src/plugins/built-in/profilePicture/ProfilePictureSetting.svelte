@@ -1,5 +1,10 @@
 <script lang="ts">
   import localforage from 'localforage'
+  import {
+    isUseCloudPfpEnabled,
+    notifyProfilePictureChanged,
+    syncLocalProfilePictureToCloud,
+  } from '@/seqta/utils/cloudPfpSync'
   let value = $state<string | undefined>(undefined)
   let fileInput = $state<HTMLInputElement | undefined>(undefined)
   let dragging = $state(false)
@@ -25,6 +30,14 @@
 
   load()
 
+  async function afterProfilePictureChange() {
+    window.dispatchEvent(new Event('profile-picture-updated'))
+    if (await isUseCloudPfpEnabled()) {
+      await syncLocalProfilePictureToCloud()
+    }
+    await notifyProfilePictureChanged()
+  }
+
   function triggerSelect() {
     fileInput?.click()
   }
@@ -43,7 +56,7 @@
     const newBlobUrl = URL.createObjectURL(file)
     value = newBlobUrl
     blobUrl = newBlobUrl
-    window.dispatchEvent(new Event('profile-picture-updated'))
+    await afterProfilePictureChange()
   }
 
   function onFileChange() {
@@ -63,7 +76,7 @@
     }
     value = undefined
     await store.removeItem('profile-picture')
-    window.dispatchEvent(new Event('profile-picture-updated'))
+    await afterProfilePictureChange()
   }
 </script>
 
