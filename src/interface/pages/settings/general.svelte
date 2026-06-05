@@ -132,8 +132,9 @@
     loadPluginSettings();
   })
 
-  const { showColourPicker, showDisclaimer, showCloudPanel } = $props<{ 
+  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel } = $props<{ 
     showColourPicker: () => void;
+    showFontPicker: () => void;
     showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
     showCloudPanel: () => void;
   }>();
@@ -190,6 +191,16 @@
       Component: PickerSwatch,
       props: {
         onClick: showColourPicker
+      }
+    },
+    {
+      title: "Interface Font",
+      description: "Choose the typeface used across SEQTA Learn",
+      id: 16,
+      Component: Button,
+      props: {
+        onClick: showFontPicker,
+        text: "Change"
       }
     },
     {

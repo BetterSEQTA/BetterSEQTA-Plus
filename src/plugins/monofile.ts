@@ -17,6 +17,7 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
@@ -697,6 +698,7 @@ export function init() {
     new MessageHandler();
 
     void updateAllColors();
+    applySelectedFont();
 
     window.addEventListener("hashchange", () => {
       if (settingsState.adaptiveThemeColour) void updateAllColors();

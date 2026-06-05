@@ -1,0 +1,311 @@
+/* Font picker — analytics design tokens & components */
+
+.bsplus-font-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  cursor: pointer;
+  background: color-mix(in srgb, #000 52%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.bsplus-font-picker-root {
+  --bsplus-analytics-radius: 16px;
+  --bsplus-analytics-radius-sm: 12px;
+  --bsplus-analytics-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --bsplus-analytics-surface: var(--background-primary, #ffffff);
+  --bsplus-analytics-surface-2: var(--background-secondary, #f8fafc);
+  --bsplus-analytics-text: var(--text-primary, #1a1a1a);
+  --bsplus-analytics-muted: color-mix(
+    in srgb,
+    var(--bsplus-analytics-text) 55%,
+    transparent
+  );
+  --bsplus-analytics-border: color-mix(
+    in srgb,
+    var(--theme-offset-bg, var(--background-secondary, #e2e8f0)) 78%,
+    transparent
+  );
+  --bsplus-analytics-shadow: 0 5px 16px 6px rgba(0, 0, 0, 0.12);
+  --bsplus-analytics-shadow-hover: 0 8px 24px 8px rgba(0, 0, 0, 0.16);
+  --bsplus-analytics-accent: var(--better-main, #007bff);
+
+  font-family: Rubik, system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-font-picker-root.dark {
+  --bsplus-analytics-shadow: 0 5px 20px 6px rgba(0, 0, 0, 0.45);
+  --bsplus-analytics-shadow-hover: 0 10px 28px 10px rgba(0, 0, 0, 0.55);
+}
+
+@keyframes bsplus-font-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bsplus-font-picker-dialog {
+  width: min(100%, 22rem);
+  max-height: min(88vh, 820px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: auto;
+  border-radius: var(--bsplus-analytics-radius);
+  background: var(--bsplus-analytics-surface);
+  border: 1px solid var(--bsplus-analytics-border);
+  box-shadow: var(--bsplus-analytics-shadow-hover);
+  animation: bsplus-font-picker-in 0.45s var(--bsplus-analytics-ease) forwards;
+}
+
+@media (min-width: 640px) {
+  .bsplus-font-picker-dialog {
+    width: min(92vw, 22rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bsplus-font-picker-dialog {
+    animation: none;
+  }
+}
+
+.bsplus-font-picker-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  flex-shrink: 0;
+  padding: 1.15rem 1.25rem;
+  border-bottom: 1px solid var(--bsplus-analytics-border);
+}
+
+.bsplus-font-picker-header-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bsplus-font-picker-header-text {
+  min-width: 0;
+}
+
+.bsplus-font-picker-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-font-picker-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--bsplus-analytics-muted);
+  line-height: 1.5;
+}
+
+.bsplus-font-picker-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: var(--bsplus-analytics-radius-sm);
+  border: 2px solid var(--bsplus-analytics-border);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  color: var(--bsplus-analytics-text);
+  transition:
+    transform 0.2s var(--bsplus-analytics-ease),
+    background 0.2s var(--bsplus-analytics-ease),
+    border-color 0.2s var(--bsplus-analytics-ease),
+    opacity 0.2s ease;
+}
+
+.bsplus-font-picker-reset:hover:not(:disabled) {
+  transform: scale(1.02);
+  background: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface-2) 80%,
+    transparent
+  );
+}
+
+.bsplus-font-picker-reset:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.bsplus-font-picker-reset:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+}
+
+.bsplus-font-picker-reset:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bsplus-font-picker-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--bsplus-analytics-radius-sm);
+  border: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  background: var(--bsplus-analytics-accent);
+  color: var(--text-color, #ffffff);
+  box-shadow: 0 2px 8px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent);
+  transition:
+    transform 0.2s var(--bsplus-analytics-ease),
+    box-shadow 0.2s var(--bsplus-analytics-ease);
+}
+
+.bsplus-font-picker-done:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 14px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
+}
+
+.bsplus-font-picker-done:active {
+  transform: scale(0.97);
+}
+
+.bsplus-font-picker-done:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+}
+
+.bsplus-font-picker-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent)
+    transparent;
+}
+
+.bsplus-font-picker-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bsplus-font-picker-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+}
+
+.bsplus-font-picker-option {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  border-radius: var(--bsplus-analytics-radius-sm);
+  border: 1px solid var(--bsplus-analytics-border);
+  background: var(--bsplus-analytics-surface);
+  box-shadow: var(--bsplus-analytics-shadow);
+  cursor: pointer;
+  font-family: Rubik, system-ui, sans-serif;
+  flex-shrink: 0;
+  transition:
+    transform 0.25s var(--bsplus-analytics-ease),
+    box-shadow 0.25s var(--bsplus-analytics-ease),
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.bsplus-font-picker-option:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bsplus-analytics-shadow-hover);
+  background: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface-2) 55%,
+    var(--bsplus-analytics-surface)
+  );
+}
+
+.bsplus-font-picker-option:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--bsplus-analytics-shadow-hover),
+    0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 30%, transparent);
+}
+
+.bsplus-font-picker-option.is-selected {
+  border-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 45%,
+    var(--bsplus-analytics-border)
+  );
+  background: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 10%,
+    var(--bsplus-analytics-surface)
+  );
+  box-shadow: 0 4px 16px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+}
+
+.bsplus-font-picker-option-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0;
+}
+
+.bsplus-font-picker-root .bsplus-font-picker-option-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bsplus-analytics-text);
+  text-align: left;
+  min-width: 0;
+}
+
+.bsplus-font-picker-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 18%,
+    transparent
+  );
+  color: var(--bsplus-analytics-accent);
+}

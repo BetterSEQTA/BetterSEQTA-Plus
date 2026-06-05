@@ -119,7 +119,8 @@ select option {
 #container {
   background: var(--auto-background) !important;
 }
-:root * {
+.legacy-root,
+.legacy-root * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 }

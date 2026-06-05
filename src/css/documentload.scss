@@ -37,8 +37,9 @@
 @layer base, override;
 
 @layer override {
-  * {
-    font-family: Rubik, sans-serif !important;
+  .legacy-root,
+  .legacy-root * {
+    font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
   }
 
   .iconFamily,

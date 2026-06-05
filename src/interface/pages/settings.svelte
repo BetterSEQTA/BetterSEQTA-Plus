@@ -15,6 +15,7 @@
   //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
   import ColourPicker from "../components/ColourPicker.svelte";
+  import FontPickerModal from "../components/FontPickerModal.svelte";
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
@@ -47,6 +48,10 @@
     showColourPicker = true;
   };
 
+  const openFontPicker = () => {
+    showFontPicker = true;
+  };
+
   const openChangelog = () => {
     OpenWhatsNewPopup();
     closeExtensionPopup();
@@ -69,6 +74,7 @@
 
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
+  let showFontPicker = $state<boolean>(false);
   let showCloudPanel = $state<boolean>(false);
 
   const openCloudPanel = () => {
@@ -85,6 +91,7 @@
   onMount(() => {
     settingsPopup.addListener(() => {
       showColourPicker = false;
+      showFontPicker = false;
       showCloudPanel = false;
     });
 
@@ -95,7 +102,7 @@
 </script>
 
 <div
-  class="w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode
+  class="relative w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode
     ? 'dark'
     : ''} {standalone ? 'h-[600px]' : 'h-full rounded-xl'} overflow-clip"
 >
@@ -293,7 +300,7 @@
         {
           title: "Settings",
           Content: Settings,
-          props: { showColourPicker: openColourPicker, showDisclaimer, showCloudPanel: openCloudPanel },
+          props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
         },
         { title: "Shortcuts", Content: Shortcuts },
         { title: "Themes", Content: Theme },
@@ -317,6 +324,14 @@
     />
   {/if}
 </div>
+
+{#if showFontPicker}
+  <FontPickerModal
+    hidePicker={() => {
+      showFontPicker = false;
+    }}
+  />
+{/if}
 
 {#if showDisclaimerModal && disclaimerCallbacks}
   <DisclaimerModal

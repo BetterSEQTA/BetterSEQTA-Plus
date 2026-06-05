@@ -1,5 +1,6 @@
 import { settingsState } from "./SettingsState";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 
 // Shortcuts rendering
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
@@ -40,6 +41,7 @@ export class StorageChangeHandler {
       "iconOnlySidebar",
       this.handleIconOnlySidebarChange.bind(this),
     );
+    settingsState.register("selectedFont", () => applySelectedFont());
   }
 
   private handleIconOnlySidebarChange(newValue: boolean | undefined) {

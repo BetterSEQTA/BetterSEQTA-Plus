@@ -57,6 +57,8 @@ export interface SettingsState {
   adaptiveThemeColour?: boolean;
   adaptiveThemeGradient?: boolean;
   adaptiveThemeColourTransition?: boolean;
+  /** Google Font preset id for SEQTA interface typography (`rubik` default). */
+  selectedFont?: string;
 
   // depreciated keys
   animatedbk: boolean;
