@@ -16,6 +16,7 @@ import {
   parseAssessments,
   processAssessments,
 } from "./utils.ts";
+import { injectRubricCopyButtons } from "./rubricCopy.ts";
 
 interface weightingsStorage {
   weightings: Record<string, string>;
@@ -80,6 +81,7 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
     });
     api.seqta.onMount("[class*='SelectedAssessment__']", () => {
       injectWeightingsTab(api);
+      injectRubricCopyButtons();
     });
   },
 };
