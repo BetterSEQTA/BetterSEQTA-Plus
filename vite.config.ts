@@ -28,6 +28,16 @@ const mode = process.env.MODE || "chrome"; // Check the environment variable to 
 const useMillion = mode.toLowerCase() !== "firefox";
 
 export default defineConfig(({ command }) => ({
+  define: {
+    __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(
+      process.env.GH_RELEASE_UPDATE_CHECK === "true",
+    ),
+    __GH_RELEASE_REPO__: JSON.stringify(
+      process.env.GH_RELEASE_REPO ?? "BetterSEQTA/BetterSEQTA-Plus",
+    ),
+    __UPDATE_CHANNEL__: JSON.stringify(process.env.UPDATE_CHANNEL ?? "stable"),
+    __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
+  },
   plugins: [
     base64Loader,
     InlineWorkerPlugin(),

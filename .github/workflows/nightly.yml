@@ -1,0 +1,46 @@
+# Nightly release workflow — updates the same "nightly" release with fresh builds from main.
+# Runs only on BetterSEQTA/BetterSEQTA-Plus. Uses the default GITHUB_TOKEN.
+
+name: Nightly Release
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NIGHTLY_TAG: nightly
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build extension
+        id: build
+        uses: ./.github/actions/build-extension
+        with:
+          gh_release_update_check: "true"
+          update_channel: nightly
+          build_label: ${{ github.run_number }}
+          release_repo: ${{ github.repository }}
+
+      - name: Ensure nightly release exists
+        run: |
+          if ! gh release view "${{ env.NIGHTLY_TAG }}" 2>/dev/null; then
+            gh release create "${{ env.NIGHTLY_TAG }}" \
+              --prerelease \
+              --title "Nightly" \
+              --notes-file .github/nightly-release-notes.md
+          fi
+
+      - name: Upload nightly assets
+        run: |
+          gh release upload "${{ env.NIGHTLY_TAG }}" \
+            --clobber \
+            "${{ steps.build.outputs.chrome_zip }}" \
+            "${{ steps.build.outputs.firefox_zip }}"

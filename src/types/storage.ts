@@ -49,6 +49,10 @@ export interface SettingsState {
   animations: boolean;
   defaultPage: string;
   devMode?: boolean;
+  /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
+  devGhReleaseVersionOverride?: string;
+  /** ISO timestamp of the last acknowledged nightly release publish time. */
+  lastSeenNightlyPublishedAt?: string;
   originalDarkMode?: boolean;
   newsSource?: string;
   mockNotices?: boolean;

@@ -119,12 +119,13 @@ git checkout -b feature/my-new-feature
 
    If your changes require documentation updates, include them in the same PR.
 
-4. **Run Tests**
+4. **Run CI checks locally**
 
-   Make sure all tests pass before submitting your PR:
+   Pull requests trigger **PR CI**, which lints and builds in a clean environment:
 
    ```bash
-   npm test
+   npm run lint
+   npm run build
    ```
 
 5. **Submit Your PR**
@@ -138,6 +139,25 @@ git checkout -b feature/my-new-feature
 7. **Merge**
 
    Once approved, a maintainer will merge your PR.
+
+### GitHub Actions workflows
+
+See [RELEASES.md](RELEASES.md) for a full guide (workflows, sideload installs, and update detector).
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `pr-ci.yml` | Every PR to `main` | Typecheck, lint, and build (no release) |
+| `mvp.yml` | Push to `main` | Build and upload `dist.zip` artifact |
+| `release.yml` | Manual (`workflow_dispatch`) | Stable release on [BetterSEQTA/BetterSEQTA-Plus](https://github.com/BetterSEQTA/BetterSEQTA-Plus) tagged with `package.json` version |
+| `nightly.yml` | Daily cron + manual | Updates the fixed `nightly` prerelease with latest `main` builds |
+
+**Releasing a stable version:** bump `version` in `package.json` on `main`, then manually run the **Release** workflow and confirm the version checkbox. Edit the release title and notes on GitHub after the first publish. Re-running for the same tag only updates the zip files. Assets are `betterseqtaplus-{version}-chrome.zip` and `-firefox.zip`.
+
+**Nightly builds** replace assets on the same `nightly` release. The release body warns that builds are experimental and must not be uploaded to extension stores.
+
+**GitHub release builds** include an in-extension update checker (settings header badge). **PR CI and local dev builds do not.**
+
+Release workflows are dispatched only on the main **BetterSEQTA/BetterSEQTA-Plus** repository and use the default `GITHUB_TOKEN`.
 
 ### Coding Standards
 
