@@ -42,7 +42,8 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.7.0 – Grade Analytics, Global Search & SEQTA Engage Improvements</h1>
+      <h1>3.7.0 – Grade Analytics, Enhanced Navigation, Global Search & SEQTA Engage Improvements</h1>
+      <li>Added Enhanced Navigation for courses: the navigator now auto-scrolls to the selected lesson (e.g. inside the "Go to…" popup) and prev/next arrows for jumping between lessons.</li>
       <li>Added Grade Analytics, new sidebar page with grade trend charts synced from SEQTA.</li>
       <li>Added Grade distribution auto-detects your school’s letter scale from released marks for analytics page.</li>
       <li>Added documents, notices, portals, folios, goals, and more to Global Search.</li>
