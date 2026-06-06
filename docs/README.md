@@ -9,6 +9,7 @@
 - [Documentation home](https://docs.betterseqta.org/)
 - [Installation](https://docs.betterseqta.org/install/)
 - [Contributing](https://docs.betterseqta.org/contributing/)
+- [GitHub releases & CI](RELEASES.md) — workflows, nightly builds, update detector
 - [Architecture](https://docs.betterseqta.org/architecture/)
 - [Contribution guidelines (repository)](../CONTRIBUTING.md)
 - [Troubleshooting](https://docs.betterseqta.org/troubleshooting/)

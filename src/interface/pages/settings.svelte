@@ -19,6 +19,12 @@
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
   import { settingsPopup } from "../hooks/SettingsPopup";
+  import {
+    checkGithubReleaseUpdate,
+    dismissNightlyUpdate,
+    isGhReleaseUpdateCheckEnabled,
+    type GhReleaseUpdateInfo,
+  } from "@/utils/githubReleaseUpdate";
 
   let devModeSequence = "";
   let settingsActiveTab = $state(0);
@@ -26,6 +32,18 @@
   let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
   let disclaimerTitle = $state("Confirm");
   let disclaimerMessage = $state("");
+  const ghReleaseUpdateEnabled = isGhReleaseUpdateCheckEnabled();
+  let ghReleaseUpdate = $state<GhReleaseUpdateInfo | null>(null);
+
+  const openGhRelease = () => {
+    const url = ghReleaseUpdate?.url
+      ?? "https://github.com/BetterSEQTA/BetterSEQTA-Plus/releases";
+    if (ghReleaseUpdate?.available) {
+      dismissNightlyUpdate();
+    }
+    window.open(url, "_blank");
+    closeExtensionPopup();
+  };
 
   const handleDevModeToggle = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -98,6 +116,12 @@
     if (standalone) {
       StandaloneStore.setStandalone(true);
     }
+
+    if (ghReleaseUpdateEnabled) {
+      void checkGithubReleaseUpdate().then((info) => {
+        ghReleaseUpdate = info;
+      });
+    }
   });
 </script>
 
@@ -134,7 +158,25 @@
       />
 
       {#if !standalone}
-        <div class="flex absolute top-1 right-1 gap-1 items-center">
+        <div class="flex absolute top-1 right-1 gap-1 items-start">
+          {#if ghReleaseUpdateEnabled}
+            <div class="flex flex-col items-end gap-0.5 max-w-[9rem] mr-0.5">
+              {#if ghReleaseUpdate?.available}
+                <button
+                  type="button"
+                  onclick={openGhRelease}
+                  class="px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500"
+                  title="Open GitHub release"
+                >
+                  Update available — {ghReleaseUpdate.label}
+                </button>
+              {/if}
+              <p class="text-[9px] leading-tight text-right text-zinc-500 dark:text-zinc-400">
+                GitHub release build — do not upload to extension stores.
+              </p>
+            </div>
+          {/if}
+          <div class="flex gap-1 items-center">
           <button
             onclick={openAbout}
             class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
@@ -156,6 +198,7 @@
           >
             {"\uecba"}
           </button>
+          </div>
 
           <!-- <button
             onclick={openMinecraftServer}

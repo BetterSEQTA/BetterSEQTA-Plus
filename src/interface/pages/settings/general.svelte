@@ -585,6 +585,21 @@
           {/if}
         </div>
       </div>
+      <div class="flex flex-col gap-2 px-4 py-3">
+        <div>
+          <h2 class="text-sm font-bold">GitHub latest version override</h2>
+          <p class="text-xs">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
+        </div>
+        <input
+          type="text"
+          placeholder="e.g. 9.9.9"
+          value={$settingsState.devGhReleaseVersionOverride ?? ""}
+          oninput={(e) => {
+            settingsState.devGhReleaseVersionOverride = e.currentTarget.value;
+          }}
+          class="px-2 py-1 text-xs rounded border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+        />
+      </div>
     </div>
   {/if}
 </div>
