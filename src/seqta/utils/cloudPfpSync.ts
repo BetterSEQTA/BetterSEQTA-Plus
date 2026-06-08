@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import localforage from "localforage";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { clearCloudPfpCache, pfpUrlWithHash } from "@/seqta/utils/cloudPfpCache";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 const PLUGIN_SETTINGS_KEY = "plugin.profile-picture.settings";
@@ -10,9 +11,32 @@ const profileStore = localforage.createInstance({
   storeName: "profilePicture",
 });
 
-function cacheBustPfpUrl(url: string): string {
-  const base = url.split("?")[0]!;
-  return `${base}?v=${Date.now()}`;
+/** Downscale before upload to reduce ingress (server still normalizes). */
+async function downscaleForUpload(blob: Blob, maxEdge = 512): Promise<Blob> {
+  if (!blob.type.startsWith("image/")) return blob;
+
+  const bitmap = await createImageBitmap(blob);
+  const maxSide = Math.max(bitmap.width, bitmap.height);
+  if (maxSide <= maxEdge) {
+    bitmap.close();
+    return blob;
+  }
+
+  const scale = maxEdge / maxSide;
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = new OffscreenCanvas(w, h);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    return blob;
+  }
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+
+  const out = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
+  return out;
 }
 
 export async function isUseCloudPfpEnabled(): Promise<boolean> {
@@ -41,6 +65,9 @@ export async function syncLocalProfilePictureToCloud(): Promise<{
   const token = await cloudAuth.getStoredToken();
   if (!token) return { success: false, error: "Not logged in" };
 
+  const user = cloudAuth.state.user;
+  const userId = user?.id;
+
   const blob = await profileStore.getItem<Blob>("profile-picture");
 
   try {
@@ -57,10 +84,10 @@ export async function syncLocalProfilePictureToCloud(): Promise<{
       if (!res.ok) {
         return { success: false, error: (data.error as string) ?? `Clear failed (${res.status})` };
       }
-      const user = cloudAuth.state.user;
       if (user) {
-        await cloudAuth.setUser({ ...user, pfpUrl: undefined });
+        await cloudAuth.setUser({ ...user, pfpUrl: undefined, pfpHash: null });
       }
+      if (userId) await clearCloudPfpCache(userId);
       return { success: true };
     }
 
@@ -71,8 +98,9 @@ export async function syncLocalProfilePictureToCloud(): Promise<{
       return { success: false, error: "File too large (max 5MB)" };
     }
 
+    const uploadBlob = await downscaleForUpload(blob);
     const formData = new FormData();
-    formData.append("file", blob, "profile-picture");
+    formData.append("file", uploadBlob, "profile-picture.jpg");
 
     const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp`, {
       method: "POST",
@@ -85,10 +113,15 @@ export async function syncLocalProfilePictureToCloud(): Promise<{
     }
 
     const pfpUrl = data.pfpUrl as string | undefined;
-    const user = cloudAuth.state.user;
+    const pfpHash = (data.pfpHash as string | null | undefined) ?? null;
     if (user && pfpUrl) {
-      await cloudAuth.setUser({ ...user, pfpUrl: cacheBustPfpUrl(pfpUrl) });
+      await cloudAuth.setUser({
+        ...user,
+        pfpUrl: pfpUrlWithHash(pfpUrl, pfpHash),
+        pfpHash,
+      });
     }
+    if (userId) await clearCloudPfpCache(userId);
     return { success: true };
   } catch (err) {
     return {
