@@ -22,6 +22,7 @@
   import {
     checkGithubReleaseUpdate,
     dismissNightlyUpdate,
+    getInstalledGhReleaseChannelLabel,
     isGhReleaseUpdateCheckEnabled,
     type GhReleaseUpdateInfo,
   } from "@/utils/githubReleaseUpdate";
@@ -33,6 +34,7 @@
   let disclaimerTitle = $state("Confirm");
   let disclaimerMessage = $state("");
   const ghReleaseUpdateEnabled = isGhReleaseUpdateCheckEnabled();
+  const ghReleaseChannelLabel = getInstalledGhReleaseChannelLabel();
   let ghReleaseUpdate = $state<GhReleaseUpdateInfo | null>(null);
 
   const openGhRelease = () => {
@@ -172,7 +174,11 @@
                 </button>
               {/if}
               <p class="text-[9px] leading-tight text-right text-zinc-500 dark:text-zinc-400">
-                GitHub release build — do not upload to extension stores.
+                {#if ghReleaseChannelLabel}
+                  {ghReleaseChannelLabel} — do not upload to extension stores.
+                {:else}
+                  GitHub release build — do not upload to extension stores.
+                {/if}
               </p>
             </div>
           {/if}

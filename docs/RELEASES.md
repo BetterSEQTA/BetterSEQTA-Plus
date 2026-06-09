@@ -71,7 +71,7 @@ Release and nightly workflows pass environment variables into Vite, which bakes 
 | `GH_RELEASE_UPDATE_CHECK` | `true` | `true` | `false` / unset |
 | `UPDATE_CHANNEL` | `stable` | `nightly` | `stable` (unused) |
 | `GH_RELEASE_REPO` | `BetterSEQTA/BetterSEQTA-Plus` | same | same |
-| `BUILD_LABEL` | empty | GitHub run number | empty |
+| `BUILD_LABEL` | empty | UTC build date (`YYYY-MM-DD`) | empty |
 
 When `GH_RELEASE_UPDATE_CHECK` is not `true`, the update-checker code is tree-shaken out of the bundle. PR CI builds and local `npm run build` do **not** include the update badge.
 
@@ -139,7 +139,8 @@ On first publish, edit the **title** and **release notes** on GitHub afterward. 
 1. Builds from the current `main` branch with the update detector enabled (nightly channel).
 2. Uses a fixed release tag: **`nightly`** (marked as prerelease).
 3. On first run: creates the `nightly` release with the text in [`.github/nightly-release-notes.md`](../.github/nightly-release-notes.md).
-4. On every subsequent run: **replaces** the zip assets on the same release (`--clobber`). The release title and body are not rewritten.
+4. On every run: sets the release title to **`Nightly (YYYY-MM-DD)`** (UTC build date) and **replaces** the zip assets on the same release (`--clobber`). The release body is not rewritten.
+5. Packages zips as `betterseqtaplus-nightly-{date}-chrome.zip` / `-firefox.zip`.
 
 The nightly release body warns that builds are experimental and must not be uploaded to extension stores.
 
@@ -206,7 +207,7 @@ Implementation: [`src/utils/githubReleaseUpdate.ts`](../src/utils/githubReleaseU
 1. Fetches the `nightly` release.
 2. Compares its `published_at` timestamp to `lastSeenNightlyPublishedAt` in extension storage.
 3. On first install, records the current publish time without showing a badge.
-4. Shows **“Update available — nightly #123”** (run number) when a newer nightly has been published.
+4. Shows **“Update available — nightly (YYYY-MM-DD)”** when a newer nightly has been published.
 
 Checks are throttled to once every **6 hours** per browser profile (`localStorage` key `bsplus_lastGhReleaseCheck`). Recent results are cached in memory for the session.
 
