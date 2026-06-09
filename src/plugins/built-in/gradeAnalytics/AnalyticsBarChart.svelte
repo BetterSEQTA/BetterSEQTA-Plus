@@ -356,12 +356,6 @@
 
       </Chart.Container>
 
-      {#if distribution().modeUsed === "letter"}
-
-        <p class="bsplus-analytics-scale-hint">{distribution().scaleLabel}</p>
-
-      {/if}
-
     {:else}
 
       <div class="bsplus-analytics-card-empty">
@@ -380,27 +374,37 @@
 
   <footer class="bsplus-analytics-card-footer">
 
-    {#if distribution().averagePercent !== null}
+    {#if distribution().modeUsed === "letter" && distribution().scaleLabel}
 
-      Average <strong>{distribution().averagePercent}%</strong>
-
-    {:else}
-
-      Average <strong>—</strong>
+      <p class="bsplus-analytics-scale-hint">{distribution().scaleLabel}</p>
 
     {/if}
 
-    across {totalAssessments} assessment{totalAssessments === 1 ? "" : "s"}
+    <p>
 
-    {#if distributionMode === "auto" && distribution().modeUsed === "letter"}
+      {#if distribution().averagePercent !== null}
 
-      <span class="bsplus-analytics-footer-muted"> · letter scale detected</span>
+        Average <strong>{distribution().averagePercent}%</strong>
 
-    {:else if distributionMode !== "auto"}
+      {:else}
 
-      <span class="bsplus-analytics-footer-muted"> · {modeOptionLabel} grouping</span>
+        Average <strong>—</strong>
 
-    {/if}
+      {/if}
+
+      across {totalAssessments} assessment{totalAssessments === 1 ? "" : "s"}
+
+      {#if distributionMode === "auto" && distribution().modeUsed === "letter"}
+
+        <span class="bsplus-analytics-footer-muted"> · letter scale detected</span>
+
+      {:else if distributionMode !== "auto"}
+
+        <span class="bsplus-analytics-footer-muted"> · {modeOptionLabel} grouping</span>
+
+      {/if}
+
+    </p>
 
   </footer>
 

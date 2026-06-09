@@ -156,7 +156,7 @@
 
 <article class="bsplus-analytics-card">
 
-  <header class="bsplus-analytics-card-header">
+  <header class="bsplus-analytics-card-header bsplus-analytics-card-header-split">
 
     <div>
 
@@ -175,6 +175,12 @@
         {/if}
 
       </p>
+
+    </div>
+
+    <div class="bsplus-analytics-card-controls" aria-hidden="true">
+
+      <div class="bsplus-analytics-card-control bsplus-analytics-card-control-spacer"></div>
 
     </div>
 
@@ -346,31 +352,33 @@
 
   <footer class="bsplus-analytics-card-footer">
 
-    {#if trend().direction === "up"}
+    <p>
 
-      <span class="bsplus-analytics-trend-up"
+      {#if trend().direction === "up"}
 
-        >Trending up · {trend().percentage}% vs previous period</span
+        <span class="bsplus-analytics-trend-up"
 
-      >
+          >Trending up · {trend().percentage}% vs previous period</span
 
-    {:else if trend().direction === "down"}
+        >
 
-      <span class="bsplus-analytics-trend-down"
+      {:else if trend().direction === "down"}
 
-        >Trending down · {trend().percentage}% vs previous period</span
+        <span class="bsplus-analytics-trend-down"
 
-      >
+          >Trending down · {trend().percentage}% vs previous period</span
 
-    {:else}
+        >
 
-      <span>Grades remain stable across this period</span>
+      {:else}
 
-    {/if}
+        <span>Grades remain stable across this period</span>
 
-    <br />
+      {/if}
 
-    <span>
+    </p>
+
+    <p>
 
       {filteredData().length} data points · {getTimeRangeLabel(timeRange)}
 
@@ -380,7 +388,7 @@
 
       {/if}
 
-    </span>
+    </p>
 
   </footer>
 

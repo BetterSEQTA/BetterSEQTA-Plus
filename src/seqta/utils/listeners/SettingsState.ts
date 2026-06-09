@@ -13,6 +13,7 @@ class StorageManager {
   private subscribers: Set<Subscriber<SettingsState>> = new Set();
   private saveTimeout: NodeJS.Timeout | null = null;
   private initialized = false;
+  private bootstrapping = false;
 
   private constructor() {
     this.data = {} as SettingsState;
@@ -33,7 +34,8 @@ class StorageManager {
         // Only save if the reference actually changed
         if (oldValue !== value) {
           Reflect.set(target.data, prop, value);
-          target.saveToStorage();
+          void target.saveToStorage([prop as string]);
+          target.notifySettingChange(prop as string, value, oldValue);
         }
         return true;
       },
@@ -68,8 +70,23 @@ class StorageManager {
   public static async initialize(): Promise<StorageManager & SettingsState> {
     const instance = StorageManager.getInstance();
     if (!instance.initialized) {
-      await instance.loadFromStorage();
-      instance.initialized = true;
+      instance.bootstrapping = true;
+      try {
+        // Must run in the service worker — dynamic import() in content scripts
+        // resolves chunk URLs against the SEQTA page origin on Firefox.
+        try {
+          await browser.runtime.sendMessage({ type: "ensureStorageDefaults" });
+        } catch (e) {
+          console.warn(
+            "[BetterSEQTA+] ensureStorageDefaults message failed:",
+            e,
+          );
+        }
+        await instance.loadFromStorage();
+        instance.initialized = true;
+      } finally {
+        instance.bootstrapping = false;
+      }
     }
     return instance;
   }
@@ -81,16 +98,24 @@ class StorageManager {
     const oldValue = this.data[key];
     if (oldValue !== value) {
       this.data[key] = value;
-      this.saveToStorage();
+      void this.saveToStorage([key as string]);
+      this.notifySettingChange(key as string, value, oldValue);
+    }
+  }
 
-      // Notify listeners
-      const listeners = this.listeners.get(key as string);
-      if (listeners) {
-        for (const listener of listeners) {
-          listener(value, oldValue);
-        }
+  private notifySettingChange(
+    key: string,
+    newValue: unknown,
+    oldValue: unknown,
+  ): void {
+    if (this.bootstrapping) return;
+    const listeners = this.listeners.get(key);
+    if (listeners) {
+      for (const listener of listeners) {
+        listener(newValue, oldValue);
       }
     }
+    this.notifySubscribers();
   }
 
   private async loadFromStorage(): Promise<void> {
@@ -100,14 +125,30 @@ class StorageManager {
     });
   }
   
-  public async saveToStorage(): Promise<void> {
+  public async saveToStorage(changedKeys?: string[]): Promise<void> {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
       this.saveTimeout = null;
     }
-    // @ts-expect-error
-    await browser.storage.local.set(this.data);
-    this.notifySubscribers();
+    const payload: Record<string, unknown> = {};
+    const keys =
+      changedKeys && changedKeys.length > 0
+        ? changedKeys
+        : Object.keys(this.data);
+
+    for (const key of keys) {
+      const value = (this.data as Record<string, unknown>)[key];
+      if (value !== undefined) {
+        payload[key] = value;
+      }
+    }
+
+    if (Object.keys(payload).length === 0) return;
+
+    await browser.storage.local.set(payload);
+    if (!this.bootstrapping) {
+      this.notifySubscribers();
+    }
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -116,38 +157,45 @@ class StorageManager {
 
   private initStorageListener(): void {
     browser.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === "local") {
-        const actualChanges: string[] = [];
-        
-        for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-          // Only process if value actually changed
-          if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-            if (newValue !== undefined) {
-              (this.data as any)[key] = newValue;
-            } else {
-              delete (this.data as any)[key];
-            }
-            actualChanges.push(key);
-            
-            // Notify specific listeners
-            const listeners = this.listeners.get(key);
-            if (listeners) {
-              for (const listener of listeners) {
-                listener(newValue, oldValue);
-              }
-            }
+      if (areaName !== "local") return;
+
+      const actualChanges: string[] = [];
+
+      for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
+        if (JSON.stringify(oldValue) === JSON.stringify(newValue)) continue;
+
+        if (newValue !== undefined) {
+          (this.data as Record<string, unknown>)[key] = newValue;
+        } else {
+          delete (this.data as Record<string, unknown>)[key];
+        }
+        actualChanges.push(key);
+
+        if (this.bootstrapping) continue;
+
+        const listeners = this.listeners.get(key);
+        if (listeners) {
+          for (const listener of listeners) {
+            listener(newValue, oldValue);
           }
         }
-        
-        // Only notify global listeners if there were actual changes
-        if (actualChanges.length > 0 && this.globalListeners.size > 0) {
-          for (const listener of this.globalListeners) {
-            for (const key of actualChanges) {
-              const { oldValue, newValue } = changes[key];
-              listener(newValue, oldValue, key);
-            }
+      }
+
+      if (
+        !this.bootstrapping &&
+        actualChanges.length > 0 &&
+        this.globalListeners.size > 0
+      ) {
+        for (const listener of this.globalListeners) {
+          for (const key of actualChanges) {
+            const { oldValue, newValue } = changes[key];
+            listener(newValue, oldValue, key);
           }
         }
+      }
+
+      if (!this.bootstrapping && actualChanges.length > 0) {
+        this.notifySubscribers();
       }
     });
   }

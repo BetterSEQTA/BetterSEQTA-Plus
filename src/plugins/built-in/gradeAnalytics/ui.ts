@@ -23,6 +23,25 @@ let darkModeObserver: MutationObserver | null = null;
 let themeStyleObserver: MutationObserver | null = null;
 let themeListeners: ThemeListenerRegistration[] = [];
 
+const ANALYTICS_STACKING_STYLE_ID = "bsplus-analytics-stacking-styles";
+
+/** Light-DOM stacking scope so toolbar/dropdown z-index cannot paint over ExtensionPopup. */
+function ensureAnalyticsStackingScope() {
+  if (document.getElementById(ANALYTICS_STACKING_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = ANALYTICS_STACKING_STYLE_ID;
+  style.textContent = `
+    #analytics-view-container,
+    .bsplus-analytics-container,
+    .bsplus-analytics-host {
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 const THEME_CSS_VARS = [
   "--better-main",
   "--better-pale",
@@ -160,6 +179,8 @@ function teardown() {
 
 export function renderAnalyticsPage(container: HTMLElement) {
   teardown();
+
+  ensureAnalyticsStackingScope();
 
   container.innerHTML = "";
   container.className = "bsplus-analytics-container";

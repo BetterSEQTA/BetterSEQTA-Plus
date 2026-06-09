@@ -190,7 +190,7 @@ export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<
  * Only applies migrations for keys present in the data; does not overwrite
  * existing plugin settings if the legacy key is absent.
  */
-function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
+export function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
   const result = { ...data };
 
   function ensurePluginSettings(pluginId: string): Record<string, unknown> {

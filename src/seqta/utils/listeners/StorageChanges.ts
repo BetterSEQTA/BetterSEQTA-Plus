@@ -62,19 +62,15 @@ export class StorageChangeHandler {
     browser.runtime.sendMessage({ type: "reloadTabs" });
   }
 
-  private handleCustomShortcutsChange(
-    newValue: CustomShortcut[],
-    oldValue: CustomShortcut[],
-  ) {
-    if (!newValue || !oldValue) return;
+  private handleCustomShortcutsChange(newValue: CustomShortcut[] | undefined) {
+    if (!Array.isArray(newValue)) return;
     renderShortcuts();
   }
 
   private handleShortcutsChange(
-    newValue: { enabled: boolean; name: string }[],
-    oldValue: { enabled: boolean; name: string }[],
+    newValue: { enabled: boolean; name: string }[] | undefined,
   ) {
-    if (!newValue || !oldValue) return;
+    if (!Array.isArray(newValue)) return;
     renderShortcuts();
   }
 
