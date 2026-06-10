@@ -47,11 +47,11 @@ Cloud settings sync is a **whole-snapshot backup** of extension local storage:
 │  │ menuitems…  │  │              │  │                        │ │
 │  └─────────────┘  └──────────────┘  └────────────────────────┘ │
 └────────────────────────────┬────────────────────────────────────┘
-                             │ buildUploadPayload()
-                             │  • filter exclusions
-                             │  • migrateLegacyToPluginSettings()
+                             │ buildUploadPatch()
+                             │  • ensureSyncableStorageDefaults (local)
+                             │  • normalize + diff vs last upload / defaults
                              ▼
-              PUT /api/bsplus/settings/sync
+              PUT /api/bsplus/settings/sync (sparse data patch)
               { schemaVersion, themeId, data: { … } }
                              │
                              ▼
@@ -108,9 +108,9 @@ Download is skipped when server `schemaVersion` > client `CLOUD_SETTINGS_SYNC_SC
 
 After download, if `themeId` / `selectedTheme` is non-empty, the service worker sets `bsplus_pending_theme_ensure_after_cloud` so the page `ThemeManager` can download missing theme assets from the store.
 
-### Full schema before upload
+### Local schema before diff (upload)
 
-`ensureSyncableStorageDefaults()` (`src/seqta/utils/ensureSyncableStorageDefaults.ts`) ensures every **cloud-syncable** key exists in `chrome.storage.local` with its default value if it was previously absent. This makes uploads and dev JSON exports contain a complete schema (e.g. `customshortcuts: []`, `shortcuts: [...]`, every `plugin.{id}.settings` object) instead of omitting keys the user never touched.
+`ensureSyncableStorageDefaults()` (`src/seqta/utils/ensureSyncableStorageDefaults.ts`) ensures every **cloud-syncable** key exists in `chrome.storage.local` with its default value if it was previously absent. This runs **locally only** so diffs against the last-uploaded snapshot (or schema defaults) are consistent. The PUT body is a **sparse patch** of changed keys only — defaults are not bulk-uploaded.
 
 | When it runs | Context |
 |--------------|---------|
@@ -118,6 +118,7 @@ After download, if `themeId` / `selectedTheme` is non-empty, the service worker 
 | `browser.runtime.onStartup` | Service worker |
 | Service worker load | `background.ts` (once at startup) |
 | `initializeSettingsState()` | SEQTA content script + extension settings page (first init) |
+| Before each cloud upload | `putSettingsOnce()` in `cloudSettingsAutoSync.ts` |
 
 Rules:
 
@@ -146,21 +147,13 @@ Content-Type: application/json
   "schemaVersion": 1,
   "themeId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "data": {
-    "onoff": true,
     "DarkMode": true,
-    "selectedTheme": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "selectedColor": "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
-    "plugin.global-search.settings": {
-      "enabled": true,
-      "searchHotkey": "ctrl+k",
-      "showRecentFirst": true,
-      "transparencyEffects": true,
-      "runIndexingOnLoad": true,
-      "passiveIndexing": true
-    }
+    "selectedTheme": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   }
 }
 ```
+
+Only keys that changed since the last successful upload appear in `data`. The server merges this patch into stored JSON; omitted keys are not deleted. Dev JSON export (`getSnapshotForUpload`) still returns the full normalized map for debugging.
 
 | Top-level field | JSON type | Rules |
 |-----------------|-----------|-------|
@@ -238,6 +231,7 @@ Implemented in `shouldOmitKeyFromCloudPayload(key)`:
 | `plugin.assessments-average.storage.assessments` | object | Keep device value |
 | `plugin.assessments-average.storage.weightings` | object | Keep device value |
 | `bsplus_cloud_settings_known_remote_updated_at` | ISO `string` | Keep device value |
+| `bsplus_cloud_settings_last_uploaded_snapshot` | `object` (normalized syncable map) | Keep device value |
 | `bsplus_lastCloudPoll` | `number` (ms) | Keep device value |
 | `bsplus_pending_theme_ensure_after_cloud` | `string` (theme id) | Keep device value |
 
@@ -1061,7 +1055,7 @@ Any new `chrome.storage.local` key syncs automatically unless added to:
 2. At least one changed key passes `isKeyIncludedInCloudUploadPayload`
 3. `autoCloudSettingsSync !== false`
 4. Valid access token
-5. Not during restore → schedule 2 s debounce → `PUT` full snapshot
+5. Not during restore → schedule 2 s debounce → `PUT` sparse patch (skip if empty)
 
 ### Server storage suggestion
 

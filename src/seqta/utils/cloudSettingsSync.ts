@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import isEqual from "lodash/isEqual";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
@@ -16,6 +17,13 @@ export const BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY =
  */
 export const BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY =
   "bsplus_pending_theme_ensure_after_cloud";
+
+/**
+ * Client-only: normalized syncable storage last acked by a successful PUT.
+ * Never uploaded; used to compute sparse upload patches.
+ */
+export const BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY =
+  "bsplus_cloud_settings_last_uploaded_snapshot";
 
 /**
  * Never uploaded to the cloud backup (OAuth and legacy keys).
@@ -48,6 +56,7 @@ export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = [
 
 const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
+  BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY,
   "bsplus_lastCloudPoll",
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
 ] as const;
@@ -118,30 +127,79 @@ export function normalizeThemeIdForSync(raw: unknown): string {
   return raw.trim();
 }
 
-export function buildUploadPayload(all: Record<string, unknown>): {
-  schemaVersion: number;
-  themeId: string;
-  data: Record<string, unknown>;
-} {
+/** Filter omit lists and migrate legacy keys → full syncable map for diff/export. */
+export function normalizeStorageForSync(all: Record<string, unknown>): Record<string, unknown> {
   const filtered: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(all)) {
     if (shouldOmitKeyFromCloudPayload(k)) continue;
     filtered[k] = v;
   }
-  const data = migrateLegacyToPluginSettings(filtered);
-  const themeId = normalizeThemeIdForSync(all.selectedTheme);
+  return migrateLegacyToPluginSettings(filtered);
+}
+
+/** Keys in `current` whose values differ from `baseline` (sparse PUT body). */
+export function diffSyncableStorage(
+  current: Record<string, unknown>,
+  baseline: Record<string, unknown>,
+): Record<string, unknown> {
+  const patch: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(current)) {
+    if (!isEqual(value, baseline[key])) {
+      patch[key] = value;
+    }
+  }
+  return patch;
+}
+
+export type CloudSettingsUploadEnvelope = {
+  schemaVersion: number;
+  themeId: string;
+  data: Record<string, unknown>;
+};
+
+/** Sparse upload envelope, or null when nothing changed vs baseline. */
+export function buildUploadPatch(
+  all: Record<string, unknown>,
+  baseline: Record<string, unknown>,
+): CloudSettingsUploadEnvelope | null {
+  const normalized = normalizeStorageForSync(all);
+  const data = diffSyncableStorage(normalized, baseline);
+  if (Object.keys(data).length === 0) return null;
   return {
     schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
-    themeId,
+    themeId: normalizeThemeIdForSync(all.selectedTheme),
     data,
   };
 }
 
-export async function getSnapshotForUpload(): Promise<{
-  schemaVersion: number;
-  themeId: string;
-  data: Record<string, unknown>;
-}> {
+/** Full normalized snapshot (dev export / debugging). */
+export function buildUploadPayload(all: Record<string, unknown>): CloudSettingsUploadEnvelope {
+  const data = normalizeStorageForSync(all);
+  return {
+    schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
+    themeId: normalizeThemeIdForSync(all.selectedTheme),
+    data,
+  };
+}
+
+export async function getLastUploadedSnapshot(): Promise<Record<string, unknown> | null> {
+  const stored = await browser.storage.local.get(BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY);
+  const snapshot = stored[BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY];
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return null;
+  return snapshot as Record<string, unknown>;
+}
+
+export async function saveLastUploadedSnapshot(
+  snapshot: Record<string, unknown>,
+): Promise<void> {
+  await browser.storage.local.set({ [BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY]: snapshot });
+}
+
+export async function clearLastUploadedSnapshot(): Promise<void> {
+  await browser.storage.local.remove(BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY);
+}
+
+export async function getSnapshotForUpload(): Promise<CloudSettingsUploadEnvelope> {
   const all = await browser.storage.local.get();
   return buildUploadPayload(all as Record<string, unknown>);
 }

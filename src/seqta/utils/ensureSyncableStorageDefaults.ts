@@ -84,7 +84,7 @@ function mergePluginSettingsDefaults(
 }
 
 /**
- * Writes any missing cloud-syncable keys so uploads contain a full schema.
+ * Writes any missing cloud-syncable keys locally for consistent diffing.
  * Never overwrites existing values. Missing plugin settings respect legacy keys.
  */
 export async function ensureSyncableStorageDefaults(): Promise<void> {
