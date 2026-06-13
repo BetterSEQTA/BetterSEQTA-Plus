@@ -11,6 +11,7 @@ import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
 import messageFoldersPlugin from "./built-in/messageFolders";
+import enhancedNavigationPlugin from "./built-in/enhancedNavigation";
 //import testPlugin from './built-in/test';
 
 // Heavy plugins (lazy-loaded only when enabled)
@@ -31,6 +32,7 @@ pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
 pluginManager.registerPlugin(messageFoldersPlugin);
+pluginManager.registerPlugin(enhancedNavigationPlugin);
 //pluginManager.registerPlugin(testPlugin);
 
 // Register heavy plugins with lazy loading

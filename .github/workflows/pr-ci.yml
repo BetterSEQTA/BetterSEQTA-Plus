@@ -1,0 +1,29 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Lint
+        run: npm run lint
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
+
+      - name: Build extension
+        uses: ./.github/actions/build-extension
+        with:
+          gh_release_update_check: "false"

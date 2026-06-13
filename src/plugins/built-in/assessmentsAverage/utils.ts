@@ -14,6 +14,59 @@ import * as pdfjs from "pdfjs-dist";
 
 ensurePdfjsWorker();
 
+export const WEIGHTING_SCHEMA_VERSION = 1;
+
+export interface WeightingEntry {
+  weight: string;
+  fingerprint: string;
+  pluginVersion: number;
+  refreshing?: boolean;
+}
+
+export type WeightingsMap = Record<string, WeightingEntry>;
+
+export function computeFingerprint(mark: any): string {
+  const score =
+    mark?.results?.percentage ?? mark?.results?.score ?? null;
+  return JSON.stringify([
+    mark?.status ?? "",
+    Boolean(mark?.graded),
+    mark?.availability ?? "",
+    score,
+    mark?.due ?? "",
+    mark?.title ?? "",
+  ]);
+}
+
+function migrateWeightings(api: any) {
+  const w = api.storage.weightings ?? {};
+  let dirty = false;
+  const out: WeightingsMap = {};
+  for (const [id, v] of Object.entries(w)) {
+    if (typeof v === "string") {
+      out[id] = { weight: v, fingerprint: "", pluginVersion: 0 };
+      dirty = true;
+    } else if (v && typeof v === "object") {
+      const entry = v as Partial<WeightingEntry>;
+      if (
+        typeof entry.weight === "string" &&
+        typeof entry.fingerprint === "string" &&
+        typeof entry.pluginVersion === "number"
+      ) {
+        out[id] = entry as WeightingEntry;
+      } else {
+        out[id] = {
+          weight: String(entry.weight ?? "N/A"),
+          fingerprint: "",
+          pluginVersion: 0,
+        };
+        dirty = true;
+      }
+    }
+  }
+  if (dirty) api.storage.weightings = out;
+}
+
 export async function initStorage(api: any) {
   await api.storage.loaded;
 
@@ -26,19 +79,34 @@ export async function initStorage(api: any) {
   if (!api.storage.weightingOverrides) {
     api.storage.weightingOverrides = {};
   }
+
+  migrateWeightings(api);
 }
 
 export function clearStuck(api: any) {
-  let hasStuckProcessing = false;
-  for (const key in api.storage.weightings) {
-    if (api.storage.weightings[key] === "processing") {
-      delete api.storage.weightings[key];
-      hasStuckProcessing = true;
+  const map = (api.storage.weightings ?? {}) as WeightingsMap;
+  let dirty = false;
+  const out: WeightingsMap = {};
+  for (const [key, entry] of Object.entries(map)) {
+    if (!entry || typeof entry !== "object") {
+      dirty = true;
+      continue;
     }
+    if (entry.weight === "processing") {
+      // Stuck mid-fetch from a previous session: drop it so the next
+      // page load can re-run handleWeightings from scratch.
+      dirty = true;
+      continue;
+    }
+    if (entry.refreshing) {
+      const { refreshing: _ignored, ...rest } = entry;
+      out[key] = rest;
+      dirty = true;
+      continue;
+    }
+    out[key] = entry;
   }
-  if (hasStuckProcessing) {
-    api.storage.weightings = { ...api.storage.weightings };
-  }
+  if (dirty) api.storage.weightings = out;
 }
 
 // Helper function to find actual class names by their base pattern
@@ -137,6 +205,7 @@ function updateWeightLabelContent(
   weighting: string | undefined,
   assessmentID: string | undefined,
   api: any,
+  refreshing = false,
 ) {
   const existingInput = weightLabel.querySelector(
     ".betterseqta-weight-input",
@@ -178,10 +247,15 @@ function updateWeightLabelContent(
 
   const span = document.createElement("span");
   span.className = "betterseqta-weight-value";
-  span.textContent =
+  const baseText =
     weighting && weighting !== "N/A"
       ? formatWeightDisplay(weighting)
       : "N/A";
+  span.textContent = refreshing ? `${baseText} ↻` : baseText;
+  if (refreshing) {
+    span.style.opacity = "0.7";
+    weightLabel.title = "Re-checking weighting…";
+  }
   weightLabel.appendChild(span);
 }
 
@@ -189,6 +263,7 @@ function createWeightLabel(
   assessmentItem: Element,
   weighting: string | undefined,
   api: any,
+  refreshing = false,
 ) {
   let statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___'],  .betterseqta-stats-container`,
@@ -224,7 +299,13 @@ function createWeightLabel(
   ) as HTMLElement | null;
 
   if (existingLabel) {
-    updateWeightLabelContent(existingLabel, weighting, assessmentID, api);
+    updateWeightLabelContent(
+      existingLabel,
+      weighting,
+      assessmentID,
+      api,
+      refreshing,
+    );
     return;
   }
 
@@ -256,7 +337,13 @@ function createWeightLabel(
   const innerTextDiv = weightLabel.querySelector(`[class*='Label__innerText___']`);
   if (innerTextDiv) innerTextDiv.textContent = "Weight";
 
-  updateWeightLabelContent(weightLabel, weighting, assessmentID, api);
+  updateWeightLabelContent(
+    weightLabel,
+    weighting,
+    assessmentID,
+    api,
+    refreshing,
+  );
   statsContainer.appendChild(weightLabel);
 }
 
@@ -563,22 +650,51 @@ async function handleWeightings(mark: any, api: any) {
   const metaclassID = mark.metaclassID;
   const title = mark.title;
 
-  if (
-    api.storage.weightings[assessmentID] != undefined &&
-    api.storage.weightings[assessmentID] !== "processing"
-  ) {
-    return;
-  }
+  const fingerprint = computeFingerprint(mark);
+  const existing = api.storage.weightings[assessmentID] as
+    | WeightingEntry
+    | undefined;
+
+  const isFresh =
+    existing &&
+    existing.weight !== "processing" &&
+    existing.fingerprint === fingerprint &&
+    existing.pluginVersion === WEIGHTING_SCHEMA_VERSION;
+
+  if (isFresh) return;
+
+  // If we have a previous usable value, keep showing it while we refetch
+  // by marking the entry as refreshing instead of wiping it. We claim the
+  // new fingerprint + version on the placeholder so a second parseAssessments
+  // pass (e.g. a fast re-mount of the wrapper) doesn't kick off a duplicate
+  // refetch for the same id while this one is still in flight.
+  const placeholder: WeightingEntry =
+    existing && existing.weight !== "processing"
+      ? {
+          ...existing,
+          fingerprint,
+          pluginVersion: WEIGHTING_SCHEMA_VERSION,
+          refreshing: true,
+        }
+      : {
+          weight: "processing",
+          fingerprint,
+          pluginVersion: WEIGHTING_SCHEMA_VERSION,
+        };
 
   api.storage.weightings = {
     ...api.storage.weightings,
-    [assessmentID]: "processing",
+    [assessmentID]: placeholder,
   };
 
   api.storage.assessments = {
     ...api.storage.assessments,
     [title.trim()]: assessmentID,
   };
+
+  // Surface the refreshing indicator on the affected row immediately,
+  // without waiting for the PDF fetch to finish.
+  document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
 
   try {
     let pdfUrl: string;
@@ -655,14 +771,24 @@ async function handleWeightings(mark: any, api: any) {
 
     api.storage.weightings = {
       ...api.storage.weightings,
-      [assessmentID]: match ? match[1] : "N/A",
+      [assessmentID]: {
+        weight: match ? match[1] : "N/A",
+        fingerprint,
+        pluginVersion: WEIGHTING_SCHEMA_VERSION,
+      },
     };
   } catch (error: any) {
     api.storage.weightings = {
       ...api.storage.weightings,
-      [assessmentID]: "N/A",
+      [assessmentID]: {
+        weight: "N/A",
+        fingerprint,
+        pluginVersion: WEIGHTING_SCHEMA_VERSION,
+      },
     };
   }
+
+  document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
 }
 
 export async function parseAssessments(api: any) {
@@ -684,6 +810,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
   let weightedTotal = 0;
   let totalWeight = 0;
   let hasInaccurateWeighting = false;
+  let hasRefreshingWeighting = false;
   let count = 0;
 
   for (const assessmentItem of assessmentItems) {
@@ -696,15 +823,17 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     if (!title) continue;
 
     const assessmentID = api.storage.assessments?.[title];
-    const autoWeighting = assessmentID
-      ? api.storage.weightings?.[assessmentID]
+    const entry = assessmentID
+      ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
       : undefined;
+    const autoWeighting = entry?.weight;
     const override = assessmentID
       ? api.storage.weightingOverrides?.[assessmentID]
       : undefined;
     const weighting = override ?? autoWeighting;
+    const refreshing = !override && Boolean(entry?.refreshing);
 
-    createWeightLabel(assessmentItem, weighting, api);
+    createWeightLabel(assessmentItem, weighting, api, refreshing);
 
     const gradeElement = assessmentItem.querySelector(
       `[class*='Thermoscore__text___']`,
@@ -727,6 +856,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
       if (!isNaN(weight) && weight >= 0) {
         weightedTotal += grade * weight;
         totalWeight += weight;
+        if (refreshing) hasRefreshingWeighting = true;
       } else {
         weightedTotal += grade;
         totalWeight += 1;
@@ -740,6 +870,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     weightedTotal,
     totalWeight,
     hasInaccurateWeighting,
+    hasRefreshingWeighting,
     count,
   };
 }
@@ -811,9 +942,10 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
   const title = titleEl?.textContent?.trim();
   const assessmentID = title ? api.storage.assessments?.[title] : undefined;
 
-  const rawWeight = assessmentID
-    ? api.storage.weightings?.[assessmentID]
+  const entry = assessmentID
+    ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
     : undefined;
+  const rawWeight = entry?.weight;
 
   const weightingUnavailable = rawWeight === "N/A";
 

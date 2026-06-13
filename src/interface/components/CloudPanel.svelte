@@ -3,6 +3,7 @@
   import { animate } from "motion";
   import { delay } from "@/seqta/utils/delay.ts";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
 
   const { hidePanel } = $props<{
     hidePanel: () => void;
@@ -105,12 +106,12 @@
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
             {#if cloudState.user?.pfpUrl}
-              <img
-                src={cloudState.user.pfpUrl}
-                alt=""
+              <CloudPfpAvatar
+                user={cloudState.user}
                 class="w-12 h-12 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-600"
               />
-            {:else}
+            {/if}
+            {#if !cloudState.user?.pfpUrl}
               <div class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base">
                 {getInitials()}
               </div>

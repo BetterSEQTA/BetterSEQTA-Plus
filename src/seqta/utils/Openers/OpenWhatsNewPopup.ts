@@ -42,7 +42,8 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.7.0 – Grade Analytics, fonts, Global Search & SEQTA Engage Improvements</h1>
+      <h1>3.7.0 – Grade Analytics, Enhanced Navigation, fonts, Global Search & SEQTA Engage Improvements</h1>
+      <li>Added Enhanced Navigation for courses: the navigator now auto-scrolls to the selected lesson (e.g. inside the "Go to…" popup) and prev/next arrows for jumping between lessons.</li>
       <li>Added Grade Analytics, new sidebar page with grade trend charts synced from SEQTA.</li>
       <li>Added Grade distribution auto-detects your school’s letter scale from released marks for analytics page.</li>
       <li>Added documents, notices, portals, folios, goals, and more to Global Search.</li>
@@ -53,6 +54,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
       <li>Added font picker in settings.</li>
       <li>Added rubric copy on assessment detail pages.</li>
       <li>Added manual weight entry when an assessment weight is N/A.</li>
+      <li>Added an automatic reindex of assessments if any of a series of tracked values change (title, release state, etc). Helps keep weightings up to date.</li>
       <li>Fixed BetterSEQTA sidebar injection issues on some pages.</li>
       <li>Tweak Theme of the Month popup making it more clear about dismissals and respecting “Don’t show again”.</li>
       <li>Fixed duplicate-result fixes.</li>

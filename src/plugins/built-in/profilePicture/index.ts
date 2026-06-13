@@ -8,6 +8,7 @@ import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "webextension-polyfill";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { resolveCloudPfp } from "@/seqta/utils/cloudPfpCache";
 import styles from "./styles.css?inline";
 import localforage from "localforage";
 
@@ -65,14 +66,17 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       const useCloud = api.settings.useCloudPfp;
       const pfpUrl = cloudAuth.state.user?.pfpUrl;
 
-      if (useCloud && pfpUrl) {
-        img = document.createElement("img");
-        img.className = "userInfoImg";
-        const base = pfpUrl.split("?")[0]!;
-        img.src = `${base}?v=${Date.now()}`;
-        if (svg) svg.style.display = "none";
-        container.appendChild(img);
-        return;
+      if (useCloud && pfpUrl && cloudAuth.state.user?.id) {
+        const resolved = await resolveCloudPfp(cloudAuth.state.user.id, pfpUrl);
+        if (resolved) {
+          currentBlobUrl = resolved.src;
+          img = document.createElement("img");
+          img.className = "userInfoImg";
+          img.src = resolved.src;
+          if (svg) svg.style.display = "none";
+          container.appendChild(img);
+          return;
+        }
       }
 
       const blob = await store.getItem<Blob>("profile-picture");

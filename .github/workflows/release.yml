@@ -1,0 +1,56 @@
+# Manual release workflow only — runs on BetterSEQTA/BetterSEQTA-Plus via workflow_dispatch.
+# Bump package.json version on main, confirm when dispatching, then run.
+# Uses the default GITHUB_TOKEN (contents: write).
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_updated:
+        description: I have already updated the version in package.json
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm version was updated
+        if: inputs.version_updated != true
+        run: |
+          echo "Check the confirmation box: you must update package.json version before releasing."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build extension
+        id: build
+        uses: ./.github/actions/build-extension
+        with:
+          gh_release_update_check: "true"
+          update_channel: stable
+          release_repo: ${{ github.repository }}
+
+      - name: Create release if missing
+        run: |
+          if ! gh release view "${{ steps.version.outputs.version }}" 2>/dev/null; then
+            gh release create "${{ steps.version.outputs.version }}" \
+              --title "${{ steps.version.outputs.version }}" \
+              --notes "Edit this release description on GitHub."
+          fi
+
+      - name: Upload release assets
+        run: |
+          gh release upload "${{ steps.version.outputs.version }}" \
+            --clobber \
+            "${{ steps.build.outputs.chrome_zip }}" \
+            "${{ steps.build.outputs.firefox_zip }}"
