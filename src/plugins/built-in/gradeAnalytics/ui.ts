@@ -3,6 +3,7 @@ import pluginStyles from "./styles.css?inline";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
+import { buildContrastAccentPalette } from "./utils/accentColor";
 
 type ThemeSettingKey =
   | "selectedColor"
@@ -96,8 +97,17 @@ function syncThemeFromPage(target: HTMLElement) {
   }
 
   const accent = resolvePageAccentColor();
-  target.style.setProperty("--bsplus-analytics-accent", accent);
-  target.style.setProperty("--better-main", accent);
+  const surface =
+    target.style.getPropertyValue("--background-primary").trim() ||
+    computed.getPropertyValue("--background-primary").trim() ||
+    (target.classList.contains("dark") ? "#1e293b" : "#ffffff");
+  const palette = buildContrastAccentPalette(accent, surface);
+
+  target.style.setProperty("--bsplus-analytics-accent", palette.accent);
+  target.style.setProperty("--bsplus-analytics-accent-subtle", palette.accentSubtle);
+  target.style.setProperty("--better-main", palette.accent);
+  target.style.setProperty("--bsplus-theme-btn-primary-bg", palette.accent);
+  target.style.setProperty("--bsplus-theme-btn-primary-color", palette.onAccent);
 
   target.classList.toggle(
     "dark",

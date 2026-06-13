@@ -73,8 +73,8 @@
 }
 
 .bsplus-analytics-animate {
-  animation: bsplus-analytics-fade-in-up 0.55s var(--bsplus-analytics-ease)
-    forwards;
+  opacity: 0;
+  animation: bsplus-analytics-fade-in-up 0.55s var(--bsplus-analytics-ease) both;
   will-change: opacity, transform;
 }
 
@@ -97,6 +97,9 @@
 }
 .bsplus-analytics-delay-4 {
   animation-delay: 320ms;
+}
+.bsplus-analytics-delay-5 {
+  animation-delay: 400ms;
 }
 
 /* ─── Header ─── */
@@ -165,10 +168,9 @@
   font-size: 0.7rem;
   font-weight: 600;
   vertical-align: middle;
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 18%,
-    transparent
+  background: var(
+    --bsplus-analytics-accent-subtle,
+    color-mix(in srgb, var(--bsplus-analytics-accent) 18%, transparent)
   );
   color: var(--bsplus-analytics-accent);
 }
@@ -324,10 +326,6 @@
 
 /* ─── Filter toolbar ─── */
 .bsplus-analytics-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
   padding: 1rem 1.15rem;
   border-radius: var(
     --bsplus-theme-card-radius,
@@ -344,6 +342,73 @@
   position: relative;
   z-index: 40;
   isolation: isolate;
+}
+
+.bsplus-analytics-toolbar-grid {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(12rem, 1.4fr) auto;
+  grid-template-rows: auto auto;
+  gap: 0.9rem 1rem;
+  align-items: end;
+  width: 100%;
+}
+
+.bsplus-analytics-toolbar-clear {
+  grid-column: 4;
+  grid-row: 1;
+  justify-self: end;
+  align-self: end;
+  padding: 0.65rem 0.9rem;
+  white-space: nowrap;
+}
+
+.bsplus-analytics-toolbar-trends {
+  grid-column: 4;
+  grid-row: 2;
+  justify-self: end;
+  align-self: center;
+  margin-left: 0;
+  max-width: 14rem;
+  text-align: right;
+}
+
+.bsplus-analytics-toolbar-trends-top {
+  grid-row: 1;
+  align-self: end;
+}
+
+@media (max-width: 900px) {
+  .bsplus-analytics-toolbar-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bsplus-analytics-toolbar-search {
+    grid-column: 1 / -1;
+  }
+
+  .bsplus-analytics-toolbar-clear {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: stretch;
+  }
+
+  .bsplus-analytics-grade-range {
+    grid-column: 1 / -1;
+  }
+
+  .bsplus-analytics-toolbar-trends {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    justify-self: start;
+    max-width: none;
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .bsplus-analytics-toolbar-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bsplus-analytics-toolbar-dropdown-field {
@@ -370,7 +435,6 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  margin-left: auto;
   padding: 0.35rem 0;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -387,13 +451,6 @@
   accent-color: var(--bsplus-analytics-accent);
   cursor: pointer;
   flex-shrink: 0;
-}
-
-@media (max-width: 900px) {
-  .bsplus-analytics-checkbox {
-    margin-left: 0;
-    width: 100%;
-  }
 }
 
 .bsplus-analytics-select,
@@ -456,9 +513,10 @@
 }
 
 .bsplus-analytics-grade-range {
-  flex: 1;
-  min-width: 12rem;
-  max-width: 20rem;
+  grid-column: 1 / 4;
+  grid-row: 2;
+  min-width: 0;
+  max-width: none;
 }
 
 .bsplus-analytics-range-value {
@@ -471,17 +529,7 @@
 }
 
 .bsplus-analytics-toolbar-search {
-  margin-left: auto;
-  flex: 1 1 14rem;
-  max-width: 18rem;
-}
-
-@media (max-width: 768px) {
-  .bsplus-analytics-toolbar-search {
-    margin-left: 0;
-    max-width: none;
-    width: 100%;
-  }
+  min-width: 0;
 }
 
 /* Toolbar custom dropdowns (time period, subjects) */
@@ -601,6 +649,29 @@
   width: 100%;
   position: relative;
   z-index: 1;
+  align-items: stretch;
+}
+
+.bsplus-analytics-chart-cell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.bsplus-analytics-chart-cell > :global(.bsplus-analytics-animate) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.bsplus-analytics-chart-cell :global(.bsplus-analytics-card) {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Fade-in animation must not paint above the filter toolbar / dropdown */
@@ -610,7 +681,7 @@
 
 @media (min-width: 960px) {
   .bsplus-analytics-charts {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
 }
@@ -618,6 +689,7 @@
 .bsplus-analytics-card {
   display: flex;
   flex-direction: column;
+  height: 100%;
   border-radius: var(
     --bsplus-theme-card-radius,
     var(--bsplus-analytics-radius)
@@ -645,8 +717,9 @@
 .bsplus-analytics-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 1rem;
+  min-height: 4.75rem;
   padding: 1.15rem 1.25rem;
   border-bottom: 1px solid var(--bsplus-analytics-border);
 }
@@ -657,9 +730,10 @@
 
 .bsplus-analytics-card-controls {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .bsplus-analytics-card-control {
@@ -705,6 +779,8 @@
 .bsplus-analytics-card-body {
   padding: 1rem 1.15rem;
   flex: 1;
+  width: 100%;
+  min-width: 0;
   background: var(--bsplus-analytics-surface);
 }
 
@@ -734,20 +810,24 @@
 
 /* ─── Layerchart / SVG (fix default black rects in dark UI) ─── */
 .bsplus-chart-host {
-  display: flex;
-  justify-content: center;
+  display: block;
   width: 100%;
+  min-width: 0;
   overflow: visible;
   color: var(--bsplus-analytics-muted);
 }
 
 .bsplus-analytics-root .bsplus-chart-surface {
+  width: 100%;
+  min-width: 0;
   height: 280px;
   min-height: 280px;
   max-height: 280px;
 }
 
 .bsplus-analytics-root .bsplus-chart-surface-bar {
+  width: 100%;
+  min-width: 0;
   height: 320px;
   min-height: 320px;
   max-height: 320px;
@@ -787,6 +867,9 @@
 }
 
 .bsplus-analytics-root [data-slot="chart"] svg {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
   background: transparent !important;
   overflow: visible;
 }
@@ -964,10 +1047,9 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.75rem;
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 14%,
-    transparent
+  background: var(
+    --bsplus-analytics-accent-subtle,
+    color-mix(in srgb, var(--bsplus-analytics-accent) 14%, transparent)
   );
   color: var(--bsplus-analytics-accent);
 }
@@ -998,9 +1080,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 0.75rem;
   padding-bottom: 0.5rem;
+  color: var(--bsplus-analytics-muted);
+  font-size: 0.8125rem;
 }
 
 /* ─── States ─── */
