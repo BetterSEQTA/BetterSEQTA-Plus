@@ -105,6 +105,10 @@ function syncThemeFromPage(target: HTMLElement) {
 
   target.style.setProperty("--bsplus-analytics-accent", palette.accent);
   target.style.setProperty("--bsplus-analytics-accent-subtle", palette.accentSubtle);
+  target.style.setProperty(
+    "--bsplus-analytics-forecast",
+    `color-mix(in srgb, ${palette.accent} 72%, ${target.classList.contains("dark") ? "#f8fafc" : "#64748b"})`,
+  );
   target.style.setProperty("--better-main", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-bg", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-color", palette.onAccent);
