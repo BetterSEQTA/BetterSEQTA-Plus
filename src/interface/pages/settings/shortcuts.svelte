@@ -24,18 +24,18 @@
   });
 
   const switchChange = (shortcut: any) => {
-    const idx = $settingsState.shortcuts.findIndex(s => s.name === shortcut);
+    const current = settingsState.shortcuts ?? [];
+    const idx = current.findIndex(s => s.name === shortcut);
     if (idx !== -1) {
-      // Create a new array with the toggled value to ensure reactivity
-      const updated = settingsState.shortcuts.map(s =>
+      const updated = current.map(s =>
         s.name === shortcut ? { ...s, enabled: !s.enabled } : s
       );
-      settingsState.shortcuts = updated;
+      settingsState.setKey("shortcuts", updated);
     } else {
-      settingsState.shortcuts = [
-        ...settingsState.shortcuts,
-        { name: shortcut, enabled: true }
-      ];
+      settingsState.setKey("shortcuts", [
+        ...current,
+        { name: shortcut, enabled: true },
+      ]);
     }
   }
 
@@ -82,7 +82,10 @@
     if (isValidTitle(newTitle) && isValidURL(newURL)) {
       const icon = newIcon || newTitle[0];
       const newShortcut = { name: newTitle.trim(), url: formatUrl(newURL).trim(), icon };
-      settingsState.customshortcuts = [...settingsState.customshortcuts, newShortcut];
+      settingsState.setKey("customshortcuts", [
+        ...(settingsState.customshortcuts ?? []),
+        newShortcut,
+      ]);
 
       newTitle = "";
       newURL = "";
@@ -94,7 +97,10 @@
   };
 
   const deleteCustomShortcut = (index: number) => {
-    settingsState.customshortcuts = settingsState.customshortcuts.filter((_, i) => i !== index);
+    settingsState.setKey(
+      "customshortcuts",
+      (settingsState.customshortcuts ?? []).filter((_, i) => i !== index),
+    );
   };
 </script>
 
@@ -203,7 +209,7 @@
     </div>
 
     <!-- Custom Shortcuts Section -->
-    {#each $settingsState.customshortcuts as shortcut, index}
+    {#each ($settingsState.customshortcuts ?? []) as shortcut, index}
       <div class="flex justify-between items-center px-4 py-3">
         {shortcut.name}
         <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>

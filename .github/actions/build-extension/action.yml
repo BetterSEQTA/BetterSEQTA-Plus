@@ -11,7 +11,7 @@ inputs:
     required: false
     default: stable
   build_label:
-    description: Optional build label for nightly display (e.g. run number).
+    description: Optional build label for nightly display (e.g. UTC build date).
     required: false
     default: ""
   release_repo:
@@ -59,9 +59,17 @@ runs:
     - name: Package zips
       id: zip
       shell: bash
+      env:
+        UPDATE_CHANNEL: ${{ inputs.update_channel }}
+        BUILD_LABEL: ${{ inputs.build_label }}
       run: |
         VERSION="${{ steps.version.outputs.version }}"
-        (cd dist/chrome && zip -r "../betterseqtaplus-${VERSION}-chrome.zip" .)
-        (cd dist/firefox && zip -r "../betterseqtaplus-${VERSION}-firefox.zip" .)
-        echo "chrome_zip=dist/betterseqtaplus-${VERSION}-chrome.zip" >> "$GITHUB_OUTPUT"
-        echo "firefox_zip=dist/betterseqtaplus-${VERSION}-firefox.zip" >> "$GITHUB_OUTPUT"
+        if [ "$UPDATE_CHANNEL" = "nightly" ] && [ -n "$BUILD_LABEL" ]; then
+          BASE="betterseqtaplus-nightly-${BUILD_LABEL}"
+        else
+          BASE="betterseqtaplus-${VERSION}"
+        fi
+        (cd dist/chrome && zip -r "../${BASE}-chrome.zip" .)
+        (cd dist/firefox && zip -r "../${BASE}-firefox.zip" .)
+        echo "chrome_zip=dist/${BASE}-chrome.zip" >> "$GITHUB_OUTPUT"
+        echo "firefox_zip=dist/${BASE}-firefox.zip" >> "$GITHUB_OUTPUT"

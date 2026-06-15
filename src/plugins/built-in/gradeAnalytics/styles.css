@@ -33,6 +33,7 @@
   --bsplus-analytics-shadow-hover: 0 8px 24px 8px rgba(0, 0, 0, 0.16);
   /* Set on host via ui.ts from --better-main / user selectedColor */
   --bsplus-analytics-accent: var(--better-main, #007bff);
+  --bsplus-analytics-chart-height: 300px;
 
   width: 100%;
   max-width: none;
@@ -340,8 +341,7 @@
   backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: visible;
   position: relative;
-  z-index: 40;
-  isolation: isolate;
+  z-index: 3;
 }
 
 .bsplus-analytics-toolbar-grid {
@@ -413,7 +413,7 @@
 
 .bsplus-analytics-toolbar-dropdown-field {
   position: relative;
-  z-index: 2;
+  z-index: 4;
 }
 
 .bsplus-analytics-field {
@@ -589,7 +589,7 @@
   position: absolute;
   left: 0;
   top: calc(100% + 0.35rem);
-  z-index: 100;
+  z-index: 5;
   min-width: 14rem;
   max-height: 12rem;
   overflow-y: auto;
@@ -675,14 +675,27 @@
 }
 
 /* Fade-in animation must not paint above the filter toolbar / dropdown */
-.bsplus-analytics-charts .bsplus-analytics-animate {
+.bsplus-analytics-charts > .bsplus-analytics-animate {
   z-index: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.bsplus-analytics-charts > .bsplus-analytics-animate > .bsplus-analytics-card {
+  flex: 1;
+  width: 100%;
 }
 
 @media (min-width: 960px) {
   .bsplus-analytics-charts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
+  }
+
+  .bsplus-analytics-charts .bsplus-analytics-card-header {
+    min-height: 5.75rem;
+    box-sizing: border-box;
+    align-items: flex-end;
   }
 }
 
@@ -769,6 +782,12 @@
   min-width: 9.5rem;
 }
 
+.bsplus-analytics-card-control-spacer {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 2.5rem;
+}
+
 .bsplus-analytics-select-compact {
   min-width: 9.5rem;
   min-height: 2.5rem;
@@ -778,7 +797,7 @@
 }
 
 .bsplus-analytics-scale-hint {
-  margin: 0.65rem 0 0;
+  margin: 0;
   font-size: 0.75rem;
   line-height: 1.4;
   color: var(--bsplus-analytics-muted);
@@ -805,9 +824,15 @@
 .bsplus-analytics-card-body {
   padding: 1rem 1.15rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
   background: var(--bsplus-analytics-surface);
+}
+
+.bsplus-analytics-charts .bsplus-analytics-card-body {
+  justify-content: center;
 }
 
 .bsplus-analytics-card-footer {
@@ -816,6 +841,20 @@
   font-size: 0.8125rem;
   color: var(--bsplus-analytics-muted);
   line-height: 1.5;
+  margin-top: auto;
+}
+
+.bsplus-analytics-charts .bsplus-analytics-card-footer {
+  min-height: 4.25rem;
+  box-sizing: border-box;
+}
+
+.bsplus-analytics-card-footer p {
+  margin: 0;
+}
+
+.bsplus-analytics-card-footer p + p {
+  margin-top: 0.35rem;
 }
 
 .bsplus-analytics-card-empty {
@@ -823,10 +862,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 220px;
+  min-height: var(--bsplus-analytics-chart-height, 300px);
+  height: var(--bsplus-analytics-chart-height, 300px);
   text-align: center;
   gap: 0.35rem;
   color: var(--bsplus-analytics-muted);
+  flex-shrink: 0;
 }
 
 .bsplus-analytics-card-empty strong {
@@ -846,9 +887,10 @@
 .bsplus-analytics-root .bsplus-chart-surface {
   width: 100%;
   min-width: 0;
-  height: 280px;
-  min-height: 280px;
-  max-height: 280px;
+  height: var(--bsplus-analytics-chart-height, 280px);
+  min-height: var(--bsplus-analytics-chart-height, 280px);
+  max-height: var(--bsplus-analytics-chart-height, 280px);
+  flex-shrink: 0;
 }
 
 .bsplus-analytics-root .bsplus-chart-surface-bar {
@@ -857,6 +899,7 @@
   height: 320px;
   min-height: 320px;
   max-height: 320px;
+  flex-shrink: 0;
 }
 
 /* Bar chart: show axis spines and tick marks (area chart hides these) */

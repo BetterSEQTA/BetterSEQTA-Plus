@@ -23,7 +23,13 @@ jobs:
         env:
           ESLINT_USE_FLAT_CONFIG: "false"
 
+      - name: Unit tests
+        run: npm test
+
       - name: Build extension
         uses: ./.github/actions/build-extension
         with:
           gh_release_update_check: "false"
+
+      - name: Smoke tests
+        run: npm run test:smoke

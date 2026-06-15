@@ -35,6 +35,14 @@ function getBuildLabel(): string {
   return typeof __BUILD_LABEL__ !== "undefined" ? __BUILD_LABEL__ : "";
 }
 
+function formatNightlyLabel(buildDate: string): string {
+  return buildDate ? `nightly (${buildDate})` : "nightly";
+}
+
+function nightlyDateFromPublishedAt(publishedAt: string): string {
+  return publishedAt.slice(0, 10);
+}
+
 function getCurrentVersion(): string {
   return browser.runtime.getManifest().version;
 }
@@ -158,8 +166,7 @@ async function checkNightlyUpdate(): Promise<GhReleaseUpdateInfo> {
   }
 
   const lastSeen = settingsState.lastSeenNightlyPublishedAt;
-  const buildLabel = getBuildLabel();
-  const label = buildLabel ? `nightly #${buildLabel}` : "nightly";
+  const label = formatNightlyLabel(nightlyDateFromPublishedAt(release.published_at));
 
   if (!lastSeen) {
     settingsState.lastSeenNightlyPublishedAt = release.published_at;
@@ -175,6 +182,12 @@ async function checkNightlyUpdate(): Promise<GhReleaseUpdateInfo> {
 
 export function isGhReleaseUpdateCheckEnabled(): boolean {
   return isUpdateCheckEnabled();
+}
+
+/** Label for the installed GitHub release build (e.g. `nightly (2025-06-10)`). */
+export function getInstalledGhReleaseChannelLabel(): string | null {
+  if (!isUpdateCheckEnabled() || getUpdateChannel() !== "nightly") return null;
+  return formatNightlyLabel(getBuildLabel());
 }
 
 export async function checkGithubReleaseUpdate(): Promise<GhReleaseUpdateInfo> {

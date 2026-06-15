@@ -20,22 +20,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set build date
+        id: build_date
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
       - name: Build extension
         id: build
         uses: ./.github/actions/build-extension
         with:
           gh_release_update_check: "true"
           update_channel: nightly
-          build_label: ${{ github.run_number }}
+          build_label: ${{ steps.build_date.outputs.date }}
           release_repo: ${{ github.repository }}
 
       - name: Ensure nightly release exists
         run: |
+          TITLE="Nightly (${{ steps.build_date.outputs.date }})"
           if ! gh release view "${{ env.NIGHTLY_TAG }}" 2>/dev/null; then
             gh release create "${{ env.NIGHTLY_TAG }}" \
               --prerelease \
-              --title "Nightly" \
+              --title "$TITLE" \
               --notes-file .github/nightly-release-notes.md
+          else
+            gh release edit "${{ env.NIGHTLY_TAG }}" --title "$TITLE"
           fi
 
       - name: Upload nightly assets

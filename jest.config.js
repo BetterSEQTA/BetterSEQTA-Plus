@@ -9,6 +9,10 @@ export default {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
+  },
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverageFrom: [
     'src/**/*.ts',

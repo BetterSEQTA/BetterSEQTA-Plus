@@ -1,6 +1,8 @@
 import browser from "webextension-polyfill";
 import semver from "semver";
 import type { SettingsState } from "@/types/storage";
+import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
+import { ensureSyncableStorageDefaults } from "@/seqta/utils/ensureSyncableStorageDefaults";
 import { fetchNews } from "./background/news";
 import {
   initCloudSettingsAutoSync,
@@ -404,6 +406,15 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     void browser.tabs.create({ url: "github.com/BetterSEQTA/BetterSEQTA-Plus" });
   },
   setDefaultStorage: () => SetStorageValue(getDefaultValues()),
+  ensureStorageDefaults: (_req, sendResponse) => {
+    void ensureSyncableStorageDefaults()
+      .then(() => sendResponse({ ok: true }))
+      .catch((e) => {
+        console.warn("[BetterSEQTA+] ensureStorageDefaults failed:", e);
+        sendResponse({ ok: false });
+      });
+    return true;
+  },
   sendNews: (req, sendResponse) => {
     fetchNews(req.source ?? "australia", sendResponse);
     return true;
@@ -477,76 +488,8 @@ browser.runtime.onMessage.addListener(
   },
 );
 
-function detectLowEndDevice(): boolean {
-  // Check for low-end hardware indicators
-  const lowCoreCount = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
-  const lowMemory = (navigator as any).deviceMemory && (navigator as any).deviceMemory <= 2;
-  
-  return lowCoreCount || lowMemory;
-}
-
 function getDefaultValues(): SettingsState {
-  const isLowEndDevice = detectLowEndDevice();
-
-  return {
-    onoff: true,
-    animatedbk: true,
-    bksliderinput: "50",
-    transparencyEffects: false,
-    lessonalert: true,
-    defaultmenuorder: [],
-    menuitems: {
-      assessments: { toggle: true },
-      courses: { toggle: true },
-      dashboard: { toggle: true },
-      documents: { toggle: true },
-      forums: { toggle: true },
-      goals: { toggle: true },
-      home: { toggle: true },
-      messages: { toggle: true },
-      myed: { toggle: true },
-      news: { toggle: true },
-      notices: { toggle: true },
-      portals: { toggle: true },
-      reports: { toggle: true },
-      settings: { toggle: true },
-      timetable: { toggle: true },
-      welcome: { toggle: true },
-    },
-    menuorder: [],
-    subjectfilters: {},
-    selectedTheme: "",
-    selectedColor:
-      "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
-    originalSelectedColor: "",
-    DarkMode: true,
-    animations: !isLowEndDevice,
-    assessmentsAverage: false,
-    defaultPage: "home",
-    shortcuts: [
-      {
-        name: "Outlook",
-        enabled: true,
-      },
-      {
-        name: "Office",
-        enabled: true,
-      },
-      {
-        name: "Google",
-        enabled: true,
-      },
-    ],
-    customshortcuts: [],
-    lettergrade: false,
-    newsSource: "australia",
-    iconOnlySidebar: false,
-    adaptiveThemeColour: false,
-    adaptiveThemeGradient: false,
-    adaptiveThemeColourTransition: true,
-    themeOfTheMonthDisabled: false,
-    autoCloudSettingsSync: true,
-  };
+  return getDefaultSettingsState();
 }
 
 function SetStorageValue(object: any) {
@@ -673,6 +616,8 @@ browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(["justupdated"]);
   browser.storage.local.remove(["data"]);
 
+  void ensureSyncableStorageDefaults();
+
   if (event.reason == "install" || event.reason == "update") {
     browser.storage.local.set({ justupdated: true });
   }
@@ -684,4 +629,9 @@ browser.runtime.onInstalled.addListener(function (event) {
   }
 });
 
+browser.runtime.onStartup.addListener(() => {
+  void ensureSyncableStorageDefaults();
+});
+
 initCloudSettingsAutoSync({ reloadSeqtaPages });
+void ensureSyncableStorageDefaults();
