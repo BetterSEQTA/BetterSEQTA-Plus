@@ -35,6 +35,7 @@
   let showSubjectTrends = $state(false);
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
+  let contentReady = $state(false);
 
   const formattedTimestamp = $derived(() => {
     if (!lastUpdated) return "";
@@ -170,6 +171,9 @@
       analyticsData = [];
     } finally {
       loading = false;
+      requestAnimationFrame(() => {
+        contentReady = true;
+      });
     }
 
     const ttl = getCacheTtlMs(24);
@@ -235,7 +239,7 @@
     </p>
   {/if}
 
-  {#if loading}
+  {#if loading || !contentReady}
     <div class="bsplus-analytics-loading bsplus-analytics-animate">
       <div class="bsplus-analytics-spinner" aria-label="Loading analytics"></div>
     </div>
@@ -261,146 +265,165 @@
     </section>
 
     <div class="bsplus-analytics-toolbar bsplus-analytics-animate bsplus-analytics-delay-2">
-      <div
-        class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
-        data-analytics-dropdown
-      >
-        <span class="bsplus-analytics-field-label">Time period</span>
-        <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
-          <button
-            type="button"
-            class="bsplus-analytics-dropdown-trigger"
-            onclick={(e) => {
-              e.stopPropagation();
-              showSubjectsDropdown = false;
-              showTimeRangeDropdown = !showTimeRangeDropdown;
-            }}
-            aria-expanded={showTimeRangeDropdown}
-            aria-haspopup="listbox"
-            aria-label="Time period for analytics"
-          >
-            {timeRangeLabel()}
-          </button>
-          {#if showTimeRangeDropdown}
-            <div class="bsplus-analytics-dropdown-menu" role="listbox">
-              {#each TIME_RANGE_OPTIONS as option (option.value)}
-                {@const selected = timeRange === option.value}
-                <button
-                  type="button"
-                  class="bsplus-analytics-dropdown-item"
-                  class:is-selected={selected}
-                  role="option"
-                  aria-selected={selected}
-                  onclick={() => selectTimeRange(option.value)}
-                >
-                  <span class="bsplus-analytics-dropdown-check"
-                    >{selected ? "✓" : ""}</span
+      <div class="bsplus-analytics-toolbar-grid">
+        <div
+          class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
+          data-analytics-dropdown
+        >
+          <span class="bsplus-analytics-field-label">Time period</span>
+          <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
+            <button
+              type="button"
+              class="bsplus-analytics-dropdown-trigger"
+              onclick={(e) => {
+                e.stopPropagation();
+                showSubjectsDropdown = false;
+                showTimeRangeDropdown = !showTimeRangeDropdown;
+              }}
+              aria-expanded={showTimeRangeDropdown}
+              aria-haspopup="listbox"
+              aria-label="Time period for analytics"
+            >
+              {timeRangeLabel()}
+            </button>
+            {#if showTimeRangeDropdown}
+              <div class="bsplus-analytics-dropdown-menu" role="listbox">
+                {#each TIME_RANGE_OPTIONS as option (option.value)}
+                  {@const selected = timeRange === option.value}
+                  <button
+                    type="button"
+                    class="bsplus-analytics-dropdown-item"
+                    class:is-selected={selected}
+                    role="option"
+                    aria-selected={selected}
+                    onclick={() => selectTimeRange(option.value)}
                   >
-                  <span>{option.label}</span>
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      </div>
-
-      <div
-        class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
-        data-analytics-dropdown
-      >
-        <span class="bsplus-analytics-field-label">Subjects</span>
-        <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
-          <button
-            type="button"
-            class="bsplus-analytics-dropdown-trigger"
-            onclick={(e) => {
-              e.stopPropagation();
-              showTimeRangeDropdown = false;
-              showSubjectsDropdown = !showSubjectsDropdown;
-            }}
-            aria-expanded={showSubjectsDropdown}
-            aria-haspopup="listbox"
-          >
-            {#if filterSubjects.length === 0}
-              All subjects
-            {:else if filterSubjects.length === 1}
-              {filterSubjects[0]}
-            {:else}
-              {filterSubjects.length} selected
+                    <span class="bsplus-analytics-dropdown-check"
+                      >{selected ? "✓" : ""}</span
+                    >
+                    <span>{option.label}</span>
+                  </button>
+                {/each}
+              </div>
             {/if}
-          </button>
-          {#if showSubjectsDropdown}
-            <div class="bsplus-analytics-dropdown-menu" role="listbox">
-              <button
-                type="button"
-                class="bsplus-analytics-dropdown-item"
-                class:is-selected={filterSubjects.length === 0}
-                onclick={() => {
-                  filterSubjects = [];
-                  showSubjectsDropdown = false;
-                }}
-              >
-                <span class="bsplus-analytics-dropdown-check"
-                  >{filterSubjects.length === 0 ? "✓" : ""}</span
-                >
+          </div>
+        </div>
+
+        <div
+          class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
+          data-analytics-dropdown
+        >
+          <span class="bsplus-analytics-field-label">Subjects</span>
+          <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
+            <button
+              type="button"
+              class="bsplus-analytics-dropdown-trigger"
+              onclick={(e) => {
+                e.stopPropagation();
+                showTimeRangeDropdown = false;
+                showSubjectsDropdown = !showSubjectsDropdown;
+              }}
+              aria-expanded={showSubjectsDropdown}
+              aria-haspopup="listbox"
+            >
+              {#if filterSubjects.length === 0}
                 All subjects
-              </button>
-              {#each uniqueSubjects() as subject}
-                {@const selected = filterSubjects.includes(subject)}
+              {:else if filterSubjects.length === 1}
+                {filterSubjects[0]}
+              {:else}
+                {filterSubjects.length} selected
+              {/if}
+            </button>
+            {#if showSubjectsDropdown}
+              <div class="bsplus-analytics-dropdown-menu" role="listbox">
                 <button
                   type="button"
                   class="bsplus-analytics-dropdown-item"
-                  class:is-selected={selected}
-                  onclick={() => toggleSubject(subject)}
+                  class:is-selected={filterSubjects.length === 0}
+                  onclick={() => {
+                    filterSubjects = [];
+                    showSubjectsDropdown = false;
+                  }}
                 >
                   <span class="bsplus-analytics-dropdown-check"
-                    >{selected ? "✓" : ""}</span
+                    >{filterSubjects.length === 0 ? "✓" : ""}</span
                   >
-                  <span style="overflow:hidden;text-overflow:ellipsis">{subject}</span>
+                  All subjects
                 </button>
-              {/each}
-            </div>
-          {/if}
+                {#each uniqueSubjects() as subject}
+                  {@const selected = filterSubjects.includes(subject)}
+                  <button
+                    type="button"
+                    class="bsplus-analytics-dropdown-item"
+                    class:is-selected={selected}
+                    onclick={() => toggleSubject(subject)}
+                  >
+                    <span class="bsplus-analytics-dropdown-check"
+                      >{selected ? "✓" : ""}</span
+                    >
+                    <span style="overflow:hidden;text-overflow:ellipsis">{subject}</span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </div>
         </div>
-      </div>
 
-      <div class="bsplus-analytics-field bsplus-analytics-grade-range">
-        <span class="bsplus-analytics-field-label">Grade range</span>
-        <GradeRangeSlider bind:value={gradeRange} />
-      </div>
+        <div class="bsplus-analytics-field bsplus-analytics-toolbar-search">
+          <span class="bsplus-analytics-field-label">Search</span>
+          <input
+            type="search"
+            class="bsplus-analytics-input"
+            bind:value={filterSearch}
+            placeholder="Search assessments…"
+          />
+        </div>
 
-      <div class="bsplus-analytics-field bsplus-analytics-toolbar-search">
-        <span class="bsplus-analytics-field-label">Search</span>
-        <input
-          type="search"
-          class="bsplus-analytics-input"
-          bind:value={filterSearch}
-          placeholder="Search assessments…"
-        />
-      </div>
+        {#if hasActiveFilters()}
+          <button
+            type="button"
+            class="bsplus-analytics-btn bsplus-analytics-btn-ghost bsplus-analytics-toolbar-clear"
+            onclick={clearFilters}
+          >
+            Clear filters
+          </button>
+        {/if}
 
-      <label class="bsplus-analytics-checkbox">
-        <input type="checkbox" bind:checked={showSubjectTrends} />
-        <span>Show per-subject trends on chart</span>
-      </label>
+        <div class="bsplus-analytics-field bsplus-analytics-grade-range">
+          <span class="bsplus-analytics-field-label">Grade range</span>
+          <GradeRangeSlider bind:value={gradeRange} />
+        </div>
+
+        <label
+          class="bsplus-analytics-checkbox bsplus-analytics-toolbar-trends"
+          class:bsplus-analytics-toolbar-trends-top={!hasActiveFilters()}
+        >
+          <input type="checkbox" bind:checked={showSubjectTrends} />
+          <span>Show per-subject trends on chart</span>
+        </label>
+      </div>
     </div>
 
     <div class="bsplus-analytics-charts">
       {#key filteredData().length + "-" + gradeRange.join(",") + filterSearch + filterSubjects.join("|") + timeRange + String(showSubjectTrends)}
-        <div class="bsplus-analytics-animate bsplus-analytics-delay-3">
-          <AnalyticsAreaChart
-            data={gradedFiltered()}
-            {timeRange}
-            showSubjectTrends={showSubjectTrends}
-          />
+        <div class="bsplus-analytics-chart-cell">
+          <div class="bsplus-analytics-animate bsplus-analytics-delay-3">
+            <AnalyticsAreaChart
+              data={gradedFiltered()}
+              {timeRange}
+              showSubjectTrends={showSubjectTrends}
+            />
+          </div>
         </div>
-        <div class="bsplus-analytics-animate bsplus-analytics-delay-4">
-          <AnalyticsBarChart data={gradedFiltered()} {timeRange} />
+        <div class="bsplus-analytics-chart-cell">
+          <div class="bsplus-analytics-animate bsplus-analytics-delay-4">
+            <AnalyticsBarChart data={gradedFiltered()} {timeRange} />
+          </div>
         </div>
       {/key}
     </div>
 
-    <div class="bsplus-analytics-animate bsplus-analytics-delay-4" style="animation-delay: 400ms;">
+    <div class="bsplus-analytics-animate bsplus-analytics-delay-5">
       <AssessmentTable data={timeScopedData()} />
     </div>
 
@@ -411,15 +434,6 @@
           ({gradedFiltered().length} with grades)
         {/if}
       </span>
-      {#if hasActiveFilters()}
-        <button
-          type="button"
-          class="bsplus-analytics-btn bsplus-analytics-btn-ghost"
-          onclick={clearFilters}
-        >
-          Clear filters
-        </button>
-      {/if}
     </footer>
   {:else}
     <div class="bsplus-analytics-empty bsplus-analytics-animate" transition:fade={{ duration: 300 }}>

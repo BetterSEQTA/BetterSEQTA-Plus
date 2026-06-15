@@ -38,9 +38,10 @@ export function filterAssessmentsByTimeRange(
 
 export type TrendPoint = {
   date: Date;
-  average: number;
+  average: number | null;
   count: number;
-  [seriesKey: string]: number | Date;
+  forecast?: number;
+  [seriesKey: string]: number | Date | null | undefined;
 };
 
 export type TrendSeries = {
