@@ -4,7 +4,7 @@ import { join, resolve } from "path";
 import touchGlobalCSSPlugin from "./lib/touchGlobalCSS";
 import InlineWorkerPlugin from "./lib/inlineWorker";
 import { base64Loader } from "./lib/base64loader";
-import type { BuildTarget } from "./lib/types";
+import type { BuildTarget, Manifest } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 
@@ -21,6 +21,37 @@ import { safari } from "./src/manifests/safari";
 import { crx } from "@crxjs/vite-plugin";
 
 const targets: BuildTarget[] = [chrome, brave, edge, firefox, opera, safari];
+
+const DEV_SERVER_PORT = 5173;
+
+/** Vite HMR needs localhost script + ws origins; only applied during `vite dev`. */
+function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
+  if (command !== "serve") return manifest;
+
+  const extensionPages = manifest.content_security_policy?.extension_pages;
+  if (!extensionPages) return manifest;
+
+  const localhost = `http://localhost:${DEV_SERVER_PORT}`;
+  const localhostWs = `ws://localhost:${DEV_SERVER_PORT}`;
+  const loopback = `http://127.0.0.1:${DEV_SERVER_PORT}`;
+  const loopbackWs = `ws://127.0.0.1:${DEV_SERVER_PORT}`;
+
+  return {
+    ...manifest,
+    content_security_policy: {
+      ...manifest.content_security_policy,
+      extension_pages: extensionPages
+        .replace(
+          "script-src 'self'",
+          `script-src 'self' ${localhost} ${loopback}`,
+        )
+        .replace(
+          /connect-src ([^;]+)/,
+          `connect-src $1 ${localhost} ${localhostWs} ${loopback} ${loopbackWs}`,
+        ),
+    },
+  };
+}
 
 const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
 //const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
@@ -46,9 +77,11 @@ export default defineConfig(({ command }) => ({
     }),
     ...(useMillion ? [million.vite({ auto: true })] : []),
     crx({
-      manifest:
+      manifest: withDevManifestCsp(
         targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??
-        chrome.manifest,
+          chrome.manifest,
+        command,
+      ),
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
     }),
     touchGlobalCSSPlugin(),
@@ -61,11 +94,12 @@ export default defineConfig(({ command }) => ({
     },
   },
   server: {
-    port: 5173,
+    port: DEV_SERVER_PORT,
+    strictPort: true,
     hmr: {
       host: "localhost",
       protocol: "ws",
-      port: 5173,
+      port: DEV_SERVER_PORT,
     },
   },
   css: {

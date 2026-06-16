@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import { getAllPluginSettings } from "@/plugins";
+import { SYNCABLE_PLUGIN_SETTING_DEFAULTS } from "@/plugins/syncablePluginDefaults";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import {
   isKeyIncludedInCloudUploadPayload,
@@ -38,18 +38,6 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "profile_picture_revision",
 ] as const;
 
-function buildDefaultPluginSettings(
-  plugin: ReturnType<typeof getAllPluginSettings>[number],
-): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, setting] of Object.entries(plugin.settings)) {
-    const meta = setting as { type?: string; default?: unknown };
-    if (meta.type === "component" || meta.type === "button") continue;
-    out[key] = meta.default;
-  }
-  return out;
-}
-
 /**
  * Flat default map in upload shape (plugin-format only; no legacy keys).
  */
@@ -65,9 +53,10 @@ export function getSyncableStorageDefaults(): Record<string, unknown> {
     delete flat[key];
   }
 
-  for (const plugin of getAllPluginSettings()) {
-    flat[`plugin.${plugin.pluginId}.settings`] =
-      buildDefaultPluginSettings(plugin);
+  for (const [pluginId, settings] of Object.entries(
+    SYNCABLE_PLUGIN_SETTING_DEFAULTS,
+  )) {
+    flat[`plugin.${pluginId}.settings`] = settings;
   }
 
   return flat;
