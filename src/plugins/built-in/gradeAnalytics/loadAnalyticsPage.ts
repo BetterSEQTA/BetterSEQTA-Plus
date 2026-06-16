@@ -1,5 +1,6 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { renderAnalyticsPage } from "./ui";
 
 let loadInFlight: Promise<void> | null = null;
 
@@ -41,6 +42,5 @@ async function loadAnalyticsPageInner(): Promise<void> {
   const titlediv = document.getElementById("title")?.firstChild;
   if (titlediv) (titlediv as HTMLElement).innerText = "Analytics";
 
-  const { renderAnalyticsPage } = await import("./ui");
   renderAnalyticsPage(container);
 }

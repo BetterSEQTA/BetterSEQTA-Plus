@@ -1,4 +1,4 @@
-import tailwindStyles from "@/interface/index.css?inline";
+import tailwindStyles from "./tailwind.css?inline";
 import pluginStyles from "./styles.css?inline";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { mount, unmount } from "svelte";
