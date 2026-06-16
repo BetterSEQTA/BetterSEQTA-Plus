@@ -143,7 +143,7 @@
                   {itemConfig?.label || item.name}
                 </span>
               </div>
-              {#if item.value !== undefined}
+              {#if item.value != null && !Number.isNaN(Number(item.value))}
                 <span class="font-mono font-medium tabular-nums">
                   {item.value.toLocaleString()}
                 </span>

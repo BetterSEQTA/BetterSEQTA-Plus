@@ -9,6 +9,7 @@
     buildGradeTrendChart,
     getTimeRangeLabel,
     type TimeRange,
+    type TrendPoint,
   } from "./timeRange";
   import { computeGradeForecast, aggregateToMonthlyPoints } from "./utils/gradePrediction";
   import PredictionMonthsSlider from "./PredictionMonthsSlider.svelte";
@@ -159,6 +160,32 @@
     );
     return monthly.length >= 3;
   });
+
+  /** Historical + future forecast points so tooltips work across the dashed line. */
+  const chartData = $derived.by((): TrendPoint[] => {
+    if (!showPrediction || !forecast?.points.length) {
+      return historicalData;
+    }
+
+    const points = historicalData.map((p) => ({ ...p }));
+    const validHist = points.filter((p) => !Number.isNaN(p.average));
+    const last = validHist[validHist.length - 1];
+
+    if (last) {
+      const lastIdx = points.findIndex((p) => p.date.getTime() === last.date.getTime());
+      if (lastIdx >= 0) {
+        points[lastIdx] = { ...points[lastIdx], forecast: last.average };
+      }
+    }
+
+    const futurePoints: TrendPoint[] = forecast.points.map((p) => ({
+      date: p.date,
+      count: 0,
+      forecast: p.value,
+    })) as TrendPoint[];
+
+    return [...points, ...futurePoints];
+  });
 </script>
 
 <article class="bsplus-analytics-card">
@@ -201,7 +228,7 @@
       <Chart.Container config={chartConfig} class="bsplus-chart-surface w-full">
         <AreaChart
           legend
-          data={historicalData}
+          data={chartData}
           x="date"
           {xDomain}
           yScale={yScale}
