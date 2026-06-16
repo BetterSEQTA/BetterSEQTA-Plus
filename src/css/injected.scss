@@ -3615,26 +3615,6 @@ div.day-empty {
   font-size: 1em;
   color: var(--text-primary);
 }
-.whatsnewHeader.engageParentsAnnouncementHeader {
-  height: auto;
-  min-height: unset;
-}
-.whatsnewHeader.engageParentsAnnouncementHeader h1 {
-  line-height: 1.2;
-}
-.whatsnewHeader.engageParentsAnnouncementHeader .engageParentsSubheading {
-  margin-top: 0.35rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  opacity: 0.92;
-}
-.seqtaEngageAccent {
-  color: #ea580c;
-  font-weight: 700;
-}
-.dark .seqtaEngageAccent {
-  color: #fb923c;
-}
 .whatsnewBackground {
   width: 100%;
   height: 100%;
@@ -3762,25 +3742,6 @@ div.day-empty {
   aspect-ratio: 16/9;
   object-fit: cover;
   margin-bottom: 12px;
-}
-.whatsnewTextContainer .engageParentsPromoWrap {
-  width: 100%;
-  margin-bottom: 12px;
-  border-radius: 16px;
-  overflow: hidden;
-  aspect-ratio: 16 / 9;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.28);
-  background: color-mix(in srgb, var(--background-secondary) 88%, var(--text-primary) 12%);
-}
-.whatsnewTextContainer .engageParentsPromoWrap .engageParentsPromoImg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border-radius: 0;
-  aspect-ratio: unset;
-  object-fit: contain;
-  object-position: center;
 }
 
 .whatsnewHeader.bsCloudAutoSyncAnnouncementHeader {
@@ -5013,67 +4974,4 @@ h2.home-subtitle {
   margin: 20px;
   font-size: 20px;
   font-weight: 400;
-}
-
-.bsplus-toast {
-  position: fixed;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 10000;
-  width: min(360px, calc(100vw - 36px));
-  padding: 14px 16px 16px;
-  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
-  border-radius: 20px;
-  background: var(--background-primary, #fff);
-  color: var(--text-primary, #1a1a1a);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
-  font-size: 0.9rem;
-  line-height: 1.45;
-}
-.bsplus-toast-eyebrow {
-  margin: 0 0 6px !important;
-  font-size: 0.72rem !important;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, #ea580c 82%, var(--text-primary) 18%);
-  opacity: 1 !important;
-}
-.dark .bsplus-toast-eyebrow {
-  color: color-mix(in srgb, #fb923c 82%, var(--text-primary) 18%);
-}
-.bsplus-toast-content strong {
-  display: block;
-  padding-right: 34px;
-  font-size: 1.2rem;
-  line-height: 1.2;
-}
-.bsplus-toast-content p:not(.bsplus-toast-eyebrow) {
-  display: -webkit-box;
-  margin: 8px 0 0;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-.bsplus-toast-close {
-  position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px !important;
-  background: rgba(0, 0, 0, 0.42);
-  color: white;
-  cursor: pointer;
-  font-size: 1.35rem;
-  line-height: 1;
-  transition: filter 0.15s ease;
-}
-.bsplus-toast-close:hover {
-  filter: brightness(1.08);
 }

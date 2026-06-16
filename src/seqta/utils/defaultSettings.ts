@@ -67,7 +67,6 @@ export function getDefaultSettingsState(): SettingsState {
     selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,
-    engageParentsAnnouncementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
   };
 }
