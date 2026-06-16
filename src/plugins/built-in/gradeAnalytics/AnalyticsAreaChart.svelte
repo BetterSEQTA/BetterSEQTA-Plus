@@ -2,7 +2,7 @@
   import * as Chart from "./chart/index";
   import { scaleLinear } from "d3-scale";
   import { Area, AreaChart, ChartClipPath, Spline } from "layerchart";
-  import { curveNatural } from "d3-shape";
+  import { curveMonotoneX } from "d3-shape";
   import { cubicInOut } from "svelte/easing";
   import type { Assessment } from "./types";
   import {
@@ -46,7 +46,7 @@
     return computeGradeForecast(points, predictionMonths);
   });
 
-  /** Bridge point + future months — separate from historical so the main line stays intact. */
+  /** Bridge point + future months — separate series rendered via Spline. */
   const forecastLineData = $derived.by(() => {
     if (!showPrediction || !forecast) return [];
 
@@ -60,19 +60,21 @@
     ];
   });
 
-  /** Ghost future dates (null grades) extend the x domain without touching the historical line. */
-  const chartData = $derived.by(() => {
-    if (!showPrediction || forecastLineData.length <= 1) {
-      return historicalData;
+  const xDomain = $derived.by((): [Date, Date] | undefined => {
+    const times = historicalData.map((p) => p.date.getTime());
+
+    if (showPrediction && forecastLineData.length > 1) {
+      for (const point of forecastLineData.slice(1)) {
+        times.push(point.date.getTime());
+      }
     }
 
-    const futurePadding = forecastLineData.slice(1).map((p) => ({
-      date: p.date,
-      average: null,
-      count: 0,
-    }));
+    if (!times.length) return undefined;
 
-    return [...historicalData, ...futurePadding];
+    return [
+      new Date(Math.min(...times)),
+      new Date(Math.max(...times)),
+    ];
   });
 
   const chartConfig = $derived.by(() => {
@@ -161,8 +163,19 @@
 
 <article class="bsplus-analytics-card">
   <header class="bsplus-analytics-card-header bsplus-analytics-card-header-split">
-    <div>
-      <h3 class="bsplus-analytics-card-title">Grade trends</h3>
+    <div class="bsplus-analytics-card-header-text">
+      <div class="bsplus-analytics-card-title-row">
+        <h3 class="bsplus-analytics-card-title">Grade trends</h3>
+        <label class="bsplus-analytics-checkbox bsplus-analytics-forecast-toggle">
+          <input
+            type="checkbox"
+            bind:checked={showPrediction}
+            disabled={!canForecast}
+          />
+          <span class="bsplus-analytics-checkmark" aria-hidden="true"></span>
+          <span>Forecast</span>
+        </label>
+      </div>
       <p class="bsplus-analytics-card-desc">
         {#if showSubjectTrends}
           Overall and per-subject averages · {getTimeRangeLabel(timeRange)}
@@ -172,21 +185,14 @@
       </p>
     </div>
 
-    <div class="bsplus-analytics-card-controls bsplus-analytics-forecast-controls">
-      <label class="bsplus-analytics-checkbox bsplus-analytics-forecast-toggle">
-        <input
-          type="checkbox"
-          bind:checked={showPrediction}
-          disabled={!canForecast}
-        />
-        <span>Grade forecast</span>
-      </label>
-
-      <div class="bsplus-analytics-card-control bsplus-analytics-forecast-horizon">
-        <span class="bsplus-analytics-field-label">Months ahead</span>
-        <PredictionMonthsSlider bind:value={predictionMonths} disabled={!showPrediction} />
+    {#if showPrediction}
+      <div class="bsplus-analytics-card-controls">
+        <label class="bsplus-analytics-card-control bsplus-analytics-forecast-horizon">
+          <span class="bsplus-analytics-field-label">Months</span>
+          <PredictionMonthsSlider bind:value={predictionMonths} />
+        </label>
       </div>
-    </div>
+    {/if}
   </header>
 
   <div class="bsplus-analytics-card-body">
@@ -195,13 +201,14 @@
       <Chart.Container config={chartConfig} class="bsplus-chart-surface w-full">
         <AreaChart
           legend
-          data={chartData}
+          data={historicalData}
           x="date"
+          {xDomain}
           yScale={yScale}
           series={areaSeries}
           props={{
             area: {
-              curve: curveNatural,
+              curve: curveMonotoneX,
               "fill-opacity": showSubjectTrends ? 0.12 : 0.35,
               line: { class: "stroke-2" },
               motion: "tween",
@@ -263,7 +270,7 @@
                 data={forecastLineData}
                 x="date"
                 y="forecast"
-                curve={curveNatural}
+                curve={curveMonotoneX}
                 class="bsplus-analytics-forecast-line"
               />
             {/if}

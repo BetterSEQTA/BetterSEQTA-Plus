@@ -209,7 +209,6 @@
           </span>
         {/if}
       </h1>
-      <p>Track your academic performance and progress over time</p>
       {#if lastUpdated && analyticsData && analyticsData.length > 0}
         <p class="bsplus-analytics-meta">Last updated: {formattedTimestamp()}</p>
       {/if}
@@ -244,32 +243,22 @@
       <div class="bsplus-analytics-spinner" aria-label="Loading analytics"></div>
     </div>
   {:else if analyticsData && analyticsData.length > 0}
-    <section
-      class="bsplus-analytics-stats bsplus-analytics-animate bsplus-analytics-delay-1"
-      aria-label="Summary statistics"
-    >
-      <div class="bsplus-analytics-stat">
-        <div class="bsplus-analytics-stat-label">Average grade</div>
-        <div class="bsplus-analytics-stat-value bsplus-analytics-stat-value-accent">
-          {statsAverage !== null ? `${statsAverage}%` : "—"}
+    <div class="bsplus-analytics-layout bsplus-analytics-animate bsplus-analytics-delay-1">
+      <aside class="bsplus-analytics-filters" aria-label="Filters">
+        <div class="bsplus-analytics-filters-head">
+          <h2 class="bsplus-analytics-filters-title">Filters</h2>
+          {#if hasActiveFilters()}
+            <button
+              type="button"
+              class="bsplus-analytics-filters-clear"
+              onclick={clearFilters}
+            >
+              Clear all
+            </button>
+          {/if}
         </div>
-      </div>
-      <div class="bsplus-analytics-stat">
-        <div class="bsplus-analytics-stat-label">Graded shown</div>
-        <div class="bsplus-analytics-stat-value">{gradedFiltered().length}</div>
-      </div>
-      <div class="bsplus-analytics-stat">
-        <div class="bsplus-analytics-stat-label">Subjects</div>
-        <div class="bsplus-analytics-stat-value">{statsSubjectCount}</div>
-      </div>
-    </section>
 
-    <div class="bsplus-analytics-toolbar bsplus-analytics-animate bsplus-analytics-delay-2">
-      <div class="bsplus-analytics-toolbar-grid">
-        <div
-          class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
-          data-analytics-dropdown
-        >
+        <div class="bsplus-analytics-filter-group" data-analytics-dropdown>
           <span class="bsplus-analytics-field-label">Time period</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
@@ -309,10 +298,7 @@
           </div>
         </div>
 
-        <div
-          class="bsplus-analytics-field bsplus-analytics-toolbar-dropdown-field"
-          data-analytics-dropdown
-        >
+        <div class="bsplus-analytics-filter-group" data-analytics-dropdown>
           <span class="bsplus-analytics-field-label">Subjects</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
@@ -361,7 +347,7 @@
                     <span class="bsplus-analytics-dropdown-check"
                       >{selected ? "✓" : ""}</span
                     >
-                    <span style="overflow:hidden;text-overflow:ellipsis">{subject}</span>
+                    <span class="bsplus-analytics-filter-subject-name">{subject}</span>
                   </button>
                 {/each}
               </div>
@@ -369,7 +355,7 @@
           </div>
         </div>
 
-        <div class="bsplus-analytics-field bsplus-analytics-toolbar-search">
+        <div class="bsplus-analytics-filter-group">
           <span class="bsplus-analytics-field-label">Search</span>
           <input
             type="search"
@@ -379,62 +365,65 @@
           />
         </div>
 
-        {#if hasActiveFilters()}
-          <button
-            type="button"
-            class="bsplus-analytics-btn bsplus-analytics-btn-ghost bsplus-analytics-toolbar-clear"
-            onclick={clearFilters}
-          >
-            Clear filters
-          </button>
-        {/if}
-
-        <div class="bsplus-analytics-field bsplus-analytics-grade-range">
+        <div class="bsplus-analytics-filter-group">
           <span class="bsplus-analytics-field-label">Grade range</span>
           <GradeRangeSlider bind:value={gradeRange} />
         </div>
 
-        <label
-          class="bsplus-analytics-checkbox bsplus-analytics-toolbar-trends"
-          class:bsplus-analytics-toolbar-trends-top={!hasActiveFilters()}
-        >
-          <input type="checkbox" bind:checked={showSubjectTrends} />
-          <span>Show per-subject trends on chart</span>
-        </label>
+        <div class="bsplus-analytics-filter-group">
+          <label class="bsplus-analytics-checkbox">
+            <input type="checkbox" bind:checked={showSubjectTrends} />
+            <span class="bsplus-analytics-checkmark" aria-hidden="true"></span>
+            <span>Per-subject trends</span>
+          </label>
+        </div>
+      </aside>
+
+      <div class="bsplus-analytics-main">
+        <div class="bsplus-analytics-stats" aria-label="Summary statistics">
+          <div class="bsplus-analytics-stat">
+            <div class="bsplus-analytics-stat-label">Average grade</div>
+            <div class="bsplus-analytics-stat-value bsplus-analytics-stat-value-accent">
+              {statsAverage !== null ? `${statsAverage}%` : "—"}
+            </div>
+          </div>
+          <div class="bsplus-analytics-stat">
+            <div class="bsplus-analytics-stat-label">Graded shown</div>
+            <div class="bsplus-analytics-stat-value">{gradedFiltered().length}</div>
+          </div>
+          <div class="bsplus-analytics-stat">
+            <div class="bsplus-analytics-stat-label">Subjects</div>
+            <div class="bsplus-analytics-stat-value">{statsSubjectCount}</div>
+          </div>
+        </div>
+
+        <div class="bsplus-analytics-results">
+          <div class="bsplus-analytics-charts">
+            <div class="bsplus-analytics-chart-cell">
+              <AnalyticsAreaChart
+                data={gradedFiltered()}
+                {timeRange}
+                showSubjectTrends={showSubjectTrends}
+              />
+            </div>
+            <div class="bsplus-analytics-chart-cell">
+              <AnalyticsBarChart data={gradedFiltered()} {timeRange} />
+            </div>
+          </div>
+
+          <AssessmentTable data={timeScopedData()} />
+        </div>
+
+        <footer class="bsplus-analytics-footer">
+          <span>
+            {timeScopedData().length} of {analyticsData.length} assessments shown
+            {#if gradedFiltered().length !== timeScopedData().length}
+              ({gradedFiltered().length} with grades)
+            {/if}
+          </span>
+        </footer>
       </div>
     </div>
-
-    <div class="bsplus-analytics-charts">
-      {#key filteredData().length + "-" + gradeRange.join(",") + filterSearch + filterSubjects.join("|") + timeRange + String(showSubjectTrends)}
-        <div class="bsplus-analytics-chart-cell">
-          <div class="bsplus-analytics-animate bsplus-analytics-delay-3">
-            <AnalyticsAreaChart
-              data={gradedFiltered()}
-              {timeRange}
-              showSubjectTrends={showSubjectTrends}
-            />
-          </div>
-        </div>
-        <div class="bsplus-analytics-chart-cell">
-          <div class="bsplus-analytics-animate bsplus-analytics-delay-4">
-            <AnalyticsBarChart data={gradedFiltered()} {timeRange} />
-          </div>
-        </div>
-      {/key}
-    </div>
-
-    <div class="bsplus-analytics-animate bsplus-analytics-delay-5">
-      <AssessmentTable data={timeScopedData()} />
-    </div>
-
-    <footer class="bsplus-analytics-footer">
-      <span>
-        {timeScopedData().length} of {analyticsData.length} assessments shown
-        {#if gradedFiltered().length !== timeScopedData().length}
-          ({gradedFiltered().length} with grades)
-        {/if}
-      </span>
-    </footer>
   {:else}
     <div class="bsplus-analytics-empty bsplus-analytics-animate" transition:fade={{ duration: 300 }}>
       <h2>No analytics data yet</h2>

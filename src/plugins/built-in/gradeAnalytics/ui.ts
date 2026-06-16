@@ -124,6 +124,7 @@ function syncThemeFromPage(target: HTMLElement) {
 
   target.style.setProperty("--bsplus-analytics-accent", palette.accent);
   target.style.setProperty("--bsplus-analytics-accent-subtle", palette.accentSubtle);
+  target.style.setProperty("--item-colour", palette.accent);
   target.style.setProperty(
     "--bsplus-analytics-forecast",
     `color-mix(in srgb, ${palette.accent} 72%, ${target.classList.contains("dark") ? "#f8fafc" : "#64748b"})`,
@@ -210,7 +211,7 @@ export function renderAnalyticsPage(container: HTMLElement) {
   shadow.appendChild(styleElement);
 
   analyticsRoot = document.createElement("div");
-  analyticsRoot.className = "bsplus-analytics-root";
+  analyticsRoot.className = "bsplus-analytics-mount";
   syncThemeToAnalyticsUi();
   shadow.appendChild(analyticsRoot);
 

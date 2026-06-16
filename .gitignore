@@ -18,6 +18,7 @@ betterseqtaplus-safari/
 
 .million/
 .vscode/
+.cursor/
 **/.DS_Store
 .parcel-cache
 .env

@@ -12,6 +12,8 @@
   min-height: min(100%, calc(100vh - 6rem));
 }
 
+/* Theme tokens (mount + page); layout padding only on the inner page root */
+.bsplus-analytics-mount,
 .bsplus-analytics-root {
   --bsplus-analytics-radius: 16px;
   --bsplus-analytics-radius-sm: 12px;
@@ -34,21 +36,46 @@
   /* Set on host via ui.ts from --better-main / user selectedColor */
   --bsplus-analytics-accent: var(--better-main, #007bff);
   --bsplus-analytics-chart-height: 300px;
+  --bsplus-analytics-stack-gap: 0.625rem;
+  /* Form controls — aligned with global SEQTA select styling */
+  --bsplus-analytics-control-bg: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 94%,
+    var(--bsplus-analytics-surface-2) 6%
+  );
+  --bsplus-analytics-control-bg-elevated: var(--bsplus-analytics-surface);
+  --bsplus-analytics-control-border: color-mix(
+    in srgb,
+    var(--theme-offset-bg, var(--bsplus-analytics-surface-2)) 88%,
+    transparent
+  );
+  --bsplus-analytics-control-border-strong: color-mix(
+    in srgb,
+    var(--bsplus-analytics-text) 18%,
+    var(--theme-offset-bg, var(--bsplus-analytics-surface-2)) 82%
+  );
 
   width: 100%;
   max-width: none;
   margin: 0;
-  min-height: min(100%, calc(100vh - 6rem));
   box-sizing: border-box;
-  padding: 1.5rem 1.25rem 2rem;
+}
+
+.bsplus-analytics-mount {
+  min-height: min(100%, calc(100vh - 6rem));
+}
+
+.bsplus-analytics-root {
   font-family: Rubik, system-ui, sans-serif;
   font-size: 0.875rem;
   color: var(--bsplus-analytics-text);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.75rem;
+  padding: 1rem 1rem 1.25rem;
 }
 
+.bsplus-analytics-mount.dark,
 .bsplus-analytics-root.dark {
   --bsplus-analytics-shadow: 0 5px 20px 6px rgba(0, 0, 0, 0.45);
   --bsplus-analytics-shadow-hover: 0 10px 28px 10px rgba(0, 0, 0, 0.55);
@@ -56,8 +83,8 @@
 
 @media (max-width: 768px) {
   .bsplus-analytics-root {
-    padding: 1.25rem 1rem 1.5rem;
-    gap: 1.5rem;
+    padding: 0.875rem 0.75rem 1rem;
+    gap: 0.875rem;
   }
 }
 
@@ -109,7 +136,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 .bsplus-analytics-header-actions {
@@ -138,7 +165,7 @@
 }
 
 .bsplus-analytics-header-text h1 {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.2rem;
   font-size: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -154,7 +181,7 @@
 }
 
 .bsplus-analytics-meta {
-  margin-top: 0.5rem;
+  margin-top: 0.15rem;
   font-size: 0.75rem;
   color: var(--bsplus-analytics-muted);
 }
@@ -266,58 +293,200 @@
   transform: none !important;
 }
 
-/* ─── Stat cards ─── */
-.bsplus-analytics-stats {
+/* ─── Sidebar layout (shop-style filters) ─── */
+.bsplus-analytics-layout {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: var(--bsplus-analytics-stack-gap);
+  align-items: start;
+  min-width: 0;
+}
+
+.bsplus-analytics-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bsplus-analytics-stack-gap);
+  min-width: 0;
+}
+
+.bsplus-analytics-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+  position: relative;
+  padding-right: 0.375rem;
+  z-index: 4;
+}
+
+.bsplus-analytics-filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.bsplus-analytics-filters-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-analytics-filters-clear {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bsplus-analytics-accent);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 45%,
+    transparent
+  );
+}
+
+.bsplus-analytics-filters-clear:hover {
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-analytics-filters-clear:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+  border-radius: 4px;
+}
+
+.bsplus-analytics-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  position: relative;
+}
+
+.bsplus-analytics-filter-group .bsplus-analytics-field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bsplus-analytics-muted);
+}
+
+.bsplus-analytics-filter-subject-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsplus-analytics-filters .bsplus-analytics-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.bsplus-analytics-filters .bsplus-analytics-dropdown-trigger {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.35rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: var(--bsplus-analytics-control-border-strong);
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
+}
+
+.bsplus-analytics-filters .bsplus-analytics-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.35rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  padding-left: 2.25rem;
+  padding-right: 0;
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: var(--bsplus-analytics-control-border-strong);
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
+}
+
+.bsplus-analytics-filters .bsplus-grade-range-slider {
+  width: 100%;
+}
+
+.bsplus-analytics-filters .bsplus-analytics-range-value {
+  min-width: 3.75rem;
+  text-align: right;
+}
+
+@media (min-width: 900px) {
+  .bsplus-analytics-layout {
+    grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
+    gap: var(--bsplus-analytics-stack-gap);
+  }
+
+  .bsplus-analytics-filters {
+    position: sticky;
+    top: 0.5rem;
+  }
+}
+
+@media (max-width: 899px) {
+  .bsplus-analytics-filters-head {
+    padding-bottom: 0;
+  }
+}
+
+/* ─── Stat strip ─── */
+.bsplus-analytics-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
 }
 
 @media (max-width: 640px) {
   .bsplus-analytics-stats {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
 
 .bsplus-analytics-stat {
-  padding: 1.1rem 1.25rem;
-  border-radius: var(
-    --bsplus-theme-card-radius,
-    var(--bsplus-analytics-radius)
-  );
-  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
-  border: var(
-    --bsplus-theme-card-border,
-    1px solid var(--bsplus-analytics-border)
-  );
-  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
-  backdrop-filter: var(--bsplus-theme-card-blur, none);
-  transition:
-    transform 0.25s var(--bsplus-analytics-ease),
-    box-shadow 0.25s var(--bsplus-analytics-ease);
-}
-
-.bsplus-analytics-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: var(
-    --bsplus-theme-card-shadow-hover,
-    var(--bsplus-analytics-shadow-hover)
-  );
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .bsplus-analytics-stat-label {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: normal;
   color: var(--bsplus-analytics-muted);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
+}
+
+.bsplus-analytics-stat-label::after {
+  content: ":";
 }
 
 .bsplus-analytics-stat-value {
-  font-size: 1.75rem;
+  font-size: 1.125rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.2;
   color: var(--bsplus-analytics-text);
 }
 
@@ -325,95 +494,11 @@
   color: var(--bsplus-analytics-accent);
 }
 
-/* ─── Filter toolbar ─── */
-.bsplus-analytics-toolbar {
-  padding: 1rem 1.15rem;
-  border-radius: var(
-    --bsplus-theme-card-radius,
-    var(--bsplus-analytics-radius)
-  );
-  background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
-  border: var(
-    --bsplus-theme-card-border,
-    1px solid var(--bsplus-analytics-border)
-  );
-  box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
-  backdrop-filter: var(--bsplus-theme-card-blur, none);
-  overflow: visible;
-  position: relative;
-  z-index: 3;
-}
-
-.bsplus-analytics-toolbar-grid {
-  display: grid;
-  grid-template-columns: minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(12rem, 1.4fr) auto;
-  grid-template-rows: auto auto;
-  gap: 0.9rem 1rem;
-  align-items: end;
-  width: 100%;
-}
-
-.bsplus-analytics-toolbar-clear {
-  grid-column: 4;
-  grid-row: 1;
-  justify-self: end;
-  align-self: end;
-  padding: 0.65rem 0.9rem;
-  white-space: nowrap;
-}
-
-.bsplus-analytics-toolbar-trends {
-  grid-column: 4;
-  grid-row: 2;
-  justify-self: end;
-  align-self: center;
-  margin-left: 0;
-  max-width: 14rem;
-  text-align: right;
-}
-
-.bsplus-analytics-toolbar-trends-top {
-  grid-row: 1;
-  align-self: end;
-}
-
-@media (max-width: 900px) {
-  .bsplus-analytics-toolbar-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .bsplus-analytics-toolbar-search {
-    grid-column: 1 / -1;
-  }
-
-  .bsplus-analytics-toolbar-clear {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    justify-self: stretch;
-  }
-
-  .bsplus-analytics-grade-range {
-    grid-column: 1 / -1;
-  }
-
-  .bsplus-analytics-toolbar-trends {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    justify-self: start;
-    max-width: none;
-    text-align: left;
-  }
-}
-
-@media (max-width: 520px) {
-  .bsplus-analytics-toolbar-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.bsplus-analytics-toolbar-dropdown-field {
-  position: relative;
-  z-index: 4;
+.bsplus-analytics-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bsplus-analytics-stack-gap);
+  min-width: 0;
 }
 
 .bsplus-analytics-field {
@@ -432,11 +517,13 @@
 }
 
 .bsplus-analytics-checkbox {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.35rem 0;
-  font-size: 0.8125rem;
+  height: 20px;
+  padding-left: 25px;
+  padding-right: 10px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--bsplus-analytics-text);
   cursor: pointer;
@@ -445,12 +532,67 @@
 }
 
 .bsplus-analytics-checkbox input[type="checkbox"] {
-  width: 1.05rem;
-  height: 1.05rem;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
   margin: 0;
-  accent-color: var(--bsplus-analytics-accent);
+  padding: 0;
   cursor: pointer;
-  flex-shrink: 0;
+}
+
+.bsplus-analytics-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: content-box;
+  width: 15px;
+  height: 15px;
+  border: 3px solid
+    var(--item-colour, var(--better-main, var(--bsplus-analytics-accent)));
+  border-radius: 5px;
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-analytics-checkbox:hover
+  input:not(:disabled)
+  ~ .bsplus-analytics-checkmark {
+  filter: brightness(0.8);
+}
+
+.bsplus-analytics-checkbox input:checked ~ .bsplus-analytics-checkmark {
+  background: var(--item-colour, var(--better-main, var(--bsplus-analytics-accent)));
+}
+
+.lc-legend-swatch-group {
+  gap: 8px;
+}
+
+.bsplus-analytics-checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+}
+
+.bsplus-analytics-checkbox input:checked ~ .bsplus-analytics-checkmark::after {
+  display: block;
+}
+
+.bsplus-analytics-checkbox input:disabled {
+  cursor: not-allowed;
+}
+
+.bsplus-analytics-checkbox input:disabled ~ .bsplus-analytics-checkmark,
+.bsplus-analytics-checkbox input:disabled ~ span:not(.bsplus-analytics-checkmark) {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .bsplus-analytics-select,
@@ -460,16 +602,24 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--bsplus-analytics-text);
-  background: var(--bsplus-analytics-surface-2);
-  border: 2px solid var(--bsplus-analytics-border);
+  background-color: var(--bsplus-analytics-control-bg);
+  border: 2px solid var(--bsplus-analytics-control-border);
   border-radius: var(--bsplus-analytics-radius-sm);
   padding: 0.65rem 2.25rem 0.65rem 0.9rem;
   min-height: 2.75rem;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
+    background-color 0.2s ease,
     transform 0.2s var(--bsplus-analytics-ease);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px
+    color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
+}
+
+.bsplus-analytics-card .bsplus-analytics-select,
+.bsplus-analytics-card .bsplus-analytics-input,
+.bsplus-analytics-card .bsplus-analytics-dropdown-trigger {
+  background-color: var(--bsplus-analytics-surface-2);
 }
 
 .bsplus-analytics-select {
@@ -497,26 +647,58 @@
 
 .bsplus-analytics-select:hover,
 .bsplus-analytics-input:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
   border-color: color-mix(
     in srgb,
     var(--bsplus-analytics-accent) 35%,
-    var(--bsplus-analytics-border)
+    var(--bsplus-analytics-control-border)
+  );
+}
+
+.bsplus-analytics-filters .bsplus-analytics-dropdown-trigger:hover {
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 40%,
+    var(--bsplus-analytics-control-border-strong)
+  );
+}
+
+.bsplus-analytics-filters .bsplus-analytics-input:hover {
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 40%,
+    var(--bsplus-analytics-control-border-strong)
   );
 }
 
 .bsplus-analytics-select:focus,
 .bsplus-analytics-input:focus {
   outline: none;
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
   border-color: var(--bsplus-analytics-accent);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bsplus-analytics-text) 12%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
 }
 
-.bsplus-analytics-grade-range {
-  grid-column: 1 / 4;
-  grid-row: 2;
-  min-width: 0;
-  max-width: none;
+.bsplus-analytics-filters .bsplus-analytics-dropdown-trigger:focus-visible {
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: var(--bsplus-analytics-accent);
+}
+
+.bsplus-analytics-filters .bsplus-analytics-input:focus {
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: var(--bsplus-analytics-accent);
 }
 
 .bsplus-analytics-range-value {
@@ -528,24 +710,16 @@
   text-align: right;
 }
 
-.bsplus-analytics-toolbar-search {
-  min-width: 0;
-}
-
-/* Toolbar custom dropdowns (time period, subjects) */
+/* Custom dropdowns (time period, subjects) */
 .bsplus-analytics-dropdown {
   position: relative;
   min-width: 11rem;
 }
 
-.dark .bsplus-analytics-dropdown-trigger {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='rgba(255,255,255,0.72)'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E");
-}
-
 .bsplus-analytics-dropdown-trigger {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   min-height: 2.75rem;
   padding: 0.65rem 2.25rem 0.65rem 0.9rem;
@@ -554,35 +728,86 @@
   font-weight: 500;
   text-align: left;
   color: var(--bsplus-analytics-text);
-  background: var(--bsplus-analytics-surface-2);
-  border: 2px solid var(--bsplus-analytics-border);
+  background-color: var(--bsplus-analytics-control-bg);
+  border: 2px solid var(--bsplus-analytics-control-border);
   border-radius: var(--bsplus-analytics-radius-sm);
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E");
-  background-position: right 0.75rem center;
-  background-repeat: no-repeat;
-  background-size: 1rem;
+  box-shadow: 0 1px 3px
+    color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
+    background-color 0.2s ease,
     transform 0.2s var(--bsplus-analytics-ease);
 }
 
+.bsplus-analytics-dropdown-trigger::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.9rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-right: 2px solid var(--bsplus-analytics-muted);
+  border-bottom: 2px solid var(--bsplus-analytics-muted);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s var(--bsplus-analytics-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bsplus-analytics-dropdown-trigger::after {
+    transition: border-color 0.2s ease;
+  }
+}
+
 .bsplus-analytics-dropdown-trigger:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
   border-color: color-mix(
     in srgb,
     var(--bsplus-analytics-accent) 35%,
-    var(--bsplus-analytics-border)
+    var(--bsplus-analytics-control-border)
   );
   transform: scale(1.01);
 }
 
+.bsplus-analytics-dropdown-trigger:hover::after {
+  border-color: var(--bsplus-analytics-text);
+}
+
+.bsplus-analytics-card .bsplus-analytics-dropdown-trigger:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface-2) 92%,
+    var(--bsplus-analytics-surface) 8%
+  );
+}
+
 .bsplus-analytics-dropdown-trigger:focus-visible {
   outline: none;
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
   border-color: var(--bsplus-analytics-accent);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bsplus-analytics-text) 12%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+}
+
+.bsplus-analytics-dropdown-trigger:focus-visible::after {
+  border-color: var(--bsplus-analytics-accent);
+}
+
+.bsplus-analytics-dropdown-trigger[aria-expanded="true"]::after {
+  transform: translateY(-35%) rotate(225deg);
 }
 
 .bsplus-analytics-dropdown-menu {
@@ -595,9 +820,9 @@
   overflow-y: auto;
   padding: 0.35rem;
   border-radius: var(--bsplus-analytics-radius-sm);
-  background: var(--bsplus-analytics-surface);
-  border: 1px solid var(--bsplus-analytics-border);
-  box-shadow: var(--bsplus-analytics-shadow-hover);
+  background: var(--bsplus-analytics-control-bg-elevated);
+  border: 1px solid var(--bsplus-analytics-control-border-strong);
+  box-shadow: var(--bsplus-analytics-shadow);
 }
 
 .bsplus-analytics-dropdown-item {
@@ -645,7 +870,7 @@
 .bsplus-analytics-charts {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: var(--bsplus-analytics-stack-gap);
   width: 100%;
   position: relative;
   z-index: 1;
@@ -660,42 +885,17 @@
   min-width: 0;
 }
 
-.bsplus-analytics-chart-cell > :global(.bsplus-analytics-animate) {
-  display: flex;
-  flex-direction: column;
+.bsplus-analytics-chart-cell > :global(.bsplus-analytics-card) {
   flex: 1;
   width: 100%;
   min-width: 0;
-}
-
-.bsplus-analytics-chart-cell :global(.bsplus-analytics-card) {
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-}
-
-/* Fade-in animation must not paint above the filter toolbar / dropdown */
-.bsplus-analytics-charts > .bsplus-analytics-animate {
-  z-index: 1;
-  display: flex;
-  min-width: 0;
-}
-
-.bsplus-analytics-charts > .bsplus-analytics-animate > .bsplus-analytics-card {
-  flex: 1;
-  width: 100%;
+  min-height: 100%;
 }
 
 @media (min-width: 960px) {
   .bsplus-analytics-charts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
-
-  .bsplus-analytics-charts .bsplus-analytics-card-header {
-    min-height: 5.75rem;
-    box-sizing: border-box;
-    align-items: flex-end;
+    gap: var(--bsplus-analytics-stack-gap);
   }
 }
 
@@ -730,10 +930,9 @@
 .bsplus-analytics-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 1rem;
-  min-height: 4.75rem;
-  padding: 1.15rem 1.25rem;
+  align-items: flex-start;
+  gap: 0.5rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   border-bottom: 1px solid var(--bsplus-analytics-border);
 }
 
@@ -741,27 +940,40 @@
   flex-wrap: wrap;
 }
 
+.bsplus-analytics-card-header-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.bsplus-analytics-card-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.bsplus-analytics-card-title-row .bsplus-analytics-card-title {
+  margin: 0;
+}
+
 .bsplus-analytics-card-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.75rem 1rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.bsplus-analytics-forecast-controls {
-  min-width: min(100%, 18rem);
-  max-width: 22rem;
-}
-
 .bsplus-analytics-forecast-toggle {
-  width: 100%;
-  justify-content: flex-end;
+  height: 20px;
+  padding: 0 0 0 25px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 
 .bsplus-analytics-forecast-horizon {
-  flex: 1;
-  min-width: 11rem;
+  min-width: 8.5rem;
+  max-width: 11rem;
 }
 
 .bsplus-analytics-forecast-line {
@@ -816,18 +1028,20 @@
 }
 
 .bsplus-analytics-card-desc {
-  margin: 0.25rem 0 0;
+  margin: 0.15rem 0 0;
   font-size: 0.8125rem;
   color: var(--bsplus-analytics-muted);
 }
 
 .bsplus-analytics-card-body {
-  padding: 1rem 1.15rem;
+  padding: 0.5rem 0.85rem 0.65rem;
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   width: 100%;
   min-width: 0;
+  min-height: 0;
   background: var(--bsplus-analytics-surface);
 }
 
@@ -836,17 +1050,12 @@
 }
 
 .bsplus-analytics-card-footer {
-  padding: 0.85rem 1.25rem 1.1rem;
+  padding: 0.5rem 0.85rem 0.65rem;
   border-top: 1px solid var(--bsplus-analytics-border);
   font-size: 0.8125rem;
   color: var(--bsplus-analytics-muted);
-  line-height: 1.5;
+  line-height: 1.4;
   margin-top: auto;
-}
-
-.bsplus-analytics-charts .bsplus-analytics-card-footer {
-  min-height: 4.25rem;
-  box-sizing: border-box;
 }
 
 .bsplus-analytics-card-footer p {
@@ -884,21 +1093,13 @@
   color: var(--bsplus-analytics-muted);
 }
 
-.bsplus-analytics-root .bsplus-chart-surface {
-  width: 100%;
-  min-width: 0;
-  height: var(--bsplus-analytics-chart-height, 280px);
-  min-height: var(--bsplus-analytics-chart-height, 280px);
-  max-height: var(--bsplus-analytics-chart-height, 280px);
-  flex-shrink: 0;
-}
-
+.bsplus-analytics-root .bsplus-chart-surface,
 .bsplus-analytics-root .bsplus-chart-surface-bar {
   width: 100%;
   min-width: 0;
-  height: 320px;
-  min-height: 320px;
-  max-height: 320px;
+  height: var(--bsplus-analytics-chart-height, 300px);
+  min-height: var(--bsplus-analytics-chart-height, 300px);
+  max-height: var(--bsplus-analytics-chart-height, 300px);
   flex-shrink: 0;
 }
 
@@ -1033,7 +1234,7 @@
 }
 
 .bsplus-analytics-table-header {
-  padding: 1rem 1.25rem;
+  padding: 0.65rem 0.85rem;
   border-bottom: 1px solid var(--bsplus-analytics-border);
 }
 
@@ -1062,7 +1263,7 @@
 }
 
 .bsplus-analytics-table th {
-  padding: 0.75rem 1rem;
+  padding: 0.55rem 0.85rem;
   font-weight: 600;
   text-align: left;
   color: var(--bsplus-analytics-muted);
@@ -1085,7 +1286,7 @@
 }
 
 .bsplus-analytics-table td {
-  padding: 0.7rem 1rem;
+  padding: 0.55rem 0.85rem;
   border-top: 1px solid var(--bsplus-analytics-border);
   color: var(--bsplus-analytics-text);
 }
@@ -1128,8 +1329,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1.25rem;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
   border-top: 1px solid var(--bsplus-analytics-border);
   color: var(--bsplus-analytics-muted);
   font-size: 0.8125rem;
@@ -1150,8 +1351,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.75rem;
-  padding-bottom: 0.5rem;
+  gap: 0.5rem;
+  padding-bottom: 0;
   color: var(--bsplus-analytics-muted);
   font-size: 0.8125rem;
 }

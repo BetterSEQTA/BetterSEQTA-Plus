@@ -6,6 +6,7 @@ import InlineWorkerPlugin from "./lib/inlineWorker";
 import { base64Loader } from "./lib/base64loader";
 import type { BuildTarget, Manifest } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
+import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 
 import million from "million/compiler";
@@ -84,6 +85,7 @@ export default defineConfig(({ command }) => ({
       ),
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
     }),
+    fixCrxWorkerLiveReload(),
     touchGlobalCSSPlugin(),
     ...(command === "build" ? [ClosePlugin(), firefoxStripFunctionProbe()] : []),
   ],
