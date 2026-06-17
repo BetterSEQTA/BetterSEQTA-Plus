@@ -144,10 +144,10 @@
     : ''} {standalone ? 'h-[600px]' : 'h-full rounded-xl'} overflow-clip"
 >
   <div
-    class="flex relative flex-col gap-2 h-full overflow-clip bg-white dark:bg-zinc-800 dark:text-white"
+    class="flex relative flex-col gap-2 h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white"
   >
     <div
-      class="grid place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
+      class="grid shrink-0 place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -354,18 +354,20 @@
       {/if}
     </div>
 
-    <TabbedContainer
-      bind:activeTab={settingsActiveTab}
-      tabs={[
-        {
-          title: "Settings",
-          Content: Settings,
-          props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
-        },
-        { title: "Shortcuts", Content: Shortcuts },
-        { title: "Themes", Content: Theme },
-      ]}
-    />
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <TabbedContainer
+        bind:activeTab={settingsActiveTab}
+        tabs={[
+          {
+            title: "Settings",
+            Content: Settings,
+            props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
+          },
+          { title: "Shortcuts", Content: Shortcuts },
+          { title: "Themes", Content: Theme },
+        ]}
+      />
+    </div>
   </div>
 
   {#if showColourPicker && ColourPickerComponent}

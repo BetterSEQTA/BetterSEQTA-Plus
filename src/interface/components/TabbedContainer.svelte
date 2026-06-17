@@ -38,8 +38,8 @@
   });
 </script>
 
-<div class="flex flex-col h-full">
-  <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
+<div class="flex flex-col h-full min-h-0">
+  <div class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
     <div bind:this={containerRef} class="flex relative">
       <MotionDiv
         class="absolute top-0 left-0 z-0 h-full bg-gradient-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
@@ -58,14 +58,14 @@
       {/each}
     </div>
   </div>
-  <div class="overflow-hidden px-4 h-full">
+  <div class="overflow-hidden px-4 flex-1 min-h-0">
     {#each tabs as { Content, props }, index (index)}
       {#if activeTab === index}
         <div
           role="tabpanel"
-          class="focus:outline-none w-full pt-2 overflow-y-scroll no-scrollbar pb-2 h-full tab active"
+          class="focus:outline-none w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active"
         >
-          <div class="fixed top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
+          <div class="sticky top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
           <Content {...props} />
         </div>
       {/if}
