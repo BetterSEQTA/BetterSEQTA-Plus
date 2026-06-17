@@ -4,7 +4,7 @@ import { renderComponentMap } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
-import { getVectorizedItemIds } from "./utils";
+import { getVectorizedItemIds, pruneOrphanVectorEmbeddings } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 
 const META_STORE = "meta";
@@ -220,6 +220,7 @@ export async function runIndexing(): Promise<void> {
   startHeartbeat();
   console.debug("%c[Indexer] Starting indexing...", "color: green");
 
+  try {
   const jobIds = Object.keys(jobs);
   let completedJobs = 0;
   const totalSteps = jobIds.length + 1;
@@ -319,6 +320,17 @@ export async function runIndexing(): Promise<void> {
   }
 
   let allItemsInPrimaryStores = await loadAllStoredItems();
+
+  const liveItemIds = new Set(allItemsInPrimaryStores.map((item) => item.id));
+  const prunedCount = await pruneOrphanVectorEmbeddings(liveItemIds);
+  if (prunedCount > 0) {
+    try {
+      const { refreshVectorCache } = await import("../search/vector/vectorSearch");
+      await refreshVectorCache();
+    } catch (e) {
+      console.warn("[Indexer] Failed to refresh vector cache after prune:", e);
+    }
+  }
 
   if (allItemsInPrimaryStores.length > 0) {
     console.debug(
@@ -434,8 +446,6 @@ export async function runIndexing(): Promise<void> {
     );
   }
 
-  stopHeartbeat();
-
   allItemsInPrimaryStores = await loadAllStoredItems();
   // Create new objects to avoid XrayWrapper issues in Firefox
   const itemsWithComponents = allItemsInPrimaryStores.map(item => {
@@ -466,6 +476,9 @@ export async function runIndexing(): Promise<void> {
   });
   loadDynamicItems(itemsWithComponents);
   window.dispatchEvent(new Event("dynamic-items-updated"));
+  } finally {
+    stopHeartbeat();
+  }
 }
 
 function mergeItems(existing: IndexItem[], incoming: IndexItem[]): IndexItem[] {

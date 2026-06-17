@@ -61,19 +61,19 @@ export class MessageHandler {
         themeManager.setTheme(request.body.themeID).then(() => {
           sendResponse({ status: "success" });
         });
-        break;
+        return true;
 
       case "DisableTheme":
         themeManager.disableTheme().then(() => {
           sendResponse({ status: "success" });
         });
-        break;
+        return true;
 
       case "DeleteTheme":
         themeManager.deleteTheme(request.body.themeID).then(() => {
           sendResponse({ status: "success" });
         });
-        break;
+        return true;
 
       case "ListThemes":
         themeManager.getAvailableThemes().then((themes) => {
@@ -97,11 +97,11 @@ export class MessageHandler {
       case "CloseThemeCreator":
         try {
           CloseThemeCreator();
+          sendResponse({ status: "success" });
         } catch (error) {
           console.error("Error closing theme creator:", error);
           sendResponse({ status: "error" });
         }
-        sendResponse({ status: "success" });
         break;
 
       case "HideSensitive":

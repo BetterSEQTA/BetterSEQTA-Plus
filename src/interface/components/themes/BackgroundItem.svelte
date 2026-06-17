@@ -12,18 +12,18 @@
 
 <div
   onclick={onClick}
-  onkeydown={onClick}
-  tabindex="-1"
+  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick() }}
+  tabindex="0"
   role="button"
   class="relative w-16 h-16 cursor-pointer rounded-xl transition ring-3 dark:ring-zinc-500/50 ring-zinc-300 {isEditMode ? 'animate-shake' : ''} {isSelected ? 'dark:ring-4 ring-4' : 'ring-0'}"
 >
   {#if isEditMode}
     <div
-      tabindex="-1"
+      tabindex="0"
       role="button"
       class="absolute top-0 right-0 z-10 flex w-6 h-6 p-2 text-white translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full place-items-center"
-      onclick={onDelete}
-      onkeydown={onDelete}
+      onclick={(e) => { e.stopPropagation(); onDelete() }}
+      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onDelete() } }}
     >
       <div class="w-4 h-0.5 bg-white"></div>
     </div>

@@ -85,7 +85,10 @@ function createSEQTAAPI(): SEQTAAPI {
  */
 function createSettingsAPI<T extends PluginSettings>(
   plugin: Plugin<T>,
-): SettingsAPI<T> & { loaded: Promise<void> } {
+): {
+  settings: SettingsAPI<T> & { loaded: Promise<void> };
+  dispose: () => void;
+} {
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
 
@@ -167,6 +170,10 @@ function createSettingsAPI<T extends PluginSettings>(
 
   browser.storage.onChanged.addListener(handleStorageChange);
 
+  const dispose = () => {
+    browser.storage.onChanged.removeListener(handleStorageChange);
+  };
+
   const proxy = new Proxy(settingsWithMeta, {
     get(target, prop) {
       return target[prop];
@@ -183,6 +190,17 @@ function createSettingsAPI<T extends PluginSettings>(
         dataToStore[key] = target[key];
       }
 
+      // Preserve enabled flag managed separately for disableToggle plugins
+      if (plugin.disableToggle) {
+        const allSettings = settingsState.getAll() as Record<string, unknown>;
+        const existing = allSettings[storageKey] as
+          | { enabled?: boolean }
+          | undefined;
+        if (existing?.enabled !== undefined) {
+          dataToStore.enabled = existing.enabled;
+        }
+      }
+
       browser.storage.local.set({ [storageKey]: dataToStore });
 
       listeners.get(prop as keyof T)?.forEach((cb) => cb(value));
@@ -190,18 +208,18 @@ function createSettingsAPI<T extends PluginSettings>(
     },
   }) as SettingsAPI<T> & { loaded: Promise<void> };
 
-  return proxy;
+  return { settings: proxy, dispose };
 }
 
 function createStorageAPI<T = any>(
   pluginId: string,
-): StorageAPI<T> & { [K in keyof T]: T[K] } {
+): {
+  storage: StorageAPI<T> & { [K in keyof T]: T[K] };
+  dispose: () => void;
+} {
   const prefix = `plugin.${pluginId}.storage.`;
   const cache: Record<string, any> = {};
   const listeners = new Map<string, Set<(value: any) => void>>();
-  const storageListeners = new Set<
-    (changes: { [key: string]: any }, area: string) => void
-  >();
 
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
@@ -243,10 +261,13 @@ function createStorageAPI<T = any>(
     }
   };
   browser.storage.onChanged.addListener(handleStorageChange);
-  storageListeners.add(handleStorageChange);
+
+  const dispose = () => {
+    browser.storage.onChanged.removeListener(handleStorageChange);
+  };
 
   // Create the proxy for direct property access
-  return new Proxy(cache, {
+  const storage = new Proxy(cache, {
     get(target, prop: string) {
       if (prop === "onChange") {
         return (key: keyof T, callback: (value: T[keyof T]) => void) => {
@@ -288,6 +309,8 @@ function createStorageAPI<T = any>(
       return true;
     },
   }) as StorageAPI<T> & { [K in keyof T]: T[K] };
+
+  return { storage, dispose };
 }
 
 function createEventsAPI(pluginId: string): EventsAPI {
@@ -357,10 +380,17 @@ function createEventsAPI(pluginId: string): EventsAPI {
 export function createPluginAPI<T extends PluginSettings, S = any>(
   plugin: Plugin<T, S>,
 ): PluginAPI<T, S> {
+  const { settings, dispose: disposeSettings } = createSettingsAPI(plugin);
+  const { storage, dispose: disposeStorage } = createStorageAPI<S>(plugin.id);
+
   return {
     seqta: createSEQTAAPI(),
-    settings: createSettingsAPI(plugin),
-    storage: createStorageAPI<S>(plugin.id),
+    settings,
+    storage,
     events: createEventsAPI(plugin.id),
+    dispose: () => {
+      disposeSettings();
+      disposeStorage();
+    },
   };
 }

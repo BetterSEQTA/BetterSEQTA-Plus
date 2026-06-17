@@ -174,18 +174,19 @@
     if (parentElement) {
       observer = new MutationObserver(checkActiveClass);
       observer.observe(parentElement, { attributes: true, attributeFilter: ['class'] });
-
-      return () => {
-        observer.disconnect();
-        backgroundUpdates.removeListener(syncBackgrounds);
-      };
     }
+
+    return () => {
+      observer?.disconnect();
+      backgroundUpdates.removeListener(syncBackgrounds);
+    };
   });
 
   onDestroy(() => {
-    if (observer) {
-      observer.disconnect();
-    }
+    observer?.disconnect();
+    backgrounds.forEach((bg) => {
+      if (bg.url) URL.revokeObjectURL(bg.url);
+    });
   });
 </script>
 

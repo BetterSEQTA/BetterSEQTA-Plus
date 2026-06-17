@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { create, all, typeOf as mathTypeOf, format as mathFormat } from 'mathjs';
 import { unitFullNames } from './unitMap';
 
 export interface CalculatorResult {
@@ -10,66 +10,42 @@ export interface CalculatorResult {
   error?: string;
 }
 
-const expandedMath = math.create(math.all);
+/** Hard cap on calculator input length to limit parse/eval cost. */
+export const CALCULATOR_MAX_INPUT_LENGTH = 128;
 
-expandedMath.import({
-  five: 5,
-  ten: 10,
-  three: 3,
-  four: 4,
-  eight: 8,
-  sixteen: 16,
-  twenty: 20,
-  twentyfive: 25,
-  fifty: 50,
-  hundred: 100,
-  plus: (a: number, b: number) => a + b,
-  minus: (a: number, b: number) => a - b,
-  times: (a: number, b: number) => a * b,
-  divided: (a: number, b: number) => a / b,
-  power: (a: number, b: number) => Math.pow(a, b),
-  half: (a: number) => a / 2,
-  double: (a: number) => a * 2,
-  quarter: (a: number) => a / 4,
+/**
+ * Functions safe to replace with stubs. Do not block type constructors
+ * (`complex`, `typed`, `fraction`, `bignumber`, `sparse`) or parse pipeline
+ * (`parse`, `compile`, `parser`) — mathjs needs those internally and
+ * `evaluate()` depends on them.
+ */
+const BLOCKED_MATH_FUNCTIONS = [
+  'import',
+  'createUnit',
+  'random',
+  'pickRandom',
+  'chain',
+  'help',
+] as const;
 
-  // String functions
-  length: (str: string) => str.length,
-  concat: (...args: string[]) => args.join(''),
-  uppercase: (str: string) => str.toUpperCase(),
-  lowercase: (str: string) => str.toLowerCase(),
-  substr: (str: string, start: number, length: number) => str.substr(start, length),
+function createSandboxedMath() {
+  const sandbox = create(all);
+  const blockFn = () => {
+    throw new Error('Function not allowed');
+  };
+  const blocked: Record<string, () => never> = {};
+  for (const name of BLOCKED_MATH_FUNCTIONS) {
+    blocked[name] = blockFn;
+  }
+  sandbox.import(blocked, { override: true });
+  return sandbox;
+}
 
-  // Random functions
-  randomInt: (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min,
-
-  // Comparison and Boolean operations
-  and: (a: boolean, b: boolean) => a && b,
-  or: (a: boolean, b: boolean) => a || b,
-  not: (a: boolean) => !a,
-
-  // Combinatorics
-  permutations: (n: number, r: number) => expandedMath.combinations(n, r) * expandedMath.factorial(r),
-  nPr: (n: number, r: number) => expandedMath.combinations(n, r) * expandedMath.factorial(r),
-  nCr: (n: number, r: number) => expandedMath.combinations(n, r),
-
-  // Number theory
-  gcd: (a: number, b: number) => expandedMath.gcd(a, b),
-  lcm: (a: number, b: number) => expandedMath.lcm(a, b),
-
-  // Precision functions
-  precision: (num: number, digits: number) => parseFloat(num.toPrecision(digits)),
-  fix: (num: number, digits: number) => parseFloat(num.toFixed(digits)),
-
-  // Percentage operations
-  percent: (value: number) => value / 100,
-  
-  // Financial operations
-  compound: (principal: number, rate: number, time: number) => principal * Math.pow(1 + rate, time),
-}, { override: true });
+const calculatorMath = createSandboxedMath();
 
 function detectUnit(expression: string): string {
   try {
-    const unit = expandedMath.unit(expression);
+    const unit = calculatorMath.unit(expression);
     if (unit) {
       const unitStr = unit.formatUnits();
       return unitFullNames[unitStr] || unitStr;
@@ -120,9 +96,9 @@ function tryCompleteExpression(expression: string): string | null {
       // Handle cases like "4 + 3 *" -> evaluate "4 + 3"
       if (partial && !partial.match(/[\+\-\*\/\^]\s*$/)) {
         try {
-          const result = expandedMath.evaluate(partial);
+          const result = calculatorMath.evaluate(partial);
           if (typeof result === 'number' && !isNaN(result)) {
-            return expandedMath.format(result, { precision: 14, lowerExp: -15, upperExp: 15 });
+            return calculatorMath.format(result, { precision: 14, lowerExp: -15, upperExp: 15 });
           }
         } catch (e) {
           // Continue to other attempts
@@ -147,6 +123,17 @@ export function calculateExpression(input: string): CalculatorResult {
       outputUnit: '',
     };
   }
+
+  if (trimmed.length > CALCULATOR_MAX_INPUT_LENGTH) {
+    return {
+      result: null,
+      isValid: false,
+      isPartial: false,
+      inputUnit: '',
+      outputUnit: '',
+      error: `Expression too long (max ${CALCULATOR_MAX_INPUT_LENGTH} characters)`,
+    };
+  }
   
   // Check if this looks like a math expression at all
   if (!isLikelyMathExpression(trimmed)) {
@@ -161,23 +148,23 @@ export function calculateExpression(input: string): CalculatorResult {
   
   try {
     // First try to evaluate the expression as-is
-    const evaluated = expandedMath.evaluate(trimmed.replace('**', '^'));
+    const evaluated = calculatorMath.evaluate(trimmed.replace('**', '^'));
     
     if (evaluated !== undefined) {
       let result: string;
       let inputUnit = '';
       let outputUnit = '';
       
-      if (math.typeOf(evaluated) === 'Unit') {
+      if (mathTypeOf(evaluated) === 'Unit') {
         // Handle unit conversion results
-        result = expandedMath.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
+        result = calculatorMath.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
         inputUnit = detectUnit(trimmed);
         outputUnit = detectUnit(result);
       } else if (typeof evaluated === 'number') {
         // Handle regular numbers
-        result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
+        result = mathFormat(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
       } else {
-        result = math.format(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
+        result = mathFormat(evaluated, { precision: 14, lowerExp: -15, upperExp: 15 });
       }
       
       return {
@@ -220,4 +207,4 @@ export function calculateExpression(input: string): CalculatorResult {
     inputUnit: '',
     outputUnit: '',
   };
-} 
+}

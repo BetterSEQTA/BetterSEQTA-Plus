@@ -11,6 +11,7 @@ import {
   requestCloudSettingsDebouncedUpload,
   runCloudSettingsPoll,
 } from "./background/cloudSettingsAutoSync";
+import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -44,6 +45,11 @@ function reloadSeqtaPages() {
 
 /** Callback for sending a response back to the message sender */
 type MessageSender = { (response?: unknown): void };
+
+async function getAccessTokenFromStorage(): Promise<string | null> {
+  const { bsplus_token } = await browser.storage.local.get("bsplus_token");
+  return typeof bsplus_token === "string" && bsplus_token.length > 0 ? bsplus_token : null;
+}
 
 /** Accept API + GitHub fallback shapes; always return `{ success, data?: { themes } }`. */
 function normalizeFetchThemesResponse(json: unknown): {
@@ -79,64 +85,99 @@ function normalizeFetchThemesResponse(json: unknown): {
 }
 
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
-  const { token } = request;
-  const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
-  const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  fetch(apiUrl, { cache: "no-store", headers })
-    .then(async (r) => {
-      const json = await r.json();
-      if (!r.ok) {
-        throw new Error(
-          (json && typeof json === "object" && "error" in json && typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : null) ?? `Themes API HTTP ${r.status}`,
-        );
-      }
-      return normalizeFetchThemesResponse(json);
-    })
-    .then(sendResponse)
-    .catch((err) => {
-      console.warn("[Background] fetchThemes API failed, trying GitHub fallback:", err?.message);
-      fetch(githubUrl, { cache: "no-store" })
-        .then(async (r) => {
-          if (!r.ok) throw new Error(`GitHub fallback HTTP ${r.status}`);
-          const data = await r.json();
-          const themes = Array.isArray(data) ? data : (data?.themes ?? []);
-          return normalizeFetchThemesResponse({ success: true, data: { themes } });
-        })
-        .then(sendResponse)
-        .catch((fallbackErr) => {
-          console.error("[Background] fetchThemes GitHub fallback error:", fallbackErr);
-          sendResponse({ success: false, error: fallbackErr?.message });
-        });
-    });
+  void (async () => {
+    const token = await getAccessTokenFromStorage();
+    const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+    const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    fetch(apiUrl, { cache: "no-store", headers })
+      .then(async (r) => {
+        const json = await r.json();
+        if (!r.ok) {
+          throw new Error(
+            (json && typeof json === "object" && "error" in json && typeof (json as { error?: string }).error === "string"
+              ? (json as { error: string }).error
+              : null) ?? `Themes API HTTP ${r.status}`,
+          );
+        }
+        return normalizeFetchThemesResponse(json);
+      })
+      .then(sendResponse)
+      .catch((err) => {
+        console.warn("[Background] fetchThemes API failed, trying GitHub fallback:", err?.message);
+        fetch(githubUrl, { cache: "no-store" })
+          .then(async (r) => {
+            if (!r.ok) throw new Error(`GitHub fallback HTTP ${r.status}`);
+            const data = await r.json();
+            const themes = Array.isArray(data) ? data : (data?.themes ?? []);
+            return normalizeFetchThemesResponse({ success: true, data: { themes } });
+          })
+          .then(sendResponse)
+          .catch((fallbackErr) => {
+            console.error("[Background] fetchThemes GitHub fallback error:", fallbackErr);
+            sendResponse({ success: false, error: fallbackErr?.message });
+          });
+      });
+  })();
   return true;
 }
 
 function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boolean {
-  const { themeId, token } = request;
+  const { themeId } = request;
   if (!themeId || typeof themeId !== "string") {
     sendResponse({ success: false, error: "Missing themeId" });
     return false;
   }
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
-    .then((r) => r.json())
-    .then(sendResponse)
-    .catch((err) => {
-      console.error("[Background] fetchThemeDetails error:", err);
-      sendResponse({ success: false, error: err?.message });
-    });
+  void (async () => {
+    const token = await getAccessTokenFromStorage();
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
+      .then((r) => r.json())
+      .then(sendResponse)
+      .catch((err) => {
+        console.error("[Background] fetchThemeDetails error:", err);
+        sendResponse({ success: false, error: err?.message });
+      });
+  })();
   return true;
 }
 
-function handleFetchFromUrl(request: any, sendResponse: MessageSender): boolean {
+function isTrustedSender(sender?: browser.Runtime.MessageSender): boolean {
+  if (!sender) return false;
+  if (sender.id && sender.id !== browser.runtime.id) return false;
+
+  const urls = [sender.url, sender.tab?.url].filter(Boolean) as string[];
+  for (const pageUrl of urls) {
+    if (/^chrome-extension:\/\//.test(pageUrl) || /^moz-extension:\/\//.test(pageUrl)) {
+      return true;
+    }
+    try {
+      if (isSeqtaOrigin(new URL(pageUrl).origin)) return true;
+    } catch {
+      // try next URL
+    }
+  }
+  return false;
+}
+
+function handleFetchFromUrl(
+  request: any,
+  sendResponse: MessageSender,
+  sender?: browser.Runtime.MessageSender,
+): boolean {
+  if (!isTrustedSender(sender)) {
+    sendResponse({ error: "Unauthorized sender" });
+    return false;
+  }
   const { url } = request;
   if (!url || typeof url !== "string") {
     sendResponse({ error: "Missing url" });
+    return false;
+  }
+  if (!isAllowedFetchUrl(url)) {
+    sendResponse({ error: "URL not allowed" });
     return false;
   }
   fetch(url, { cache: "no-store" })
@@ -177,7 +218,15 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
   return true;
 }
 
-function handleCloudLogin(request: any, sendResponse: MessageSender): boolean {
+function handleCloudLogin(
+  request: any,
+  sendResponse: MessageSender,
+  sender?: browser.Runtime.MessageSender,
+): boolean {
+  if (!isTrustedSender(sender)) {
+    sendResponse({ error: "Unauthorized sender" });
+    return false;
+  }
   const { client_id, redirect_uri, login, password } = request;
   if (!client_id || !redirect_uri || !login || !password) {
     sendResponse({ error: "Missing client_id, redirect_uri, login, or password" });
@@ -291,10 +340,18 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
   return true;
 }
 
-function handleCloudSettingsUpload(request: any, sendResponse: MessageSender): boolean {
+function handleCloudSettingsUpload(
+  request: any,
+  sendResponse: MessageSender,
+  sender?: browser.Runtime.MessageSender,
+): boolean {
+  if (!isTrustedSender(sender)) {
+    sendResponse({ success: false, error: "Unauthorized sender" });
+    return false;
+  }
   void (async () => {
     try {
-      const token = request.token as string | undefined;
+      const token = await getAccessTokenFromStorage();
       if (!token) {
         sendResponse({ success: false, error: "Not authenticated" });
         return;
@@ -316,10 +373,18 @@ function handleCloudSettingsUpload(request: any, sendResponse: MessageSender): b
   return true;
 }
 
-function handleCloudSettingsDownload(request: any, sendResponse: MessageSender): boolean {
+function handleCloudSettingsDownload(
+  request: any,
+  sendResponse: MessageSender,
+  sender?: browser.Runtime.MessageSender,
+): boolean {
+  if (!isTrustedSender(sender)) {
+    sendResponse({ success: false, error: "Unauthorized sender" });
+    return false;
+  }
   void (async () => {
     try {
-      const token = request.token as string | undefined;
+      const token = await getAccessTokenFromStorage();
       if (!token) {
         sendResponse({ success: false, error: "Not authenticated" });
         return;
@@ -343,22 +408,29 @@ function handleCloudSettingsDownload(request: any, sendResponse: MessageSender):
 }
 
 function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean {
-  const { themeId, token, action } = request;
-  if (!themeId || !token) {
-    sendResponse({ success: false, error: "Theme ID and token required" });
+  const { themeId, action } = request;
+  if (!themeId) {
+    sendResponse({ success: false, error: "Theme ID required" });
     return false;
   }
-  const isFavorite = action === "favorite";
-  fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
-    method: isFavorite ? "POST" : "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  })
-    .then((r) => r.json())
-    .then(sendResponse)
-    .catch((err) => {
-      console.error("[Background] cloudFavorite error:", err);
-      sendResponse({ success: false, error: err?.message });
-    });
+  void (async () => {
+    const token = await getAccessTokenFromStorage();
+    if (!token) {
+      sendResponse({ success: false, error: "Not authenticated" });
+      return;
+    }
+    const isFavorite = action === "favorite";
+    fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
+      method: isFavorite ? "POST" : "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then(sendResponse)
+      .catch((err) => {
+        console.error("[Background] cloudFavorite error:", err);
+        sendResponse({ success: false, error: err?.message });
+      });
+  })();
   return true;
 }
 
@@ -376,7 +448,12 @@ function isSeqtaOrigin(origin: string): boolean {
   }
 }
 
-function handleSetDevApiBase(request: any): boolean {
+function handleSetDevApiBase(
+  request: any,
+  _sendResponse: MessageSender,
+  sender?: browser.Runtime.MessageSender,
+): boolean {
+  if (!isTrustedSender(sender)) return false;
   const url = typeof request?.url === "string" ? request.url.trim() : null;
   if (url && /^https?:\/\//.test(url)) {
     DEV_API_BASE = url.replace(/\/$/, "");
@@ -415,7 +492,11 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       });
     return true;
   },
-  sendNews: (req, sendResponse) => {
+  sendNews: (req, sendResponse, sender) => {
+    if (!isTrustedSender(sender)) {
+      sendResponse({ error: "Unauthorized sender" });
+      return false;
+    }
     fetchNews(req.source ?? "australia", sendResponse);
     return true;
   },

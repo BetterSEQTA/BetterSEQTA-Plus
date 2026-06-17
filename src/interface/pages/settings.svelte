@@ -6,7 +6,7 @@
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
@@ -108,12 +108,14 @@
     showDisclaimerModal = true;
   };
 
+  const closePopupsOnSettingsClose = () => {
+    showColourPicker = false;
+    showFontPicker = false;
+    showCloudPanel = false;
+  };
+
   onMount(() => {
-    settingsPopup.addListener(() => {
-      showColourPicker = false;
-      showFontPicker = false;
-      showCloudPanel = false;
-    });
+    settingsPopup.addListener(closePopupsOnSettingsClose);
 
     if (standalone) {
       StandaloneStore.setStandalone(true);
@@ -124,6 +126,10 @@
         ghReleaseUpdate = info;
       });
     }
+  });
+
+  onDestroy(() => {
+    settingsPopup.removeListener(closePopupsOnSettingsClose);
   });
 </script>
 

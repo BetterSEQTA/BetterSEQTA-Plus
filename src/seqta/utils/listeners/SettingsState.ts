@@ -2,6 +2,20 @@ import browser from "webextension-polyfill";
 import type { SettingsState } from "@/types/storage";
 import type { Subscriber, Unsubscriber } from "svelte/store";
 
+/** Auth/session keys live in `chrome.storage.local` only — not on the settingsState proxy. */
+const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
+  "bsplus_token",
+  "bsplus_refresh_token",
+  "bsplus_client_id",
+  "bsplus_user",
+  "cloudAccessToken",
+  "cloudUsername",
+]);
+
+function isExcludedSettingsKey(key: string): boolean {
+  return EXCLUDED_FROM_SETTINGS_SURFACE.has(key);
+}
+
 type ChangeListener = (newValue: any, oldValue: any) => void;
 type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 
@@ -26,9 +40,16 @@ class StorageManager {
         if (prop in target) {
           return (target as any)[prop];
         }
+        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
+          return undefined;
+        }
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
+        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
+          void browser.storage.local.set({ [prop]: value });
+          return true;
+        }
         const oldValue = target.data[prop];
 
         // Only save if the reference actually changed
@@ -95,6 +116,10 @@ class StorageManager {
     key: K,
     value: SettingsState[K],
   ): void {
+    if (typeof key === "string" && isExcludedSettingsKey(key)) {
+      void browser.storage.local.set({ [key]: value });
+      return;
+    }
     const oldValue = this.data[key];
     if (oldValue !== value) {
       this.data[key] = value;
@@ -121,6 +146,7 @@ class StorageManager {
   private async loadFromStorage(): Promise<void> {
     const result = await browser.storage.local.get();
     Object.entries(result).forEach(([key, value]) => {
+      if (isExcludedSettingsKey(key)) return;
       Reflect.set(this.data, key, value);
     });
   }
@@ -137,6 +163,7 @@ class StorageManager {
         : Object.keys(this.data);
 
     for (const key of keys) {
+      if (isExcludedSettingsKey(key)) continue;
       const value = (this.data as Record<string, unknown>)[key];
       if (value !== undefined) {
         payload[key] = value;
@@ -163,6 +190,7 @@ class StorageManager {
 
       for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
         if (JSON.stringify(oldValue) === JSON.stringify(newValue)) continue;
+        if (isExcludedSettingsKey(key)) continue;
 
         if (newValue !== undefined) {
           (this.data as Record<string, unknown>)[key] = newValue;

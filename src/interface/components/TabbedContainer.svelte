@@ -39,7 +39,7 @@
 </script>
 
 <div class="flex flex-col h-full">
-  <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container">
+  <div class="top-0 z-10 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
     <div bind:this={containerRef} class="flex relative">
       <MotionDiv
         class="absolute top-0 left-0 z-0 h-full bg-gradient-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
@@ -48,6 +48,8 @@
       />
       {#each tabs as { title }, index}
         <button
+          role="tab"
+          aria-selected={activeTab === index}
           class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-none"
           onclick={() => activeTab = index}
         >
@@ -64,7 +66,10 @@
     >
       <div class="flex">
         {#each tabs as { Content, props }, index}
-        <div class="absolute focus:outline-none w-full pt-2 transition-opacity duration-300 overflow-y-scroll no-scrollbar pb-2 h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
+        <div
+          role="tabpanel"
+          aria-hidden={activeTab !== index}
+          class="absolute focus:outline-none w-full pt-2 transition-opacity duration-300 overflow-y-scroll no-scrollbar pb-2 h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
           style="left: {index * 100}%;">
           <div style="left: {index * 100}%;" class="fixed top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
              <Content {...props} />

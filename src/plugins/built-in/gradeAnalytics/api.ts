@@ -24,6 +24,9 @@ async function fetchJSON(url: string, body: Record<string, unknown>) {
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
   return res.json();
 }
 
@@ -254,10 +257,19 @@ async function loadAllPast(
   const results: Record<string, unknown>[][] = [];
   for (let i = 0; i < subjects.length; i += PAST_FETCH_CONCURRENCY) {
     const batch = subjects.slice(i, i + PAST_FETCH_CONCURRENCY);
-    const batchResults = await Promise.all(
+    const batchResults = await Promise.allSettled(
       batch.map((s) => loadPastForSubject(studentId, s)),
     );
-    results.push(...batchResults);
+    for (const result of batchResults) {
+      if (result.status === "fulfilled") {
+        results.push(result.value);
+      } else {
+        console.error(
+          "[BetterSEQTA+] Past assessments fetch failed:",
+          result.reason,
+        );
+      }
+    }
   }
   return results.flat();
 }
@@ -295,7 +307,7 @@ function mergeRawAssessments(
 }
 
 export async function getStudentId(): Promise<number> {
-  const info = await getUserInfo();
+  const info = await getUserInfo({ validateSession: true });
   const id = Number(info?.id);
   if (!id || isNaN(id)) throw new Error("Could not resolve student ID");
   return id;

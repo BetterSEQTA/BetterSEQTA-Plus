@@ -5,7 +5,18 @@ import Sortable from "sortablejs";
 
 export let MenuOptionsOpen = false;
 
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 export function OpenMenuOptions() {
+  if (MenuOptionsOpen) return;
+
   var container = document.getElementById("container");
   var menu = document.getElementById("menu");
 
@@ -23,9 +34,9 @@ export function OpenMenuOptions() {
     for (let i = 0; i < childnodes.length; i++) {
       const element = childnodes[i];
       if (
-        !settingsState.defaultmenuorder.indexOf(
+        settingsState.defaultmenuorder.indexOf(
           (element as HTMLElement).dataset.key,
-        )
+        ) === -1
       ) {
         let newdefaultmenuorder = settingsState.defaultmenuorder;
         newdefaultmenuorder.push((element as HTMLElement).dataset.key);
@@ -53,7 +64,7 @@ export function OpenMenuOptions() {
   var savebutton = document.createElement("div");
   savebutton.classList.add("editmenuoption");
   savebutton.innerText = "Save";
-  savebutton.id = "restoredefaultoption";
+  savebutton.id = "savemenuoption";
 
   menusettings.appendChild(defaultbutton);
   menusettings.appendChild(savebutton);
@@ -71,15 +82,18 @@ export function OpenMenuOptions() {
       (element.firstChild as HTMLElement).classList.remove("noscroll");
     }
 
+    const menuKey = escapeHtmlAttr((element as HTMLElement).dataset.key ?? "");
     let MenuItemToggle = stringToHTML(
-      `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
+      `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${menuKey}"><label for="${menuKey}" class="onoffswitch-label"></label>`,
     ).firstChild;
     (element as HTMLElement).append(MenuItemToggle!);
 
     if (!element.dataset.betterseqta) {
       const a = document.createElement("section");
-      a.innerHTML = element.innerHTML;
       cloneAttributes(a, element);
+      while (element.firstChild) {
+        a.appendChild(element.firstChild);
+      }
       menu!.firstChild!.insertBefore(a, element);
       element.remove();
     }
@@ -109,12 +123,12 @@ export function OpenMenuOptions() {
     } else {
       (buttons[i] as HTMLInputElement).checked = true;
     }
-    (buttons[i] as HTMLInputElement).checked = true;
   }
 
+  let sortable: Sortable | undefined;
   try {
     var el = document.querySelector("#menu > ul");
-    var sortable = Sortable.create(el as HTMLElement, {
+    sortable = Sortable.create(el as HTMLElement, {
       draggable: ".draggable",
       dataIdAttr: "data-key",
       animation: 150,
@@ -178,8 +192,10 @@ export function OpenMenuOptions() {
 
       if (!element.dataset.betterseqta) {
         const a = document.createElement("li");
-        a.innerHTML = element.innerHTML;
         cloneAttributes(a, element);
+        while (element.firstChild) {
+          a.appendChild(element.firstChild);
+        }
         menu!.firstChild!.insertBefore(a, element);
         element.remove();
       }
@@ -209,7 +225,7 @@ export function OpenMenuOptions() {
         "important",
       );
     }
-    saveNewOrder(sortable);
+    if (sortable) saveNewOrder(sortable);
   });
 }
 

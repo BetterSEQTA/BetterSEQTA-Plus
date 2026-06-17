@@ -1,7 +1,6 @@
 import browser from "webextension-polyfill";
 import { clearCloudPfpCache } from "@/seqta/utils/cloudPfpCache";
 import { clearLastUploadedSnapshot } from "@/seqta/utils/cloudSettingsSync";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 const REDIRECT_URI = "https://accounts.betterseqta.org/auth/bsplus/callback";
 
@@ -87,11 +86,10 @@ class CloudAuthService {
   }
 
   /** Pull cloud settings backup after a fresh sign-in (matches manual “Download from cloud”). */
-  private triggerCloudSettingsDownloadAfterLogin(accessToken: string): void {
+  private triggerCloudSettingsDownloadAfterLogin(): void {
     void browser.runtime
       .sendMessage({
         type: "cloudSettingsDownload",
-        token: accessToken,
       })
       .then((res: unknown) => {
         const r = res as { success?: boolean; notFound?: boolean; error?: string } | undefined;
@@ -112,7 +110,6 @@ class CloudAuthService {
 
   /** Persist an updated user object (e.g. after cloud profile picture sync). */
   public async setUser(user: CloudUser | null): Promise<void> {
-    (settingsState as any).setKey(STORAGE_KEYS.user, user);
     await browser.storage.local.set({ [STORAGE_KEYS.user]: user });
     this._state = {
       isLoggedIn: this._state.isLoggedIn,
@@ -122,11 +119,8 @@ class CloudAuthService {
   }
 
   private async getClientId(): Promise<string> {
-    let clientId = (settingsState as any)[STORAGE_KEYS.clientId] as string | undefined;
-    if (!clientId) {
-      const stored = await browser.storage.local.get(STORAGE_KEYS.clientId);
-      clientId = stored[STORAGE_KEYS.clientId] as string | undefined;
-    }
+    const stored = await browser.storage.local.get(STORAGE_KEYS.clientId);
+    let clientId = stored[STORAGE_KEYS.clientId] as string | undefined;
     if (!clientId) {
       const reserveResult = (await browser.runtime.sendMessage({
         type: "cloudReserveClient",
@@ -136,7 +130,7 @@ class CloudAuthService {
         throw new Error(reserveResult?.error ?? "Failed to reserve client");
       }
       clientId = reserveResult.client_id;
-      (settingsState as any).setKey(STORAGE_KEYS.clientId, clientId);
+      await browser.storage.local.set({ [STORAGE_KEYS.clientId]: clientId });
     }
     return clientId;
   }
@@ -180,15 +174,17 @@ class CloudAuthService {
         error?: string;
       };
       if (result?.access_token && result?.refresh_token) {
-        (settingsState as any).setKey(STORAGE_KEYS.accessToken, result.access_token);
-        (settingsState as any).setKey(STORAGE_KEYS.refreshToken, result.refresh_token);
-        (settingsState as any).setKey(STORAGE_KEYS.user, result.user ?? null);
+        await browser.storage.local.set({
+          [STORAGE_KEYS.accessToken]: result.access_token,
+          [STORAGE_KEYS.refreshToken]: result.refresh_token,
+          [STORAGE_KEYS.user]: result.user ?? null,
+        });
         this._state = {
           isLoggedIn: true,
           user: result.user ?? null,
         };
         this.notify();
-        this.triggerCloudSettingsDownloadAfterLogin(result.access_token);
+        this.triggerCloudSettingsDownloadAfterLogin();
         return { success: true };
       }
       return {
@@ -239,9 +235,11 @@ class CloudAuthService {
     };
 
     if (refreshResult?.access_token && refreshResult?.refresh_token) {
-      (settingsState as any).setKey(STORAGE_KEYS.accessToken, refreshResult.access_token);
-      (settingsState as any).setKey(STORAGE_KEYS.refreshToken, refreshResult.refresh_token);
-      (settingsState as any).setKey(STORAGE_KEYS.user, refreshResult.user ?? null);
+      await browser.storage.local.set({
+        [STORAGE_KEYS.accessToken]: refreshResult.access_token,
+        [STORAGE_KEYS.refreshToken]: refreshResult.refresh_token,
+        [STORAGE_KEYS.user]: refreshResult.user ?? null,
+      });
       this._state = {
         isLoggedIn: true,
         user: refreshResult.user ?? null,

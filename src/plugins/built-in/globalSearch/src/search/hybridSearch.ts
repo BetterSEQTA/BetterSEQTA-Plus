@@ -242,11 +242,12 @@ export async function hybridSearch(
 export async function hybridSearchWithExpansion(
   bm25Results: CombinedResult[],
   query: string,
-  _allItems: IndexItem[],
+  allItems: IndexItem[],
   options: HybridSearchOptions = {},
 ): Promise<CombinedResult[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const trimmedQuery = query.trim().toLowerCase();
+  const liveIndexIds = new Set(allItems.map((item) => item.id));
 
   // First, rerank BM25 results
   const rerankedBm25 = await hybridSearch(bm25Results, query, options);
@@ -297,6 +298,9 @@ export async function hybridSearchWithExpansion(
 
   vectorResults.forEach(v => {
     if (bm25Ids.has(v.object.id)) return;
+
+    // Drop stale vector hits for items no longer in the live structured index.
+    if (!liveIndexIds.has(v.object.id)) return;
 
     // This is a semantic match that BM25 missed
     const item = v.object;

@@ -53,8 +53,9 @@
     const [minG, maxG] = gradeRange;
     return analyticsData.filter((a) => {
       if (filterSubjects.length && !filterSubjects.includes(a.subject)) return false;
-      const grade = a.finalGrade ?? -1;
-      if (grade < minG || grade > maxG) return false;
+      if (a.finalGrade !== undefined) {
+        if (a.finalGrade < minG || a.finalGrade > maxG) return false;
+      }
       if (
         filterSearch &&
         !a.title.toLowerCase().includes(filterSearch.toLowerCase()) &&

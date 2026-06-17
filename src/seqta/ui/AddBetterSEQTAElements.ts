@@ -16,6 +16,24 @@ import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 
 let cachedUserInfo: any = null;
+let userInfoCacheListenersAttached = false;
+
+export function invalidateCachedUserInfo(): void {
+  cachedUserInfo = null;
+}
+
+function attachUserInfoCacheInvalidation(): void {
+  if (userInfoCacheListenersAttached || typeof window === "undefined") return;
+  userInfoCacheListenersAttached = true;
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      invalidateCachedUserInfo();
+    }
+  });
+}
+
+attachUserInfoCacheInvalidation();
 
 let LightDarkModeSnakeEggButton = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
@@ -25,8 +43,10 @@ let sidebarAccessibilityListenersAttached = false;
 /** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
 const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
 
-export async function getUserInfo() {
-  if (cachedUserInfo) return cachedUserInfo;
+export async function getUserInfo(options?: { validateSession?: boolean }) {
+  if (cachedUserInfo && !options?.validateSession) {
+    return cachedUserInfo;
+  }
 
   try {
     const response = await fetch(`${location.origin}/seqta/student/login`, {
@@ -41,7 +61,26 @@ export async function getUserInfo() {
       }),
     });
 
-    cachedUserInfo = (await response.json()).payload;
+    if (!response.ok) {
+      throw new Error(`Failed to get user info: HTTP ${response.status}`);
+    }
+
+    const payload = (await response.json()).payload;
+
+    if (
+      cachedUserInfo &&
+      options?.validateSession &&
+      payload?.id != null &&
+      cachedUserInfo.id != null &&
+      payload.id !== cachedUserInfo.id
+    ) {
+      console.warn(
+        "[BetterSEQTA+] Session user changed; invalidating cached user info",
+      );
+      invalidateCachedUserInfo();
+    }
+
+    cachedUserInfo = payload;
     return cachedUserInfo;
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to get user info:", error);

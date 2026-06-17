@@ -21,11 +21,14 @@
   let prevLoggedIn = $state(false);
   let showSignInModal = $state(false);
 
-  cloudAuth.subscribe((s) => {
-    const now = s.isLoggedIn;
-    if (now && !prevLoggedIn && themes) void fetchThemes();
-    prevLoggedIn = now;
-    cloudLoggedIn = now;
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => {
+      const now = s.isLoggedIn;
+      if (now && !prevLoggedIn && themes) void fetchThemes();
+      prevLoggedIn = now;
+      cloudLoggedIn = now;
+    });
+    return unsub;
   });
 
   const handleThemeClick = async (theme: CustomTheme, e: MouseEvent) => {
@@ -102,17 +105,14 @@
       selectedTheme: themeManager.getSelectedThemeId() || '',
     }
     if (themes && cloudLoggedIn) {
-      const token = await cloudAuth.getStoredToken();
-      if (token) {
-        const status: Record<string, boolean> = {};
-        await Promise.all(
-          themes.themes.map(async (t) => {
-            try {
-              const res = (await browser.runtime.sendMessage({
-                type: 'fetchThemeDetails',
-                themeId: t.id,
-                token,
-              })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
+      const status: Record<string, boolean> = {};
+      await Promise.all(
+        themes.themes.map(async (t) => {
+          try {
+            const res = (await browser.runtime.sendMessage({
+              type: 'fetchThemeDetails',
+              themeId: t.id,
+            })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
               if (res?.success && res?.data?.theme) {
                 status[t.id] = !!res.data.theme.is_favorited;
               }
@@ -122,7 +122,6 @@
           })
         );
         favoriteStatus = status;
-      }
     } else {
       favoriteStatus = {};
     }
@@ -134,13 +133,10 @@
       showSignInModal = true;
       return;
     }
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
     const isFavorite = !favoriteStatus[theme.id];
     const result = (await browser.runtime.sendMessage({
       type: 'cloudFavorite',
       themeId: theme.id,
-      token,
       action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {

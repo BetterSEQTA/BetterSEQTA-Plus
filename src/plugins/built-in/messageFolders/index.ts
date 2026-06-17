@@ -67,6 +67,44 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+function isAllowedFolderColor(color: unknown): color is string {
+  return typeof color === "string" && FOLDER_COLORS.includes(color);
+}
+
+function isAllowedFolderIcon(icon: unknown): icon is string {
+  return typeof icon === "string" && FOLDER_HEROICONS.includes(icon);
+}
+
+function normalizeFolder(folder: Folder): Folder {
+  return {
+    id: typeof folder.id === "string" && folder.id ? folder.id : generateId(),
+    name: typeof folder.name === "string" ? folder.name.trim().slice(0, 30) : "Folder",
+    color: isAllowedFolderColor(folder.color) ? folder.color : FOLDER_COLORS[0],
+    emoji: isAllowedFolderIcon(folder.emoji) ? folder.emoji : FOLDER_HEROICONS[0],
+  };
+}
+
+function setSvgIconContent(parent: HTMLElement, svgMarkup: string): void {
+  parent.replaceChildren();
+  const template = document.createElement("template");
+  template.innerHTML = svgMarkup.trim();
+  const node = template.content.firstElementChild;
+  if (node) parent.appendChild(node);
+}
+
+function appendFolderBadgeContent(badge: HTMLElement, folder: Folder): void {
+  badge.replaceChildren();
+  if (folder.emoji) {
+    const iconWrap = document.createElement("span");
+    iconWrap.style.display = "inline-flex";
+    iconWrap.style.verticalAlign = "middle";
+    iconWrap.style.marginRight = "2px";
+    setSvgIconContent(iconWrap, folder.emoji);
+    badge.appendChild(iconWrap);
+  }
+  badge.appendChild(document.createTextNode(folder.name));
+}
+
 const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFoldersStorage> = {
   id: "messageFolders",
   name: "Message Folders",
@@ -95,7 +133,8 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     let foldedSection: HTMLElement | null = null;
     const unregisters: Array<{ unregister: () => void }> = [];
 
-    const getFolders = (): Folder[] => api.storage.folders ?? [];
+    const getFolders = (): Folder[] =>
+      (api.storage.folders ?? []).map((folder) => normalizeFolder(folder));
     const getAssignments = (): Record<string, string[]> => api.storage.messageAssignments ?? {};
 
     const saveFolders = (folders: Folder[]) => {
@@ -298,7 +337,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
         const iconSpan = document.createElement("span");
         iconSpan.className = "bsplus-folder-icon";
-        iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+        setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
         item.appendChild(iconSpan);
 
         const name = document.createElement("span");
@@ -622,7 +661,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
 
           const name = document.createElement("span");
           name.textContent = folder.name;
@@ -725,7 +764,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
           dot.style.background = folder.color;
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
           const name = document.createElement("span");
           name.textContent = folder.name;
           item.appendChild(dot);
@@ -810,7 +849,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
           const badge = document.createElement("span");
           badge.className = "bsplus-msg-badge";
           badge.style.background = folder.color;
-          badge.innerHTML = `${folder.emoji ? `<span style="display:inline-flex;vertical-align:middle;margin-right:2px">${folder.emoji}</span>` : ""}${folder.name}`;
+          appendFolderBadgeContent(badge, folder);
           badge.title = `Filter by "${folder.name}"`;
           badge.addEventListener("click", (e) => {
             e.stopPropagation();

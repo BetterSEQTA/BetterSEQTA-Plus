@@ -62,6 +62,10 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
           },
         );
 
+        if (!response.ok) {
+          throw new Error(`Heartbeat HTTP ${response.status}`);
+        }
+
         const data = await response.json();
 
         // Store notification count for history

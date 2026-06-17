@@ -61,11 +61,12 @@ export function showBsCloudAutoSyncAnnouncement(onDismissed?: () => void) {
     </div>
   `).firstChild as HTMLElement;
 
-  settingsState.bsCloudAutoSyncAnnouncementShown = true;
-
   openPopup({
     header,
     content: [imageContainer, text],
-    afterClose: onDismissed,
+    afterClose: () => {
+      settingsState.bsCloudAutoSyncAnnouncementShown = true;
+      onDismissed?.();
+    },
   });
 }

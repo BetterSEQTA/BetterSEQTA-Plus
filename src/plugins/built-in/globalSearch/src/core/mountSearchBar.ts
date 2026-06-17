@@ -37,6 +37,41 @@ export function mountSearchBar(
   const searchButton = document.createElement("div");
   searchButton.className = "search-trigger";
 
+  const searchIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  searchIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  searchIcon.setAttribute("width", "16");
+  searchIcon.setAttribute("height", "16");
+  searchIcon.setAttribute("viewBox", "0 0 24 24");
+  searchIcon.setAttribute("fill", "none");
+  searchIcon.setAttribute("stroke", "currentColor");
+  searchIcon.setAttribute("stroke-width", "2");
+  searchIcon.setAttribute("stroke-linecap", "round");
+  searchIcon.setAttribute("stroke-linejoin", "round");
+
+  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  circle.setAttribute("cx", "11");
+  circle.setAttribute("cy", "11");
+  circle.setAttribute("r", "8");
+  searchIcon.appendChild(circle);
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", "21");
+  line.setAttribute("y1", "21");
+  line.setAttribute("x2", "16.65");
+  line.setAttribute("y2", "16.65");
+  searchIcon.appendChild(line);
+
+  const searchLabel = document.createElement("p");
+  searchLabel.textContent = "Quick search...";
+
+  const hotkeySpan = document.createElement("span");
+  hotkeySpan.className = "search-trigger-hotkey";
+  hotkeySpan.style.marginLeft = "auto";
+  hotkeySpan.style.display = "flex";
+  hotkeySpan.style.alignItems = "center";
+  hotkeySpan.style.color = "#777";
+  hotkeySpan.style.fontSize = "12px";
+
   const progressBarWrapper = document.createElement("div");
   progressBarWrapper.className = "search-progress-bar-wrapper";
 
@@ -234,14 +269,10 @@ export function mountSearchBar(
   appRef.clearDoneFlashTimer = clearDoneFlashTimer;
   
   const updateSearchButtonDisplay = () => {
-    searchButton.innerHTML = /* html */ `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <p>Quick search...</p>
-      <span style="margin-left: auto; display: flex; align-items: center; color: #777; font-size: 12px;">${hotkeyDisplay}</span>
-    `;
+    hotkeySpan.textContent = hotkeyDisplay;
+    if (!searchButton.contains(searchIcon)) {
+      searchButton.replaceChildren(searchIcon, searchLabel, hotkeySpan);
+    }
   };
 
   updateSearchButtonDisplay();

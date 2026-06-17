@@ -74,7 +74,10 @@ function ensureGestureStart(handler: () => void): () => void {
 
 async function startPlayback(volume: number): Promise<void> {
   const blob = await loadAudioBlob();
-  if (!blob) return;
+  if (!blob) {
+    stopAndCleanupAudio();
+    return;
+  }
 
   stopAndCleanupAudio();
 
@@ -123,7 +126,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       }
     });
 
-    // Note: Stop button/event removed by user; no stop handling needed
+    // Note: Stop button dispatches betterseqta-background-music-stop on remove
 
     // Start if we have audio and autoplay is enabled
     const tryStart = async () => {
@@ -160,16 +163,21 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     };
     document.addEventListener("visibilitychange", visHandler);
 
-    // Allow uploads to trigger refresh
+    // Allow uploads to trigger refresh; stop event clears playback on remove
     const uploadedHandler = () => {
       const vol = (api.settings as any).volume ?? 0.5;
       startPlayback(vol);
     };
+    const stopHandler = () => {
+      stopAndCleanupAudio();
+    };
     window.addEventListener("betterseqta-background-music-updated", uploadedHandler);
+    window.addEventListener("betterseqta-background-music-stop", stopHandler);
 
     return () => {
       document.removeEventListener("visibilitychange", visHandler);
       window.removeEventListener("betterseqta-background-music-updated", uploadedHandler);
+      window.removeEventListener("betterseqta-background-music-stop", stopHandler);
       if (cleanupRegistered && (window as any).__betterseqta_bg_music_cancel__) {
         (window as any).__betterseqta_bg_music_cancel__();
         (window as any).__betterseqta_bg_music_cancel__ = undefined;

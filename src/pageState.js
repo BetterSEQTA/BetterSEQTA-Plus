@@ -509,7 +509,13 @@ function deepFunctionCheck(obj, path = "") {
   }
 }
 
+function isTrustedMessage(event) {
+  return event.source === window && event.origin === window.location.origin;
+}
+
 window.addEventListener("message", (event) => {
+  if (!isTrustedMessage(event)) return;
+
   if (event.data.type === "reactFiberRequest") {
     const { selector, action, payload, debug, messageId } = event.data;
     const fiberInstance = ReactFiber.find(selector, {
@@ -522,12 +528,14 @@ window.addEventListener("message", (event) => {
         response = fiberInstance.getState(payload.key);
         break;
       case "setState":
-        // Handle both function and object updates
-        if (payload.updateFn) {
-          const updateFn = new Function('return ' + payload.updateFn)();
-          fiberInstance.setState(updateFn);
-        } else {
+        if (
+          payload.updateObject &&
+          typeof payload.updateObject === "object" &&
+          !Array.isArray(payload.updateObject)
+        ) {
           fiberInstance.setState(payload.updateObject);
+        } else {
+          console.warn("[pageState] setState rejected: only plain objects are allowed");
         }
         response = {};
         break;
@@ -580,7 +588,7 @@ window.addEventListener("message", (event) => {
         response,
         messageId,
       },
-      "*",
+      window.location.origin,
     );
   } else if (event.data.type === "triggerKeyboardEvent") {
     // Handle keyboard event triggering from content script

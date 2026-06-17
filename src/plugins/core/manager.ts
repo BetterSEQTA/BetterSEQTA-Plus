@@ -35,6 +35,7 @@ export class PluginManager {
   private runningPlugins: Map<string, boolean> = new Map();
   private eventBacklog: Map<string, any[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
+  private apiDisposers: Map<string, () => void> = new Map();
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
   private styleElements: Map<string, HTMLStyleElement> = new Map();
 
@@ -148,6 +149,7 @@ export class PluginManager {
 
     try {
       const api = createPluginAPI(plugin);
+      this.apiDisposers.set(pluginId, api.dispose);
 
       // Check if plugin is enabled before starting
       if (plugin.disableToggle) {
@@ -158,6 +160,7 @@ export class PluginManager {
         const enabled =
           pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
         if (!enabled) {
+          this.disposePluginAPI(pluginId);
           console.info(
             `Plugin "${pluginId}" is disabled, skipping initialization`,
           );
@@ -186,11 +189,29 @@ export class PluginManager {
       // Process any backlogged events
       await this.processBackloggedEvents(pluginId);
     } catch (error) {
+      this.removePluginStyles(pluginId);
+      this.disposePluginAPI(pluginId);
       console.error(
         `[BetterSEQTA+] Failed to start plugin ${pluginId}:`,
         error,
       );
       throw error;
+    }
+  }
+
+  private removePluginStyles(pluginId: string): void {
+    const styleElement = this.styleElements.get(pluginId);
+    if (styleElement) {
+      styleElement.remove();
+      this.styleElements.delete(pluginId);
+    }
+  }
+
+  private disposePluginAPI(pluginId: string): void {
+    const dispose = this.apiDisposers.get(pluginId);
+    if (dispose) {
+      dispose();
+      this.apiDisposers.delete(pluginId);
     }
   }
 
@@ -225,12 +246,8 @@ export class PluginManager {
    * @returns {Promise<void>} A promise that resolves when the plugin has been stopped.
    */
   public async stopPlugin(pluginId: string): Promise<void> {
-    // Remove plugin styles
-    const styleElement = this.styleElements.get(pluginId);
-    if (styleElement) {
-      styleElement.remove();
-      this.styleElements.delete(pluginId);
-    }
+    this.removePluginStyles(pluginId);
+    this.disposePluginAPI(pluginId);
 
     const cleanup = this.cleanupFunctions.get(pluginId);
     if (cleanup) {

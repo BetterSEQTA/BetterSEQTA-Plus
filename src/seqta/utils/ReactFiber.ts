@@ -22,6 +22,16 @@ class ReactFiber {
     return new ReactFiber(selector, options);
   }
 
+  private getTargetOrigin(): string {
+    return window.location.origin;
+  }
+
+  private isTrustedMessage(event: MessageEvent): boolean {
+    return (
+      event.source === window && event.origin === this.getTargetOrigin()
+    );
+  }
+
   private async sendMessage(action: string, payload: any = {}): Promise<any> {
     return new Promise((resolve, _) => {
       const messageId = this.messageIdCounter++;
@@ -34,7 +44,8 @@ class ReactFiber {
         messageId,
       };
 
-      const listener = (response: any) => {
+      const listener = (response: MessageEvent) => {
+        if (!this.isTrustedMessage(response)) return;
         if (
           response.data?.type === "reactFiberResponse" &&
           response.data?.messageId === messageId
@@ -47,7 +58,7 @@ class ReactFiber {
         }
       };
       window.addEventListener("message", listener);
-      window.postMessage(message, "*");
+      window.postMessage(message, this.getTargetOrigin());
     });
   }
 
@@ -57,15 +68,14 @@ class ReactFiber {
     });
   }
 
-  async setState(update: any | ((prevState: any) => any)): Promise<ReactFiber> {
-    const updateFnString =
-      typeof update === "function" ? update.toString() : null;
-    const updateObject = typeof update !== "function" ? update : null;
+  async setState(update: Record<string, unknown>): Promise<ReactFiber> {
+    if (typeof update !== "object" || update === null || Array.isArray(update)) {
+      throw new TypeError(
+        "ReactFiber.setState only accepts plain JSON-serializable objects",
+      );
+    }
 
-    await this.sendMessage("setState", {
-      updateFn: updateFnString,
-      updateObject,
-    });
+    await this.sendMessage("setState", { updateObject: update });
     return this;
   }
 
