@@ -1,11 +1,10 @@
-import renderSvelte from "@/interface/main";
 import SearchBar from "../components/SearchBar.svelte";
 import { unmount } from "svelte";
 import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import browser from "webextension-polyfill";
 
-export function mountSearchBar(
+export async function mountSearchBar(
   titleElement: Element,
   api: any,
   appRef: {
@@ -305,6 +304,7 @@ export function mountSearchBar(
   });
 
   try {
+    const { default: renderSvelte } = await import("@/interface/main");
     appRef.current = renderSvelte(SearchBar, searchRootShadow, {
       transparencyEffects: api.settings.transparencyEffects ? true : false,
       showRecentFirst: api.settings.showRecentFirst,

@@ -6,7 +6,7 @@ import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "webextension-polyfill";
 
-import * as plugins from "@/plugins";
+import { init as Monofile } from "@/plugins/monofile";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
@@ -104,10 +104,11 @@ async function init() {
       }
 
       await main();
-      plugins.Monofile();
+      Monofile();
 
       if (settingsState.onoff) {
-        await plugins.initializePlugins();
+        const { initializePlugins } = await import("@/plugins/runtime");
+        await initializePlugins();
       }
 
       if (settingsState.devMode) {

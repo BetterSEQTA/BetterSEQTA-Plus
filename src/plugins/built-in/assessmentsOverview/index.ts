@@ -131,16 +131,16 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
       if (requestId !== loadRequestId) return;
 
-      renderSkeletonLoader(container);
+      void renderSkeletonLoader(container);
 
       try {
         const data = await getAssessmentsData();
         if (requestId !== loadRequestId) return;
-        renderGrid(container, data);
+        void renderGrid(container, data);
       } catch (err) {
         if (requestId !== loadRequestId) return;
         console.error("Failed to load assessments:", err);
-        renderErrorState(
+        void renderErrorState(
           container,
           err instanceof Error ? err.message : "Unknown error",
         );

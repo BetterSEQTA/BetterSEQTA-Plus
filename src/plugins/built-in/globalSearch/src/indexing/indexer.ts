@@ -1,6 +1,6 @@
-import { clear, get, getAll, put, remove, resetDatabase } from "./db";
+import { applyStoreDiff, get, getAll, put, remove, resetDatabase } from "./db";
 import { jobs } from "./jobs";
-import { renderComponentMap } from "./renderComponents";
+import { decorateIndexItems } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
@@ -89,10 +89,62 @@ function shouldRun(job: Job, lastRun?: number): boolean {
 }
 
 function getLastRunMeta(jobId: string): Promise<number | undefined> {
-  return getAll(META_STORE).then((metaItems) => {
-    const match = metaItems.find((m: any) => m.jobId === jobId);
-    return match?.lastRun;
+  return get(META_STORE, jobId).then((rec) => rec?.lastRun);
+}
+
+function indexItemStorageKey(item: IndexItem): string {
+  return JSON.stringify({
+    id: item.id,
+    text: item.text,
+    category: item.category,
+    content: item.content,
+    dateAdded: item.dateAdded,
+    metadata: item.metadata,
+    actionId: item.actionId,
+    renderComponentId: item.renderComponentId,
   });
+}
+
+function indexItemsEqual(a: IndexItem, b: IndexItem): boolean {
+  return indexItemStorageKey(a) === indexItemStorageKey(b);
+}
+
+async function diffAndStoreItems(
+  targetStore: string,
+  items: IndexItem[],
+): Promise<void> {
+  const validItems = items.filter((i) => i && i.id);
+  if (validItems.length !== items.length) {
+    console.warn(
+      `[Indexer] Filtered out ${items.length - validItems.length} invalid items before storing in '${targetStore}'.`,
+    );
+  }
+
+  const existing = (await getAll(targetStore)) as IndexItem[];
+  const existingMap = new Map(
+    existing.filter((i) => i?.id).map((i) => [i.id, i]),
+  );
+  const newMap = new Map(validItems.map((i) => [i.id, i]));
+
+  const puts: Array<{ key: string; value: IndexItem }> = [];
+  const removeKeys: string[] = [];
+
+  for (const [id, item] of newMap) {
+    const prev = existingMap.get(id);
+    if (!prev || !indexItemsEqual(prev, item)) {
+      puts.push({ key: id, value: item });
+    }
+  }
+
+  for (const id of existingMap.keys()) {
+    if (!newMap.has(id)) {
+      removeKeys.push(id);
+    }
+  }
+
+  if (puts.length > 0 || removeKeys.length > 0) {
+    await applyStoreDiff(targetStore, puts, removeKeys);
+  }
 }
 
 async function updateLastRunMeta(jobId: string): Promise<void> {
@@ -255,14 +307,7 @@ export async function runIndexing(): Promise<void> {
       await getAll(storeId ?? jobId);
     const setStoredItems = async (items: IndexItem[], storeId?: string) => {
       const targetStore = storeId ?? jobId;
-      await clear(targetStore);
-      const validItems = items.filter((i) => i && i.id);
-      if (validItems.length !== items.length) {
-        console.warn(
-          `[Indexer Job ${jobId} -> Store ${targetStore}] Filtered out ${items.length - validItems.length} invalid items before storing.`,
-        );
-      }
-      await Promise.all(validItems.map((i) => put(targetStore, i, i.id)));
+      await diffAndStoreItems(targetStore, items);
     };
     const addItem = async (item: IndexItem, storeId?: string) => {
       const targetStore = storeId ?? jobId;
@@ -447,35 +492,13 @@ export async function runIndexing(): Promise<void> {
   }
 
   allItemsInPrimaryStores = await loadAllStoredItems();
-  // Create new objects to avoid XrayWrapper issues in Firefox
-  const itemsWithComponents = allItemsInPrimaryStores.map(item => {
-    try {
-      const jobDef = jobs[item.category] || Object.values(jobs).find(j => j.id === item.category) || jobs[item.renderComponentId];
-      let renderComponent = item.renderComponent;
-      if (jobDef) {
-        renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
-      } else if (renderComponentMap[item.renderComponentId]) {
-        renderComponent = renderComponentMap[item.renderComponentId];
-      }
-      // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
-      // Use JSON serialization to ensure all nested properties are accessible
-      try {
-        const cloned = JSON.parse(JSON.stringify(item));
-        cloned.renderComponent = renderComponent;
-        return cloned;
-      } catch (e) {
-        // Fallback to shallow copy if deep clone fails
-        console.warn("[Indexer] Failed to deep clone item, using shallow copy:", e);
-        return { ...item, renderComponent };
-      }
-    } catch (error) {
-      // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
-      console.warn("[Indexer] Failed to add render component to item (Firefox XrayWrapper):", error);
-      return item;
-    }
-  });
+  const itemsWithComponents = decorateIndexItems(allItemsInPrimaryStores);
   loadDynamicItems(itemsWithComponents);
-  window.dispatchEvent(new Event("dynamic-items-updated"));
+  window.dispatchEvent(
+    new CustomEvent("dynamic-items-updated", {
+      detail: { fullRebuild: true },
+    }),
+  );
   } finally {
     stopHeartbeat();
   }

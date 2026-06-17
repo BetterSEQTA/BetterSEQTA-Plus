@@ -16,6 +16,23 @@ function isExcludedSettingsKey(key: string): boolean {
   return EXCLUDED_FROM_SETTINGS_SURFACE.has(key);
 }
 
+const SAVE_DEBOUNCE_MS = 200;
+
+function storageChangeIsNoop(oldValue: unknown, newValue: unknown): boolean {
+  if (oldValue === newValue) return true;
+  if (
+    oldValue === undefined ||
+    newValue === undefined ||
+    typeof oldValue !== "object" ||
+    typeof newValue !== "object" ||
+    oldValue === null ||
+    newValue === null
+  ) {
+    return false;
+  }
+  return JSON.stringify(oldValue) === JSON.stringify(newValue);
+}
+
 type ChangeListener = (newValue: any, oldValue: any) => void;
 type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 
@@ -25,9 +42,11 @@ class StorageManager {
   private listeners: Map<string, Set<ChangeListener>>;
   private globalListeners: Set<GlobalChangeListener>;
   private subscribers: Set<Subscriber<SettingsState>> = new Set();
-  private saveTimeout: NodeJS.Timeout | null = null;
+  private saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingPatch: Record<string, unknown> = {};
   private initialized = false;
   private bootstrapping = false;
+  private suppressWrites = false;
 
   private constructor() {
     this.data = {} as SettingsState;
@@ -151,12 +170,14 @@ class StorageManager {
     });
   }
   
-  public async saveToStorage(changedKeys?: string[]): Promise<void> {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-      this.saveTimeout = null;
+  public setSuppressWrites(suppress: boolean): void {
+    this.suppressWrites = suppress;
+    if (!suppress) {
+      this.scheduleDebouncedSave();
     }
-    const payload: Record<string, unknown> = {};
+  }
+
+  private queueStoragePatch(changedKeys?: string[]): void {
     const keys =
       changedKeys && changedKeys.length > 0
         ? changedKeys
@@ -166,16 +187,40 @@ class StorageManager {
       if (isExcludedSettingsKey(key)) continue;
       const value = (this.data as Record<string, unknown>)[key];
       if (value !== undefined) {
-        payload[key] = value;
+        this.pendingPatch[key] = value;
       }
     }
+  }
 
-    if (Object.keys(payload).length === 0) return;
+  private scheduleDebouncedSave(): void {
+    if (this.bootstrapping || this.suppressWrites) return;
+    if (Object.keys(this.pendingPatch).length === 0) return;
 
-    await browser.storage.local.set(payload);
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout(() => {
+      void this.flushPendingPatch();
+    }, SAVE_DEBOUNCE_MS);
+  }
+
+  private async flushPendingPatch(): Promise<void> {
+    this.saveTimeout = null;
+    if (this.bootstrapping || this.suppressWrites) return;
+
+    const patch = { ...this.pendingPatch };
+    this.pendingPatch = {};
+    if (Object.keys(patch).length === 0) return;
+
+    await browser.storage.local.set(patch);
     if (!this.bootstrapping) {
       this.notifySubscribers();
     }
+  }
+
+  public saveToStorage(changedKeys?: string[]): void {
+    this.queueStoragePatch(changedKeys);
+    this.scheduleDebouncedSave();
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -189,7 +234,7 @@ class StorageManager {
       const actualChanges: string[] = [];
 
       for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-        if (JSON.stringify(oldValue) === JSON.stringify(newValue)) continue;
+        if (storageChangeIsNoop(oldValue, newValue)) continue;
         if (isExcludedSettingsKey(key)) continue;
 
         if (newValue !== undefined) {
@@ -292,3 +337,7 @@ class StorageManager {
 export const settingsState = StorageManager.getInstance();
 export const initializeSettingsState = async () =>
   await StorageManager.initialize();
+
+export function setSettingsStateSuppressWrites(suppress: boolean): void {
+  settingsState.setSuppressWrites(suppress);
+}

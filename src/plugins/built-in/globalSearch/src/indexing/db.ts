@@ -184,6 +184,56 @@ export async function put(
   }
 }
 
+/**
+ * Apply puts and deletes in a single readwrite transaction.
+ */
+export async function applyStoreDiff(
+  store: string,
+  puts: Array<{ key: string; value: any }>,
+  removeKeys: string[],
+): Promise<void> {
+  if (puts.length === 0 && removeKeys.length === 0) return;
+
+  try {
+    const db = await openDB();
+
+    if (!db.objectStoreNames.contains(store)) {
+      await upgradeDB(store);
+      const upgradedDb = await openDB();
+      await runStoreDiffTransaction(upgradedDb, store, puts, removeKeys);
+      return;
+    }
+
+    await runStoreDiffTransaction(db, store, puts, removeKeys);
+  } catch (error) {
+    console.error(`Error in applyStoreDiff for store ${store}:`, error);
+    throw error;
+  }
+}
+
+function runStoreDiffTransaction(
+  db: IDBDatabase,
+  store: string,
+  puts: Array<{ key: string; value: any }>,
+  removeKeys: string[],
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readwrite");
+    const objectStore = tx.objectStore(store);
+
+    for (const key of removeKeys) {
+      objectStore.delete(key);
+    }
+    for (const { key, value } of puts) {
+      objectStore.put(value, key);
+    }
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
 export async function remove(store: string, key: string): Promise<void> {
   try {
     const s = await getStore(store, "readwrite");

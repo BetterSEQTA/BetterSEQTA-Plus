@@ -10,6 +10,7 @@ import {
   performCloudSettingsUploadWithRetry,
   requestCloudSettingsDebouncedUpload,
   runCloudSettingsPoll,
+  withSuppressedCloudAutoUpload,
 } from "./background/cloudSettingsAutoSync";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 
@@ -573,10 +574,10 @@ function getDefaultValues(): SettingsState {
   return getDefaultSettingsState();
 }
 
-function SetStorageValue(object: any) {
-  for (var i in object) {
-    browser.storage.local.set({ [i]: object[i] });
-  }
+function SetStorageValue(object: SettingsState) {
+  void withSuppressedCloudAutoUpload(() =>
+    browser.storage.local.set(object as Record<string, unknown>),
+  );
 }
 
 /** One-time migration for 3.6.5: opt upgraders into Global Search + indexing + transparency defaults. */

@@ -457,6 +457,17 @@ function onStorageChanged(
   })();
 }
 
+export async function withSuppressedCloudAutoUpload<T>(
+  operation: () => T | Promise<T>,
+): Promise<T> {
+  suppressAutoUploadDuringRestore = true;
+  try {
+    return await operation();
+  } finally {
+    suppressAutoUploadDuringRestore = false;
+  }
+}
+
 export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }): void {
   reloadSeqtaPagesFn = deps.reloadSeqtaPages;
   if (autoSyncInitialized) return;

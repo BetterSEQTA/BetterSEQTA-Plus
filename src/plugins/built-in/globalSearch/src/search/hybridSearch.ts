@@ -132,6 +132,7 @@ export async function hybridSearch(
   bm25Results: CombinedResult[],
   query: string,
   options: HybridSearchOptions = {},
+  precomputedVectorResults?: VectorSearchResult[],
 ): Promise<CombinedResult[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const trimmedQuery = query.trim().toLowerCase();
@@ -146,9 +147,10 @@ export async function hybridSearch(
 
   if (trimmedQuery.length > 2) {
     try {
-      // Get more vector results than BM25 results to ensure coverage
-      // This allows us to find semantic matches that BM25 might have missed
-      const vectorSearchResults = await searchVectors(trimmedQuery, opts.bm25TopK * 2);
+      const vectorTopK = opts.bm25TopK * 2;
+      const vectorSearchResults =
+        precomputedVectorResults ??
+        (await searchVectors(trimmedQuery, vectorTopK));
       
       // Create a map of item ID to vector similarity
       const vectorMap = new Map<string, number>();
@@ -249,28 +251,31 @@ export async function hybridSearchWithExpansion(
   const trimmedQuery = query.trim().toLowerCase();
   const liveIndexIds = new Set(allItems.map((item) => item.id));
 
-  // First, rerank BM25 results
-  const rerankedBm25 = await hybridSearch(bm25Results, query, options);
-
-  // If query is too short, skip vector expansion
   if (trimmedQuery.length <= 2) {
-    return rerankedBm25;
+    return hybridSearch(bm25Results, query, options);
   }
+
+  let vectorResults: VectorSearchResult[] = [];
+  try {
+    vectorResults = await searchVectors(trimmedQuery, opts.bm25TopK * 2);
+  } catch (e) {
+    console.warn("[Hybrid Search] Vector search failed:", e);
+    return hybridSearch(bm25Results, query, options);
+  }
+
+  // Rerank BM25 results using the single vector pass above
+  const rerankedBm25 = await hybridSearch(
+    bm25Results,
+    query,
+    options,
+    vectorResults,
+  );
 
   // For short / single-token queries vector expansion brings in too much
   // noise (and is the main reason results "flicker" between adjacent
   // keystrokes). Keep semantic recall for longer queries.
   if (isWeakSemanticQuery(trimmedQuery)) {
     return rerankedBm25.slice(0, opts.finalLimit);
-  }
-
-  // Get vector search results
-  let vectorResults: VectorSearchResult[] = [];
-  try {
-    vectorResults = await searchVectors(trimmedQuery, opts.bm25TopK);
-  } catch (e) {
-    console.warn("[Hybrid Search] Vector search failed:", e);
-    return rerankedBm25;
   }
 
   // Find vector results that weren't in BM25 results

@@ -785,7 +785,7 @@ export async function OpenThemeOfTheMonthPopup(
   card.querySelector(".themeOfTheMonthCardPrimary")?.addEventListener("click", () => {
     settingsState.themeOfTheMonthDismissedMonth = entry.month;
     dismissWithCleanup();
-    openThemeStoreWithHighlight(linkedThemeId!);
+    void openThemeStoreWithHighlight(linkedThemeId!);
   });
 
   const openDontShowConfirm = () => {

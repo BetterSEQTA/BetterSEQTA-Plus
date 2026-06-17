@@ -59,23 +59,16 @@
     </div>
   </div>
   <div class="overflow-hidden px-4 h-full">
-    <MotionDiv
-      class="h-full"
-      animate={{ x: `${-activeTab * 100}%` }}
-      transition={springTransition}
-    >
-      <div class="flex">
-        {#each tabs as { Content, props }, index}
+    {#each tabs as { Content, props }, index (index)}
+      {#if activeTab === index}
         <div
           role="tabpanel"
-          aria-hidden={activeTab !== index}
-          class="absolute focus:outline-none w-full pt-2 transition-opacity duration-300 overflow-y-scroll no-scrollbar pb-2 h-full tab {activeTab === index ? 'opacity-100 active' : 'opacity-0'}"
-          style="left: {index * 100}%;">
-          <div style="left: {index * 100}%;" class="fixed top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
-             <Content {...props} />
-          </div>
-        {/each}
-      </div>
-    </MotionDiv>
+          class="focus:outline-none w-full pt-2 overflow-y-scroll no-scrollbar pb-2 h-full tab active"
+        >
+          <div class="fixed top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
+          <Content {...props} />
+        </div>
+      {/if}
+    {/each}
   </div>
 </div>

@@ -14,11 +14,11 @@
   import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
   //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
-  import ColourPicker from "../components/ColourPicker.svelte";
+  import type { Component } from "svelte";
   import FontPickerModal from "../components/FontPickerModal.svelte";
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
-  import { settingsPopup } from "../hooks/SettingsPopup";
+  import { settingsPopup } from "@/seqta/utils/settingsPopup";
   import {
     checkGithubReleaseUpdate,
     dismissNightlyUpdate,
@@ -64,7 +64,12 @@
     }, 10000);
   };
 
-  const openColourPicker = () => {
+  let ColourPickerComponent = $state<Component | null>(null);
+
+  const openColourPicker = async () => {
+    if (!ColourPickerComponent) {
+      ColourPickerComponent = (await import("../components/ColourPicker.svelte")).default;
+    }
     showColourPicker = true;
   };
 
@@ -363,8 +368,8 @@
     />
   </div>
 
-  {#if showColourPicker}
-    <ColourPicker
+  {#if showColourPicker && ColourPickerComponent}
+    <ColourPickerComponent
       hidePicker={() => {
         showColourPicker = false;
       }}

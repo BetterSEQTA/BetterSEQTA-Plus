@@ -12,6 +12,7 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import type { SettingsState } from "@/types/storage";
 
 function createSEQTAAPI(): SEQTAAPI {
   return {
@@ -149,29 +150,27 @@ function createSettingsAPI<T extends PluginSettings>(
 
   settingsWithMeta.loaded = loaded;
 
-  // Listen for storage changes and update settingsWithMeta
-  const handleStorageChange = (
-    changes: { [key: string]: browser.Storage.StorageChange },
-    area: string,
-  ) => {
-    if (area !== "local" || !(storageKey in changes)) return;
+  const handleSettingsChange = (newValue: unknown) => {
+    if (!newValue || typeof newValue !== "object") return;
 
-    const newValue = changes[storageKey].newValue as
-      | Partial<Record<keyof T, any>>
-      | undefined;
-    if (!newValue) return;
-
-    for (const key in newValue) {
+    const newSettings = newValue as Partial<Record<keyof T, any>>;
+    for (const key in newSettings) {
       const typedKey = key as keyof T;
-      settingsWithMeta[typedKey] = newValue[typedKey];
-      listeners.get(typedKey)?.forEach((cb) => cb(newValue[typedKey]));
+      settingsWithMeta[typedKey] = newSettings[typedKey];
+      listeners.get(typedKey)?.forEach((cb) => cb(newSettings[typedKey]));
     }
   };
 
-  browser.storage.onChanged.addListener(handleStorageChange);
+  settingsState.register(
+    storageKey as keyof SettingsState,
+    handleSettingsChange,
+  );
 
   const dispose = () => {
-    browser.storage.onChanged.removeListener(handleStorageChange);
+    settingsState.unregister(
+      storageKey as keyof SettingsState,
+      handleSettingsChange,
+    );
   };
 
   const proxy = new Proxy(settingsWithMeta, {
@@ -241,29 +240,22 @@ function createStorageAPI<T = any>(
     }
   })();
 
-  // Listen for storage changes
   const handleStorageChange = (
-    changes: { [key: string]: any },
-    area: string,
+    newValue: unknown,
+    _oldValue: unknown,
+    key: string,
   ) => {
-    if (area === "local") {
-      Object.entries(changes).forEach(([key, change]) => {
-        if (key.startsWith(prefix)) {
-          const shortKey = key.slice(prefix.length);
-          cache[shortKey] = change.newValue;
+    if (!key.startsWith(prefix)) return;
 
-          // Notify listeners
-          listeners
-            .get(shortKey)
-            ?.forEach((callback) => callback(change.newValue));
-        }
-      });
-    }
+    const shortKey = key.slice(prefix.length);
+    cache[shortKey] = newValue;
+    listeners.get(shortKey)?.forEach((callback) => callback(newValue));
   };
-  browser.storage.onChanged.addListener(handleStorageChange);
+
+  settingsState.registerGlobal(handleStorageChange);
 
   const dispose = () => {
-    browser.storage.onChanged.removeListener(handleStorageChange);
+    settingsState.unregisterGlobal(handleStorageChange);
   };
 
   // Create the proxy for direct property access

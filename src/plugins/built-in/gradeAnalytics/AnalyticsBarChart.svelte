@@ -310,8 +310,6 @@
 
                 y: { type: "tween", duration: 600, easing: cubicInOut },
 
-                height: { type: "tween", duration: 600, easing: cubicInOut },
-
               },
 
             },

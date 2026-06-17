@@ -5,7 +5,7 @@
   import { circOut, quintOut } from 'svelte/easing';
   import { type StaticCommandItem } from '../core/commands';
   import type { CombinedResult } from '../core/types';
-  import { createSearchIndexes, performSearch as doSearch } from '../search/searchUtils';
+  import { createSearchIndexes, applyDynamicIndexDelta, performSearch as doSearch, type DynamicItemsUpdatedDetail } from '../search/searchUtils';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
@@ -129,7 +129,31 @@
 
     window.addEventListener('indexing-progress', progressHandler as EventListener);
     
-    const itemsUpdatedHandler = () => {
+    const itemsUpdatedHandler = (event: Event) => {
+      const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
+
+      if (
+        detail?.vectorUpdate &&
+        !detail.changedItems?.length &&
+        !detail.removedIds?.length
+      ) {
+        performSearch();
+        return;
+      }
+
+      if (detail?.incremental && !detail.fullRebuild) {
+        const updatedFuse = applyDynamicIndexDelta(
+          dynamicContentFuse,
+          dynamicIdToItemMap,
+          detail,
+        );
+        if (updatedFuse) {
+          dynamicContentFuse = updatedFuse;
+          performSearch();
+          return;
+        }
+      }
+
       setupSearchIndexes();
       performSearch();
     };
