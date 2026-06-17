@@ -440,6 +440,10 @@ function trustedPageOrigin(): string {
   return window.location.origin;
 }
 
+function escJsSingleQuoted(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
 async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
   const isBlobUrl = url.startsWith("blob:");
   const pageOrigin = trustedPageOrigin();
@@ -448,8 +452,8 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       const requestId = `pdf-fetch-${Date.now()}-${Math.random()}`;
-      const escapedUrl = url.replace(/'/g, "\\'");
-      const escapedOrigin = pageOrigin.replace(/'/g, "\\'");
+      const escapedUrl = escJsSingleQuoted(url);
+      const escapedOrigin = escJsSingleQuoted(pageOrigin);
 
       script.textContent = `
         (function() {
@@ -540,22 +544,17 @@ export async function extractPDFText(url: string): Promise<string> {
     if (isFirefox) {
       const { lib: pdfLibUrl, worker: pdfWorkerUrl } =
         getPdfjsPageContextUrls();
-      const escJsSingleQuoted = (s: string) =>
-        s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
       const pdfWorkerInj = escJsSingleQuoted(pdfWorkerUrl);
 
       const pageOrigin = trustedPageOrigin();
-      const escapedOrigin = pageOrigin.replace(/'/g, "\\'");
+      const escapedOrigin = escJsSingleQuoted(pageOrigin);
 
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
         const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
 
-        const escapedUrl = url
-          .replace(/\\/g, "\\\\")
-          .replace(/'/g, "\\'")
-          .replace(/"/g, '\\"');
+        const escapedUrl = escJsSingleQuoted(url);
 
         script.textContent = `
           (function() {
