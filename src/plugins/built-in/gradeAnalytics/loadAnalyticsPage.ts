@@ -28,7 +28,15 @@ async function loadAnalyticsPageInner(): Promise<void> {
   });
   document.querySelector('[data-key="analytics"]')?.classList.add("active");
 
-  const main = (await waitForElm("#main", true, 100, 60)) as HTMLElement;
+  let main: HTMLElement;
+  try {
+    main = (await waitForElm("#main", true, 100, 60)) as HTMLElement;
+  } catch {
+    console.warn(
+      "[BetterSEQTA+] Analytics: timed out waiting for #main (shell not ready).",
+    );
+    return;
+  }
 
   main.innerHTML = "";
   main.style.overflow = "auto";
