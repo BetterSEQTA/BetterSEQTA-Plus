@@ -61,6 +61,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
     const gridItem = document.createElement("li");
     gridItem.className = "item";
     gridItem.classList.add(OVERVIEW_MENU_CLASS);
+    gridItem.dataset.betterseqta = "true";
     const label = document.createElement("label");
     label.textContent = "Overview";
     gridItem.appendChild(label);
@@ -79,9 +80,11 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
     const clickHandler = (e: Event) => {
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       void loadGridView();
     };
-    gridItem.addEventListener("click", clickHandler);
+    gridItem.addEventListener("click", clickHandler, true);
 
     const popstateHandler = () => {
       if (isOverviewRoute()) {
@@ -131,16 +134,16 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
       if (requestId !== loadRequestId) return;
 
-      void renderSkeletonLoader(container);
+      renderSkeletonLoader(container);
 
       try {
         const data = await getAssessmentsData();
         if (requestId !== loadRequestId) return;
-        void renderGrid(container, data);
+        renderGrid(container, data);
       } catch (err) {
         if (requestId !== loadRequestId) return;
         console.error("Failed to load assessments:", err);
-        void renderErrorState(
+        renderErrorState(
           container,
           err instanceof Error ? err.message : "Unknown error",
         );
@@ -151,7 +154,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
       loadRequestId += 1;
       window.removeEventListener("popstate", popstateHandler);
       menuObserver.disconnect();
-      gridItem.removeEventListener("click", clickHandler);
+      gridItem.removeEventListener("click", clickHandler, true);
       teardownOverviewUi();
       gridItem.remove();
     };

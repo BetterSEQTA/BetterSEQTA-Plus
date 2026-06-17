@@ -1,4 +1,8 @@
+import renderSvelte from "@/interface/main";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import AssessmentsOverview from "./AssessmentsOverview.svelte";
+import SkeletonLoader from "./SkeletonLoader.svelte";
+import ErrorState from "./ErrorState.svelte";
 import { unmount } from "svelte";
 
 let currentApp: any = null;
@@ -115,42 +119,26 @@ function prepareContainer(container: HTMLElement) {
   watchOverviewTheme(container);
 }
 
-async function mountOverviewComponent(
-  container: HTMLElement,
-  loader: () => Promise<{ default: any }>,
-  props: Record<string, unknown> = {},
-) {
-  const [{ default: renderSvelte }, { default: Component }] = await Promise.all([
-    import("@/interface/main"),
-    loader(),
-  ]);
-  currentApp = renderSvelte(Component, container, props);
-}
-
-export async function renderGrid(container: HTMLElement, data: any) {
+export function renderGrid(container: HTMLElement, data: any) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  await mountOverviewComponent(container, () => import("./AssessmentsOverview.svelte"), {
-    data,
-  });
+  currentApp = renderSvelte(AssessmentsOverview, container, { data });
 }
 
-export async function renderSkeletonLoader(container: HTMLElement) {
+export function renderSkeletonLoader(container: HTMLElement) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  await mountOverviewComponent(container, () => import("./SkeletonLoader.svelte"));
+  currentApp = renderSvelte(SkeletonLoader, container);
 }
 
-export async function renderLoadingState(container: HTMLElement) {
-  await renderSkeletonLoader(container);
+export function renderLoadingState(container: HTMLElement) {
+  renderSkeletonLoader(container);
 }
 
-export async function renderErrorState(container: HTMLElement, error: string) {
+export function renderErrorState(container: HTMLElement, error: string) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  await mountOverviewComponent(container, () => import("./ErrorState.svelte"), {
-    error,
-  });
+  currentApp = renderSvelte(ErrorState, container, { error });
 }
 
 export function teardownOverviewUi() {
