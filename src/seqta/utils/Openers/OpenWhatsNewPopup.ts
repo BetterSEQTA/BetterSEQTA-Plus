@@ -42,6 +42,13 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.7.2 – Analytics Fixes</h1>
+      <li>Fixed analytics page breaking on certain configurations.</li>
+      <li>Added safer DOM handling for analytics to prevent crashes.</li>
+      <li>Fixed hovering tooltip for forecast analytics chart.</li>
+      <li>Improved grade analytics layout, controls, and forecast chart rendering.</li>
+      <li>Updated update image for new layout.</li>
+
       <h1>3.7.0 – Grade Analytics, Enhanced Navigation, fonts, Global Search & SEQTA Engage Improvements</h1>
       <li>Added Enhanced Navigation for courses: the navigator now auto-scrolls to the selected lesson (e.g. inside the "Go to…" popup) and prev/next arrows for jumping between lessons.</li>
       <li>Added Grade Analytics, new sidebar page with grade trend charts synced from SEQTA.</li>
