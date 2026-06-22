@@ -38,6 +38,7 @@ export function getDefaultSettingsState(): SettingsState {
       settings: { toggle: true },
       timetable: { toggle: true },
       welcome: { toggle: true },
+      analytics: { toggle: true },
     },
     menuorder: [],
     subjectfilters: {},

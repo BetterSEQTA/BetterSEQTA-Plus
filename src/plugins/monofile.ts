@@ -40,29 +40,7 @@ import IconFamily from "@/resources/fonts/IconFamily.woff";
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw";
 
-function SetDisplayNone(ElementName: string) {
-  return `li[data-key=${ElementName}]{display:var(--menuHidden) !important; transition: 1s;}`;
-}
-
-async function HideMenuItems(): Promise<void> {
-  try {
-    let stylesheetInnerText: string = "";
-    for (const [menuItem, { toggle }] of Object.entries(
-      settingsState.menuitems,
-    )) {
-      if (!toggle) {
-        stylesheetInnerText += SetDisplayNone(menuItem);
-        console.info(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
-      }
-    }
-
-    const menuItemStyle: HTMLStyleElement = document.createElement("style");
-    menuItemStyle.innerText = stylesheetInnerText;
-    document.head.appendChild(menuItemStyle);
-  } catch (error) {
-    console.error("[BetterSEQTA+] An error occurred:", error);
-  }
-}
+import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 
 export function hideSideBar() {
   const sidebar = document.getElementById("menu"); // The sidebar element to be closed
@@ -368,11 +346,18 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 }
 
 async function handleNewsPage(): Promise<void> {
-  console.info("[BetterSEQTA+] Started Init");
-  if (settingsState.onoff) {
-    SendNewsPage();
+  if (!settingsState.onoff) {
     finishLoad();
+    return;
   }
+
+  console.info("[BetterSEQTA+] Started Init");
+  try {
+    await SendNewsPage();
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to load news page:", error);
+  }
+  finishLoad();
 }
 
 async function handleDefault(): Promise<void> {
@@ -674,8 +659,24 @@ export function showConflictPopup() {
 }
 
 export function init() {
+  const tryMountDisabledUi = async () => {
+    if (document.getElementById("AddedSettings")) return;
+
+    try {
+      await waitForElm("#content");
+    } catch {
+      try {
+        await waitForElm("#container");
+      } catch {
+        await waitForElm("body");
+      }
+    }
+
+    AppendElementsToDisabledPage();
+  };
+
   const handleDisabled = () => {
-    waitForElm(".code", true, 50).then(AppendElementsToDisabledPage);
+    void tryMountDisabledUi();
   };
 
   if (settingsState.onoff) {
@@ -705,7 +706,7 @@ export function init() {
     });
     loading();
     InjectCustomIcons();
-    HideMenuItems();
+    applyMenuItemVisibility();
     tryLoad();
 
     // Auto-focus WISP direct online submission editor when pane opens
@@ -787,7 +788,7 @@ export function init() {
   } else {
     handleDisabled();
     InjectCustomIcons();
-    window.addEventListener("load", handleDisabled);
+    window.addEventListener("load", handleDisabled, { once: true });
   }
 }
 
@@ -807,6 +808,8 @@ function InjectCustomIcons() {
 }
 
 export function AppendElementsToDisabledPage() {
+  if (document.getElementById("AddedSettings")) return;
+
   console.info("[BetterSEQTA+] Appending elements to disabled page");
   AddBetterSEQTAElements();
 
@@ -822,7 +825,13 @@ export function AppendElementsToDisabledPage() {
     border-radius: 50%;
     margin: 7px !important;
     cursor: pointer;
-    color: white !important;
+    color: #38373d !important;
+    background: rgba(0, 0, 0, 0.08);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    visibility: visible !important;
+    z-index: 1000;
   }
   .addedButton svg {
     margin: 6px;

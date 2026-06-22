@@ -1,9 +1,39 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
+import { applyMenuItemVisibility } from "../menuItemVisibility";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
 export let MenuOptionsOpen = false;
+
+function mergeMenuItemsFromDom(): Record<string, { toggle: boolean }> {
+  const menu = document.getElementById("menu");
+  const merged = {
+    ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
+  };
+  if (!menu?.firstChild) return merged;
+
+  const children = menu.firstChild.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const key = (children[i] as HTMLElement).dataset.key;
+    if (key && !merged[key]) {
+      merged[key] = { toggle: true };
+    }
+  }
+  return merged;
+}
+
+function storeMenuSettings(): void {
+  const menuItems: Record<string, { toggle: boolean }> = {};
+  const inputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
+  for (const input of inputs) {
+    if (input.id) {
+      menuItems[input.id] = { toggle: input.checked };
+    }
+  }
+  settingsState.menuitems =
+    menuItems as SettingsState["menuitems"];
+}
 
 export function OpenMenuOptions() {
   var container = document.getElementById("container");
@@ -22,19 +52,20 @@ export function OpenMenuOptions() {
   if (settingsState.defaultmenuorder.length != childnodes.length) {
     for (let i = 0; i < childnodes.length; i++) {
       const element = childnodes[i];
+      const key = (element as HTMLElement).dataset.key;
       if (
-        !settingsState.defaultmenuorder.indexOf(
-          (element as HTMLElement).dataset.key,
-        )
+        key &&
+        settingsState.defaultmenuorder.indexOf(key) === -1
       ) {
         let newdefaultmenuorder = settingsState.defaultmenuorder;
-        newdefaultmenuorder.push((element as HTMLElement).dataset.key);
+        newdefaultmenuorder.push(key);
         settingsState.defaultmenuorder = newdefaultmenuorder;
       }
     }
   }
 
   MenuOptionsOpen = true;
+  menu!.classList.add("bsplus-sidebar-edit-mode");
 
   var cover = document.createElement("div");
   cover.classList.add("notMenuCover");
@@ -53,7 +84,7 @@ export function OpenMenuOptions() {
   var savebutton = document.createElement("div");
   savebutton.classList.add("editmenuoption");
   savebutton.innerText = "Save";
-  savebutton.id = "restoredefaultoption";
+  savebutton.id = "savemenuoption";
 
   menusettings.appendChild(defaultbutton);
   menusettings.appendChild(savebutton);
@@ -86,81 +117,51 @@ export function OpenMenuOptions() {
   }
 
   if (Object.keys(settingsState.menuitems).length == 0) {
-    menubuttons = menu!.firstChild!.childNodes;
-    let menuItems = {} as any;
-    for (var i = 0; i < menubuttons.length; i++) {
-      var id = (menubuttons[i] as HTMLElement).dataset.key;
-      const element: any = {};
-      element.toggle = true;
-      (menuItems[id as keyof typeof menuItems] as any) = element;
-    }
-    settingsState.menuitems = menuItems;
+    settingsState.menuitems = mergeMenuItemsFromDom() as SettingsState["menuitems"];
+  } else {
+    settingsState.menuitems = mergeMenuItemsFromDom() as SettingsState["menuitems"];
   }
 
-  var menubuttons: any = document.getElementsByClassName("menuitem");
-
-  let menuItems = settingsState.menuitems as any;
+  let menuItems = settingsState.menuitems as Record<string, { toggle: boolean }>;
   let buttons = document.getElementsByClassName("menuitem");
   for (let i = 0; i < buttons.length; i++) {
-    let id = buttons[i].id as string | undefined;
-    if (menuItems[id as keyof typeof menuItems]) {
-      (buttons[i] as HTMLInputElement).checked =
-        menuItems[id as keyof typeof menuItems].toggle;
-    } else {
-      (buttons[i] as HTMLInputElement).checked = true;
-    }
-    (buttons[i] as HTMLInputElement).checked = true;
+    const input = buttons[i] as HTMLInputElement;
+    const id = input.id;
+    input.checked =
+      id && menuItems[id] ? menuItems[id].toggle : true;
   }
 
+  let sortable: Sortable | undefined;
   try {
     var el = document.querySelector("#menu > ul");
-    var sortable = Sortable.create(el as HTMLElement, {
+    sortable = Sortable.create(el as HTMLElement, {
       draggable: ".draggable",
       dataIdAttr: "data-key",
       animation: 150,
       easing: "cubic-bezier(.5,0,.5,1)",
       onEnd: function () {
-        saveNewOrder(sortable);
+        saveNewOrder(sortable!);
       },
     });
   } catch (err) {
     console.error(err);
   }
 
-  function changeDisplayProperty(element: any) {
-    if (!element.checked) {
-      element.parentNode.parentNode.style.display = "var(--menuHidden)";
-    }
-    if (element.checked) {
-      element.parentNode.parentNode.style.setProperty(
-        "display",
-        "flex",
-        "important",
-      );
+  function changeDisplayProperty(input: HTMLInputElement) {
+    const row = input.closest("li, section") as HTMLElement | null;
+    if (!row) return;
+    if (!input.checked) {
+      row.style.display = "var(--menuHidden)";
+    } else {
+      row.style.setProperty("display", "flex", "important");
     }
   }
 
-  function StoreMenuSettings() {
-    let menu = document.getElementById("menu");
-    const menuItems: any = {};
-    let menubuttons = menu!.firstChild!.childNodes;
-    const button = document.getElementsByClassName("menuitem");
-    for (let i = 0; i < menubuttons.length; i++) {
-      const id = (menubuttons[i] as HTMLElement).dataset.key;
-      const element: any = {};
-      element.toggle = (button[i] as HTMLInputElement).checked;
-
-      menuItems[id as keyof typeof menuItems] = element;
-    }
-    settingsState.menuitems = menuItems;
-  }
-
-  for (let i = 0; i < menubuttons.length; i++) {
-    const element = menubuttons[i];
-    element.addEventListener("change", () => {
-      element.parentElement.parentElement.getAttribute("data-key");
-      StoreMenuSettings();
-      changeDisplayProperty(element);
+  const menuInputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
+  for (const input of menuInputs) {
+    input.addEventListener("change", () => {
+      storeMenuSettings();
+      changeDisplayProperty(input);
     });
   }
 
@@ -168,6 +169,7 @@ export function OpenMenuOptions() {
     menusettings?.remove();
     cover?.remove();
     MenuOptionsOpen = false;
+    menu!.classList.remove("bsplus-sidebar-edit-mode");
     menu!.style.setProperty("--menuHidden", "none");
 
     for (let i = 0; i < ListItems.length; i++) {
@@ -189,10 +191,21 @@ export function OpenMenuOptions() {
     for (let i = 0; i < switches.length; i++) {
       switches[i].remove();
     }
+
+    applyMenuItemVisibility();
+  }
+
+  function saveAndClose() {
+    storeMenuSettings();
+    if (sortable) {
+      saveNewOrder(sortable);
+    }
+    applyMenuItemVisibility();
+    closeAll();
   }
 
   cover?.addEventListener("click", closeAll);
-  savebutton?.addEventListener("click", closeAll);
+  savebutton?.addEventListener("click", saveAndClose);
 
   defaultbutton?.addEventListener("click", function () {
     const options = settingsState.defaultmenuorder;
@@ -200,20 +213,27 @@ export function OpenMenuOptions() {
 
     ChangeMenuItemPositions(options);
 
-    for (let i = 0; i < menubuttons.length; i++) {
-      const element = menubuttons[i];
-      element.checked = true;
-      element.parentNode.parentNode.style.setProperty(
-        "display",
-        "flex",
-        "important",
-      );
+    const inputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
+    const restored: Record<string, { toggle: boolean }> = {};
+    for (const input of inputs) {
+      input.checked = true;
+      const row = input.closest("li, section") as HTMLElement | null;
+      if (row) {
+        row.style.setProperty("display", "flex", "important");
+      }
+      if (input.id) {
+        restored[input.id] = { toggle: true };
+      }
     }
-    saveNewOrder(sortable);
+    settingsState.menuitems = restored as SettingsState["menuitems"];
+
+    if (sortable) {
+      saveNewOrder(sortable);
+    }
   });
 }
 
-function saveNewOrder(sortable: any) {
+function saveNewOrder(sortable: Sortable) {
   var order = sortable.toArray();
   settingsState.menuorder = order;
 }
@@ -238,7 +258,10 @@ export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
 
   var newArr = [];
   for (var i = 0; i < listorder.length; i++) {
-    newArr[listorder[i]] = menuList[i];
+    const index = listorder[i];
+    if (index >= 0) {
+      newArr[index] = menuList[i];
+    }
   }
 
   let listItemsDOM = document.getElementById("menu")!.firstChild;

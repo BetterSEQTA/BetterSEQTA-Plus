@@ -3,6 +3,11 @@ import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
+import { MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions";
+import {
+  applyMenuItemVisibility,
+  isMenuItemHidden,
+} from "@/seqta/utils/menuItemVisibility";
 import { loadAnalyticsPage } from "../loadAnalyticsPage";
 import styles from "../styles.css?inline";
 
@@ -17,11 +22,15 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     "Adds an analytics page with grade trends, distribution charts, and assessment history",
   version: "1.0.0",
   settings: {},
-  disableToggle: false,
+  disableToggle: true,
   styles,
 
   run: async () => {
     if (isSeqtaEngageExperience()) {
+      return () => {};
+    }
+
+    if (isMenuItemHidden("analytics")) {
       return () => {};
     }
 
@@ -44,8 +53,11 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     }
 
     processMenuItemNode(analyticsItem);
+    applyMenuItemVisibility();
 
     const menuObserver = new MutationObserver(() => {
+      if (MenuOptionsOpen) return;
+      if (isMenuItemHidden("analytics")) return;
       if (!menuList.contains(analyticsItem)) {
         if (homeButton?.parentElement === menuList) {
           homeButton.insertAdjacentElement("afterend", analyticsItem);
@@ -53,11 +65,20 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
           menuList.insertBefore(analyticsItem, menuList.firstChild);
         }
         processMenuItemNode(analyticsItem);
+        applyMenuItemVisibility();
       }
     });
     menuObserver.observe(menuList, { childList: true });
 
     const onClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        MenuOptionsOpen ||
+        analyticsItem.classList.contains("draggable") ||
+        target.closest(".onoffswitch, .editmenuoption-container")
+      ) {
+        return;
+      }
       e.preventDefault();
       window.history.pushState({}, "", "/#?page=/analytics");
       void loadAnalyticsPage();

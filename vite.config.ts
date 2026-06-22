@@ -8,6 +8,7 @@ import type { BuildTarget, Manifest } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
 import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
+import { extensionChunkUrls } from "./lib/extensionChunkUrls";
 
 import million from "million/compiler";
 
@@ -71,6 +72,7 @@ export default defineConfig(({ command }) => ({
     __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
   },
   plugins: [
+    extensionChunkUrls(),
     base64Loader,
     InlineWorkerPlugin(),
     svelte({

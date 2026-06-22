@@ -512,6 +512,54 @@ ul.magicDelete > li.deleting {
 #menu:has(> ul > li.hasChildren.active) > ul > li:not(.hasChildren.active) {
   pointer-events: none !important;
 }
+
+/* Edit Sidebar: every row + toggle must stay clickable (drill stack disables siblings). */
+#menu.bsplus-sidebar-edit-mode li.item,
+#menu.bsplus-sidebar-edit-mode section.item,
+#menu.bsplus-sidebar-edit-mode .bsplus-sidebar-offscreen,
+#menu.bsplus-sidebar-edit-mode .bsplus-sidebar-offscreen * {
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+#menu.bsplus-sidebar-edit-mode:has(> ul > li.hasChildren.active)
+  > ul
+  > li:not(.hasChildren.active) {
+  pointer-events: auto !important;
+}
+
+#menu.bsplus-sidebar-edit-mode > ul > .bsplus-sidebar-offscreen:not(.hasChildren.active),
+#menu.bsplus-sidebar-edit-mode .sub .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  position: relative !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
+  margin: inherit !important;
+  padding: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable > label {
+  flex: 1;
+  min-width: 0;
+}
+
+#menu.bsplus-sidebar-edit-mode .onoffswitch {
+  pointer-events: auto !important;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
 #menu section > label {
   align-items: center;
   box-sizing: border-box;

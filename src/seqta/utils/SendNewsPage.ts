@@ -12,11 +12,15 @@ export async function SendNewsPage() {
   await delay(10);
 
   const element = document.querySelector("[data-key=news]");
-  element!.classList.add("active");
+  element?.classList.add("active");
 
-  // Remove all current elements in the main div to add new elements
   const main = document.getElementById("main");
-  main!.innerHTML = "";
+  if (!main) {
+    console.warn("[BetterSEQTA+] News page: #main not found");
+    return;
+  }
+
+  main.innerHTML = "";
 
   const displayCountry = (() => {
     switch (settingsState.newsSource?.toLowerCase()) {
@@ -40,10 +44,12 @@ export async function SendNewsPage() {
     </div>
   </div>`);
 
-  main!.append(html.firstChild!);
+  main.append(html.firstChild!);
 
-  const titlediv = document.getElementById("title")!.firstChild;
-  (titlediv! as HTMLElement).innerText = "News";
+  const titleBar = document.getElementById("title")?.firstChild;
+  if (titleBar) {
+    (titleBar as HTMLElement).innerText = "News";
+  }
   AppendLoadingSymbol("newsloading", "#news-container");
 
   const response = (await browser.runtime.sendMessage({

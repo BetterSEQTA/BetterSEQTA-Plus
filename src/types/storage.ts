@@ -6,6 +6,7 @@ export interface SettingsState {
   lessonalert: boolean;
   menuitems: {
     assessments: ToggleItem;
+    analytics: ToggleItem;
     courses: ToggleItem;
     dashboard: ToggleItem;
     documents: ToggleItem;
@@ -21,6 +22,7 @@ export interface SettingsState {
     settings: ToggleItem;
     timetable: ToggleItem;
     welcome: ToggleItem;
+    [key: string]: ToggleItem;
   };
   menuorder: any[];
   onoff: boolean;

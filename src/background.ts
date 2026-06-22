@@ -626,6 +626,7 @@ browser.runtime.onInstalled.addListener(function (event) {
     void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
     void resetThemeOfTheMonthDisabledFor366Upgrade(event.previousVersion);
     void resetThemeOfTheMonthDismissalFor370Upgrade(event.previousVersion);
+    reloadSeqtaPages();
   }
 });
 

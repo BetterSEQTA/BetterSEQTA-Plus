@@ -278,7 +278,13 @@ function setupEventListeners() {
 }
 
 async function createSettingsButton(parent?: Element) {
-  const target = parent ?? document.getElementById("content")!;
+  if (document.getElementById("AddedSettings")) return;
+
+  const target =
+    parent ??
+    document.getElementById("content") ??
+    document.getElementById("container") ??
+    document.body;
   target.append(
     stringToHTML(/* html */ `
       <button class="addedButton tooltip" id="AddedSettings">
@@ -599,7 +605,31 @@ function getDrillFolderChain(
   return chain;
 }
 
+function isSidebarEditMode(): boolean {
+  const menu = document.getElementById("menu");
+  return (
+    document.querySelector(".editmenuoption-container") != null ||
+    menu?.classList.contains("bsplus-sidebar-edit-mode") === true
+  );
+}
+
+function clearSidebarAccessibilityLocks() {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  const entries = menu.querySelectorAll("li, section");
+  for (const entry of entries) {
+    if (!(entry instanceof HTMLElement)) continue;
+    entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
+  }
+}
+
 function updateSidebarAccessibility() {
+  if (isSidebarEditMode()) {
+    clearSidebarAccessibilityLocks();
+    return;
+  }
+
   const menu = document.getElementById("menu");
   if (!menu) return;
 
