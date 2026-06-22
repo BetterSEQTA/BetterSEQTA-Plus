@@ -31,9 +31,18 @@ jobs:
         run: npm test
 
       - name: Build extension
+        id: build
         uses: ./.github/actions/build-extension
         with:
           gh_release_update_check: "false"
+
+      - name: Upload extension zips
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zips
+          path: |
+            ${{ steps.build.outputs.chrome_zip }}
+            ${{ steps.build.outputs.firefox_zip }}
 
       - name: Smoke tests
         run: npm run test:smoke
