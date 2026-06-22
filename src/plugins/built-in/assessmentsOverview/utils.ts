@@ -101,6 +101,34 @@ export function assessmentBelongsToActiveSubjects(
   return activeSubjects.some((subject) => subject.code === code);
 }
 
+export function activeSubjectForAssessment(
+  assessment: Record<string, unknown>,
+  activeSubjects: OverviewSubject[],
+): OverviewSubject | undefined {
+  const programme = Number(
+    assessment.programmeID ?? assessment.programme,
+  );
+  const metaclass = Number(
+    assessment.metaclassID ?? assessment.metaclass,
+  );
+
+  if (
+    programme &&
+    metaclass &&
+    !Number.isNaN(programme) &&
+    !Number.isNaN(metaclass)
+  ) {
+    const subject = activeSubjects.find(
+      (s) => s.programme === programme && s.metaclass === metaclass,
+    );
+    if (subject) return subject;
+  }
+
+  const code = String(assessment.code ?? assessment.subject ?? "").trim();
+  if (!code) return undefined;
+  return activeSubjects.find((s) => s.code === code);
+}
+
 export function filterAssessmentsForActiveSubjects<T extends Record<string, unknown>>(
   assessments: T[],
   activeSubjects: OverviewSubject[],
@@ -108,6 +136,24 @@ export function filterAssessmentsForActiveSubjects<T extends Record<string, unkn
   return assessments.filter((assessment) =>
     assessmentBelongsToActiveSubjects(assessment, activeSubjects),
   );
+}
+
+/** Active subjects that have at least one assessment in the given list. */
+export function subjectsWithUpcomingAssessments(
+  assessments: Record<string, unknown>[],
+  activeSubjects: OverviewSubject[],
+): OverviewSubject[] {
+  const result: OverviewSubject[] = [];
+  const seen = new Set<string>();
+
+  for (const assessment of assessments) {
+    const subject = activeSubjectForAssessment(assessment, activeSubjects);
+    if (!subject || seen.has(subject.code)) continue;
+    seen.add(subject.code);
+    result.push(subject);
+  }
+
+  return result;
 }
 
 export function formatDate(dateStr: string, submitted?: boolean): string {

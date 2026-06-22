@@ -14,6 +14,12 @@ import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessmen
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 import { verboseInfo } from "@/utils/verboseLog";
+import {
+  activeSubjectsFromLearnPayload,
+  activeSubjectForAssessment,
+  filterAssessmentsForActiveSubjects,
+  subjectsWithUpcomingAssessments,
+} from "@/plugins/built-in/assessmentsOverview/utils";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
@@ -113,12 +119,11 @@ export async function loadHomePage() {
 
   callHomeTimetable(TodayFormatted, true);
 
-  const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
-  const activeSubjects = activeClass?.subjects || [];
-  const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
-  const currentAssessments = assessments
-    .filter((a: any) => activeSubjectCodes.includes(a.code))
-    .sort(comparedate);
+  const activeSubjects = activeSubjectsFromLearnPayload(classes);
+  const currentAssessments = filterAssessmentsForActiveSubjects(
+    assessments,
+    activeSubjects,
+  ).sort(comparedate);
 
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
@@ -919,8 +924,13 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  for (let i = 0; i < activeSubjects.length; i++) {
-    const element = activeSubjects[i];
+  const filterSubjects = subjectsWithUpcomingAssessments(
+    assessments,
+    activeSubjects,
+  );
+
+  for (let i = 0; i < filterSubjects.length; i++) {
+    const element = filterSubjects[i];
     const colour = colours.find(
       (c: any) => c.name === `timetable.subject.colour.${element.code}`,
     );
@@ -934,7 +944,15 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  CreateFilters(activeSubjects);
+  CreateFilters(filterSubjects);
+
+  for (let i = 0; i < assessments.length; i++) {
+    const subject = activeSubjectForAssessment(
+      assessments[i],
+      activeSubjects,
+    );
+    assessments[i].filterCode = subject?.code ?? assessments[i].code;
+  }
 
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];
@@ -1018,7 +1036,7 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
     const element = assessments[i];
     const item = document.createElement("div");
     item.classList.add("upcoming-assessment");
-    item.setAttribute("data-subject", element.code);
+    item.setAttribute("data-subject", element.filterCode ?? element.code);
     item.id = `assessment${element.id}`;
     item.style.cssText = element.colour;
 
@@ -1110,15 +1128,24 @@ async function GetLessonColours() {
   }
 }
 
-function CreateFilters(subjects: any) {
-  const filteroptions = settingsState.subjectfilters;
+function CreateFilters(subjects: { code: string }[]) {
+  const filteroptions = { ...settingsState.subjectfilters };
   const filterdiv = document.querySelector("#upcoming-filters");
+  if (!filterdiv) return;
+
+  filterdiv.innerHTML = "";
+  const activeCodes = new Set(subjects.map((s) => s.code));
+
+  for (const key of Object.keys(filteroptions)) {
+    if (!activeCodes.has(key)) {
+      delete filteroptions[key];
+    }
+  }
 
   for (let i = 0; i < subjects.length; i++) {
     const element = subjects[i];
     if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
       filteroptions[element.code] = true;
-      settingsState.subjectfilters = filteroptions;
     }
     filterdiv!.append(
       CreateSubjectFilter(
@@ -1128,6 +1155,8 @@ function CreateFilters(subjects: any) {
       ),
     );
   }
+
+  settingsState.subjectfilters = filteroptions;
 }
 
 function CreateSubjectFilter(
@@ -1146,9 +1175,9 @@ function CreateSubjectFilter(
   label.append(input, span);
 
   input.addEventListener("change", function (change) {
-    const filters = settingsState.subjectfilters;
-    const id = (change.target as HTMLInputElement).id.split("-")[1];
-    filters[id] = (change.target as HTMLInputElement).checked;
+    const checked = (change.target as HTMLInputElement).checked;
+    const filters = { ...settingsState.subjectfilters };
+    filters[subjectcode] = checked;
     settingsState.subjectfilters = filters;
   });
 
