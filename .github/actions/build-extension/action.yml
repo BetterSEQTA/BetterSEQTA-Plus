@@ -69,7 +69,7 @@ runs:
         else
           BASE="betterseqtaplus-${VERSION}"
         fi
-        (cd dist/chrome && zip -r "../${BASE}-chrome.zip" .)
-        (cd dist/firefox && zip -r "../${BASE}-firefox.zip" .)
+        tar -a -cf "dist/${BASE}-chrome.zip" -C dist/chrome .
+        tar -a -cf "dist/${BASE}-firefox.zip" -C dist/firefox .
         echo "chrome_zip=dist/${BASE}-chrome.zip" >> "$GITHUB_OUTPUT"
         echo "firefox_zip=dist/${BASE}-firefox.zip" >> "$GITHUB_OUTPUT"

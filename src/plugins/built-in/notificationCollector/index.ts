@@ -12,6 +12,7 @@ import {
   injectArchivedForUser,
   mountArchivedNotificationInjection,
 } from "./injectArchivedNotifications";
+import styles from "./styles.css?inline";
 
 const notificationCollectorSettings = {
   saveLocally: booleanSetting({
@@ -45,6 +46,10 @@ const notificationCollectorPlugin: Plugin<
     if (isSeqtaEngageExperience()) {
       return () => {};
     }
+
+    const styleEl = document.createElement("style");
+    styleEl.textContent = styles;
+    document.head.appendChild(styleEl);
 
     await api.storage.loaded;
     await api.settings.loaded;
@@ -208,6 +213,7 @@ const notificationCollectorPlugin: Plugin<
       teardownInjection();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       pageChangeUnregister.unregister();
+      styleEl.remove();
     };
   },
 };

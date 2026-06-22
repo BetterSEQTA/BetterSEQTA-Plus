@@ -1,11 +1,18 @@
 # Nightly release workflow — updates the same "nightly" release with fresh builds from main.
 # Runs only on BetterSEQTA/BetterSEQTA-Plus. Uses the default GITHUB_TOKEN.
+#
+# Scheduled at midnight Australia/Adelaide (ACST/ACDT). GitHub cron is UTC-only, so we
+# trigger at 13:30 and 14:30 UTC and only proceed when Adelaide local time is 00:00.
+# Builds on windows-latest (matches local dev; Linux nightly builds were failing on Vite/Svelte).
 
 name: Nightly Release
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+  # 13:30 UTC = 00:00 Adelaide during daylight saving (ACDT, UTC+10:30)
+    - cron: "30 13 * * *"
+  # 14:30 UTC = 00:00 Adelaide during standard time (ACST, UTC+9:30)
+    - cron: "30 14 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,16 +23,37 @@ env:
 
 jobs:
   nightly:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
+      - name: Check Adelaide midnight
+        id: time_check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          TZ=Australia/Adelaide
+          if [ "$(date +%H%M)" = "0000" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: not midnight Australia/Adelaide ($(date +%Y-%m-%d %H:%M %Z))"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.time_check.outputs.proceed == 'true'
 
       - name: Set build date
         id: build_date
-        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+        if: steps.time_check.outputs.proceed == 'true'
+        run: echo "date=$(TZ=Australia/Adelaide date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
 
       - name: Build extension
         id: build
+        if: steps.time_check.outputs.proceed == 'true'
         uses: ./.github/actions/build-extension
         with:
           gh_release_update_check: "true"
@@ -34,6 +62,7 @@ jobs:
           release_repo: ${{ github.repository }}
 
       - name: Ensure nightly release exists
+        if: steps.time_check.outputs.proceed == 'true'
         run: |
           TITLE="Nightly (${{ steps.build_date.outputs.date }})"
           if ! gh release view "${{ env.NIGHTLY_TAG }}" 2>/dev/null; then
@@ -46,6 +75,7 @@ jobs:
           fi
 
       - name: Upload nightly assets
+        if: steps.time_check.outputs.proceed == 'true'
         run: |
           gh release upload "${{ env.NIGHTLY_TAG }}" \
             --clobber \

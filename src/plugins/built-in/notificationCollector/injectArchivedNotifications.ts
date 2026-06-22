@@ -10,6 +10,12 @@ import {
 
 const LIST_SELECTOR = '[class*="notifications__list___"]';
 const ITEMS_SELECTOR = '[class*="notifications__items___"]';
+const ITEM_SELECTOR = '[class*="notifications__item___"]';
+const BACKED_UP_CLASS = "bsplus-notification-backed-up";
+const BACKUP_BADGE_CLASS = "bsplus-notification-backup-badge";
+
+const BACKUP_CHECK_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 
 function notificationTimestamp(item: Record<string, unknown>): number {
   const ms = new Date(String(item.timestamp ?? 0)).getTime();
@@ -61,8 +67,32 @@ async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
 async function injectWithRetries(archive: ArchiveMap, attempts = 10) {
   for (let i = 0; i < attempts; i++) {
     const done = await tryInjectArchived(archive);
-    if (done) return;
+    if (done) break;
     await delay(120);
+  }
+  applyBackupBadges(archive);
+}
+
+export function applyBackupBadges(archive: ArchiveMap) {
+  const backedUpIds = new Set(Object.keys(archive));
+
+  for (const itemEl of document.querySelectorAll<HTMLElement>(ITEM_SELECTOR)) {
+    const id = itemEl.getAttribute("data-id");
+    if (!id) continue;
+
+    if (backedUpIds.has(id)) {
+      itemEl.classList.add(BACKED_UP_CLASS);
+      if (!itemEl.querySelector(`.${BACKUP_BADGE_CLASS}`)) {
+        const badge = document.createElement("span");
+        badge.className = BACKUP_BADGE_CLASS;
+        badge.title = "Saved locally";
+        badge.innerHTML = BACKUP_CHECK_SVG;
+        itemEl.appendChild(badge);
+      }
+    } else {
+      itemEl.classList.remove(BACKED_UP_CLASS);
+      itemEl.querySelector(`.${BACKUP_BADGE_CLASS}`)?.remove();
+    }
   }
 }
 
