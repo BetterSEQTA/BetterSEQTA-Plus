@@ -133,6 +133,13 @@ export default defineConfig(({ command }) => ({
       input: {
         settings: join(__dirname, "src", "interface", "index.html"),
         pageState: join(__dirname, "src", "pageState.js"),
+        seqtaMenuColourPatch: join(
+          __dirname,
+          "src",
+          "seqta",
+          "utils",
+          "seqtaMenuColourPatch.js",
+        ),
       },
       output: {
         assetFileNames: "assets/[name]-[hash][extname]",

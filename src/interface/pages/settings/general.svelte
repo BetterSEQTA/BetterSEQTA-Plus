@@ -249,7 +249,7 @@
       id: 10,
       Component: Select,
       props: {
-        state: $settingsState.defaultPage ?? "home",
+        value: $settingsState.defaultPage ?? "home",
         onChange: (value: string) => (settingsState.defaultPage = value),
         options: [
           { value: "home", label: "Home" },
@@ -268,7 +268,7 @@
       id: 11,
       Component: Select,
       props: {
-        state: $settingsState.newsSource,
+        value: $settingsState.newsSource,
         onChange: (value: string) => settingsState.newsSource = value,
           options: [
            { value: "australia", label: "Australia" },
@@ -405,7 +405,7 @@
                     />                
                   {:else if setting.type === 'select'}
                     <Select
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
                     onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     options={(setting.options as string[]).map(opt => ({
                       value: opt,

@@ -52,7 +52,8 @@ export default function ClosePlugin(): Plugin {
      */
     closeBundle() {
       console.log("Bundle closed"); // Log successful closure of the bundle
-      process.exit(0); // Exit with status 0 indicating a successful build
+      // Do not process.exit here — it can mask Vite render errors and break
+      // multi-target builds (`npm run build` runs chrome then firefox).
     },
   };
 }

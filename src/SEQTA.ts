@@ -10,6 +10,7 @@ import * as plugins from "@/plugins";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
+import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -46,6 +47,9 @@ if (document.childNodes[1]) {
     document.childNodes[1].textContent?.includes(
       "Copyright (c) SEQTA Software",
     ) ?? false;
+  if (hasSEQTAText) {
+    installSeqtaMenuColourPatch();
+  }
   init();
 }
 

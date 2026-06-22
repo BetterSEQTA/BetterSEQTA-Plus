@@ -885,7 +885,7 @@
   min-width: 0;
 }
 
-.bsplus-analytics-chart-cell > :global(.bsplus-analytics-card) {
+.bsplus-analytics-chart-cell > .bsplus-analytics-card {
   flex: 1;
   width: 100%;
   min-width: 0;

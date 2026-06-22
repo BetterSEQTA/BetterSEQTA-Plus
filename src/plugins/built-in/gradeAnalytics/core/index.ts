@@ -3,12 +3,14 @@ import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import {
-  ChangeMenuItemPositions,
   ensureAnalyticsMenuOrder,
   insertMenuItemAfterKey,
   processMenuItemNode,
 } from "@/seqta/utils/sidebarMenuIcons";
-import { MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions";
+import {
+  ChangeMenuItemPositions,
+  MenuOptionsOpen,
+} from "@/seqta/utils/Openers/OpenMenuOptions";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
   applyMenuItemVisibility,

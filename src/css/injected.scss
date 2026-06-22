@@ -34,7 +34,8 @@
   display: none;
 }
 
-button.uiButton.timetable-zoom.iconFamily,
+button.timetable-zoom.iconFamily,
+button.bsplus-timetable-control.iconFamily,
 .iconFamily {
   font-family: "IconFamily" !important;
 }
@@ -219,6 +220,13 @@ select option {
   pointer-events: none !important;
 }
 
+/* Colour picker dialog teardown can leave an empty shell that blocks clicks */
+.modaliser-container:not(:has(.modaliser > *)) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .connectedNotificationsWrapper > div > button > svg > g {
   fill: var(--theme-primary) !important;
 }
@@ -335,12 +343,18 @@ select option {
 }
 
 .timetable-zoom,
-.timetable-hide {
+.timetable-hide,
+.bsplus-timetable-control {
   font-size: 14px !important;
   line-height: 1 !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px 8px;
 }
 
 #main > .dashboard {
@@ -848,6 +862,11 @@ ol:has([class*="MessageList__avatar___"] svg) {
 .quickbar .actions [title="Choose a colour"] > svg {
   scale: 0.9;
 }
+
+.quickbar .actions .timetable-edit-quickbar-btn > svg {
+  scale: 0.9;
+  padding-top: 1px;
+}
 .quickbar[data-yiq="light"] .actions {
   color: white !important;
 }
@@ -1078,7 +1097,13 @@ div > ol:has(.uiFileHandlerWrapper) {
   min-height: 128px !important;
 }
 body.student #menu > ul::before {
+  content: "";
+  display: block;
+  width: 100%;
   background-image: var(--betterseqta-logo) !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto 48px;
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -2712,9 +2737,22 @@ body {
 .days {
   width: 100%;
 }
-.modaliser {
-  display: none;
+/* Do not hide .modaliser globally — SEQTA Modaliser relies on transitionend to
+   dispose; display:none prevents that and leaves empty shells that block clicks. */
+.modaliser-container:not(.visible) {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.modaliser-container.visible .modaliser {
   background: var(--better-main);
+}
+
+/* ColourChooser teardown can leave a full-screen uiSlidePane that blocks entry clicks */
+.uiSlidePane:not(.shown):has(.pane.colourChooser) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 [class*="MessageList__unread___"] {
@@ -2807,6 +2845,14 @@ body {
 
 .clr-swatches button {
   border-radius: 4px;
+}
+
+/* Never let a closed Coloris picker intercept timetable clicks */
+body:not(.clr-open) .clr-picker,
+.clr-picker:not(.clr-open) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .dark

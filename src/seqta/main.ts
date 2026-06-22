@@ -6,6 +6,8 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 // UI and theme management
 import pageState from "@/pageState.js?url";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 
 // Stylesheets
 import injectedCSS from "@/css/injected.scss?inline";
@@ -15,6 +17,7 @@ export async function main() {
     try {
       if (settingsState.onoff) {
         injectPageState();
+        installSeqtaMenuColourPatch();
 
         // Rather permanent FIX for bug! -> this is a hack to get the injected.css file to have HMR in development mode as this import system is currently broken with crxjs
         if (import.meta.env.MODE === "development") {
@@ -35,6 +38,6 @@ export async function main() {
 
 function injectPageState() {
   const mainScript = document.createElement("script");
-  mainScript.src = browser.runtime.getURL(pageState);
+  mainScript.src = resolveExtensionAssetUrl(pageState);
   document.head.appendChild(mainScript);
 }
