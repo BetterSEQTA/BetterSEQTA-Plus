@@ -14,7 +14,6 @@ import {
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
   applyMenuItemVisibility,
-  isMenuItemHidden,
 } from "@/seqta/utils/menuItemVisibility";
 import { loadAnalyticsPage } from "../loadAnalyticsPage";
 import styles from "../styles.css?inline";
@@ -35,10 +34,6 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
 
   run: async () => {
     if (isSeqtaEngageExperience()) {
-      return () => {};
-    }
-
-    if (isMenuItemHidden("analytics")) {
       return () => {};
     }
 
@@ -68,7 +63,6 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
 
     const menuObserver = new MutationObserver(() => {
       if (MenuOptionsOpen) return;
-      if (isMenuItemHidden("analytics")) return;
       if (!menuList.contains(analyticsItem)) {
         placeAnalyticsItem();
         ensureAnalyticsMenuOrder();

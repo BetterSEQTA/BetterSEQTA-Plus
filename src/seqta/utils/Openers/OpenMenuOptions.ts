@@ -25,7 +25,9 @@ function mergeMenuItemsFromDom(): Record<string, { toggle: boolean }> {
 }
 
 function storeMenuSettings(): void {
-  const menuItems: Record<string, { toggle: boolean }> = {};
+  const menuItems: Record<string, { toggle: boolean }> = {
+    ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
+  };
   const inputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
   for (const input of inputs) {
     if (input.id) {

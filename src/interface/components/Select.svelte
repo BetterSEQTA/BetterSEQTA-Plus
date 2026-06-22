@@ -131,7 +131,7 @@
     right: 0;
     z-index: 50;
     margin: 0;
-    padding: 0.35rem;
+    padding: 0.5rem;
     list-style: none;
     border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
     border-radius: 14px;
@@ -139,8 +139,11 @@
     box-shadow:
       0 10px 25px -5px rgb(0 0 0 / 0.25),
       0 8px 10px -6px rgb(0 0 0 / 0.2);
-    max-height: 16rem;
+    max-height: 18rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
   }
 
   .select-option {
@@ -150,9 +153,10 @@
     border-radius: 10px;
     background: transparent;
     color: var(--text-primary);
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 1.35;
     text-align: left;
     cursor: pointer;
     transition: background-color 150ms ease;
