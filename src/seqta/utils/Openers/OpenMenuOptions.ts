@@ -1,6 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
+import { insertKeyAfterInOrder } from "@/seqta/utils/sidebarMenuIcons";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
@@ -57,9 +58,18 @@ export function OpenMenuOptions() {
         key &&
         settingsState.defaultmenuorder.indexOf(key) === -1
       ) {
-        let newdefaultmenuorder = settingsState.defaultmenuorder;
-        newdefaultmenuorder.push(key);
-        settingsState.defaultmenuorder = newdefaultmenuorder;
+        if (key === "analytics") {
+          settingsState.defaultmenuorder = insertKeyAfterInOrder(
+            settingsState.defaultmenuorder,
+            key,
+            "courses",
+          );
+        } else {
+          settingsState.defaultmenuorder = [
+            ...settingsState.defaultmenuorder,
+            key,
+          ];
+        }
       }
     }
   }

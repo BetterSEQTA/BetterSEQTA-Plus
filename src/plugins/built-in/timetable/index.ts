@@ -1,6 +1,9 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import type { Plugin } from "../../core/types";
-import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
+import {
+  attachTimetableColorisRecovery,
+  resetStuckColorisPicker,
+} from "@/seqta/utils/timetableColoris";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 const timetablePlugin: Plugin<{}, {}> = {
@@ -63,6 +66,9 @@ function resetTimetableStyles(): void {
 }
 
 async function handleTimetable(): Promise<void> {
+  attachTimetableColorisRecovery();
+  resetStuckColorisPicker();
+
   // SEQTA uses `.times` blocks on entries, not necessarily `.time`; avoid infinite polling on a missing selector.
   try {
     await waitForElm(".timetablepage .times, .timetablepage .entry.class", true, 50, 200);

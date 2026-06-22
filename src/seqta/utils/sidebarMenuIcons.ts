@@ -12,6 +12,58 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const BETTERSEQTA_ICON_ATTR = "data-betterseqta-icon";
 
+export function insertMenuItemAfterKey(
+  menuList: HTMLElement,
+  item: HTMLElement,
+  afterKey: string,
+): void {
+  const after = menuList.querySelector(
+    `:scope > li[data-key="${afterKey}"], :scope > section[data-key="${afterKey}"]`,
+  );
+  if (after instanceof HTMLElement) {
+    after.insertAdjacentElement("afterend", item);
+  } else {
+    menuList.appendChild(item);
+  }
+}
+
+export function insertKeyAfterInOrder(
+  order: string[],
+  key: string,
+  afterKey: string,
+): string[] {
+  if (order.includes(key)) return order;
+  const copy = [...order];
+  const afterIdx = copy.indexOf(afterKey);
+  if (afterIdx >= 0) {
+    copy.splice(afterIdx + 1, 0, key);
+  } else {
+    copy.push(key);
+  }
+  return copy;
+}
+
+/** Default Analytics immediately below Courses in saved menu order. */
+export function ensureAnalyticsMenuOrder(): void {
+  if (!settingsState.defaultmenuorder.includes("analytics")) {
+    settingsState.defaultmenuorder = insertKeyAfterInOrder(
+      settingsState.defaultmenuorder,
+      "analytics",
+      "courses",
+    );
+  }
+  if (
+    settingsState.menuorder.length > 0 &&
+    !settingsState.menuorder.includes("analytics")
+  ) {
+    settingsState.menuorder = insertKeyAfterInOrder(
+      settingsState.menuorder,
+      "analytics",
+      "courses",
+    );
+  }
+}
+
 function getMenuLabel(element: HTMLElement): HTMLElement | null {
   const label = element.querySelector(":scope > label");
   return label instanceof HTMLElement ? label : null;

@@ -2,8 +2,14 @@ import type { Plugin } from "@/plugins/core/types";
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
+import {
+  ChangeMenuItemPositions,
+  ensureAnalyticsMenuOrder,
+  insertMenuItemAfterKey,
+  processMenuItemNode,
+} from "@/seqta/utils/sidebarMenuIcons";
 import { MenuOptionsOpen } from "@/seqta/utils/Openers/OpenMenuOptions";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
   applyMenuItemVisibility,
   isMenuItemHidden,
@@ -45,11 +51,14 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     analyticsItem.dataset.betterseqta = "true";
     analyticsItem.innerHTML = `<label>${ANALYTICS_MENU_ICON}<span>Analytics</span></label>`;
 
-    const homeButton = document.getElementById("homebutton");
-    if (homeButton?.parentElement === menuList) {
-      homeButton.insertAdjacentElement("afterend", analyticsItem);
-    } else {
-      menuList.insertBefore(analyticsItem, menuList.firstChild);
+    const placeAnalyticsItem = () => {
+      insertMenuItemAfterKey(menuList, analyticsItem, "courses");
+    };
+
+    placeAnalyticsItem();
+    ensureAnalyticsMenuOrder();
+    if (settingsState.menuorder.length > 0) {
+      ChangeMenuItemPositions(settingsState.menuorder);
     }
 
     processMenuItemNode(analyticsItem);
@@ -59,10 +68,10 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
       if (MenuOptionsOpen) return;
       if (isMenuItemHidden("analytics")) return;
       if (!menuList.contains(analyticsItem)) {
-        if (homeButton?.parentElement === menuList) {
-          homeButton.insertAdjacentElement("afterend", analyticsItem);
-        } else {
-          menuList.insertBefore(analyticsItem, menuList.firstChild);
+        placeAnalyticsItem();
+        ensureAnalyticsMenuOrder();
+        if (settingsState.menuorder.length > 0) {
+          ChangeMenuItemPositions(settingsState.menuorder);
         }
         processMenuItemNode(analyticsItem);
         applyMenuItemVisibility();

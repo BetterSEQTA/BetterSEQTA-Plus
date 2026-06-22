@@ -30,6 +30,7 @@ import { loadAnalyticsPage } from "@/plugins/built-in/gradeAnalytics/loadAnalyti
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
+import { attachTimetableColorisRecovery } from "@/seqta/utils/timetableColoris";
 
 // JSON content
 import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
@@ -247,6 +248,7 @@ async function LoadPageElements(): Promise<void> {
       className: "timetablepage",
     },
     async () => {
+      attachTimetableColorisRecovery();
       await updateTimetableTimes();
     },
   );

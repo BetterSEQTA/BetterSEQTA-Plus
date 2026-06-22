@@ -2794,45 +2794,19 @@ body {
 .defaultWelcomeWrapper {
   background: unset !important;
 }
-.clr-swatches button::after,
-.clr-dark .clr-preview::after,
-.clr-field button::after {
-  opacity: unset;
-  padding-top: unset;
-  -webkit-transform: unset;
-  transform: unset;
-  -webkit-transform-origin: unset;
-  transform-origin: unset;
-  visibility: unset;
-  -webkit-animation-name: unset !important;
-  animation-name: unset !important;
-  background-color: currentColor !important;
-}
-.clr-swatches button {
-  align-items: unset;
-  display: block;
-  padding: unset;
-  transition: none;
-}
-.clr-clear {
-  display: none !important;
-}
-.clr-preview::before,
-.clr-preview::after {
-  visibility: unset;
-  -webkit-transform-origin: unset;
-  transform-origin: unset;
-  -webkit-transform: unset;
-  transform: unset;
-  padding-top: unset;
-  opacity: unset;
-}
+
+/* Coloris (timetable subject colours): cosmetic only — do not unset
+   transforms/animations on ::after (breaks picker reopen). */
 #clr-color-preview {
   margin: 15px 0 20px 20px;
   border: 0;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
+}
+
+.clr-swatches button {
+  border-radius: 4px;
 }
 
 .dark
