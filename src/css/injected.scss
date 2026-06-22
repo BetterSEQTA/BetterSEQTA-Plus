@@ -64,8 +64,8 @@ body {
 
 select {
   border-radius: 16px !important;
-  border: 1px solid color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 78%, transparent) !important;
-  background: color-mix(in srgb, var(--background-primary) 90%, transparent) !important;
+  border: 1px solid var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) !important;
+  background: var(--theme-primary, var(--background-primary)) !important;
   color: var(--text-primary) !important;
   padding: 0.5rem 1rem !important;
   min-height: 2.5rem !important;
@@ -78,14 +78,14 @@ select {
 }
 
 select:hover {
-  background: color-mix(in srgb, var(--background-primary) 94%, var(--background-secondary) 6%) !important;
-  border-color: color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 92%, transparent) !important;
+  background: var(--theme-secondary, var(--background-secondary)) !important;
+  border-color: var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) !important;
 }
 
 select:focus {
   outline: none !important;
-  background: color-mix(in srgb, var(--background-primary) 96%, var(--background-secondary) 4%) !important;
-  border-color: color-mix(in srgb, var(--text-primary) 18%, var(--theme-offset-bg, var(--background-secondary)) 82%) !important;
+  background: var(--theme-secondary, var(--background-secondary)) !important;
+  border-color: color-mix(in srgb, var(--text-primary) 18%, var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) 82%) !important;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
 }
 
@@ -114,6 +114,11 @@ select::-ms-expand {
 select option {
   background-color: #ffffff !important;
   color: #18181b !important;
+}
+
+.dark select option {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 .dark select:not([multiple]):not([size]),

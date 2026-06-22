@@ -18,8 +18,8 @@
   --bsplus-analytics-radius: 16px;
   --bsplus-analytics-radius-sm: 12px;
   --bsplus-analytics-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --bsplus-analytics-surface: var(--background-primary, #ffffff);
-  --bsplus-analytics-surface-2: var(--background-secondary, #f8fafc);
+  --bsplus-analytics-surface: var(--theme-primary, var(--background-primary, #ffffff));
+  --bsplus-analytics-surface-2: var(--theme-secondary, var(--background-secondary, #f8fafc));
   --bsplus-analytics-text: var(--text-primary, #1a1a1a);
   --bsplus-analytics-muted: color-mix(
     in srgb,

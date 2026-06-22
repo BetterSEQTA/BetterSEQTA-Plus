@@ -85,9 +85,9 @@
     justify-content: space-between;
     gap: 0.75rem;
     width: 100%;
-    border: 1px solid color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 72%, transparent);
+    border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
     border-radius: 18px;
-    background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+    background: var(--theme-primary, #ffffff);
     color: var(--text-primary);
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
@@ -102,14 +102,14 @@
   }
 
   .select-trigger:hover {
-    background: color-mix(in srgb, var(--background-primary) 94%, var(--background-secondary) 6%);
-    border-color: color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 88%, transparent);
+    background: var(--theme-secondary, #e5e7eb);
+    border-color: var(--theme-offset-bg, var(--theme-secondary, #d4d4d8));
   }
 
   .select-trigger:focus-visible {
     outline: none;
-    background: color-mix(in srgb, var(--background-primary) 96%, var(--background-secondary) 4%);
-    border-color: color-mix(in srgb, var(--text-primary) 22%, var(--theme-offset-bg, var(--background-secondary)) 78%);
+    background: var(--theme-secondary, #e5e7eb);
+    border-color: color-mix(in srgb, var(--text-primary) 22%, var(--theme-secondary, #e5e7eb) 78%);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
   }
 
@@ -133,9 +133,9 @@
     margin: 0;
     padding: 0.35rem;
     list-style: none;
-    border: 1px solid color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 72%, transparent);
+    border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
     border-radius: 14px;
-    background: var(--background-primary);
+    background: var(--theme-primary, #ffffff);
     box-shadow:
       0 10px 25px -5px rgb(0 0 0 / 0.25),
       0 8px 10px -6px rgb(0 0 0 / 0.2);
@@ -161,10 +161,10 @@
   .select-option:hover,
   .select-option:focus-visible {
     outline: none;
-    background: color-mix(in srgb, var(--background-secondary) 55%, transparent);
+    background: var(--theme-secondary, #e5e7eb);
   }
 
   .select-option.is-selected {
-    background: color-mix(in srgb, var(--background-secondary) 70%, transparent);
+    background: var(--theme-secondary, #e5e7eb);
   }
 </style>
