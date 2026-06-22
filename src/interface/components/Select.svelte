@@ -63,11 +63,6 @@
     background: transparent;
   }
 
-  .select-input option {
-    background: var(--background-primary);
-    color: var(--text-primary);
-  }
-
   .select-icon {
     color: color-mix(in srgb, var(--text-primary) 60%, transparent);
   }
@@ -78,5 +73,11 @@
 
   :global(.dark) .select-input {
     color-scheme: dark;
+  }
+
+  /* Native option lists on Windows/Edge often stay light regardless of color-scheme */
+  .select-input option {
+    background-color: #ffffff;
+    color: #18181b;
   }
 </style>

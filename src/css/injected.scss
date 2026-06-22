@@ -66,6 +66,10 @@ select {
   border: 1px solid color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 78%, transparent) !important;
   background: color-mix(in srgb, var(--background-primary) 90%, transparent) !important;
   color: var(--text-primary) !important;
+  padding: 0.5rem 1rem !important;
+  min-height: 2.5rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25 !important;
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
@@ -94,6 +98,10 @@ select[size="1"] {
   background-repeat: no-repeat !important;
   background-size: 1rem !important;
   padding-right: 2.6rem !important;
+}
+
+html:not(.dark) select:not([multiple]):not([size]),
+html:not(.dark) select[size="1"] {
   color-scheme: light;
 }
 
@@ -101,20 +109,16 @@ select::-ms-expand {
   display: none;
 }
 
+/* OS option panels on Windows/Edge are often light even in dark mode */
 select option {
-  background: var(--background-primary) !important;
-  color: var(--text-primary) !important;
+  background-color: #ffffff !important;
+  color: #18181b !important;
 }
 
 .dark select:not([multiple]):not([size]),
 .dark select[size="1"] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23c9c9c9'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
   color-scheme: dark;
-}
-
-.dark select option {
-  background: var(--background-primary) !important;
-  color: var(--text-primary) !important;
 }
 #container {
   background: var(--auto-background) !important;
