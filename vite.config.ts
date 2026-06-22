@@ -72,13 +72,26 @@ export default defineConfig(({ command }) => ({
     __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
   },
   plugins: [
+    svelte({
+      emitCss: false,
+      configFile: join(__dirname, "src", "svelte.config.js"),
+    }),
     extensionChunkUrls(),
     base64Loader,
     InlineWorkerPlugin(),
-    svelte({
-      emitCss: false,
-    }),
-    ...(useMillion ? [million.vite({ auto: true })] : []),
+    ...(useMillion && command !== "build"
+      ? [
+          million.vite({
+            auto: true,
+            filter: {
+              exclude: [
+                "**/*.svelte",
+                "node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}",
+              ],
+            },
+          }),
+        ]
+      : []),
     crx({
       manifest: withDevManifestCsp(
         targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??
@@ -115,6 +128,12 @@ export default defineConfig(({ command }) => ({
     include: [
       "@babel/runtime/helpers/extends",
       "@babel/runtime/helpers/interopRequireDefault",
+      "layerchart",
+      "d3-scale",
+      "d3-shape",
+      "d3-array",
+      "d3-format",
+      "d3-time",
     ],
   },
   legacy: {
@@ -133,20 +152,6 @@ export default defineConfig(({ command }) => ({
       input: {
         settings: join(__dirname, "src", "interface", "index.html"),
         pageState: join(__dirname, "src", "pageState.js"),
-        seqtaMenuColourPatch: join(
-          __dirname,
-          "src",
-          "seqta",
-          "utils",
-          "seqtaMenuColourPatch.js",
-        ),
-        themeImagePagePatch: join(
-          __dirname,
-          "src",
-          "seqta",
-          "utils",
-          "themeImagePagePatch.js",
-        ),
       },
       output: {
         assetFileNames: "assets/[name]-[hash][extname]",

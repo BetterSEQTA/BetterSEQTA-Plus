@@ -10,7 +10,7 @@
   const segments = $derived(getSegments(text, term, matches));
 
   // Build highlight map (copied and adapted from highlightMatch)
-  function getSegments(text: string, term: string, matches?: readonly FuseResultMatch[]) {
+  function getSegments(text: string, term: string, matches = undefined) {
     if (!term.trim() || !matches || matches.length === 0) return [{ text, highlight: false }];
 
     try {

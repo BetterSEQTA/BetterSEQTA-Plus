@@ -260,7 +260,7 @@
 
 
 
-  const hideModal = (relatedTheme?: Theme | null) => {
+  const hideModal = (relatedTheme = null) => {
 
     animate(
 
