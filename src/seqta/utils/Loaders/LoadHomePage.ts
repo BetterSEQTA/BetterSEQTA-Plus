@@ -20,6 +20,10 @@ import {
   filterAssessmentsForActiveSubjects,
   subjectsWithUpcomingAssessments,
 } from "@/plugins/built-in/assessmentsOverview/utils";
+import {
+  noticeMatchesLabelFilter,
+  resolveNoticeFilterTokens,
+} from "@/seqta/utils/notices/noticeLabelFilters";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
@@ -131,33 +135,20 @@ export async function loadHomePage() {
     upcomingItems.classList.remove("loading");
   }
 
-  const labelArray = prefs.payload
-    .filter((item: any) => item.name === "notices.filters")
-    .map((item: any) => item.value);
+  const labelTokens = await resolveNoticeFilterTokens(
+    prefs.payload,
+    `${location.origin}/seqta/student/load/notices?`,
+  );
 
   const noticeContainer = document.getElementById("notice-container");
   if (noticeContainer) {
-    if (labelArray.length > 0) {
-      const dateControl = document.querySelector(
-        'input[type="date"]',
-      ) as HTMLInputElement;
-      if (dateControl) {
-        dateControl.value = TodayFormatted;
-        setupNotices(labelArray[0].split(" "), TodayFormatted);
-      }
-      noticeContainer.classList.remove("loading");
-    } else {
-      noticeContainer.classList.remove("loading");
-      noticeContainer.innerHTML = "";
-      const emptyState = document.createElement("div");
-      emptyState.classList.add("day-empty");
-      const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
-      const text = document.createElement("p");
-      text.innerText = "No notices available.";
-      emptyState.append(img, text);
-      noticeContainer.append(emptyState);
+    const dateControl = document.querySelector(
+      'input[type="date"]',
+    ) as HTMLInputElement;
+    if (dateControl) {
+      dateControl.value = TodayFormatted;
     }
+    setupNotices(labelTokens, TodayFormatted);
   }
 
   return cleanup;
@@ -248,6 +239,12 @@ function setupNotices(labelArray: string[], date: string) {
   ) as HTMLInputElement;
 
   const fetchNotices = async (date: string) => {
+    const container = document.getElementById("notice-container");
+    if (container) {
+      container.classList.add("loading");
+      container.innerHTML = "";
+    }
+
     try {
       const data = settingsState.mockNotices
         ? getMockNotices()
@@ -255,13 +252,13 @@ function setupNotices(labelArray: string[], date: string) {
             await fetch(`${location.origin}/seqta/student/load/notices?`, {
               method: "POST",
               headers: { "Content-Type": "application/json; charset=utf-8" },
+              credentials: "include",
               body: JSON.stringify({ date }),
             })
           ).json();
 
       processNotices(data, labelArray);
     } catch {
-      // Notices failed to load; processNotices will show empty state if container exists
       processNotices({ payload: [] }, labelArray);
     }
   };
@@ -294,30 +291,17 @@ function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");
   if (!NoticeContainer) return;
 
+  NoticeContainer.classList.remove("loading");
   NoticeContainer.innerHTML = "";
 
   const notices = response?.payload;
   if (!Array.isArray(notices)) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    NoticeContainer.append(emptyState);
+    appendNoticeEmptyState(NoticeContainer, "No notices for today.");
     return;
   }
 
   if (!notices.length) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    NoticeContainer.append(emptyState);
+    appendNoticeEmptyState(NoticeContainer, "No notices for today.");
     return;
   }
 
@@ -325,8 +309,7 @@ function processNotices(response: any, labelArray: string[]) {
 
   notices.forEach((notice: any) => {
     const shouldInclude =
-      settingsState.mockNotices ||
-      labelArray.includes(JSON.stringify(notice.label));
+      settingsState.mockNotices || noticeMatchesLabelFilter(notice, labelArray);
 
     if (shouldInclude) {
       const colour = processNoticeColor(notice.colour);
@@ -335,7 +318,23 @@ function processNotices(response: any, labelArray: string[]) {
     }
   });
 
+  if (fragment.childNodes.length === 0) {
+    appendNoticeEmptyState(NoticeContainer, "No notices for today.");
+    return;
+  }
+
   NoticeContainer.appendChild(fragment);
+}
+
+function appendNoticeEmptyState(container: HTMLElement, message: string) {
+  const emptyState = document.createElement("div");
+  emptyState.classList.add("day-empty");
+  const img = document.createElement("img");
+  img.src = browser.runtime.getURL(LogoLight);
+  const text = document.createElement("p");
+  text.innerText = message;
+  emptyState.append(img, text);
+  container.append(emptyState);
 }
 
 function processNoticeColor(colour: string): string | undefined {

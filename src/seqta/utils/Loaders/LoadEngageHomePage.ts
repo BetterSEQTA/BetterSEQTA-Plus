@@ -18,6 +18,10 @@ import {
   toISODate,
   weekRangeContaining,
 } from "@/seqta/utils/Loaders/engageParentTimetable";
+import {
+  noticeMatchesLabelFilter,
+  resolveNoticeFilterTokens,
+} from "@/seqta/utils/notices/noticeLabelFilters";
 
 export function updateEngageHomeMenuActive(isHome: boolean): void {
   const home = document.getElementById("homebutton");
@@ -267,30 +271,17 @@ function processEngageNotices(response: any, labelArray: string[]): void {
   const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
   if (!noticeContainer) return;
 
+  noticeContainer.classList.remove("loading");
   noticeContainer.innerHTML = "";
 
   const notices = response?.payload;
   if (!Array.isArray(notices)) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    noticeContainer.append(emptyState);
+    appendEngageNoticeEmptyState(noticeContainer, "No notices for today.");
     return;
   }
 
   if (!notices.length) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    noticeContainer.append(emptyState);
+    appendEngageNoticeEmptyState(noticeContainer, "No notices for today.");
     return;
   }
 
@@ -298,9 +289,7 @@ function processEngageNotices(response: any, labelArray: string[]): void {
 
   notices.forEach((notice: any) => {
     const shouldInclude =
-      settingsState.mockNotices ||
-      labelArray.length === 0 ||
-      labelArray.includes(JSON.stringify(notice.label));
+      settingsState.mockNotices || noticeMatchesLabelFilter(notice, labelArray);
 
     if (shouldInclude) {
       const colour = processEngageNoticeColor(notice.colour);
@@ -309,7 +298,23 @@ function processEngageNotices(response: any, labelArray: string[]): void {
     }
   });
 
+  if (fragment.childNodes.length === 0) {
+    appendEngageNoticeEmptyState(noticeContainer, "No notices for today.");
+    return;
+  }
+
   noticeContainer.appendChild(fragment);
+}
+
+function appendEngageNoticeEmptyState(container: HTMLElement, message: string) {
+  const emptyState = document.createElement("div");
+  emptyState.classList.add("day-empty");
+  const img = document.createElement("img");
+  img.src = browser.runtime.getURL(LogoLight);
+  const text = document.createElement("p");
+  text.innerText = message;
+  emptyState.append(img, text);
+  container.append(emptyState);
 }
 
 function createEngageNoticeElement(
@@ -613,6 +618,12 @@ async function fetchEngageNoticesFromApi(
   date: string,
   labelTokens: string[],
 ): Promise<void> {
+  const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
+  if (noticeContainer) {
+    noticeContainer.classList.add("loading");
+    noticeContainer.innerHTML = "";
+  }
+
   try {
     const data = settingsState.mockNotices
       ? getMockNotices()
@@ -662,7 +673,7 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
   const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
   if (!noticeContainer) return;
 
-  let labelFilterValues: string[] = [];
+  let prefsPayload: unknown = [];
   try {
     const prefsRes = await fetch(`${location.origin}/seqta/parent/load/prefs?`, {
       method: "POST",
@@ -671,21 +682,15 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
       body: JSON.stringify({ asArray: true, request: "userPrefs" }),
     });
     const prefs = await prefsRes.json();
-    const payload = prefs?.payload;
-    if (Array.isArray(payload)) {
-      labelFilterValues = payload
-        .filter((item: { name?: string }) => item.name === "notices.filters")
-        .map((item: { value?: string }) => item.value)
-        .filter((v): v is string => typeof v === "string");
-    }
+    prefsPayload = prefs?.payload ?? [];
   } catch {
-    labelFilterValues = [];
+    prefsPayload = [];
   }
 
-  const labelTokens =
-    labelFilterValues.length > 0
-      ? String(labelFilterValues[0]).split(" ").filter(Boolean)
-      : [];
+  const labelTokens = await resolveNoticeFilterTokens(
+    prefsPayload,
+    `${location.origin}/seqta/parent/load/notices`,
+  );
 
   const dateControl = document.getElementById(ENGAGE_NOTICES_DATE_ID);
   if (dateControl) {
@@ -696,8 +701,6 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
 
   const cleanup = bindEngageNoticesDateInput(labelTokens, todayFormatted);
   engageMergeNoticeCleanup(cleanup);
-
-  noticeContainer.classList.remove("loading");
 }
 
 function engageMergeNoticeCleanup(noticeCleanup: () => void): void {
