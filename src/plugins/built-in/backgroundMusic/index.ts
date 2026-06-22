@@ -32,7 +32,6 @@ const store = localforage.createInstance({
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
-let cleanupRegistered = false;
 let pendingGestureCancel: (() => void) | null = null;
 let visibilityResumeTimeout: number | null = null;
 
@@ -54,45 +53,54 @@ function stopAndCleanupAudio(): void {
   }
 }
 
-function ensureGestureStart(handler: () => void): () => void {
-  const eventTypes = ["pointerdown", "keydown", "touchstart"]; // broad user gesture coverage
+function disarmGesturePlayback(): void {
+  if (pendingGestureCancel) {
+    pendingGestureCancel();
+    pendingGestureCancel = null;
+  }
+}
+
+function armGesturePlayback(handler: () => void): void {
+  disarmGesturePlayback();
+  const eventTypes = ["pointerdown", "keydown", "touchstart"] as const;
   const listener = () => {
+    disarmGesturePlayback();
     handler();
-    for (const type of eventTypes) {
-      window.removeEventListener(type, listener);
-    }
   };
   for (const type of eventTypes) {
     window.addEventListener(type, listener, { once: true, passive: true });
   }
-  return () => {
+  pendingGestureCancel = () => {
     for (const type of eventTypes) {
       window.removeEventListener(type, listener);
     }
   };
 }
 
-async function startPlayback(volume: number): Promise<void> {
+async function startPlayback(volume: number): Promise<boolean> {
   const blob = await loadAudioBlob();
-  if (!blob) return;
+  if (!blob) return false;
 
-  stopAndCleanupAudio();
-
-  currentObjectUrl = URL.createObjectURL(blob);
-  const audio = new Audio(currentObjectUrl);
-  audio.loop = true;
-  audio.volume = Math.max(0, Math.min(1, volume));
-  audio.preload = "auto";
-  audio.crossOrigin = "anonymous";
-  audio.style.display = "none";
-  document.body.appendChild(audio);
-  currentAudio = audio;
+  if (!currentAudio) {
+    stopAndCleanupAudio();
+    currentObjectUrl = URL.createObjectURL(blob);
+    const audio = new Audio(currentObjectUrl);
+    audio.loop = true;
+    audio.volume = Math.max(0, Math.min(1, volume));
+    audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
+    audio.style.display = "none";
+    document.body.appendChild(audio);
+    currentAudio = audio;
+  } else {
+    currentAudio.volume = Math.max(0, Math.min(1, volume));
+  }
 
   try {
-    // Attempt immediate play; may be blocked until gesture
-    await audio.play();
+    await currentAudio.play();
+    return true;
   } catch {
-    // Ignore; will be started after gesture if enabled
+    return false;
   }
 }
 
@@ -109,73 +117,84 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     await api.storage.loaded;
 
-    // react to specific setting changes
-    api.settings.onChange("volume" as any, (value: any) => {
-      const vol = (typeof value === "number" ? value : 0.5) as number;
+    const tryStart = async () => {
+      const blob = await loadAudioBlob();
+      if (!blob) return;
+
+      const vol = (api.settings as { volume?: number }).volume ?? 0.5;
+      const played = await startPlayback(vol);
+      if (played) {
+        disarmGesturePlayback();
+      } else {
+        armGesturePlayback(() => void tryStart());
+      }
+    };
+
+    api.settings.onChange("volume" as never, (value: unknown) => {
+      const vol = typeof value === "number" ? value : 0.5;
       if (currentAudio) currentAudio.volume = Math.max(0, Math.min(1, vol));
     });
 
-    api.settings.onChange("pauseOnHidden" as any, (value: any) => {
-      const pauseOnHidden = (typeof value === "boolean" ? value : true) as boolean;
-      // If the setting is disabled and audio is currently paused due to tab being hidden, resume it
-      if (!pauseOnHidden && currentAudio && currentAudio.paused && document.visibilityState === "hidden") {
-        currentAudio.play().catch(() => {});
+    api.settings.onChange("pauseOnHidden" as never, (value: unknown) => {
+      const pauseOnHidden = typeof value === "boolean" ? value : true;
+      if (
+        !pauseOnHidden &&
+        currentAudio?.paused &&
+        document.visibilityState === "visible"
+      ) {
+        void tryStart();
       }
     });
 
-    // Note: Stop button/event removed by user; no stop handling needed
+    armGesturePlayback(() => void tryStart());
+    void tryStart();
 
-    // Start if we have audio and autoplay is enabled
-    const tryStart = async () => {
-      const vol = (api.settings as any).volume ?? 0.5;
-      await startPlayback(vol);
-    };
-
-    // Always arm gesture start and attempt immediate start
-    const cancel = ensureGestureStart(() => { tryStart(); });
-    cleanupRegistered = true;
-    (window as any).__betterseqta_bg_music_cancel__ = cancel;
-    tryStart();
-
-    // Pause on tab hide, resume on show with a small delay (if enabled)
     const visHandler = () => {
-      if (!currentAudio) return;
-      const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
+      if (!currentAudio) {
+        if (document.visibilityState === "visible") void tryStart();
+        return;
+      }
+
+      const pauseOnHidden =
+        (api.settings as { pauseOnHidden?: boolean }).pauseOnHidden ?? true;
       if (!pauseOnHidden) return;
+
       if (document.visibilityState === "hidden") {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);
           visibilityResumeTimeout = null;
         }
         currentAudio.pause();
-      } else if (document.visibilityState === "visible") {
+      } else {
         if (visibilityResumeTimeout !== null) {
           clearTimeout(visibilityResumeTimeout);
         }
         visibilityResumeTimeout = window.setTimeout(() => {
           visibilityResumeTimeout = null;
-          currentAudio?.play().catch(() => {});
+          void tryStart();
         }, 200);
       }
     };
     document.addEventListener("visibilitychange", visHandler);
 
-    // Allow uploads to trigger refresh
-    const uploadedHandler = () => {
-      const vol = (api.settings as any).volume ?? 0.5;
-      startPlayback(vol);
-    };
+    const pageshowHandler = () => void tryStart();
+    window.addEventListener("pageshow", pageshowHandler);
+
+    const uploadedHandler = () => void tryStart();
     window.addEventListener("betterseqta-background-music-updated", uploadedHandler);
 
     return () => {
       document.removeEventListener("visibilitychange", visHandler);
-      window.removeEventListener("betterseqta-background-music-updated", uploadedHandler);
-      if (cleanupRegistered && (window as any).__betterseqta_bg_music_cancel__) {
-        (window as any).__betterseqta_bg_music_cancel__();
-        (window as any).__betterseqta_bg_music_cancel__ = undefined;
+      window.removeEventListener("pageshow", pageshowHandler);
+      window.removeEventListener(
+        "betterseqta-background-music-updated",
+        uploadedHandler,
+      );
+      disarmGesturePlayback();
+      if (visibilityResumeTimeout !== null) {
+        clearTimeout(visibilityResumeTimeout);
+        visibilityResumeTimeout = null;
       }
-      if (pendingGestureCancel) { pendingGestureCancel(); pendingGestureCancel = null; }
-      if (visibilityResumeTimeout !== null) { clearTimeout(visibilityResumeTimeout); visibilityResumeTimeout = null; }
       stopAndCleanupAudio();
     };
   },
