@@ -13,6 +13,7 @@ export interface ArchivedNotification {
   subjectCode?: string;
   firstSavedAt: string;
   lastSeenAt: string;
+  raw: RawNotification;
 }
 
 export type ArchiveMap = Record<string, ArchivedNotification>;
@@ -82,6 +83,7 @@ export function normalizeArchivedNotification(
       messageID: Number(message.messageID) || undefined,
       firstSavedAt: now,
       lastSeenAt: now,
+      raw: { ...raw },
     };
   }
 
@@ -103,6 +105,7 @@ export function normalizeArchivedNotification(
       subjectCode: readString(assessment.subjectCode) || undefined,
       firstSavedAt: now,
       lastSeenAt: now,
+      raw: { ...raw },
     };
   }
 
@@ -114,6 +117,7 @@ export function normalizeArchivedNotification(
     subtitle: readString(raw.subtitle),
     firstSavedAt: now,
     lastSeenAt: now,
+    raw: { ...raw },
   };
 }
 
@@ -134,8 +138,10 @@ export function mergeNotificationsIntoArchive(
       merged[key] = {
         ...prev,
         ...normalized,
+        timestamp: normalized.timestamp || prev.timestamp,
         firstSavedAt: prev.firstSavedAt,
         lastSeenAt: now,
+        raw: { ...prev.raw, ...raw },
       };
     } else {
       merged[key] = normalized;
@@ -149,4 +155,55 @@ export function listArchivedNotifications(archive: ArchiveMap): ArchivedNotifica
   return Object.values(archive).sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
+}
+
+export function archivedToApiNotification(
+  item: ArchivedNotification,
+): RawNotification {
+  if (item.raw && typeof item.raw === "object") {
+    return {
+      ...item.raw,
+      notificationID: item.notificationID,
+      type: item.type,
+      timestamp: item.timestamp,
+    };
+  }
+
+  if (item.type === "message") {
+    return {
+      notificationID: item.notificationID,
+      type: "message",
+      timestamp: item.timestamp,
+      message: {
+        title: item.title,
+        subtitle: item.subtitle,
+        messageID: item.messageID,
+      },
+    };
+  }
+
+  if (item.type === "coneqtassessments") {
+    return {
+      notificationID: item.notificationID,
+      type: "coneqtassessments",
+      timestamp: item.timestamp,
+      coneqtAssessments: {
+        title: item.title,
+        subtitle: item.subtitle,
+        assessmentID: item.assessmentID,
+        programmeID: item.programmeID,
+        metaclassID: item.metaclassID,
+        subjectCode: item.subjectCode,
+        term: "",
+      },
+    };
+  }
+
+  return {
+    notificationID: item.notificationID,
+    type: item.type,
+    timestamp: item.timestamp,
+    title: item.title,
+    subtitle: item.subtitle,
+  };
 }

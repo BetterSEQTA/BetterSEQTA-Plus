@@ -8,15 +8,17 @@ import {
   mergeNotificationsIntoArchive,
   resolveNotificationUserKey,
 } from "./archive";
-import { mountArchiveUI } from "./archiveUI";
-import styles from "./styles.css?inline";
+import {
+  injectArchivedForUser,
+  mountArchivedNotificationInjection,
+} from "./injectArchivedNotifications";
 
 const notificationCollectorSettings = {
   saveLocally: booleanSetting({
     default: true,
     title: "Save notification history locally",
     description:
-      "Keeps a per-account copy in extension storage. SEQTA removes notifications after about a year; these stay until you clear extension data.",
+      "Saves notifications per account in extension storage and restores missing ones into the SEQTA list",
   }),
 } as const;
 
@@ -35,9 +37,8 @@ const notificationCollectorPlugin: Plugin<
   name: "Notification Collector",
   description:
     "Tracks notifications and saves a local per-account archive that outlasts SEQTA's server retention",
-  version: "1.1.0",
+  version: "1.2.0",
   settings: notificationCollectorSettings,
-  styles,
   disableToggle: true,
 
   run: async (api) => {
@@ -80,6 +81,8 @@ const notificationCollectorPlugin: Plugin<
         if (JSON.stringify(existing) !== JSON.stringify(merged)) {
           archivesByUser[userKey] = merged;
           api.storage.archivesByUser = archivesByUser;
+        } else if (document.querySelector('[class*="notifications__list___"]')) {
+          await injectArchivedForUser(merged);
         }
       } catch (error) {
         console.warn("[BetterSEQTA+] Notification archive sync failed:", error);
@@ -182,7 +185,10 @@ const notificationCollectorPlugin: Plugin<
       }
     });
 
-    mountArchiveUI(api, resolveNotificationUserKey);
+    const teardownInjection = mountArchivedNotificationInjection(
+      api,
+      resolveNotificationUserKey,
+    );
 
     api.seqta.onMount("[class*='notifications__bubble___']", () => {
       startPolling();
@@ -199,6 +205,7 @@ const notificationCollectorPlugin: Plugin<
 
     return () => {
       stopPolling();
+      teardownInjection();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       pageChangeUnregister.unregister();
     };
