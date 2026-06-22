@@ -5,6 +5,7 @@
  */
 
 import { dismissStaleColourDialogs } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
+import { verboseInfo } from "@/utils/verboseLog";
 
 let attached = false;
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
@@ -83,7 +84,7 @@ export function attachTimetableColorisRecovery(): void {
       if (!pickerOpen) {
         const result = dismissTimetableUiBlockers();
         if (result.slideRemoved > 0 || result.modalRemoved > 0) {
-          console.info(
+          verboseInfo(
             "[BetterSEQTA+] timetable colour: content-script cleanup",
             result,
           );

@@ -9,6 +9,7 @@
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
+  import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
 
   const themeManager = ThemeManager.getInstance();
 
@@ -237,8 +238,8 @@
 
           <div class="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900 { isEditMode ? 'animate-shake brightness-90' : ''}">
             {#if theme.coverImage}
-              <img
-                src={typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}
+              <ThemeBlobImage
+                source={theme.coverImage}
                 alt={theme.name}
                 class="object-cover absolute inset-0 z-0 w-full h-full pointer-events-none"
               />

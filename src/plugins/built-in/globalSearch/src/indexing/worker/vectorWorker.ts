@@ -1,6 +1,7 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../types";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
 let initializationFailed = false;
@@ -33,27 +34,27 @@ let streamingSession: {
 
 async function initWorker() {
   if (isInitialized) {
-    console.debug("Vector worker already initialized.");
+    verboseDebug("Vector worker already initialized.");
     return;
   }
   
   // Skip initialization in Firefox
   if (isFirefoxWorker()) {
-    console.debug("[Vector Worker] Vector search not supported in Firefox - skipping initialization");
+    verboseDebug("[Vector Worker] Vector search not supported in Firefox - skipping initialization");
     isInitialized = true;
     initializationFailed = true;
     vectorIndex = null;
     return;
   }
   
-  console.debug("Initializing vector worker...");
+  verboseDebug("Initializing vector worker...");
   try {
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
 
     const stored = await vectorIndex.getAllObjectsFromIndexedDB();
     if (stored.length > 0) {
-      console.debug(`Found ${stored.length} existing items in IndexedDB`);
+      verboseDebug(`Found ${stored.length} existing items in IndexedDB`);
 
       loadedItemIds.clear();
 
@@ -64,14 +65,14 @@ async function initWorker() {
         }
       });
 
-      console.debug(
+      verboseDebug(
         `Vector index loaded ${loadedItemIds.size} unique items from IndexedDB.`,
       );
     } else {
-      console.debug("No existing vector index found in IndexedDB.");
+      verboseDebug("No existing vector index found in IndexedDB.");
     }
     isInitialized = true;
-    console.debug("Vector worker initialized successfully.");
+    verboseDebug("Vector worker initialized successfully.");
   } catch (e) {
     console.warn("[Vector Worker] Failed to initialize vector worker (will use text search only):", e);
     isInitialized = true;
@@ -149,7 +150,7 @@ async function startStreamingSession(
     processingPromise: null,
   };
 
-  console.debug(
+  verboseDebug(
     `Started streaming session for ${totalExpected} items with batch size ${batchSize}`,
   );
 
@@ -175,7 +176,7 @@ async function processStreamingBatch(
   streamingSession.totalReceived += items.length;
   streamingSession.pendingItems.push(...items);
 
-  console.debug(
+  verboseDebug(
     `Received streaming batch: ${items.length} items (${streamingSession.totalReceived}/${streamingSession.totalExpected})`,
   );
 
@@ -208,7 +209,7 @@ async function processStreamingItems() {
 
     if (unprocessedItems.length === 0) {
       streamingSession.totalProcessed += batchToProcess.length;
-      console.debug(`Skipped ${batchToProcess.length} already processed items`);
+      verboseDebug(`Skipped ${batchToProcess.length} already processed items`);
       continue;
     }
 
@@ -231,7 +232,7 @@ async function processStreamingItems() {
           loadedItemIds.size % 200 === 0
         ) {
           await vectorIndex!.saveIndex("indexedDB");
-          console.debug(
+          verboseDebug(
             `Saved streaming index at ${streamingSession.totalProcessed} processed items (${loadedItemIds.size} total unique items)`,
           );
         }
@@ -272,7 +273,7 @@ async function finalizeStreamingSession() {
   try {
     if (vectorIndex) {
       await vectorIndex.saveIndex("indexedDB");
-      console.debug("Final save of streaming index completed");
+      verboseDebug("Final save of streaming index completed");
     }
   } catch (e) {
     console.error("Error in final streaming save:", e);
@@ -293,7 +294,7 @@ async function finalizeStreamingSession() {
     },
   });
 
-  console.debug(
+  verboseDebug(
     `Streaming session completed: ${totalProcessed}/${totalExpected} items processed`,
   );
 }
@@ -303,14 +304,14 @@ async function endStreamingSession() {
     return;
   }
 
-  console.debug("Ending streaming session...");
+  verboseDebug("Ending streaming session...");
 
   if (streamingSession.processingPromise) {
     await streamingSession.processingPromise;
   }
 
   if (streamingSession.pendingItems.length > 0) {
-    console.debug(
+    verboseDebug(
       `Processing ${streamingSession.pendingItems.length} remaining items before ending session`,
     );
     streamingSession.processingPromise = processStreamingItems();
@@ -320,7 +321,7 @@ async function endStreamingSession() {
   try {
     if (vectorIndex) {
       await vectorIndex.saveIndex("indexedDB");
-      console.debug("Final save before ending streaming session");
+      verboseDebug("Final save before ending streaming session");
     }
   } catch (e) {
     console.error("Error in final save before ending session:", e);
@@ -341,7 +342,7 @@ async function endStreamingSession() {
 }
 
 async function processItems(items: IndexItem[], signal: AbortSignal) {
-  console.debug("Worker received process request.");
+  verboseDebug("Worker received process request.");
 
   if (initializationFailed || isFirefoxWorker()) {
     self.postMessage({
@@ -378,7 +379,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
   });
 
   if (signal.aborted) {
-    console.debug("Processing cancelled before starting.");
+    verboseDebug("Processing cancelled before starting.");
     self.postMessage({
       type: "progress",
       data: {
@@ -390,7 +391,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
   }
 
   if (unprocessedItems.length === 0) {
-    console.debug(
+    verboseDebug(
       `No new items to process. ${loadedItemIds.size} items already in index.`,
     );
     self.postMessage({
@@ -403,7 +404,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     return;
   }
 
-  console.debug(
+  verboseDebug(
     `Starting processing of ${unprocessedItems.length} items (${items.length - unprocessedItems.length} already processed).`,
   );
   self.postMessage({
@@ -419,7 +420,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
   let processedCount = 0;
   for (let i = 0; i < unprocessedItems.length; i += BATCH_SIZE) {
     if (signal.aborted) {
-      console.debug("Processing cancelled during batching.");
+      verboseDebug("Processing cancelled during batching.");
       self.postMessage({
         type: "progress",
         data: {
@@ -437,7 +438,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     ) as (IndexItem & { embedding: number[] })[];
 
     if (signal.aborted) {
-      console.debug("Processing cancelled after vectorization batch.");
+      verboseDebug("Processing cancelled after vectorization batch.");
       self.postMessage({
         type: "progress",
         data: {
@@ -464,7 +465,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     }
 
     if (signal.aborted) {
-      console.debug("Processing cancelled before saving batch.");
+      verboseDebug("Processing cancelled before saving batch.");
       self.postMessage({
         type: "progress",
         data: {
@@ -481,7 +482,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     ) {
       try {
         await vectorIndex!.saveIndex("indexedDB");
-        console.debug(
+        verboseDebug(
           `Saved index after processing batch ${i / BATCH_SIZE + 1} (${loadedItemIds.size} total unique items)`,
         );
       } catch (e) {
@@ -505,7 +506,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     });
   }
 
-  console.debug(
+  verboseDebug(
     `Processing complete. Total unique items in index: ${loadedItemIds.size}`,
   );
   self.postMessage({
@@ -520,7 +521,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
 }
 
 async function resetWorker() {
-  console.debug("Resetting vector worker state...");
+  verboseDebug("Resetting vector worker state...");
 
   loadedItemIds.clear();
 
@@ -532,7 +533,7 @@ async function resetWorker() {
   if (vectorIndex) {
     try {
       await vectorIndex.saveIndex("indexedDB");
-      console.debug("Saved index before reset");
+      verboseDebug("Saved index before reset");
     } catch (e) {
       console.warn("Error saving index before reset:", e);
     }
@@ -543,7 +544,7 @@ async function resetWorker() {
 
   await initWorker();
 
-  console.debug(
+  verboseDebug(
     `Vector worker reset complete. Loaded ${loadedItemIds.size} items.`,
   );
 

@@ -7,6 +7,7 @@ import {
   hotkeySetting,
   Setting,
 } from "@/plugins/core/settingsHelpers";
+import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { runIndexing } from "../indexing/indexer";
@@ -70,7 +71,7 @@ const settings = defineSettings({
           try {
             const workerManager = VectorWorkerManager.getInstance();
             await workerManager.resetWorker();
-            console.log("Vector worker reset successfully");
+            verboseLog("Vector worker reset successfully");
           } catch (e) {
             console.warn("Failed to reset vector worker:", e);
           }
@@ -90,7 +91,7 @@ const settings = defineSettings({
             return new Promise<void>((resolve, reject) => {
               const req = indexedDB.deleteDatabase(dbName);
               req.onsuccess = () => {
-                console.log(`Successfully deleted database: ${dbName}`);
+                verboseLog(`Successfully deleted database: ${dbName}`);
                 resolve();
               };
               req.onerror = () => {
@@ -103,7 +104,7 @@ const settings = defineSettings({
                 setTimeout(() => {
                   const retryReq = indexedDB.deleteDatabase(dbName);
                   retryReq.onsuccess = () => {
-                    console.log(`Successfully deleted database on retry: ${dbName}`);
+                    verboseLog(`Successfully deleted database on retry: ${dbName}`);
                     resolve();
                   };
                   retryReq.onerror = () => reject(retryReq.error);
@@ -176,7 +177,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     try {
       const wasUpdated = await checkAndHandleUpdate();
       if (wasUpdated) {
-        console.log(
+        verboseLog(
           "[Global Search] Extension updated — search index reset; the next indexing pass will repopulate.",
         );
       }
@@ -188,7 +189,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
         error?.message?.includes("MIME type") ||
         error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")
       ) {
-        console.debug(
+        verboseDebug(
           "[Global Search] Version check skipped due to asset loading restrictions:",
           error.message,
         );
@@ -217,7 +218,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
         if (isVectorSearchSupported()) {
           VectorWorkerManager.getInstance();
         } else {
-          console.debug("[Global Search] Skipping vector worker warm-up (Firefox detected - using text search only)");
+          verboseDebug("[Global Search] Skipping vector worker warm-up (Firefox detected - using text search only)");
         }
       } catch (error) {
         console.warn("[Global Search] Vector worker warm-up failed:", error);
@@ -230,15 +231,15 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       resetWorker: async () => {
         const workerManager = VectorWorkerManager.getInstance();
         await workerManager.resetWorker();
-        console.log("Vector worker reset via debug helper");
+        verboseLog("Vector worker reset via debug helper");
       },
       checkWorkerStatus: () => {
         const workerManager = VectorWorkerManager.getInstance();
-        console.log("Streaming active:", workerManager.isStreamingActive());
+        verboseLog("Streaming active:", workerManager.isStreamingActive());
       },
       passiveItems: async () => {
         const items = await getStoredPassiveItems();
-        console.log(`Captured ${items.length} passive items`);
+        verboseLog(`Captured ${items.length} passive items`);
         return items;
       },
       runSelfTests: async () => {
@@ -250,7 +251,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       checkIndexedDBSize: async () => {
         try {
           const estimate = await navigator.storage.estimate();
-          console.log("Storage estimate:", estimate);
+          verboseLog("Storage estimate:", estimate);
           
           // Check embeddiaDB size
           const dbRequest = indexedDB.open("embeddiaDB");
@@ -260,7 +261,7 @@ const globalSearchPlugin: Plugin<typeof settings> = {
             const store = transaction.objectStore("embeddiaObjectStore");
             const countRequest = store.count();
             countRequest.onsuccess = () => {
-              console.log("embeddiaDB item count:", countRequest.result);
+              verboseLog("embeddiaDB item count:", countRequest.result);
             };
           };
         } catch (e) {

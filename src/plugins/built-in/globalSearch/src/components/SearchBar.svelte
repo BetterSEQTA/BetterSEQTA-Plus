@@ -15,6 +15,7 @@
   import HighlightedText from '../utils/HighlightedText.svelte';
   import { matchesHotkey } from '../utils/hotkeyUtils';
   import browser from 'webextension-polyfill';
+  import { verboseDebug } from '@/utils/verboseLog';
 
   const { 
     transparencyEffects, 
@@ -160,7 +161,7 @@
     dynamicItems.forEach(item => dynamicIdToItemMap.set(item.id, item));
     commands.forEach(item => commandIdToItemMap.set(item.id, item));
     
-    console.debug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
+    verboseDebug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
   }
 
   const performSearch = async () => {

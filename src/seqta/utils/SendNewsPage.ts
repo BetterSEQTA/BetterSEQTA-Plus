@@ -5,9 +5,10 @@ import { settingsState } from "./listeners/SettingsState";
 import browser from "webextension-polyfill";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { animate, stagger } from "motion";
+import { verboseInfo } from "@/utils/verboseLog";
 
 export async function SendNewsPage() {
-  console.info("[BetterSEQTA+] Started Loading News Page");
+  verboseInfo("[BetterSEQTA+] Started Loading News Page");
   document.title = "News ― SEQTA Learn";
   await delay(10);
 

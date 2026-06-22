@@ -1,4 +1,5 @@
 import type { Plugin, PluginSettings } from "./types";
+import { verboseInfo } from "@/utils/verboseLog";
 
 /**
  * Interface for lazy-loaded plugin definitions
@@ -37,13 +38,13 @@ export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = 
     beta: lazyPlugin.beta,
     
     run: async (api) => {
-      console.info(`[BetterSEQTA+] Dynamically loading plugin "${lazyPlugin.id}"...`);
+      verboseInfo(`[BetterSEQTA+] Dynamically loading plugin "${lazyPlugin.id}"...`);
       
       try {
         // Dynamically import the actual plugin implementation
         const { default: actualPlugin } = await lazyPlugin.loader();
         
-        console.info(`[BetterSEQTA+] Successfully loaded plugin "${lazyPlugin.id}"`);
+        verboseInfo(`[BetterSEQTA+] Successfully loaded plugin "${lazyPlugin.id}"`);
         
         // Execute the actual plugin's run function
         return await actualPlugin.run(api);

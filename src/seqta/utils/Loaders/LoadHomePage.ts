@@ -13,13 +13,14 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import { verboseInfo } from "@/utils/verboseLog";
 
 let LessonInterval: any;
 let currentSelectedDate = new Date();
 let loadingTimeout: any;
 
 export async function loadHomePage() {
-  console.info("[BetterSEQTA+] Started Loading Home Page");
+  verboseInfo("[BetterSEQTA+] Started Loading Home Page");
 
   currentSelectedDate = new Date();
 

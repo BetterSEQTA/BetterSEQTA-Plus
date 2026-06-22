@@ -18,6 +18,7 @@ import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import { verboseInfo, verboseLog } from "@/utils/verboseLog";
 import loading from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
@@ -300,7 +301,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
         break;
       case "home":
         window.location.replace(`${location.origin}/#?page=/home`);
-        console.info("[BetterSEQTA+] Started Init (SEQTA Engage home)");
+        verboseInfo("[BetterSEQTA+] Started Init (SEQTA Engage home)");
         if (settingsState.onoff) void loadEngageHomePage();
         finishLoad();
         break;
@@ -316,7 +317,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       await handleNewsPage();
       break;
     case "analytics":
-      console.info("[BetterSEQTA+] Started Init (Analytics)");
+      verboseInfo("[BetterSEQTA+] Started Init (Analytics)");
       if (settingsState.onoff) void loadAnalyticsPage();
       finishLoad();
       break;
@@ -336,7 +337,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
       break;
     case "home":
       window.location.replace(`${location.origin}/#?page=/home`);
-      console.info("[BetterSEQTA+] Started Init");
+      verboseInfo("[BetterSEQTA+] Started Init");
       if (settingsState.onoff) loadHomePage();
       finishLoad();
       break;
@@ -353,7 +354,7 @@ async function handleNewsPage(): Promise<void> {
     return;
   }
 
-  console.info("[BetterSEQTA+] Started Init");
+  verboseInfo("[BetterSEQTA+] Started Init");
   try {
     await SendNewsPage();
   } catch (error) {
@@ -682,7 +683,7 @@ export function init() {
   };
 
   if (settingsState.onoff) {
-    console.info("[BetterSEQTA+] Enabled");
+    verboseInfo("[BetterSEQTA+] Enabled");
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
     if (settingsState.iconOnlySidebar) {
       if (document.body) {
@@ -783,7 +784,7 @@ export function init() {
         ".outside-container .bottom-container",
       );
       if (legacyElement) {
-        console.log("Legacy extension detected");
+        verboseLog("Legacy extension detected");
         showConflictPopup();
       }
     }, 1000);
@@ -795,7 +796,7 @@ export function init() {
 }
 
 function InjectCustomIcons() {
-  console.info("[BetterSEQTA+] Injecting Icons");
+  verboseInfo("[BetterSEQTA+] Injecting Icons");
 
   const style = document.createElement("style");
   style.setAttribute("type", "text/css");
@@ -812,7 +813,7 @@ function InjectCustomIcons() {
 export function AppendElementsToDisabledPage() {
   if (document.getElementById("AddedSettings")) return;
 
-  console.info("[BetterSEQTA+] Appending elements to disabled page");
+  verboseInfo("[BetterSEQTA+] Appending elements to disabled page");
   AddBetterSEQTAElements();
 
   let settingsStyle = document.createElement("style");

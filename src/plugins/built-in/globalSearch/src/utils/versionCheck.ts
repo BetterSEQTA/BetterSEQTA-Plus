@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import { resetSearchIndexes } from "../indexing/resetIndexes";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const VERSION_STORAGE_KEY = "betterseqta-global-search-version";
 const VERSION_CACHE_KEY = "betterseqta-global-search-cache-version";
 
@@ -60,7 +61,7 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
   // First run: just remember the version, don't reset (the user likely
   // just installed the extension; the index is already empty).
   if (!storedVersion) {
-    console.debug(
+    verboseDebug(
       `[Version Check] First run detected, storing version ${currentVersion}`,
     );
     storeVersion(currentVersion);
@@ -71,7 +72,7 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
     return false;
   }
 
-  console.log(
+  verboseLog(
     `[Version Check] Extension updated from ${storedVersion} to ${currentVersion}, resetting search index...`,
   );
 
@@ -79,7 +80,7 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
 
   try {
     await resetSearchIndexes();
-    console.log(
+    verboseLog(
       "[Version Check] Search index reset; next indexing pass will repopulate from scratch.",
     );
   } catch (e) {
@@ -112,7 +113,7 @@ export async function clearAllCaches(): Promise<void> {
       } catch (e: any) {
         // Module might not be loaded yet, or CSS preload error - that's okay
         if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
-          console.debug("[Version Check] Could not clear search cache:", e);
+          verboseDebug("[Version Check] Could not clear search cache:", e);
         }
       }
       
@@ -122,12 +123,12 @@ export async function clearAllCaches(): Promise<void> {
       } catch (e: any) {
         // Module might not be loaded yet, or CSS preload error - that's okay
         if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
-          console.debug("[Version Check] Could not clear embedding cache:", e);
+          verboseDebug("[Version Check] Could not clear embedding cache:", e);
         }
       }
     }, 50);
     
-    console.debug("[Version Check] All caches cleared");
+    verboseDebug("[Version Check] All caches cleared");
   } catch (e) {
     console.error("[Version Check] Error clearing caches:", e);
   }

@@ -2,6 +2,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 export interface BaseCommandItem {
   id: string;
   text: string;
@@ -105,7 +106,7 @@ async function navigateToSpecificLesson(lesson: any) {
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {
           // Found the exact matching lesson, click it
           (lessonElement as HTMLElement).click();
-          console.log(`Navigated to exact lesson: ${lessonDate} ${lessonPeriod}`);
+          verboseLog(`Navigated to exact lesson: ${lessonDate} ${lessonPeriod}`);
           return true;
         }
       }

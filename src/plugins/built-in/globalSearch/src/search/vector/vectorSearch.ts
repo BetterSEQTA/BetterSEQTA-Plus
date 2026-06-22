@@ -3,6 +3,7 @@ import type { IndexItem } from "../../indexing/types";
 import type { SearchResult } from "embeddia";
 import { isVectorSearchSupported } from "../../utils/browserDetection";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 let vectorIndex: EmbeddingIndex | null = null;
 let initializationAttempted = false;
 let initializationFailed = false;
@@ -11,7 +12,7 @@ export async function initVectorSearch() {
   // Skip initialization if already attempted and failed, or if not supported
   if (initializationFailed || !isVectorSearchSupported()) {
     if (!isVectorSearchSupported()) {
-      console.debug("[Vector Search] Vector search not supported in Firefox - using text search only");
+      verboseDebug("[Vector Search] Vector search not supported in Firefox - using text search only");
     }
     return;
   }
@@ -26,7 +27,7 @@ export async function initVectorSearch() {
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
     vectorIndex.preloadIndexedDB();
-    console.debug("[Vector Search] Initialized successfully");
+    verboseDebug("[Vector Search] Initialized successfully");
   } catch (e) {
     console.warn("[Vector Search] Failed to initialize vector search (will use text search only):", e);
     initializationFailed = true;
@@ -66,7 +67,7 @@ function setCachedEmbedding(query: string, embedding: number[]) {
  */
 export function clearEmbeddingCache(): void {
   embeddingCache.clear();
-  console.debug("[Vector Search] Embedding cache cleared");
+  verboseDebug("[Vector Search] Embedding cache cleared");
 }
 
 // Listen for cache clear events (e.g., on extension update)

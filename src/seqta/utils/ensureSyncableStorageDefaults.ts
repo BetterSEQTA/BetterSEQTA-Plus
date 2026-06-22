@@ -29,6 +29,7 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "themeOfTheMonthLastSeenId",
   "justupdated",
   "devMode",
+  "verboseLogging",
   "hideSensitiveContent",
   "mockNotices",
   "devGhReleaseVersionOverride",

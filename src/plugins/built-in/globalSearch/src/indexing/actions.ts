@@ -3,6 +3,7 @@ import type { IndexItem } from "./types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 interface MessageMetadata {
   messageId: number;
   author: string;
@@ -171,7 +172,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       if ((assessmentId === undefined || assessmentId === null) && itemClone.id && itemClone.id.startsWith('assignment-')) {
         const extractedId = itemClone.id.replace('assignment-', '');
         assessmentId = Number(extractedId) || extractedId;
-        console.log("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
+        verboseLog("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
       }
       
       // Convert to numbers, but preserve 0 as valid
@@ -198,7 +199,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       
       if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
         const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
-        console.log("[Assessment Action] ✅ Navigating to:", url);
+        verboseLog("[Assessment Action] ✅ Navigating to:", url);
         window.location.hash = url;
       } else {
         // Fallback: try to navigate to assessments page if metadata is incomplete

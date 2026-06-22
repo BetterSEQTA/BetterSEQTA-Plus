@@ -3,6 +3,7 @@ import type { Plugin } from "../../core/types";
 import { attachTimetableColorisRecovery } from "@/seqta/utils/timetableColoris";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { verboseLog } from "@/utils/verboseLog";
 
 const timetablePlugin: Plugin<{}, {}> = {
   id: "timetable",
@@ -87,7 +88,7 @@ async function handleTimetable(): Promise<void> {
 }
 
 function handleTimetableZoom(): void {
-  console.log("Initializing timetable zoom controls");
+  verboseLog("Initializing timetable zoom controls");
 
   // Create zoom controls
   const zoomControls = document.createElement("div");

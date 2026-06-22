@@ -3,6 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { extractTextFromValue } from "../extract";
 import { delay } from "@/seqta/utils/delay";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 /**
  * Indexes student goals from `/seqta/student/load/goals`.
  *
@@ -42,7 +43,7 @@ export const goalsJob: Job = {
       { mode: "years" },
     );
     if (!Array.isArray(years) || years.length === 0) {
-      console.debug("[Goals job] No goal years available; skipping.");
+      verboseDebug("[Goals job] No goal years available; skipping.");
       return [];
     }
 
@@ -101,7 +102,7 @@ export const goalsJob: Job = {
       await delay(PER_YEAR_DELAY_MS);
     }
 
-    console.debug(`[Goals job] Indexed ${items.length} goal entries.`);
+    verboseDebug(`[Goals job] Indexed ${items.length} goal entries.`);
     return items;
   },
 

@@ -3,6 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 /**
  * Indexes student folio entries from `/seqta/student/folio`.
  *
@@ -126,7 +127,7 @@ export const folioJob: Job = {
       await delay(PER_ITEM_DELAY_MS);
     }
 
-    console.debug(`[Folio job] Indexed ${items.length} folio entries.`);
+    verboseDebug(`[Folio job] Indexed ${items.length} folio entries.`);
     return items;
   },
 

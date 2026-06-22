@@ -10,6 +10,7 @@ import {
   isStrongLexicalMatch,
   STRONG_LEXICAL_THRESHOLD,
 } from "./lexicalMatch";
+import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 
 /** Same normalization as lexical matching (trim + lowercase). */
 function normSearchKey(s: string): string {
@@ -91,7 +92,7 @@ function setCachedResults(query: string, results: CombinedResult[]) {
  */
 export function clearSearchCache(): void {
   searchCache.clear();
-  console.debug("[Search] Search result cache cleared");
+  verboseDebug("[Search] Search result cache cleared");
 }
 
 // Listen for cache clear events (e.g., on extension update)

@@ -7,6 +7,7 @@ import { loadDynamicItems } from "../utils/dynamicItems";
 import { getVectorizedItemIds } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
@@ -101,7 +102,7 @@ async function updateLastRunMeta(jobId: string): Promise<void> {
 
 async function acquireLock(): Promise<boolean> {
   if (isIndexingActive) {
-    console.debug("[Indexer] Already indexing in this tab");
+    verboseDebug("[Indexer] Already indexing in this tab");
     return false;
   }
 
@@ -200,7 +201,7 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
       console.error(`Error loading items for job store ${jobId}:`, error);
     }
   }
-  console.debug(
+  verboseDebug(
     `[Indexer] Loaded ${all.length} items from all primary stores.`,
   );
   return all;
@@ -210,7 +211,7 @@ export async function runIndexing(): Promise<void> {
   await ensureSchemaCurrent();
 
   if (!(await acquireLock())) {
-    console.debug(
+    verboseDebug(
       "%c[Indexer] Could not acquire lock - another tab is indexing or this tab is already indexing",
       "color: gray",
     );
@@ -218,7 +219,7 @@ export async function runIndexing(): Promise<void> {
   }
 
   startHeartbeat();
-  console.debug("%c[Indexer] Starting indexing...", "color: green");
+  verboseDebug("%c[Indexer] Starting indexing...", "color: green");
 
   const jobIds = Object.keys(jobs);
   let completedJobs = 0;
@@ -236,7 +237,7 @@ export async function runIndexing(): Promise<void> {
     const lastRun = await getLastRunMeta(jobId);
 
     if (!shouldRun(job, lastRun)) {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] Skipping job "${jobId}" (not due)`,
         "color: gray",
       );
@@ -288,7 +289,7 @@ export async function runIndexing(): Promise<void> {
       setProgress: (p) => saveProgress(jobId, p),
     };
 
-    console.debug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
+    verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
 
     try {
       const newItemsRaw = await job.run(ctx);
@@ -300,12 +301,12 @@ export async function runIndexing(): Promise<void> {
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);
 
-      console.debug(
+      verboseDebug(
         `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items reported by run, ${merged.length} total items now in '${jobId}' store.`,
         "color: #00c46f",
       );
     } catch (err) {
-      console.debug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
+      verboseDebug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
       console.error(err);
     }
 
@@ -321,7 +322,7 @@ export async function runIndexing(): Promise<void> {
   let allItemsInPrimaryStores = await loadAllStoredItems();
 
   if (allItemsInPrimaryStores.length > 0) {
-    console.debug(
+    verboseDebug(
       `%c[Indexer] Checking ${allItemsInPrimaryStores.length} items for vectorization...`,
       "color: #4ea1ff",
     );
@@ -331,7 +332,7 @@ export async function runIndexing(): Promise<void> {
     const newItemsToVectorize = allItemsInPrimaryStores.filter(item => !vectorizedItemIds.has(item.id));
     
     if (newItemsToVectorize.length > 0) {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] Sending ${newItemsToVectorize.length} new items to worker for vectorization (${allItemsInPrimaryStores.length - newItemsToVectorize.length} already vectorized)`,
         "color: #4ea1ff",
       );
@@ -389,7 +390,7 @@ export async function runIndexing(): Promise<void> {
             );
         }
       });
-      console.debug(
+      verboseDebug(
         "%c[Indexer] Vectorization task for stored items sent to worker.",
         "color: green",
       );
@@ -408,7 +409,7 @@ export async function runIndexing(): Promise<void> {
       );
     }
     } else {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] All ${allItemsInPrimaryStores.length} items are already vectorized, skipping worker initialization.`,
         "color: gray",
       );
@@ -421,7 +422,7 @@ export async function runIndexing(): Promise<void> {
       );
     }
   } else {
-    console.debug(
+    verboseDebug(
       "%c[Indexer] No items found in primary stores to send for vectorization.",
       "color: gray",
     );

@@ -11,6 +11,7 @@
   var TUTOR_COLOUR_PREF_PREFIX = "timetable.tutor.";
 
   function log(event, detail) {
+    if (!document.documentElement.hasAttribute("data-bsplus-verbose-log")) return;
     if (detail !== undefined) {
       console.info(LOG, event, detail);
     } else {

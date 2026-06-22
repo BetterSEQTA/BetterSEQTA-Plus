@@ -1,4 +1,5 @@
 import { settingsState } from "./listeners/SettingsState";
+import { verboseInfo } from "@/utils/verboseLog";
 
 const STYLE_ID = "bsplus-menuitem-visibility";
 
@@ -28,7 +29,7 @@ export function applyMenuItemVisibility(): void {
     )) {
       if (config && !config.toggle) {
         css += hideRule(menuItem);
-        console.info(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
+        verboseInfo(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
       }
     }
 

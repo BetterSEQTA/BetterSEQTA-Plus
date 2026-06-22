@@ -7,6 +7,7 @@ import { loadAllStoredItems } from "../indexer";
 import { renderComponentMap } from "../renderComponents";
 import { jobs } from "../jobs";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const RATE_LIMIT_CONFIG = {
   minDelay: 30,
   maxDelay: 3000,
@@ -208,7 +209,7 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
   ) {
     progress.circuitBreakerOpen = false;
     progress.consecutiveFailures = 0;
-    console.info(
+    verboseInfo(
       `[Messages job] Circuit breaker closed after ${RATE_LIMIT_CONFIG.circuitBreakerResetTime}ms`,
     );
     return false;
@@ -352,7 +353,7 @@ async function processMessagesInParallel(
       batchResponseTime,
     );
 
-    console.log(
+    verboseLog(
       `[Messages job] Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
     );
   }
@@ -397,7 +398,7 @@ export const messagesJob: Job = {
         await vectorWorker.startStreamingSession(
           progress.totalEstimated,
           (progressData) => {
-            console.log(
+            verboseLog(
               `[Messages job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
@@ -405,7 +406,7 @@ export const messagesJob: Job = {
           "messages",
         );
         progress.streamingStarted = true;
-        console.log(
+        verboseLog(
           `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
         );
       } catch (error) {
@@ -422,7 +423,7 @@ export const messagesJob: Job = {
     let itemsStreamedToVector = 0;
 
     if (progress.retryQueue.length > 0) {
-      console.log(
+      verboseLog(
         `[Messages job] Processing ${Math.min(progress.retryQueue.length, 10)} items from retry queue`,
       );
 
@@ -505,7 +506,7 @@ export const messagesJob: Job = {
           batchResponseTime,
         );
 
-        console.log(
+        verboseLog(
           `[Messages job] Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
         );
       }
@@ -590,7 +591,7 @@ export const messagesJob: Job = {
         try {
           await vectorWorker.streamItems(itemsToStream);
           itemsStreamedToVector += itemsToStream.length;
-          console.log(
+          verboseLog(
             `[Messages job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
         } catch (error) {
@@ -659,7 +660,7 @@ export const messagesJob: Job = {
         await ctx.setProgress(progress);
         progressUpdateCounter = 0;
 
-        console.log(
+        verboseLog(
           `[Messages job] Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
         );
       }
@@ -673,7 +674,7 @@ export const messagesJob: Job = {
     if (progress.streamingStarted) {
       try {
         await vectorWorker.endStreamingSession();
-        console.log(
+        verboseLog(
           `[Messages job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
       } catch (error) {

@@ -6,6 +6,7 @@ import {
   pickId,
   pickTitle,
 } from "./extract";
+import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { loadAllStoredItems } from "./indexer";
 import { loadDynamicItems } from "../utils/dynamicItems";
@@ -542,7 +543,7 @@ export function installPassiveObserver(): void {
       }
     } catch (e) {
       // Never let observer errors bubble up to the host page.
-      console.debug("[Passive Observer] fetch hook error:", e);
+      verboseDebug("[Passive Observer] fetch hook error:", e);
     }
 
     return response;
@@ -605,7 +606,7 @@ export function installPassiveObserver(): void {
                 void persistItems(items);
               }
             } catch (e) {
-              console.debug("[Passive Observer] xhr load error:", e);
+              verboseDebug("[Passive Observer] xhr load error:", e);
             }
           });
         }
@@ -616,7 +617,7 @@ export function installPassiveObserver(): void {
     };
   }
 
-  console.debug("[Passive Observer] Installed.");
+  verboseDebug("[Passive Observer] Installed.");
 }
 
 /**

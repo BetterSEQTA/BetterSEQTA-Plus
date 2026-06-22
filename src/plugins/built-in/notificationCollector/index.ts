@@ -1,5 +1,6 @@
 import type { Plugin } from "../../core/types";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { verboseInfo } from "@/utils/verboseLog";
 
 interface NotificationCollectorStorage {
   lastNotificationCount: number;
@@ -75,7 +76,7 @@ const notificationCollectorPlugin: Plugin<{}, NotificationCollectorStorage> = {
         if (alertDiv) {
           alertDiv.textContent = notificationCount.toString();
         } else {
-          console.info("[BetterSEQTA+] No notifications currently");
+          verboseInfo("[BetterSEQTA+] No notifications currently");
         }
       } catch (error) {
         console.error("[BetterSEQTA+] Error fetching notifications:", error);

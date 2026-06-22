@@ -8,6 +8,7 @@ import { loadAllStoredItems } from "../indexer";
 import { renderComponentMap } from "../renderComponents";
 import { jobs } from "../jobs";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const NOTIFICATIONS_RATE_LIMIT = {
   baseDelay: 150,
   maxDelay: 3000,
@@ -201,7 +202,7 @@ export const notificationsJob: Job = {
         await vectorWorker.startStreamingSession(
           estimatedTotal,
           (progressData) => {
-            console.log(
+            verboseLog(
               `[Notifications job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
@@ -209,7 +210,7 @@ export const notificationsJob: Job = {
           "notifications",
         );
         progress.streamingStarted = true;
-        console.log(
+        verboseLog(
           `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
         );
       } catch (error) {
@@ -247,7 +248,7 @@ export const notificationsJob: Job = {
     let itemsStreamedToVector = 0;
 
     if (progress.retryQueue.length > 0) {
-      console.log(
+      verboseLog(
         `[Notifications job] Processing ${Math.min(progress.retryQueue.length, 3)} items from retry queue`,
       );
 
@@ -352,7 +353,7 @@ export const notificationsJob: Job = {
         try {
           await vectorWorker.streamItems([...itemsToStream]);
           itemsStreamedToVector += itemsToStream.length;
-          console.log(
+          verboseLog(
             `[Notifications job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
           itemsToStream.length = 0;
@@ -424,7 +425,7 @@ export const notificationsJob: Job = {
       try {
         await vectorWorker.streamItems([...itemsToStream]);
         itemsStreamedToVector += itemsToStream.length;
-        console.log(
+        verboseLog(
           `[Notifications job] Streamed final ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
         );
       } catch (error) {
@@ -438,7 +439,7 @@ export const notificationsJob: Job = {
     if (progress.streamingStarted) {
       try {
         await vectorWorker.endStreamingSession();
-        console.log(
+        verboseLog(
           `[Notifications job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
         progress.streamingStarted = false;
@@ -459,7 +460,7 @@ export const notificationsJob: Job = {
     }
 
     await ctx.setProgress(progress);
-    console.log(
+    verboseLog(
       `[Notifications job] Processed ${processedCount} notifications, ${progress.retryQueue.length} in retry queue, ${progress.failedRequests} failures, ${itemsStreamedToVector} items streamed to vector worker`,
     );
 

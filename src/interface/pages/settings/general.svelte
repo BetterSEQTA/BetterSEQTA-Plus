@@ -494,6 +494,18 @@
       </div>
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
+          <h2 class="text-sm font-bold">Verbose logging</h2>
+          <p class="text-xs">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.verboseLogging ?? false}
+            onChange={(isOn: boolean) => settingsState.verboseLogging = isOn}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
           <h2 class="text-sm font-bold">Sensitive Hider</h2>
           <p class="text-xs">Replace sensitive content with mock data</p>
         </div>

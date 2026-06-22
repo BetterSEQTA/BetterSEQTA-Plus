@@ -140,6 +140,13 @@ export default defineConfig(({ command }) => ({
           "utils",
           "seqtaMenuColourPatch.js",
         ),
+        themeImagePagePatch: join(
+          __dirname,
+          "src",
+          "seqta",
+          "utils",
+          "themeImagePagePatch.js",
+        ),
       },
       output: {
         assetFileNames: "assets/[name]-[hash][extname]",

@@ -1,3 +1,4 @@
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 /**
  * Check which items are already vectorized in embeddia's IndexedDB
  * Returns a Set of item IDs that are already indexed
@@ -7,7 +8,7 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
     const request = indexedDB.open("embeddiaDB");
     
     request.onerror = () => {
-      console.debug("Could not open embeddiaDB, assuming no items are vectorized");
+      verboseDebug("Could not open embeddiaDB, assuming no items are vectorized");
       resolve(new Set());
     };
     
@@ -15,7 +16,7 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
       const db = (event.target as IDBOpenDBRequest).result;
       
       if (!db.objectStoreNames.contains("embeddiaObjectStore")) {
-        console.debug("embeddiaObjectStore not found, assuming no items are vectorized");
+        verboseDebug("embeddiaObjectStore not found, assuming no items are vectorized");
         db.close();
         resolve(new Set());
         return;
@@ -34,7 +35,7 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
             }
           });
           
-          console.debug(`Found ${vectorizedIds.size} already vectorized items in embeddia DB`);
+          verboseDebug(`Found ${vectorizedIds.size} already vectorized items in embeddia DB`);
           db.close();
           resolve(vectorizedIds);
         };
