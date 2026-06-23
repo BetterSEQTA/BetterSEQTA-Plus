@@ -28,6 +28,8 @@
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import LucideMoon from '@/interface/components/icons/LucideMoon.svelte'
+  import LucideSun from '@/interface/components/icons/LucideSun.svelte'
 
   const { themeID } = $props<{ themeID: string }>()
   const themeManager = ThemeManager.getInstance();
@@ -253,19 +255,23 @@
             </div>
           {:else if item.type === 'lightDarkToggle'}
             <button
-              class="overflow-hidden relative px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 font-IconFamily"
+              class="overflow-hidden relative flex justify-center items-center px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
               onclick={() => (item.props as LightDarkToggleProps).onChange(!(item.props as LightDarkToggleProps).state)}
             >
               {#key (item.props as LightDarkToggleProps).state}
                 <span
-                  class="absolute"
+                  class="absolute flex items-center justify-center"
                   in:fade={{ duration: 150 }}
                   out:fade={{ duration: 150 }}
                 >
-                  {(item.props as LightDarkToggleProps).state ? '\uec12' : '\uecfe'}
+                  {#if (item.props as LightDarkToggleProps).state}
+                    <LucideMoon class="w-5 h-5" />
+                  {:else}
+                    <LucideSun class="w-5 h-5" />
+                  {/if}
                 </span>
               {/key}
-              <span class='opacity-0'>{'\uec12'}</span>
+              <span class="opacity-0 inline-flex"><LucideMoon class="w-5 h-5" /></span>
             </button>
           {/if}
         </div>
