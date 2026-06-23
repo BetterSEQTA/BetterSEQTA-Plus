@@ -62,14 +62,4 @@ runs:
       env:
         UPDATE_CHANNEL: ${{ inputs.update_channel }}
         BUILD_LABEL: ${{ inputs.build_label }}
-      run: |
-        VERSION="${{ steps.version.outputs.version }}"
-        if [ "$UPDATE_CHANNEL" = "nightly" ] && [ -n "$BUILD_LABEL" ]; then
-          BASE="betterseqtaplus-nightly-${BUILD_LABEL}"
-        else
-          BASE="betterseqtaplus-${VERSION}"
-        fi
-        tar -a -cf "dist/${BASE}-chrome.zip" -C dist/chrome .
-        tar -a -cf "dist/${BASE}-firefox.zip" -C dist/firefox .
-        echo "chrome_zip=dist/${BASE}-chrome.zip" >> "$GITHUB_OUTPUT"
-        echo "firefox_zip=dist/${BASE}-firefox.zip" >> "$GITHUB_OUTPUT"
+      run: node scripts/package-extension-zips.mjs "${{ steps.version.outputs.version }}"
