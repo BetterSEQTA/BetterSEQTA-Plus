@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { clearCloudPfpCache } from "@/seqta/utils/cloudPfpCache";
 import { clearLastUploadedSnapshot } from "@/seqta/utils/cloudSettingsSync";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -167,12 +168,14 @@ class CloudAuthService {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const clientId = await this.getClientId();
+      const device_name = await getBsplusDeviceName();
       const result = (await browser.runtime.sendMessage({
         type: "cloudLogin",
         client_id: clientId,
         redirect_uri: REDIRECT_URI,
         login: login.trim(),
         password,
+        device_name,
       })) as {
         access_token?: string;
         refresh_token?: string;

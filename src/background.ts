@@ -11,6 +11,7 @@ import {
   requestCloudSettingsDebouncedUpload,
   runCloudSettingsPoll,
 } from "./background/cloudSettingsAutoSync";
+import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -178,25 +179,33 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
 }
 
 function handleCloudLogin(request: any, sendResponse: MessageSender): boolean {
-  const { client_id, redirect_uri, login, password } = request;
+  const { client_id, redirect_uri, login, password, device_name } = request;
   if (!client_id || !redirect_uri || !login || !password) {
     sendResponse({ error: "Missing client_id, redirect_uri, login, or password" });
     return false;
   }
-  fetch("https://accounts.betterseqta.org/api/bsplus/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id, redirect_uri, login, password }),
-  })
-    .then(async (r) => {
+  void (async () => {
+    const loginBody: Record<string, string> = {
+      client_id,
+      redirect_uri,
+      login,
+      password,
+      device_name: device_name ?? await getBsplusDeviceName(),
+    };
+    try {
+      const r = await fetch("https://accounts.betterseqta.org/api/bsplus/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginBody),
+      });
       const data = await parseJsonResponse(r);
       if (!r.ok) sendResponse({ error: data?.error ?? "Login failed" });
       else sendResponse(data);
-    })
-    .catch((err) => {
+    } catch (err) {
       console.error("[Background] cloudLogin error:", err);
-      sendResponse({ error: err?.message ?? "Network error" });
-    });
+      sendResponse({ error: (err as Error)?.message ?? "Network error" });
+    }
+  })();
   return true;
 }
 
