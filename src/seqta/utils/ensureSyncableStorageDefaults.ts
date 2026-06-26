@@ -32,6 +32,8 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "verboseLogging",
   "hideSensitiveContent",
   "mockNotices",
+  "homeUpcomingAssessmentsPerSubjectMax",
+  "homeUpcomingIncludePast",
   "devGhReleaseVersionOverride",
   "lastSeenNightlyPublishedAt",
   "originalDarkMode",

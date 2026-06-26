@@ -154,6 +154,55 @@ export async function loadHomePage() {
   return cleanup;
 }
 
+let upcomingRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
+
+/** Re-render the home page upcoming assessments block when related settings change. */
+export function refreshHomeUpcomingAssessments() {
+  if (!document.getElementById("upcoming-items")) return;
+
+  if (upcomingRefreshTimeout) clearTimeout(upcomingRefreshTimeout);
+  upcomingRefreshTimeout = setTimeout(() => {
+    upcomingRefreshTimeout = null;
+    void renderHomeUpcomingAssessments();
+  }, 150);
+}
+
+async function renderHomeUpcomingAssessments() {
+  const upcomingItems = document.getElementById("upcoming-items");
+  if (!upcomingItems) return;
+
+  upcomingItems.classList.add("loading");
+  upcomingItems.innerHTML = "";
+  const filterContainer = document.getElementById("upcoming-filters");
+  if (filterContainer) filterContainer.innerHTML = "";
+
+  const [assessments, classes] = await Promise.all([
+    GetUpcomingAssessments(),
+    GetActiveClasses(),
+  ]);
+
+  const activeSubjects = activeSubjectsFromLearnPayload(classes);
+  const currentAssessments = filterAssessmentsForActiveSubjects(
+    assessments,
+    activeSubjects,
+  ).sort(comparedate);
+
+  await CreateUpcomingSection(currentAssessments, activeSubjects);
+  upcomingItems.classList.remove("loading");
+}
+
+export function registerHomeUpcomingSettingsListeners() {
+  const keys = [
+    "homeUpcomingSubjectsMax",
+    "homeUpcomingAssessmentsPerSubjectMax",
+    "homeUpcomingIncludePast",
+  ] as const;
+
+  for (const key of keys) {
+    settingsState.register(key, () => refreshHomeUpcomingAssessments());
+  }
+}
+
 async function GetUpcomingAssessments() {
   try {
     return fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
@@ -285,7 +334,13 @@ function debounce<T extends (...args: any[]) => any>(
 }
 
 function comparedate(obj1: any, obj2: any) {
-  return obj1.date < obj2.date ? -1 : obj1.date > obj2.date ? 1 : 0;
+  const d1 = new Date(obj1.due || obj1.date || 0).getTime();
+  const d2 = new Date(obj2.due || obj2.date || 0).getTime();
+  return d1 - d2;
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 function processNotices(response: any, labelArray: string[]) {
   const NoticeContainer = document.getElementById("notice-container");
@@ -894,20 +949,73 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lessonattendance ? lessonattendance.label : " ";
 }
 
+function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
+  const maxSubjects = settingsState.homeUpcomingSubjectsMax ?? 5;
+  const maxPerSubject = settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0;
+
+  for (let i = 0; i < assessments.length; i++) {
+    const subject = activeSubjectForAssessment(assessments[i], activeSubjects);
+    assessments[i].filterCode = subject?.code ?? assessments[i].code;
+  }
+
+  const bySubject = new Map<string, any[]>();
+  const subjectOrder: string[] = [];
+
+  for (const assessment of assessments) {
+    const code = assessment.filterCode;
+    if (!bySubject.has(code)) {
+      bySubject.set(code, []);
+      subjectOrder.push(code);
+    }
+    bySubject.get(code)!.push(assessment);
+  }
+
+  for (const items of bySubject.values()) {
+    items.sort(
+      (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
+    );
+  }
+
+  subjectOrder.sort(
+    (a, b) =>
+      new Date(bySubject.get(a)![0].due).getTime() -
+      new Date(bySubject.get(b)![0].due).getTime(),
+  );
+
+  const subjectLimit =
+    maxSubjects > 0 ? maxSubjects : subjectOrder.length;
+  const allowedSubjects = subjectOrder.slice(0, subjectLimit);
+
+  const limited: any[] = [];
+  for (const code of allowedSubjects) {
+    const items = bySubject.get(code)!;
+    const perSubjectLimit = maxPerSubject > 0 ? maxPerSubject : items.length;
+    limited.push(...items.slice(0, perSubjectLimit));
+  }
+
+  limited.sort(
+    (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
+  );
+
+  assessments.splice(0, assessments.length, ...limited);
+}
+
 async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   const upcomingitemcontainer = document.querySelector("#upcoming-items");
-  const overdueDates = [];
   const upcomingDates = {};
   const Today = new Date();
 
-  for (let i = 0; i < assessments.length; i++) {
-    const assessmentdue = new Date(assessments[i].due);
-    if (assessmentdue < Today && !CheckSpecialDay(Today, assessmentdue)) {
-      overdueDates.push(assessments[i]);
-      assessments.splice(i, 1);
-      i--;
+  if (!(settingsState.homeUpcomingIncludePast ?? true)) {
+    const todayStart = startOfDay(Today);
+    for (let i = assessments.length - 1; i >= 0; i--) {
+      const assessmentdue = new Date(assessments[i].due);
+      if (assessmentdue < todayStart) {
+        assessments.splice(i, 1);
+      }
     }
   }
+
+  applyHomeUpcomingLimits(assessments, activeSubjects);
 
   const colours = await GetLessonColours();
 
@@ -944,14 +1052,6 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   }
 
   CreateFilters(filterSubjects);
-
-  for (let i = 0; i < assessments.length; i++) {
-    const subject = activeSubjectForAssessment(
-      assessments[i],
-      activeSubjects,
-    );
-    assessments[i].filterCode = subject?.code ?? assessments[i].code;
-  }
 
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];

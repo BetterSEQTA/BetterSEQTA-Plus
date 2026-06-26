@@ -5,6 +5,7 @@ import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 // Shortcuts rendering
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
+import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/Loaders/LoadHomePage";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/OpenMenuOptions";
 
@@ -39,6 +40,7 @@ export class StorageChangeHandler {
       "subjectfilters",
       FilterUpcomingAssessments.bind(this),
     );
+    registerHomeUpcomingSettingsListeners();
     settingsState.register(
       "iconOnlySidebar",
       this.handleIconOnlySidebarChange.bind(this),

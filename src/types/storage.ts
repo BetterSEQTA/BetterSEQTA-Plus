@@ -48,6 +48,12 @@ export interface SettingsState {
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
+  /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
+  homeUpcomingSubjectsMax?: number;
+  /** Max assessments shown per subject on the home page; 0 = no limit. */
+  homeUpcomingAssessmentsPerSubjectMax?: number;
+  /** When true, show past-due assessments from the upcoming list on the home page. */
+  homeUpcomingIncludePast?: boolean;
   devMode?: boolean;
   /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
   verboseLogging?: boolean;

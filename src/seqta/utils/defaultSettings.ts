@@ -50,6 +50,9 @@ export function getDefaultSettingsState(): SettingsState {
     animations: !isLowEndDevice,
     assessmentsAverage: false,
     defaultPage: "home",
+    homeUpcomingSubjectsMax: 5,
+    homeUpcomingAssessmentsPerSubjectMax: 0,
+    homeUpcomingIncludePast: true,
     shortcuts: [
       { name: "Outlook", enabled: true },
       { name: "Office", enabled: true },

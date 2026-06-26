@@ -293,6 +293,69 @@
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
+          <h2 class="text-sm font-bold">Home Page Assessments</h2>
+          <p class="text-xs">Limit upcoming assessments shown on the home page by subject</p>
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Include Past Assessments</h2>
+          <p class="text-xs">Show past-due assessments from the upcoming list, matching the Assessments page</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.homeUpcomingIncludePast ?? true}
+            onChange={(isOn: boolean) => (settingsState.homeUpcomingIncludePast = isOn)}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Maximum Subjects</h2>
+          <p class="text-xs">Number of subjects to include, ordered by soonest due date</p>
+        </div>
+        <div>
+          <Select
+            value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
+            onChange={(value: string) => (settingsState.homeUpcomingSubjectsMax = Number(value))}
+            options={[
+              { value: "0", label: "All" },
+              { value: "3", label: "3" },
+              { value: "5", label: "5" },
+              { value: "7", label: "7" },
+              { value: "10", label: "10" },
+              { value: "15", label: "15" },
+            ]}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
+          <p class="text-xs">Assessments shown for each included subject</p>
+        </div>
+        <div>
+          <Select
+            value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
+            onChange={(value: string) => (settingsState.homeUpcomingAssessmentsPerSubjectMax = Number(value))}
+            options={[
+              { value: "0", label: "All" },
+              { value: "1", label: "1" },
+              { value: "2", label: "2" },
+              { value: "3", label: "3" },
+              { value: "5", label: "5" },
+              { value: "10", label: "10" },
+            ]}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
           <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
           <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
         </div>
