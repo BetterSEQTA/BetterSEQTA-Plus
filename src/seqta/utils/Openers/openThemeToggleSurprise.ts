@@ -1,7 +1,8 @@
 import browser from "webextension-polyfill";
+import themeToggleSurpriseVideo from "@/resources/theme-toggle-surprise.mp4";
 
 /** Maintainer note: the light/dark toggle easter egg (10 clicks) plays a Rick Roll video. */
-const VIDEO_RESOURCE = "resources/theme-toggle-surprise.mp4";
+const VIDEO_SRC = browser.runtime.getURL(themeToggleSurpriseVideo);
 const POPOUT_ROOT_ID = "bsplus-ld-surprise-root";
 /** Preload begins this many toggle clicks before the reveal. */
 export const THEME_TOGGLE_SURPRISE_PRELOAD_AT = 5;
@@ -10,7 +11,6 @@ export const THEME_TOGGLE_SURPRISE_TRIGGER_AT = 10;
 let playerRoot: HTMLElement | null = null;
 let playerVideo: HTMLVideoElement | null = null;
 let playerPlayOverlay: HTMLButtonElement | null = null;
-let videoSourceUrl: string | null = null;
 
 function hostElement(): HTMLElement {
   return document.getElementById("container") ?? document.body;
@@ -24,18 +24,10 @@ function showPlayOverlay(): void {
   playerPlayOverlay?.classList.remove("bsplus-ld-surprise-play--hidden");
 }
 
-function videoResourceUrl(): string {
-  if (!videoSourceUrl) {
-    videoSourceUrl = browser.runtime.getURL(VIDEO_RESOURCE);
-  }
-  return videoSourceUrl;
-}
-
 function attachVideoSource(): void {
   if (!playerVideo) return;
-  const src = videoResourceUrl();
-  if (playerVideo.src === src) return;
-  playerVideo.src = src;
+  if (playerVideo.src === VIDEO_SRC) return;
+  playerVideo.src = VIDEO_SRC;
   playerVideo.load();
 }
 

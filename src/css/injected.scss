@@ -4993,7 +4993,7 @@ h2.home-subtitle {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  width: min(420px, calc(100vw - 48px));
+  width: min(640px, calc(100vw - 48px));
   aspect-ratio: 16 / 9;
   border-radius: 16px;
   overflow: hidden;
@@ -5015,11 +5015,11 @@ h2.home-subtitle {
 
 .bsplus-ld-surprise-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   z-index: 1;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 0;
   border-radius: 999px;
@@ -5031,7 +5031,7 @@ h2.home-subtitle {
 .bsplus-ld-surprise-close::before {
   content: "\ed8a";
   font-family: "IconFamily";
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   pointer-events: none;
 }
@@ -5059,7 +5059,7 @@ h2.home-subtitle {
 .bsplus-ld-surprise-play::before {
   content: "\ec5d";
   font-family: "IconFamily";
-  font-size: 3rem;
+  font-size: 4rem;
   line-height: 1;
   pointer-events: none;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
