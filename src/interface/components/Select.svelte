@@ -5,29 +5,149 @@
     options: Array<{ value: string, label: string }>
   }>();
 
+  const listboxId = `select-listbox-${Math.random().toString(36).slice(2, 9)}`;
+
   let isOpen = $state(false);
+  let activeIndex = $state(0);
   let root: HTMLDivElement | undefined = $state();
+  let trigger: HTMLButtonElement | undefined = $state();
+  let listbox: HTMLUListElement | undefined = $state();
 
   const selectedLabel = $derived(
     options.find((option) => option.value === value)?.label ?? value,
   );
 
+  const selectedIndex = $derived(
+    options.findIndex((option) => option.value === value),
+  );
+
+  const activeDescendantId = $derived(
+    isOpen && options[activeIndex]
+      ? optionId(options[activeIndex].value)
+      : undefined,
+  );
+
+  function optionId(optionValue: string): string {
+    return `${listboxId}-option-${optionValue}`;
+  }
+
+  function openMenu(preferredIndex?: number) {
+    isOpen = true;
+    activeIndex =
+      preferredIndex ??
+      (selectedIndex >= 0 ? selectedIndex : 0);
+  }
+
+  function closeMenu(returnFocus = true) {
+    isOpen = false;
+    if (returnFocus) {
+      trigger?.focus();
+    }
+  }
+
   function toggleOpen() {
-    isOpen = !isOpen;
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   }
 
   function selectValue(nextValue: string) {
     onChange(nextValue);
-    isOpen = false;
+    closeMenu();
+  }
+
+  function selectActive() {
+    const option = options[activeIndex];
+    if (option) {
+      selectValue(option.value);
+    }
+  }
+
+  function moveActive(delta: number) {
+    if (!options.length) return;
+    activeIndex = (activeIndex + delta + options.length) % options.length;
+  }
+
+  function onTriggerKeydown(event: KeyboardEvent) {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        if (isOpen) {
+          moveActive(1);
+        } else {
+          openMenu();
+        }
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        if (isOpen) {
+          moveActive(-1);
+        } else {
+          openMenu();
+        }
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        if (isOpen) {
+          selectActive();
+        } else {
+          openMenu();
+        }
+        break;
+      case "Escape":
+        if (isOpen) {
+          event.preventDefault();
+          closeMenu();
+        }
+        break;
+    }
+  }
+
+  function onListboxKeydown(event: KeyboardEvent) {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        moveActive(1);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        moveActive(-1);
+        break;
+      case "Home":
+        event.preventDefault();
+        activeIndex = 0;
+        break;
+      case "End":
+        event.preventDefault();
+        activeIndex = Math.max(0, options.length - 1);
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        selectActive();
+        break;
+      case "Escape":
+        event.preventDefault();
+        closeMenu();
+        break;
+      case "Tab":
+        closeMenu(false);
+        break;
+    }
   }
 
   $effect(() => {
     if (!isOpen) return;
 
+    queueMicrotask(() => listbox?.focus());
+
     const onPointerDown = (event: PointerEvent) => {
       const path = event.composedPath();
       if (root && path.includes(root)) return;
-      isOpen = false;
+      closeMenu(false);
     };
 
     document.addEventListener("pointerdown", onPointerDown, true);
@@ -37,11 +157,14 @@
 
 <div class="select-wrapper" bind:this={root}>
   <button
+    bind:this={trigger}
     type="button"
     class="select-trigger"
     aria-haspopup="listbox"
     aria-expanded={isOpen}
+    aria-controls={listboxId}
     onclick={toggleOpen}
+    onkeydown={onTriggerKeydown}
   >
     <span class="select-label">{selectedLabel}</span>
     <span class="select-icon" aria-hidden="true">
@@ -56,14 +179,29 @@
   </button>
 
   {#if isOpen}
-    <ul class="select-menu" role="listbox">
-      {#each options as option (option.value)}
-        <li role="option" aria-selected={option.value === value}>
+    <ul
+      bind:this={listbox}
+      id={listboxId}
+      class="select-menu"
+      role="listbox"
+      tabindex="-1"
+      aria-activedescendant={activeDescendantId}
+      onkeydown={onListboxKeydown}
+    >
+      {#each options as option, index (option.value)}
+        <li
+          id={optionId(option.value)}
+          role="option"
+          aria-selected={option.value === value}
+        >
           <button
             type="button"
             class="select-option"
             class:is-selected={option.value === value}
+            class:is-active={index === activeIndex}
+            tabindex="-1"
             onclick={() => selectValue(option.value)}
+            onmouseenter={() => (activeIndex = index)}
           >
             {option.label}
           </button>
@@ -146,6 +284,14 @@
     gap: 0.125rem;
   }
 
+  .select-menu:focus-visible {
+    outline: none;
+    box-shadow:
+      0 10px 25px -5px rgb(0 0 0 / 0.25),
+      0 8px 10px -6px rgb(0 0 0 / 0.2),
+      0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
+  }
+
   .select-option {
     display: block;
     width: 100%;
@@ -163,7 +309,8 @@
   }
 
   .select-option:hover,
-  .select-option:focus-visible {
+  .select-option:focus-visible,
+  .select-option.is-active {
     outline: none;
     background: var(--theme-secondary, #e5e7eb);
   }

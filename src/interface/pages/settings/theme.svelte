@@ -22,7 +22,7 @@
       <button
         onclick={() => editMode = !editMode}
         class="absolute top-0 right-0 z-10 px-2 h-8 text-lg rounded-xl bg-zinc-100 dark:bg-zinc-700">
-        <span class="mr-2">{editMode ? 'Done' : 'Remove'}</span>
+        <span class="mr-2">{editMode ? 'Done' : 'Edit'}</span>
         <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
       </button>
 
