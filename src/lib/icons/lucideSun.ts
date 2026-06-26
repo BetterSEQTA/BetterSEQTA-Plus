@@ -1,15 +1,6 @@
 /**
- * Lucide "sun" icon (https://lucide.dev/icons/sun, ISC License).
- * Thin strokes — reads clearly as a sun, not a gear.
+ * Material "light_mode" sun icon — filled style to match SEQTA menu bar icons.
  */
 export const LUCIDE_SUN_ICON_SVG = `
-  <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/>
-  <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/>
+  <path fill="currentColor" d="M12,7C9.24,7 7,9.24 7,12C7,14.76 9.24,17 12,17C14.76,17 17,14.76 17,12C17,9.24 14.76,7 12,7M2,13H4C4.55,13 5,12.55 5,12C5,11.45 4.55,11 4,11H2C1.45,11 1,11.45 1,12C1,12.55 1.45,13 2,13M20,13H22C22.55,13 23,12.55 23,12C23,11.45 22.55,11 22,11H20C19.45,11 19,11.45 19,12C19,12.55 19.45,13 20,13M11,2V4C11,4.55 11.45,5 12,5C12.55,5 13,4.55 13,4V2C13,1.45 12.55,1 12,1C11.45,1 11,1.45 11,2M11,20V22C11,22.55 11.45,23 12,23C12.55,23 13,22.55 13,22V20C13,19.45 12.55,19 12,19C11.45,19 11,19.45 11,20M5.99,4.58C5.6,4.19 4.96,4.19 4.58,4.58C4.19,4.96 4.19,5.6 4.58,5.99L5.64,7.05C6.03,7.44 6.67,7.44 7.05,7.05C7.44,6.67 7.44,6.03 7.05,5.64L5.99,4.58M18.36,16.95C17.97,16.56 17.33,16.56 16.95,16.95C16.56,17.33 16.56,17.97 16.95,18.36L18.01,19.42C18.4,19.81 19.04,19.81 19.42,19.42C19.81,19.04 19.81,18.4 19.42,18.01L18.36,16.95M19.42,5.99C19.81,5.6 19.81,4.96 19.42,4.58C19.04,4.19 18.4,4.19 18.01,4.58L16.95,5.64C16.56,6.03 16.56,6.67 16.95,7.05C17.33,7.44 17.97,7.44 18.36,7.05L19.42,5.99M7.05,18.36C7.44,17.97 7.44,17.33 7.05,16.95C6.67,16.56 6.03,16.56 5.64,16.95L4.58,18.01C4.19,18.4 4.19,19.04 4.58,19.42C4.96,19.81 5.6,19.81 5.99,19.42L7.05,18.36Z"/>
 `.trim();
