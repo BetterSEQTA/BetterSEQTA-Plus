@@ -4,6 +4,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
+import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
 
 type ThemeSettingKey =
   | "selectedColor"
@@ -61,26 +62,6 @@ const ACCENT_CSS_VARS = [
   "--accentColor",
   "--colour-betterseqta-blue",
 ] as const;
-
-/** Resolve a solid colour for charts (gradients → first stop). */
-function extractSolidColor(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed || trimmed === "initial") return null;
-  if (
-    trimmed.startsWith("#") ||
-    trimmed.startsWith("rgb") ||
-    trimmed.startsWith("hsl")
-  ) {
-    return trimmed;
-  }
-  if (trimmed.includes("gradient")) {
-    const match = trimmed.match(
-      /#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/i,
-    );
-    return match?.[0] ?? null;
-  }
-  return null;
-}
 
 const THEME_ACCENT_OVERRIDES: Record<string, string> = {
   "bb0aaf40-55ef-40f7-bc64-93b67ef96c01": "#4ade80",
