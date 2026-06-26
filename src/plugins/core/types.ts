@@ -141,6 +141,7 @@ export interface PluginAPI<T extends PluginSettings, S = any> {
   settings: SettingsAPI<T>;
   storage: TypedStorageAPI<S>;
   events: EventsAPI;
+  dispose: () => void;
 }
 
 export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {

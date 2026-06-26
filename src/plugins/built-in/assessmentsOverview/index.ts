@@ -1,7 +1,7 @@
 import type { Plugin } from "../../core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { getAssessmentsData } from "./api";
-import { renderErrorState, renderGrid, renderSkeletonLoader } from "./ui";
+import { renderErrorState, renderGrid, renderSkeletonLoader, teardownOverviewUi } from "./ui";
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
@@ -61,10 +61,13 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
     const gridItem = document.createElement("li");
     gridItem.className = "item";
     gridItem.classList.add(OVERVIEW_MENU_CLASS);
+    gridItem.dataset.betterseqta = "true";
     const label = document.createElement("label");
     label.textContent = "Overview";
     gridItem.appendChild(label);
     menu.insertBefore(gridItem, menu.firstChild);
+
+    let loadRequestId = 0;
 
     const menuObserver = new MutationObserver(() => {
       ensureOverviewMenuPosition(menu, gridItem);
@@ -77,11 +80,24 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
     const clickHandler = (e: Event) => {
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       void loadGridView();
     };
-    gridItem.addEventListener("click", clickHandler);
+    gridItem.addEventListener("click", clickHandler, true);
+
+    const popstateHandler = () => {
+      if (isOverviewRoute()) {
+        void loadGridView();
+      } else {
+        loadRequestId += 1;
+        teardownOverviewUi();
+      }
+    };
+    window.addEventListener("popstate", popstateHandler);
 
     async function loadGridView() {
+      const requestId = ++loadRequestId;
       await delay(1);
 
       if (isSeqtaEngageExperience()) {
@@ -98,7 +114,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
       }
 
       const main = document.getElementById("main");
-      if (!main) return;
+      if (!main || requestId !== loadRequestId) return;
 
       document
         .querySelectorAll('[data-key="assessments"] .item')
@@ -110,17 +126,22 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
         .querySelector('[data-key="assessments"]')
         ?.classList.add("active");
 
-  main.innerHTML = '<div id="grid-view-container" class="bsplus-overview-host"></div>';
+      main.innerHTML =
+        '<div id="grid-view-container" class="bsplus-overview-host"></div>';
       const container = document.getElementById(
         "grid-view-container",
       ) as HTMLElement;
+
+      if (requestId !== loadRequestId) return;
 
       renderSkeletonLoader(container);
 
       try {
         const data = await getAssessmentsData();
+        if (requestId !== loadRequestId) return;
         renderGrid(container, data);
       } catch (err) {
+        if (requestId !== loadRequestId) return;
         console.error("Failed to load assessments:", err);
         renderErrorState(
           container,
@@ -130,8 +151,11 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
     }
 
     return () => {
+      loadRequestId += 1;
+      window.removeEventListener("popstate", popstateHandler);
       menuObserver.disconnect();
-      gridItem.removeEventListener("click", clickHandler);
+      gridItem.removeEventListener("click", clickHandler, true);
+      teardownOverviewUi();
       gridItem.remove();
     };
   },

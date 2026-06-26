@@ -4,7 +4,7 @@ import DOMPurify from "dompurify";
  * Converts an HTML string into a DOM element, with sanitization and optional styling.
  *
  * This function first sanitizes the input HTML string using DOMPurify to prevent XSS attacks.
- * The sanitization process allows 'onclick' attributes and specific URI schemes.
+ * The sanitization process allows only safe URI schemes in links and media.
  * Then, it parses the sanitized string into an HTML document and returns its body.
  * Optionally, it can apply predefined CSS styles to the body element.
  *
@@ -16,9 +16,8 @@ export default function stringToHTML(str: string, styles = false) {
   const parser = new DOMParser();
 
   str = DOMPurify.sanitize(str, {
-    ADD_ATTR: ["onclick"],
     ALLOWED_URI_REGEXP:
-      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|chrome-extension):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      /^(?:(?:https?|mailto|tel):|\/|#|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   });
 
   const doc = parser.parseFromString(str, "text/html");

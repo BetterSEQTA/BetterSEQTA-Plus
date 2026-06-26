@@ -25,6 +25,11 @@ const REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/refresh`;
 const UPLOAD_DEBOUNCE_MS = 2000;
 const POLL_THROTTLE_MS = 24 * 60 * 60 * 1000;
 const POLL_THROTTLE_KEY = "bsplus_lastCloudPoll";
+const FETCH_TIMEOUT_MS = 30_000;
+
+function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+}
 
 type CloudSummaryResponse = {
   desqta?: unknown;
@@ -35,6 +40,7 @@ let reloadSeqtaPagesFn: (() => void) | null = null;
 let suppressAutoUploadDuringRestore = false;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let pollInFlight: Promise<void> | null = null;
+let autoSyncInitialized = false;
 
 function isAutoCloudSyncEnabled(all: Record<string, unknown>): boolean {
   return all.autoCloudSettingsSync !== false;
@@ -65,7 +71,7 @@ async function tryRefreshTokens(): Promise<boolean> {
   if (!refresh_token || !client_id) return false;
 
   try {
-    const r = await fetch(REFRESH_URL, {
+    const r = await fetchWithTimeout(REFRESH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token, client_id }),
@@ -100,7 +106,7 @@ async function fetchCloudSummaryOnce(
   | { ok: false; unauthorized: boolean; error?: string }
 > {
   try {
-    const r = await fetch(CLOUD_SUMMARY_URL, {
+    const r = await fetchWithTimeout(CLOUD_SUMMARY_URL, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -177,7 +183,7 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
       return { ok: true, skipped: true };
     }
 
-    const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
+    const r = await fetchWithTimeout(CLOUD_SETTINGS_SYNC_URL, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -235,7 +241,7 @@ type GetResult =
 
 async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
   try {
-    const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
+    const r = await fetchWithTimeout(CLOUD_SETTINGS_SYNC_URL, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
@@ -373,8 +379,8 @@ export function runCloudSettingsPoll(): Promise<void> {
     try {
       const { [POLL_THROTTLE_KEY]: last } = await browser.storage.local.get(POLL_THROTTLE_KEY);
       if (Date.now() - (Number(last) || 0) < POLL_THROTTLE_MS) return;
-      await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
       await runCloudSettingsPollInner();
+      await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
     } catch (e) {
       console.error("[BS+ cloud sync] Poll error:", e);
     } finally {
@@ -451,8 +457,21 @@ function onStorageChanged(
   })();
 }
 
+export async function withSuppressedCloudAutoUpload<T>(
+  operation: () => T | Promise<T>,
+): Promise<T> {
+  suppressAutoUploadDuringRestore = true;
+  try {
+    return await operation();
+  } finally {
+    suppressAutoUploadDuringRestore = false;
+  }
+}
+
 export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }): void {
   reloadSeqtaPagesFn = deps.reloadSeqtaPages;
+  if (autoSyncInitialized) return;
+  autoSyncInitialized = true;
   browser.storage.onChanged.addListener(onStorageChanged);
 }
 

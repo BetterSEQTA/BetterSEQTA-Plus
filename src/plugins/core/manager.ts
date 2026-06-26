@@ -23,6 +23,23 @@ interface StorageChange<T = any> {
   newValue?: T;
 }
 
+/** Phased plugin startup: critical UI first, light DOM next, heavy plugins last. */
+const PLUGIN_START_PHASES: readonly string[][] = [
+  ["themes", "animated-background"],
+  [
+    "timetable",
+    "timetableEdit",
+    "notificationCollector",
+    "enhanced-navigation",
+    "assessments-overview",
+    "assessments-average",
+    "messageFolders",
+    "profile-picture",
+    "background-music",
+  ],
+  ["global-search", "grade-analytics"],
+];
+
 /**
  * Singleton class responsible for the entire lifecycle of plugins.
  * This includes registration, starting, stopping, event dispatching,
@@ -35,6 +52,7 @@ export class PluginManager {
   private runningPlugins: Map<string, boolean> = new Map();
   private eventBacklog: Map<string, any[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
+  private apiDisposers: Map<string, () => void> = new Map();
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
   private styleElements: Map<string, HTMLStyleElement> = new Map();
 
@@ -148,6 +166,7 @@ export class PluginManager {
 
     try {
       const api = createPluginAPI(plugin);
+      this.apiDisposers.set(pluginId, api.dispose);
 
       // Check if plugin is enabled before starting
       if (plugin.disableToggle) {
@@ -158,6 +177,7 @@ export class PluginManager {
         const enabled =
           pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
         if (!enabled) {
+          this.disposePluginAPI(pluginId);
           console.info(
             `Plugin "${pluginId}" is disabled, skipping initialization`,
           );
@@ -186,6 +206,8 @@ export class PluginManager {
       // Process any backlogged events
       await this.processBackloggedEvents(pluginId);
     } catch (error) {
+      this.removePluginStyles(pluginId);
+      this.disposePluginAPI(pluginId);
       console.error(
         `[BetterSEQTA+] Failed to start plugin ${pluginId}:`,
         error,
@@ -194,23 +216,55 @@ export class PluginManager {
     }
   }
 
-  /**
-   * Attempts to start all registered plugins.
-   * Errors during the start of individual plugins are caught and logged,
-   * allowing other plugins to attempt to start.
-   *
-   * @returns {Promise<void>} A promise that resolves when all plugins have attempted to start.
-   *                          It uses `Promise.allSettled` to wait for all start operations.
-   */
-  public async startAllPlugins(): Promise<void> {
-    const startPromises = Array.from(this.plugins.keys()).map((id) =>
+  private removePluginStyles(pluginId: string): void {
+    const styleElement = this.styleElements.get(pluginId);
+    if (styleElement) {
+      styleElement.remove();
+      this.styleElements.delete(pluginId);
+    }
+  }
+
+  private disposePluginAPI(pluginId: string): void {
+    const dispose = this.apiDisposers.get(pluginId);
+    if (dispose) {
+      dispose();
+      this.apiDisposers.delete(pluginId);
+    }
+  }
+
+  private async startPluginPhase(pluginIds: string[]): Promise<void> {
+    const registeredIds = new Set(this.plugins.keys());
+    const idsToStart = pluginIds.filter((id) => registeredIds.has(id));
+
+    const startPromises = idsToStart.map((id) =>
       this.startPlugin(id).catch((error) => {
         console.error(`Failed to start plugin "${id}":`, error);
-        return Promise.reject(error); // Still reject to indicate failure for this specific plugin if needed by caller
+        return Promise.reject(error);
       }),
     );
 
     await Promise.allSettled(startPromises);
+  }
+
+  /**
+   * Attempts to start all registered plugins in phased order.
+   * Errors during the start of individual plugins are caught and logged,
+   * allowing other plugins to attempt to start.
+   *
+   * @returns {Promise<void>} A promise that resolves when all plugins have attempted to start.
+   */
+  public async startAllPlugins(): Promise<void> {
+    for (const phase of PLUGIN_START_PHASES) {
+      await this.startPluginPhase(phase);
+    }
+
+    const phasedIds = new Set(PLUGIN_START_PHASES.flat());
+    const remainingIds = Array.from(this.plugins.keys()).filter(
+      (id) => !phasedIds.has(id),
+    );
+    if (remainingIds.length > 0) {
+      await this.startPluginPhase(remainingIds);
+    }
   }
 
   /**
@@ -225,12 +279,8 @@ export class PluginManager {
    * @returns {Promise<void>} A promise that resolves when the plugin has been stopped.
    */
   public async stopPlugin(pluginId: string): Promise<void> {
-    // Remove plugin styles
-    const styleElement = this.styleElements.get(pluginId);
-    if (styleElement) {
-      styleElement.remove();
-      this.styleElements.delete(pluginId);
-    }
+    this.removePluginStyles(pluginId);
+    this.disposePluginAPI(pluginId);
 
     const cleanup = this.cleanupFunctions.get(pluginId);
     if (cleanup) {

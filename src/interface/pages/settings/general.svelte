@@ -19,6 +19,7 @@
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
   import { getStoredOverride, setApiBase } from "@/seqta/utils/DevApiBase"
+  import { onMount } from "svelte"
 
   let devApiBaseInput = $state<string>(getStoredOverride() ?? "")
   let devApiBaseActive = $state<string | null>(getStoredOverride())
@@ -128,9 +129,9 @@
     await browser.storage.local.set({ [storageKey]: currentSettings });
   }
 
-  $effect(() => {
-    loadPluginSettings();
-  })
+  onMount(() => {
+    void loadPluginSettings();
+  });
 
   const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel } = $props<{ 
     showColourPicker: () => void;

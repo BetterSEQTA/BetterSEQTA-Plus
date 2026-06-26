@@ -53,6 +53,75 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
   });
 }
 
+const EMBEDDIA_DB = "embeddiaDB";
+const EMBEDDIA_STORE = "embeddiaObjectStore";
+
+/**
+ * Remove vector embeddings for the given item ids from embeddiaDB.
+ */
+export async function removeVectorEmbeddings(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  return new Promise((resolve) => {
+    const request = indexedDB.open(EMBEDDIA_DB);
+
+    request.onerror = () => resolve();
+
+    request.onsuccess = () => {
+      const db = request.result;
+
+      if (!db.objectStoreNames.contains(EMBEDDIA_STORE)) {
+        db.close();
+        resolve();
+        return;
+      }
+
+      try {
+        const transaction = db.transaction([EMBEDDIA_STORE], "readwrite");
+        const store = transaction.objectStore(EMBEDDIA_STORE);
+
+        for (const id of ids) {
+          store.delete(id);
+        }
+
+        transaction.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+
+        transaction.onerror = () => {
+          db.close();
+          resolve();
+        };
+      } catch (error) {
+        console.warn("[Indexer] Failed to remove vector embeddings:", error);
+        db.close();
+        resolve();
+      }
+    };
+  });
+}
+
+/**
+ * Delete vector embeddings that no longer exist in the structured index.
+ * Returns the number of orphaned embeddings removed.
+ */
+export async function pruneOrphanVectorEmbeddings(
+  liveItemIds: Set<string>,
+): Promise<number> {
+  const vectorizedIds = await getVectorizedItemIds();
+  const orphanIds = [...vectorizedIds].filter((id) => !liveItemIds.has(id));
+
+  if (orphanIds.length > 0) {
+    console.debug(
+      `[Indexer] Pruning ${orphanIds.length} orphaned vector embedding(s)`,
+    );
+    await removeVectorEmbeddings(orphanIds);
+  }
+
+  return orphanIds.length;
+}
+
 export function htmlToPlainText(rawHtml: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(rawHtml, "text/html");

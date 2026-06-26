@@ -67,6 +67,116 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+function isAllowedFolderColor(color: unknown): color is string {
+  return typeof color === "string" && FOLDER_COLORS.includes(color);
+}
+
+function isAllowedFolderIcon(icon: unknown): icon is string {
+  return typeof icon === "string" && FOLDER_HEROICONS.includes(icon);
+}
+
+function normalizeFolder(folder: Folder): Folder {
+  return {
+    id: typeof folder.id === "string" && folder.id ? folder.id : generateId(),
+    name: typeof folder.name === "string" ? folder.name.trim().slice(0, 30) : "Folder",
+    color: isAllowedFolderColor(folder.color) ? folder.color : FOLDER_COLORS[0],
+    emoji: isAllowedFolderIcon(folder.emoji) ? folder.emoji : FOLDER_HEROICONS[0],
+  };
+}
+
+function setSvgIconContent(parent: HTMLElement, svgMarkup: string): void {
+  parent.replaceChildren();
+  const template = document.createElement("template");
+  template.innerHTML = svgMarkup.trim();
+  const node = template.content.firstElementChild;
+  if (node) parent.appendChild(node);
+}
+
+function appendFolderBadgeContent(badge: HTMLElement, folder: Folder): void {
+  badge.replaceChildren();
+  if (folder.emoji) {
+    const iconWrap = document.createElement("span");
+    iconWrap.style.display = "inline-flex";
+    iconWrap.style.verticalAlign = "middle";
+    iconWrap.style.marginRight = "2px";
+    setSvgIconContent(iconWrap, folder.emoji);
+    badge.appendChild(iconWrap);
+  }
+  badge.appendChild(document.createTextNode(folder.name));
+}
+
+const MESSAGE_LIST_ITEM_SELECTOR =
+  "[class*='MessageList__MessageList___'] ol > li[data-message]";
+
+function getMessageListItems(): NodeListOf<Element> {
+  return document.querySelectorAll(MESSAGE_LIST_ITEM_SELECTOR);
+}
+
+function clearMessageListBadges(
+  messageItems: NodeListOf<Element>,
+  restoreSubjectPlain: (subject: Element) => void,
+): void {
+  for (const li of messageItems) {
+    const subject = li.querySelector("[class*='MessageList__subject___']");
+    if (
+      subject &&
+      (subject.querySelector(".bsplus-msg-badges") ||
+        subject.querySelector(".bsplus-subject-text"))
+    ) {
+      restoreSubjectPlain(subject);
+    } else {
+      li.querySelector(".bsplus-msg-badges")?.remove();
+    }
+  }
+}
+
+function getAssignedFolderIds(
+  msgId: string,
+  assignments: Record<string, string[]>,
+): string[] {
+  return Object.entries(assignments)
+    .filter(([, messageIds]) => messageIds.includes(msgId))
+    .map(([folderId]) => folderId);
+}
+
+function ensureMessageBadgeContainer(li: Element): HTMLElement {
+  const existing = li.querySelector(".bsplus-msg-badges") as HTMLElement | null;
+  if (existing) return existing;
+
+  const badgeContainer = document.createElement("div");
+  badgeContainer.className = "bsplus-msg-badges";
+  const subject = li.querySelector("[class*='MessageList__subject___']");
+  if (subject) {
+    if (!subject.querySelector(".bsplus-subject-text")) {
+      const textWrap = document.createElement("span");
+      textWrap.className = "bsplus-subject-text";
+      textWrap.textContent = subject.textContent;
+      subject.textContent = "";
+      subject.appendChild(textWrap);
+    }
+    subject.appendChild(badgeContainer);
+  } else {
+    li.appendChild(badgeContainer);
+  }
+  return badgeContainer;
+}
+
+function createFolderBadge(
+  folder: Folder,
+  onFilter: (folderId: string) => void,
+): HTMLElement {
+  const badge = document.createElement("span");
+  badge.className = "bsplus-msg-badge";
+  badge.style.background = folder.color;
+  appendFolderBadgeContent(badge, folder);
+  badge.title = `Filter by "${folder.name}"`;
+  badge.addEventListener("click", (e) => {
+    e.stopPropagation();
+    onFilter(folder.id);
+  });
+  return badge;
+}
+
 const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFoldersStorage> = {
   id: "messageFolders",
   name: "Message Folders",
@@ -95,7 +205,8 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     let foldedSection: HTMLElement | null = null;
     const unregisters: Array<{ unregister: () => void }> = [];
 
-    const getFolders = (): Folder[] => api.storage.folders ?? [];
+    const getFolders = (): Folder[] =>
+      (api.storage.folders ?? []).map((folder) => normalizeFolder(folder));
     const getAssignments = (): Record<string, string[]> => api.storage.messageAssignments ?? {};
 
     const saveFolders = (folders: Folder[]) => {
@@ -298,7 +409,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
         const iconSpan = document.createElement("span");
         iconSpan.className = "bsplus-folder-icon";
-        iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+        setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
         item.appendChild(iconSpan);
 
         const name = document.createElement("span");
@@ -622,7 +733,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
 
           const name = document.createElement("span");
           name.textContent = folder.name;
@@ -725,7 +836,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
           dot.style.background = folder.color;
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
           const name = document.createElement("span");
           name.textContent = folder.name;
           item.appendChild(dot);
@@ -760,66 +871,37 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     };
 
     const applyBadges = () => {
-      const messageItems = document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]");
+      const messageItems = getMessageListItems();
       if (!shouldShowBadgesInList()) {
-        for (const li of messageItems) {
-          const subject = li.querySelector("[class*='MessageList__subject___']");
-          if (subject && (subject.querySelector(".bsplus-msg-badges") || subject.querySelector(".bsplus-subject-text"))) {
-            restoreSubjectPlain(subject);
-          } else {
-            li.querySelector(".bsplus-msg-badges")?.remove();
-          }
-        }
+        clearMessageListBadges(messageItems, restoreSubjectPlain);
         return;
       }
+
       const folders = getFolders();
       const assignments = getAssignments();
+      const selectFolder = (folderId: string) => {
+        activeFolderId = folderId;
+        applyFolderFilter();
+        applyBadges();
+        renderSidebarFolders();
+      };
+
       for (const li of messageItems) {
         const msgId = li.getAttribute("data-message");
         if (!msgId) continue;
-        let badgeContainer = li.querySelector(".bsplus-msg-badges") as HTMLElement | null;
-        const folderIds: string[] = [];
-        for (const [fId, mIds] of Object.entries(assignments)) {
-          if (mIds.includes(msgId)) folderIds.push(fId);
-        }
+
+        const folderIds = getAssignedFolderIds(msgId, assignments);
         if (folderIds.length === 0) {
-          badgeContainer?.remove();
+          li.querySelector(".bsplus-msg-badges")?.remove();
           continue;
         }
-        if (!badgeContainer) {
-          badgeContainer = document.createElement("div");
-          badgeContainer.className = "bsplus-msg-badges";
-          const subject = li.querySelector("[class*='MessageList__subject___']");
-          if (subject) {
-            if (!subject.querySelector(".bsplus-subject-text")) {
-              const textWrap = document.createElement("span");
-              textWrap.className = "bsplus-subject-text";
-              textWrap.textContent = subject.textContent;
-              subject.textContent = "";
-              subject.appendChild(textWrap);
-            }
-            subject.appendChild(badgeContainer);
-          } else {
-            li.appendChild(badgeContainer);
-          }
-        }
-        badgeContainer.innerHTML = "";
-        for (const fId of folderIds) {
-          const folder = folders.find((f) => f.id === fId);
+
+        const badgeContainer = ensureMessageBadgeContainer(li);
+        badgeContainer.replaceChildren();
+        for (const folderId of folderIds) {
+          const folder = folders.find((f) => f.id === folderId);
           if (!folder) continue;
-          const badge = document.createElement("span");
-          badge.className = "bsplus-msg-badge";
-          badge.style.background = folder.color;
-          badge.innerHTML = `${folder.emoji ? `<span style="display:inline-flex;vertical-align:middle;margin-right:2px">${folder.emoji}</span>` : ""}${folder.name}`;
-          badge.title = `Filter by "${folder.name}"`;
-          badge.addEventListener("click", (e) => {
-            e.stopPropagation();
-            activeFolderId = folder.id;
-            applyFolderFilter();
-            applyBadges();
-            renderSidebarFolders();
-          });
-          badgeContainer.appendChild(badge);
+          badgeContainer.appendChild(createFolderBadge(folder, selectFolder));
         }
       }
     };

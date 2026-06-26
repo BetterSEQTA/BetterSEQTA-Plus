@@ -2,6 +2,37 @@ import browser from "webextension-polyfill";
 import type { SettingsState } from "@/types/storage";
 import type { Subscriber, Unsubscriber } from "svelte/store";
 
+/** Auth/session keys live in `chrome.storage.local` only — not on the settingsState proxy. */
+const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
+  "bsplus_token",
+  "bsplus_refresh_token",
+  "bsplus_client_id",
+  "bsplus_user",
+  "cloudAccessToken",
+  "cloudUsername",
+]);
+
+function isExcludedSettingsKey(key: string): boolean {
+  return EXCLUDED_FROM_SETTINGS_SURFACE.has(key);
+}
+
+const SAVE_DEBOUNCE_MS = 200;
+
+function storageChangeIsNoop(oldValue: unknown, newValue: unknown): boolean {
+  if (oldValue === newValue) return true;
+  if (
+    oldValue === undefined ||
+    newValue === undefined ||
+    typeof oldValue !== "object" ||
+    typeof newValue !== "object" ||
+    oldValue === null ||
+    newValue === null
+  ) {
+    return false;
+  }
+  return JSON.stringify(oldValue) === JSON.stringify(newValue);
+}
+
 type ChangeListener = (newValue: any, oldValue: any) => void;
 type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
 
@@ -11,9 +42,11 @@ class StorageManager {
   private listeners: Map<string, Set<ChangeListener>>;
   private globalListeners: Set<GlobalChangeListener>;
   private subscribers: Set<Subscriber<SettingsState>> = new Set();
-  private saveTimeout: NodeJS.Timeout | null = null;
+  private saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingPatch: Record<string, unknown> = {};
   private initialized = false;
   private bootstrapping = false;
+  private suppressWrites = false;
 
   private constructor() {
     this.data = {} as SettingsState;
@@ -26,9 +59,16 @@ class StorageManager {
         if (prop in target) {
           return (target as any)[prop];
         }
+        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
+          return undefined;
+        }
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
+        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
+          void browser.storage.local.set({ [prop]: value });
+          return true;
+        }
         const oldValue = target.data[prop];
 
         // Only save if the reference actually changed
@@ -95,6 +135,10 @@ class StorageManager {
     key: K,
     value: SettingsState[K],
   ): void {
+    if (typeof key === "string" && isExcludedSettingsKey(key)) {
+      void browser.storage.local.set({ [key]: value });
+      return;
+    }
     const oldValue = this.data[key];
     if (oldValue !== value) {
       this.data[key] = value;
@@ -121,34 +165,62 @@ class StorageManager {
   private async loadFromStorage(): Promise<void> {
     const result = await browser.storage.local.get();
     Object.entries(result).forEach(([key, value]) => {
+      if (isExcludedSettingsKey(key)) return;
       Reflect.set(this.data, key, value);
     });
   }
   
-  public async saveToStorage(changedKeys?: string[]): Promise<void> {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-      this.saveTimeout = null;
+  public setSuppressWrites(suppress: boolean): void {
+    this.suppressWrites = suppress;
+    if (!suppress) {
+      this.scheduleDebouncedSave();
     }
-    const payload: Record<string, unknown> = {};
+  }
+
+  private queueStoragePatch(changedKeys?: string[]): void {
     const keys =
       changedKeys && changedKeys.length > 0
         ? changedKeys
         : Object.keys(this.data);
 
     for (const key of keys) {
+      if (isExcludedSettingsKey(key)) continue;
       const value = (this.data as Record<string, unknown>)[key];
       if (value !== undefined) {
-        payload[key] = value;
+        this.pendingPatch[key] = value;
       }
     }
+  }
 
-    if (Object.keys(payload).length === 0) return;
+  private scheduleDebouncedSave(): void {
+    if (this.bootstrapping || this.suppressWrites) return;
+    if (Object.keys(this.pendingPatch).length === 0) return;
 
-    await browser.storage.local.set(payload);
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout(() => {
+      void this.flushPendingPatch();
+    }, SAVE_DEBOUNCE_MS);
+  }
+
+  private async flushPendingPatch(): Promise<void> {
+    this.saveTimeout = null;
+    if (this.bootstrapping || this.suppressWrites) return;
+
+    const patch = { ...this.pendingPatch };
+    this.pendingPatch = {};
+    if (Object.keys(patch).length === 0) return;
+
+    await browser.storage.local.set(patch);
     if (!this.bootstrapping) {
       this.notifySubscribers();
     }
+  }
+
+  public saveToStorage(changedKeys?: string[]): void {
+    this.queueStoragePatch(changedKeys);
+    this.scheduleDebouncedSave();
   }
 
   private async removeFromStorage(key: string): Promise<void> {
@@ -162,7 +234,8 @@ class StorageManager {
       const actualChanges: string[] = [];
 
       for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-        if (JSON.stringify(oldValue) === JSON.stringify(newValue)) continue;
+        if (storageChangeIsNoop(oldValue, newValue)) continue;
+        if (isExcludedSettingsKey(key)) continue;
 
         if (newValue !== undefined) {
           (this.data as Record<string, unknown>)[key] = newValue;
@@ -264,3 +337,7 @@ class StorageManager {
 export const settingsState = StorageManager.getInstance();
 export const initializeSettingsState = async () =>
   await StorageManager.initialize();
+
+export function setSettingsStateSuppressWrites(suppress: boolean): void {
+  settingsState.setSuppressWrites(suppress);
+}

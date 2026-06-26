@@ -1,7 +1,7 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { animate } from "motion";
 
-import { settingsPopup } from "@/interface/hooks/SettingsPopup";
+import { settingsPopup } from "@/seqta/utils/settingsPopup";
 
 export let SettingsClicked = false;
 

@@ -4,13 +4,13 @@ import { settingsState } from "../listeners/SettingsState";
 import { closePopup } from "./PopupManager";
 import { getApiBase } from "../DevApiBase";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
-import { cloudAuth } from "../CloudAuth";
 import type { Theme } from "@/interface/types/Theme";
 import {
   buildModalHeroSlides,
   normalizeStoreTheme,
 } from "@/interface/utils/themeStoreFlavours";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
+import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
 
 export interface ThemeOfTheMonthEntry {
   id: string;
@@ -67,17 +67,15 @@ function heroUrlFromStoreTheme(theme: {
   coverImage?: string | null;
 }): string | null {
   const url = (theme.marqueeImage || theme.coverImage || "").trim();
-  return url || null;
+  return allowedPopupImageUrl(url);
 }
 
 export async function fetchThemeStoreTheme(themeId: string): Promise<Theme | null> {
-  try {
-    const token = await cloudAuth.getStoredToken();
-    const res = (await browser.runtime.sendMessage({
-      type: "fetchThemeDetails",
-      themeId,
-      token: token ?? undefined,
-    })) as { success?: boolean; data?: { theme?: Record<string, unknown> } };
+    try {
+      const res = (await browser.runtime.sendMessage({
+        type: "fetchThemeDetails",
+        themeId,
+      })) as { success?: boolean; data?: { theme?: Record<string, unknown> } };
 
     if (!res?.success || !res?.data?.theme) return null;
     return normalizeStoreTheme(res.data.theme);
@@ -100,7 +98,12 @@ function buildPopupGallerySlides(
   heroUrl: string | null,
 ): PopupGallerySlide[] {
   if (storeTheme) {
-    return buildModalHeroSlides(storeTheme).filter((s) => s.imageUrl.trim());
+    return buildModalHeroSlides(storeTheme)
+      .map((s) => {
+        const imageUrl = allowedPopupImageUrl(s.imageUrl);
+        return imageUrl ? { imageUrl, caption: s.caption } : null;
+      })
+      .filter((s): s is PopupGallerySlide => s !== null);
   }
   if (heroUrl) {
     return [{ imageUrl: heroUrl, caption: entry.title }];
@@ -642,7 +645,7 @@ export async function OpenThemeOfTheMonthPopup(
   const storeTheme = linkedThemeId ? await fetchThemeStoreTheme(linkedThemeId) : null;
   const heroUrl =
     (storeTheme ? heroUrlFromStoreTheme(storeTheme) : null) ??
-    entry.cover_image?.trim() ??
+    allowedPopupImageUrl(entry.cover_image) ??
     null;
   const gallerySlides = buildPopupGallerySlides(entry, storeTheme, heroUrl);
   const hasExpandableContent = gallerySlides.length > 0 || entry.description.trim().length > 0;
@@ -782,7 +785,7 @@ export async function OpenThemeOfTheMonthPopup(
   card.querySelector(".themeOfTheMonthCardPrimary")?.addEventListener("click", () => {
     settingsState.themeOfTheMonthDismissedMonth = entry.month;
     dismissWithCleanup();
-    openThemeStoreWithHighlight(linkedThemeId!);
+    void openThemeStoreWithHighlight(linkedThemeId!);
   });
 
   const openDontShowConfirm = () => {

@@ -1,7 +1,5 @@
-import renderSvelte from "@/interface/main";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
 import { unmount } from "svelte";
-import themeCreator from "@/interface/pages/themeCreator.svelte";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 let themeCreatorSvelteApp: any = null;
@@ -11,10 +9,15 @@ let themeCreatorSvelteApp: any = null;
  * @param themeID - The ID of the theme to load in the Theme Creator
  * @returns void
  */
-export function OpenThemeCreator(themeID: string = "") {
+export async function OpenThemeCreator(themeID: string = "") {
   CloseThemeCreator();
 
-  // Only store original color if we're not editing an existing theme
+  const [{ default: renderSvelte }, { default: themeCreator }] =
+    await Promise.all([
+      import("@/interface/main"),
+      import("@/interface/pages/themeCreator.svelte"),
+    ]);
+
   localStorage.setItem("themeCreatorOpen", "true");
   if (!themeID) {
     localStorage.setItem("originalPreviewColor", settingsState.selectedColor);
@@ -34,7 +37,6 @@ export function OpenThemeCreator(themeID: string = "") {
   const mainContent = document.querySelector("#container") as HTMLDivElement;
   if (mainContent) mainContent.style.width = `calc(100% - ${width})`;
 
-  // close button
   const closeButton = document.createElement("button");
   closeButton.classList.add("themeCloseButton");
   closeButton.textContent = "×";
@@ -92,7 +94,6 @@ export function OpenThemeCreator(themeID: string = "") {
  * @returns void
  */
 export function CloseThemeCreator() {
-  // Remove the stored flag
   localStorage.removeItem("themeCreatorOpen");
 
   const themeCreator = document.getElementById("themeCreator");

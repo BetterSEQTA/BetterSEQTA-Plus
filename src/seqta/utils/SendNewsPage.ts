@@ -100,7 +100,7 @@ export async function SendNewsPage() {
       ? article.description
       : "No description available.";
 
-    description.innerHTML =
+    description.textContent =
       articleDescription.length > 400
         ? articleDescription.substring(0, 400) + "..."
         : articleDescription;

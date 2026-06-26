@@ -3,11 +3,10 @@ import {
   closeExtensionPopup,
   SettingsClicked,
 } from "../Closers/closeExtensionPopup";
-import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
-import Settings from "@/interface/pages/settings.svelte";
 
 let isSettingsRendered = false;
+let settingsLoadPromise: Promise<void> | null = null;
 
 function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
   return (event: MouseEvent) => {
@@ -38,21 +37,39 @@ export function addExtensionSettings() {
   (extensionContainer ?? document.body).addEventListener("click", handler, false);
 }
 
-export function renderSettingsIfNeeded() {
+async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {
   if (isSettingsRendered) return;
-  
+
+  const [{ default: renderSvelte }, { default: Settings }] = await Promise.all([
+    import("@/interface/main"),
+    import("@/interface/pages/settings.svelte"),
+  ]);
+
+  const shadow = extensionPopup.attachShadow({ mode: "open" });
+  const mount = () => renderSvelte(Settings, shadow);
+
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(mount);
+  } else {
+    mount();
+  }
+
+  isSettingsRendered = true;
+}
+
+export async function renderSettingsIfNeeded(): Promise<void> {
+  if (isSettingsRendered) return;
+
   const extensionPopup = document.getElementById("ExtensionPopup");
   if (!extensionPopup) return;
 
-  try {
-    const shadow = extensionPopup.attachShadow({ mode: "open" });
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => renderSvelte(Settings, shadow));
-    } else {
-      renderSvelte(Settings, shadow);
-    }
-    isSettingsRendered = true;
-  } catch (err) {
-    console.error(err);
+  if (!settingsLoadPromise) {
+    settingsLoadPromise = loadSettingsUi(extensionPopup).catch((err) => {
+      settingsLoadPromise = null;
+      console.error(err);
+      throw err;
+    });
   }
+
+  await settingsLoadPromise;
 }

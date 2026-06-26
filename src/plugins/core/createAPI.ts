@@ -12,6 +12,7 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import type { SettingsState } from "@/types/storage";
 
 function createSEQTAAPI(): SEQTAAPI {
   return {
@@ -85,7 +86,10 @@ function createSEQTAAPI(): SEQTAAPI {
  */
 function createSettingsAPI<T extends PluginSettings>(
   plugin: Plugin<T>,
-): SettingsAPI<T> & { loaded: Promise<void> } {
+): {
+  settings: SettingsAPI<T> & { loaded: Promise<void> };
+  dispose: () => void;
+} {
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
 
@@ -146,26 +150,28 @@ function createSettingsAPI<T extends PluginSettings>(
 
   settingsWithMeta.loaded = loaded;
 
-  // Listen for storage changes and update settingsWithMeta
-  const handleStorageChange = (
-    changes: { [key: string]: browser.Storage.StorageChange },
-    area: string,
-  ) => {
-    if (area !== "local" || !(storageKey in changes)) return;
+  const handleSettingsChange = (newValue: unknown) => {
+    if (!newValue || typeof newValue !== "object") return;
 
-    const newValue = changes[storageKey].newValue as
-      | Partial<Record<keyof T, any>>
-      | undefined;
-    if (!newValue) return;
-
-    for (const key in newValue) {
+    const newSettings = newValue as Partial<Record<keyof T, any>>;
+    for (const key in newSettings) {
       const typedKey = key as keyof T;
-      settingsWithMeta[typedKey] = newValue[typedKey];
-      listeners.get(typedKey)?.forEach((cb) => cb(newValue[typedKey]));
+      settingsWithMeta[typedKey] = newSettings[typedKey];
+      listeners.get(typedKey)?.forEach((cb) => cb(newSettings[typedKey]));
     }
   };
 
-  browser.storage.onChanged.addListener(handleStorageChange);
+  settingsState.register(
+    storageKey as keyof SettingsState,
+    handleSettingsChange,
+  );
+
+  const dispose = () => {
+    settingsState.unregister(
+      storageKey as keyof SettingsState,
+      handleSettingsChange,
+    );
+  };
 
   const proxy = new Proxy(settingsWithMeta, {
     get(target, prop) {
@@ -183,6 +189,17 @@ function createSettingsAPI<T extends PluginSettings>(
         dataToStore[key] = target[key];
       }
 
+      // Preserve enabled flag managed separately for disableToggle plugins
+      if (plugin.disableToggle) {
+        const allSettings = settingsState.getAll() as Record<string, unknown>;
+        const existing = allSettings[storageKey] as
+          | { enabled?: boolean }
+          | undefined;
+        if (existing?.enabled !== undefined) {
+          dataToStore.enabled = existing.enabled;
+        }
+      }
+
       browser.storage.local.set({ [storageKey]: dataToStore });
 
       listeners.get(prop as keyof T)?.forEach((cb) => cb(value));
@@ -190,18 +207,18 @@ function createSettingsAPI<T extends PluginSettings>(
     },
   }) as SettingsAPI<T> & { loaded: Promise<void> };
 
-  return proxy;
+  return { settings: proxy, dispose };
 }
 
 function createStorageAPI<T = any>(
   pluginId: string,
-): StorageAPI<T> & { [K in keyof T]: T[K] } {
+): {
+  storage: StorageAPI<T> & { [K in keyof T]: T[K] };
+  dispose: () => void;
+} {
   const prefix = `plugin.${pluginId}.storage.`;
   const cache: Record<string, any> = {};
   const listeners = new Map<string, Set<(value: any) => void>>();
-  const storageListeners = new Set<
-    (changes: { [key: string]: any }, area: string) => void
-  >();
 
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
@@ -223,30 +240,26 @@ function createStorageAPI<T = any>(
     }
   })();
 
-  // Listen for storage changes
   const handleStorageChange = (
-    changes: { [key: string]: any },
-    area: string,
+    newValue: unknown,
+    _oldValue: unknown,
+    key: string,
   ) => {
-    if (area === "local") {
-      Object.entries(changes).forEach(([key, change]) => {
-        if (key.startsWith(prefix)) {
-          const shortKey = key.slice(prefix.length);
-          cache[shortKey] = change.newValue;
+    if (!key.startsWith(prefix)) return;
 
-          // Notify listeners
-          listeners
-            .get(shortKey)
-            ?.forEach((callback) => callback(change.newValue));
-        }
-      });
-    }
+    const shortKey = key.slice(prefix.length);
+    cache[shortKey] = newValue;
+    listeners.get(shortKey)?.forEach((callback) => callback(newValue));
   };
-  browser.storage.onChanged.addListener(handleStorageChange);
-  storageListeners.add(handleStorageChange);
+
+  settingsState.registerGlobal(handleStorageChange);
+
+  const dispose = () => {
+    settingsState.unregisterGlobal(handleStorageChange);
+  };
 
   // Create the proxy for direct property access
-  return new Proxy(cache, {
+  const storage = new Proxy(cache, {
     get(target, prop: string) {
       if (prop === "onChange") {
         return (key: keyof T, callback: (value: T[keyof T]) => void) => {
@@ -288,6 +301,8 @@ function createStorageAPI<T = any>(
       return true;
     },
   }) as StorageAPI<T> & { [K in keyof T]: T[K] };
+
+  return { storage, dispose };
 }
 
 function createEventsAPI(pluginId: string): EventsAPI {
@@ -357,10 +372,17 @@ function createEventsAPI(pluginId: string): EventsAPI {
 export function createPluginAPI<T extends PluginSettings, S = any>(
   plugin: Plugin<T, S>,
 ): PluginAPI<T, S> {
+  const { settings, dispose: disposeSettings } = createSettingsAPI(plugin);
+  const { storage, dispose: disposeStorage } = createStorageAPI<S>(plugin.id);
+
   return {
     seqta: createSEQTAAPI(),
-    settings: createSettingsAPI(plugin),
-    storage: createStorageAPI<S>(plugin.id),
+    settings,
+    storage,
     events: createEventsAPI(plugin.id),
+    dispose: () => {
+      disposeSettings();
+      disposeStorage();
+    },
   };
 }

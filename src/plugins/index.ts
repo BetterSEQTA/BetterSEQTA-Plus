@@ -39,8 +39,6 @@ pluginManager.registerPlugin(enhancedNavigationPlugin);
 pluginManager.registerPlugin(globalSearchPluginLazy);
 pluginManager.registerPlugin(gradeAnalyticsPluginLazy);
 
-export { init as Monofile } from "./monofile";
-
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();
 }

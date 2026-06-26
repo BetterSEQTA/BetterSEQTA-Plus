@@ -214,7 +214,7 @@ const staticCommands: StaticCommandItem[] = [
         code: 'KeyM',
         keyCode: 77,
         altKey: true
-      }, "*");
+      }, location.origin);
     },
     keywords: ["compose", "message", "dm", "direct message", "new message"],
     priority: 3,

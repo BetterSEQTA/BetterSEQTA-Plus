@@ -2,8 +2,6 @@
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
   import browser from 'webextension-polyfill'
-  import { OpenThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
-  import { OpenStorePage } from '@/seqta/ui/renderStore'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
@@ -21,11 +19,14 @@
   let prevLoggedIn = $state(false);
   let showSignInModal = $state(false);
 
-  cloudAuth.subscribe((s) => {
-    const now = s.isLoggedIn;
-    if (now && !prevLoggedIn && themes) void fetchThemes();
-    prevLoggedIn = now;
-    cloudLoggedIn = now;
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => {
+      const now = s.isLoggedIn;
+      if (now && !prevLoggedIn && themes) void fetchThemes();
+      prevLoggedIn = now;
+      cloudLoggedIn = now;
+    });
+    return unsub;
   });
 
   const handleThemeClick = async (theme: CustomTheme, e: MouseEvent) => {
@@ -102,17 +103,14 @@
       selectedTheme: themeManager.getSelectedThemeId() || '',
     }
     if (themes && cloudLoggedIn) {
-      const token = await cloudAuth.getStoredToken();
-      if (token) {
-        const status: Record<string, boolean> = {};
-        await Promise.all(
-          themes.themes.map(async (t) => {
-            try {
-              const res = (await browser.runtime.sendMessage({
-                type: 'fetchThemeDetails',
-                themeId: t.id,
-                token,
-              })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
+      const status: Record<string, boolean> = {};
+      await Promise.all(
+        themes.themes.map(async (t) => {
+          try {
+            const res = (await browser.runtime.sendMessage({
+              type: 'fetchThemeDetails',
+              themeId: t.id,
+            })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
               if (res?.success && res?.data?.theme) {
                 status[t.id] = !!res.data.theme.is_favorited;
               }
@@ -122,10 +120,20 @@
           })
         );
         favoriteStatus = status;
-      }
     } else {
       favoriteStatus = {};
     }
+  }
+
+  const openStorePage = async () => {
+    const { OpenStorePage } = await import('@/seqta/ui/renderStore')
+    OpenStorePage()
+  }
+
+  const openThemeCreator = async (themeId?: string) => {
+    const { OpenThemeCreator } = await import('@/plugins/built-in/themes/ThemeCreator')
+    OpenThemeCreator(themeId)
+    closeExtensionPopup()
   }
 
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
@@ -134,13 +142,10 @@
       showSignInModal = true;
       return;
     }
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
     const isFavorite = !favoriteStatus[theme.id];
     const result = (await browser.runtime.sendMessage({
       type: 'cloudFavorite',
       themeId: theme.id,
-      token,
       action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {
@@ -216,8 +221,8 @@
             </div>
             <div
               class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
-              onclick={(event) => { event.stopPropagation(); OpenThemeCreator(theme.id); closeExtensionPopup() }}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') OpenThemeCreator(theme.id); closeExtensionPopup() }}
+              onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
+              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
               role="button"
               tabindex="-1"
             >
@@ -265,7 +270,7 @@
     {/if}
 
     <button
-      onclick={() => OpenStorePage()}
+      onclick={() => void openStorePage()}
       class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xecc5;</span>
@@ -273,7 +278,7 @@
     </button>
 
     <button
-      onclick={() => { OpenThemeCreator(); closeExtensionPopup() }}
+      onclick={() => void openThemeCreator()}
       class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
     >
       <span class="text-xl font-IconFamily">&#xec60;</span>
