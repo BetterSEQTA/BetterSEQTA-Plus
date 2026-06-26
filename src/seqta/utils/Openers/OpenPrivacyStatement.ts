@@ -31,12 +31,12 @@ export function OpenPrivacyStatement() {
         <p>BetterSEQTA+ uses your browser's local storage to save your preferences and settings. This data remains on your device and is never transmitted anywhere. You can clear this data at any time through your browser's settings.</p>
         
         <h3>Open Source</h3>
-        <p>BetterSEQTA+ is an open-source project. You can review our code on <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus" target="_blank" style="color: inherit; text-decoration: underline;">GitHub</a> to verify our privacy practices. We believe in transparency and encourage you to inspect the code yourself.</p>
+        <p>BetterSEQTA+ is an open-source project. You can review our code on <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">GitHub</a> to verify our privacy practices. We believe in transparency and encourage you to inspect the code yourself.</p>
         
         <h3>Our Commitment</h3>
         <p>We are committed to providing the best features possible while respecting your privacy. We understand that schools and students have concerns about data privacy, and we want to assure you that BetterSEQTA+ is designed with privacy as a core principle.</p>
         
-        <p style="margin-top: 20px; font-weight: bold;">If you have any questions or concerns about our privacy practices, please reach out to us through our <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus" target="_blank" style="color: inherit; text-decoration: underline;">GitHub repository</a>.</p>
+        <p style="margin-top: 20px; font-weight: bold;">If you have any questions or concerns about our privacy practices, please reach out to us through our <a href="https://github.com/BetterSEQTA/BetterSEQTA-Plus" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">GitHub repository</a>.</p>
       </div>
     `).firstChild as HTMLElement;
 

@@ -67,7 +67,7 @@ export function activeSubjectsFromEngageChild(child: {
   const seen = new Set<string>();
 
   for (const term of child.terms ?? []) {
-    if (term.active !== 1) continue;
+    if (!isActiveTermFlag(term.active)) continue;
     for (const raw of term.subjects ?? []) {
       const subject = normalizeOverviewSubject(raw);
       if (!subject) continue;
@@ -202,7 +202,14 @@ export function determineStatus(item: any): string {
   }
 
   const completedKey = "betterseqta-completed-assessments";
-  const completed = JSON.parse(localStorage.getItem(completedKey) || "[]");
+  let completed: unknown[] = [];
+  try {
+    const raw = localStorage.getItem(completedKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    completed = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    completed = [];
+  }
   if (completed.includes(item.id)) {
     return "MARKS_RELEASED";
   }

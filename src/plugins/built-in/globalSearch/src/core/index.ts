@@ -287,10 +287,10 @@ const globalSearchPlugin: Plugin<typeof settings> = {
     const title = document.querySelector("#title");
 
     if (title) {
-      mountSearchBar(title, api, appRef);
+      void mountSearchBar(title, api, appRef);
     } else {
       const titleElement = await waitForElm("#title", true, 100, 60);
-      mountSearchBar(titleElement, api, appRef);
+      void mountSearchBar(titleElement, api, appRef);
     }
 
     return () => {

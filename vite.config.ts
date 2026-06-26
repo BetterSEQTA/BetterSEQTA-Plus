@@ -61,6 +61,10 @@ const mode = process.env.MODE || "chrome"; // Check the environment variable to 
 const useMillion = mode.toLowerCase() !== "firefox";
 
 export default defineConfig(({ command }) => ({
+  // Content scripts run on the host page; absolute `/assets/...` URLs would
+  // resolve against SEQTA instead of chrome-extension://. Relative base makes
+  // Vite emit import.meta.url-relative chunk/CSS URLs at runtime.
+  base: command === "build" ? "./" : "/",
   define: {
     __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(
       process.env.GH_RELEASE_UPDATE_CHECK === "true",

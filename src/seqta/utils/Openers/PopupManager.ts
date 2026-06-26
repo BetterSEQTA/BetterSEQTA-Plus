@@ -57,6 +57,15 @@ interface OpenPopupOptions {
   containerClass?: string;
 }
 
+function chainAfterClose(next?: () => void) {
+  if (!next) return;
+  const previous = pendingAfterClose;
+  pendingAfterClose = () => {
+    next();
+    previous?.();
+  };
+}
+
 export function openPopup({
   header,
   content = [],
@@ -65,7 +74,12 @@ export function openPopup({
   clearJustUpdated = false,
   containerClass,
 }: OpenPopupOptions = {}) {
-  pendingAfterClose = afterClose;
+  if (document.getElementById("whatsnewbk")) {
+    chainAfterClose(afterClose);
+    return;
+  }
+
+  chainAfterClose(afterClose);
 
   const background = document.createElement("div");
   background.id = "whatsnewbk";
@@ -87,7 +101,9 @@ export function openPopup({
   container.append(closeButton);
 
   background.append(container);
-  document.getElementById("container")!.append(background);
+  const appContainer = document.getElementById("container");
+  if (!appContainer) return;
+  appContainer.append(background);
 
   if (settingsState.animations) {
     (motionAnimate as any)(

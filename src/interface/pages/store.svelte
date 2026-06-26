@@ -23,7 +23,10 @@
   const themeManager = ThemeManager.getInstance();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
-  cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
+    return unsub;
+  });
 
   // State variables
   let searchTerm = $state('');
@@ -86,13 +89,11 @@
   }
 
   const toggleFavorite = async (theme: Theme) => {
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
+    if (!cloudLoggedIn) return;
     const isFavorite = !theme.is_favorited;
     const result = (await browser.runtime.sendMessage({
       type: 'cloudFavorite',
       themeId: theme.id,
-      token,
       action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {
@@ -119,14 +120,12 @@
       error = null;
     }
     try {
-      const token = await cloudAuth.getStoredToken();
       const data = await sendMessageWithTimeout<{
         success?: boolean;
         data?: { themes: unknown[] };
         error?: string;
       }>({
         type: 'fetchThemes',
-        token: token ?? undefined,
       });
       if (!data?.success || !Array.isArray(data?.data?.themes)) {
         throw new Error(data?.error || 'Failed to fetch themes');

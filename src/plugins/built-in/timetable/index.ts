@@ -88,6 +88,8 @@ async function handleTimetable(): Promise<void> {
 }
 
 function handleTimetableZoom(): void {
+  if (document.querySelector(".timetable-zoom-controls")) return;
+
   verboseLog("Initializing timetable zoom controls");
 
   // Create zoom controls
@@ -136,6 +138,8 @@ function handleTimetableZoom(): void {
 }
 
 function handleTimetableAssessmentHide(): void {
+  if (document.querySelector(".timetable-hide-controls")) return;
+
   const hideControls = document.createElement("div");
   hideControls.className = "timetable-hide-controls";
 

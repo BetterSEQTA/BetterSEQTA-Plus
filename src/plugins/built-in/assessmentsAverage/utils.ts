@@ -25,6 +25,91 @@ export interface WeightingEntry {
 
 export type WeightingsMap = Record<string, WeightingEntry>;
 
+/** Primary storage key for weightings / overrides. */
+export function assessmentIdKey(mark: { id: string | number }): string {
+  return String(mark.id);
+}
+
+/** Composite lookup key when the same title appears in multiple metaclasses. */
+export function assessmentTitleLookupKey(mark: {
+  metaclassID?: string | number;
+  title?: string;
+}): string | null {
+  const title = mark.title?.trim();
+  if (!title) return null;
+  const metaclassID = mark.metaclassID;
+  if (metaclassID != null && metaclassID !== "") {
+    return `${metaclassID}:${title}`;
+  }
+  return title;
+}
+
+function registerAssessmentLookup(api: any, mark: any) {
+  const assessmentID = assessmentIdKey(mark);
+  const next: Record<string, string> = {
+    ...api.storage.assessments,
+    [assessmentID]: assessmentID,
+  };
+  const compositeKey = assessmentTitleLookupKey(mark);
+  if (compositeKey) next[compositeKey] = assessmentID;
+  api.storage.assessments = next;
+}
+
+type MarkLike = {
+  id: string | number;
+  title?: string;
+  metaclassID?: string | number;
+};
+
+function collectMarksFromFiberState(state: Record<string, unknown>): MarkLike[] {
+  return [
+    ...(Array.isArray(state.marks) ? state.marks : []),
+    ...(Array.isArray(state.upcoming) ? state.upcoming : []),
+    ...(Array.isArray(state.pending) ? state.pending : []),
+  ] as MarkLike[];
+}
+
+async function resolveAssessmentId(
+  api: any,
+  title: string,
+  marks?: MarkLike[],
+): Promise<string | undefined> {
+  const assessments = (api.storage.assessments ?? {}) as Record<string, string>;
+  let resolvedMarks = marks;
+
+  if (!resolvedMarks) {
+    try {
+      const state = await ReactFiber.find(
+        "[class*='AssessmentList__items___']",
+      ).getState();
+      resolvedMarks = collectMarksFromFiberState(state);
+    } catch {
+      resolvedMarks = [];
+    }
+  }
+
+  const matching = resolvedMarks.filter((mark) => mark.title?.trim() === title);
+  if (matching.length === 1) {
+    return assessmentIdKey(matching[0]);
+  }
+
+  for (const mark of matching) {
+    const compositeKey = assessmentTitleLookupKey(mark);
+    if (compositeKey && assessments[compositeKey]) {
+      return assessments[compositeKey];
+    }
+  }
+
+  if (assessments[title]) return assessments[title];
+
+  const suffix = `:${title}`;
+  for (const [key, id] of Object.entries(assessments)) {
+    if (key.endsWith(suffix)) return id;
+  }
+
+  return undefined;
+}
+
 export function computeFingerprint(mark: any): string {
   const score =
     mark?.results?.percentage ?? mark?.results?.score ?? null;
@@ -264,6 +349,7 @@ function createWeightLabel(
   weighting: string | undefined,
   api: any,
   refreshing = false,
+  assessmentID?: string,
 ) {
   let statsContainer = assessmentItem.querySelector(
     `[class*='AssessmentItem__stats___'],  .betterseqta-stats-container`,
@@ -289,10 +375,8 @@ function createWeightLabel(
     ? "space-between"
     : "flex-end";
 
-  const title = assessmentItem
-    .querySelector(`[class*='AssessmentItem__title___']`)
-    ?.textContent?.trim();
-  const assessmentID = title ? api.storage.assessments?.[title] : undefined;
+  const resolvedAssessmentId =
+    assessmentID ?? assessmentItem.dataset.betterseqtaAssessmentId;
 
   const existingLabel = statsContainer.querySelector(
     ".betterseqta-weight-label",
@@ -302,7 +386,7 @@ function createWeightLabel(
     updateWeightLabelContent(
       existingLabel,
       weighting,
-      assessmentID,
+      resolvedAssessmentId,
       api,
       refreshing,
     );
@@ -340,7 +424,7 @@ function createWeightLabel(
   updateWeightLabelContent(
     weightLabel,
     weighting,
-    assessmentID,
+    resolvedAssessmentId,
     api,
     refreshing,
   );
@@ -352,14 +436,24 @@ export const isFirefox =
   !navigator.userAgent.toLowerCase().includes("seamonkey") &&
   !navigator.userAgent.toLowerCase().includes("waterfox");
 
+function trustedPageOrigin(): string {
+  return window.location.origin;
+}
+
+function escJsSingleQuoted(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
 async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
   const isBlobUrl = url.startsWith("blob:");
+  const pageOrigin = trustedPageOrigin();
 
   if (isBlobUrl || isFirefox) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       const requestId = `pdf-fetch-${Date.now()}-${Math.random()}`;
-      const escapedUrl = url.replace(/'/g, "\\'");
+      const escapedUrl = escJsSingleQuoted(url);
+      const escapedOrigin = escJsSingleQuoted(pageOrigin);
 
       script.textContent = `
         (function() {
@@ -375,19 +469,20 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
                 type: '${requestId}',
                 success: true,
                 data: Array.from(new Uint8Array(arrayBuffer))
-              }, '*');
+              }, '${escapedOrigin}');
             })
             .catch(error => {
               window.postMessage({
                 type: '${requestId}',
                 success: false,
                 error: error.message || String(error)
-              }, '*');
+              }, '${escapedOrigin}');
             });
         })();
       `;
 
       const messageHandler = (event: MessageEvent) => {
+        if (event.origin !== pageOrigin || event.source !== window) return;
         if (event.data?.type === requestId) {
           window.removeEventListener("message", messageHandler);
           if (script.parentNode) {
@@ -449,23 +544,22 @@ export async function extractPDFText(url: string): Promise<string> {
     if (isFirefox) {
       const { lib: pdfLibUrl, worker: pdfWorkerUrl } =
         getPdfjsPageContextUrls();
-      const escJsSingleQuoted = (s: string) =>
-        s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
       const pdfWorkerInj = escJsSingleQuoted(pdfWorkerUrl);
+
+      const pageOrigin = trustedPageOrigin();
+      const escapedOrigin = escJsSingleQuoted(pageOrigin);
 
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
         const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
 
-        const escapedUrl = url
-          .replace(/\\/g, "\\\\")
-          .replace(/'/g, "\\'")
-          .replace(/"/g, '\\"');
+        const escapedUrl = escJsSingleQuoted(url);
 
         script.textContent = `
           (function() {
             const requestId = '${requestId}';
+            const pageOrigin = '${escapedOrigin}';
             const url = '${escapedUrl}';
             const pdfLibSrc = '${pdfLibInj}';
             const pdfWorkerSrc = '${pdfWorkerInj}';
@@ -485,7 +579,7 @@ export async function extractPDFText(url: string): Promise<string> {
                   type: requestId,
                   success: false,
                   error: 'Failed to load pdfjs library'
-                }, '*');
+                }, pageOrigin);
               };
               
               document.head.appendChild(pdfjsScript);
@@ -506,7 +600,7 @@ export async function extractPDFText(url: string): Promise<string> {
                       type: requestId,
                       success: false,
                       error: 'HTTP ' + xhr.status + ': ' + xhr.statusText
-                    }, '*');
+                    }, pageOrigin);
                     return;
                   }
                   
@@ -542,21 +636,21 @@ export async function extractPDFText(url: string): Promise<string> {
                           type: requestId,
                           success: true,
                           text: text
-                        }, '*');
+                        }, pageOrigin);
                       })
                       .catch(error => {
                         window.postMessage({
                           type: requestId,
                           success: false,
                           error: 'PDF parsing error: ' + (error.message || String(error))
-                        }, '*');
+                        }, pageOrigin);
                       });
                   } catch (error) {
                     window.postMessage({
                       type: requestId,
                       success: false,
                       error: 'ArrayBuffer error: ' + (error.message || String(error))
-                    }, '*');
+                    }, pageOrigin);
                   }
                 };
                 
@@ -565,7 +659,7 @@ export async function extractPDFText(url: string): Promise<string> {
                     type: requestId,
                     success: false,
                     error: 'Network error fetching PDF'
-                  }, '*');
+                  }, pageOrigin);
                 };
                 
                 xhr.ontimeout = function() {
@@ -573,7 +667,7 @@ export async function extractPDFText(url: string): Promise<string> {
                     type: requestId,
                     success: false,
                     error: 'Timeout fetching PDF'
-                  }, '*');
+                  }, pageOrigin);
                 };
                 
                 xhr.timeout = 30000;
@@ -583,13 +677,14 @@ export async function extractPDFText(url: string): Promise<string> {
                   type: requestId,
                   success: false,
                   error: 'Setup error: ' + (error.message || String(error))
-                }, '*');
+                }, pageOrigin);
               }
             }
           })();
         `;
 
         const messageHandler = (event: MessageEvent) => {
+          if (event.origin !== pageOrigin || event.source !== window) return;
           if (event.data?.type === requestId) {
             window.removeEventListener("message", messageHandler);
             if (script.parentNode) {
@@ -646,9 +741,8 @@ export async function extractPDFText(url: string): Promise<string> {
 }
 
 async function handleWeightings(mark: any, api: any) {
-  const assessmentID = mark.id;
+  const assessmentID = assessmentIdKey(mark);
   const metaclassID = mark.metaclassID;
-  const title = mark.title;
 
   const fingerprint = computeFingerprint(mark);
   const existing = api.storage.weightings[assessmentID] as
@@ -687,10 +781,7 @@ async function handleWeightings(mark: any, api: any) {
     [assessmentID]: placeholder,
   };
 
-  api.storage.assessments = {
-    ...api.storage.assessments,
-    [title.trim()]: assessmentID,
-  };
+  registerAssessmentLookup(api, mark);
 
   // Surface the refreshing indicator on the affected row immediately,
   // without waiting for the PDF fetch to finish.
@@ -813,6 +904,16 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
   let hasRefreshingWeighting = false;
   let count = 0;
 
+  let fiberMarks: MarkLike[] = [];
+  try {
+    const state = await ReactFiber.find(
+      "[class*='AssessmentList__items___']",
+    ).getState();
+    fiberMarks = collectMarksFromFiberState(state);
+  } catch {
+    fiberMarks = [];
+  }
+
   for (const assessmentItem of assessmentItems) {
     const titleEl = assessmentItem.querySelector(
       `[class*='AssessmentItem__title___']`,
@@ -822,7 +923,11 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     const title = titleEl.textContent?.trim();
     if (!title) continue;
 
-    const assessmentID = api.storage.assessments?.[title];
+    const assessmentID = await resolveAssessmentId(api, title, fiberMarks);
+    if (assessmentID) {
+      (assessmentItem as HTMLElement).dataset.betterseqtaAssessmentId =
+        assessmentID;
+    }
     const entry = assessmentID
       ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
       : undefined;
@@ -833,7 +938,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
     const weighting = override ?? autoWeighting;
     const refreshing = !override && Boolean(entry?.refreshing);
 
-    createWeightLabel(assessmentItem, weighting, api, refreshing);
+    createWeightLabel(assessmentItem, weighting, api, refreshing, assessmentID);
 
     const gradeElement = assessmentItem.querySelector(
       `[class*='Thermoscore__text___']`,
@@ -935,25 +1040,35 @@ function resolveTabSetClasses(): Record<string, string> {
   return resolved;
 }
 
-function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
-  const titleEl = document.querySelector(
-    "[class*='AssessmentItem__AssessmentItem___'][class*='selected___'] [class*='AssessmentItem__title___']",
+interface WeightingTabContext {
+  assessmentID?: string;
+  autoWeight?: number;
+  override?: number | string;
+  weightingUnavailable: boolean;
+  statusNote: string;
+}
+
+async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext> {
+  const selectedItem = document.querySelector(
+    "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
+  ) as HTMLElement | null;
+  const titleEl = selectedItem?.querySelector(
+    "[class*='AssessmentItem__title___']",
   );
   const title = titleEl?.textContent?.trim();
-  const assessmentID = title ? api.storage.assessments?.[title] : undefined;
+  const assessmentID =
+    selectedItem?.dataset.betterseqtaAssessmentId ??
+    (title ? await resolveAssessmentId(api, title) : undefined);
 
   const entry = assessmentID
     ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
     : undefined;
   const rawWeight = entry?.weight;
-
   const weightingUnavailable = rawWeight === "N/A";
-
   const autoWeight =
     rawWeight && rawWeight !== "processing" && rawWeight !== "N/A"
       ? rawWeight
       : undefined;
-
   const override = assessmentID
     ? api.storage.weightingOverrides?.[assessmentID]
     : undefined;
@@ -965,6 +1080,22 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
       : weightingUnavailable
         ? "No weighting was found in the marksheet. Set one manually."
         : "Overrides the auto-detected value.";
+
+  return {
+    assessmentID,
+    autoWeight,
+    override,
+    weightingUnavailable,
+    statusNote,
+  };
+}
+
+function renderWeightingTabHtml(
+  sheet: HTMLElement,
+  context: WeightingTabContext,
+) {
+  const { assessmentID, autoWeight, override, weightingUnavailable, statusNote } =
+    context;
 
   sheet.innerHTML = `
     <style>
@@ -1010,9 +1141,13 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
       ${!assessmentID ? `<p style="font-size:12px;color:rgba(255,80,80,0.8);margin-top:8px">Assessment not yet indexed — try refreshing.</p>` : ""}
     </div>
   `;
+}
 
-  if (!assessmentID) return;
-
+function attachWeightingInputHandlers(
+  sheet: HTMLElement,
+  api: any,
+  assessmentID: string,
+) {
   const input = sheet.querySelector(
     "#betterseqta-weight-override",
   ) as HTMLInputElement;
@@ -1022,20 +1157,17 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
 
   const save = () => {
     const raw = input.value.trim();
-    if (raw === "") {
-      const result = saveWeightingOverride(api, assessmentID, "");
-      if (!result.ok) return;
-      input.style.borderColor = "rgba(128,128,128,0.3)";
-    } else {
-      const result = saveWeightingOverride(api, assessmentID, raw);
-      if (!result.ok) {
+    const result = saveWeightingOverride(api, assessmentID, raw);
+    if (!result.ok) {
+      if (raw !== "") {
         input.style.borderColor = "rgba(255,80,80,0.6)";
         statusEl.textContent = result.error ?? "Invalid. Must be 0 or greater";
         statusEl.style.color = "rgba(255,80,80,0.8)";
-        return;
       }
-      input.style.borderColor = "rgba(128,128,128,0.3)";
+      return;
     }
+
+    input.style.borderColor = "rgba(128,128,128,0.3)";
     statusEl.textContent = "Saved";
     statusEl.style.color = "";
     setTimeout(() => (statusEl.textContent = ""), 2000);
@@ -1053,6 +1185,13 @@ function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
     if (statusEl.textContent === "Invalid. Must be 0 or greater.")
       statusEl.textContent = "";
   });
+}
+
+async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+  const context = await resolveWeightingTabContext(api);
+  renderWeightingTabHtml(sheet, context);
+  if (!context.assessmentID) return;
+  attachWeightingInputHandlers(sheet, api, context.assessmentID);
 }
 
 export function injectWeightingsTab(api: any) {
@@ -1093,7 +1232,7 @@ export function injectWeightingsTab(api: any) {
   container.appendChild(newSheet);
 
   newTab.addEventListener("click", () => {
-    buildWeightingsTabContent(api, newSheet);
+    void buildWeightingsTabContent(api, newSheet);
   });
 
   const allTabs = Array.from(tabList.querySelectorAll("li"));
@@ -1107,20 +1246,22 @@ export function injectWeightingsTab(api: any) {
         t.className.includes("TabSet__selected___"),
       );
       if (i === currentIndex) return;
-      const goingRight = i > currentIndex;
+      const goingRight = currentIndex < 0 ? true : i > currentIndex;
 
       allTabs.forEach((t) => {
         t.className = "";
         t.setAttribute("aria-selected", "false");
       });
 
-      allSheets[currentIndex].className = [
-        cls["TabSet__tabsheet___"],
-        cls["TabSet__hidden___"],
-        goingRight
-          ? cls["TabSet__disappearToLeft___"]
-          : cls["TabSet__disappearToRight___"],
-      ].join(" ");
+      if (currentIndex >= 0) {
+        allSheets[currentIndex].className = [
+          cls["TabSet__tabsheet___"],
+          cls["TabSet__hidden___"],
+          goingRight
+            ? cls["TabSet__disappearToLeft___"]
+            : cls["TabSet__disappearToRight___"],
+        ].join(" ");
+      }
 
       allSheets[i].className = [
         cls["TabSet__tabsheet___"],

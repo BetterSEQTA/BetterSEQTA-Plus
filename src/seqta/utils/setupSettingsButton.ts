@@ -17,7 +17,7 @@ export function setupSettingsButton() {
     if (SettingsClicked) {
       closeExtensionPopup(extensionPopup as HTMLElement);
     } else {
-      renderSettingsIfNeeded();
+      await renderSettingsIfNeeded();
 
       await delay(30);
       

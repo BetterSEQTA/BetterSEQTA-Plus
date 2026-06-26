@@ -7,14 +7,52 @@ import Sortable from "sortablejs";
 
 export let MenuOptionsOpen = false;
 
-function mergeMenuItemsFromDom(): Record<string, { toggle: boolean }> {
-  const menu = document.getElementById("menu");
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function syncDefaultMenuOrder(menu: HTMLElement) {
+  const childnodes = menu.firstChild!.childNodes;
+  if (settingsState.defaultmenuorder.length === 0) {
+    settingsState.defaultmenuorder = Array.from(childnodes).map(
+      (element) => (element as HTMLElement).dataset.key,
+    );
+    return;
+  }
+
+  if (settingsState.defaultmenuorder.length === childnodes.length) return;
+
+  for (let i = 0; i < childnodes.length; i++) {
+    const key = (childnodes[i] as HTMLElement).dataset.key;
+    if (key && settingsState.defaultmenuorder.indexOf(key) === -1) {
+      if (key === "analytics") {
+        settingsState.defaultmenuorder = insertKeyAfterInOrder(
+          settingsState.defaultmenuorder,
+          key,
+          "courses",
+        );
+      } else {
+        settingsState.defaultmenuorder = [
+          ...settingsState.defaultmenuorder,
+          key,
+        ];
+      }
+    }
+  }
+}
+
+function mergeMenuItemsFromDom(
+  menu: HTMLElement,
+): Record<string, { toggle: boolean }> {
   const merged = {
     ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
   };
-  if (!menu?.firstChild) return merged;
-
-  const children = menu.firstChild.childNodes;
+  const children = menu.firstChild!.childNodes;
   for (let i = 0; i < children.length; i++) {
     const key = (children[i] as HTMLElement).dataset.key;
     if (key && !merged[key]) {
@@ -24,7 +62,110 @@ function mergeMenuItemsFromDom(): Record<string, { toggle: boolean }> {
   return merged;
 }
 
-function storeMenuSettings(): void {
+function createMenuEditControls(menu: HTMLElement, container: HTMLElement) {
+  const cover = document.createElement("div");
+  cover.classList.add("notMenuCover");
+  menu.style.zIndex = "20";
+  menu.style.setProperty("--menuHidden", "flex");
+  container.append(cover);
+
+  const menusettings = document.createElement("div");
+  menusettings.classList.add("editmenuoption-container");
+
+  const defaultbutton = document.createElement("div");
+  defaultbutton.classList.add("editmenuoption");
+  defaultbutton.innerText = "Restore Default";
+  defaultbutton.id = "restoredefaultoption";
+
+  const savebutton = document.createElement("div");
+  savebutton.classList.add("editmenuoption");
+  savebutton.innerText = "Save";
+  savebutton.id = "savemenuoption";
+
+  menusettings.appendChild(defaultbutton);
+  menusettings.appendChild(savebutton);
+  menu.appendChild(menusettings);
+
+  return { cover, menusettings, defaultbutton, savebutton };
+}
+
+function prepareMenuItemsForEdit(menu: HTMLElement) {
+  const listItems = menu.firstChild!.childNodes;
+  for (let i = 0; i < listItems.length; i++) {
+    const element = listItems[i] as HTMLElement;
+    element.classList.add("draggable");
+    if (element.classList.contains("hasChildren")) {
+      element.classList.remove("active");
+      (element.firstChild as HTMLElement).classList.remove("noscroll");
+    }
+
+    const menuKey = escapeHtmlAttr(element.dataset.key ?? "");
+    const menuItemToggle = stringToHTML(
+      `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${menuKey}"><label for="${menuKey}" class="onoffswitch-label"></label>`,
+    ).firstChild;
+    element.append(menuItemToggle!);
+
+    if (element.dataset.betterseqta) continue;
+
+    const section = document.createElement("section");
+    cloneAttributes(section, element);
+    while (element.firstChild) section.appendChild(element.firstChild);
+    menu.firstChild!.insertBefore(section, element);
+    element.remove();
+  }
+  return listItems;
+}
+
+function syncMenuItemSettings(menu: HTMLElement) {
+  settingsState.menuitems = mergeMenuItemsFromDom(
+    menu,
+  ) as SettingsState["menuitems"];
+}
+
+function applySavedMenuToggleStates() {
+  const menuItems = settingsState.menuitems as Record<
+    string,
+    { toggle: boolean }
+  >;
+  const buttons = document.getElementsByClassName("menuitem");
+  for (let i = 0; i < buttons.length; i++) {
+    const id = buttons[i].id;
+    (buttons[i] as HTMLInputElement).checked = id
+      ? (menuItems[id]?.toggle ?? true)
+      : true;
+  }
+}
+
+function createMenuSortable(): Sortable | undefined {
+  try {
+    const el = document.querySelector("#menu > ul");
+    if (!el) return undefined;
+    let sortable: Sortable | undefined;
+    sortable = Sortable.create(el as HTMLElement, {
+      draggable: ".draggable",
+      dataIdAttr: "data-key",
+      animation: 150,
+      easing: "cubic-bezier(.5,0,.5,1)",
+      onEnd: () => saveNewOrder(sortable),
+    });
+    return sortable;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
+}
+
+function changeMenuItemDisplay(element: HTMLInputElement) {
+  const row = element.closest("li, section") as HTMLElement | null;
+  if (!row) return;
+  if (!element.checked) {
+    row.style.display = "var(--menuHidden)";
+    return;
+  }
+  row.style.setProperty("display", "flex", "important");
+}
+
+function storeMenuSettings() {
   const menuItems: Record<string, { toggle: boolean }> = {
     ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
   };
@@ -34,214 +175,96 @@ function storeMenuSettings(): void {
       menuItems[input.id] = { toggle: input.checked };
     }
   }
-  settingsState.menuitems =
-    menuItems as SettingsState["menuitems"];
+  settingsState.menuitems = menuItems as SettingsState["menuitems"];
+}
+
+function restoreMenuItemsFromEditMode(
+  menu: HTMLElement,
+  listItems: NodeListOf<ChildNode>,
+) {
+  for (let i = 0; i < listItems.length; i++) {
+    const element = listItems[i] as HTMLElement;
+    element.classList.remove("draggable");
+    element.setAttribute("draggable", "false");
+
+    if (element.dataset.betterseqta) continue;
+
+    const listItem = document.createElement("li");
+    cloneAttributes(listItem, element);
+    while (element.firstChild) listItem.appendChild(element.firstChild);
+    menu.firstChild!.insertBefore(listItem, element);
+    element.remove();
+  }
+
+  menu.querySelectorAll(".onoffswitch").forEach((toggle) => toggle.remove());
 }
 
 export function OpenMenuOptions() {
-  var container = document.getElementById("container");
-  var menu = document.getElementById("menu");
+  if (MenuOptionsOpen) return;
 
-  if (settingsState.defaultmenuorder.length == 0) {
-    let childnodes = menu!.firstChild!.childNodes;
-    let newdefaultmenuorder = [];
-    for (let i = 0; i < childnodes.length; i++) {
-      const element = childnodes[i];
-      newdefaultmenuorder.push((element as HTMLElement).dataset.key);
-      settingsState.defaultmenuorder = newdefaultmenuorder;
-    }
-  }
-  let childnodes = menu!.firstChild!.childNodes;
-  if (settingsState.defaultmenuorder.length != childnodes.length) {
-    for (let i = 0; i < childnodes.length; i++) {
-      const element = childnodes[i];
-      const key = (element as HTMLElement).dataset.key;
-      if (
-        key &&
-        settingsState.defaultmenuorder.indexOf(key) === -1
-      ) {
-        if (key === "analytics") {
-          settingsState.defaultmenuorder = insertKeyAfterInOrder(
-            settingsState.defaultmenuorder,
-            key,
-            "courses",
-          );
-        } else {
-          settingsState.defaultmenuorder = [
-            ...settingsState.defaultmenuorder,
-            key,
-          ];
-        }
-      }
-    }
-  }
+  const container = document.getElementById("container");
+  const menu = document.getElementById("menu");
+  if (!container || !menu) return;
 
+  syncDefaultMenuOrder(menu);
   MenuOptionsOpen = true;
-  menu!.classList.add("bsplus-sidebar-edit-mode");
+  menu.classList.add("bsplus-sidebar-edit-mode");
 
-  var cover = document.createElement("div");
-  cover.classList.add("notMenuCover");
-  menu!.style.zIndex = "20";
-  menu!.style.setProperty("--menuHidden", "flex");
-  container!.append(cover);
+  const { cover, menusettings, defaultbutton, savebutton } =
+    createMenuEditControls(menu, container);
+  const listItems = prepareMenuItemsForEdit(menu);
+  syncMenuItemSettings(menu);
+  applySavedMenuToggleStates();
 
-  var menusettings = document.createElement("div");
-  menusettings.classList.add("editmenuoption-container");
+  const menubuttons = document.getElementsByClassName("menuitem");
+  const sortable = createMenuSortable();
 
-  var defaultbutton = document.createElement("div");
-  defaultbutton.classList.add("editmenuoption");
-  defaultbutton.innerText = "Restore Default";
-  defaultbutton.id = "restoredefaultoption";
-
-  var savebutton = document.createElement("div");
-  savebutton.classList.add("editmenuoption");
-  savebutton.innerText = "Save";
-  savebutton.id = "savemenuoption";
-
-  menusettings.appendChild(defaultbutton);
-  menusettings.appendChild(savebutton);
-
-  menu!.appendChild(menusettings);
-
-  var ListItems = menu!.firstChild!.childNodes;
-  for (let i = 0; i < ListItems.length; i++) {
-    const element1 = ListItems[i];
-    const element = element1 as HTMLElement;
-
-    (element as HTMLElement).classList.add("draggable");
-    if ((element as HTMLElement).classList.contains("hasChildren")) {
-      (element as HTMLElement).classList.remove("active");
-      (element.firstChild as HTMLElement).classList.remove("noscroll");
-    }
-
-    let MenuItemToggle = stringToHTML(
-      `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${(element as HTMLElement).dataset.key}"><label for="${(element as HTMLElement).dataset.key}" class="onoffswitch-label"></label>`,
-    ).firstChild;
-    (element as HTMLElement).append(MenuItemToggle!);
-
-    if (!element.dataset.betterseqta) {
-      const a = document.createElement("section");
-      a.innerHTML = element.innerHTML;
-      cloneAttributes(a, element);
-      menu!.firstChild!.insertBefore(a, element);
-      element.remove();
-    }
-  }
-
-  if (Object.keys(settingsState.menuitems).length == 0) {
-    settingsState.menuitems = mergeMenuItemsFromDom() as SettingsState["menuitems"];
-  } else {
-    settingsState.menuitems = mergeMenuItemsFromDom() as SettingsState["menuitems"];
-  }
-
-  let menuItems = settingsState.menuitems as Record<string, { toggle: boolean }>;
-  let buttons = document.getElementsByClassName("menuitem");
-  for (let i = 0; i < buttons.length; i++) {
-    const input = buttons[i] as HTMLInputElement;
-    const id = input.id;
-    input.checked =
-      id && menuItems[id] ? menuItems[id].toggle : true;
-  }
-
-  let sortable: Sortable | undefined;
-  try {
-    var el = document.querySelector("#menu > ul");
-    sortable = Sortable.create(el as HTMLElement, {
-      draggable: ".draggable",
-      dataIdAttr: "data-key",
-      animation: 150,
-      easing: "cubic-bezier(.5,0,.5,1)",
-      onEnd: function () {
-        saveNewOrder(sortable!);
-      },
-    });
-  } catch (err) {
-    console.error(err);
-  }
-
-  function changeDisplayProperty(input: HTMLInputElement) {
-    const row = input.closest("li, section") as HTMLElement | null;
-    if (!row) return;
-    if (!input.checked) {
-      row.style.display = "var(--menuHidden)";
-    } else {
-      row.style.setProperty("display", "flex", "important");
-    }
-  }
-
-  const menuInputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
-  for (const input of menuInputs) {
-    input.addEventListener("change", () => {
+  for (let i = 0; i < menubuttons.length; i++) {
+    const element = menubuttons[i] as HTMLInputElement;
+    element.addEventListener("change", () => {
       storeMenuSettings();
-      changeDisplayProperty(input);
+      changeMenuItemDisplay(element);
     });
   }
 
-  function closeAll() {
-    menusettings?.remove();
-    cover?.remove();
+  const closeAll = () => {
+    menusettings.remove();
+    cover.remove();
     MenuOptionsOpen = false;
-    menu!.classList.remove("bsplus-sidebar-edit-mode");
-    menu!.style.setProperty("--menuHidden", "none");
-
-    for (let i = 0; i < ListItems.length; i++) {
-      const element1 = ListItems[i];
-      const element = element1 as HTMLElement;
-      element.classList.remove("draggable");
-      element.setAttribute("draggable", "false");
-
-      if (!element.dataset.betterseqta) {
-        const a = document.createElement("li");
-        a.innerHTML = element.innerHTML;
-        cloneAttributes(a, element);
-        menu!.firstChild!.insertBefore(a, element);
-        element.remove();
-      }
-    }
-
-    let switches = menu!.querySelectorAll(".onoffswitch");
-    for (let i = 0; i < switches.length; i++) {
-      switches[i].remove();
-    }
-
+    menu.classList.remove("bsplus-sidebar-edit-mode");
+    menu.style.setProperty("--menuHidden", "none");
+    restoreMenuItemsFromEditMode(menu, listItems);
     applyMenuItemVisibility();
-  }
+  };
 
-  function saveAndClose() {
+  const saveAndClose = () => {
     storeMenuSettings();
     if (sortable) {
       saveNewOrder(sortable);
     }
     applyMenuItemVisibility();
     closeAll();
-  }
+  };
 
-  cover?.addEventListener("click", closeAll);
-  savebutton?.addEventListener("click", saveAndClose);
+  cover.addEventListener("click", closeAll);
+  savebutton.addEventListener("click", saveAndClose);
 
-  defaultbutton?.addEventListener("click", function () {
-    const options = settingsState.defaultmenuorder;
-    settingsState.menuorder = options;
+  defaultbutton.addEventListener("click", () => {
+    settingsState.menuorder = settingsState.defaultmenuorder;
+    ChangeMenuItemPositions(settingsState.defaultmenuorder);
 
-    ChangeMenuItemPositions(options);
-
-    const inputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
     const restored: Record<string, { toggle: boolean }> = {};
-    for (const input of inputs) {
-      input.checked = true;
-      const row = input.closest("li, section") as HTMLElement | null;
-      if (row) {
-        row.style.setProperty("display", "flex", "important");
-      }
-      if (input.id) {
-        restored[input.id] = { toggle: true };
+    for (let i = 0; i < menubuttons.length; i++) {
+      const element = menubuttons[i] as HTMLInputElement;
+      element.checked = true;
+      changeMenuItemDisplay(element);
+      if (element.id) {
+        restored[element.id] = { toggle: true };
       }
     }
     settingsState.menuitems = restored as SettingsState["menuitems"];
 
-    if (sortable) {
-      saveNewOrder(sortable);
-    }
+    if (sortable) saveNewOrder(sortable);
   });
 }
 

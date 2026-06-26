@@ -42,6 +42,23 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.7.3 – Bugfix Bundle</h1>
+      <li>Fixed dropdown contrast and readability in settings and across SEQTA pages.</li>
+      <li>Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.</li>
+      <li>Fixed timetable subject colour picker not reopening after closing (#221).</li>
+      <li>Fixed theme wallpaper images not applying on Firefox (#206).</li>
+      <li>Fixed missing subjects in upcoming assessments on the home page (#454).</li>
+      <li>Added home page assessment limits (subjects, per-subject count, include past).</li>
+      <li>Fixed assessment overview showing <code>Undefined%</code> for letter grades (#430).</li>
+      <li>Fixed notifications older than a year being removed; added local per-account archive (#443).</li>
+      <li>Fixed notices on the home screen sometimes failing to load (#388).</li>
+      <li>Fixed nightly/CI release builds (Windows runners, zip packaging, layerchart compile).</li>
+      <li>Fixed multi-target builds exiting early and masking Vite errors.</li>
+      <li>Improved background music autoplay with a tap-to-start hint when blocked.</li>
+      <li>Added verbose logging toggle under Developer settings.</li>
+      <li>Restored theme settings Edit/Done label and improved custom Select keyboard accessibility.</li>
+      <li>Cloud sign-in now sends a device name for account management.</li>
+
       <h1>3.7.2 – Analytics Fixes</h1>
       <li>Fixed analytics page breaking on certain configurations.</li>
       <li>Added safer DOM handling for analytics to prevent crashes.</li>
@@ -403,6 +420,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
               </a>
             <a class="socials" href="https://www.youtube.com/@BetterSEQTAPlus" style="background: none !important; margin: 0 5px; padding: 0; display: flex; align-items: center;">
           <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px"><path d="M 44.898438 14.5 C 44.5 12.300781 42.601563 10.699219 40.398438 10.199219 C 37.101563 9.5 31 9 24.398438 9 C 17.800781 9 11.601563 9.5 8.300781 10.199219 C 6.101563 10.699219 4.199219 12.199219 3.800781 14.5 C 3.398438 17 3 20.5 3 25 C 3 29.5 3.398438 33 3.898438 35.5 C 4.300781 37.699219 6.199219 39.300781 8.398438 39.800781 C 11.898438 40.5 17.898438 41 24.5 41 C 31.101563 41 37.101563 40.5 40.601563 39.800781 C 42.800781 39.300781 44.699219 37.800781 45.101563 35.5 C 45.5 33 46 29.398438 46.101563 25 C 45.898438 20.5 45.398438 17 44.898438 14.5 Z M 19 32 L 19 18 L 31.199219 25 Z"/></svg>
+        </a>
          <a class="socials" href="https://chromewebstore.google.com/detail/betterseqta+/afdgaoaclhkhemfkkkonemoapeinchel" style="background: none !important; margin: 0 5px; padding: 0; display: flex; align-items: center;">
            <svg style="width:25px; height:25px; vertical-align: middle;" viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
@@ -410,7 +428,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
           </a>
         </div>
         <div>
-          <a href="https://ko-fi.com/sethburkart" target="_blank" style="background: none !important; margin:0;margin-left:6px;padding:0; display: flex; align-items: center;">
+          <a href="https://ko-fi.com/sethburkart" target="_blank" rel="noopener noreferrer" style="background: none !important; margin:0;margin-left:6px;padding:0; display: flex; align-items: center;">
            <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
           </a>
         </div>

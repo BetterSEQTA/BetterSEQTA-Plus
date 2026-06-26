@@ -129,7 +129,12 @@
           data-font-id={preset.id}
         >
           <div class="bsplus-font-picker-option-head">
-            <span class="bsplus-font-picker-option-name">{preset.name}</span>
+            <span 
+              class="bsplus-font-picker-option-name"
+              style="font-family: {preset.stack} !important;"
+            >
+              {preset.name}
+            </span>
             {#if selectedId === preset.id}
               <span class="bsplus-font-picker-badge">Selected</span>
             {/if}

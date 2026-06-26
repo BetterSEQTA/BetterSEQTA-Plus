@@ -6,7 +6,7 @@
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
@@ -14,11 +14,11 @@
   import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
   //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
-  import ColourPicker from "../components/ColourPicker.svelte";
+  import type { Component } from "svelte";
   import FontPickerModal from "../components/FontPickerModal.svelte";
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
-  import { settingsPopup } from "../hooks/SettingsPopup";
+  import { settingsPopup } from "@/seqta/utils/settingsPopup";
   import {
     checkGithubReleaseUpdate,
     dismissNightlyUpdate,
@@ -64,7 +64,12 @@
     }, 10000);
   };
 
-  const openColourPicker = () => {
+  let ColourPickerComponent = $state<Component | null>(null);
+
+  const openColourPicker = async () => {
+    if (!ColourPickerComponent) {
+      ColourPickerComponent = (await import("../components/ColourPicker.svelte")).default;
+    }
     showColourPicker = true;
   };
 
@@ -113,12 +118,14 @@
     showDisclaimerModal = true;
   };
 
+  const closePopupsOnSettingsClose = () => {
+    showColourPicker = false;
+    showFontPicker = false;
+    showCloudPanel = false;
+  };
+
   onMount(() => {
-    settingsPopup.addListener(() => {
-      showColourPicker = false;
-      showFontPicker = false;
-      showCloudPanel = false;
-    });
+    settingsPopup.addListener(closePopupsOnSettingsClose);
 
     if (standalone) {
       StandaloneStore.setStandalone(true);
@@ -130,6 +137,10 @@
       });
     }
   });
+
+  onDestroy(() => {
+    settingsPopup.removeListener(closePopupsOnSettingsClose);
+  });
 </script>
 
 <div
@@ -138,10 +149,10 @@
     : ''} {standalone ? 'h-[600px]' : 'h-full rounded-xl'} overflow-clip"
 >
   <div
-    class="flex relative flex-col gap-2 h-full overflow-clip bg-white dark:bg-zinc-800 dark:text-white"
+    class="flex relative flex-col gap-2 h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white"
   >
     <div
-      class="grid place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
+      class="grid shrink-0 place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -348,22 +359,24 @@
       {/if}
     </div>
 
-    <TabbedContainer
-      bind:activeTab={settingsActiveTab}
-      tabs={[
-        {
-          title: "Settings",
-          Content: Settings,
-          props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
-        },
-        { title: "Shortcuts", Content: Shortcuts },
-        { title: "Themes", Content: Theme },
-      ]}
-    />
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <TabbedContainer
+        bind:activeTab={settingsActiveTab}
+        tabs={[
+          {
+            title: "Settings",
+            Content: Settings,
+            props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
+          },
+          { title: "Shortcuts", Content: Shortcuts },
+          { title: "Themes", Content: Theme },
+        ]}
+      />
+    </div>
   </div>
 
-  {#if showColourPicker}
-    <ColourPicker
+  {#if showColourPicker && ColourPickerComponent}
+    <ColourPickerComponent
       hidePicker={() => {
         showColourPicker = false;
       }}

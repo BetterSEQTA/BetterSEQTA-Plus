@@ -5,6 +5,7 @@
  */
 
 import { settingsState } from "../listeners/SettingsState";
+import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
 
 const FULLSCREENABLE_CLASS = "popup-media-fullscreenable";
 const OVERLAY_VISIBLE_CLASS = "bsplus-popup-media-overlay-backdrop--visible";
@@ -56,12 +57,21 @@ function openMediaOverlayViewer(source: HTMLImageElement | HTMLVideoElement) {
     nv.loop = v.loop;
     nv.muted = v.muted;
     nv.volume = v.volume;
+    let hasValidSource = false;
     for (const s of v.querySelectorAll("source")) {
+      const src = allowedPopupImageUrl((s as HTMLSourceElement).src);
+      if (!src) continue;
+      hasValidSource = true;
       const ns = document.createElement("source");
-      ns.src = (s as HTMLSourceElement).src;
+      ns.src = src;
       const t = (s as HTMLSourceElement).type;
       if (t) ns.type = t;
       nv.appendChild(ns);
+    }
+    if (!hasValidSource) {
+      const directSrc = allowedPopupImageUrl(v.currentSrc || v.src);
+      if (!directSrc) return;
+      nv.src = directSrc;
     }
     nv.addEventListener(
       "loadeddata",
@@ -79,9 +89,12 @@ function openMediaOverlayViewer(source: HTMLImageElement | HTMLVideoElement) {
     nv.load();
     media = nv;
   } else {
+    const rawSrc = source.currentSrc || source.src;
+    const safeSrc = allowedPopupImageUrl(rawSrc);
+    if (!safeSrc) return;
     const img = document.createElement("img");
     img.classList.add("bsplus-popup-media-overlay-media");
-    img.src = source.currentSrc || source.src;
+    img.src = safeSrc;
     img.alt = source.alt || "";
     media = img;
   }

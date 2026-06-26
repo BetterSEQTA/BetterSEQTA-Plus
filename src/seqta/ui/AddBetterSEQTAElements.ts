@@ -18,6 +18,26 @@ import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 
 let cachedUserInfo: any = null;
+let userInfoFetchPromise: Promise<any> | null = null;
+let userInfoCacheListenersAttached = false;
+
+export function invalidateCachedUserInfo(): void {
+  cachedUserInfo = null;
+  userInfoFetchPromise = null;
+}
+
+function attachUserInfoCacheInvalidation(): void {
+  if (userInfoCacheListenersAttached || typeof window === "undefined") return;
+  userInfoCacheListenersAttached = true;
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      invalidateCachedUserInfo();
+    }
+  });
+}
+
+attachUserInfoCacheInvalidation();
 
 let LightDarkModeSnakeEggButton = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
@@ -27,28 +47,66 @@ let sidebarAccessibilityListenersAttached = false;
 /** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
 const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
 
-export async function getUserInfo() {
-  if (cachedUserInfo) return cachedUserInfo;
-
-  try {
-    const response = await fetch(`${location.origin}/seqta/student/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({
-        mode: "normal",
-        query: null,
-        redirect_url: location.origin,
-      }),
-    });
-
-    cachedUserInfo = (await response.json()).payload;
+export async function getUserInfo(options?: { validateSession?: boolean }) {
+  if (cachedUserInfo && !options?.validateSession) {
     return cachedUserInfo;
-  } catch (error) {
-    console.error("[BetterSEQTA+] Failed to get user info:", error);
-    throw error;
   }
+
+  if (userInfoFetchPromise && !options?.validateSession) {
+    return userInfoFetchPromise;
+  }
+
+  const fetchUserInfo = async () => {
+    try {
+      const response = await fetch(`${location.origin}/seqta/student/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+          mode: "normal",
+          query: null,
+          redirect_url: location.origin,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get user info: HTTP ${response.status}`);
+      }
+
+      const payload = (await response.json()).payload;
+
+      if (
+        cachedUserInfo &&
+        options?.validateSession &&
+        payload?.id != null &&
+        cachedUserInfo.id != null &&
+        payload.id !== cachedUserInfo.id
+      ) {
+        console.warn(
+          "[BetterSEQTA+] Session user changed; invalidating cached user info",
+        );
+        invalidateCachedUserInfo();
+      }
+
+      cachedUserInfo = payload;
+      return cachedUserInfo;
+    } catch (error) {
+      console.error("[BetterSEQTA+] Failed to get user info:", error);
+      throw error;
+    } finally {
+      if (!options?.validateSession) {
+        userInfoFetchPromise = null;
+      }
+    }
+  };
+
+  if (options?.validateSession) {
+    return fetchUserInfo();
+  }
+
+  userInfoFetchPromise = fetchUserInfo();
+  return userInfoFetchPromise;
 }
 
 export async function AddBetterSEQTAElements() {
@@ -78,11 +136,7 @@ export async function AddBetterSEQTAElements() {
     menuList.insertBefore(fragment, menuList.firstChild);
 
     try {
-      await Promise.all([
-        appendBackgroundToUI(),
-        handleUserInfo(),
-        handleStudentData(),
-      ]);
+      await Promise.all([appendBackgroundToUI(), handleUserInfoAndStudentData()]);
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to initialize UI elements:", error);
     }
@@ -112,11 +166,26 @@ function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
   );
 }
 
-async function handleUserInfo() {
+async function handleUserInfoAndStudentData() {
   try {
-    updateUserInfo(await getUserInfo());
+    const [userInfo, studentResponse] = await Promise.all([
+      getUserInfo(),
+      fetch(`${location.origin}/seqta/student/load/message/people`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({ mode: "student" }),
+      }),
+    ]);
+
+    updateUserInfo(userInfo);
+    await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
-    console.error("[BetterSEQTA+] Failed to handle user info:", error);
+    console.error(
+      "[BetterSEQTA+] Failed to handle user info and student data:",
+      error,
+    );
   }
 }
 
@@ -172,27 +241,7 @@ function updateUserInfo(info: {
     .appendChild(document.getElementsByClassName("logout")[0]);
 }
 
-async function handleStudentData() {
-  try {
-    const response = await fetch(
-      `${location.origin}/seqta/student/load/message/people`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify({ mode: "student" }),
-      },
-    );
-
-    await updateStudentInfo((await response.json()).payload);
-  } catch (error) {
-    console.error("[BetterSEQTA+] Failed to handle student data:", error);
-  }
-}
-
-async function updateStudentInfo(students: any) {
-  const info = await getUserInfo();
+async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof getUserInfo>>) {
   const index = students.findIndex(
     (person: any) =>
       person.firstname == info.userDesc.split(" ")[0] &&

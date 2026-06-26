@@ -10,8 +10,8 @@ import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloud
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
   clearCustomThemeAdaptiveCssVariables,
@@ -603,8 +603,12 @@ export class ThemeManager {
       if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
         throw new Error("Failed to get theme download URL");
       }
+      const themeJsonUrl = downloadData.data.theme_json_url;
+      if (!isAllowedFetchUrl(themeJsonUrl)) {
+        throw new Error("Theme download URL not allowed");
+      }
       themeData = (await this.fetchFromUrl(
-        downloadData.data.theme_json_url,
+        themeJsonUrl,
       )) as ThemeContent;
     } catch (apiError) {
       console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
@@ -732,10 +736,8 @@ export class ThemeManager {
     this.storeUpdateCheckRunning = true;
     localStorage.setItem(ThemeManager.STORE_CHECK_KEY, String(Date.now()));
     try {
-      const token = await cloudAuth.getStoredToken();
       const res = (await browser.runtime.sendMessage({
         type: "fetchThemes",
-        token: token ?? undefined,
       })) as {
         success?: boolean;
         data?: { themes?: Array<{ id: string; updated_at?: number }> };

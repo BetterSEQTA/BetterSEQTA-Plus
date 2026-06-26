@@ -102,6 +102,94 @@ if (typeof window !== 'undefined') {
   });
 }
 
+/** Rebuild Fuse when incremental delta exceeds this count. */
+export const INCREMENTAL_FUSE_REBUILD_THRESHOLD = 75;
+
+export const DYNAMIC_FUSE_OPTIONS = {
+  keys: [
+    { name: "text", weight: 3 },
+    { name: "content", weight: 1 },
+    { name: "category", weight: 0.4 },
+    { name: "metadata.subjectName", weight: 1.6 },
+    { name: "metadata.subjectCode", weight: 1.6 },
+    { name: "metadata.subject", weight: 1.4 },
+    { name: "metadata.courseCode", weight: 1.2 },
+    { name: "metadata.filename", weight: 1.2 },
+    { name: "metadata.author", weight: 0.8 },
+    { name: "metadata.authorName", weight: 0.8 },
+    { name: "metadata.label", weight: 0.6 },
+    { name: "metadata.categoryName", weight: 0.6 },
+    { name: "metadata.entityType", weight: 0.4 },
+  ],
+  includeScore: true,
+  includeMatches: true,
+  threshold: 0.5,
+  minMatchCharLength: 2,
+  distance: 100,
+  useExtendedSearch: true,
+  ignoreLocation: true,
+  findAllMatches: true,
+  shouldSort: true,
+} as const;
+
+export interface DynamicItemsUpdatedDetail {
+  incremental?: boolean;
+  fullRebuild?: boolean;
+  jobId?: string;
+  changedItems?: IndexItem[];
+  removedIds?: string[];
+  vectorUpdate?: boolean;
+  streaming?: boolean;
+  newItemCount?: number;
+}
+
+export function createDynamicContentFuse(
+  items: IndexItem[],
+): Fuse<IndexItem> {
+  return new Fuse(
+    dedupeIndexItemsForSearch(items),
+    DYNAMIC_FUSE_OPTIONS,
+  ) as Fuse<IndexItem>;
+}
+
+/**
+ * Apply an incremental dynamic-item delta to an existing Fuse index.
+ * Returns null when a full rebuild is recommended.
+ */
+export function applyDynamicIndexDelta(
+  fuse: Fuse<IndexItem> | undefined,
+  idToItemMap: Map<string, IndexItem>,
+  detail: DynamicItemsUpdatedDetail,
+): Fuse<IndexItem> | null {
+  const changedItems = detail.changedItems ?? [];
+  const removedIds = detail.removedIds ?? [];
+  const deltaSize = changedItems.length + removedIds.length;
+
+  if (
+    detail.fullRebuild ||
+    !fuse ||
+    idToItemMap.size === 0 ||
+    deltaSize === 0 ||
+    deltaSize > INCREMENTAL_FUSE_REBUILD_THRESHOLD
+  ) {
+    return null;
+  }
+
+  for (const id of removedIds) {
+    fuse.remove((item) => item.id === id);
+    idToItemMap.delete(id);
+  }
+
+  for (const item of changedItems) {
+    fuse.remove((existing) => existing.id === item.id);
+    fuse.add(item);
+    idToItemMap.set(item.id, item);
+  }
+
+  clearSearchCache();
+  return fuse;
+}
+
 export function createSearchIndexes() {
   clearSearchCache();
   const commands = getStaticCommands();
@@ -119,49 +207,9 @@ export function createSearchIndexes() {
     findAllMatches: false, // Performance optimization
   };
 
-  // Optimized dynamic content search options.
-  // The expanded corpus mixes structured entities (assessments, subjects)
-  // with free-form text (course content, notices, folio bodies, passive
-  // captures) so we list a broad set of metadata keys while keeping titles
-  // dominant in the ranking.
-  // NOTE: metadata.route is intentionally excluded. Raw API paths like
-  // `/seqta/student/load/message/people` should never influence ranking — they
-  // historically caused passive-capture support records to bubble up above
-  // real assessments when the user typed substrings that happened to appear in
-  // the path.
-  const dynamicOptions = {
-    keys: [
-      { name: "text", weight: 3 }, // Title is king
-      { name: "content", weight: 1 },
-      { name: "category", weight: 0.4 },
-      { name: "metadata.subjectName", weight: 1.6 },
-      { name: "metadata.subjectCode", weight: 1.6 },
-      { name: "metadata.subject", weight: 1.4 },
-      { name: "metadata.courseCode", weight: 1.2 },
-      { name: "metadata.filename", weight: 1.2 },
-      { name: "metadata.author", weight: 0.8 },
-      { name: "metadata.authorName", weight: 0.8 },
-      { name: "metadata.label", weight: 0.6 },
-      { name: "metadata.categoryName", weight: 0.6 },
-      { name: "metadata.entityType", weight: 0.4 },
-    ],
-    includeScore: true,
-    includeMatches: true,
-    threshold: 0.5,
-    minMatchCharLength: 2,
-    distance: 100,
-    useExtendedSearch: true,
-    ignoreLocation: true,
-    findAllMatches: true,
-    shouldSort: true,
-  };
-
   return {
     commandsFuse: new Fuse(commands, commandOptions) as Fuse<StaticCommandItem>,
-    dynamicContentFuse: new Fuse(
-      dynamicItems,
-      dynamicOptions,
-    ) as Fuse<IndexItem>,
+    dynamicContentFuse: createDynamicContentFuse(dynamicItems),
     commands,
     dynamicItems,
   };

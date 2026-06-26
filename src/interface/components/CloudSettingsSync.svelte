@@ -22,15 +22,13 @@
   });
 
   async function upload() {
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
+    if (!cloudState.isLoggedIn) return;
     busy = true;
     statusError = null;
     statusMessage = null;
     try {
       const res = (await browser.runtime.sendMessage({
         type: "cloudSettingsUpload",
-        token,
       })) as { success?: boolean; error?: string };
       if (res?.success) {
         statusMessage = "Settings uploaded.";
@@ -49,15 +47,13 @@
   }
 
   async function confirmDownload() {
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
+    if (!cloudState.isLoggedIn) return;
     busy = true;
     statusError = null;
     statusMessage = null;
     try {
       const res = (await browser.runtime.sendMessage({
         type: "cloudSettingsDownload",
-        token,
       })) as { success?: boolean; error?: string; notFound?: boolean };
       if (res?.success) {
         statusMessage = "Settings restored.";

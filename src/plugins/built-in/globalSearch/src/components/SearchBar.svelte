@@ -5,7 +5,7 @@
   import { circOut, quintOut } from 'svelte/easing';
   import { type StaticCommandItem } from '../core/commands';
   import type { CombinedResult } from '../core/types';
-  import { createSearchIndexes, performSearch as doSearch } from '../search/searchUtils';
+  import { createSearchIndexes, applyDynamicIndexDelta, performSearch as doSearch, type DynamicItemsUpdatedDetail } from '../search/searchUtils';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
@@ -130,7 +130,31 @@
 
     window.addEventListener('indexing-progress', progressHandler as EventListener);
     
-    const itemsUpdatedHandler = () => {
+    const itemsUpdatedHandler = (event: Event) => {
+      const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
+
+      if (
+        detail?.vectorUpdate &&
+        !detail.changedItems?.length &&
+        !detail.removedIds?.length
+      ) {
+        performSearch();
+        return;
+      }
+
+      if (detail?.incremental && !detail.fullRebuild) {
+        const updatedFuse = applyDynamicIndexDelta(
+          dynamicContentFuse,
+          dynamicIdToItemMap,
+          detail,
+        );
+        if (updatedFuse) {
+          dynamicContentFuse = updatedFuse;
+          performSearch();
+          return;
+        }
+      }
+
       setupSearchIndexes();
       performSearch();
     };
@@ -176,29 +200,35 @@
     const term = searchTerm.trim().toLowerCase();
     const requestId = ++searchRequestId;
 
-    if (commandsFuse && dynamicContentFuse) {
-      const results = await doSearch(
-        term,
-        commandsFuse,
-        commandIdToItemMap,
-        dynamicContentFuse,
-        dynamicIdToItemMap,
-        true, // sortByRecent
-      );
+    try {
+      if (commandsFuse && dynamicContentFuse) {
+        const results = await doSearch(
+          term,
+          commandsFuse,
+          commandIdToItemMap,
+          dynamicContentFuse,
+          dynamicIdToItemMap,
+          true, // sortByRecent
+        );
 
-      // Drop the result if the user has typed since this search started, or
-      // if the current term no longer matches what we searched for. This
-      // keeps the visible list anchored to the latest query.
-      if (requestId !== searchRequestId) return;
-      if (searchTerm.trim().toLowerCase() !== term) return;
+        // Drop the result if the user has typed since this search started, or
+        // if the current term no longer matches what we searched for. This
+        // keeps the visible list anchored to the latest query.
+        if (requestId !== searchRequestId) return;
+        if (searchTerm.trim().toLowerCase() !== term) return;
 
-      combinedResults = results;
-    } else {
-      if (requestId !== searchRequestId) return;
-      combinedResults = [];
+        combinedResults = results;
+      } else {
+        if (requestId !== searchRequestId) return;
+        combinedResults = [];
+      }
+    } finally {
+      // Only clear loading for the latest in-flight search — stale async
+      // passes must not leave the spinner stuck after fast typing.
+      if (requestId === searchRequestId) {
+        isLoading = false;
+      }
     }
-
-    isLoading = false;
   };
 
   // Optimized debounce: shorter delay for better responsiveness

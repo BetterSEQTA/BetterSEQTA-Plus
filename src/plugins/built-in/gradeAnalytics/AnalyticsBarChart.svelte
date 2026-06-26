@@ -268,7 +268,7 @@
 
           xScale={scaleBand().padding(distribution().modeUsed === "letter" ? 0.22 : 0.28)}
 
-          yScale={yScale()}
+          yScale={yScale}
 
           x="grade"
 
@@ -309,8 +309,6 @@
               motion: {
 
                 y: { type: "tween", duration: 600, easing: cubicInOut },
-
-                height: { type: "tween", duration: 600, easing: cubicInOut },
 
               },
 

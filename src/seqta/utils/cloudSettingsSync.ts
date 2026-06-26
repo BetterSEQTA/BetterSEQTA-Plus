@@ -73,7 +73,15 @@ const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   ...KEYS_OMITTED_FROM_CLOUD_UPLOAD,
   ...SENSITIVE_DEVICE_STORAGE_KEYS_EXACT,
   ...CLIENT_ONLY_CLOUD_KEYS_EXACT,
+  "devMode",
+  "devGhReleaseVersionOverride",
 ]);
+
+const UNSAFE_STORAGE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+function isUnsafeStorageKey(key: string): boolean {
+  return UNSAFE_STORAGE_KEYS.has(key);
+}
 
 /** True if a storage key is part of the upload payload (and should trigger auto-upload when changed). */
 export function isKeyIncludedInCloudUploadPayload(key: string): boolean {
@@ -81,6 +89,7 @@ export function isKeyIncludedInCloudUploadPayload(key: string): boolean {
 }
 
 function shouldOmitKeyFromCloudPayload(key: string): boolean {
+  if (isUnsafeStorageKey(key)) return true;
   if (OMIT_FROM_UPLOAD_EXACT.has(key)) return true;
   for (const prefix of SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES) {
     if (key.startsWith(prefix)) return true;
@@ -115,6 +124,7 @@ function collectLocalKeysToPreserve(local: Record<string, unknown>): Record<stri
 function stripExcludedKeysFromRemoteData(remote: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(remote)) {
+    if (isUnsafeStorageKey(k)) continue;
     if (shouldOmitKeyFromCloudPayload(k)) continue;
     out[k] = v;
   }
@@ -336,5 +346,7 @@ export async function applyDownloadedEnvelope(envelope: unknown): Promise<void> 
 
   const migrated = migrateLegacyToPluginSettings(remoteFlat);
   const remoteSanitized = stripExcludedKeysFromRemoteData(migrated);
-  await browser.storage.local.set(remoteSanitized);
+  const local = (await browser.storage.local.get()) as Record<string, unknown>;
+  const preserve = collectLocalKeysToPreserve(local);
+  await browser.storage.local.set({ ...remoteSanitized, ...preserve });
 }

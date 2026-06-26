@@ -1,5 +1,5 @@
 import type { IndexItem } from "./types";
-import { put, getAll } from "./db";
+import { getAll, put } from "./db";
 import {
   buildIndexItem,
   extractTextFromValue,
@@ -8,10 +8,8 @@ import {
 } from "./extract";
 import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
-import { loadAllStoredItems } from "./indexer";
-import { loadDynamicItems } from "../utils/dynamicItems";
-import { renderComponentMap } from "./renderComponents";
-import { jobs } from "./jobs";
+import { mergeDynamicItems } from "../utils/dynamicItems";
+import { decorateIndexItems } from "./renderComponents";
 
 /**
  * Passive network observer.
@@ -42,6 +40,8 @@ const MAX_PER_RESPONSE_TEXT_CHARS = 1500;
 let installed = false;
 let pendingFlush: ReturnType<typeof setTimeout> | null = null;
 let pendingDirty = false;
+/** Items persisted since the last flush — only these are pushed to the search layer. */
+const pendingChangedItems = new Map<string, IndexItem>();
 
 export function isPassiveObserverInstalled(): boolean {
   return installed;
@@ -387,6 +387,7 @@ async function persistItems(items: IndexItem[]): Promise<void> {
   for (const item of items) {
     try {
       await put(STORE_ID, item, item.id);
+      pendingChangedItems.set(item.id, item);
     } catch (e) {
       console.warn(
         `[Passive Observer] Failed to persist item ${item.id}:`,
@@ -410,38 +411,20 @@ function scheduleFlush() {
 }
 
 async function flushDynamicItems(): Promise<void> {
+  if (pendingChangedItems.size === 0) return;
+
+  const rawChanged = Array.from(pendingChangedItems.values());
+  pendingChangedItems.clear();
+
   try {
-    const all = await loadAllStoredItems();
-    const decorated = all.map((item) => {
-      try {
-        const jobDef =
-          jobs[item.category] ||
-          Object.values(jobs).find((j) => j.id === item.category) ||
-          jobs[item.renderComponentId];
-        let renderComponent = item.renderComponent;
-        if (jobDef) {
-          renderComponent =
-            renderComponentMap[jobDef.renderComponentId] || renderComponent;
-        } else if (renderComponentMap[item.renderComponentId]) {
-          renderComponent = renderComponentMap[item.renderComponentId];
-        }
-        try {
-          const cloned = JSON.parse(JSON.stringify(item));
-          cloned.renderComponent = renderComponent;
-          return cloned;
-        } catch {
-          return { ...item, renderComponent };
-        }
-      } catch {
-        return item;
-      }
-    });
-    loadDynamicItems(decorated);
+    const decorated = decorateIndexItems(rawChanged);
+    mergeDynamicItems(decorated);
     window.dispatchEvent(
       new CustomEvent("dynamic-items-updated", {
         detail: {
           incremental: true,
           jobId: STORE_ID,
+          changedItems: decorated,
           streaming: false,
         },
       }),
