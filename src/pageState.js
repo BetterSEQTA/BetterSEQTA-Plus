@@ -513,100 +513,104 @@ function isTrustedMessage(event) {
   return event.source === window && event.origin === window.location.origin;
 }
 
+function executeReactFiberAction(fiberInstance, action, payload) {
+  switch (action) {
+    case "getState":
+      return fiberInstance.getState(payload.key);
+    case "setState":
+      if (
+        payload.updateObject &&
+        typeof payload.updateObject === "object" &&
+        !Array.isArray(payload.updateObject)
+      ) {
+        fiberInstance.setState(payload.updateObject);
+      } else {
+        console.warn("[pageState] setState rejected: only plain objects are allowed");
+      }
+      return {};
+    case "getProp":
+      return fiberInstance.getProp(payload.propName);
+    case "setProp":
+      fiberInstance.setProp(payload.propName, payload.value);
+      return {};
+    case "forceUpdate":
+      fiberInstance.forceUpdate();
+      return {};
+    default:
+      console.warn(`[pageState] Unknown action: ${action}`);
+      return null;
+  }
+}
+
+function sanitizeResponseForPostMessage(response) {
+  if (response !== null && typeof response === "object") {
+    response = makeSerializable(response);
+  }
+
+  try {
+    deepFunctionCheck(response);
+  } catch (functionError) {
+    console.warn("[pageState] Function detected in response, cleaning:", functionError.message);
+    return `[Cleaned Response - Function found at: ${functionError.message}]`;
+  }
+
+  try {
+    if (typeof structuredClone === "function") {
+      structuredClone(response);
+    } else {
+      JSON.parse(JSON.stringify(response));
+    }
+  } catch (cloneError) {
+    console.warn("[pageState] Response not cloneable, fallback:", cloneError.message);
+    return `[Uncloneable Response: ${cloneError.message}]`;
+  }
+
+  return response;
+}
+
+function handleReactFiberRequest(data) {
+  const { selector, action, payload, debug, messageId } = data;
+  const fiberInstance = ReactFiber.find(selector, { debug });
+  const response = sanitizeResponseForPostMessage(
+    executeReactFiberAction(fiberInstance, action, payload),
+  );
+
+  window.postMessage(
+    {
+      type: "reactFiberResponse",
+      response,
+      messageId,
+    },
+    window.location.origin,
+  );
+}
+
+function handleTriggerKeyboardEvent(data) {
+  const { key, code, altKey, ctrlKey, metaKey, shiftKey, keyCode } = data;
+  const keyboardEvent = new KeyboardEvent("keydown", {
+    key,
+    code,
+    keyCode: keyCode || 0,
+    which: keyCode || 0,
+    altKey: altKey || false,
+    ctrlKey: ctrlKey || false,
+    metaKey: metaKey || false,
+    shiftKey: shiftKey || false,
+    bubbles: true,
+    cancelable: true,
+  });
+  document.dispatchEvent(keyboardEvent);
+}
+
 window.addEventListener("message", (event) => {
   if (!isTrustedMessage(event)) return;
 
   if (event.data.type === "reactFiberRequest") {
-    const { selector, action, payload, debug, messageId } = event.data;
-    const fiberInstance = ReactFiber.find(selector, {
-      debug,
-    });
+    handleReactFiberRequest(event.data);
+    return;
+  }
 
-    let response;
-    switch (action) {
-      case "getState":
-        response = fiberInstance.getState(payload.key);
-        break;
-      case "setState":
-        if (
-          payload.updateObject &&
-          typeof payload.updateObject === "object" &&
-          !Array.isArray(payload.updateObject)
-        ) {
-          fiberInstance.setState(payload.updateObject);
-        } else {
-          console.warn("[pageState] setState rejected: only plain objects are allowed");
-        }
-        response = {};
-        break;
-
-      case "getProp":
-        response = fiberInstance.getProp(payload.propName);
-        break;
-      case "setProp":
-        fiberInstance.setProp(payload.propName, payload.value);
-        response = {};
-        break;
-      case "forceUpdate":
-        fiberInstance.forceUpdate();
-        response = {};
-        break;
-      default:
-        console.warn(`[pageState] Unknown action: ${action}`);
-        response = null;
-    }
-
-    if (response !== null && typeof response === "object") {
-      response = makeSerializable(response);
-    }
-
-    // Final safety check before postMessage
-    try {
-      deepFunctionCheck(response);
-    } catch (functionError) {
-      console.warn("[pageState] Function detected in response, cleaning:", functionError.message);
-      response = `[Cleaned Response - Function found at: ${functionError.message}]`;
-    }
-
-    // Additional structured clone test
-    try {
-      // Test if the object can be cloned (same algorithm as postMessage)
-      if (typeof structuredClone === 'function') {
-        structuredClone(response);
-      } else {
-        // Fallback for older browsers - try JSON round-trip
-        JSON.parse(JSON.stringify(response));
-      }
-    } catch (cloneError) {
-      console.warn("[pageState] Response not cloneable, fallback:", cloneError.message);
-      response = `[Uncloneable Response: ${cloneError.message}]`;
-    }
-
-    window.postMessage(
-      {
-        type: "reactFiberResponse",
-        response,
-        messageId,
-      },
-      window.location.origin,
-    );
-  } else if (event.data.type === "triggerKeyboardEvent") {
-    // Handle keyboard event triggering from content script
-    const { key, code, altKey, ctrlKey, metaKey, shiftKey, keyCode } = event.data;
-    
-    const keyboardEvent = new KeyboardEvent('keydown', {
-      key,
-      code,
-      keyCode: keyCode || 0,
-      which: keyCode || 0,
-      altKey: altKey || false,
-      ctrlKey: ctrlKey || false,
-      metaKey: metaKey || false,
-      shiftKey: shiftKey || false,
-      bubbles: true,
-      cancelable: true
-    });
-    
-    document.dispatchEvent(keyboardEvent);
+  if (event.data.type === "triggerKeyboardEvent") {
+    handleTriggerKeyboardEvent(event.data);
   }
 });

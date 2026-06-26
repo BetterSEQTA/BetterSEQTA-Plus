@@ -128,102 +128,9 @@ export async function mountSearchBar(
     }
   };
 
-  const updateProgressDisplay = () => {
-    const indexingStoppedThisTick = indexingJustStoppedFlag;
-    indexingJustStoppedFlag = false;
-
-    const active = isIndexing && totalJobs > 0;
-
-    // Stray pulses (missing total, 0 completed, etc.) used to hit the idle
-    // branch and call clearDoneFlashTimer(), killing the Done! hold/fade.
-    if (doneFlashTimer !== null || doneFadeTimer !== null) {
-      if (!active) {
-        return;
-      }
-      clearDoneFlashTimer();
-    }
-
-    const completionEligible =
-      ranIndexingCycle &&
-      !active &&
-      totalJobs > 0 &&
-      (completedJobs >= totalJobs || indexingStoppedThisTick);
-
-    if (active) {
-      clearDoneFlashTimer();
-      progressBarWrapper.classList.remove("is-rough-complete");
-      progressText.classList.remove(
-        "is-rough",
-        "is-fading-done",
-        "is-done-message",
-      );
-      const percentage = Math.round((completedJobs / totalJobs) * 100);
-      progressBar.style.width = `${Math.max(2, percentage)}%`;
-      progressBarWrapper.classList.add("is-active");
-      searchAnchor.classList.add("is-indexing");
-      searchButton.classList.add("is-indexing");
-
-      if (indexingStatus) {
-        progressText.textContent = `${truncateStatus(indexingStatus)} · ${percentage}%`;
-      } else {
-        progressText.textContent = `Indexing ${completedJobs}/${totalJobs} (${percentage}%)`;
-      }
-      progressText.classList.add("is-active");
-      return;
-    }
-
-    if (completionEligible) {
-      // Duplicate end-of-run ticks must not reschedule hold/fade timers
-      if (doneFlashTimer !== null || doneFadeTimer !== null) {
-        return;
-      }
-
-      const rough =
-        indexingStatus != null && statusLooksRough(indexingStatus);
-
-      progressBar.style.width = "0%";
-      progressBarWrapper.classList.remove("is-active");
-      searchAnchor.classList.remove("is-indexing");
-      searchButton.classList.remove("is-indexing");
-      progressText.classList.remove("is-fading-done");
-
-      progressText.textContent = rough ? truncateStatus(indexingStatus!, 52) : "Done!";
-      if (rough) {
-        progressText.classList.add("is-rough");
-        progressBarWrapper.classList.add("is-rough-complete");
-      } else {
-        progressText.classList.remove("is-rough");
-        progressBarWrapper.classList.remove("is-rough-complete");
-      }
-      progressText.classList.add("is-active", "is-done-message");
-
-      doneFlashTimer = setTimeout(() => {
-        doneFlashTimer = null;
-        progressText.classList.add("is-fading-done");
-        doneFadeTimer = setTimeout(() => {
-          doneFadeTimer = null;
-          ranIndexingCycle = false;
-          indexingStatus = null;
-          progressBar.style.width = "0%";
-          progressBarWrapper.classList.remove("is-active");
-          progressBarWrapper.classList.remove("is-rough-complete");
-          searchAnchor.classList.remove("is-indexing");
-          searchButton.classList.remove("is-indexing");
-          progressText.classList.remove(
-            "is-active",
-            "is-rough",
-            "is-fading-done",
-            "is-done-message",
-          );
-          progressText.textContent = "";
-        }, DONE_FADE_MS);
-      }, DONE_HOLD_MS);
-      return;
-    }
-
+  const resetIdleProgressUi = () => {
     clearDoneFlashTimer();
-    progressBarWrapper.classList.remove("is-active");
-    progressBarWrapper.classList.remove("is-rough-complete");
+    progressBarWrapper.classList.remove("is-active", "is-rough-complete");
     searchAnchor.classList.remove("is-indexing");
     searchButton.classList.remove("is-indexing");
     progressText.classList.remove(
@@ -236,6 +143,75 @@ export async function mountSearchBar(
     progressText.textContent = "";
     ranIndexingCycle = false;
     indexingStatus = null;
+  };
+
+  const showActiveIndexingUi = (percentage: number) => {
+    clearDoneFlashTimer();
+    progressBarWrapper.classList.remove("is-rough-complete");
+    progressText.classList.remove("is-rough", "is-fading-done", "is-done-message");
+    progressBar.style.width = `${Math.max(2, percentage)}%`;
+    progressBarWrapper.classList.add("is-active");
+    searchAnchor.classList.add("is-indexing");
+    searchButton.classList.add("is-indexing");
+    progressText.textContent = indexingStatus
+      ? `${truncateStatus(indexingStatus)} · ${percentage}%`
+      : `Indexing ${completedJobs}/${totalJobs} (${percentage}%)`;
+    progressText.classList.add("is-active");
+  };
+
+  const scheduleCompletionFlash = (rough: boolean) => {
+    progressBar.style.width = "0%";
+    progressBarWrapper.classList.remove("is-active");
+    searchAnchor.classList.remove("is-indexing");
+    searchButton.classList.remove("is-indexing");
+    progressText.classList.remove("is-fading-done");
+    progressText.textContent = rough ? truncateStatus(indexingStatus!, 52) : "Done!";
+    progressText.classList.toggle("is-rough", rough);
+    progressBarWrapper.classList.toggle("is-rough-complete", rough);
+    progressText.classList.add("is-active", "is-done-message");
+
+    doneFlashTimer = setTimeout(() => {
+      doneFlashTimer = null;
+      progressText.classList.add("is-fading-done");
+      doneFadeTimer = setTimeout(() => {
+        doneFadeTimer = null;
+        resetIdleProgressUi();
+      }, DONE_FADE_MS);
+    }, DONE_HOLD_MS);
+  };
+
+  const updateProgressDisplay = () => {
+    const indexingStoppedThisTick = indexingJustStoppedFlag;
+    indexingJustStoppedFlag = false;
+
+    const active = isIndexing && totalJobs > 0;
+
+    // Stray pulses (missing total, 0 completed, etc.) used to hit the idle
+    // branch and call clearDoneFlashTimer(), killing the Done! hold/fade.
+    if (doneFlashTimer !== null || doneFadeTimer !== null) {
+      if (!active) return;
+      clearDoneFlashTimer();
+    }
+
+    const completionEligible =
+      ranIndexingCycle &&
+      !active &&
+      totalJobs > 0 &&
+      (completedJobs >= totalJobs || indexingStoppedThisTick);
+
+    if (active) {
+      showActiveIndexingUi(Math.round((completedJobs / totalJobs) * 100));
+      return;
+    }
+
+    if (completionEligible) {
+      if (doneFlashTimer !== null || doneFadeTimer !== null) return;
+      const rough = indexingStatus != null && statusLooksRough(indexingStatus);
+      scheduleCompletionFlash(rough);
+      return;
+    }
+
+    resetIdleProgressUi();
   };
 
   // Listen for indexing progress events

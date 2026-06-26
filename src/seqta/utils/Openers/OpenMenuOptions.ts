@@ -14,216 +14,215 @@ function escapeHtmlAttr(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-export function OpenMenuOptions() {
-  if (MenuOptionsOpen) return;
-
-  var container = document.getElementById("container");
-  var menu = document.getElementById("menu");
-
-  if (settingsState.defaultmenuorder.length == 0) {
-    let childnodes = menu!.firstChild!.childNodes;
-    let newdefaultmenuorder = [];
-    for (let i = 0; i < childnodes.length; i++) {
-      const element = childnodes[i];
-      newdefaultmenuorder.push((element as HTMLElement).dataset.key);
-      settingsState.defaultmenuorder = newdefaultmenuorder;
-    }
-  }
-  let childnodes = menu!.firstChild!.childNodes;
-  if (settingsState.defaultmenuorder.length != childnodes.length) {
-    for (let i = 0; i < childnodes.length; i++) {
-      const element = childnodes[i];
-      if (
-        settingsState.defaultmenuorder.indexOf(
-          (element as HTMLElement).dataset.key,
-        ) === -1
-      ) {
-        let newdefaultmenuorder = settingsState.defaultmenuorder;
-        newdefaultmenuorder.push((element as HTMLElement).dataset.key);
-        settingsState.defaultmenuorder = newdefaultmenuorder;
-      }
-    }
+function syncDefaultMenuOrder(menu: HTMLElement) {
+  const childnodes = menu.firstChild!.childNodes;
+  if (settingsState.defaultmenuorder.length === 0) {
+    settingsState.defaultmenuorder = Array.from(childnodes).map(
+      (element) => (element as HTMLElement).dataset.key,
+    );
+    return;
   }
 
-  MenuOptionsOpen = true;
+  if (settingsState.defaultmenuorder.length === childnodes.length) return;
 
-  var cover = document.createElement("div");
+  const nextOrder = [...settingsState.defaultmenuorder];
+  for (let i = 0; i < childnodes.length; i++) {
+    const key = (childnodes[i] as HTMLElement).dataset.key;
+    if (key && nextOrder.indexOf(key) === -1) nextOrder.push(key);
+  }
+  settingsState.defaultmenuorder = nextOrder;
+}
+
+function createMenuEditControls(menu: HTMLElement, container: HTMLElement) {
+  const cover = document.createElement("div");
   cover.classList.add("notMenuCover");
-  menu!.style.zIndex = "20";
-  menu!.style.setProperty("--menuHidden", "flex");
-  container!.append(cover);
+  menu.style.zIndex = "20";
+  menu.style.setProperty("--menuHidden", "flex");
+  container.append(cover);
 
-  var menusettings = document.createElement("div");
+  const menusettings = document.createElement("div");
   menusettings.classList.add("editmenuoption-container");
 
-  var defaultbutton = document.createElement("div");
+  const defaultbutton = document.createElement("div");
   defaultbutton.classList.add("editmenuoption");
   defaultbutton.innerText = "Restore Default";
   defaultbutton.id = "restoredefaultoption";
 
-  var savebutton = document.createElement("div");
+  const savebutton = document.createElement("div");
   savebutton.classList.add("editmenuoption");
   savebutton.innerText = "Save";
   savebutton.id = "savemenuoption";
 
   menusettings.appendChild(defaultbutton);
   menusettings.appendChild(savebutton);
+  menu.appendChild(menusettings);
 
-  menu!.appendChild(menusettings);
+  return { cover, menusettings, defaultbutton, savebutton };
+}
 
-  var ListItems = menu!.firstChild!.childNodes;
-  for (let i = 0; i < ListItems.length; i++) {
-    const element1 = ListItems[i];
-    const element = element1 as HTMLElement;
-
-    (element as HTMLElement).classList.add("draggable");
-    if ((element as HTMLElement).classList.contains("hasChildren")) {
-      (element as HTMLElement).classList.remove("active");
+function prepareMenuItemsForEdit(menu: HTMLElement) {
+  const listItems = menu.firstChild!.childNodes;
+  for (let i = 0; i < listItems.length; i++) {
+    const element = listItems[i] as HTMLElement;
+    element.classList.add("draggable");
+    if (element.classList.contains("hasChildren")) {
+      element.classList.remove("active");
       (element.firstChild as HTMLElement).classList.remove("noscroll");
     }
 
-    const menuKey = escapeHtmlAttr((element as HTMLElement).dataset.key ?? "");
-    let MenuItemToggle = stringToHTML(
+    const menuKey = escapeHtmlAttr(element.dataset.key ?? "");
+    const menuItemToggle = stringToHTML(
       `<div class="onoffswitch" style="margin: auto 0;"><input class="onoffswitch-checkbox notification menuitem" type="checkbox" id="${menuKey}"><label for="${menuKey}" class="onoffswitch-label"></label>`,
     ).firstChild;
-    (element as HTMLElement).append(MenuItemToggle!);
+    element.append(menuItemToggle!);
 
-    if (!element.dataset.betterseqta) {
-      const a = document.createElement("section");
-      cloneAttributes(a, element);
-      while (element.firstChild) {
-        a.appendChild(element.firstChild);
-      }
-      menu!.firstChild!.insertBefore(a, element);
-      element.remove();
-    }
+    if (element.dataset.betterseqta) continue;
+
+    const section = document.createElement("section");
+    cloneAttributes(section, element);
+    while (element.firstChild) section.appendChild(element.firstChild);
+    menu.firstChild!.insertBefore(section, element);
+    element.remove();
   }
+  return listItems;
+}
 
-  if (Object.keys(settingsState.menuitems).length == 0) {
-    menubuttons = menu!.firstChild!.childNodes;
-    let menuItems = {} as any;
-    for (var i = 0; i < menubuttons.length; i++) {
-      var id = (menubuttons[i] as HTMLElement).dataset.key;
-      const element: any = {};
-      element.toggle = true;
-      (menuItems[id as keyof typeof menuItems] as any) = element;
-    }
-    settingsState.menuitems = menuItems;
+function ensureMenuItemSettings(menu: HTMLElement) {
+  if (Object.keys(settingsState.menuitems).length > 0) return;
+
+  const menuItems: Record<string, { toggle: boolean }> = {};
+  const menuButtons = menu.firstChild!.childNodes;
+  for (let i = 0; i < menuButtons.length; i++) {
+    const id = (menuButtons[i] as HTMLElement).dataset.key;
+    if (id) menuItems[id] = { toggle: true };
   }
+  settingsState.menuitems = menuItems;
+}
 
-  var menubuttons: any = document.getElementsByClassName("menuitem");
-
-  let menuItems = settingsState.menuitems as any;
-  let buttons = document.getElementsByClassName("menuitem");
+function applySavedMenuToggleStates() {
+  const menuItems = settingsState.menuitems as Record<
+    string,
+    { toggle: boolean }
+  >;
+  const buttons = document.getElementsByClassName("menuitem");
   for (let i = 0; i < buttons.length; i++) {
-    let id = buttons[i].id as string | undefined;
-    if (menuItems[id as keyof typeof menuItems]) {
-      (buttons[i] as HTMLInputElement).checked =
-        menuItems[id as keyof typeof menuItems].toggle;
-    } else {
-      (buttons[i] as HTMLInputElement).checked = true;
-    }
+    const id = buttons[i].id;
+    (buttons[i] as HTMLInputElement).checked = id
+      ? (menuItems[id]?.toggle ?? true)
+      : true;
   }
+}
 
-  let sortable: Sortable | undefined;
+function createMenuSortable(): Sortable | undefined {
   try {
-    var el = document.querySelector("#menu > ul");
+    const el = document.querySelector("#menu > ul");
+    if (!el) return undefined;
+    let sortable: Sortable | undefined;
     sortable = Sortable.create(el as HTMLElement, {
       draggable: ".draggable",
       dataIdAttr: "data-key",
       animation: 150,
       easing: "cubic-bezier(.5,0,.5,1)",
-      onEnd: function () {
-        saveNewOrder(sortable);
-      },
+      onEnd: () => saveNewOrder(sortable),
     });
+    return sortable;
   } catch (err) {
     console.error(err);
+    return undefined;
+  }
+}
+
+function changeMenuItemDisplay(element: HTMLInputElement) {
+  const row = element.parentNode?.parentNode as HTMLElement | null;
+  if (!row) return;
+  if (!element.checked) {
+    row.style.display = "var(--menuHidden)";
+    return;
+  }
+  row.style.setProperty("display", "flex", "important");
+}
+
+function storeMenuSettings() {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  const menuItems: Record<string, { toggle: boolean }> = {};
+  const menuButtons = menu.firstChild!.childNodes;
+  const toggles = document.getElementsByClassName("menuitem");
+  for (let i = 0; i < menuButtons.length; i++) {
+    const id = (menuButtons[i] as HTMLElement).dataset.key;
+    if (!id) continue;
+    menuItems[id] = { toggle: (toggles[i] as HTMLInputElement).checked };
+  }
+  settingsState.menuitems = menuItems;
+}
+
+function restoreMenuItemsFromEditMode(menu: HTMLElement, listItems: NodeListOf<ChildNode>) {
+  for (let i = 0; i < listItems.length; i++) {
+    const element = listItems[i] as HTMLElement;
+    element.classList.remove("draggable");
+    element.setAttribute("draggable", "false");
+
+    if (element.dataset.betterseqta) continue;
+
+    const listItem = document.createElement("li");
+    cloneAttributes(listItem, element);
+    while (element.firstChild) listItem.appendChild(element.firstChild);
+    menu.firstChild!.insertBefore(listItem, element);
+    element.remove();
   }
 
-  function changeDisplayProperty(element: any) {
-    if (!element.checked) {
-      element.parentNode.parentNode.style.display = "var(--menuHidden)";
-    }
-    if (element.checked) {
-      element.parentNode.parentNode.style.setProperty(
-        "display",
-        "flex",
-        "important",
-      );
-    }
-  }
+  menu.querySelectorAll(".onoffswitch").forEach((toggle) => toggle.remove());
+}
 
-  function StoreMenuSettings() {
-    let menu = document.getElementById("menu");
-    const menuItems: any = {};
-    let menubuttons = menu!.firstChild!.childNodes;
-    const button = document.getElementsByClassName("menuitem");
-    for (let i = 0; i < menubuttons.length; i++) {
-      const id = (menubuttons[i] as HTMLElement).dataset.key;
-      const element: any = {};
-      element.toggle = (button[i] as HTMLInputElement).checked;
+export function OpenMenuOptions() {
+  if (MenuOptionsOpen) return;
 
-      menuItems[id as keyof typeof menuItems] = element;
-    }
-    settingsState.menuitems = menuItems;
-  }
+  const container = document.getElementById("container");
+  const menu = document.getElementById("menu");
+  if (!container || !menu) return;
+
+  syncDefaultMenuOrder(menu);
+  MenuOptionsOpen = true;
+
+  const { cover, menusettings, defaultbutton, savebutton } = createMenuEditControls(
+    menu,
+    container,
+  );
+  const listItems = prepareMenuItemsForEdit(menu);
+  ensureMenuItemSettings(menu);
+  applySavedMenuToggleStates();
+
+  const menubuttons = document.getElementsByClassName("menuitem");
+  const sortable = createMenuSortable();
 
   for (let i = 0; i < menubuttons.length; i++) {
-    const element = menubuttons[i];
+    const element = menubuttons[i] as HTMLInputElement;
     element.addEventListener("change", () => {
-      element.parentElement.parentElement.getAttribute("data-key");
-      StoreMenuSettings();
-      changeDisplayProperty(element);
+      storeMenuSettings();
+      changeMenuItemDisplay(element);
     });
   }
 
-  function closeAll() {
-    menusettings?.remove();
-    cover?.remove();
+  const closeAll = () => {
+    menusettings.remove();
+    cover.remove();
     MenuOptionsOpen = false;
-    menu!.style.setProperty("--menuHidden", "none");
+    menu.style.setProperty("--menuHidden", "none");
+    restoreMenuItemsFromEditMode(menu, listItems);
+  };
 
-    for (let i = 0; i < ListItems.length; i++) {
-      const element1 = ListItems[i];
-      const element = element1 as HTMLElement;
-      element.classList.remove("draggable");
-      element.setAttribute("draggable", "false");
+  cover.addEventListener("click", closeAll);
+  savebutton.addEventListener("click", closeAll);
 
-      if (!element.dataset.betterseqta) {
-        const a = document.createElement("li");
-        cloneAttributes(a, element);
-        while (element.firstChild) {
-          a.appendChild(element.firstChild);
-        }
-        menu!.firstChild!.insertBefore(a, element);
-        element.remove();
-      }
-    }
-
-    let switches = menu!.querySelectorAll(".onoffswitch");
-    for (let i = 0; i < switches.length; i++) {
-      switches[i].remove();
-    }
-  }
-
-  cover?.addEventListener("click", closeAll);
-  savebutton?.addEventListener("click", closeAll);
-
-  defaultbutton?.addEventListener("click", function () {
-    const options = settingsState.defaultmenuorder;
-    settingsState.menuorder = options;
-
-    ChangeMenuItemPositions(options);
+  defaultbutton.addEventListener("click", () => {
+    settingsState.menuorder = settingsState.defaultmenuorder;
+    ChangeMenuItemPositions(settingsState.defaultmenuorder);
 
     for (let i = 0; i < menubuttons.length; i++) {
-      const element = menubuttons[i];
+      const element = menubuttons[i] as HTMLInputElement;
       element.checked = true;
-      element.parentNode.parentNode.style.setProperty(
-        "display",
-        "flex",
-        "important",
-      );
+      changeMenuItemDisplay(element);
     }
     if (sortable) saveNewOrder(sortable);
   });

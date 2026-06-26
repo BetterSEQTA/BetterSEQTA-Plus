@@ -1040,7 +1040,15 @@ function resolveTabSetClasses(): Record<string, string> {
   return resolved;
 }
 
-async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+interface WeightingTabContext {
+  assessmentID?: string;
+  autoWeight?: number;
+  override?: number | string;
+  weightingUnavailable: boolean;
+  statusNote: string;
+}
+
+async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext> {
   const selectedItem = document.querySelector(
     "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
   ) as HTMLElement | null;
@@ -1056,14 +1064,11 @@ async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
     ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
     : undefined;
   const rawWeight = entry?.weight;
-
   const weightingUnavailable = rawWeight === "N/A";
-
   const autoWeight =
     rawWeight && rawWeight !== "processing" && rawWeight !== "N/A"
       ? rawWeight
       : undefined;
-
   const override = assessmentID
     ? api.storage.weightingOverrides?.[assessmentID]
     : undefined;
@@ -1075,6 +1080,22 @@ async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
       : weightingUnavailable
         ? "No weighting was found in the marksheet. Set one manually."
         : "Overrides the auto-detected value.";
+
+  return {
+    assessmentID,
+    autoWeight,
+    override,
+    weightingUnavailable,
+    statusNote,
+  };
+}
+
+function renderWeightingTabHtml(
+  sheet: HTMLElement,
+  context: WeightingTabContext,
+) {
+  const { assessmentID, autoWeight, override, weightingUnavailable, statusNote } =
+    context;
 
   sheet.innerHTML = `
     <style>
@@ -1120,9 +1141,13 @@ async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
       ${!assessmentID ? `<p style="font-size:12px;color:rgba(255,80,80,0.8);margin-top:8px">Assessment not yet indexed — try refreshing.</p>` : ""}
     </div>
   `;
+}
 
-  if (!assessmentID) return;
-
+function attachWeightingInputHandlers(
+  sheet: HTMLElement,
+  api: any,
+  assessmentID: string,
+) {
   const input = sheet.querySelector(
     "#betterseqta-weight-override",
   ) as HTMLInputElement;
@@ -1132,20 +1157,17 @@ async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
 
   const save = () => {
     const raw = input.value.trim();
-    if (raw === "") {
-      const result = saveWeightingOverride(api, assessmentID, "");
-      if (!result.ok) return;
-      input.style.borderColor = "rgba(128,128,128,0.3)";
-    } else {
-      const result = saveWeightingOverride(api, assessmentID, raw);
-      if (!result.ok) {
+    const result = saveWeightingOverride(api, assessmentID, raw);
+    if (!result.ok) {
+      if (raw !== "") {
         input.style.borderColor = "rgba(255,80,80,0.6)";
         statusEl.textContent = result.error ?? "Invalid. Must be 0 or greater";
         statusEl.style.color = "rgba(255,80,80,0.8)";
-        return;
       }
-      input.style.borderColor = "rgba(128,128,128,0.3)";
+      return;
     }
+
+    input.style.borderColor = "rgba(128,128,128,0.3)";
     statusEl.textContent = "Saved";
     statusEl.style.color = "";
     setTimeout(() => (statusEl.textContent = ""), 2000);
@@ -1163,6 +1185,13 @@ async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
     if (statusEl.textContent === "Invalid. Must be 0 or greater.")
       statusEl.textContent = "";
   });
+}
+
+async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+  const context = await resolveWeightingTabContext(api);
+  renderWeightingTabHtml(sheet, context);
+  if (!context.assessmentID) return;
+  attachWeightingInputHandlers(sheet, api, context.assessmentID);
 }
 
 export function injectWeightingsTab(api: any) {
