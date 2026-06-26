@@ -10,7 +10,7 @@ import {
 import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { runIndexing } from "../indexing/indexer";
+import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
 import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
@@ -196,6 +196,15 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       } else {
         console.warn("[Global Search] Failed to check for updates:", error);
       }
+    }
+
+    // Run schema migration before any IndexedDB connections are opened.
+    // If this runs later (during indexing), embeddiaDB and betterseqta-index
+    // may already be open and delete requests come back blocked.
+    try {
+      await ensureSchemaCurrent();
+    } catch (error) {
+      console.warn("[Global Search] Schema check failed:", error);
     }
 
     try {

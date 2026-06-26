@@ -34,47 +34,49 @@ const STRUCTURED_DB = "betterseqta-index";
 const VECTOR_DB = "embeddiaDB";
 const STRUCTURED_VERSION_KEY = "betterseqta-index-version";
 
-function deleteIndexedDb(name: string): Promise<void> {
-  return new Promise((resolve) => {
-    let resolved = false;
-    const finish = () => {
-      if (resolved) return;
-      resolved = true;
-      resolve();
-    };
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
+function tryDeleteDatabase(
+  name: string,
+): Promise<"success" | "blocked" | "error"> {
+  return new Promise((resolve) => {
     let req: IDBOpenDBRequest;
     try {
       req = indexedDB.deleteDatabase(name);
-    } catch (e) {
-      console.warn(`[Reset] Could not start delete of ${name}:`, e);
-      finish();
+    } catch (error) {
+      console.warn(`[Reset] Could not start delete of ${name}:`, error);
+      resolve("error");
       return;
     }
 
-    req.onsuccess = () => finish();
+    req.onsuccess = () => resolve("success");
     req.onerror = () => {
       console.warn(`[Reset] Error deleting ${name}:`, req.error);
-      finish();
+      resolve("error");
     };
-    req.onblocked = () => {
-      // Connections are still open in another tab. Wait briefly, retry,
-      // then resolve regardless so we never hang the caller forever.
-      console.warn(
-        `[Reset] Delete of ${name} blocked; will retry then resolve.`,
-      );
-      setTimeout(() => {
-        try {
-          const retry = indexedDB.deleteDatabase(name);
-          retry.onsuccess = () => finish();
-          retry.onerror = () => finish();
-          retry.onblocked = () => finish();
-        } catch {
-          finish();
-        }
-      }, 600);
-    };
+    req.onblocked = () => resolve("blocked");
   });
+}
+
+async function deleteIndexedDb(name: string): Promise<void> {
+  const maxAttempts = 6;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const result = await tryDeleteDatabase(name);
+    if (result === "success") return;
+
+    if (result === "blocked") {
+      console.warn(
+        `[Reset] Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
+      );
+    }
+
+    await delay(200 * (attempt + 1));
+  }
+
+  console.warn(`[Reset] Gave up deleting ${name} after ${maxAttempts} attempts`);
 }
 
 export async function resetSearchIndexes(): Promise<void> {
@@ -96,7 +98,7 @@ export async function resetSearchIndexes(): Promise<void> {
 
   // Give listeners a tick to close any open IDB connections; otherwise
   // the delete request below comes back with `onblocked`.
-  await new Promise<void>((resolve) => setTimeout(resolve, 150));
+  await delay(300);
 
   await Promise.allSettled([
     deleteIndexedDb(STRUCTURED_DB),

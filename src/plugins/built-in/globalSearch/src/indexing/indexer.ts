@@ -1,4 +1,4 @@
-import { applyStoreDiff, get, getAll, put, remove, resetDatabase } from "./db";
+import { applyStoreDiff, get, getAll, put, remove } from "./db";
 import { jobs } from "./jobs";
 import { decorateIndexItems } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
@@ -6,6 +6,7 @@ import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
 import { getVectorizedItemIds, pruneOrphanVectorEmbeddings } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
+import { resetSearchIndexes } from "./resetIndexes";
 
 import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const META_STORE = "meta";
@@ -33,20 +34,9 @@ async function ensureSchemaCurrent(): Promise<void> {
     );
 
     try {
-      await resetDatabase();
+      await resetSearchIndexes();
     } catch (e) {
-      console.warn("[Indexer] Failed to reset structured database:", e);
-    }
-
-    try {
-      await new Promise<void>((resolve) => {
-        const req = indexedDB.deleteDatabase("embeddiaDB");
-        req.onsuccess = () => resolve();
-        req.onerror = () => resolve();
-        req.onblocked = () => resolve();
-      });
-    } catch (e) {
-      console.warn("[Indexer] Failed to reset embeddiaDB:", e);
+      console.warn("[Indexer] Failed to reset search indexes:", e);
     }
 
     try {
@@ -57,6 +47,8 @@ async function ensureSchemaCurrent(): Promise<void> {
   })();
   return schemaCheckPromise;
 }
+
+export { ensureSchemaCurrent };
 
 /* ─────────── Progress‑meta helpers ─────────── */
 async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {

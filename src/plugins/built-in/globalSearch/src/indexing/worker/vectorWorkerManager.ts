@@ -13,6 +13,7 @@ export type ProgressCallback = (data: {
 
 export class VectorWorkerManager {
   private static instance: VectorWorkerManager;
+  private static resetListenerInstalled = false;
   private worker: Worker | null = null;
   private isInitialized = false;
   private readyPromise: Promise<void> | null = null;
@@ -42,6 +43,17 @@ export class VectorWorkerManager {
       verboseDebug("Creating new VectorWorkerManager instance");
       VectorWorkerManager.instance = new VectorWorkerManager();
     }
+
+    if (
+      !VectorWorkerManager.resetListenerInstalled &&
+      typeof window !== "undefined"
+    ) {
+      VectorWorkerManager.resetListenerInstalled = true;
+      window.addEventListener("betterseqta-reset-search-index", () => {
+        VectorWorkerManager.getInstance().terminate();
+      });
+    }
+
     return VectorWorkerManager.instance;
   }
 
