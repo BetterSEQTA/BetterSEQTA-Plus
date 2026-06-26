@@ -15,9 +15,8 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 import {
+  ensureThemeToggleSurprisePageScript,
   openThemeToggleSurprise,
-  preloadThemeToggleSurprise,
-  THEME_TOGGLE_SURPRISE_PRELOAD_AT,
   THEME_TOGGLE_SURPRISE_TRIGGER_AT,
 } from "@/seqta/utils/Openers/openThemeToggleSurprise";
 
@@ -432,14 +431,12 @@ async function addDarkLightToggle(parent?: Element) {
     "LightDarkModeButton",
   )!;
 
+  ensureThemeToggleSurprisePageScript();
+
   lightDarkModeButtonElement.addEventListener("click", async () => {
     const darklightText = document.getElementById("darklighttooliptext");
 
     lightDarkToggleStreak += 1;
-
-    if (lightDarkToggleStreak >= THEME_TOGGLE_SURPRISE_PRELOAD_AT) {
-      preloadThemeToggleSurprise();
-    }
 
     if (lightDarkToggleStreak >= THEME_TOGGLE_SURPRISE_TRIGGER_AT) {
       lightDarkToggleStreak = 0;
