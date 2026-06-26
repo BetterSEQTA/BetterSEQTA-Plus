@@ -20,6 +20,7 @@ permissions:
 
 env:
   NIGHTLY_TAG: nightly
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   nightly:
