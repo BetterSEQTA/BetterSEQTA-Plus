@@ -8,7 +8,11 @@ export default {
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
+    '^.+\\.js$': ['ts-jest', { tsconfig: { allowJs: true } }],
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(color|color-string|color-convert|color-name)/)',
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
