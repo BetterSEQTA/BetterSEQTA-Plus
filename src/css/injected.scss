@@ -4975,3 +4975,104 @@ h2.home-subtitle {
   font-size: 20px;
   font-weight: 400;
 }
+
+.bsplus-ld-surprise-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.bsplus-ld-surprise-root--preloading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bsplus-ld-surprise-popout {
+  pointer-events: auto;
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 48px));
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  transform-origin: bottom right;
+  animation: bsplusLdSurprisePopoutIn 0.28s ease-out;
+}
+
+.bsplus-ld-surprise-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+  object-fit: contain;
+}
+
+.bsplus-ld-surprise-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.bsplus-ld-surprise-close::before {
+  content: "\ed8a";
+  font-family: "IconFamily";
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.bsplus-ld-surprise-play {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.bsplus-ld-surprise-play--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bsplus-ld-surprise-play::before {
+  content: "\ec5d";
+  font-family: "IconFamily";
+  font-size: 3rem;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+}
+
+@keyframes bsplusLdSurprisePopoutIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

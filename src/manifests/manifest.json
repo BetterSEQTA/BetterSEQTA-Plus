@@ -36,7 +36,8 @@
         "resources/icons/*",
         "resources/update-image.webp",
         "resources/pdfjs/pdf.worker.min.mjs",
-        "resources/pdfjs/pdf.legacy.min.mjs"
+        "resources/pdfjs/pdf.legacy.min.mjs",
+        "resources/theme-toggle-surprise.mp4"
       ],
       "matches": ["*://*/*"]
     }
