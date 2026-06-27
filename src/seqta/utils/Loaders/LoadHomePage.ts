@@ -1,6 +1,7 @@
 import { animate, stagger } from "motion";
 import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import assessmentsicon from "@/seqta/icons/assessmentsIcon";
 import coursesicon from "@/seqta/icons/coursesIcon";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
@@ -726,7 +727,7 @@ function callHomeTimetable(date: string, change?: any) {
       const dummyDay = document.createElement("div");
       dummyDay.classList.add("day-empty");
       const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
+      img.src = resolveExtensionAssetUrl(LogoLight);
       const text = document.createElement("p");
       text.innerText = "No lessons available.";
       dummyDay.append(img, text);
@@ -978,7 +979,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" />
+        <img src="${resolveExtensionAssetUrl(LogoLight)}" />
         <p>No assessments available.</p>
       </div>`;
   }

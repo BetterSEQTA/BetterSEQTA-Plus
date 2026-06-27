@@ -1,6 +1,7 @@
 import { animate } from "motion";
 import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import debounce from "@/seqta/utils/debounce";
@@ -129,7 +130,7 @@ function renderEngageDayLessons(): void {
   if (lessons.length === 0) {
     dayContainer.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+        <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
         <p>No lessons for this day.</p>
       </div>`;
   } else {
@@ -714,7 +715,7 @@ function showEngageTimetableError(message: string): void {
   dayContainer.classList.remove("loading");
   dayContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }
@@ -725,7 +726,7 @@ function showEngageNoticesSectionError(message: string): void {
   noticeContainer.classList.remove("loading");
   noticeContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }

@@ -35,6 +35,7 @@ import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
 // Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 
 // Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw";
@@ -106,7 +107,7 @@ export async function finishLoad() {
 }
 
 export function GetCSSElement(file: string) {
-  const cssFile = browser.runtime.getURL(file);
+  const cssFile = resolveExtensionAssetUrl(file);
   const fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
   fileref.setAttribute("type", "text/css");
@@ -814,7 +815,7 @@ function InjectCustomIcons() {
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
+      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`;

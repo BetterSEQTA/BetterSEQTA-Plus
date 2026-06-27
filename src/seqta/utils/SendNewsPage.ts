@@ -4,6 +4,7 @@ import { delay } from "./delay";
 import { settingsState } from "./listeners/SettingsState";
 import browser from "webextension-polyfill";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
 
 export async function SendNewsPage() {
@@ -58,7 +59,7 @@ export async function SendNewsPage() {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLightOutline);
+    img.src = resolveExtensionAssetUrl(LogoLightOutline);
     const text = document.createElement("p");
     text.innerText = "No news articles available right now.";
     emptyState.append(img, text);
@@ -79,7 +80,7 @@ export async function SendNewsPage() {
 
     if (article.urlToImage == "null" || article.urlToImage == null) {
       articleimage.style.cssText = `
-        background-image: url(${browser.runtime.getURL(LogoLightOutline)});
+        background-image: url(${resolveExtensionAssetUrl(LogoLightOutline)});
         width: 20%;
         margin: 0 7.5%;
       `;
