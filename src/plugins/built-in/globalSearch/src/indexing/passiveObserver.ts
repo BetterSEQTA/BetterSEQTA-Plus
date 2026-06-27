@@ -11,6 +11,7 @@ import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
 import { decorateIndexItems } from "./renderComponents";
 import { isIndexingPaused } from "./indexingPause";
+import { isAssessmentListRoute } from "./routeFilters";
 
 /**
  * Passive network observer.
@@ -298,6 +299,8 @@ function synthesizeItems(
   ctx: CapturedContext,
   payload: unknown,
 ): IndexItem[] {
+  if (isAssessmentListRoute(ctx.route)) return [];
+
   const entities = entitiesFromPayload(payload);
   if (entities.length === 0) return [];
 

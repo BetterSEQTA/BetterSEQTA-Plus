@@ -353,8 +353,27 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     const forumId = num("forumId") ?? num("forum");
     const year = num("year");
     const assessmentId =
-      num("assessmentId") ?? num("assessmentID") ?? num("id");
+      num("assessmentId") ??
+      num("assessmentID") ??
+      num("entityId") ??
+      num("id");
     const messageId = num("messageId");
+
+    const navigateToAssessment = (): void => {
+      if (programme !== undefined && metaclass !== undefined) {
+        const itemSuffix =
+          assessmentId !== undefined ? `&item=${assessmentId}` : "";
+        navigateToHashRoute(
+          `/assessments/${programme}:${metaclass}${itemSuffix}`,
+        );
+        return;
+      }
+      if (assessmentId !== undefined) {
+        navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
+        return;
+      }
+      navigateToHashRoute("/assessments/upcoming");
+    };
 
     if (sourcePage === "/messages") {
       navigateInCurrentSeqtaApp("/messages");
@@ -369,19 +388,8 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         }
         break;
       case "assessments":
-        if (programme !== undefined && metaclass !== undefined) {
-          const itemSuffix =
-            assessmentId !== undefined ? `&item=${assessmentId}` : "";
-          navigateToHashRoute(
-            `/assessments/${programme}:${metaclass}${itemSuffix}`,
-          );
-          return;
-        }
-        if (assessmentId !== undefined) {
-          navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
-          return;
-        }
-        navigateToHashRoute("/assessments/upcoming");
+      case "assessment":
+        navigateToAssessment();
         return;
       case "forums":
       case "forum":

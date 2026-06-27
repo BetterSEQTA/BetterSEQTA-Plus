@@ -42,10 +42,47 @@ export function courseDestinationKey(item: IndexItem): string | undefined {
   return `course:${programme}:${metaclass}`;
 }
 
+function shouldDedupeAsSameAssessmentSPA(item: IndexItem): boolean {
+  if (item.actionId === "assessment") return true;
+  if (item.actionId !== "passive") return false;
+
+  const md = item.metadata ?? {};
+  const route = typeof md.route === "string" ? md.route.toLowerCase() : "";
+  if (route.includes("/assessment/list/")) return true;
+
+  const cat = item.category?.toLowerCase();
+  return cat === "past" || cat === "upcoming";
+}
+
+export function assessmentDestinationKey(item: IndexItem): string | undefined {
+  if (!shouldDedupeAsSameAssessmentSPA(item)) return undefined;
+  const md = item.metadata ?? {};
+  const assessmentId = toFiniteNumber(
+    md.assessmentId ?? md.assessmentID ?? md.entityId,
+  );
+  if (assessmentId === undefined) return undefined;
+  return `assessment:${assessmentId}`;
+}
+
+function searchDedupeKey(item: IndexItem): string | undefined {
+  return courseDestinationKey(item) ?? assessmentDestinationKey(item);
+}
+
 function isPassiveLike(item: IndexItem): boolean {
   return (
     item.actionId === "passive" || item.metadata?.source === "passive"
   );
+}
+
+function hasProgrammeMetaclass(item: IndexItem): boolean {
+  const md = item.metadata ?? {};
+  const programme = toFiniteNumber(
+    md.programme ?? md.programmeId ?? md.programmeID,
+  );
+  const metaclass = toFiniteNumber(
+    md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId,
+  );
+  return programme !== undefined && metaclass !== undefined;
 }
 
 function pickBetterCourseNavDuplicate(a: IndexItem, b: IndexItem): IndexItem {
@@ -65,20 +102,51 @@ function pickBetterCourseNavDuplicate(a: IndexItem, b: IndexItem): IndexItem {
   return ad >= bd ? a : b;
 }
 
+function pickBetterAssessmentDuplicate(a: IndexItem, b: IndexItem): IndexItem {
+  const aP = isPassiveLike(a);
+  const bP = isPassiveLike(b);
+  if (aP && !bP) return b;
+  if (!aP && bP) return a;
+
+  if (a.category === "assignments" && b.category !== "assignments") return a;
+  if (b.category === "assignments" && a.category !== "assignments") return b;
+
+  const aPm = hasProgrammeMetaclass(a);
+  const bPm = hasProgrammeMetaclass(b);
+  if (aPm && !bPm) return a;
+  if (!aPm && bPm) return b;
+
+  const ad = typeof a.dateAdded === "number" ? a.dateAdded : 0;
+  const bd = typeof b.dateAdded === "number" ? b.dateAdded : 0;
+  return ad >= bd ? a : b;
+}
+
+function pickBetterSearchDuplicate(
+  a: IndexItem,
+  b: IndexItem,
+  key: string,
+): IndexItem {
+  if (key.startsWith("assessment:")) {
+    return pickBetterAssessmentDuplicate(a, b);
+  }
+  return pickBetterCourseNavDuplicate(a, b);
+}
+
 /**
- * Collapses multiple index rows that open the same course hash route
- * (e.g. `course` job + passive `/load/courses` capture) so search shows one hit.
+ * Collapses multiple index rows that open the same course or assessment hash
+ * route (e.g. `course` job + passive `/load/courses`, or assignments job +
+ * passive `/assessment/list/past`) so search shows one hit.
  */
 export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
   const winners = new Map<string, IndexItem>();
 
   for (const item of items) {
-    const key = courseDestinationKey(item);
+    const key = searchDedupeKey(item);
     if (!key) continue;
     const prev = winners.get(key);
     winners.set(
       key,
-      prev ? pickBetterCourseNavDuplicate(prev, item) : item,
+      prev ? pickBetterSearchDuplicate(prev, item, key) : item,
     );
   }
 
@@ -86,7 +154,7 @@ export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
   const out: IndexItem[] = [];
 
   for (const item of items) {
-    const key = courseDestinationKey(item);
+    const key = searchDedupeKey(item);
     if (!key) {
       out.push(item);
       continue;
@@ -99,14 +167,14 @@ export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
   return out;
 }
 
-function dynamicCourseKey(row: CombinedResult): string | undefined {
+function dynamicSearchKey(row: CombinedResult): string | undefined {
   if (row.type !== "dynamic") return undefined;
-  return courseDestinationKey(row.item as IndexItem);
+  return searchDedupeKey(row.item as IndexItem);
 }
 
 /**
  * Final pass after hybrid expansion: vector-only recall can still surface a
- * second row for the same `/courses/P:M` SPA route using a stale passive id.
+ * second row for the same SPA route using a stale passive id.
  */
 export function dedupeCombinedResultsByCourseNav(
   results: CombinedResult[],
@@ -114,7 +182,7 @@ export function dedupeCombinedResultsByCourseNav(
   const best = new Map<string, CombinedResult>();
 
   for (const r of results) {
-    const key = dynamicCourseKey(r);
+    const key = dynamicSearchKey(r);
     if (!key) continue;
     const prev = best.get(key);
     if (!prev) {
@@ -123,7 +191,7 @@ export function dedupeCombinedResultsByCourseNav(
     }
     const aItem = prev.item as IndexItem;
     const bItem = r.item as IndexItem;
-    const winnerItem = pickBetterCourseNavDuplicate(aItem, bItem);
+    const winnerItem = pickBetterSearchDuplicate(aItem, bItem, key);
     const envelope = winnerItem.id === aItem.id ? prev : r;
     best.set(key, {
       ...envelope,
@@ -137,7 +205,7 @@ export function dedupeCombinedResultsByCourseNav(
   const out: CombinedResult[] = [];
 
   for (const r of results) {
-    const key = dynamicCourseKey(r);
+    const key = dynamicSearchKey(r);
     if (!key) {
       out.push(r);
       continue;
