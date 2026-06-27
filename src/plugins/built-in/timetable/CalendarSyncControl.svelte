@@ -2,20 +2,38 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import browser from "webextension-polyfill";
-  import { fetchTimetableForSync } from "@/seqta/utils/googleCalendar/fetchTimetable";
-  import { syncLessonsToGoogleCalendar } from "@/seqta/utils/googleCalendar/syncEngine";
-  import type { GoogleCalendarStatus, GoogleCalendarSyncResult } from "@/seqta/utils/googleCalendar/types";
+  import {
+    GOOGLE_CALENDAR_SYNC_WEEKS_MAX,
+    GOOGLE_CALENDAR_SYNC_WEEKS_MIN,
+  } from "@/config/googleCalendar";
+  import { maybeRunDueWeeklySync } from "@/seqta/utils/googleCalendar/calendarSyncListener";
+  import { deleteSyncedEventsFromGoogleCalendar } from "@/seqta/utils/googleCalendar/syncEngine";
+  import {
+    formatSyncResultMessage,
+    runGoogleCalendarSync,
+  } from "@/seqta/utils/googleCalendar/syncRunner";
+  import type {
+    GoogleCalendarStatus,
+    GoogleCalendarSyncProgress,
+    GoogleCalendarSyncResult,
+  } from "@/seqta/utils/googleCalendar/types";
+  import CalendarDeleteEventsModal from "./CalendarDeleteEventsModal.svelte";
   import CalendarDisconnectModal from "./CalendarDisconnectModal.svelte";
+  import CalendarSyncProgress from "./CalendarSyncProgress.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { syncCalendarSyncTheme } from "./calendarSyncTheme";
 
-  type BusyPhase = "connect" | "sync" | "disconnect" | null;
+  type BusyPhase = "connect" | "sync" | "delete" | "disconnect" | null;
 
   let status = $state<GoogleCalendarStatus>({ configured: true, connected: false });
   let busy = $state<BusyPhase>(null);
   let menuOpen = $state(false);
   let showDisconnect = $state(false);
+  let showDeleteEvents = $state(false);
   let toast = $state<{ message: string; error: boolean } | null>(null);
+  let syncProgress = $state<GoogleCalendarSyncProgress | null>(null);
+  let syncWeeksAhead = $state(12);
+  let autoSyncWeekly = $state(true);
 
   let rootEl = $state<HTMLDivElement | null>(null);
   let triggerEl = $state<HTMLButtonElement | null>(null);
@@ -38,6 +56,8 @@
     status = (await browser.runtime.sendMessage({
       type: "googleCalendarStatus",
     })) as GoogleCalendarStatus;
+    syncWeeksAhead = status.syncWeeksAhead ?? 12;
+    autoSyncWeekly = status.autoSyncWeekly !== false;
   }
 
   async function getAccessTokenFromBackground(): Promise<string> {
@@ -50,26 +70,42 @@
     return res.accessToken;
   }
 
-  async function performSync(): Promise<boolean> {
-    const lessons = await fetchTimetableForSync();
-    const result = await syncLessonsToGoogleCalendar(
-      { origin: location.origin, lessons },
-      getAccessTokenFromBackground,
-    );
+  function handleSyncProgress(progress: GoogleCalendarSyncProgress) {
+    syncProgress = progress;
+  }
+
+  async function saveSyncSettings(patch: {
+    syncWeeksAhead?: number;
+    autoSyncWeekly?: boolean;
+  }) {
+    const result = (await browser.runtime.sendMessage({
+      type: "googleCalendarUpdateSyncSettings",
+      ...patch,
+    })) as GoogleCalendarStatus & { success?: boolean };
+    if (result.syncWeeksAhead != null) syncWeeksAhead = result.syncWeeksAhead;
+    if (result.autoSyncWeekly != null) autoSyncWeekly = result.autoSyncWeekly;
+    status = { ...status, ...result };
+  }
+
+  async function performSync(mode: "full" | "incremental" = "full"): Promise<boolean> {
+    const result = await runGoogleCalendarSync({
+      mode,
+      onProgress: handleSyncProgress,
+    });
+
+    syncProgress = null;
 
     if (!result.success) {
       showToastMessage(result.error ?? "Calendar sync failed.", true);
       return false;
     }
 
-    const created = result.created ?? 0;
-    const updated = result.updated ?? 0;
     status = {
       ...status,
       connected: true,
       lastSyncAt: result.lastSyncAt ?? status.lastSyncAt,
     };
-    showToastMessage(`Google Calendar updated (${created} new, ${updated} updated).`);
+    showToastMessage(formatSyncResultMessage(result));
     return true;
   }
 
@@ -91,6 +127,7 @@
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Could not connect.", true);
     } finally {
+      syncProgress = null;
       busy = null;
     }
   }
@@ -108,8 +145,58 @@
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Calendar sync failed.", true);
     } finally {
+      syncProgress = null;
       busy = null;
     }
+  }
+
+  async function confirmDeleteEvents() {
+    if (isBusy) return;
+    busy = "delete";
+    syncProgress = {
+      phase: "preparing",
+      current: 0,
+      total: 1,
+      message: "Preparing removal…",
+    };
+    try {
+      const result = await deleteSyncedEventsFromGoogleCalendar(
+        location.origin,
+        getAccessTokenFromBackground,
+        { onProgress: handleSyncProgress },
+      );
+
+      if (!result.success) {
+        showToastMessage(result.error ?? "Could not remove calendar events.", true);
+        return;
+      }
+
+      const removed = result.deleted ?? 0;
+      showDeleteEvents = false;
+      menuOpen = false;
+      if (removed === 0) {
+        showToastMessage("No synced events to remove.");
+      } else {
+        showToastMessage(`Removed ${removed} event${removed === 1 ? "" : "s"} from Google Calendar.`);
+      }
+    } catch (err) {
+      showToastMessage(err instanceof Error ? err.message : "Remove failed.", true);
+    } finally {
+      syncProgress = null;
+      busy = null;
+    }
+  }
+
+  async function onWeeksAheadChange(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    if (!Number.isFinite(value)) return;
+    await saveSyncSettings({ syncWeeksAhead: value });
+  }
+
+  async function onAutoSyncToggle(event: Event) {
+    const checked = (event.currentTarget as HTMLInputElement).checked;
+    autoSyncWeekly = checked;
+    await saveSyncSettings({ autoSyncWeekly: checked });
   }
 
   async function confirmDisconnect() {
@@ -198,7 +285,12 @@
   });
 
   onMount(() => {
-    void refreshStatus();
+    void refreshStatus().then(() => {
+      void maybeRunDueWeeklySync((message, isError) => {
+        showToastMessage(message, isError);
+        void refreshStatus();
+      });
+    });
 
     const themeKeys = [
       "selectedColor",
@@ -241,7 +333,7 @@
 <div class="bsplus-cal-sync" bind:this={rootEl}>
   <button
     type="button"
-    class="bsplus-cal-trigger"
+    class="uiButton bsplus-cal-trigger iconFamily"
     bind:this={triggerEl}
     class:bsplus-cal-trigger--open={menuOpen}
     class:bsplus-cal-trigger--connected={status.connected}
@@ -254,26 +346,10 @@
       if (!isBusy) toggleMenu();
     }}
   >
-    <span class="bsplus-cal-trigger-label" aria-hidden="true">
-      <span class="bsplus-google-word">
-        <span class="bsplus-google-g">G</span><span class="bsplus-google-o1">o</span><span class="bsplus-google-o2">o</span><span class="bsplus-google-g2">g</span><span class="bsplus-google-l">l</span><span class="bsplus-google-e">e</span>
-      </span>
-      <span class="bsplus-cal-word">Calendar</span>
-    </span>
+    <span class="bsplus-cal-trigger-icon" aria-hidden="true">&#xe9cd;</span>
+    <span class="bsplus-cal-trigger-text">Calendar</span>
     {#if status.connected}
       <span class="bsplus-cal-status-dot" aria-hidden="true"></span>
-    {/if}
-    <span class="bsplus-cal-chevron" aria-hidden="true">
-      <svg viewBox="0 0 20 20" fill="currentColor">
-        <path
-          fill-rule="evenodd"
-          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </span>
-    {#if isBusy}
-      <span class="bsplus-cal-spinner" aria-hidden="true"></span>
     {/if}
   </button>
 
@@ -332,6 +408,38 @@
           </div>
         </div>
 
+        {#if status.connected}
+          <div class="bsplus-cal-settings" role="group" aria-label="Sync settings">
+            <label class="bsplus-cal-setting">
+              <span class="bsplus-cal-setting-label">Weeks ahead</span>
+              <input
+                type="number"
+                class="bsplus-cal-setting-input"
+                min={GOOGLE_CALENDAR_SYNC_WEEKS_MIN}
+                max={GOOGLE_CALENDAR_SYNC_WEEKS_MAX}
+                value={syncWeeksAhead}
+                disabled={isBusy}
+                onchange={(e) => void onWeeksAheadChange(e)}
+              />
+            </label>
+            <label class="bsplus-cal-setting bsplus-cal-setting--toggle">
+              <span class="bsplus-cal-setting-label">Auto-sync weekly</span>
+              <input
+                type="checkbox"
+                class="bsplus-cal-setting-checkbox"
+                checked={autoSyncWeekly}
+                disabled={isBusy}
+                onchange={(e) => void onAutoSyncToggle(e)}
+              />
+            </label>
+            <p class="bsplus-cal-setting-hint">
+              Keeps a rolling {syncWeeksAhead}-week window. Each week adds the next week and removes the oldest.
+            </p>
+          </div>
+        {/if}
+
+        <CalendarSyncProgress progress={syncProgress} />
+
         <div class="bsplus-cal-provider-actions">
           {#if !status.connected}
             <button
@@ -361,6 +469,17 @@
               role="menuitem"
               disabled={isBusy}
               onclick={() => {
+                showDeleteEvents = true;
+              }}
+            >
+              {busy === "delete" ? "Removing…" : "Remove from calendar"}
+            </button>
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--ghost"
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => {
                 showDisconnect = true;
               }}
             >
@@ -376,6 +495,15 @@
       </div>
     </div>
   {/if}
+
+  <CalendarDeleteEventsModal
+    open={showDeleteEvents}
+    busy={busy === "delete"}
+    onCancel={() => {
+      if (busy !== "delete") showDeleteEvents = false;
+    }}
+    onConfirm={confirmDeleteEvents}
+  />
 
   <CalendarDisconnectModal
     open={showDisconnect}
@@ -402,7 +530,7 @@
   .bsplus-cal-sync {
     position: relative;
     display: inline-flex;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: Rubik, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: var(--bsplus-cal-text, var(--text-primary, #111));
   }
 
@@ -411,33 +539,31 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-width: 188px;
-    height: 42px;
-    padding: 0 12px 0 14px;
-    border: 1px solid color-mix(in srgb, var(--bsplus-cal-text, #111) 14%, transparent);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--bsplus-cal-surface, #fff) 88%, transparent);
-    color: var(--bsplus-cal-text, var(--text-primary, #111));
-    cursor: pointer;
+    gap: 6px;
+    min-width: auto;
+    height: auto;
+    padding: 0 10px;
+    margin-left: 4px;
+    border-radius: 16px !important;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
-  .bsplus-cal-trigger-label {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+  .bsplus-cal-trigger-icon {
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.9;
+  }
+
+  .bsplus-cal-trigger-text {
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1;
     white-space: nowrap;
   }
 
   .bsplus-google-word {
     display: inline-flex;
-    font-size: 18px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -464,34 +590,20 @@
     color: #34a853;
   }
 
-  .bsplus-cal-word {
-    color: var(--bsplus-cal-text, var(--text-primary, #111));
-    font-weight: 700;
-  }
-
   .bsplus-cal-trigger:hover:not(.bsplus-cal-trigger--busy) {
     transform: scale(1.03);
-    border-color: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 45%, transparent);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   .bsplus-cal-trigger:active:not(.bsplus-cal-trigger--busy) {
     transform: scale(0.97);
   }
 
-  .bsplus-cal-trigger:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--bsplus-cal-surface, #fff),
-      0 0 0 4px var(--bsplus-cal-accent, var(--better-main, #3b82f6));
-  }
-
   .bsplus-cal-trigger--open {
-    border-color: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 55%, transparent);
-    background: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 10%, transparent);
+    background: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 14%, transparent) !important;
   }
 
-  .bsplus-cal-trigger--connected {
-    border-color: color-mix(in srgb, #22c55e 50%, transparent);
+  .bsplus-cal-trigger--connected .bsplus-cal-status-dot {
+    display: block;
   }
 
   .bsplus-cal-trigger--busy {
@@ -501,45 +613,61 @@
 
   .bsplus-cal-status-dot {
     position: absolute;
-    top: 7px;
-    right: 26px;
+    top: 4px;
+    right: 4px;
     width: 7px;
     height: 7px;
     border-radius: 999px;
     background: #22c55e;
     box-shadow: 0 0 0 2px var(--bsplus-cal-surface, #fff);
+    display: none;
   }
 
-  .bsplus-cal-chevron {
+  .bsplus-cal-settings {
+    margin: 8px 0 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
+    background: color-mix(in srgb, var(--bsplus-cal-surface, #fff) 92%, transparent);
+    display: grid;
+    gap: 8px;
+  }
+
+  .bsplus-cal-setting {
     display: flex;
-    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .bsplus-cal-setting-label {
+    font-weight: 600;
+    color: var(--bsplus-cal-text, var(--text-primary, #111));
+  }
+
+  .bsplus-cal-setting-input {
+    width: 64px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 18%, transparent));
+    background: var(--bsplus-cal-surface, #fff);
+    color: var(--bsplus-cal-text, var(--text-primary, #111));
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .bsplus-cal-setting-checkbox {
     width: 16px;
     height: 16px;
-    margin-left: auto;
-    opacity: 0.6;
-    pointer-events: none;
+    accent-color: var(--bsplus-cal-accent, var(--better-main, #3b82f6));
   }
 
-  .bsplus-cal-chevron svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  .bsplus-cal-spinner {
-    position: absolute;
-    right: 10px;
-    width: 16px;
-    height: 16px;
-    border-radius: 999px;
-    border: 2px solid color-mix(in srgb, var(--bsplus-cal-accent, #3b82f6) 25%, transparent);
-    border-top-color: var(--bsplus-cal-accent, #3b82f6);
-    animation: bsplus-cal-spin 0.7s linear infinite;
-  }
-
-  @keyframes bsplus-cal-spin {
-    to {
-      transform: rotate(360deg);
-    }
+  .bsplus-cal-setting-hint {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 58%, transparent);
   }
 
   .bsplus-cal-menu {

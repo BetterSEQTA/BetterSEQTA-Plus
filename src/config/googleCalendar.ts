@@ -28,8 +28,11 @@ export const GOOGLE_CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
 export const BSPLUS_GOOGLE_CALENDAR_EVENT_PROP = "bsplusSeqtaKey";
 
-/** Weeks of timetable to sync (from start of current week). */
+/** Default weeks of timetable to sync forward (from start of current week). */
 export const GOOGLE_CALENDAR_SYNC_WEEKS = 12;
+export const GOOGLE_CALENDAR_SYNC_WEEKS_DEFAULT = GOOGLE_CALENDAR_SYNC_WEEKS;
+export const GOOGLE_CALENDAR_SYNC_WEEKS_MIN = 1;
+export const GOOGLE_CALENDAR_SYNC_WEEKS_MAX = 52;
 
 export function isGoogleCalendarConfigured(): boolean {
   return GOOGLE_OAUTH_CLIENT_ID.length > 0;

@@ -25,6 +25,21 @@ export interface GoogleCalendarEventInput {
 export interface GoogleCalendarSyncRequest {
   origin: string;
   lessons: SeqtaTimetableLesson[];
+  mode?: "full" | "incremental";
+  weeksAhead?: number;
+}
+
+export type GoogleCalendarSyncPhase = "preparing" | "deleting" | "upserting" | "done";
+
+export interface GoogleCalendarSyncProgress {
+  phase: GoogleCalendarSyncPhase;
+  current: number;
+  total: number;
+  message: string;
+}
+
+export interface GoogleCalendarSyncOptions {
+  onProgress?: (progress: GoogleCalendarSyncProgress) => void;
 }
 
 export interface GoogleCalendarSyncResult {
@@ -33,6 +48,7 @@ export interface GoogleCalendarSyncResult {
   configured?: boolean;
   created?: number;
   updated?: number;
+  deleted?: number;
   skipped?: number;
   failed?: number;
   lastSyncAt?: number;
@@ -43,5 +59,17 @@ export interface GoogleCalendarStatus {
   configured: boolean;
   connected: boolean;
   lastSyncAt?: number;
+  lastWeeklySyncAt?: number;
   lastSyncOrigin?: string;
+  syncWeeksAhead?: number;
+  autoSyncWeekly?: boolean;
+}
+
+export interface GoogleCalendarDeleteResult {
+  success: boolean;
+  configured?: boolean;
+  connected?: boolean;
+  deleted?: number;
+  failed?: number;
+  error?: string;
 }

@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import type { GoogleCalendarEventMapEntry } from "./eventMapEntry";
 
 /** Never uploaded to BetterSEQTA Cloud (OAuth tokens + per-device event map). */
 export const BSPLUS_GOOGLE_CALENDAR_STORAGE_KEY = "bsplus_google_calendar";
@@ -9,9 +10,13 @@ export interface GoogleCalendarStoredState {
   expiresAt?: number;
   connectedAt?: number;
   lastSyncAt?: number;
+  lastWeeklySyncAt?: number;
   lastSyncOrigin?: string;
-  /** `${origin}::${seqtaKey}` → Google Calendar event id */
-  eventMap?: Record<string, string>;
+  syncWeeksAhead?: number;
+  autoSyncWeekly?: boolean;
+  pendingWeeklySync?: boolean;
+  /** `${origin}::${seqtaKey}` → Google event id (+ lesson date when known) */
+  eventMap?: Record<string, string | GoogleCalendarEventMapEntry>;
 }
 
 export async function readGoogleCalendarState(): Promise<GoogleCalendarStoredState> {

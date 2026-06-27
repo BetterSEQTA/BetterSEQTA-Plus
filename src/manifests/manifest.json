@@ -15,7 +15,7 @@
       "64": "resources/icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage", "identity"],
+  "permissions": ["tabs", "notifications", "storage", "identity", "alarms"],
   "host_permissions": [
     "https://newsapi.org/",
     "https://betterseqta.org/",

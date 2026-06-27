@@ -42,3 +42,22 @@ export async function upsertGoogleCalendarEvent(
   }
   return json.id;
 }
+
+export async function deleteGoogleCalendarEvent(
+  accessToken: string,
+  calendarId: string,
+  eventId: string,
+  refreshAccessToken?: () => Promise<string>,
+): Promise<void> {
+  const res = await fetch(
+    `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  if (res.status === 401 && refreshAccessToken) {
+    const nextToken = await refreshAccessToken();
+    return deleteGoogleCalendarEvent(nextToken, calendarId, eventId);
+  }
+  if (res.ok || res.status === 404 || res.status === 410) return;
+  const err = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+  throw new Error(err?.error?.message ?? `Google Calendar delete failed (${res.status})`);
+}

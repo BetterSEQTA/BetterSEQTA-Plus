@@ -16,10 +16,20 @@ import {
   readGoogleCalendarState,
   writeGoogleCalendarState,
 } from "@/seqta/utils/googleCalendar/storage";
+import {
+  clampSyncWeeks,
+  getAutoSyncWeekly,
+  getSyncWeeksAhead,
+} from "@/seqta/utils/googleCalendar/syncSettings";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
+import {
+  clearWeeklySyncAlarm,
+  ensureWeeklySyncAlarm,
+  registerWeeklySyncAlarmListener,
+} from "./googleCalendarWeekly";
 
 function base64UrlEncode(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -197,6 +207,8 @@ async function connectGoogleCalendar(): Promise<GoogleCalendarSyncResult> {
       connectedAt: Date.now(),
     });
 
+    await ensureWeeklySyncAlarm();
+
     return { success: true, configured: true, connected: true };
   } catch (err) {
     return {
@@ -209,11 +221,16 @@ async function connectGoogleCalendar(): Promise<GoogleCalendarSyncResult> {
 
 async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
   const state = await readGoogleCalendarState();
+  const syncWeeksAhead = await getSyncWeeksAhead();
+  const autoSyncWeekly = await getAutoSyncWeekly();
   return {
     configured: isGoogleCalendarConfigured(),
     connected: !!(state.refreshToken || state.accessToken),
     lastSyncAt: state.lastSyncAt,
+    lastWeeklySyncAt: state.lastWeeklySyncAt,
     lastSyncOrigin: state.lastSyncOrigin,
+    syncWeeksAhead,
+    autoSyncWeekly,
   };
 }
 
@@ -222,6 +239,7 @@ export async function handleGoogleCalendarConnect(): Promise<GoogleCalendarSyncR
 }
 
 export async function handleGoogleCalendarDisconnect(): Promise<{ success: boolean }> {
+  await clearWeeklySyncAlarm();
   await clearGoogleCalendarState();
   return { success: true };
 }
@@ -298,4 +316,50 @@ export function registerGoogleCalendarMessageHandlers(
       });
     return true;
   };
+
+  handlers.googleCalendarEnsureWeeklyAlarm = (_req, sendResponse, sender) => {
+    if (rejectUntrusted(sendResponse, sender)) return false;
+    void ensureWeeklySyncAlarm()
+      .then(() => sendResponse({ success: true }))
+      .catch((err) => {
+        sendResponse({
+          success: false,
+          error: err instanceof Error ? err.message : "Could not schedule weekly sync",
+        });
+      });
+    return true;
+  };
+
+  handlers.googleCalendarUpdateSyncSettings = (request, sendResponse, sender) => {
+    if (rejectUntrusted(sendResponse, sender)) return false;
+    void (async () => {
+      const body = request as {
+        syncWeeksAhead?: number;
+        autoSyncWeekly?: boolean;
+      };
+      const patch: Record<string, unknown> = {};
+      if (body.syncWeeksAhead != null) {
+        patch.syncWeeksAhead = clampSyncWeeks(body.syncWeeksAhead);
+      }
+      if (body.autoSyncWeekly != null) {
+        patch.autoSyncWeekly = !!body.autoSyncWeekly;
+      }
+      if (Object.keys(patch).length > 0) {
+        await writeGoogleCalendarState(patch);
+      }
+      await ensureWeeklySyncAlarm();
+      sendResponse({ success: true, ...(await getGoogleCalendarStatus()) });
+    })().catch((err) => {
+      sendResponse({
+        success: false,
+        error: err instanceof Error ? err.message : "Could not update sync settings",
+      });
+    });
+    return true;
+  };
+}
+
+export function initGoogleCalendarBackground(): void {
+  registerWeeklySyncAlarmListener();
+  void ensureWeeklySyncAlarm();
 }

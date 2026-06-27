@@ -1,16 +1,6 @@
-import { GOOGLE_CALENDAR_SYNC_WEEKS } from "@/config/googleCalendar";
-import { toISODate, weekRangeContaining } from "@/seqta/utils/Loaders/engageParentTimetable";
+import type { SyncDateRange } from "./syncDateRange";
+import { syncWindowRange } from "./syncDateRange";
 import type { SeqtaTimetableLesson } from "./types";
-
-export function syncDateRange(weeksAhead = GOOGLE_CALENDAR_SYNC_WEEKS): {
-  from: string;
-  until: string;
-} {
-  const { from } = weekRangeContaining(new Date());
-  const end = new Date(from + "T12:00:00");
-  end.setDate(end.getDate() + weeksAhead * 7 - 1);
-  return { from, until: toISODate(end) };
-}
 
 async function postSeqtaJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(`${location.origin}${path}`, {
@@ -50,8 +40,10 @@ function isEngageParentContext(): boolean {
   );
 }
 
-export async function fetchTimetableForSync(): Promise<SeqtaTimetableLesson[]> {
-  const { from, until } = syncDateRange();
+export async function fetchTimetableLessons(
+  range: SyncDateRange,
+): Promise<SeqtaTimetableLesson[]> {
+  const { from, until } = range;
 
   if (isEngageParentContext()) {
     const listJson = await postSeqtaJson<{ payload?: { id?: string | number }[] }>(
@@ -80,3 +72,9 @@ export async function fetchTimetableForSync(): Promise<SeqtaTimetableLesson[]> {
   );
   return Array.isArray(data?.payload?.items) ? data.payload.items : [];
 }
+
+export async function fetchTimetableForSync(weeksAhead?: number): Promise<SeqtaTimetableLesson[]> {
+  return fetchTimetableLessons(syncWindowRange(weeksAhead));
+}
+
+export { syncWindowRange, trailingWeekRange, droppedWeekRange } from "./syncDateRange";

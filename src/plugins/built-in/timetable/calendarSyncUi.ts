@@ -1,6 +1,7 @@
 import { mount, unmount } from "svelte";
 import CalendarSyncControl from "./CalendarSyncControl.svelte";
 import { syncCalendarSyncTheme } from "./calendarSyncTheme";
+import { registerGoogleCalendarContentHandlers } from "@/seqta/utils/googleCalendar/calendarSyncListener";
 import hostStyles from "./calendarSyncHost.css?inline";
 
 const CONTROLS_CLASS = "timetable-calendar-controls";
@@ -35,6 +36,7 @@ export async function mountGoogleCalendarButton(): Promise<void> {
   if (!toolbar) return;
 
   ensureHostStyles();
+  registerGoogleCalendarContentHandlers();
 
   const controls = document.createElement("div");
   controls.className = `${CONTROLS_CLASS} bsplus-timetable-control`;
