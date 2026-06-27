@@ -48,7 +48,7 @@
         "resources/pdfjs/pdf.worker.min.mjs",
         "resources/pdfjs/pdf.legacy.min.mjs",
         "resources/ort/*",
-        "assets/*.css"
+        "assets/*.css",
         "assets/*"
       ],
       "matches": ["*://*/*"]
