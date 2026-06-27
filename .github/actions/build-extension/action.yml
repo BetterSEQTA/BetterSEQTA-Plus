@@ -33,14 +33,8 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Use Node.js 22.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
-
-    - name: Install dependencies
-      shell: bash
-      run: npm install --legacy-peer-deps
+    - name: Setup Node and dependencies
+      uses: ./.github/actions/setup-node-deps
 
     - name: Read version
       id: version

@@ -17,6 +17,7 @@ export default {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
   },
+  setupFilesAfterEnv: ['<rootDir>/src/test/jest.setup.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverageFrom: [
     'src/**/*.ts',

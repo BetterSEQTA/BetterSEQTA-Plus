@@ -1,0 +1,9 @@
+name: Run unit tests
+description: Run Jest unit tests.
+
+runs:
+  using: composite
+  steps:
+    - name: Unit tests
+      shell: bash
+      run: npm run test:unit

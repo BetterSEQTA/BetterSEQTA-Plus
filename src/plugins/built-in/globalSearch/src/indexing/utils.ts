@@ -141,7 +141,7 @@ export function htmlToPlainText(rawHtml: string): string {
     }
   });
 
-  let text = body.innerText || "";
+  let text = body.textContent || body.innerText || "";
 
   text = text
     .replace(/\u00A0/g, " ")

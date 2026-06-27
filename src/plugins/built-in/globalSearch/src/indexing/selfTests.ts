@@ -22,12 +22,10 @@ import {
 /**
  * Lightweight in-process self-tests for the global-search overhaul.
  *
- * The repository does not (yet) ship with a test runner, so we instead
- * expose a deterministic suite of assertions over the pure helpers that
- * back active jobs and the passive observer. This is intentionally
- * dependency-free so it can run inside the extension page (`window.
- * globalSearchDebug.runSelfTests()`) and from any future Vitest harness
- * without modification.
+ * Exposes a deterministic suite of assertions over the pure helpers that
+ * back active jobs and the passive observer. Runs in Jest via
+ * `selfTests.test.ts`, and inside the extension page via
+ * `window.globalSearchDebug.runSelfTests()`.
  */
 
 interface TestCase {
