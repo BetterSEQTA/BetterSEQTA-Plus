@@ -10,6 +10,7 @@ import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
 import { decorateIndexItems } from "./renderComponents";
+import { isIndexingPaused } from "./indexingPause";
 
 /**
  * Passive network observer.
@@ -380,7 +381,7 @@ function synthesizeItems(
 /* ------------------------------------------------------------------ */
 
 async function persistItems(items: IndexItem[]): Promise<void> {
-  if (items.length === 0) return;
+  if (items.length === 0 || isIndexingPaused()) return;
 
   // Dedupe against existing entries. We replace on collision so the latest
   // observation wins (e.g. if a message changes title).
@@ -401,16 +402,27 @@ async function persistItems(items: IndexItem[]): Promise<void> {
 }
 
 function scheduleFlush() {
-  if (pendingFlush) return;
+  if (pendingFlush || isIndexingPaused()) return;
   pendingFlush = setTimeout(() => {
     pendingFlush = null;
-    if (!pendingDirty) return;
+    if (!pendingDirty || isIndexingPaused()) return;
     pendingDirty = false;
     void flushDynamicItems();
   }, FLUSH_DEBOUNCE_MS);
 }
 
+/** Drop queued passive captures after a manual index reset. */
+export function pausePassiveObserver(): void {
+  pendingChangedItems.clear();
+  pendingDirty = false;
+  if (pendingFlush) {
+    clearTimeout(pendingFlush);
+    pendingFlush = null;
+  }
+}
+
 async function flushDynamicItems(): Promise<void> {
+  if (isIndexingPaused()) return;
   if (pendingChangedItems.size === 0) return;
 
   const rawChanged = Array.from(pendingChangedItems.values());

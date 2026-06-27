@@ -11,6 +11,8 @@ import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import styles from "./styles.css?inline";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
+import { installResetIndexMessageListener } from "../indexing/resetIndexes";
+import { isIndexingPaused } from "../indexing/indexingPause";
 import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
@@ -168,6 +170,8 @@ const globalSearchPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     const appRef = { current: null };
 
+    installResetIndexMessageListener();
+
     // Run the version check BEFORE we open any IndexedDB connections.
     // On a normal load (no version change) this is just a string compare
     // and a manifest read, so the cost is negligible. On a real update,
@@ -287,8 +291,9 @@ const globalSearchPlugin: Plugin<typeof settings> = {
       }
     }
 
-    if (api.settings.runIndexingOnLoad) {
+    if (api.settings.runIndexingOnLoad && !isIndexingPaused()) {
       setTimeout(async () => {
+        if (isIndexingPaused()) return;
         await runIndexing();
       }, 2000);
     }

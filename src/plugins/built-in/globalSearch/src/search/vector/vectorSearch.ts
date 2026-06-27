@@ -2,6 +2,7 @@ import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../../indexing/types";
 import type { SearchResult } from "embeddia";
 import { isVectorSearchSupported } from "../../utils/browserDetection";
+import { ensureTransformersEnv } from "@/lib/transformersExtension";
 
 import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 let vectorIndex: EmbeddingIndex | null = null;
@@ -24,6 +25,7 @@ export async function initVectorSearch() {
   initializationAttempted = true;
 
   try {
+    await ensureTransformersEnv();
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
     vectorIndex.preloadIndexedDB();

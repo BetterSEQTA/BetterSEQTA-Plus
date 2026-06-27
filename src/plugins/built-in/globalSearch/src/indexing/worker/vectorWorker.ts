@@ -1,7 +1,15 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../types";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug, verboseInfo, verboseLog } from "./workerVerboseLog";
+
+let ortWasmBase: string | null = null;
+
+async function configureOrtWasm(base: string): Promise<void> {
+  const { env } = await import("@huggingface/transformers");
+  env.backends.onnx.wasm = env.backends.onnx.wasm ?? {};
+  env.backends.onnx.wasm.wasmPaths = base.endsWith("/") ? base : `${base}/`;
+}
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
 let initializationFailed = false;
@@ -49,6 +57,9 @@ async function initWorker() {
   
   verboseDebug("Initializing vector worker...");
   try {
+    if (ortWasmBase) {
+      await configureOrtWasm(ortWasmBase);
+    }
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
 
@@ -562,6 +573,9 @@ self.addEventListener("message", async (e) => {
 
   switch (type) {
     case "init":
+      if (data?.ortWasmBase) {
+        ortWasmBase = data.ortWasmBase;
+      }
       await initWorker();
       self.postMessage({ type: "ready" });
       break;
@@ -594,13 +608,3 @@ self.addEventListener("message", async (e) => {
       console.warn("Unknown message type:", type);
   }
 });
-
-initWorker()
-  .then(() => {
-    self.postMessage({ type: "ready" });
-  })
-  .catch((err) => {
-    console.error("Initial worker initialization failed:", err);
-
-    self.postMessage({ type: "ready" });
-  });

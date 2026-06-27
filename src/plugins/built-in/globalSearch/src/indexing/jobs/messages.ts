@@ -395,7 +395,7 @@ export const messagesJob: Job = {
       progress.totalEstimated = await estimateMessageCount();
 
       try {
-        await vectorWorker.startStreamingSession(
+        progress.streamingStarted = await vectorWorker.startStreamingSession(
           progress.totalEstimated,
           (progressData) => {
             verboseLog(
@@ -405,10 +405,11 @@ export const messagesJob: Job = {
           RATE_LIMIT_CONFIG.vectorBatchSize,
           "messages",
         );
-        progress.streamingStarted = true;
-        verboseLog(
-          `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
-        );
+        if (progress.streamingStarted) {
+          verboseLog(
+            `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
+          );
+        }
       } catch (error) {
         console.warn(
           "[Messages job] Failed to start streaming session:",

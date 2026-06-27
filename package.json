@@ -6,7 +6,7 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "compile:layerchart": "node scripts/compile-layerchart-vendor.mjs",
-    "postinstall": "node scripts/copy-pdfjs-assets.mjs && npm run compile:layerchart",
+    "postinstall": "node scripts/copy-pdfjs-assets.mjs && node scripts/copy-ort-wasm-assets.mjs && npm run compile:layerchart",
     "autoaudit": "npm audit && npm audit fix && npm run build",
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",

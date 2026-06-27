@@ -199,7 +199,7 @@ export const notificationsJob: Job = {
       const estimatedTotal = Math.min(notifications.length * 1.2, 100);
 
       try {
-        await vectorWorker.startStreamingSession(
+        progress.streamingStarted = await vectorWorker.startStreamingSession(
           estimatedTotal,
           (progressData) => {
             verboseLog(
@@ -209,10 +209,11 @@ export const notificationsJob: Job = {
           NOTIFICATIONS_RATE_LIMIT.vectorBatchSize,
           "notifications",
         );
-        progress.streamingStarted = true;
-        verboseLog(
-          `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
-        );
+        if (progress.streamingStarted) {
+          verboseLog(
+            `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
+          );
+        }
       } catch (error) {
         console.warn(
           "[Notifications job] Failed to start streaming session:",

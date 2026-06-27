@@ -43,12 +43,13 @@ export default function InlineWorkerDevPlugin(): Plugin {
         // Note: Original code had `await fs.readFile(cleanPath, "utf-8");` but `code` wasn't used.
         // `esbuild` directly takes `cleanPath` as an entry point.
         const result = await build({
-          entryPoints: [cleanPath], // esbuild uses the file path directly
+          entryPoints: [cleanPath],
           bundle: true,
-          write: false, // We want the output in memory, not written to disk
-          platform: "browser", // Target environment for the worker code
-          format: "iife", // Immediately Invoked Function Expression, suitable for workers
-          target: "esnext", // Transpile to modern JavaScript
+          write: false,
+          platform: "browser",
+          format: "iife",
+          target: "esnext",
+          external: ["webextension-polyfill"],
         });
 
         const workerCode = result.outputFiles[0].text;

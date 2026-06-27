@@ -7,6 +7,7 @@ import { loadDynamicItems } from "../utils/dynamicItems";
 import { getVectorizedItemIds, pruneOrphanVectorEmbeddings } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 import { resetSearchIndexes } from "./resetIndexes";
+import { isIndexingPaused } from "./indexingPause";
 
 import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const META_STORE = "meta";
@@ -252,7 +253,18 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
 }
 
 export async function runIndexing(): Promise<void> {
+  if (isIndexingPaused()) {
+    verboseDebug(
+      "[Indexer] Skipping indexing — index was reset; reload the page to rebuild.",
+    );
+    return;
+  }
+
   await ensureSchemaCurrent();
+
+  if (isIndexingPaused()) {
+    return;
+  }
 
   if (!(await acquireLock())) {
     verboseDebug(
@@ -272,6 +284,19 @@ export async function runIndexing(): Promise<void> {
   dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
 
   for (const jobId of jobIds) {
+    if (isIndexingPaused()) {
+      verboseDebug(
+        "[Indexer] Indexing stopped — index was reset; reload the page to rebuild.",
+      );
+      dispatchProgress(
+        completedJobs,
+        totalSteps,
+        false,
+        "Indexing paused — reload to rebuild",
+      );
+      return;
+    }
+
     dispatchProgress(
       completedJobs,
       totalSteps,

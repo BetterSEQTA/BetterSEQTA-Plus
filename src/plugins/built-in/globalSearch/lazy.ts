@@ -7,7 +7,10 @@ import {
 } from "../../core/settingsHelpers";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
-import { resetSearchIndexes } from "./src/indexing/resetIndexes";
+import {
+  resetSearchIndexes,
+  notifyOpenTabsResetSearchIndex,
+} from "./src/indexing/resetIndexes";
 
 // Platform-aware default hotkey
 const getDefaultHotkey = () => {
@@ -52,9 +55,7 @@ const settings = defineSettings({
       if (!confirmed) return;
 
       try {
-        // `resetSearchIndexes` is a tiny statically-imported helper: no
-        // dynamic chunks to chase, so the button keeps working even when
-        // the settings page has been open across an extension update.
+        await notifyOpenTabsResetSearchIndex();
         await resetSearchIndexes();
         alert(
           "Search index and storage were reset.\n\nReload this tab to regenerate the index.",

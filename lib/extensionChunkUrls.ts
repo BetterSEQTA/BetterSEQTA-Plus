@@ -15,8 +15,15 @@ export function extensionChunkUrls(): Plugin {
         base: "./",
         experimental: {
           renderBuiltUrl(filename, { hostType, type }) {
+            const path = filename.replace(/^\//, "");
             if (type === "chunk" && hostType === "js") {
-              const path = filename.replace(/^\//, "");
+              return {
+                runtime: `chrome.runtime.getURL(${JSON.stringify(path)})`,
+              };
+            }
+            // Rewrite CSS preloads from JS dynamic imports (content scripts).
+            // Do not rewrite hostType "css" — extension HTML pages need static hrefs.
+            if (type === "asset" && hostType === "js" && path.endsWith(".css")) {
               return {
                 runtime: `chrome.runtime.getURL(${JSON.stringify(path)})`,
               };

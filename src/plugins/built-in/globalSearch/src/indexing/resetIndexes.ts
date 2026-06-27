@@ -1,4 +1,48 @@
 import { SCHEMA_VERSION_KEY } from "./schemaVersion";
+import { pauseIndexingUntilReload } from "./indexingPause";
+import { pausePassiveObserver } from "./passiveObserver";
+import browser from "webextension-polyfill";
+
+export const RESET_INDEX_MESSAGE = "global-search-reset-index";
+
+let resetMessageListenerInstalled = false;
+
+/** Notify open SEQTA tabs to pause indexing and wipe page-origin stores. */
+export async function notifyOpenTabsResetSearchIndex(): Promise<void> {
+  const tabs = await browser.tabs.query({});
+  await Promise.allSettled(
+    tabs.map((tab) =>
+      tab.id != null
+        ? browser.tabs.sendMessage(tab.id, { type: RESET_INDEX_MESSAGE })
+        : Promise.resolve(),
+    ),
+  );
+}
+
+/** Content scripts: handle reset broadcast from the settings popup. */
+export function installResetIndexMessageListener(): void {
+  if (resetMessageListenerInstalled) return;
+  resetMessageListenerInstalled = true;
+
+  browser.runtime.onMessage.addListener((message) => {
+    if (message?.type !== RESET_INDEX_MESSAGE) return;
+    pauseIndexingUntilReload();
+    pausePassiveObserver();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("indexing-progress", {
+          detail: {
+            completed: 0,
+            total: 0,
+            indexing: false,
+            status: "Indexing paused — reload to rebuild",
+          },
+        }),
+      );
+    }
+    void resetSearchIndexes();
+  });
+}
 
 /**
  * Hard-reset of all global-search persistence.

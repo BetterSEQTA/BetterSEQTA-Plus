@@ -49,10 +49,16 @@ export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = 
         // Execute the actual plugin's run function
         return await actualPlugin.run(api);
       } catch (error: any) {
-        // Handle Firefox MIME type errors gracefully
-        if (error?.message?.includes("MIME type") || error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
+        const msg = error?.message ?? "";
+        // Handle content-script asset loading failures gracefully (Firefox MIME
+        // errors, CSS preload blocked on host page, corrupted chunks).
+        if (
+          msg.includes("MIME type") ||
+          msg.includes("NS_ERROR_CORRUPTED_CONTENT") ||
+          msg.includes("preload CSS")
+        ) {
           console.error(
-            `[BetterSEQTA+] Failed to load plugin "${lazyPlugin.id}" due to Firefox module loading restrictions. ` +
+            `[BetterSEQTA+] Failed to load plugin "${lazyPlugin.id}" due to module/asset loading restrictions. ` +
             `This may be a build configuration issue. Error:`,
             error
           );

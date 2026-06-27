@@ -1,6 +1,7 @@
 import { refreshVectorCache } from "../../search/vector/vectorSearch";
 import type { IndexItem } from "../types";
 import { isVectorSearchSupported } from "../../utils/browserDetection";
+import { getOrtWasmBaseUrl } from "@/lib/transformersExtension";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 
 import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
@@ -91,7 +92,7 @@ export class VectorWorkerManager {
         this.isInitialized = false;
 
         reject(new Error("Worker initialization timed out"));
-      }, 10000);
+      }, 60000);
 
       this.worker!.addEventListener("message", (e) => {
         const { type, data } = e.data;
@@ -158,7 +159,10 @@ export class VectorWorkerManager {
         }
       });
 
-      this.worker!.postMessage({ type: "init" });
+      this.worker!.postMessage({
+        type: "init",
+        data: { ortWasmBase: getOrtWasmBaseUrl() },
+      });
     });
   }
 
@@ -388,7 +392,7 @@ export class VectorWorkerManager {
     onProgress?: ProgressCallback,
     batchSize: number = 10,
     jobId?: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     // Skip if vector search is not supported
     if (!isVectorSearchSupported()) {
       verboseDebug("[VectorWorker] Vector search not supported - skipping streaming session");
@@ -398,13 +402,13 @@ export class VectorWorkerManager {
           message: "Vector search not available - using text search only",
         });
       }
-      return;
+      return false;
     }
 
     // Only initialize if we expect items to process
     if (totalExpectedItems === 0) {
       verboseDebug("[VectorWorker] No items expected, not starting streaming session");
-      return;
+      return false;
     }
 
     await this.ensureReady();
@@ -419,7 +423,7 @@ export class VectorWorkerManager {
         await new Promise((resolve) => setTimeout(resolve, 100));
       } else {
         verboseDebug(`Streaming session for job ${jobId} already active`);
-        return;
+        return true;
       }
     }
 
@@ -455,13 +459,20 @@ export class VectorWorkerManager {
         message: `Starting streaming vectorization for ${jobId}`,
       });
     }
+
+    return true;
   }
 
   async streamItems(items: IndexItem[]): Promise<void> {
+    if (!isVectorSearchSupported()) {
+      return;
+    }
+
     if (!this.streamingSession?.isActive) {
-      throw new Error(
-        "No active streaming session. Call startStreamingSession first.",
+      verboseDebug(
+        "[VectorWorker] streamItems skipped — no active streaming session",
       );
+      return;
     }
 
     const uniqueItems = items.filter((item, index, arr) => {

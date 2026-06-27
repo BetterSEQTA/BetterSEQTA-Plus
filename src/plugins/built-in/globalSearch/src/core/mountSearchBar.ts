@@ -280,7 +280,7 @@ export async function mountSearchBar(
   });
 
   try {
-    const { default: renderSvelte } = await import("@/interface/main");
+    const { default: renderSvelte } = await import("@/interface/renderInShadow");
     appRef.current = renderSvelte(SearchBar, searchRootShadow, {
       transparencyEffects: api.settings.transparencyEffects ? true : false,
       showRecentFirst: api.settings.showRecentFirst,
