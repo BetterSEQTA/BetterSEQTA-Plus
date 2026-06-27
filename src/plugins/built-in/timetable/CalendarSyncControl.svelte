@@ -520,7 +520,7 @@
         </div>
       </div>
 
-      <div class="bsplus-cal-provider bsplus-cal-provider--outlook" role="none">
+      <div class="bsplus-cal-provider" role="none">
         <div class="bsplus-cal-provider-row">
           <span class="bsplus-cal-provider-icon" aria-hidden="true">
             <OutlookCalendarIcon />
@@ -621,11 +621,6 @@
         {/if}
 
         <CalendarSyncProgress progress={syncProgress} />
-
-      <div class="bsplus-cal-coming-soon" role="none">
-        <span class="bsplus-cal-coming-soon-label">More providers</span>
-        <span class="bsplus-cal-coming-soon-hint">Apple Calendar — coming soon</span>
-      </div>
     </div>
   {/if}
 
@@ -851,10 +846,6 @@
     margin-bottom: 8px;
   }
 
-  .bsplus-cal-provider--outlook {
-    margin-bottom: 0;
-  }
-
   .bsplus-cal-provider-row {
     display: flex;
     align-items: center;
@@ -931,27 +922,6 @@
 
   .bsplus-cal-action--ghost:hover:not(:disabled) {
     background: color-mix(in srgb, var(--bsplus-cal-text) 14%, var(--bsplus-cal-surface));
-  }
-
-  .bsplus-cal-coming-soon {
-    margin-top: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px dashed var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 18%, transparent));
-  }
-
-  .bsplus-cal-coming-soon-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 70%, transparent);
-  }
-
-  .bsplus-cal-coming-soon-hint {
-    display: block;
-    margin-top: 2px;
-    font-size: 10px;
-    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 50%, transparent);
   }
 
   .bsplus-cal-toast {

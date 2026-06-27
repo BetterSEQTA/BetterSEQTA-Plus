@@ -11,6 +11,7 @@ export default {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^color$': '<rootDir>/src/test/mocks/color.ts',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
   },
   moduleFileExtensions: ['ts', 'js', 'json'],

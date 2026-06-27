@@ -4,13 +4,11 @@ import {
   shouldRunWeeklySync,
 } from "@/seqta/utils/calendarSync/settings";
 import {
-  formatSyncResultMessage,
-  runGoogleCalendarSync,
-} from "@/seqta/utils/googleCalendar/syncRunner";
-import {
-  formatOutlookSyncResultMessage,
-  runOutlookCalendarSync,
-} from "@/seqta/utils/outlookCalendar/syncRunner";
+  formatWeeklySyncMessages,
+  weeklySyncErrorMessage,
+} from "@/seqta/utils/calendarSync/weeklySyncMessages";
+import { runGoogleCalendarSync } from "@/seqta/utils/googleCalendar/syncRunner";
+import { runOutlookCalendarSync } from "@/seqta/utils/outlookCalendar/syncRunner";
 import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
 import { readOutlookCalendarState } from "@/seqta/utils/outlookCalendar/storage";
 import type { GoogleCalendarSyncResult } from "@/seqta/utils/googleCalendar/types";
@@ -70,27 +68,13 @@ export async function maybeRunDueWeeklySync(
   const results = await runWeeklySyncForConnectedProviders();
   if (!onComplete) return;
 
-  const errors = results.filter((r) => !r.success);
-  if (errors.length > 0) {
-    onComplete(errors[0]?.error ?? "Weekly calendar sync failed.", true);
+  const errorMessage = weeklySyncErrorMessage(results);
+  if (errorMessage) {
+    onComplete(errorMessage, true);
     return;
   }
 
-  const messages: string[] = [];
-  let index = 0;
-  if (google.refreshToken || google.accessToken) {
-    const result = results[index++];
-    const changed =
-      (result.created ?? 0) + (result.updated ?? 0) + (result.deleted ?? 0) > 0;
-    if (changed) messages.push(formatSyncResultMessage(result));
-  }
-  if (outlook.refreshToken || outlook.accessToken) {
-    const result = results[index++];
-    const changed =
-      (result.created ?? 0) + (result.updated ?? 0) + (result.deleted ?? 0) > 0;
-    if (changed) messages.push(formatOutlookSyncResultMessage(result));
-  }
-
+  const messages = formatWeeklySyncMessages(google, outlook, results);
   if (messages.length > 0) {
     onComplete(messages.join(" "));
   }
