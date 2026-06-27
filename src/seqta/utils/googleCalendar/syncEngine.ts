@@ -7,7 +7,6 @@ import {
   normalizeEventMapEntry,
 } from "@/seqta/utils/googleCalendar/eventMapEntry";
 import {
-  droppedWeekRange,
   isDateInRange,
   syncWindowRange,
 } from "@/seqta/utils/googleCalendar/syncDateRange";
@@ -120,7 +119,6 @@ function entriesToPrune(
   currentMapKeys: Set<string>,
 ): Array<[string, string]> {
   const window = syncWindowRange(weeksAhead);
-  const dropped = droppedWeekRange(weeksAhead);
   const prefix = `${origin}::`;
   const entries: Array<[string, string]> = [];
 
@@ -131,7 +129,7 @@ function entriesToPrune(
 
     let shouldDelete = false;
     if (mode === "incremental") {
-      shouldDelete = !!entry.date && isDateInRange(entry.date, dropped);
+      shouldDelete = false;
     } else if (entry.date) {
       shouldDelete = !isDateInRange(entry.date, window);
     } else {

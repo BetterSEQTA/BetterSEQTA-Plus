@@ -97,6 +97,19 @@ describe("syncLessonsToGoogleCalendar", () => {
     });
   });
 
+  it("does not delete events during incremental sync", async () => {
+    const result = await syncLessonsToGoogleCalendar(
+      { origin: ORIGIN, lessons: [baseLesson], mode: "incremental" },
+      getAccessToken,
+    );
+
+    expect(deleteGoogleCalendarEvent).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      success: true,
+      deleted: 0,
+    });
+  });
+
   it("reports progress while syncing", async () => {
     const progress: Array<{ phase: string; current: number; total: number }> = [];
     await syncLessonsToGoogleCalendar(

@@ -341,13 +341,13 @@
     aria-haspopup="menu"
     aria-expanded={menuOpen}
     aria-busy={isBusy}
-    aria-label={status.connected ? "Google Calendar sync options" : "Connect Google Calendar"}
+    aria-label={status.connected ? "Google Calendar sync options" : "Sync with Calendar"}
     onclick={() => {
       if (!isBusy) toggleMenu();
     }}
   >
     <span class="bsplus-cal-trigger-icon" aria-hidden="true">&#xe9cd;</span>
-    <span class="bsplus-cal-trigger-text">Calendar</span>
+    <span class="bsplus-cal-trigger-text">Sync with Calendar</span>
     {#if status.connected}
       <span class="bsplus-cal-status-dot" aria-hidden="true"></span>
     {/if}
@@ -433,7 +433,7 @@
               />
             </label>
             <p class="bsplus-cal-setting-hint">
-              Keeps a rolling {syncWeeksAhead}-week window. Each week adds the next week and removes the oldest.
+              Syncs {syncWeeksAhead} weeks ahead on connect and manual sync. Weekly auto-sync adds each new week forward.
             </p>
           </div>
         {/if}
