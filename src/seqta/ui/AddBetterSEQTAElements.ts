@@ -14,6 +14,11 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
+import {
+  ensureThemeToggleSurprisePageScript,
+  openThemeToggleSurprise,
+  THEME_TOGGLE_SURPRISE_TRIGGER_AT,
+} from "@/seqta/utils/Openers/openThemeToggleSurprise";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -37,7 +42,7 @@ function attachUserInfoCacheInvalidation(): void {
 
 attachUserInfoCacheInvalidation();
 
-let LightDarkModeSnakeEggButton = 0;
+let lightDarkToggleStreak = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
 let sidebarTabOrderAnimationFrame: number | null = null;
 let sidebarAccessibilityListenersAttached = false;
@@ -475,14 +480,17 @@ async function addDarkLightToggle(parent?: Element) {
     "LightDarkModeButton",
   )!;
 
+  ensureThemeToggleSurprisePageScript();
+
   lightDarkModeButtonElement.addEventListener("click", async () => {
     const darklightText = document.getElementById("darklighttooliptext");
 
-    LightDarkModeSnakeEggButton += 1;
+    lightDarkToggleStreak += 1;
 
-    if (LightDarkModeSnakeEggButton >= 10) {
-      window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "_blank");
-      LightDarkModeSnakeEggButton = 0;
+    if (lightDarkToggleStreak >= THEME_TOGGLE_SURPRISE_TRIGGER_AT) {
+      lightDarkToggleStreak = 0;
+      openThemeToggleSurprise();
+      return;
     }
 
     if (
