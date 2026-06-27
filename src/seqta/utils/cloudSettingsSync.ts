@@ -37,6 +37,7 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "bsplus_user",
   "cloudAccessToken",
   "cloudUsername",
+  "bsplus_google_calendar",
 ] as const;
 
 /**
@@ -67,6 +68,7 @@ const AUTH_KEYS_TO_PRESERVE = [
   "bsplus_refresh_token",
   "bsplus_client_id",
   "bsplus_user",
+  "bsplus_google_calendar",
 ] as const;
 
 const OMIT_FROM_UPLOAD_EXACT = new Set<string>([

@@ -2,6 +2,7 @@ import "./index.css";
 import Settings from "./pages/settings.svelte";
 import IconFamily from "@/resources/fonts/IconFamily.woff";
 import browser from "webextension-polyfill";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
 
@@ -13,7 +14,7 @@ function InjectCustomIcons() {
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
+      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`;

@@ -13,6 +13,7 @@ import {
   withSuppressedCloudAutoUpload,
 } from "./background/cloudSettingsAutoSync";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
+import { registerGoogleCalendarMessageHandlers } from "./background/googleCalendar";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -556,6 +557,8 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     return true;
   },
 };
+
+registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
 
 browser.runtime.onMessage.addListener(
   // @ts-ignore - OnMessageListener expects literal true for async, we return boolean

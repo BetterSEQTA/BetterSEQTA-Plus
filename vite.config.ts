@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { join, resolve } from "path";
 
 import touchGlobalCSSPlugin from "./lib/touchGlobalCSS";
@@ -59,7 +59,13 @@ const mode = process.env.MODE || "chrome"; // Check the environment variable to 
 /** Million's compiler can emit `new Function()`, which Firefox extension pages block (strict CSP, no unsafe-eval). */
 const useMillion = mode.toLowerCase() !== "firefox";
 
-export default defineConfig(({ command }) => ({
+const repoRoot = __dirname;
+
+export default defineConfig(({ command, mode: viteMode }) => {
+  // `.env` lives at repo root (not `src/`). Required for `npm run dev` and builds.
+  const env = loadEnv(viteMode, repoRoot, "");
+
+  return {
   // Content scripts run on the host page; absolute `/assets/...` URLs would
   // resolve against SEQTA instead of chrome-extension://. Relative base makes
   // Vite emit import.meta.url-relative chunk/CSS URLs at runtime.
@@ -73,7 +79,9 @@ export default defineConfig(({ command }) => ({
     ),
     __UPDATE_CHANNEL__: JSON.stringify(process.env.UPDATE_CHANNEL ?? "stable"),
     __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
+    __GOOGLE_OAUTH_CLIENT_ID__: JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID ?? ""),
   },
+  envDir: repoRoot,
   plugins: [
     base64Loader,
     InlineWorkerPlugin(),
@@ -145,4 +153,5 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}));
+};
+});
