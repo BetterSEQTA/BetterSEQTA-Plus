@@ -4,6 +4,7 @@ import { attachTimetableColorisRecovery } from "@/seqta/utils/timetableColoris";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { verboseLog } from "@/utils/verboseLog";
+import { mountGoogleCalendarButton, unmountGoogleCalendarButton } from "./calendarSyncUi";
 
 const timetablePlugin: Plugin<{}, {}> = {
   id: "timetable",
@@ -28,6 +29,7 @@ const timetablePlugin: Plugin<{}, {}> = {
         const hideControls = document.querySelector(".timetable-hide-controls");
         if (hideControls) hideControls.remove();
 
+        unmountGoogleCalendarButton();
         resetTimetableStyles();
       }
     };
@@ -85,6 +87,7 @@ async function handleTimetable(): Promise<void> {
 
   handleTimetableZoom();
   handleTimetableAssessmentHide();
+  void mountGoogleCalendarButton();
 }
 
 function handleTimetableZoom(): void {

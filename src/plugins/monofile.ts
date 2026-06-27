@@ -87,7 +87,7 @@ export async function finishLoad() {
 }
 
 export function GetCSSElement(file: string) {
-  const cssFile = browser.runtime.getURL(file);
+  const cssFile = resolveExtensionAssetUrl(file);
   const fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
   fileref.setAttribute("type", "text/css");

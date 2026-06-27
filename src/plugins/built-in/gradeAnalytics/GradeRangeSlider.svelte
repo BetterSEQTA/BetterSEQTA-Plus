@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
+
   let {
     value = $bindable<[number, number]>([0, 100]),
     min = 0,
@@ -13,9 +15,15 @@
 
   let dragging: "min" | "max" | null = $state(null);
 
-  const span = $derived(max - min || 1);
-  const minPercent = $derived(((value[0] - min) / span) * 100);
-  const maxPercent = $derived(((value[1] - min) / span) * 100);
+  let visual: [number, number] = $state([...value]);
+  let animationFrame: number | null = null;
+  onDestroy(() => {
+    if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+  });
+
+  const span = $derived(Math.max(max - min, 1));
+  const minPercent = $derived(((visual[0] - min) / span) * 100);
+  const maxPercent = $derived(((visual[1] - min) / span) * 100);
 
   const minZ = $derived(
     dragging === "min" ? 5 : dragging === "max" ? 2 : value[0] > (min + max) / 2 ? 4 : 3,
@@ -24,23 +32,69 @@
     dragging === "max" ? 5 : dragging === "min" ? 2 : value[1] <= (min + max) / 2 ? 4 : 3,
   );
 
-  function onMinInput(e: Event) {
-    const raw = Number((e.currentTarget as HTMLInputElement).value);
-    if (raw > value[1]) {
-      value = [value[1], raw];
-    } else {
-      value = [raw, value[1]];
-    }
+  function clamp(n: number) {
+    return Math.min(max, Math.max(min, n));
   }
 
-  function onMaxInput(e: Event) {
-    const raw = Number((e.currentTarget as HTMLInputElement).value);
-    if (raw < value[0]) {
-      value = [raw, value[0]];
-    } else {
-      value = [value[0], raw];
+  function animateVisualTo(target: [number, number]) {
+    if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+
+    const start: [number, number] = [...visual];
+    const startTime = performance.now();
+    const duration = 200;
+
+    function frame(now: number) {
+      // sine wave ease animation
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = Math.sin((t * Math.PI) / 2);
+
+      visual = [
+        start[0] + (target[0] - start[0]) * eased,
+        start[1] + (target[1] - start[1]) * eased,
+      ];
+      
+      if (t < 1) {
+        animationFrame = requestAnimationFrame(frame);
+      } else {
+        visual = target;
+        animationFrame = null;
+      }
     }
+    animationFrame = requestAnimationFrame(frame);
   }
+
+  function onInput(e: Event, which: "min" | "max", animate: boolean) {
+    const raw = clamp(Number((e.currentTarget as HTMLInputElement).value));
+    
+    let next: [number, number];
+
+    if (animate) {
+      next = which === "min"
+        // if next[0] > next[1]: next[1] = next[0]
+        ? [raw, Math.max(raw, value[1])]
+        // if next[1] < next[0]: next[0] = next[1]
+        : [Math.min(raw, value[0]), raw]; 
+    } else {
+      if (which === "min") {
+      next = raw > value[1]
+        ? [value[1], raw]
+        : [raw, value[1]];
+      } else {
+      next = raw < value[0]
+        ? [raw, value[0]]
+        : [value[0], raw];
+      }
+    }
+
+    value = next;
+
+    if (animate) {
+      animateVisualTo(next);
+    } else {
+      visual = next;
+    } 
+  }
+
 </script>
 
 <div class="bsplus-grade-range-slider">
@@ -59,8 +113,8 @@
       {min}
       {max}
       {step}
-      value={value[0]}
-      oninput={onMinInput}
+      value={visual[0]}
+      oninput={(e) => onInput(e, "min", false)}
       onpointerdown={() => (dragging = "min")}
       onpointerup={() => (dragging = null)}
       onpointercancel={() => (dragging = null)}
@@ -79,8 +133,8 @@
       {min}
       {max}
       {step}
-      value={value[1]}
-      oninput={onMaxInput}
+      value={visual[1]}
+      oninput={(e) => onInput(e, "max", false)}
       onpointerdown={() => (dragging = "max")}
       onpointerup={() => (dragging = null)}
       onpointercancel={() => (dragging = null)}
@@ -94,15 +148,42 @@
       aria-valuenow={value[1]}
     />
   </div>
-  <span class="bsplus-analytics-range-value" aria-live="polite">
-    {value[0]}% – {value[1]}%
-  </span>
+
+  <div class="bsplus-analytics-range-display" aria-live="polite">
+    <span class="bsplus-analytics-range-input-wrap">
+      <input
+        type="number"
+        class="bsplus-analytics-range-value"
+        value={value[0]}
+        oninput={(e) => onInput(e, "min", true)}
+        placeholder={min}
+        min={min}
+        max={max}
+        step={step}
+      />
+      <span class="bsplus-analytics-range-suffix">%</span>
+    </span>
+    <span class="bsplus-analytics-range-dash">–</span>
+    <span class="bsplus-analytics-range-input-wrap">
+      <input
+        type="number"
+        class="bsplus-analytics-range-value"
+        value={value[1]}
+        oninput={(e) => onInput(e, "max", true)}
+        placeholder={max}
+        min={min}
+        max={max}
+        step={step}
+      />
+      <span class="bsplus-analytics-range-suffix">%</span>
+    </span>
+  </div>
 </div>
 
 <style>
   .bsplus-grade-range-slider {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.65rem;
     width: 100%;
     min-width: 0;
@@ -110,10 +191,42 @@
 
   .bsplus-grade-range-slider-track-wrap {
     position: relative;
-    flex: 1;
+    width: 100%;
     height: 1.5rem;
     display: flex;
     align-items: center;
+  }
+
+  .bsplus-analytics-range-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .bsplus-analytics-range-input-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .bsplus-analytics-range-suffix {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bsplus-analytics-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .bsplus-analytics-range-dash {
+    color: var(--bsplus-analytics-muted);
+    font-weight: 700;
+    padding: 0 0.15rem;
   }
 
   .bsplus-grade-range-slider-track {

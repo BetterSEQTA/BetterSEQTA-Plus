@@ -421,8 +421,10 @@
 }
 
 .bsplus-analytics-filters .bsplus-analytics-range-value {
-  min-width: 3.75rem;
-  text-align: right;
+  background-color: var(--bsplus-analytics-control-bg-elevated);
+  border-color: var(--bsplus-analytics-control-border-strong);
+  box-shadow: 0 1px 4px
+    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
 }
 
 @media (min-width: 900px) {
@@ -702,12 +704,62 @@
 }
 
 .bsplus-analytics-range-value {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--bsplus-analytics-muted);
-  white-space: nowrap;
-  min-width: 4.5rem;
-  text-align: right;
+  appearance: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--bsplus-analytics-text);
+  background-color: var(--bsplus-analytics-control-bg);
+  border: 2px solid var(--bsplus-analytics-control-border);
+  border-radius: var(--bsplus-analytics-radius-sm);
+  padding: 0.5rem 1.8rem 0.5rem 0.5rem;
+  min-height: 2.75rem;
+  min-width: 3.5rem;
+  width: auto;
+  max-width: 4.5rem;
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s var(--bsplus-analytics-ease);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
+}
+
+.bsplus-analytics-range-value:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-accent) 35%,
+    var(--bsplus-analytics-control-border)
+  );
+}
+
+.bsplus-analytics-range-value:focus {
+  outline: none;
+  background-color: color-mix(
+    in srgb,
+    var(--bsplus-analytics-surface) 96%,
+    var(--bsplus-analytics-surface-2) 4%
+  );
+  border-color: var(--bsplus-analytics-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bsplus-analytics-text) 12%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+}
+
+.bsplus-analytics-range-value::-webkit-outer-spin-button,
+.bsplus-analytics-range-value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bsplus-analytics-range-value[type="number"] {
+  -moz-appearance: textfield;
 }
 
 /* Custom dropdowns (time period, subjects) */

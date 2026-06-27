@@ -15,17 +15,27 @@
       "64": "resources/icons/icon-64.png"
     }
   },
-  "permissions": ["tabs", "notifications", "storage"],
-  "host_permissions": ["https://newsapi.org/", "https://betterseqta.org/", "https://accounts.betterseqta.org/", "*://*/*"],
+  "permissions": ["tabs", "notifications", "storage", "identity", "alarms"],
+  "host_permissions": [
+    "https://newsapi.org/",
+    "https://betterseqta.org/",
+    "https://accounts.betterseqta.org/",
+    "https://www.googleapis.com/",
+    "https://oauth2.googleapis.com/",
+    "https://graph.microsoft.com/",
+    "https://login.microsoftonline.com/",
+    "*://*/*"
+  ],
   "background": {
     "service_worker": "background.ts"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http: https: https://betterseqta.org https://accounts.betterseqta.org https://raw.githubusercontent.com https://newsapi.org"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http: https: https://betterseqta.org https://accounts.betterseqta.org https://raw.githubusercontent.com https://newsapi.org https://www.googleapis.com https://oauth2.googleapis.com https://graph.microsoft.com https://login.microsoftonline.com"
   },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
+      "exclude_matches": ["*://accounts.betterseqta.org/*"],
       "js": ["SEQTA.ts"],
       "run_at": "document_start"
     }
@@ -39,6 +49,7 @@
         "resources/pdfjs/pdf.legacy.min.mjs",
         "resources/ort/*",
         "assets/*.css"
+        "assets/*"
       ],
       "matches": ["*://*/*"]
     }
