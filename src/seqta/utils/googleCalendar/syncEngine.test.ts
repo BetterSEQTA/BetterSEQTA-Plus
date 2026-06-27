@@ -15,7 +15,7 @@ jest.mock("@/seqta/utils/googleCalendar/storage", () => ({
   writeGoogleCalendarState: jest.fn(async (patch: unknown) => patch),
 }));
 
-jest.mock("@/seqta/utils/googleCalendar/syncSettings", () => ({
+jest.mock("@/seqta/utils/calendarSync/settings", () => ({
   getSyncWeeksAhead: jest.fn(async () => 12),
 }));
 

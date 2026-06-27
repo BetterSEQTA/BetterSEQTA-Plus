@@ -4,11 +4,13 @@
   let {
     open = false,
     busy = false,
+    providerLabel = "Google",
     onConfirm,
     onCancel,
   } = $props<{
     open?: boolean;
     busy?: boolean;
+    providerLabel?: string;
     onConfirm: () => void | Promise<void>;
     onCancel: () => void;
   }>();
@@ -34,10 +36,10 @@
       transition:fade={{ duration: 180 }}
     >
       <h2 id="bsplus-cal-disconnect-title" class="bsplus-cal-modal-title">
-        Disconnect Google Calendar?
+        Disconnect {providerLabel} Calendar?
       </h2>
       <p class="bsplus-cal-modal-body">
-        Your synced timetable events will stay in Google Calendar, but BetterSEQTA+ will stop
+        Your synced timetable events will stay in {providerLabel} Calendar, but BetterSEQTA+ will stop
         updating them until you connect again.
       </p>
       <div class="bsplus-cal-modal-actions">

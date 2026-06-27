@@ -1,5 +1,7 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
+import { ensureFontLoaded } from "@/seqta/ui/fonts/Manager";
+import { getFontPreset } from "@/seqta/ui/fonts/presets";
 
 export const CALENDAR_THEME_CSS_VARS = [
   "--better-main",
@@ -42,6 +44,10 @@ function resolvePageAccentColor(): string {
 export function syncCalendarSyncTheme(target: HTMLElement): void {
   const computed = getComputedStyle(document.documentElement);
   const dark = isCalendarDarkMode();
+  const fontPreset = getFontPreset(settingsState.selectedFont);
+
+  ensureFontLoaded(fontPreset);
+  target.style.setProperty("--bsplus-cal-font-family", fontPreset.stack);
 
   for (const name of CALENDAR_THEME_CSS_VARS) {
     const value =

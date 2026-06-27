@@ -14,6 +14,7 @@ import {
 } from "./background/cloudSettingsAutoSync";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import { registerGoogleCalendarMessageHandlers, initGoogleCalendarBackground } from "./background/googleCalendar";
+import { registerOutlookCalendarMessageHandlers } from "./background/outlookCalendar";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -559,6 +560,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
 };
 
 registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
+registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
 initGoogleCalendarBackground();
 
 browser.runtime.onMessage.addListener(

@@ -9,6 +9,10 @@
   import { maybeRunDueWeeklySync } from "@/seqta/utils/googleCalendar/calendarSyncListener";
   import { deleteSyncedEventsFromGoogleCalendar } from "@/seqta/utils/googleCalendar/syncEngine";
   import {
+    formatOutlookSyncResultMessage,
+    runOutlookCalendarSync,
+  } from "@/seqta/utils/outlookCalendar/syncRunner";
+  import {
     formatSyncResultMessage,
     runGoogleCalendarSync,
   } from "@/seqta/utils/googleCalendar/syncRunner";
@@ -17,17 +21,24 @@
     GoogleCalendarSyncProgress,
     GoogleCalendarSyncResult,
   } from "@/seqta/utils/googleCalendar/types";
+  import type { OutlookCalendarStatus } from "@/seqta/utils/outlookCalendar/types";
+  import { deleteSyncedEventsFromOutlookCalendar } from "@/seqta/utils/outlookCalendar/syncEngine";
   import CalendarDeleteEventsModal from "./CalendarDeleteEventsModal.svelte";
   import CalendarDisconnectModal from "./CalendarDisconnectModal.svelte";
   import CalendarSyncProgress from "./CalendarSyncProgress.svelte";
+  import OutlookCalendarIcon from "./OutlookCalendarIcon.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { syncCalendarSyncTheme } from "./calendarSyncTheme";
 
+  type CalendarProvider = "google" | "outlook";
   type BusyPhase = "connect" | "sync" | "delete" | "disconnect" | null;
+  type BusyState = { provider: CalendarProvider; phase: BusyPhase } | null;
 
-  let status = $state<GoogleCalendarStatus>({ configured: true, connected: false });
-  let busy = $state<BusyPhase>(null);
+  let googleStatus = $state<GoogleCalendarStatus>({ configured: true, connected: false });
+  let outlookStatus = $state<OutlookCalendarStatus>({ configured: true, connected: false });
+  let busy = $state<BusyState>(null);
   let menuOpen = $state(false);
+  let modalProvider = $state<CalendarProvider | null>(null);
   let showDisconnect = $state(false);
   let showDeleteEvents = $state(false);
   let toast = $state<{ message: string; error: boolean } | null>(null);
@@ -42,7 +53,16 @@
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   const isBusy = $derived(busy !== null);
+  const anyConnected = $derived(googleStatus.connected || outlookStatus.connected);
   const accent = "var(--bsplus-cal-accent, var(--better-main, #3b82f6))";
+
+  function isProviderBusy(provider: CalendarProvider): boolean {
+    return busy?.provider === provider;
+  }
+
+  function providerPhase(provider: CalendarProvider): BusyPhase {
+    return busy?.provider === provider ? busy.phase : null;
+  }
 
   function showToastMessage(message: string, isError = false) {
     toast = { message, error: isError };
@@ -53,19 +73,26 @@
   }
 
   async function refreshStatus() {
-    status = (await browser.runtime.sendMessage({
-      type: "googleCalendarStatus",
-    })) as GoogleCalendarStatus;
-    syncWeeksAhead = status.syncWeeksAhead ?? 12;
-    autoSyncWeekly = status.autoSyncWeekly !== false;
+    const [google, outlook] = await Promise.all([
+      browser.runtime.sendMessage({ type: "googleCalendarStatus" }) as Promise<GoogleCalendarStatus>,
+      browser.runtime.sendMessage({ type: "outlookCalendarStatus" }) as Promise<OutlookCalendarStatus>,
+    ]);
+    googleStatus = google;
+    outlookStatus = outlook;
+    syncWeeksAhead = google.syncWeeksAhead ?? 12;
+    autoSyncWeekly = google.autoSyncWeekly !== false;
   }
 
-  async function getAccessTokenFromBackground(): Promise<string> {
-    const res = (await browser.runtime.sendMessage({
-      type: "googleCalendarGetAccessToken",
-    })) as { success?: boolean; accessToken?: string; error?: string };
+  async function getAccessToken(provider: CalendarProvider): Promise<string> {
+    const messageType =
+      provider === "google" ? "googleCalendarGetAccessToken" : "outlookCalendarGetAccessToken";
+    const res = (await browser.runtime.sendMessage({ type: messageType })) as {
+      success?: boolean;
+      accessToken?: string;
+      error?: string;
+    };
     if (!res?.success || !res.accessToken) {
-      throw new Error(res?.error ?? "Could not get Google Calendar access token.");
+      throw new Error(res?.error ?? "Could not get calendar access token.");
     }
     return res.accessToken;
   }
@@ -84,15 +111,17 @@
     })) as GoogleCalendarStatus & { success?: boolean };
     if (result.syncWeeksAhead != null) syncWeeksAhead = result.syncWeeksAhead;
     if (result.autoSyncWeekly != null) autoSyncWeekly = result.autoSyncWeekly;
-    status = { ...status, ...result };
+    googleStatus = { ...googleStatus, ...result };
   }
 
-  async function performSync(mode: "full" | "incremental" = "full"): Promise<boolean> {
-    const result = await runGoogleCalendarSync({
-      mode,
-      onProgress: handleSyncProgress,
-    });
+  async function performSync(
+    provider: CalendarProvider,
+    mode: "full" | "incremental" = "full",
+  ): Promise<boolean> {
+    const run = provider === "google" ? runGoogleCalendarSync : runOutlookCalendarSync;
+    const format = provider === "google" ? formatSyncResultMessage : formatOutlookSyncResultMessage;
 
+    const result = await run({ mode, onProgress: handleSyncProgress });
     syncProgress = null;
 
     if (!result.success) {
@@ -100,30 +129,47 @@
       return false;
     }
 
-    status = {
-      ...status,
-      connected: true,
-      lastSyncAt: result.lastSyncAt ?? status.lastSyncAt,
-    };
-    showToastMessage(formatSyncResultMessage(result));
+    if (provider === "google") {
+      googleStatus = {
+        ...googleStatus,
+        connected: true,
+        lastSyncAt: result.lastSyncAt ?? googleStatus.lastSyncAt,
+      };
+    } else {
+      outlookStatus = {
+        ...outlookStatus,
+        connected: true,
+        lastSyncAt: result.lastSyncAt ?? outlookStatus.lastSyncAt,
+      };
+    }
+
+    showToastMessage(format(result));
     return true;
   }
 
-  async function connectGoogle() {
+  async function connectProvider(provider: CalendarProvider) {
+    const status = provider === "google" ? googleStatus : outlookStatus;
     if (!status.configured || isBusy) return;
     menuOpen = true;
-    busy = "connect";
+    busy = { provider, phase: "connect" };
+    const connectType =
+      provider === "google" ? "googleCalendarConnect" : "outlookCalendarConnect";
     try {
       const result = (await browser.runtime.sendMessage({
-        type: "googleCalendarConnect",
+        type: connectType,
       })) as GoogleCalendarSyncResult;
       if (!result.success) {
-        showToastMessage(result.error ?? "Could not connect to Google Calendar.", true);
+        const label = provider === "google" ? "Google" : "Outlook";
+        showToastMessage(result.error ?? `Could not connect to ${label} Calendar.`, true);
         return;
       }
-      status = { ...status, connected: true };
-      busy = "sync";
-      await performSync();
+      if (provider === "google") {
+        googleStatus = { ...googleStatus, connected: true };
+      } else {
+        outlookStatus = { ...outlookStatus, connected: true };
+      }
+      busy = { provider, phase: "sync" };
+      await performSync(provider);
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Could not connect.", true);
     } finally {
@@ -132,16 +178,17 @@
     }
   }
 
-  async function syncTimetable() {
+  async function syncProvider(provider: CalendarProvider) {
+    const status = provider === "google" ? googleStatus : outlookStatus;
     if (!status.configured || isBusy) return;
     if (!status.connected) {
-      await connectGoogle();
+      await connectProvider(provider);
       return;
     }
 
-    busy = "sync";
+    busy = { provider, phase: "sync" };
     try {
-      await performSync();
+      await performSync(provider);
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Calendar sync failed.", true);
     } finally {
@@ -151,8 +198,9 @@
   }
 
   async function confirmDeleteEvents() {
-    if (isBusy) return;
-    busy = "delete";
+    if (isBusy || !modalProvider) return;
+    const provider = modalProvider;
+    busy = { provider, phase: "delete" };
     syncProgress = {
       phase: "preparing",
       current: 0,
@@ -160,11 +208,13 @@
       message: "Preparing removal…",
     };
     try {
-      const result = await deleteSyncedEventsFromGoogleCalendar(
-        location.origin,
-        getAccessTokenFromBackground,
-        { onProgress: handleSyncProgress },
-      );
+      const deleteFn =
+        provider === "google"
+          ? deleteSyncedEventsFromGoogleCalendar
+          : deleteSyncedEventsFromOutlookCalendar;
+      const result = await deleteFn(location.origin, () => getAccessToken(provider), {
+        onProgress: handleSyncProgress,
+      });
 
       if (!result.success) {
         showToastMessage(result.error ?? "Could not remove calendar events.", true);
@@ -174,6 +224,7 @@
       const removed = result.deleted ?? 0;
       showDeleteEvents = false;
       menuOpen = false;
+      modalProvider = null;
       if (removed === 0) {
         showToastMessage("No synced events to remove.");
       } else {
@@ -200,20 +251,29 @@
   }
 
   async function confirmDisconnect() {
-    if (isBusy) return;
-    busy = "disconnect";
+    if (isBusy || !modalProvider) return;
+    const provider = modalProvider;
+    busy = { provider, phase: "disconnect" };
+    const disconnectType =
+      provider === "google" ? "googleCalendarDisconnect" : "outlookCalendarDisconnect";
+    const label = provider === "google" ? "Google" : "Outlook";
     try {
       const result = (await browser.runtime.sendMessage({
-        type: "googleCalendarDisconnect",
+        type: disconnectType,
       })) as { success?: boolean };
       if (!result?.success) {
-        showToastMessage("Could not disconnect Google Calendar.", true);
+        showToastMessage(`Could not disconnect ${label} Calendar.`, true);
         return;
       }
-      status = { ...status, connected: false, lastSyncAt: undefined };
+      if (provider === "google") {
+        googleStatus = { ...googleStatus, connected: false, lastSyncAt: undefined };
+      } else {
+        outlookStatus = { ...outlookStatus, connected: false, lastSyncAt: undefined };
+      }
       showDisconnect = false;
       menuOpen = false;
-      showToastMessage("Disconnected from Google Calendar.");
+      modalProvider = null;
+      showToastMessage(`Disconnected from ${label} Calendar.`);
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Disconnect failed.", true);
     } finally {
@@ -294,6 +354,7 @@
 
     const themeKeys = [
       "selectedColor",
+      "selectedFont",
       "DarkMode",
       "adaptiveThemeColour",
       "adaptiveThemeGradient",
@@ -333,22 +394,22 @@
 <div class="bsplus-cal-sync" bind:this={rootEl}>
   <button
     type="button"
-    class="uiButton bsplus-cal-trigger iconFamily"
+    class="uiButton bsplus-cal-trigger"
     bind:this={triggerEl}
     class:bsplus-cal-trigger--open={menuOpen}
-    class:bsplus-cal-trigger--connected={status.connected}
+    class:bsplus-cal-trigger--connected={anyConnected}
     class:bsplus-cal-trigger--busy={isBusy}
     aria-haspopup="menu"
     aria-expanded={menuOpen}
     aria-busy={isBusy}
-    aria-label={status.connected ? "Google Calendar sync options" : "Sync with Calendar"}
+    aria-label={anyConnected ? "Calendar sync options" : "Sync with Calendar"}
     onclick={() => {
       if (!isBusy) toggleMenu();
     }}
   >
-    <span class="bsplus-cal-trigger-icon" aria-hidden="true">&#xe9cd;</span>
+    <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xe9cd;</span>
     <span class="bsplus-cal-trigger-text">Sync with Calendar</span>
-    {#if status.connected}
+    {#if anyConnected}
       <span class="bsplus-cal-status-dot" aria-hidden="true"></span>
     {/if}
   </button>
@@ -397,10 +458,10 @@
               <span> Calendar</span>
             </span>
             <span class="bsplus-cal-provider-status">
-              {#if !status.configured}
+              {#if !googleStatus.configured}
                 Not available in this build
-              {:else if status.connected}
-                Connected{formatLastSync(status.lastSyncAt) ? ` · ${formatLastSync(status.lastSyncAt)}` : ""}
+              {:else if googleStatus.connected}
+                Connected{formatLastSync(googleStatus.lastSyncAt) ? ` · ${formatLastSync(googleStatus.lastSyncAt)}` : ""}
               {:else}
                 Not connected
               {/if}
@@ -408,8 +469,129 @@
           </div>
         </div>
 
-        {#if status.connected}
-          <div class="bsplus-cal-settings" role="group" aria-label="Sync settings">
+        <div class="bsplus-cal-provider-actions">
+          {#if !googleStatus.connected}
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--primary"
+              style:--bsplus-cal-accent={accent}
+              role="menuitem"
+              disabled={!googleStatus.configured || isBusy}
+              onclick={() => void connectProvider("google")}
+            >
+              {providerPhase("google") === "connect" ? "Connecting…" : "Connect"}
+            </button>
+          {:else}
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--primary"
+              style:--bsplus-cal-accent={accent}
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => void syncProvider("google")}
+            >
+              {providerPhase("google") === "sync" ? "Syncing…" : "Sync now"}
+            </button>
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--ghost"
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => {
+                modalProvider = "google";
+                showDeleteEvents = true;
+              }}
+            >
+              {providerPhase("google") === "delete" ? "Removing…" : "Remove from calendar"}
+            </button>
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--ghost"
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => {
+                modalProvider = "google";
+                showDisconnect = true;
+              }}
+            >
+              Disconnect
+            </button>
+          {/if}
+        </div>
+      </div>
+
+      <div class="bsplus-cal-provider bsplus-cal-provider--outlook" role="none">
+        <div class="bsplus-cal-provider-row">
+          <span class="bsplus-cal-provider-icon" aria-hidden="true">
+            <OutlookCalendarIcon />
+          </span>
+          <div class="bsplus-cal-provider-copy">
+            <span class="bsplus-cal-provider-name">Outlook Calendar</span>
+            <span class="bsplus-cal-provider-status">
+              {#if !outlookStatus.configured}
+                Set OUTLOOK_OAUTH_CLIENT_ID to enable
+              {:else if outlookStatus.connected}
+                Connected{formatLastSync(outlookStatus.lastSyncAt) ? ` · ${formatLastSync(outlookStatus.lastSyncAt)}` : ""}
+              {:else}
+                Not connected
+              {/if}
+            </span>
+          </div>
+        </div>
+
+        <div class="bsplus-cal-provider-actions">
+          {#if !outlookStatus.connected}
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--primary"
+              style:--bsplus-cal-accent={accent}
+              role="menuitem"
+              disabled={!outlookStatus.configured || isBusy}
+              onclick={() => void connectProvider("outlook")}
+            >
+              {providerPhase("outlook") === "connect" ? "Connecting…" : "Connect"}
+            </button>
+          {:else}
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--primary"
+              style:--bsplus-cal-accent={accent}
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => void syncProvider("outlook")}
+            >
+              {providerPhase("outlook") === "sync" ? "Syncing…" : "Sync now"}
+            </button>
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--ghost"
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => {
+                modalProvider = "outlook";
+                showDeleteEvents = true;
+              }}
+            >
+              {providerPhase("outlook") === "delete" ? "Removing…" : "Remove from calendar"}
+            </button>
+            <button
+              type="button"
+              class="bsplus-cal-action bsplus-cal-action--ghost"
+              role="menuitem"
+              disabled={isBusy}
+              onclick={() => {
+                modalProvider = "outlook";
+                showDisconnect = true;
+              }}
+            >
+              Disconnect
+            </button>
+          {/if}
+        </div>
+      </div>
+
+      {#if anyConnected}
+        <div class="bsplus-cal-settings" role="group" aria-label="Sync settings">
             <label class="bsplus-cal-setting">
               <span class="bsplus-cal-setting-label">Weeks ahead</span>
               <input
@@ -440,76 +622,29 @@
 
         <CalendarSyncProgress progress={syncProgress} />
 
-        <div class="bsplus-cal-provider-actions">
-          {#if !status.connected}
-            <button
-              type="button"
-              class="bsplus-cal-action bsplus-cal-action--primary"
-              style:--bsplus-cal-accent={accent}
-              role="menuitem"
-              disabled={!status.configured || isBusy}
-              onclick={() => void connectGoogle()}
-            >
-              {busy === "connect" ? "Connecting…" : "Connect"}
-            </button>
-          {:else}
-            <button
-              type="button"
-              class="bsplus-cal-action bsplus-cal-action--primary"
-              style:--bsplus-cal-accent={accent}
-              role="menuitem"
-              disabled={isBusy}
-              onclick={() => void syncTimetable()}
-            >
-              {busy === "sync" ? "Syncing…" : "Sync now"}
-            </button>
-            <button
-              type="button"
-              class="bsplus-cal-action bsplus-cal-action--ghost"
-              role="menuitem"
-              disabled={isBusy}
-              onclick={() => {
-                showDeleteEvents = true;
-              }}
-            >
-              {busy === "delete" ? "Removing…" : "Remove from calendar"}
-            </button>
-            <button
-              type="button"
-              class="bsplus-cal-action bsplus-cal-action--ghost"
-              role="menuitem"
-              disabled={isBusy}
-              onclick={() => {
-                showDisconnect = true;
-              }}
-            >
-              Disconnect
-            </button>
-          {/if}
-        </div>
-      </div>
-
       <div class="bsplus-cal-coming-soon" role="none">
         <span class="bsplus-cal-coming-soon-label">More providers</span>
-        <span class="bsplus-cal-coming-soon-hint">Outlook, Apple Calendar — coming soon</span>
+        <span class="bsplus-cal-coming-soon-hint">Apple Calendar — coming soon</span>
       </div>
     </div>
   {/if}
 
   <CalendarDeleteEventsModal
     open={showDeleteEvents}
-    busy={busy === "delete"}
+    busy={busy?.phase === "delete"}
+    providerLabel={modalProvider === "outlook" ? "Outlook" : "Google"}
     onCancel={() => {
-      if (busy !== "delete") showDeleteEvents = false;
+      if (busy?.phase !== "delete") showDeleteEvents = false;
     }}
     onConfirm={confirmDeleteEvents}
   />
 
   <CalendarDisconnectModal
     open={showDisconnect}
-    busy={busy === "disconnect"}
+    busy={busy?.phase === "disconnect"}
+    providerLabel={modalProvider === "outlook" ? "Outlook" : "Google"}
     onCancel={() => {
-      if (busy !== "disconnect") showDisconnect = false;
+      if (busy?.phase !== "disconnect") showDisconnect = false;
     }}
     onConfirm={confirmDisconnect}
   />
@@ -530,7 +665,7 @@
   .bsplus-cal-sync {
     position: relative;
     display: inline-flex;
-    font-family: Rubik, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
     color: var(--bsplus-cal-text, var(--text-primary, #111));
   }
 
@@ -545,16 +680,19 @@
     padding: 0 10px;
     margin-left: 4px;
     border-radius: 16px !important;
+    font-family: inherit;
     transition: all 0.2s ease;
   }
 
   .bsplus-cal-trigger-icon {
+    font-family: "IconFamily" !important;
     font-size: 16px;
     line-height: 1;
     opacity: 0.9;
   }
 
   .bsplus-cal-trigger-text {
+    font-family: inherit;
     font-size: 13px;
     font-weight: 600;
     line-height: 1;
@@ -680,7 +818,7 @@
     color: var(--bsplus-cal-text, #18181b);
     border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
   }
 
   .bsplus-cal-menu.dark {
@@ -710,6 +848,11 @@
     padding: 8px;
     border-radius: 10px;
     background: var(--bsplus-cal-surface-muted, color-mix(in srgb, var(--bsplus-cal-text) 4%, transparent));
+    margin-bottom: 8px;
+  }
+
+  .bsplus-cal-provider--outlook {
+    margin-bottom: 0;
   }
 
   .bsplus-cal-provider-row {

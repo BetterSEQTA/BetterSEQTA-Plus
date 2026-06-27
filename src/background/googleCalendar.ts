@@ -20,16 +20,16 @@ import {
   clampSyncWeeks,
   getAutoSyncWeekly,
   getSyncWeeksAhead,
-} from "@/seqta/utils/googleCalendar/syncSettings";
+} from "@/seqta/utils/calendarSync/settings";
+import {
+  readSharedCalendarSyncSettings,
+  writeSharedCalendarSyncSettings,
+} from "@/seqta/utils/calendarSync/sharedSettings";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
-import {
-  clearWeeklySyncAlarm,
-  ensureWeeklySyncAlarm,
-  registerWeeklySyncAlarmListener,
-} from "./googleCalendarWeekly";
+import { ensureWeeklySyncAlarm, initCalendarBackground } from "./calendarWeekly";
 
 function base64UrlEncode(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -221,13 +221,14 @@ async function connectGoogleCalendar(): Promise<GoogleCalendarSyncResult> {
 
 async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
   const state = await readGoogleCalendarState();
+  const shared = await readSharedCalendarSyncSettings();
   const syncWeeksAhead = await getSyncWeeksAhead();
   const autoSyncWeekly = await getAutoSyncWeekly();
   return {
     configured: isGoogleCalendarConfigured(),
     connected: !!(state.refreshToken || state.accessToken),
     lastSyncAt: state.lastSyncAt,
-    lastWeeklySyncAt: state.lastWeeklySyncAt,
+    lastWeeklySyncAt: shared.lastWeeklySyncAt,
     lastSyncOrigin: state.lastSyncOrigin,
     syncWeeksAhead,
     autoSyncWeekly,
@@ -239,8 +240,8 @@ export async function handleGoogleCalendarConnect(): Promise<GoogleCalendarSyncR
 }
 
 export async function handleGoogleCalendarDisconnect(): Promise<{ success: boolean }> {
-  await clearWeeklySyncAlarm();
   await clearGoogleCalendarState();
+  await ensureWeeklySyncAlarm();
   return { success: true };
 }
 
@@ -345,7 +346,7 @@ export function registerGoogleCalendarMessageHandlers(
         patch.autoSyncWeekly = !!body.autoSyncWeekly;
       }
       if (Object.keys(patch).length > 0) {
-        await writeGoogleCalendarState(patch);
+        await writeSharedCalendarSyncSettings(patch);
       }
       await ensureWeeklySyncAlarm();
       sendResponse({ success: true, ...(await getGoogleCalendarStatus()) });
@@ -359,7 +360,4 @@ export function registerGoogleCalendarMessageHandlers(
   };
 }
 
-export function initGoogleCalendarBackground(): void {
-  registerWeeklySyncAlarmListener();
-  void ensureWeeklySyncAlarm();
-}
+export { initCalendarBackground as initGoogleCalendarBackground } from "./calendarWeekly";

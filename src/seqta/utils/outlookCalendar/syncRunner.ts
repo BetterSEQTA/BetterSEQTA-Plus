@@ -5,33 +5,33 @@ import {
   trailingWeekRange,
 } from "@/seqta/utils/googleCalendar/fetchTimetable";
 import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
-import { syncLessonsToGoogleCalendar } from "@/seqta/utils/googleCalendar/syncEngine";
+import { syncLessonsToOutlookCalendar } from "@/seqta/utils/outlookCalendar/syncEngine";
 import type {
   GoogleCalendarSyncOptions,
   GoogleCalendarSyncProgress,
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 
-export type GoogleCalendarRunMode = "full" | "incremental";
+export type OutlookCalendarRunMode = "full" | "incremental";
 
-export interface RunGoogleCalendarSyncParams {
-  mode?: GoogleCalendarRunMode;
+export interface RunOutlookCalendarSyncParams {
+  mode?: OutlookCalendarRunMode;
   silent?: boolean;
   onProgress?: (progress: GoogleCalendarSyncProgress) => void;
 }
 
 async function getAccessTokenFromBackground(): Promise<string> {
   const res = (await browser.runtime.sendMessage({
-    type: "googleCalendarGetAccessToken",
+    type: "outlookCalendarGetAccessToken",
   })) as { success?: boolean; accessToken?: string; error?: string };
   if (!res?.success || !res.accessToken) {
-    throw new Error(res?.error ?? "Could not get Google Calendar access token.");
+    throw new Error(res?.error ?? "Could not get Outlook Calendar access token.");
   }
   return res.accessToken;
 }
 
-export async function runGoogleCalendarSync(
-  params: RunGoogleCalendarSyncParams = {},
+export async function runOutlookCalendarSync(
+  params: RunOutlookCalendarSyncParams = {},
 ): Promise<GoogleCalendarSyncResult> {
   const mode = params.mode ?? "full";
   const weeksAhead = await getSyncWeeksAhead();
@@ -49,7 +49,7 @@ export async function runGoogleCalendarSync(
       : await fetchTimetableForSync(weeksAhead);
 
   const options: GoogleCalendarSyncOptions = { onProgress: params.onProgress };
-  const result = await syncLessonsToGoogleCalendar(
+  const result = await syncLessonsToOutlookCalendar(
     {
       origin: location.origin,
       lessons,
@@ -63,7 +63,7 @@ export async function runGoogleCalendarSync(
   return result;
 }
 
-export function formatSyncResultMessage(result: GoogleCalendarSyncResult): string {
+export function formatOutlookSyncResultMessage(result: GoogleCalendarSyncResult): string {
   const created = result.created ?? 0;
   const updated = result.updated ?? 0;
   const deleted = result.deleted ?? 0;
@@ -71,6 +71,6 @@ export function formatSyncResultMessage(result: GoogleCalendarSyncResult): strin
   if (created > 0) parts.push(`${created} new`);
   if (updated > 0) parts.push(`${updated} updated`);
   if (deleted > 0) parts.push(`${deleted} removed`);
-  if (parts.length === 0) return "Google Calendar is up to date.";
-  return `Google Calendar updated (${parts.join(", ")}).`;
+  if (parts.length === 0) return "Outlook Calendar is up to date.";
+  return `Outlook Calendar updated (${parts.join(", ")}).`;
 }

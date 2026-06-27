@@ -1,6 +1,6 @@
 import { verboseLog } from "@/utils/verboseLog";
-import { isGoogleCalendarConfigured } from "@/config/googleCalendar";
-import { googleApiEventBody, mapLessonsToGoogleEvents } from "@/seqta/utils/googleCalendar/eventMapper";
+import { isOutlookCalendarConfigured } from "@/config/outlookCalendar";
+import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
 import {
   getStoredEventId,
   lessonDateFromSeqtaKey,
@@ -10,12 +10,6 @@ import {
   isDateInRange,
   syncWindowRange,
 } from "@/seqta/utils/googleCalendar/syncDateRange";
-import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
-import {
-  eventMapKey,
-  readGoogleCalendarState,
-  writeGoogleCalendarState,
-} from "@/seqta/utils/googleCalendar/storage";
 import type {
   GoogleCalendarDeleteResult,
   GoogleCalendarSyncOptions,
@@ -24,12 +18,20 @@ import type {
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 import {
-  deleteGoogleCalendarEvent,
-  upsertGoogleCalendarEvent,
-} from "@/seqta/utils/googleCalendar/upsertEvent";
+  mapLessonsToOutlookEvents,
+  outlookGraphEventBody,
+} from "@/seqta/utils/outlookCalendar/eventMapper";
+import {
+  outlookEventMapKey,
+  readOutlookCalendarState,
+  writeOutlookCalendarState,
+} from "@/seqta/utils/outlookCalendar/storage";
+import {
+  deleteOutlookCalendarEvent,
+  upsertOutlookCalendarEvent,
+} from "@/seqta/utils/outlookCalendar/upsertEvent";
 
 const EVENT_MAP_PERSIST_EVERY = 10;
-const CALENDAR_ID = "primary";
 
 type DeleteTrackedEventsResult = {
   deleted: number;
@@ -47,7 +49,7 @@ function lessonDateForEvent(startDateTime: string, seqtaKey: string): string {
   return startDateTime.slice(0, 10) || lessonDateFromSeqtaKey(seqtaKey) || "";
 }
 
-async function deleteTrackedEventsFromGoogle(
+async function deleteTrackedEventsFromOutlook(
   entries: Array<[string, string]>,
   eventMap: Record<string, string | { id: string; date: string }>,
   getAccessToken: () => Promise<string>,
@@ -62,10 +64,9 @@ async function deleteTrackedEventsFromGoogle(
   let deleted = 0;
   let failed = 0;
 
-  for (let i = 0; i < entries.length; i++) {
-    const [mapKey, eventId] = entries[i];
+  for (const [mapKey, eventId] of entries) {
     try {
-      await deleteGoogleCalendarEvent(accessToken, CALENDAR_ID, eventId, async () => {
+      await deleteOutlookCalendarEvent(accessToken, eventId, async () => {
         accessToken = await getAccessToken();
         return accessToken;
       });
@@ -80,10 +81,10 @@ async function deleteTrackedEventsFromGoogle(
       });
 
       if (persistProgress && (deleted + failed) % EVENT_MAP_PERSIST_EVERY === 0) {
-        await writeGoogleCalendarState({ eventMap });
+        await writeOutlookCalendarState({ eventMap });
       }
     } catch (err) {
-      verboseLog("[BetterSEQTA+] Google Calendar event delete failed:", err);
+      verboseLog("[BetterSEQTA+] Outlook Calendar event delete failed:", err);
       failed += 1;
       reportProgress(onProgress, {
         phase: "deleting",
@@ -142,29 +143,28 @@ function entriesToPrune(
   return entries;
 }
 
-/** Runs in the content script tab so long syncs are not killed by the MV3 service worker. */
-export async function syncLessonsToGoogleCalendar(
+export async function syncLessonsToOutlookCalendar(
   request: GoogleCalendarSyncRequest,
   getAccessToken: () => Promise<string>,
   options: GoogleCalendarSyncOptions = {},
 ): Promise<GoogleCalendarSyncResult> {
-  if (!isGoogleCalendarConfigured()) {
+  if (!isOutlookCalendarConfigured()) {
     return {
       success: false,
       configured: false,
-      error: "Google Calendar is not configured in this extension build.",
+      error: "Outlook Calendar is not configured in this extension build.",
     };
   }
 
-  const state = await readGoogleCalendarState();
+  const state = await readOutlookCalendarState();
   if (!state.refreshToken && !state.accessToken) {
-    return { success: false, configured: true, connected: false, error: "Connect Google Calendar first." };
+    return { success: false, configured: true, connected: false, error: "Connect Outlook Calendar first." };
   }
 
   const mode = request.mode ?? "full";
   const weeksAhead = request.weeksAhead ?? (await getSyncWeeksAhead());
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
+  const events = mapLessonsToOutlookEvents(request.origin, request.lessons, timeZone);
 
   if (events.length === 0 && mode === "full") {
     return {
@@ -184,11 +184,13 @@ export async function syncLessonsToGoogleCalendar(
 
   let accessToken = await getAccessToken();
   const eventMap = { ...(state.eventMap ?? {}) };
-  const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
+  const currentMapKeys = new Set(
+    events.map((event) => outlookEventMapKey(request.origin, event.seqtaKey)),
+  );
   const staleEntries = entriesToPrune(eventMap, request.origin, mode, weeksAhead, currentMapKeys);
   const totalSteps = staleEntries.length + events.length;
 
-  const staleResult = await deleteTrackedEventsFromGoogle(
+  const staleResult = await deleteTrackedEventsFromOutlook(
     staleEntries,
     eventMap,
     getAccessToken,
@@ -205,14 +207,13 @@ export async function syncLessonsToGoogleCalendar(
 
   for (let i = 0; i < events.length; i++) {
     const event = events[i];
-    const mapKey = eventMapKey(request.origin, event.seqtaKey);
+    const mapKey = outlookEventMapKey(request.origin, event.seqtaKey);
     const existingId = getStoredEventId(eventMap[mapKey]);
     try {
-      const googleId = await upsertGoogleCalendarEvent(
+      const outlookId = await upsertOutlookCalendarEvent(
         accessToken,
-        CALENDAR_ID,
         existingId,
-        googleApiEventBody(event),
+        outlookGraphEventBody(event),
         async () => {
           accessToken = await getAccessToken();
           return accessToken;
@@ -221,7 +222,7 @@ export async function syncLessonsToGoogleCalendar(
       if (existingId) updated += 1;
       else created += 1;
       eventMap[mapKey] = {
-        id: googleId,
+        id: outlookId,
         date: lessonDateForEvent(event.startDateTime, event.seqtaKey),
       };
 
@@ -233,14 +234,14 @@ export async function syncLessonsToGoogleCalendar(
       });
 
       if ((i + 1) % EVENT_MAP_PERSIST_EVERY === 0 || i === events.length - 1) {
-        await writeGoogleCalendarState({
+        await writeOutlookCalendarState({
           eventMap,
           lastSyncAt,
           lastSyncOrigin: request.origin,
         });
       }
     } catch (err) {
-      verboseLog("[BetterSEQTA+] Google Calendar event sync failed:", err);
+      verboseLog("[BetterSEQTA+] Outlook Calendar event sync failed:", err);
       failed += 1;
       reportProgress(options.onProgress, {
         phase: "upserting",
@@ -252,7 +253,7 @@ export async function syncLessonsToGoogleCalendar(
   }
 
   if (staleResult.deleted > 0 || staleEntries.length > 0 || events.length > 0) {
-    await writeGoogleCalendarState({
+    await writeOutlookCalendarState({
       eventMap,
       lastSyncAt,
       lastSyncOrigin: request.origin,
@@ -283,23 +284,22 @@ export async function syncLessonsToGoogleCalendar(
   };
 }
 
-/** Delete all tracked BetterSEQTA+ events for this SEQTA origin from Google Calendar. */
-export async function deleteSyncedEventsFromGoogleCalendar(
+export async function deleteSyncedEventsFromOutlookCalendar(
   origin: string,
   getAccessToken: () => Promise<string>,
   options: GoogleCalendarSyncOptions = {},
 ): Promise<GoogleCalendarDeleteResult> {
-  if (!isGoogleCalendarConfigured()) {
+  if (!isOutlookCalendarConfigured()) {
     return {
       success: false,
       configured: false,
-      error: "Google Calendar is not configured in this extension build.",
+      error: "Outlook Calendar is not configured in this extension build.",
     };
   }
 
-  const state = await readGoogleCalendarState();
+  const state = await readOutlookCalendarState();
   if (!state.refreshToken && !state.accessToken) {
-    return { success: false, configured: true, connected: false, error: "Connect Google Calendar first." };
+    return { success: false, configured: true, connected: false, error: "Connect Outlook Calendar first." };
   }
 
   const entries = originEventMapEntries(state.eventMap ?? {}, origin);
@@ -315,7 +315,7 @@ export async function deleteSyncedEventsFromGoogleCalendar(
   });
 
   const eventMap = { ...(state.eventMap ?? {}) };
-  const { deleted, failed } = await deleteTrackedEventsFromGoogle(
+  const { deleted, failed } = await deleteTrackedEventsFromOutlook(
     entries,
     eventMap,
     getAccessToken,
@@ -325,7 +325,7 @@ export async function deleteSyncedEventsFromGoogleCalendar(
     entries.length,
   );
 
-  await writeGoogleCalendarState({ eventMap });
+  await writeOutlookCalendarState({ eventMap });
 
   reportProgress(options.onProgress, {
     phase: "done",

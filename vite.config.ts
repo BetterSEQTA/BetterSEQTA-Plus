@@ -80,6 +80,7 @@ export default defineConfig(({ command, mode: viteMode }) => {
     __UPDATE_CHANNEL__: JSON.stringify(process.env.UPDATE_CHANNEL ?? "stable"),
     __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
     __GOOGLE_OAUTH_CLIENT_ID__: JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID ?? ""),
+    __OUTLOOK_OAUTH_CLIENT_ID__: JSON.stringify(env.OUTLOOK_OAUTH_CLIENT_ID ?? ""),
   },
   envDir: repoRoot,
   plugins: [

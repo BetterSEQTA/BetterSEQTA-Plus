@@ -3,3 +3,4 @@ declare const __GH_RELEASE_REPO__: string;
 declare const __UPDATE_CHANNEL__: "stable" | "nightly";
 declare const __BUILD_LABEL__: string;
 declare const __GOOGLE_OAUTH_CLIENT_ID__: string;
+declare const __OUTLOOK_OAUTH_CLIENT_ID__: string;

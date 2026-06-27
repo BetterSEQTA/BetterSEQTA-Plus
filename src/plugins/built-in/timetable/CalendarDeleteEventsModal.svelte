@@ -4,11 +4,13 @@
   let {
     open = false,
     busy = false,
+    providerLabel = "Google",
     onConfirm,
     onCancel,
   } = $props<{
     open?: boolean;
     busy?: boolean;
+    providerLabel?: string;
     onConfirm: () => void | Promise<void>;
     onCancel: () => void;
   }>();
@@ -37,7 +39,7 @@
         Remove synced events?
       </h2>
       <p class="bsplus-cal-modal-body">
-        This removes all BetterSEQTA+ timetable events from your Google Calendar for this school.
+        This removes all BetterSEQTA+ timetable events from your {providerLabel} Calendar for this school.
         Your connection stays active — you can sync again later.
       </p>
       <div class="bsplus-cal-modal-actions">
