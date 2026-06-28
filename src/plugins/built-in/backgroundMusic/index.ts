@@ -1,5 +1,10 @@
 import type { Plugin } from "@/plugins/core/types";
-import { booleanSetting, componentSetting, defineSettings, numberSetting } from "@/plugins/core/settingsHelpers";
+import {
+  booleanSetting,
+  componentSetting,
+  defineSettings,
+  numberSetting,
+} from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
@@ -20,7 +25,8 @@ const settings = defineSettings({
   }),
   pauseOnHidden: booleanSetting({
     title: "Pause when tab hidden",
-    description: "Pause music when switching to another tab or minimizing the browser",
+    description:
+      "Pause music when switching to another tab or minimizing the browser",
     default: true,
   }),
 });
@@ -30,72 +36,130 @@ const store = localforage.createInstance({
   storeName: "music",
 });
 
-let currentAudio: HTMLAudioElement | null = null;
-let currentObjectUrl: string | null = null;
-let cleanupRegistered = false;
-let pendingGestureCancel: (() => void) | null = null;
-let visibilityResumeTimeout: number | null = null;
+const GESTURE_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+const gestureOpts: AddEventListenerOptions = { capture: true, passive: true };
 
-async function loadAudioBlob(): Promise<Blob | null> {
+let audio: HTMLAudioElement | null = null;
+let objectUrl: string | null = null;
+let gestureCleanup: (() => void) | null = null;
+let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+let hintEl: HTMLElement | null = null;
+let playing = false;
+
+const clamp = (v: number) => Math.max(0, Math.min(1, v));
+
+async function loadBlob(): Promise<Blob | null> {
   const blob = await store.getItem<Blob>("audio-blob");
-  return blob && blob instanceof Blob ? blob : null;
+  return blob instanceof Blob ? blob : null;
 }
 
-function stopAndCleanupAudio(): void {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.src = "";
-    currentAudio.remove();
-    currentAudio = null;
-  }
-  if (currentObjectUrl) {
-    URL.revokeObjectURL(currentObjectUrl);
-    currentObjectUrl = null;
-  }
+function clearHint(): void {
+  hintEl?.remove();
+  hintEl = null;
 }
 
-function ensureGestureStart(handler: () => void): () => void {
-  const eventTypes = ["pointerdown", "keydown", "touchstart"]; // broad user gesture coverage
-  const listener = () => {
-    handler();
-    for (const type of eventTypes) {
-      window.removeEventListener(type, listener);
-    }
-  };
-  for (const type of eventTypes) {
-    window.addEventListener(type, listener, { once: true, passive: true });
-  }
-  return () => {
-    for (const type of eventTypes) {
-      window.removeEventListener(type, listener);
-    }
-  };
+function disarmGesture(): void {
+  gestureCleanup?.();
+  gestureCleanup = null;
 }
 
-async function startPlayback(volume: number): Promise<void> {
-  const blob = await loadAudioBlob();
+function onPlayStarted(): void {
+  playing = true;
+  clearHint();
+  disarmGesture();
+}
+
+function stopAudio(): void {
+  audio?.pause();
+  audio?.remove();
+  audio = null;
+  if (objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl = null;
+  playing = false;
+}
+
+function showHint(onActivate: () => void): void {
+  clearHint();
+  const hint = document.createElement("button");
+  hint.id = "bsplus-bg-music-hint";
+  hint.type = "button";
+  hint.className = "bsplus-bg-music-hint";
+  hint.textContent = "Tap to start background music";
+  hint.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    onActivate();
+  });
+  document.body.append(hint);
+  hintEl = hint;
+}
+
+/** Prepare <audio> so play() can run synchronously inside a user-gesture handler. */
+async function prepareAudio(vol: number): Promise<boolean> {
+  const blob = await loadBlob();
   if (!blob) {
-    stopAndCleanupAudio();
-    return;
+    stopAudio();
+    clearHint();
+    return false;
   }
+  if (!audio) {
+    stopAudio();
+    objectUrl = URL.createObjectURL(blob);
+    audio = new Audio(objectUrl);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.style.display = "none";
+    document.body.append(audio);
+  }
+  audio.volume = clamp(vol);
+  return true;
+}
 
-  stopAndCleanupAudio();
+/** Call synchronously from a user-gesture handler (no await before this). */
+function playPrepared(vol: number): void {
+  if (!audio) return;
+  audio.volume = clamp(vol);
+  void audio.play().then(onPlayStarted).catch(() => {
+    playing = false;
+  });
+}
 
-  currentObjectUrl = URL.createObjectURL(blob);
-  const audio = new Audio(currentObjectUrl);
-  audio.loop = true;
-  audio.volume = Math.max(0, Math.min(1, volume));
-  audio.preload = "auto";
-  audio.crossOrigin = "anonymous";
-  audio.style.display = "none";
-  document.body.appendChild(audio);
-  currentAudio = audio;
-
+async function tryAutoplay(vol: number): Promise<boolean> {
+  if (!(await prepareAudio(vol)) || !audio) return false;
   try {
-    // Attempt immediate play; may be blocked until gesture
     await audio.play();
+    onPlayStarted();
+    return true;
   } catch {
-    // Ignore; will be started after gesture if enabled
+    playing = false;
+    return false;
+  }
+}
+
+function armGesture(onGesture: () => void): void {
+  disarmGesture();
+  const listener = (event: Event) => {
+    if (event.type === "keydown") {
+      const key = (event as KeyboardEvent).key;
+      if (key !== "Enter" && key !== " ") return;
+    }
+    onGesture();
+  };
+  for (const type of GESTURE_EVENTS) {
+    document.addEventListener(type, listener, gestureOpts);
+  }
+  gestureCleanup = () => {
+    for (const type of GESTURE_EVENTS) {
+      document.removeEventListener(type, listener, gestureOpts);
+    }
+    clearHint();
+  };
+  showHint(onGesture);
+}
+
+function clearResumeTimer(): void {
+  if (resumeTimer !== null) {
+    clearTimeout(resumeTimer);
+    resumeTimer = null;
   }
 }
 
@@ -112,80 +176,84 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     await api.storage.loaded;
 
-    // react to specific setting changes
-    api.settings.onChange("volume" as any, (value: any) => {
-      const vol = (typeof value === "number" ? value : 0.5) as number;
-      if (currentAudio) currentAudio.volume = Math.max(0, Math.min(1, vol));
+    type BgSettings = { volume?: number; pauseOnHidden?: boolean };
+    const s = () => api.settings as BgSettings;
+    const vol = () => s().volume ?? 0.5;
+    const pauseOnHidden = () => s().pauseOnHidden ?? true;
+
+    const gestureStart = () => {
+      if (audio) playPrepared(vol());
+    };
+
+    const ensurePlayback = async () => {
+      if (!(await prepareAudio(vol()))) return;
+      if (playing && audio && !audio.paused) {
+        clearHint();
+        disarmGesture();
+        return;
+      }
+      if (!(await tryAutoplay(vol()))) armGesture(gestureStart);
+    };
+
+    api.settings.onChange("volume" as never, (value: unknown) => {
+      if (typeof value === "number" && audio) audio.volume = clamp(value);
     });
 
-    api.settings.onChange("pauseOnHidden" as any, (value: any) => {
-      const pauseOnHidden = (typeof value === "boolean" ? value : true) as boolean;
-      // If the setting is disabled and audio is currently paused due to tab being hidden, resume it
-      if (!pauseOnHidden && currentAudio && currentAudio.paused && document.visibilityState === "hidden") {
-        currentAudio.play().catch(() => {});
+    api.settings.onChange("pauseOnHidden" as never, (value: unknown) => {
+      if (
+        value === false &&
+        audio?.paused &&
+        document.visibilityState === "visible"
+      ) {
+        void ensurePlayback();
       }
     });
 
-    // Note: Stop button dispatches betterseqta-background-music-stop on remove
+    await ensurePlayback();
 
-    // Start if we have audio and autoplay is enabled
-    const tryStart = async () => {
-      const vol = (api.settings as any).volume ?? 0.5;
-      await startPlayback(vol);
-    };
-
-    // Always arm gesture start and attempt immediate start
-    const cancel = ensureGestureStart(() => { tryStart(); });
-    cleanupRegistered = true;
-    (window as any).__betterseqta_bg_music_cancel__ = cancel;
-    tryStart();
-
-    // Pause on tab hide, resume on show with a small delay (if enabled)
-    const visHandler = () => {
-      if (!currentAudio) return;
-      const pauseOnHidden = (api.settings as any).pauseOnHidden ?? true;
-      if (!pauseOnHidden) return;
+    const onVisibility = () => {
       if (document.visibilityState === "hidden") {
-        if (visibilityResumeTimeout !== null) {
-          clearTimeout(visibilityResumeTimeout);
-          visibilityResumeTimeout = null;
-        }
-        currentAudio.pause();
-      } else if (document.visibilityState === "visible") {
-        if (visibilityResumeTimeout !== null) {
-          clearTimeout(visibilityResumeTimeout);
-        }
-        visibilityResumeTimeout = window.setTimeout(() => {
-          visibilityResumeTimeout = null;
-          currentAudio?.play().catch(() => {});
-        }, 200);
+        if (!pauseOnHidden() || !audio) return;
+        clearResumeTimer();
+        audio.pause();
+        playing = false;
+        return;
       }
-    };
-    document.addEventListener("visibilitychange", visHandler);
-
-    // Allow uploads to trigger refresh; stop event clears playback on remove
-    const uploadedHandler = () => {
-      const vol = (api.settings as any).volume ?? 0.5;
-      startPlayback(vol);
-    };
-    const stopHandler = () => {
-      stopAndCleanupAudio();
-    };
-    window.addEventListener("betterseqta-background-music-updated", uploadedHandler);
-    window.addEventListener("betterseqta-background-music-stop", stopHandler);
-
-    return () => {
-      document.removeEventListener("visibilitychange", visHandler);
-      window.removeEventListener("betterseqta-background-music-updated", uploadedHandler);
-      window.removeEventListener("betterseqta-background-music-stop", stopHandler);
-      if (cleanupRegistered && (window as any).__betterseqta_bg_music_cancel__) {
-        (window as any).__betterseqta_bg_music_cancel__();
-        (window as any).__betterseqta_bg_music_cancel__ = undefined;
+      if (!audio) {
+        void ensurePlayback();
+        return;
       }
-      if (pendingGestureCancel) { pendingGestureCancel(); pendingGestureCancel = null; }
-      if (visibilityResumeTimeout !== null) { clearTimeout(visibilityResumeTimeout); visibilityResumeTimeout = null; }
-      stopAndCleanupAudio();
+      if (!pauseOnHidden()) return;
+      clearResumeTimer();
+      resumeTimer = setTimeout(() => {
+        resumeTimer = null;
+        void tryAutoplay(vol());
+      }, 200);
     };
+
+    const onUpdated = () => void ensurePlayback();
+    const onStop = () => {
+      disarmGesture();
+      stopAudio();
+      clearHint();
+    };
+    const teardown = () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onUpdated);
+      window.removeEventListener("betterseqta-background-music-updated", onUpdated);
+      window.removeEventListener("betterseqta-background-music-stop", onStop);
+      clearResumeTimer();
+      disarmGesture();
+      clearHint();
+      stopAudio();
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onUpdated);
+    window.addEventListener("betterseqta-background-music-updated", onUpdated);
+    window.addEventListener("betterseqta-background-music-stop", onStop);
+
+    return teardown;
   },
 };
 

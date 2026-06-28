@@ -1,3 +1,7 @@
+export function getDefaultSearchHotkey(): string {
+  return navigator.platform.toUpperCase().includes("MAC") ? "cmd+k" : "ctrl+k";
+}
+
 export interface ParsedHotkey {
   ctrl: boolean;
   meta: boolean;

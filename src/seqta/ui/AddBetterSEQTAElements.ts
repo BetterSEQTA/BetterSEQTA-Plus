@@ -14,6 +14,8 @@ import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
+import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
+import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -327,7 +329,13 @@ function setupEventListeners() {
 }
 
 async function createSettingsButton(parent?: Element) {
-  const target = parent ?? document.getElementById("content")!;
+  if (document.getElementById("AddedSettings")) return;
+
+  const target =
+    parent ??
+    document.getElementById("content") ??
+    document.getElementById("container") ??
+    document.body;
   target.append(
     stringToHTML(/* html */ `
       <button class="addedButton tooltip" id="AddedSettings">
@@ -456,14 +464,11 @@ function GetLightDarkModeString() {
 }
 
 async function addDarkLightToggle(parent?: Element) {
-  const SUN_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
-  const MOON_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
-
   const toggleTarget = parent ?? document.getElementById("content")!;
   toggleTarget.append(
     stringToHTML(/* html */ `
       <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
-        <svg xmlns="http://www.w3.org/2000/svg">${settingsState.DarkMode ? SUN_ICON_SVG : MOON_ICON_SVG}</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
         <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${GetLightDarkModeString()}</div>
       </button>
     `).firstChild!,
@@ -500,8 +505,8 @@ async function addDarkLightToggle(parent?: Element) {
 
     const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
     svgElement.innerHTML = settingsState.DarkMode
-      ? SUN_ICON_SVG
-      : MOON_ICON_SVG;
+      ? LUCIDE_SUN_ICON_SVG
+      : LUCIDE_MOON_ICON_SVG;
     darklightText!.innerText = GetLightDarkModeString();
   });
 }
@@ -545,10 +550,7 @@ function scheduleSidebarAccessibilityUpdate() {
     cancelAnimationFrame(sidebarTabOrderAnimationFrame);
   }
 
-  // Double rAF: SEQTA applies `.active` / updates `.sub` on the next frame
-  // after a click. Running earlier hid the submenu with `aria-hidden` while
-  // focus was still on a <label> inside it, which broke routing and sent
-  // the SPA back to home.
+  // Double rAF: SEQTA applies drill state on the next frame after click.
   sidebarTabOrderAnimationFrame = requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       sidebarTabOrderAnimationFrame = null;
@@ -611,13 +613,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   }
 }
 
-/**
- * Keyboard tab order for the drilled-in sidebar only.
- * SEQTA already sets `aria-hidden` on off-screen menu rows; we must not
- * override that or hide `.sub` ourselves — doing so while a <label> inside
- * the submenu still has focus breaks SEQTA's router and navigates to home.
- */
-/** Every folder row on the path to the open list (e.g. Assessments → 2026_S1). */
+/** Folder rows on the path to the currently open sidebar list. */
 function getDrillFolderChain(
   menu: HTMLElement,
   visibleList: HTMLElement | null,
@@ -648,7 +644,31 @@ function getDrillFolderChain(
   return chain;
 }
 
+function isSidebarEditMode(): boolean {
+  const menu = document.getElementById("menu");
+  return (
+    document.querySelector(".editmenuoption-container") != null ||
+    menu?.classList.contains("bsplus-sidebar-edit-mode") === true
+  );
+}
+
+function clearSidebarAccessibilityLocks() {
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  const entries = menu.querySelectorAll("li, section");
+  for (const entry of entries) {
+    if (!(entry instanceof HTMLElement)) continue;
+    entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
+  }
+}
+
 function updateSidebarAccessibility() {
+  if (isSidebarEditMode()) {
+    clearSidebarAccessibilityLocks();
+    return;
+  }
+
   const menu = document.getElementById("menu");
   if (!menu) return;
 
@@ -690,15 +710,6 @@ function updateSidebarAccessibility() {
   }
 }
 
-function getVisibleSidebarEntries(menu = document.getElementById("menu")) {
-  if (!menu) return [] as HTMLElement[];
-
-  const visibleList = getVisibleSidebarList(menu);
-  if (!visibleList) return [] as HTMLElement[];
-
-  return getDirectSidebarEntries(visibleList);
-}
-
 function getDirectSidebarEntries(list: HTMLElement) {
   return Array.from(list.querySelectorAll(":scope > li, :scope > section")).filter(
     (entry): entry is HTMLElement => entry instanceof HTMLElement,
@@ -732,9 +743,8 @@ function getVisibleSidebarList(menu: HTMLElement) {
 }
 
 function getSidebarListParentEntry(list: HTMLElement) {
-  return list.closest(".sub")?.parentElement instanceof HTMLElement
-    ? (list.closest(".sub")!.parentElement as HTMLElement)
-    : null;
+  const sub = list.closest(".sub");
+  return sub?.parentElement instanceof HTMLElement ? sub.parentElement : null;
 }
 
 function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {

@@ -1,12 +1,15 @@
-import { applyStoreDiff, get, getAll, put, remove, resetDatabase } from "./db";
+import { applyStoreDiff, get, getAll, put, remove } from "./db";
 import { jobs } from "./jobs";
-import { decorateIndexItems } from "./renderComponents";
+import { decorateIndexItems, publishDynamicItemsUpdate } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
 import { getVectorizedItemIds, pruneOrphanVectorEmbeddings } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
+import { resetSearchIndexes } from "./resetIndexes";
+import { isIndexingPaused } from "./indexingPause";
 
+import { verboseDebug } from '@/utils/verboseLog';
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
@@ -32,20 +35,9 @@ async function ensureSchemaCurrent(): Promise<void> {
     );
 
     try {
-      await resetDatabase();
+      await resetSearchIndexes();
     } catch (e) {
-      console.warn("[Indexer] Failed to reset structured database:", e);
-    }
-
-    try {
-      await new Promise<void>((resolve) => {
-        const req = indexedDB.deleteDatabase("embeddiaDB");
-        req.onsuccess = () => resolve();
-        req.onerror = () => resolve();
-        req.onblocked = () => resolve();
-      });
-    } catch (e) {
-      console.warn("[Indexer] Failed to reset embeddiaDB:", e);
+      console.warn("[Indexer] Failed to reset search indexes:", e);
     }
 
     try {
@@ -57,7 +49,8 @@ async function ensureSchemaCurrent(): Promise<void> {
   return schemaCheckPromise;
 }
 
-/* ─────────── Progress‑meta helpers ─────────── */
+export { ensureSchemaCurrent };
+
 async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
   const rec = await get(META_STORE, `progress:${jobId}`);
   return rec?.progress as T | undefined;
@@ -66,7 +59,6 @@ async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
 async function saveProgress<T = any>(jobId: string, progress: T): Promise<void> {
   await put(META_STORE, { progress }, `progress:${jobId}`);
 }
-/* ───────────────────────────────────────────── */
 
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let isIndexingActive = false;
@@ -151,46 +143,46 @@ async function updateLastRunMeta(jobId: string): Promise<void> {
   await put(META_STORE, { jobId, lastRun: Date.now() }, jobId);
 }
 
+async function tryClaimLock(lockId: string): Promise<boolean> {
+  localStorage.setItem(LOCK_KEY, lockId);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  if (localStorage.getItem(LOCK_KEY) === lockId) {
+    isIndexingActive = true;
+    return true;
+  }
+  return false;
+}
+
 async function acquireLock(): Promise<boolean> {
   if (isIndexingActive) {
-    console.debug("[Indexer] Already indexing in this tab");
+    verboseDebug("[Indexer] Already indexing in this tab");
     return false;
   }
 
   const lockId = `${Date.now()}-${Math.random()}`;
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < LOCK_ACQUIRE_TIMEOUT) {
     const currentLock = localStorage.getItem(LOCK_KEY);
     const currentTime = Date.now();
-    
+
     if (!currentLock) {
-      localStorage.setItem(LOCK_KEY, lockId);
-      await new Promise(resolve => setTimeout(resolve, 50));
-      if (localStorage.getItem(LOCK_KEY) === lockId) {
-        isIndexingActive = true;
-        return true;
-      }
+      if (await tryClaimLock(lockId)) return true;
     } else {
       try {
-        const [timestamp] = currentLock.split('-');
+        const [timestamp] = currentLock.split("-");
         const lockTime = parseInt(timestamp, 10);
         if (isNaN(lockTime) || currentTime - lockTime > LOCK_TIMEOUT) {
-          localStorage.setItem(LOCK_KEY, lockId);
-          await new Promise(resolve => setTimeout(resolve, 50));
-          if (localStorage.getItem(LOCK_KEY) === lockId) {
-            isIndexingActive = true;
-            return true;
-          }
+          if (await tryClaimLock(lockId)) return true;
         }
       } catch (e) {
         console.warn("[Indexer] Error parsing lock:", e);
       }
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 100));
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  
+
   return false;
 }
 
@@ -252,17 +244,91 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
       console.error(`Error loading items for job store ${jobId}:`, error);
     }
   }
-  console.debug(
+  verboseDebug(
     `[Indexer] Loaded ${all.length} items from all primary stores.`,
   );
   return all;
 }
 
+function dispatchVectorProgress(
+  progress: {
+    status?: string;
+    total?: number;
+    processed?: number;
+    message?: string;
+  },
+  completedJobs: number,
+  totalSteps: number,
+): number {
+  let detailMessage = progress.message || "";
+  let completed = completedJobs;
+
+  if (
+    progress.status === "processing" &&
+    progress.total &&
+    progress.processed !== undefined
+  ) {
+    detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
+  } else if (progress.status === "complete") {
+    detailMessage = "Vectorization complete";
+    completed++;
+    dispatchProgress(completed, totalSteps, false, "Indexing finished", detailMessage);
+    return completed;
+  } else if (progress.status === "error") {
+    dispatchProgress(
+      completed,
+      totalSteps,
+      false,
+      "Vectorization failed",
+      `Vectorization error: ${progress.message}`,
+    );
+    return completed;
+  } else if (progress.status === "cancelled") {
+    dispatchProgress(
+      completed,
+      totalSteps,
+      false,
+      "Vectorization cancelled",
+      `Vectorization cancelled: ${progress.message}`,
+    );
+    return completed;
+  } else if (progress.status === "started") {
+    detailMessage = `Vectorization started for ${progress.total} items`;
+  }
+
+  if (
+    progress.status !== "complete" &&
+    progress.status !== "error" &&
+    progress.status !== "cancelled"
+  ) {
+    dispatchProgress(
+      completed,
+      totalSteps,
+      true,
+      "Vectorization in progress",
+      detailMessage,
+    );
+  }
+
+  return completed;
+}
+
 export async function runIndexing(): Promise<void> {
+  if (isIndexingPaused()) {
+    verboseDebug(
+      "[Indexer] Skipping indexing — index was reset; reload the page to rebuild.",
+    );
+    return;
+  }
+
   await ensureSchemaCurrent();
 
+  if (isIndexingPaused()) {
+    return;
+  }
+
   if (!(await acquireLock())) {
-    console.debug(
+    verboseDebug(
       "%c[Indexer] Could not acquire lock - another tab is indexing or this tab is already indexing",
       "color: gray",
     );
@@ -270,7 +336,7 @@ export async function runIndexing(): Promise<void> {
   }
 
   startHeartbeat();
-  console.debug("%c[Indexer] Starting indexing...", "color: green");
+  verboseDebug("%c[Indexer] Starting indexing...", "color: green");
 
   try {
   const jobIds = Object.keys(jobs);
@@ -279,6 +345,19 @@ export async function runIndexing(): Promise<void> {
   dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
 
   for (const jobId of jobIds) {
+    if (isIndexingPaused()) {
+      verboseDebug(
+        "[Indexer] Indexing stopped — index was reset; reload the page to rebuild.",
+      );
+      dispatchProgress(
+        completedJobs,
+        totalSteps,
+        false,
+        "Indexing paused — reload to rebuild",
+      );
+      return;
+    }
+
     dispatchProgress(
       completedJobs,
       totalSteps,
@@ -289,7 +368,7 @@ export async function runIndexing(): Promise<void> {
     const lastRun = await getLastRunMeta(jobId);
 
     if (!shouldRun(job, lastRun)) {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] Skipping job "${jobId}" (not due)`,
         "color: gray",
       );
@@ -334,7 +413,7 @@ export async function runIndexing(): Promise<void> {
       setProgress: (p) => saveProgress(jobId, p),
     };
 
-    console.debug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
+    verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
 
     try {
       const newItemsRaw = await job.run(ctx);
@@ -346,12 +425,12 @@ export async function runIndexing(): Promise<void> {
       await setStoredItems(merged);
       await updateLastRunMeta(jobId);
 
-      console.debug(
+      verboseDebug(
         `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items reported by run, ${merged.length} total items now in '${jobId}' store.`,
         "color: #00c46f",
       );
     } catch (err) {
-      console.debug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
+      verboseDebug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
       console.error(err);
     }
 
@@ -378,7 +457,7 @@ export async function runIndexing(): Promise<void> {
   }
 
   if (allItemsInPrimaryStores.length > 0) {
-    console.debug(
+    verboseDebug(
       `%c[Indexer] Checking ${allItemsInPrimaryStores.length} items for vectorization...`,
       "color: #4ea1ff",
     );
@@ -388,7 +467,7 @@ export async function runIndexing(): Promise<void> {
     const newItemsToVectorize = allItemsInPrimaryStores.filter(item => !vectorizedItemIds.has(item.id));
     
     if (newItemsToVectorize.length > 0) {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] Sending ${newItemsToVectorize.length} new items to worker for vectorization (${allItemsInPrimaryStores.length - newItemsToVectorize.length} already vectorized)`,
         "color: #4ea1ff",
       );
@@ -397,56 +476,9 @@ export async function runIndexing(): Promise<void> {
       try {
         const workerManager = VectorWorkerManager.getInstance();
         await workerManager.processItems(newItemsToVectorize, (progress) => {
-        let detailMessage = progress.message || "";
-        if (
-          progress.status === "processing" &&
-          progress.total &&
-          progress.processed !== undefined
-        ) {
-          detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
-        } else if (progress.status === "complete") {
-          detailMessage = "Vectorization complete";
-          completedJobs++;
-          dispatchProgress(
-            completedJobs,
-            totalSteps,
-            false,
-            "Indexing finished",
-            detailMessage
-          );
-        } else if (progress.status === "error") {
-          detailMessage = `Vectorization error: ${progress.message}`;
-          dispatchProgress(
-            completedJobs,
-            totalSteps,
-            false,
-            "Vectorization failed",
-            detailMessage,
-          );
-        } else if (progress.status === "started") {
-          detailMessage = `Vectorization started for ${progress.total} items`;
-        } else if (progress.status === "cancelled") {
-          detailMessage = `Vectorization cancelled: ${progress.message}`;
-          dispatchProgress(
-            completedJobs,
-            totalSteps,
-            false,
-            "Vectorization cancelled",
-            detailMessage,
-          );
-        }
-
-        if (progress.status !== "complete" && progress.status !== "error" && progress.status !== "cancelled") {
-            dispatchProgress(
-              completedJobs,
-              totalSteps,
-              true,
-              "Vectorization in progress",
-              detailMessage,
-            );
-        }
-      });
-      console.debug(
+          completedJobs = dispatchVectorProgress(progress, completedJobs, totalSteps);
+        });
+      verboseDebug(
         "%c[Indexer] Vectorization task for stored items sent to worker.",
         "color: green",
       );
@@ -465,7 +497,7 @@ export async function runIndexing(): Promise<void> {
       );
     }
     } else {
-      console.debug(
+      verboseDebug(
         `%c[Indexer] All ${allItemsInPrimaryStores.length} items are already vectorized, skipping worker initialization.`,
         "color: gray",
       );
@@ -478,7 +510,7 @@ export async function runIndexing(): Promise<void> {
       );
     }
   } else {
-    console.debug(
+    verboseDebug(
       "%c[Indexer] No items found in primary stores to send for vectorization.",
       "color: gray",
     );

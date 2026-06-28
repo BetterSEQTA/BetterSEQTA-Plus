@@ -1,6 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes the user's external portal entries from `/seqta/student/load/portals`.
  *
@@ -82,7 +83,7 @@ export const portalsJob: Job = {
       });
     }
 
-    console.debug(`[Portals job] Indexed ${items.length} portal entries.`);
+    verboseDebug(`[Portals job] Indexed ${items.length} portal entries.`);
     return items;
   },
 

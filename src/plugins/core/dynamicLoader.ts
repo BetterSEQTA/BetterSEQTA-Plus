@@ -1,8 +1,6 @@
 import type { Plugin, PluginSettings } from "./types";
+import { verboseInfo } from "@/utils/verboseLog";
 
-/**
- * Interface for lazy-loaded plugin definitions
- */
 export interface LazyPlugin<T extends PluginSettings = PluginSettings, S = any> {
   id: string;
   name: string;
@@ -13,64 +11,45 @@ export interface LazyPlugin<T extends PluginSettings = PluginSettings, S = any> 
   disableToggle?: boolean;
   defaultEnabled?: boolean;
   beta?: boolean;
-  
-  // Instead of a run function, we have a loader that imports the actual plugin
   loader: () => Promise<{ default: Plugin<T, S> }>;
 }
 
-/**
- * Converts a lazy plugin into a regular plugin by wrapping the run function
- * with dynamic import logic
- */
+const ASSET_LOAD_ERRORS = ["MIME type", "NS_ERROR_CORRUPTED_CONTENT", "preload CSS"];
+
+function isAssetLoadError(error: unknown): boolean {
+  const msg = (error as { message?: string })?.message ?? "";
+  return ASSET_LOAD_ERRORS.some((token) => msg.includes(token));
+}
+
 export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = any>(
-  lazyPlugin: LazyPlugin<T, S>
+  lazyPlugin: LazyPlugin<T, S>,
 ): Plugin<T, S> {
+  const { loader, ...meta } = lazyPlugin;
   return {
-    id: lazyPlugin.id,
-    name: lazyPlugin.name,
-    description: lazyPlugin.description,
-    version: lazyPlugin.version,
-    settings: lazyPlugin.settings,
-    styles: lazyPlugin.styles,
-    disableToggle: lazyPlugin.disableToggle,
-    defaultEnabled: lazyPlugin.defaultEnabled,
-    beta: lazyPlugin.beta,
-    
+    ...meta,
     run: async (api) => {
-      console.info(`[BetterSEQTA+] Dynamically loading plugin "${lazyPlugin.id}"...`);
-      
+      verboseInfo(`[BetterSEQTA+] Dynamically loading plugin "${lazyPlugin.id}"...`);
       try {
-        // Dynamically import the actual plugin implementation
-        const { default: actualPlugin } = await lazyPlugin.loader();
-        
-        console.info(`[BetterSEQTA+] Successfully loaded plugin "${lazyPlugin.id}"`);
-        
-        // Execute the actual plugin's run function
+        const { default: actualPlugin } = await loader();
+        verboseInfo(`[BetterSEQTA+] Successfully loaded plugin "${lazyPlugin.id}"`);
         return await actualPlugin.run(api);
-      } catch (error: any) {
-        // Handle Firefox MIME type errors gracefully
-        if (error?.message?.includes("MIME type") || error?.message?.includes("NS_ERROR_CORRUPTED_CONTENT")) {
+      } catch (error) {
+        if (isAssetLoadError(error)) {
           console.error(
-            `[BetterSEQTA+] Failed to load plugin "${lazyPlugin.id}" due to Firefox module loading restrictions. ` +
-            `This may be a build configuration issue. Error:`,
-            error
+            `[BetterSEQTA+] Failed to load plugin "${lazyPlugin.id}" due to module/asset loading restrictions:`,
+            error,
           );
-          // Don't throw - allow the extension to continue functioning without this plugin
           return;
         }
         console.error(`[BetterSEQTA+] Failed to dynamically load plugin "${lazyPlugin.id}":`, error);
         throw error;
       }
-    }
+    },
   };
 }
 
-/**
- * Helper function to create a lazy plugin definition
- */
 export function defineLazyPlugin<T extends PluginSettings = PluginSettings, S = any>(
-  config: LazyPlugin<T, S>
+  config: LazyPlugin<T, S>,
 ): Plugin<T, S> {
   return createLazyPlugin(config);
 }
-

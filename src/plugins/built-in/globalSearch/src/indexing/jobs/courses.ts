@@ -3,6 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { buildIndexItem } from "../extract";
 import { htmlToPlainText } from "../utils";
 
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes per-subject course content from `/seqta/student/load/courses`.
  *
@@ -106,7 +107,7 @@ export const coursesJob: Job = {
   run: async (_ctx) => {
     const subjects = await fetchActiveSubjects();
     if (subjects.length === 0) {
-      console.debug("[Courses job] No active subjects discovered.");
+      verboseDebug("[Courses job] No active subjects discovered.");
       return [];
     }
 
@@ -169,7 +170,7 @@ export const coursesJob: Job = {
       );
     }
 
-    console.debug(
+    verboseDebug(
       `[Courses job] Indexed ${items.length} courses across ${subjects.length} subjects.`,
     );
     return items;

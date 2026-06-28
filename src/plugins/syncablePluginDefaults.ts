@@ -19,7 +19,7 @@ export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<
   themes: {},
   "animated-background": { speed: 1 },
   "assessments-average": { lettergrade: false },
-  notificationCollector: {},
+  notificationCollector: { saveLocally: true },
   timetable: {},
   timetableEdit: {},
   "profile-picture": { useCloudPfp: false },

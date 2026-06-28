@@ -33,7 +33,7 @@ function getRoomAndTeacherElements(entry: HTMLElement): {
 }
 
 const EDIT_ICON_SVG =
-  '<svg width="24" height="24" viewBox="0 0 24 24"><g style="fill: currentcolor;"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></g></svg>';
+  '<svg width="20" height="20" viewBox="0 0 24 24"><g style="fill: currentcolor;"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></g></svg>';
 
 function showEditModal(
   item: TimetableEntryData,
@@ -147,7 +147,11 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     let quickbarObserver: MutationObserver | null = null;
     let quickbarSyncTimer: ReturnType<typeof setTimeout> | null = null;
     let lastClickedCi: number | null = null;
-    let lastClickedEntry: { roomEl: HTMLElement; teacherEl: HTMLElement; item: TimetableEntryData } | null = null;
+    let lastClickedEntry: {
+      roomEl: HTMLElement | null;
+      teacherEl: HTMLElement | null;
+      item: TimetableEntryData;
+    } | null = null;
     let lastSyncedQuickbarCi: number | null = null;
 
     const getOverrides = (): TimetableOverrides =>
@@ -160,6 +164,64 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       description: string,
     ): { room?: string; staff?: string } | undefined =>
       getOverrides()[String(ci)] ?? getOverridesBySubject()[description];
+
+    const findClassEntry = (
+      title: string,
+      calendarId?: string | null,
+    ): HTMLElement | null => {
+      if (calendarId) {
+        const byCalendar = document.querySelector(
+          `.timetablepage .entry.class[data-calendarid="${calendarId}"]`,
+        );
+        if (byCalendar) return byCalendar as HTMLElement;
+      }
+
+      for (const entry of document.querySelectorAll(".timetablepage .entry.class")) {
+        const entryTitle = entry.querySelector(".title")?.textContent?.trim();
+        if (entryTitle === title) return entry as HTMLElement;
+      }
+      return null;
+    };
+
+    const resolveContextFromQuickbar = (quickbar: HTMLElement): void => {
+      const title = quickbar.querySelector(".title")?.textContent?.trim() ?? "";
+      if (!title) return;
+
+      const quickbarRoom = quickbar.querySelector(".meta .room")?.textContent?.trim() ?? "";
+      const quickbarStaff =
+        quickbar.querySelector(".meta .teacher")?.textContent?.trim() ?? "";
+
+      const entry = findClassEntry(title);
+      if (entry) {
+        const ciStr = entry.getAttribute("data-instance");
+        const ci = ciStr ? parseInt(ciStr, 10) : NaN;
+        const { roomEl, teacherEl } = getRoomAndTeacherElements(entry);
+        const description = title;
+        const room = roomEl?.textContent?.trim() ?? quickbarRoom;
+        const staff = teacherEl?.textContent?.trim() ?? quickbarStaff;
+        lastClickedCi = isNaN(ci) ? null : ci;
+        lastClickedEntry = {
+          roomEl,
+          teacherEl,
+          item: { ci: isNaN(ci) ? 0 : ci, description, room, staff },
+        };
+        lastSyncedQuickbarCi = null;
+        return;
+      }
+
+      lastClickedCi = null;
+      lastClickedEntry = {
+        roomEl: null,
+        teacherEl: null,
+        item: {
+          ci: 0,
+          description: title,
+          room: quickbarRoom,
+          staff: quickbarStaff,
+        },
+      };
+      lastSyncedQuickbarCi = null;
+    };
 
     const processEntry = (entry: HTMLElement): void => {
       if (entry.classList.contains("assessment") || entry.hasAttribute("data-timetable-edit-processed")) return;
@@ -188,13 +250,16 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
       }
 
-      const captureClick = () => {
-        lastClickedCi = ci;
-        lastClickedEntry = { roomEl, teacherEl, item };
-        lastSyncedQuickbarCi = null;
-        scheduleQuickbarSync();
-      };
-      entry.addEventListener("click", captureClick, true);
+      entry.addEventListener(
+        "click",
+        () => {
+          lastClickedCi = ci;
+          lastClickedEntry = { roomEl, teacherEl, item };
+          lastSyncedQuickbarCi = null;
+          scheduleQuickbarSync();
+        },
+        true,
+      );
     };
 
     const processAllEntries = () => {
@@ -204,24 +269,26 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const getVisibleClassQuickbar = (): HTMLElement | null => {
-      const quickbar = document.querySelector(
-        ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.above.visible, .timetablepage .quickbar.visible",
-      );
+      const quickbar = document.querySelector(".timetablepage .quickbar.visible");
       if (!quickbar || quickbar.getAttribute("data-type") !== "class") return null;
       return quickbar as HTMLElement;
     };
 
     const applyOverridesToQuickbar = (quickbar: HTMLElement): void => {
-      if (lastClickedCi === null) return;
-      if (lastSyncedQuickbarCi === lastClickedCi) return;
+      resolveContextFromQuickbar(quickbar);
 
       const description =
         quickbar.querySelector(".title")?.textContent?.trim() ??
         lastClickedEntry?.item.description ??
         "";
-      const override = getEffectiveOverride(lastClickedCi, description);
+      if (!description) return;
+
+      const ci = lastClickedCi ?? lastClickedEntry?.item.ci ?? 0;
+      if (lastSyncedQuickbarCi === ci && lastClickedCi !== null) return;
+
+      const override = getEffectiveOverride(ci, description);
       if (!override) {
-        lastSyncedQuickbarCi = lastClickedCi;
+        lastSyncedQuickbarCi = ci;
         return;
       }
 
@@ -237,7 +304,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         teacherEl.textContent = override.staff;
       }
 
-      lastSyncedQuickbarCi = lastClickedCi;
+      lastSyncedQuickbarCi = ci;
     };
 
     const updateVisibleQuickbar = (room: string, staff: string): void => {
@@ -259,13 +326,21 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       if (quickbarSyncTimer !== null) clearTimeout(quickbarSyncTimer);
 
       let attempts = 0;
+      const maxAttempts = 15;
       const trySync = (): void => {
         const quickbar = getVisibleClassQuickbar();
-        if (quickbar && lastClickedCi !== null) {
-          syncClassQuickbar(quickbar);
+        if (!quickbar) {
+          if (++attempts < maxAttempts) {
+            quickbarSyncTimer = setTimeout(trySync, 50);
+          }
           return;
         }
-        if (++attempts < 6) {
+
+        syncClassQuickbar(quickbar);
+
+        const hasButton = quickbar.querySelector(".timetable-edit-quickbar-btn");
+        const hasActions = quickbar.querySelector(".actions");
+        if ((!hasButton || !hasActions) && ++attempts < maxAttempts) {
           quickbarSyncTimer = setTimeout(trySync, 50);
         }
       };
@@ -279,24 +354,33 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       const actions = quickbar.querySelector(".actions");
       if (!actions) return;
 
+      const colourBtn = actions.querySelector(
+        "[title='Choose a colour'], button.uiButton",
+      );
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "uiButton timetable-edit-quickbar-btn";
+      btn.className =
+        colourBtn instanceof HTMLElement
+          ? `${colourBtn.className} timetable-edit-quickbar-btn`
+          : "timetable-edit-quickbar-btn";
       btn.title = "Edit room and teacher";
       btn.innerHTML = EDIT_ICON_SVG;
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const ci = lastClickedCi;
-        const entryData = lastClickedEntry;
-        if (!ci || !entryData) return;
 
         const qb = (e.currentTarget as HTMLElement).closest(".quickbar");
         if (!qb) return;
+
+        resolveContextFromQuickbar(qb as HTMLElement);
+        const entryData = lastClickedEntry;
+        if (!entryData) return;
+
         const quickbarRoom = qb.querySelector(".meta .room")?.textContent?.trim() ?? "";
         const quickbarTeacher = qb.querySelector(".meta .teacher")?.textContent?.trim() ?? "";
         const quickbarTitle = qb.querySelector(".title")?.textContent?.trim() ?? "";
+        const ci = lastClickedCi ?? entryData.item.ci;
         const item: TimetableEntryData = {
           ci,
           description: quickbarTitle || entryData.item.description,
@@ -308,8 +392,8 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
           item,
           getOverrides(),
           getOverridesBySubject(),
-          (ci, room, staff, applyToFuture) => {
-            if (applyToFuture) {
+          (saveCi, room, staff, applyToFuture) => {
+            if (applyToFuture || !saveCi) {
               const bySubject = { ...getOverridesBySubject() };
               bySubject[item.description] = {
                 room: room || undefined,
@@ -320,7 +404,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
               const current = getOverrides();
               api.storage.timetableOverrides = {
                 ...current,
-                [String(ci)]: { room: room || undefined, staff: staff || undefined },
+                [String(saveCi)]: { room: room || undefined, staff: staff || undefined },
               };
             }
             if (entryData.roomEl) entryData.roomEl.textContent = room;
@@ -328,10 +412,12 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
             updateVisibleQuickbar(room, staff);
             processAllEntries();
           },
-          (ci) => {
-            const current = getOverrides();
-            delete current[String(ci)];
-            api.storage.timetableOverrides = current;
+          (clearCi) => {
+            if (clearCi) {
+              const current = getOverrides();
+              delete current[String(clearCi)];
+              api.storage.timetableOverrides = current;
+            }
             const bySubject = getOverridesBySubject();
             delete bySubject[item.description];
             api.storage.timetableOverridesBySubject = bySubject;
@@ -343,12 +429,15 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         );
       });
 
-      actions.insertBefore(btn, actions.firstChild);
+      actions.insertBefore(
+        btn,
+        colourBtn ?? actions.firstChild,
+      );
     };
 
     const syncQuickbarFromDOM = () => {
       const quickbar = getVisibleClassQuickbar();
-      if (!quickbar || lastClickedCi === null || !lastClickedEntry) return;
+      if (!quickbar) return;
       syncClassQuickbar(quickbar);
     };
 
@@ -357,25 +446,40 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       if (!timetablePage || quickbarObserver) return;
 
       quickbarObserver = new MutationObserver((mutations) => {
-        const quickbarBecameVisible = mutations.some(
-          (mutation) =>
-            mutation.type === "attributes" &&
-            mutation.attributeName === "class" &&
-            (mutation.target as HTMLElement).classList.contains("quickbar") &&
-            (mutation.target as HTMLElement).classList.contains("visible"),
-        );
-        if (!quickbarBecameVisible || lastClickedCi === null) return;
-
         const quickbar = getVisibleClassQuickbar();
-        if (quickbar) syncClassQuickbar(quickbar);
+        if (!quickbar) return;
+
+        const shouldSync = mutations.some((mutation) => {
+          if (mutation.type === "attributes" && mutation.attributeName === "class") {
+            const target = mutation.target as HTMLElement;
+            return target.classList.contains("quickbar");
+          }
+          if (mutation.type === "childList") {
+            const target = mutation.target as HTMLElement;
+            return target.classList?.contains("quickbar") || target.closest?.(".quickbar");
+          }
+          return false;
+        });
+
+        if (shouldSync) scheduleQuickbarSync();
       });
 
       quickbarObserver.observe(timetablePage, {
         subtree: true,
+        childList: true,
         attributes: true,
         attributeFilter: ["class"],
       });
     };
+
+    const onTimetableEntryClick = (event: Event): void => {
+      const target = event.target as HTMLElement;
+      if (!target.closest?.(".timetablepage .entry.class")) return;
+      lastSyncedQuickbarCi = null;
+      scheduleQuickbarSync();
+    };
+
+    document.addEventListener("click", onTimetableEntryClick, true);
 
     const handleTimetable = async () => {
       // Class entries (`div.entry.class`) load after the page shell; don't fail the whole
@@ -406,6 +510,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
 
     return () => {
       unregister();
+      document.removeEventListener("click", onTimetableEntryClick, true);
       observer?.disconnect();
       quickbarObserver?.disconnect();
       if (quickbarSyncTimer !== null) clearTimeout(quickbarSyncTimer);

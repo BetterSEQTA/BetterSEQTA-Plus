@@ -2,11 +2,10 @@ import type { IndexItem, Job } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
-import { loadDynamicItems } from "../../utils/dynamicItems";
 import { loadAllStoredItems } from "../indexer";
-import { renderComponentMap } from "../renderComponents";
-import { jobs } from "../jobs";
+import { publishDynamicItemsUpdate } from "../renderComponents";
 
+import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const RATE_LIMIT_CONFIG = {
   minDelay: 30,
   maxDelay: 3000,
@@ -208,7 +207,7 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
   ) {
     progress.circuitBreakerOpen = false;
     progress.consecutiveFailures = 0;
-    console.info(
+    verboseInfo(
       `[Messages job] Circuit breaker closed after ${RATE_LIMIT_CONFIG.circuitBreakerResetTime}ms`,
     );
     return false;
@@ -352,7 +351,7 @@ async function processMessagesInParallel(
       batchResponseTime,
     );
 
-    console.log(
+    verboseLog(
       `[Messages job] Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
     );
   }
@@ -394,20 +393,21 @@ export const messagesJob: Job = {
       progress.totalEstimated = await estimateMessageCount();
 
       try {
-        await vectorWorker.startStreamingSession(
+        progress.streamingStarted = await vectorWorker.startStreamingSession(
           progress.totalEstimated,
           (progressData) => {
-            console.log(
+            verboseLog(
               `[Messages job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
           RATE_LIMIT_CONFIG.vectorBatchSize,
           "messages",
         );
-        progress.streamingStarted = true;
-        console.log(
-          `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
-        );
+        if (progress.streamingStarted) {
+          verboseLog(
+            `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
+          );
+        }
       } catch (error) {
         console.warn(
           "[Messages job] Failed to start streaming session:",
@@ -422,7 +422,7 @@ export const messagesJob: Job = {
     let itemsStreamedToVector = 0;
 
     if (progress.retryQueue.length > 0) {
-      console.log(
+      verboseLog(
         `[Messages job] Processing ${Math.min(progress.retryQueue.length, 10)} items from retry queue`,
       );
 
@@ -505,7 +505,7 @@ export const messagesJob: Job = {
           batchResponseTime,
         );
 
-        console.log(
+        verboseLog(
           `[Messages job] Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
         );
       }
@@ -590,7 +590,7 @@ export const messagesJob: Job = {
         try {
           await vectorWorker.streamItems(itemsToStream);
           itemsStreamedToVector += itemsToStream.length;
-          console.log(
+          verboseLog(
             `[Messages job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
         } catch (error) {
@@ -603,44 +603,10 @@ export const messagesJob: Job = {
 
       if (processedItems.length > 0) {
         try {
-          const currentItems = await loadAllStoredItems();
-          // Create new objects to avoid XrayWrapper issues in Firefox
-          const itemsWithComponents = currentItems.map((item) => {
-            try {
-              const jobDef =
-                jobs[item.category] ||
-                Object.values(jobs).find((j) => j.id === item.category) ||
-                jobs[item.renderComponentId];
-              let renderComponent = item.renderComponent;
-              if (jobDef) {
-                renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
-              } else if (renderComponentMap[item.renderComponentId]) {
-                renderComponent = renderComponentMap[item.renderComponentId];
-              }
-              // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
-              try {
-                const cloned = JSON.parse(JSON.stringify(item));
-                cloned.renderComponent = renderComponent;
-                return cloned;
-              } catch (e) {
-                // Fallback to shallow copy if deep clone fails
-                return { ...item, renderComponent };
-              }
-            } catch (error) {
-              // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
-              return item;
-            }
-          });
-          loadDynamicItems(itemsWithComponents);
-          window.dispatchEvent(
-            new CustomEvent("dynamic-items-updated", {
-              detail: {
-                incremental: true,
-                jobId: "messages",
-                newItemCount: processedItems.length,
-                streaming: true,
-              },
-            }),
+          publishDynamicItemsUpdate(
+            await loadAllStoredItems(),
+            "messages",
+            processedItems.length,
           );
         } catch (error) {
           console.warn(
@@ -659,7 +625,7 @@ export const messagesJob: Job = {
         await ctx.setProgress(progress);
         progressUpdateCounter = 0;
 
-        console.log(
+        verboseLog(
           `[Messages job] Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
         );
       }
@@ -673,7 +639,7 @@ export const messagesJob: Job = {
     if (progress.streamingStarted) {
       try {
         await vectorWorker.endStreamingSession();
-        console.log(
+        verboseLog(
           `[Messages job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
       } catch (error) {

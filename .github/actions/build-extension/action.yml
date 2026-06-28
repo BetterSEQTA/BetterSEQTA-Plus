@@ -33,14 +33,8 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.x
-
-    - name: Install dependencies
-      shell: bash
-      run: npm install --legacy-peer-deps
+    - name: Setup Node and dependencies
+      uses: ./.github/actions/setup-node-deps
 
     - name: Read version
       id: version
@@ -62,14 +56,4 @@ runs:
       env:
         UPDATE_CHANNEL: ${{ inputs.update_channel }}
         BUILD_LABEL: ${{ inputs.build_label }}
-      run: |
-        VERSION="${{ steps.version.outputs.version }}"
-        if [ "$UPDATE_CHANNEL" = "nightly" ] && [ -n "$BUILD_LABEL" ]; then
-          BASE="betterseqtaplus-nightly-${BUILD_LABEL}"
-        else
-          BASE="betterseqtaplus-${VERSION}"
-        fi
-        (cd dist/chrome && zip -r "../${BASE}-chrome.zip" .)
-        (cd dist/firefox && zip -r "../${BASE}-firefox.zip" .)
-        echo "chrome_zip=dist/${BASE}-chrome.zip" >> "$GITHUB_OUTPUT"
-        echo "firefox_zip=dist/${BASE}-firefox.zip" >> "$GITHUB_OUTPUT"
+      run: node scripts/package-extension-zips.mjs "${{ steps.version.outputs.version }}"

@@ -106,10 +106,15 @@
     showCloudPanel = true;
   };
 
-  const showDisclaimer = (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => {
+  const showDisclaimer = (
+    onConfirm: () => void,
+    onCancel: () => void,
+    title = "Confirm",
+    message = "",
+  ) => {
     disclaimerCallbacks = { onConfirm, onCancel };
-    disclaimerTitle = title ?? "Confirm";
-    disclaimerMessage = message ?? "";
+    disclaimerTitle = title;
+    disclaimerMessage = message;
     showDisclaimerModal = true;
   };
 

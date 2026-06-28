@@ -1,5 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
+import { applyMenuItemVisibility } from "../menuItemVisibility";
+import { insertKeyAfterInOrder } from "@/seqta/utils/sidebarMenuIcons";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
@@ -25,12 +27,39 @@ function syncDefaultMenuOrder(menu: HTMLElement) {
 
   if (settingsState.defaultmenuorder.length === childnodes.length) return;
 
-  const nextOrder = [...settingsState.defaultmenuorder];
   for (let i = 0; i < childnodes.length; i++) {
     const key = (childnodes[i] as HTMLElement).dataset.key;
-    if (key && nextOrder.indexOf(key) === -1) nextOrder.push(key);
+    if (key && settingsState.defaultmenuorder.indexOf(key) === -1) {
+      if (key === "analytics") {
+        settingsState.defaultmenuorder = insertKeyAfterInOrder(
+          settingsState.defaultmenuorder,
+          key,
+          "courses",
+        );
+      } else {
+        settingsState.defaultmenuorder = [
+          ...settingsState.defaultmenuorder,
+          key,
+        ];
+      }
+    }
   }
-  settingsState.defaultmenuorder = nextOrder;
+}
+
+function mergeMenuItemsFromDom(
+  menu: HTMLElement,
+): Record<string, { toggle: boolean }> {
+  const merged = {
+    ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
+  };
+  const children = menu.firstChild!.childNodes;
+  for (let i = 0; i < children.length; i++) {
+    const key = (children[i] as HTMLElement).dataset.key;
+    if (key && !merged[key]) {
+      merged[key] = { toggle: true };
+    }
+  }
+  return merged;
 }
 
 function createMenuEditControls(menu: HTMLElement, container: HTMLElement) {
@@ -87,16 +116,10 @@ function prepareMenuItemsForEdit(menu: HTMLElement) {
   return listItems;
 }
 
-function ensureMenuItemSettings(menu: HTMLElement) {
-  if (Object.keys(settingsState.menuitems).length > 0) return;
-
-  const menuItems: Record<string, { toggle: boolean }> = {};
-  const menuButtons = menu.firstChild!.childNodes;
-  for (let i = 0; i < menuButtons.length; i++) {
-    const id = (menuButtons[i] as HTMLElement).dataset.key;
-    if (id) menuItems[id] = { toggle: true };
-  }
-  settingsState.menuitems = menuItems;
+function syncMenuItemSettings(menu: HTMLElement) {
+  settingsState.menuitems = mergeMenuItemsFromDom(
+    menu,
+  ) as SettingsState["menuitems"];
 }
 
 function applySavedMenuToggleStates() {
@@ -133,7 +156,7 @@ function createMenuSortable(): Sortable | undefined {
 }
 
 function changeMenuItemDisplay(element: HTMLInputElement) {
-  const row = element.parentNode?.parentNode as HTMLElement | null;
+  const row = element.closest("li, section") as HTMLElement | null;
   if (!row) return;
   if (!element.checked) {
     row.style.display = "var(--menuHidden)";
@@ -143,21 +166,22 @@ function changeMenuItemDisplay(element: HTMLInputElement) {
 }
 
 function storeMenuSettings() {
-  const menu = document.getElementById("menu");
-  if (!menu) return;
-
-  const menuItems: Record<string, { toggle: boolean }> = {};
-  const menuButtons = menu.firstChild!.childNodes;
-  const toggles = document.getElementsByClassName("menuitem");
-  for (let i = 0; i < menuButtons.length; i++) {
-    const id = (menuButtons[i] as HTMLElement).dataset.key;
-    if (!id) continue;
-    menuItems[id] = { toggle: (toggles[i] as HTMLInputElement).checked };
+  const menuItems: Record<string, { toggle: boolean }> = {
+    ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
+  };
+  const inputs = document.querySelectorAll<HTMLInputElement>(".menuitem");
+  for (const input of inputs) {
+    if (input.id) {
+      menuItems[input.id] = { toggle: input.checked };
+    }
   }
-  settingsState.menuitems = menuItems;
+  settingsState.menuitems = menuItems as SettingsState["menuitems"];
 }
 
-function restoreMenuItemsFromEditMode(menu: HTMLElement, listItems: NodeListOf<ChildNode>) {
+function restoreMenuItemsFromEditMode(
+  menu: HTMLElement,
+  listItems: NodeListOf<ChildNode>,
+) {
   for (let i = 0; i < listItems.length; i++) {
     const element = listItems[i] as HTMLElement;
     element.classList.remove("draggable");
@@ -184,13 +208,12 @@ export function OpenMenuOptions() {
 
   syncDefaultMenuOrder(menu);
   MenuOptionsOpen = true;
+  menu.classList.add("bsplus-sidebar-edit-mode");
 
-  const { cover, menusettings, defaultbutton, savebutton } = createMenuEditControls(
-    menu,
-    container,
-  );
+  const { cover, menusettings, defaultbutton, savebutton } =
+    createMenuEditControls(menu, container);
   const listItems = prepareMenuItemsForEdit(menu);
-  ensureMenuItemSettings(menu);
+  syncMenuItemSettings(menu);
   applySavedMenuToggleStates();
 
   const menubuttons = document.getElementsByClassName("menuitem");
@@ -208,27 +231,44 @@ export function OpenMenuOptions() {
     menusettings.remove();
     cover.remove();
     MenuOptionsOpen = false;
+    menu.classList.remove("bsplus-sidebar-edit-mode");
     menu.style.setProperty("--menuHidden", "none");
     restoreMenuItemsFromEditMode(menu, listItems);
+    applyMenuItemVisibility();
+  };
+
+  const saveAndClose = () => {
+    storeMenuSettings();
+    if (sortable) {
+      saveNewOrder(sortable);
+    }
+    applyMenuItemVisibility();
+    closeAll();
   };
 
   cover.addEventListener("click", closeAll);
-  savebutton.addEventListener("click", closeAll);
+  savebutton.addEventListener("click", saveAndClose);
 
   defaultbutton.addEventListener("click", () => {
     settingsState.menuorder = settingsState.defaultmenuorder;
     ChangeMenuItemPositions(settingsState.defaultmenuorder);
 
+    const restored: Record<string, { toggle: boolean }> = {};
     for (let i = 0; i < menubuttons.length; i++) {
       const element = menubuttons[i] as HTMLInputElement;
       element.checked = true;
       changeMenuItemDisplay(element);
+      if (element.id) {
+        restored[element.id] = { toggle: true };
+      }
     }
+    settingsState.menuitems = restored as SettingsState["menuitems"];
+
     if (sortable) saveNewOrder(sortable);
   });
 }
 
-function saveNewOrder(sortable: any) {
+function saveNewOrder(sortable: Sortable) {
   var order = sortable.toArray();
   settingsState.menuorder = order;
 }
@@ -253,7 +293,10 @@ export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
 
   var newArr = [];
   for (var i = 0; i < listorder.length; i++) {
-    newArr[listorder[i]] = menuList[i];
+    const index = listorder[i];
+    if (index >= 0) {
+      newArr[index] = menuList[i];
+    }
   }
 
   let listItemsDOM = document.getElementById("menu")!.firstChild;

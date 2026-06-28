@@ -1,6 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes file metadata from `/seqta/student/load/documents`.
  *
@@ -131,7 +132,7 @@ export const documentsJob: Job = {
       }
     }
 
-    console.debug(`[Documents job] Indexed ${items.length} document entries.`);
+    verboseDebug(`[Documents job] Indexed ${items.length} document entries.`);
     return items;
   },
 

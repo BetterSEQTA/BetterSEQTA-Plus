@@ -14,138 +14,214 @@ function updateVersion(version: number) {
   localStorage.setItem(VERSION_KEY, version.toString());
 }
 
+function invalidateConnection(): void {
+  if (cachedDb) {
+    cachedDb.close();
+    cachedDb = null;
+  }
+  dbPromise = null;
+}
+
+function attachConnection(db: IDBDatabase): void {
+  if (cachedDb && cachedDb !== db) {
+    cachedDb.close();
+  }
+  cachedDb = db;
+  cachedDb.onclose = () => {
+    cachedDb = null;
+    dbPromise = null;
+  };
+  updateVersion(db.version);
+}
+
+function setupUpgradeHandler(
+  request: IDBOpenDBRequest,
+  extraStore?: string,
+): void {
+  request.onupgradeneeded = (event) => {
+    const db = request.result;
+
+    if (!Array.from(db.objectStoreNames).includes(META_STORE)) {
+      db.createObjectStore(META_STORE);
+    }
+
+    if (extraStore && !db.objectStoreNames.contains(extraStore)) {
+      db.createObjectStore(extraStore);
+    }
+
+    if (event.newVersion != null) {
+      updateVersion(event.newVersion);
+    }
+  };
+}
+
+function openDatabase(version?: number, extraStore?: string): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    let request: IDBOpenDBRequest;
+    try {
+      request =
+        version != null
+          ? indexedDB.open(DB_NAME, version)
+          : indexedDB.open(DB_NAME);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    setupUpgradeHandler(request, extraStore);
+    request.onsuccess = () => {
+      attachConnection(request.result);
+      resolve(request.result);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function wipeDatabase(): Promise<void> {
+  invalidateConnection();
+  localStorage.removeItem(VERSION_KEY);
+  return deleteDatabaseWithRetries(DB_NAME);
+}
+
+function deleteDatabaseWithRetries(
+  name: string,
+  maxAttempts = 6,
+): Promise<void> {
+  return new Promise((resolve) => {
+    const attemptDelete = (attempt: number) => {
+      let req: IDBOpenDBRequest;
+      try {
+        req = indexedDB.deleteDatabase(name);
+      } catch (error) {
+        console.warn(`[DB] Could not start delete of ${name}:`, error);
+        resolve();
+        return;
+      }
+
+      req.onsuccess = () => resolve();
+
+      req.onerror = () => {
+        console.warn(`[DB] Error deleting ${name}:`, req.error);
+        if (attempt + 1 < maxAttempts) {
+          setTimeout(() => attemptDelete(attempt + 1), 150 * (attempt + 1));
+          return;
+        }
+        resolve();
+      };
+
+      req.onblocked = () => {
+        console.warn(
+          `[DB] Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
+        );
+        if (attempt + 1 < maxAttempts) {
+          setTimeout(() => attemptDelete(attempt + 1), 200 * (attempt + 1));
+          return;
+        }
+        resolve();
+      };
+    };
+
+    attemptDelete(0);
+  });
+}
+
+export function closeSearchDatabase(): void {
+  invalidateConnection();
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("betterseqta-reset-search-index", () => {
+    closeSearchDatabase();
+  });
+}
+
+async function openDBInternal(): Promise<IDBDatabase> {
+  const storedVersion = getCurrentVersion();
+
+  try {
+    return await openDatabase(storedVersion);
+  } catch (error) {
+    const domError = error as DOMException | undefined;
+
+    if (domError?.name === "VersionError") {
+      console.warn(
+        "[DB] localStorage version out of sync with IndexedDB; opening current version",
+      );
+      invalidateConnection();
+      try {
+        return await openDatabase();
+      } catch (fallbackError) {
+        console.warn("[DB] Fallback open failed, recreating database:", fallbackError);
+      }
+    } else {
+      console.error("Error opening database:", error);
+    }
+
+    await wipeDatabase();
+    return openDatabase(1);
+  }
+}
+
 function openDB(): Promise<IDBDatabase> {
-  if (cachedDb && cachedDb.version >= getCurrentVersion()) {
+  if (cachedDb) {
     return Promise.resolve(cachedDb);
   }
 
   if (dbPromise) return dbPromise;
 
-  const currentVersion = getCurrentVersion();
-
-  dbPromise = new Promise((resolve, reject) => {
-    let request: IDBOpenDBRequest;
-
-    try {
-      request = indexedDB.open(DB_NAME, currentVersion);
-    } catch (e) {
-      console.warn("Database version conflict, recreating database...");
-      if (cachedDb) {
-        cachedDb.close();
-        cachedDb = null;
-      }
-      indexedDB.deleteDatabase(DB_NAME);
-      localStorage.removeItem(VERSION_KEY);
-      request = indexedDB.open(DB_NAME, 1);
-      updateVersion(1);
-    }
-
-    request.onupgradeneeded = (event) => {
-      const db = request.result;
-      const existingStores = Array.from(db.objectStoreNames);
-
-      if (!existingStores.includes(META_STORE)) {
-        db.createObjectStore(META_STORE);
-      }
-
-      updateVersion(event.newVersion || 1);
-    };
-
-    request.onsuccess = () => {
-      if (cachedDb && cachedDb !== request.result) {
-        cachedDb.close();
-      }
-      cachedDb = request.result;
-
-      cachedDb.onclose = () => {
-        cachedDb = null;
-        dbPromise = null;
-      };
-
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      console.error("Error opening database:", request.error);
-
-      if (cachedDb) {
-        cachedDb.close();
-        cachedDb = null;
-      }
-      indexedDB.deleteDatabase(DB_NAME);
-      localStorage.removeItem(VERSION_KEY);
-      dbPromise = null;
-      reject(request.error);
-    };
-  });
-
+  dbPromise = openDBInternal();
   return dbPromise;
 }
 
-async function getStore(store: string, mode: IDBTransactionMode = "readonly") {
+function idbRequest<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function objectStore(
+  store: string,
+  mode: IDBTransactionMode = "readonly",
+): Promise<IDBObjectStore> {
   const db = await openDB();
 
   if (!db.objectStoreNames.contains(store)) {
     await upgradeDB(store);
-
     const upgradedDb = await openDB();
-    const tx = upgradedDb.transaction(store, mode);
-    return tx.objectStore(store);
+    return upgradedDb.transaction(store, mode).objectStore(store);
   }
 
-  const tx = db.transaction(store, mode);
-  return tx.objectStore(store);
+  return db.transaction(store, mode).objectStore(store);
 }
 
-function upgradeDB(newStore: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const currentVersion = getCurrentVersion();
-    const newVersion = currentVersion + 1;
+async function upgradeDB(newStore: string): Promise<void> {
+  invalidateConnection();
 
-    if (cachedDb) {
-      cachedDb.close();
-      cachedDb = null;
-    }
+  let baseVersion = 0;
+
+  try {
+    const db = await openDatabase();
+    baseVersion = db.version;
+    db.close();
+    cachedDb = null;
     dbPromise = null;
+  } catch (error) {
+    console.warn("[DB] Could not probe database version before upgrade:", error);
+  }
 
-    const request = indexedDB.open(DB_NAME, newVersion);
-
-    request.onupgradeneeded = (event) => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(newStore)) {
-        db.createObjectStore(newStore);
-      }
-
-      updateVersion(event.newVersion || newVersion);
-    };
-
-    request.onsuccess = () => {
-      cachedDb = request.result;
-
-      cachedDb.onclose = () => {
-        cachedDb = null;
-        dbPromise = null;
-      };
-
-      dbPromise = Promise.resolve(request.result);
-      resolve();
-    };
-
-    request.onerror = () => {
-      console.error("Error upgrading database:", request.error);
-      reject(request.error);
-    };
-  });
+  try {
+    await openDatabase(baseVersion + 1, newStore);
+  } catch (error) {
+    console.error("Error upgrading database:", error);
+    throw error;
+  }
 }
 
 export async function getAll(store: string): Promise<any[]> {
   try {
-    const s = await getStore(store);
-    return new Promise((resolve, reject) => {
-      const req = s.getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store);
+    return await idbRequest(s.getAll());
   } catch (error) {
     console.error(`Error in getAll for store ${store}:`, error);
     return [];
@@ -154,12 +230,8 @@ export async function getAll(store: string): Promise<any[]> {
 
 export async function get(store: string, key: string): Promise<any> {
   try {
-    const s = await getStore(store);
-    return new Promise((resolve, reject) => {
-      const req = s.get(key);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store);
+    return await idbRequest(s.get(key));
   } catch (error) {
     console.error(`Error in get for store ${store}, key ${key}:`, error);
     return null;
@@ -172,21 +244,14 @@ export async function put(
   key?: string,
 ): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = key ? s.put(value, key) : s.put(value);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(key ? s.put(value, key) : s.put(value));
   } catch (error) {
     console.error(`Error in put for store ${store}:`, error);
     throw error;
   }
 }
 
-/**
- * Apply puts and deletes in a single readwrite transaction.
- */
 export async function applyStoreDiff(
   store: string,
   puts: Array<{ key: string; value: any }>,
@@ -196,15 +261,10 @@ export async function applyStoreDiff(
 
   try {
     const db = await openDB();
-
     if (!db.objectStoreNames.contains(store)) {
       await upgradeDB(store);
-      const upgradedDb = await openDB();
-      await runStoreDiffTransaction(upgradedDb, store, puts, removeKeys);
-      return;
     }
-
-    await runStoreDiffTransaction(db, store, puts, removeKeys);
+    await runStoreDiffTransaction(await openDB(), store, puts, removeKeys);
   } catch (error) {
     console.error(`Error in applyStoreDiff for store ${store}:`, error);
     throw error;
@@ -219,13 +279,13 @@ function runStoreDiffTransaction(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
-    const objectStore = tx.objectStore(store);
+    const objectStoreRef = tx.objectStore(store);
 
     for (const key of removeKeys) {
-      objectStore.delete(key);
+      objectStoreRef.delete(key);
     }
     for (const { key, value } of puts) {
-      objectStore.put(value, key);
+      objectStoreRef.put(value, key);
     }
 
     tx.oncomplete = () => resolve();
@@ -236,12 +296,8 @@ function runStoreDiffTransaction(
 
 export async function remove(store: string, key: string): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = s.delete(key);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(s.delete(key));
   } catch (error) {
     console.error(`Error in remove for store ${store}, key ${key}:`, error);
     throw error;
@@ -250,12 +306,8 @@ export async function remove(store: string, key: string): Promise<void> {
 
 export async function clear(store: string): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = s.clear();
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(s.clear());
   } catch (error) {
     console.error(`Error in clear for store ${store}:`, error);
     throw error;
@@ -263,54 +315,23 @@ export async function clear(store: string): Promise<void> {
 }
 
 export async function resetDatabase(): Promise<void> {
-  // Close cached database connection
-  if (cachedDb) {
-    try {
-      cachedDb.close();
-    } catch (e) {
-      console.warn("[DB] Error closing cached database:", e);
-    }
-    cachedDb = null;
-  }
-
-  // Close pending database promise
   if (dbPromise) {
     try {
       const db = await dbPromise;
       db.close();
-    } catch (e) {
-      // Database might not be open yet, that's okay
+    } catch {
+      // Database might not be open yet
     }
-    dbPromise = null;
   }
 
-  // Wait a bit for connections to fully close
-  await new Promise(resolve => setTimeout(resolve, 100));
+  invalidateConnection();
 
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => {
-      localStorage.removeItem(VERSION_KEY);
-      resolve();
-    };
-    req.onerror = () => {
-      console.error("[DB] Error deleting database:", req.error);
-      reject(req.error);
-    };
-    req.onblocked = () => {
-      console.warn("[DB] Database deletion blocked - waiting for connections to close");
-      // Wait a bit longer and try again
-      setTimeout(() => {
-        const retryReq = indexedDB.deleteDatabase(DB_NAME);
-        retryReq.onsuccess = () => {
-          localStorage.removeItem(VERSION_KEY);
-          resolve();
-        };
-        retryReq.onerror = () => reject(retryReq.error);
-        retryReq.onblocked = () => {
-          reject(new Error(`Database is still open. Please close other tabs/windows and try again.`));
-        };
-      }, 500);
-    };
-  });
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("betterseqta-reset-search-index"));
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  localStorage.removeItem(VERSION_KEY);
+  await deleteDatabaseWithRetries(DB_NAME);
 }

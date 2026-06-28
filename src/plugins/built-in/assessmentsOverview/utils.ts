@@ -1,3 +1,8 @@
+import {
+  approximatePercentFromLetterGrade,
+  extractLetterGradeStringFromPayload,
+} from "../gradeAnalytics/letterGradeScale";
+
 export interface OverviewSubject {
   code: string;
   programme: number;
@@ -101,6 +106,34 @@ export function assessmentBelongsToActiveSubjects(
   return activeSubjects.some((subject) => subject.code === code);
 }
 
+export function activeSubjectForAssessment(
+  assessment: Record<string, unknown>,
+  activeSubjects: OverviewSubject[],
+): OverviewSubject | undefined {
+  const programme = Number(
+    assessment.programmeID ?? assessment.programme,
+  );
+  const metaclass = Number(
+    assessment.metaclassID ?? assessment.metaclass,
+  );
+
+  if (
+    programme &&
+    metaclass &&
+    !Number.isNaN(programme) &&
+    !Number.isNaN(metaclass)
+  ) {
+    const subject = activeSubjects.find(
+      (s) => s.programme === programme && s.metaclass === metaclass,
+    );
+    if (subject) return subject;
+  }
+
+  const code = String(assessment.code ?? assessment.subject ?? "").trim();
+  if (!code) return undefined;
+  return activeSubjects.find((s) => s.code === code);
+}
+
 export function filterAssessmentsForActiveSubjects<T extends Record<string, unknown>>(
   assessments: T[],
   activeSubjects: OverviewSubject[],
@@ -108,6 +141,24 @@ export function filterAssessmentsForActiveSubjects<T extends Record<string, unkn
   return assessments.filter((assessment) =>
     assessmentBelongsToActiveSubjects(assessment, activeSubjects),
   );
+}
+
+/** Active subjects that have at least one assessment in the given list. */
+export function subjectsWithUpcomingAssessments(
+  assessments: Record<string, unknown>[],
+  activeSubjects: OverviewSubject[],
+): OverviewSubject[] {
+  const result: OverviewSubject[] = [];
+  const seen = new Set<string>();
+
+  for (const assessment of assessments) {
+    const subject = activeSubjectForAssessment(assessment, activeSubjects);
+    if (!subject || seen.has(subject.code)) continue;
+    seen.add(subject.code);
+    result.push(subject);
+  }
+
+  return result;
 }
 
 export function formatDate(dateStr: string, submitted?: boolean): string {
@@ -217,4 +268,74 @@ export function getGradeValue(assessment: any): number | null {
   }
 
   return null;
+}
+
+export function extractAssessmentLetterGrade(assessment: any): string | undefined {
+  if (assessment?.grade != null && String(assessment.grade).trim() !== "") {
+    return String(assessment.grade).trim();
+  }
+  return extractLetterGradeStringFromPayload(assessment);
+}
+
+export function percentageToLetterGrade(percentage: number): string {
+  const letterMap: Record<number, string> = {
+    100: "A+",
+    95: "A",
+    90: "A-",
+    85: "B+",
+    80: "B",
+    75: "B-",
+    70: "C+",
+    65: "C",
+    60: "C-",
+    55: "D+",
+    50: "D",
+    45: "D-",
+    40: "E+",
+    35: "E",
+    30: "E-",
+    0: "F",
+  };
+
+  const rounded = Math.ceil(percentage / 5) * 5;
+  return letterMap[rounded] || "F";
+}
+
+export function getThermoscorePercent(assessment: any): number | null {
+  const numeric = getGradeValue(assessment);
+  if (numeric !== null) return numeric;
+
+  const letter = extractAssessmentLetterGrade(assessment);
+  if (letter) {
+    const approx = approximatePercentFromLetterGrade(letter);
+    if (approx !== undefined) return approx;
+  }
+
+  return null;
+}
+
+export function getDisplayGrade(assessment: any, letterGradeMode: boolean): string {
+  if (letterGradeMode) {
+    const letter = extractAssessmentLetterGrade(assessment);
+    if (letter) return letter;
+
+    const val = getGradeValue(assessment);
+    if (val !== null) return percentageToLetterGrade(val);
+
+    return "No grade";
+  }
+
+  const val = getGradeValue(assessment);
+  if (val !== null) return `${val}%`;
+
+  const letter = extractAssessmentLetterGrade(assessment);
+  if (letter) return letter;
+
+  return "No grade";
+}
+
+export function assessmentHasGradeDisplay(assessment: any): boolean {
+  if (extractAssessmentLetterGrade(assessment)) return true;
+  if (getGradeValue(assessment) !== null) return true;
+  return false;
 }

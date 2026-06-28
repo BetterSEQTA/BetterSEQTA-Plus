@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { determineStatus, formatDate, getGradeValue } from "./utils";
+  import {
+    assessmentHasGradeDisplay,
+    determineStatus,
+    formatDate,
+    getDisplayGrade,
+    getThermoscorePercent,
+  } from "./utils";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
@@ -21,28 +27,12 @@
 
   const HIDDEN_ASSESSMENTS_KEY = "betterseqta-hidden-assessments";
 
-  function percentageToLetter(percentage: number): string {
-    const letterMap: Record<number, string> = {
-      100: "A+",
-      95: "A",
-      90: "A-",
-      85: "B+",
-      80: "B",
-      75: "B-",
-      70: "C+",
-      65: "C",
-      60: "C-",
-      55: "D+",
-      50: "D",
-      45: "D-",
-      40: "E+",
-      35: "E",
-      30: "E-",
-      0: "F",
-    };
-
-    const rounded = Math.ceil(percentage / 5) * 5;
-    return letterMap[rounded] || "F";
+  function isLetterGradeMode(): boolean {
+    const allSettings = settingsState.getAll() as unknown as Record<
+      string,
+      { lettergrade?: boolean } | undefined
+    >;
+    return allSettings["plugin.assessments-average.settings"]?.lettergrade ?? false;
   }
 
   let currentFilters: FilterOptions = {
@@ -73,9 +63,7 @@
   }
 
   function getAssessmentGrade(a: any): string {
-    const val = getGradeValue(a);
-    if (val === null) return "No grade";
-    return percentageToLetter(val);
+    return getDisplayGrade(a, isLetterGradeMode());
   }
 
   function getGroupKey(assessment: any): string {
@@ -522,7 +510,7 @@
                         {#if assessment.submitted}
                           <span class="card-label label-submitted" style="background: #10b981; color: white;">Submitted</span>
                         {/if}
-                        {#if isCompleted && status === "MARKS_RELEASED" && !assessment.results}
+                        {#if isCompleted && status === "MARKS_RELEASED" && !assessmentHasGradeDisplay(assessment)}
                           <span class="card-label label-completed" style="background: #059669; color: white;">Completed</span>
                         {/if}
                       </div>
@@ -559,7 +547,7 @@
 
                       <h3 class="assessment-title">{assessment.title}</h3>
 
-                      {#if !assessment.results && !isCompleted}
+                      {#if !assessmentHasGradeDisplay(assessment) && !isCompleted}
                         <div class="assessment-meta">
                           <div class="due-date {dueDateClass}">
                             <OverviewIcon name="calendar-days" size={14} />
@@ -568,18 +556,14 @@
                         </div>
                       {/if}
 
-                      {#if assessment.results}
+                      {#if assessmentHasGradeDisplay(assessment)}
+                        {@const gradeLabel = getDisplayGrade(assessment, isLetterGradeMode())}
+                        {@const barPercent = getThermoscorePercent(assessment) ?? 0}
                         <div class="card-footer">
                           <div class="Thermoscore__Thermoscore___WFpL3" style="--fill-colour: {color}">
-                            <div style="width: {assessment.results.percentage}%" class="Thermoscore__fill___ojxDI">
-                              <div title="{assessment.results.percentage}%" class="Thermoscore__text___XSR_M">
-                                {(() => {
-                                  const allSettings = settingsState.getAll() as unknown as any;
-                                  const letterGradeSetting = allSettings["plugin.assessments-average.settings"]?.lettergrade;
-                                  return letterGradeSetting 
-                                    ? percentageToLetter(assessment.results.percentage)
-                                    : `${assessment.results.percentage}%`;
-                                })()}
+                            <div style="width: {barPercent}%" class="Thermoscore__fill___ojxDI">
+                              <div title={gradeLabel} class="Thermoscore__text___XSR_M">
+                                {gradeLabel}
                               </div>
                             </div>
                           </div>

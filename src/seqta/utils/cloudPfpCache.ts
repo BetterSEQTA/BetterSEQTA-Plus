@@ -28,6 +28,10 @@ export function pfpUrlWithHash(url: string, hash: string | null | undefined): st
   return `${base}?v=${hash}`;
 }
 
+export function defaultAccountsPfpUrl(userId: string): string {
+  return `${ACCOUNTS_BASE}/api/user/pfp/${userId}`;
+}
+
 async function fetchServerHash(userId: string): Promise<string | null> {
   const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp/${userId}/meta`);
   if (!res.ok) return null;
@@ -94,6 +98,10 @@ export async function resolveCloudPfp(
   const headers: HeadersInit = {};
   if (localHash) {
     headers["If-None-Match"] = `"${localHash}"`;
+  }
+  const token = await cloudAuth.getStoredToken();
+  if (token && isAccountsHostedPfpUrl(pfpUrl)) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const res = await fetch(imageUrl, { headers });

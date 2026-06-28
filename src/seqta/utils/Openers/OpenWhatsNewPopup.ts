@@ -42,6 +42,23 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
+      <h1>3.7.3 – Bugfix Bundle</h1>
+      <li>Fixed dropdown contrast and readability in settings and across SEQTA pages.</li>
+      <li>Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.</li>
+      <li>Fixed timetable subject colour picker not reopening after closing (#221).</li>
+      <li>Fixed theme wallpaper images not applying on Firefox (#206).</li>
+      <li>Fixed missing subjects in upcoming assessments on the home page (#454).</li>
+      <li>Added home page assessment limits (subjects, per-subject count, include past).</li>
+      <li>Fixed assessment overview showing <code>Undefined%</code> for letter grades (#430).</li>
+      <li>Fixed notifications older than a year being removed; added local per-account archive (#443).</li>
+      <li>Fixed notices on the home screen sometimes failing to load (#388).</li>
+      <li>Fixed nightly/CI release builds (Windows runners, zip packaging, layerchart compile).</li>
+      <li>Fixed multi-target builds exiting early and masking Vite errors.</li>
+      <li>Improved background music autoplay with a tap-to-start hint when blocked.</li>
+      <li>Added verbose logging toggle under Developer settings.</li>
+      <li>Restored theme settings Edit/Done label and improved custom Select keyboard accessibility.</li>
+      <li>Cloud sign-in now sends a device name for account management.</li>
+
       <h1>3.7.2 – Analytics Fixes</h1>
       <li>Fixed analytics page breaking on certain configurations.</li>
       <li>Added safer DOM handling for analytics to prevent crashes.</li>
