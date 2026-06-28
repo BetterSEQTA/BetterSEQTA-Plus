@@ -25,10 +25,18 @@
   import { deleteSyncedEventsFromOutlookCalendar } from "@/seqta/utils/outlookCalendar/syncEngine";
   import CalendarDeleteEventsModal from "./CalendarDeleteEventsModal.svelte";
   import CalendarDisconnectModal from "./CalendarDisconnectModal.svelte";
-  import CalendarSyncProgress from "./CalendarSyncProgress.svelte";
   import OutlookCalendarIcon from "./OutlookCalendarIcon.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { syncCalendarSyncTheme } from "./calendarSyncTheme";
+  import { isCalendarSyncModalTarget, portalToBody } from "./calendarSyncPortal";
+
+  function syncProgressPercent(progress: GoogleCalendarSyncProgress | null): number {
+    if (!progress || progress.phase === "done") return 0;
+    if (progress.total > 0) {
+      return Math.min(100, Math.round((progress.current / progress.total) * 100));
+    }
+    return progress.phase === "preparing" ? 8 : 0;
+  }
 
   type CalendarProvider = "google" | "outlook";
   type BusyPhase = "connect" | "sync" | "delete" | "disconnect" | null;
@@ -54,6 +62,38 @@
 
   const isBusy = $derived(busy !== null);
   const anyConnected = $derived(googleStatus.connected || outlookStatus.connected);
+  const showTriggerProgress = $derived(
+    isBusy &&
+      (busy?.phase === "sync" ||
+        busy?.phase === "delete" ||
+        busy?.phase === "connect" ||
+        (syncProgress !== null && syncProgress.phase !== "done")),
+  );
+  const triggerProgressPercent = $derived.by(() => {
+    if (!showTriggerProgress) return 0;
+    if (syncProgress && syncProgress.phase !== "done") {
+      return syncProgressPercent(syncProgress);
+    }
+    return 10;
+  });
+  const triggerStatusText = $derived.by(() => {
+    if (!showTriggerProgress) return "Sync with Calendar";
+    const verb = busy?.phase === "delete" ? "Deleting" : "Syncing";
+    if (syncProgress?.total) return `${verb} ${triggerProgressPercent}%`;
+    return `${verb}…`;
+  });
+  const triggerAriaLabel = $derived.by(() => {
+    if (!showTriggerProgress) {
+      return anyConnected ? "Calendar sync options" : "Sync with Calendar";
+    }
+    if (syncProgress?.total) {
+      const verb = busy?.phase === "delete" ? "Deleting" : "Syncing";
+      return `Calendar ${verb.toLowerCase()} in progress, ${triggerProgressPercent} percent complete`;
+    }
+    return busy?.phase === "delete"
+      ? "Calendar deletion in progress"
+      : "Calendar sync in progress";
+  });
   const accent = "var(--bsplus-cal-accent, var(--better-main, #3b82f6))";
 
   function isProviderBusy(provider: CalendarProvider): boolean {
@@ -150,7 +190,7 @@
   async function connectProvider(provider: CalendarProvider) {
     const status = provider === "google" ? googleStatus : outlookStatus;
     if (!status.configured || isBusy) return;
-    menuOpen = true;
+    menuOpen = false;
     busy = { provider, phase: "connect" };
     const connectType =
       provider === "google" ? "googleCalendarConnect" : "outlookCalendarConnect";
@@ -187,6 +227,7 @@
     }
 
     busy = { provider, phase: "sync" };
+    menuOpen = false;
     try {
       await performSync(provider);
     } catch (err) {
@@ -200,6 +241,8 @@
   async function confirmDeleteEvents() {
     if (isBusy || !modalProvider) return;
     const provider = modalProvider;
+    showDeleteEvents = false;
+    menuOpen = false;
     busy = { provider, phase: "delete" };
     syncProgress = {
       phase: "preparing",
@@ -222,13 +265,12 @@
       }
 
       const removed = result.deleted ?? 0;
-      showDeleteEvents = false;
-      menuOpen = false;
       modalProvider = null;
+      const label = provider === "google" ? "Google" : "Outlook";
       if (removed === 0) {
         showToastMessage("No synced events to remove.");
       } else {
-        showToastMessage(`Removed ${removed} event${removed === 1 ? "" : "s"} from Google Calendar.`);
+        showToastMessage(`Removed ${removed} event${removed === 1 ? "" : "s"} from ${label} Calendar.`);
       }
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Remove failed.", true);
@@ -281,8 +323,21 @@
     }
   }
 
-  function toggleMenu() {
+  function openDeleteModal(provider: CalendarProvider) {
     if (isBusy) return;
+    modalProvider = provider;
+    menuOpen = false;
+    showDeleteEvents = true;
+  }
+
+  function openDisconnectModal(provider: CalendarProvider) {
+    if (isBusy) return;
+    modalProvider = provider;
+    menuOpen = false;
+    showDisconnect = true;
+  }
+
+  function toggleMenu() {
     menuOpen = !menuOpen;
     if (menuOpen) {
       queueMicrotask(() => syncMenuTheme());
@@ -317,12 +372,7 @@
   }
 
   function portalMenu(node: HTMLElement) {
-    document.body.appendChild(node);
-    return {
-      destroy() {
-        node.remove();
-      },
-    };
+    return portalToBody(node);
   }
 
   $effect(() => {
@@ -332,8 +382,11 @@
   });
 
   $effect(() => {
-    if (!menuOpen || !menuEl) return;
-    syncMenuTheme();
+    if (menuOpen && menuEl) syncMenuTheme();
+  });
+
+  $effect(() => {
+    if (!menuOpen || !triggerEl) return;
     updateMenuPosition();
     const onLayout = () => updateMenuPosition();
     window.addEventListener("resize", onLayout);
@@ -376,6 +429,7 @@
       const target = event.target as Node;
       if (rootEl?.contains(target)) return;
       if (menuEl?.contains(target)) return;
+      if (isCalendarSyncModalTarget(target)) return;
       menuOpen = false;
     };
 
@@ -397,21 +451,20 @@
     class="uiButton bsplus-cal-trigger"
     bind:this={triggerEl}
     class:bsplus-cal-trigger--open={menuOpen}
-    class:bsplus-cal-trigger--connected={anyConnected}
     class:bsplus-cal-trigger--busy={isBusy}
+    class:bsplus-cal-trigger--progress={showTriggerProgress}
+    style:--bsplus-cal-trigger-progress="{triggerProgressPercent}%"
     aria-haspopup="menu"
     aria-expanded={menuOpen}
     aria-busy={isBusy}
-    aria-label={anyConnected ? "Calendar sync options" : "Sync with Calendar"}
-    onclick={() => {
-      if (!isBusy) toggleMenu();
-    }}
+    aria-label={triggerAriaLabel}
+    onclick={() => toggleMenu()}
   >
-    <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xe9cd;</span>
-    <span class="bsplus-cal-trigger-text">Sync with Calendar</span>
-    {#if anyConnected}
-      <span class="bsplus-cal-status-dot" aria-hidden="true"></span>
-    {/if}
+    <span class="bsplus-cal-trigger-fill" aria-hidden="true"></span>
+    <span class="bsplus-cal-trigger-content">
+      <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xe9cd;</span>
+      <span class="bsplus-cal-trigger-text">{triggerStatusText}</span>
+    </span>
   </button>
 
   {#if menuOpen}
@@ -425,7 +478,7 @@
     >
       <div class="bsplus-cal-menu-header">
         <span class="bsplus-cal-menu-title">Calendar sync</span>
-        <span class="bsplus-cal-menu-sub">Connect providers to sync your timetable</span>
+        <span class="bsplus-cal-menu-sub">Copy your SEQTA timetable classes to Google or Outlook</span>
       </div>
 
       <div class="bsplus-cal-provider" role="none">
@@ -479,7 +532,7 @@
               disabled={!googleStatus.configured || isBusy}
               onclick={() => void connectProvider("google")}
             >
-              {providerPhase("google") === "connect" ? "Connecting…" : "Connect"}
+              {providerPhase("google") === "connect" ? "Connecting…" : "Connect & sync"}
             </button>
           {:else}
             <button
@@ -490,31 +543,25 @@
               disabled={isBusy}
               onclick={() => void syncProvider("google")}
             >
-              {providerPhase("google") === "sync" ? "Syncing…" : "Sync now"}
+              {providerPhase("google") === "sync" ? "Updating…" : "Update calendar"}
             </button>
             <button
               type="button"
               class="bsplus-cal-action bsplus-cal-action--ghost"
               role="menuitem"
               disabled={isBusy}
-              onclick={() => {
-                modalProvider = "google";
-                showDeleteEvents = true;
-              }}
+              onclick={() => openDeleteModal("google")}
             >
-              {providerPhase("google") === "delete" ? "Removing…" : "Remove from calendar"}
+              {providerPhase("google") === "delete" ? "Deleting…" : "Delete synced classes"}
             </button>
             <button
               type="button"
               class="bsplus-cal-action bsplus-cal-action--ghost"
               role="menuitem"
               disabled={isBusy}
-              onclick={() => {
-                modalProvider = "google";
-                showDisconnect = true;
-              }}
+              onclick={() => openDisconnectModal("google")}
             >
-              Disconnect
+              Disconnect account
             </button>
           {/if}
         </div>
@@ -549,7 +596,7 @@
               disabled={!outlookStatus.configured || isBusy}
               onclick={() => void connectProvider("outlook")}
             >
-              {providerPhase("outlook") === "connect" ? "Connecting…" : "Connect"}
+              {providerPhase("outlook") === "connect" ? "Connecting…" : "Connect & sync"}
             </button>
           {:else}
             <button
@@ -560,40 +607,39 @@
               disabled={isBusy}
               onclick={() => void syncProvider("outlook")}
             >
-              {providerPhase("outlook") === "sync" ? "Syncing…" : "Sync now"}
+              {providerPhase("outlook") === "sync" ? "Updating…" : "Update calendar"}
             </button>
             <button
               type="button"
               class="bsplus-cal-action bsplus-cal-action--ghost"
               role="menuitem"
               disabled={isBusy}
-              onclick={() => {
-                modalProvider = "outlook";
-                showDeleteEvents = true;
-              }}
+              onclick={() => openDeleteModal("outlook")}
             >
-              {providerPhase("outlook") === "delete" ? "Removing…" : "Remove from calendar"}
+              {providerPhase("outlook") === "delete" ? "Deleting…" : "Delete synced classes"}
             </button>
             <button
               type="button"
               class="bsplus-cal-action bsplus-cal-action--ghost"
               role="menuitem"
               disabled={isBusy}
-              onclick={() => {
-                modalProvider = "outlook";
-                showDisconnect = true;
-              }}
+              onclick={() => openDisconnectModal("outlook")}
             >
-              Disconnect
+              Disconnect account
             </button>
           {/if}
         </div>
       </div>
 
       {#if anyConnected}
-        <div class="bsplus-cal-settings" role="group" aria-label="Sync settings">
+        <div class="bsplus-cal-settings" role="group" aria-label="Sync options">
             <label class="bsplus-cal-setting">
-              <span class="bsplus-cal-setting-label">Weeks ahead</span>
+              <div class="bsplus-cal-setting-copy">
+                <span class="bsplus-cal-setting-label">Weeks to sync</span>
+                <span class="bsplus-cal-setting-desc">
+                  How many weeks of classes to add when you connect or tap Update calendar.
+                </span>
+              </div>
               <input
                 type="number"
                 class="bsplus-cal-setting-input"
@@ -605,7 +651,12 @@
               />
             </label>
             <label class="bsplus-cal-setting bsplus-cal-setting--toggle">
-              <span class="bsplus-cal-setting-label">Auto-sync weekly</span>
+              <div class="bsplus-cal-setting-copy">
+                <span class="bsplus-cal-setting-label">Sync new weeks automatically</span>
+                <span class="bsplus-cal-setting-desc">
+                  Each week, add the next week of your timetable without opening this menu.
+                </span>
+              </div>
               <input
                 type="checkbox"
                 class="bsplus-cal-setting-checkbox"
@@ -614,13 +665,8 @@
                 onchange={(e) => void onAutoSyncToggle(e)}
               />
             </label>
-            <p class="bsplus-cal-setting-hint">
-              Syncs {syncWeeksAhead} weeks ahead on connect and manual sync. Weekly auto-sync adds each new week forward.
-            </p>
           </div>
         {/if}
-
-        <CalendarSyncProgress progress={syncProgress} />
     </div>
   {/if}
 
@@ -676,7 +722,32 @@
     margin-left: 4px;
     border-radius: 16px !important;
     font-family: inherit;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .bsplus-cal-trigger-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--bsplus-cal-trigger-progress, 0%);
+    border-radius: inherit;
+    background: color-mix(
+      in srgb,
+      var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 38%,
+      transparent
+    );
+    transition: width 0.25s ease;
+    pointer-events: none;
+  }
+
+  .bsplus-cal-trigger-content {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
 
   .bsplus-cal-trigger-icon {
@@ -735,25 +806,17 @@
     background: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 14%, transparent) !important;
   }
 
-  .bsplus-cal-trigger--connected .bsplus-cal-status-dot {
-    display: block;
-  }
-
   .bsplus-cal-trigger--busy {
-    opacity: 0.85;
-    cursor: wait;
+    opacity: 0.95;
   }
 
-  .bsplus-cal-status-dot {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background: #22c55e;
-    box-shadow: 0 0 0 2px var(--bsplus-cal-surface, #fff);
-    display: none;
+  .bsplus-cal-trigger--progress {
+    cursor: default;
+  }
+
+  .bsplus-cal-trigger--progress:hover,
+  .bsplus-cal-trigger--progress:active {
+    transform: none;
   }
 
   .bsplus-cal-settings {
@@ -768,10 +831,17 @@
 
   .bsplus-cal-setting {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
     font-size: 12px;
+  }
+
+  .bsplus-cal-setting-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .bsplus-cal-setting-label {
@@ -779,8 +849,19 @@
     color: var(--bsplus-cal-text, var(--text-primary, #111));
   }
 
+  .bsplus-cal-setting-desc {
+    font-size: 10px;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 58%, transparent);
+  }
+
+  .bsplus-cal-setting--toggle {
+    align-items: center;
+  }
+
   .bsplus-cal-setting-input {
     width: 64px;
+    flex: 0 0 auto;
     padding: 6px 8px;
     border-radius: 10px;
     border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 18%, transparent));
@@ -793,19 +874,13 @@
   .bsplus-cal-setting-checkbox {
     width: 16px;
     height: 16px;
+    flex: 0 0 auto;
     accent-color: var(--bsplus-cal-accent, var(--better-main, #3b82f6));
-  }
-
-  .bsplus-cal-setting-hint {
-    margin: 0;
-    font-size: 10px;
-    line-height: 1.4;
-    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 58%, transparent);
   }
 
   .bsplus-cal-menu {
     position: fixed;
-    z-index: 2147483647;
+    z-index: var(--bsplus-cal-z-menu, 2147483646);
     width: min(320px, calc(100vw - 24px));
     padding: 10px;
     border-radius: 14px;

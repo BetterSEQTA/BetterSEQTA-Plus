@@ -15,6 +15,8 @@ import type {
 } from "@/seqta/utils/googleCalendar/types";
 
 export const EVENT_MAP_PERSIST_EVERY = 10;
+/** Max UI progress refresh rate during bulk delete/upsert (reduces Svelte re-renders). */
+export const SYNC_PROGRESS_THROTTLE_MS = 1000;
 
 export type EventMapRecord = Record<string, string | { id: string; date: string }>;
 
@@ -23,11 +25,87 @@ export type MappedLessonEvent = {
   startDateTime: string;
 };
 
+type ProgressThrottleState = {
+  lastReportAt: number;
+  pending: GoogleCalendarSyncProgress | null;
+  timer: ReturnType<typeof setTimeout> | null;
+};
+
+const progressThrottleByCallback = new WeakMap<
+  NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
+  ProgressThrottleState
+>();
+
+function getProgressThrottleState(
+  onProgress: NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
+): ProgressThrottleState {
+  let state = progressThrottleByCallback.get(onProgress);
+  if (!state) {
+    state = { lastReportAt: 0, pending: null, timer: null };
+    progressThrottleByCallback.set(onProgress, state);
+  }
+  return state;
+}
+
+function flushPendingSyncProgress(
+  onProgress: NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
+  state: ProgressThrottleState,
+) {
+  if (state.timer) {
+    clearTimeout(state.timer);
+    state.timer = null;
+  }
+  if (!state.pending) return;
+  onProgress(state.pending);
+  state.pending = null;
+  state.lastReportAt = Date.now();
+}
+
+/** Clears any queued progress for a callback (e.g. when a sync run ends). */
+export function resetSyncProgressThrottle(
+  onProgress: GoogleCalendarSyncOptions["onProgress"],
+) {
+  if (!onProgress) return;
+  const state = progressThrottleByCallback.get(onProgress);
+  if (!state) return;
+  if (state.timer) {
+    clearTimeout(state.timer);
+    state.timer = null;
+  }
+  state.pending = null;
+}
+
 export function reportSyncProgress(
   onProgress: GoogleCalendarSyncOptions["onProgress"],
   progress: GoogleCalendarSyncProgress,
 ) {
-  onProgress?.(progress);
+  if (!onProgress) return;
+
+  const state = getProgressThrottleState(onProgress);
+
+  if (progress.phase === "preparing" || progress.phase === "done") {
+    flushPendingSyncProgress(onProgress, state);
+    onProgress(progress);
+    state.lastReportAt = Date.now();
+    if (progress.phase === "done") {
+      resetSyncProgressThrottle(onProgress);
+    }
+    return;
+  }
+
+  state.pending = progress;
+  const elapsed = Date.now() - state.lastReportAt;
+  if (elapsed >= SYNC_PROGRESS_THROTTLE_MS) {
+    flushPendingSyncProgress(onProgress, state);
+    return;
+  }
+
+  if (state.timer) return;
+
+  state.timer = setTimeout(() => {
+    state.timer = null;
+    flushPendingSyncProgress(onProgress, state);
+  }, SYNC_PROGRESS_THROTTLE_MS - elapsed);
 }
 
 export function lessonDateForEvent(startDateTime: string, seqtaKey: string): string {

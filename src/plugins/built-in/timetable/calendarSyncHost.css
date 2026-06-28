@@ -11,11 +11,16 @@
 }
 
 .timetable-calendar-controls.bsplus-cal-menu-open {
-  z-index: 2147483646;
+  z-index: 2147483645;
 }
 
 .timetablepage #toolbar:has(.bsplus-cal-menu-open) {
-  z-index: 2147483646 !important;
+  z-index: 2147483645 !important;
+}
+
+:root {
+  --bsplus-cal-z-menu: 2147483646;
+  --bsplus-cal-z-modal: 2147483647;
 }
 
 .bsplus-calendar-sync-mount {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
+  import { portalToBody } from "./calendarSyncPortal";
 
   let {
     open = false,
@@ -19,6 +20,7 @@
 {#if open}
   <div
     class="bsplus-cal-modal-backdrop"
+    use:portalToBody
     onclick={(e) => {
       if (e.target === e.currentTarget && !busy) onCancel();
     }}
@@ -36,11 +38,11 @@
       transition:fade={{ duration: 180 }}
     >
       <h2 id="bsplus-cal-delete-title" class="bsplus-cal-modal-title">
-        Remove synced events?
+        Delete synced classes?
       </h2>
       <p class="bsplus-cal-modal-body">
-        This removes all BetterSEQTA+ timetable events from your {providerLabel} Calendar for this school.
-        Your connection stays active — you can sync again later.
+        Removes every BetterSEQTA+ timetable event from your {providerLabel} Calendar for this school.
+        Your account stays connected — use Update calendar to sync again.
       </p>
       <div class="bsplus-cal-modal-actions">
         <button
@@ -57,7 +59,7 @@
           disabled={busy}
           onclick={() => void onConfirm()}
         >
-          {busy ? "Removing…" : "Remove from calendar"}
+          {busy ? "Deleting…" : "Delete synced classes"}
         </button>
       </div>
     </div>
@@ -68,7 +70,7 @@
   .bsplus-cal-modal-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 2147483647;
+    z-index: var(--bsplus-cal-z-modal, 2147483647);
     display: flex;
     align-items: center;
     justify-content: center;

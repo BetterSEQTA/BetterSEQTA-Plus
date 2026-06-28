@@ -5,6 +5,7 @@ import {
   trailingWeekRange,
 } from "@/seqta/utils/googleCalendar/fetchTimetable";
 import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
+import { reportSyncProgress } from "@/seqta/utils/calendarSync/lessonSyncShared";
 import { syncLessonsToOutlookCalendar } from "@/seqta/utils/outlookCalendar/syncEngine";
 import type {
   GoogleCalendarSyncOptions,
@@ -36,7 +37,7 @@ export async function runOutlookCalendarSync(
   const mode = params.mode ?? "full";
   const weeksAhead = await getSyncWeeksAhead();
 
-  params.onProgress?.({
+  reportSyncProgress(params.onProgress, {
     phase: "preparing",
     current: 0,
     total: 1,

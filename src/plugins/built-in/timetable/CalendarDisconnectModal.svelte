@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
+  import { portalToBody } from "./calendarSyncPortal";
 
   let {
     open = false,
@@ -19,6 +20,7 @@
 {#if open}
   <div
     class="bsplus-cal-modal-backdrop"
+    use:portalToBody
     onclick={(e) => {
       if (e.target === e.currentTarget && !busy) onCancel();
     }}
@@ -39,8 +41,8 @@
         Disconnect {providerLabel} Calendar?
       </h2>
       <p class="bsplus-cal-modal-body">
-        Your synced timetable events will stay in {providerLabel} Calendar, but BetterSEQTA+ will stop
-        updating them until you connect again.
+        Stops BetterSEQTA+ from updating your calendar. Synced classes stay in {providerLabel} Calendar
+        until you delete them or connect again.
       </p>
       <div class="bsplus-cal-modal-actions">
         <button
@@ -57,7 +59,7 @@
           disabled={busy}
           onclick={() => void onConfirm()}
         >
-          {busy ? "Disconnecting…" : "Disconnect"}
+          {busy ? "Disconnecting…" : "Disconnect account"}
         </button>
       </div>
     </div>
@@ -68,7 +70,7 @@
   .bsplus-cal-modal-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 2147483647;
+    z-index: var(--bsplus-cal-z-modal, 2147483647);
     display: flex;
     align-items: center;
     justify-content: center;
