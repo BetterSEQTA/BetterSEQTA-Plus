@@ -1,8 +1,4 @@
-/**
- * Google Calendar OAuth — public client config (extension).
- * Client secret and token exchange live on accounts.betterseqta.org.
- * See docs/GOOGLE_CALENDAR_ACCOUNTS_CALLBACK.md
- */
+/** Google Calendar OAuth — public client config. Token exchange is on accounts.betterseqta.org. */
 
 const HARDCODED_GOOGLE_OAUTH_CLIENT_ID =
   "270834969641-f6t7jtpu6j0cemse8updj3rkos7nl0hf.apps.googleusercontent.com";
@@ -15,9 +11,7 @@ export const GOOGLE_OAUTH_CLIENT_ID: string =
 
 export const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 
-/** Must match Google Console + accounts callback route exactly. */
 export const GOOGLE_CALENDAR_OAUTH_CALLBACK = `${ACCOUNTS_BASE}/auth/google/calendar/callback`;
-
 export const GOOGLE_CALENDAR_TOKEN_URL = `${ACCOUNTS_BASE}/api/bsplus/google/calendar/token`;
 export const GOOGLE_CALENDAR_REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/google/calendar/refresh`;
 
@@ -28,9 +22,7 @@ export const GOOGLE_CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
 export const BSPLUS_GOOGLE_CALENDAR_EVENT_PROP = "bsplusSeqtaKey";
 
-/** Default weeks of timetable to sync forward (from start of current week). */
 export const GOOGLE_CALENDAR_SYNC_WEEKS = 12;
-export const GOOGLE_CALENDAR_SYNC_WEEKS_DEFAULT = GOOGLE_CALENDAR_SYNC_WEEKS;
 export const GOOGLE_CALENDAR_SYNC_WEEKS_MIN = 1;
 export const GOOGLE_CALENDAR_SYNC_WEEKS_MAX = 52;
 

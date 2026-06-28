@@ -3,33 +3,38 @@ import {
   markWeeklySyncComplete,
   shouldRunWeeklySync,
 } from "@/seqta/utils/calendarSync/settings";
-import {
-  formatWeeklySyncMessages,
-  weeklySyncErrorMessage,
-} from "@/seqta/utils/calendarSync/weeklySyncMessages";
-import { runGoogleCalendarSync } from "@/seqta/utils/googleCalendar/syncRunner";
-import { runOutlookCalendarSync } from "@/seqta/utils/outlookCalendar/syncRunner";
+import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
+import { runGoogleCalendarSync, runOutlookCalendarSync } from "@/seqta/utils/calendarSync/syncRunner";
 import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
 import { readOutlookCalendarState } from "@/seqta/utils/outlookCalendar/storage";
 import type { GoogleCalendarSyncResult } from "@/seqta/utils/googleCalendar/types";
 
 let listenerRegistered = false;
 
-async function runWeeklySyncForConnectedProviders(): Promise<GoogleCalendarSyncResult[]> {
-  const [google, outlook] = await Promise.all([
-    readGoogleCalendarState(),
-    readOutlookCalendarState(),
-  ]);
-  const results: GoogleCalendarSyncResult[] = [];
+const WEEKLY_PROVIDERS = [
+  { label: "Google Calendar", read: readGoogleCalendarState, run: runGoogleCalendarSync },
+  { label: "Outlook Calendar", read: readOutlookCalendarState, run: runOutlookCalendarSync },
+] as const;
 
-  if (google.refreshToken || google.accessToken) {
-    results.push(await runGoogleCalendarSync({ mode: "incremental", silent: true }));
-  }
-  if (outlook.refreshToken || outlook.accessToken) {
-    results.push(await runOutlookCalendarSync({ mode: "incremental", silent: true }));
+function isConnected(state: { refreshToken?: string; accessToken?: string }): boolean {
+  return Boolean(state.refreshToken || state.accessToken);
+}
+
+function hadChanges(result: GoogleCalendarSyncResult): boolean {
+  return (result.created ?? 0) + (result.updated ?? 0) + (result.deleted ?? 0) > 0;
+}
+
+async function runWeeklySyncForConnectedProviders(): Promise<
+  Array<{ label: string; result: GoogleCalendarSyncResult }>
+> {
+  const results: Array<{ label: string; result: GoogleCalendarSyncResult }> = [];
+
+  for (const provider of WEEKLY_PROVIDERS) {
+    if (!isConnected(await provider.read())) continue;
+    results.push({ label: provider.label, result: await provider.run({ mode: "incremental" }) });
   }
 
-  if (results.some((r) => r.success)) {
+  if (results.some(({ result }) => result.success)) {
     await markWeeklySyncComplete();
   }
 
@@ -61,24 +66,20 @@ export async function maybeRunDueWeeklySync(
 ): Promise<void> {
   if (!(await shouldRunWeeklySync())) return;
 
-  const [google, outlook] = await Promise.all([
-    readGoogleCalendarState(),
-    readOutlookCalendarState(),
-  ]);
   const results = await runWeeklySyncForConnectedProviders();
   if (!onComplete) return;
 
-  const errorMessage = weeklySyncErrorMessage(results);
-  if (errorMessage) {
-    onComplete(errorMessage, true);
+  const failed = results.find(({ result }) => !result.success);
+  if (failed) {
+    onComplete(failed.result.error ?? "Weekly calendar sync failed.", true);
     return;
   }
 
-  const messages = formatWeeklySyncMessages(google, outlook, results);
+  const messages = results
+    .filter(({ result }) => hadChanges(result))
+    .map(({ label, result }) => formatLessonSyncResultMessage(result, label));
+
   if (messages.length > 0) {
     onComplete(messages.join(" "));
   }
 }
-
-/** @deprecated use registerCalendarContentHandlers */
-export const registerGoogleCalendarContentHandlers = registerCalendarContentHandlers;

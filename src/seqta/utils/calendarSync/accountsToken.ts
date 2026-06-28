@@ -1,10 +1,4 @@
-import {
-  OUTLOOK_CALENDAR_ACCOUNTS_NOT_READY_HINT,
-  OUTLOOK_CALENDAR_REFRESH_URL,
-  OUTLOOK_CALENDAR_TOKEN_URL,
-} from "@/config/outlookCalendar";
-
-type OutlookTokenPayload = {
+export type AccountsTokenPayload = {
   access_token: string;
   refresh_token?: string;
   expires_in?: number;
@@ -19,7 +13,7 @@ async function parseAccountsJson(res: Response): Promise<Record<string, unknown>
   }
 }
 
-function extractTokens(json: Record<string, unknown>): OutlookTokenPayload {
+function extractTokens(json: Record<string, unknown>): AccountsTokenPayload {
   const access_token = json.access_token;
   if (typeof access_token !== "string" || !access_token) {
     throw new Error("Token response missing access_token");
@@ -31,21 +25,30 @@ function extractTokens(json: Record<string, unknown>): OutlookTokenPayload {
   };
 }
 
-function formatAccountsTokenError(res: Response, json: Record<string, unknown>): string {
-  if (res.status === 404 || res.status === 501) {
-    return OUTLOOK_CALENDAR_ACCOUNTS_NOT_READY_HINT;
-  }
+function formatAccountsTokenError(
+  res: Response,
+  json: Record<string, unknown>,
+  notReadyHint: string,
+  includeErrorDescription: boolean,
+): string {
+  if (res.status === 404 || res.status === 501) return notReadyHint;
   const err = typeof json.error === "string" ? json.error : "";
-  const desc = typeof json.error_description === "string" ? json.error_description : "";
+  const desc =
+    includeErrorDescription && typeof json.error_description === "string"
+      ? json.error_description
+      : "";
   return desc || err || `Accounts token API failed (${res.status})`;
 }
 
-export async function exchangeOutlookCodeViaAccounts(
+export async function exchangeAccountsCode(
+  tokenUrl: string,
   code: string,
   redirectUri: string,
   codeVerifier: string,
-): Promise<OutlookTokenPayload> {
-  const res = await fetch(OUTLOOK_CALENDAR_TOKEN_URL, {
+  notReadyHint: string,
+  includeErrorDescription = false,
+): Promise<AccountsTokenPayload> {
+  const res = await fetch(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -56,22 +59,25 @@ export async function exchangeOutlookCodeViaAccounts(
   });
   const json = await parseAccountsJson(res);
   if (!res.ok) {
-    throw new Error(formatAccountsTokenError(res, json));
+    throw new Error(formatAccountsTokenError(res, json, notReadyHint, includeErrorDescription));
   }
   return extractTokens(json);
 }
 
-export async function refreshOutlookTokenViaAccounts(
+export async function refreshAccountsToken(
+  refreshUrl: string,
   refreshToken: string,
-): Promise<OutlookTokenPayload> {
-  const res = await fetch(OUTLOOK_CALENDAR_REFRESH_URL, {
+  notReadyHint: string,
+  includeErrorDescription = false,
+): Promise<AccountsTokenPayload> {
+  const res = await fetch(refreshUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
   const json = await parseAccountsJson(res);
   if (!res.ok) {
-    throw new Error(formatAccountsTokenError(res, json));
+    throw new Error(formatAccountsTokenError(res, json, notReadyHint, includeErrorDescription));
   }
   return extractTokens(json);
 }

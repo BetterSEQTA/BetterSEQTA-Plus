@@ -25,5 +25,4 @@
 
 .bsplus-calendar-sync-mount {
   display: inline-flex;
-  font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
 }

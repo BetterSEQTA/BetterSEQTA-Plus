@@ -3,109 +3,31 @@ import {
   getStoredEventId,
   lessonDateFromSeqtaKey,
   normalizeEventMapEntry,
-} from "@/seqta/utils/googleCalendar/eventMapEntry";
+  type EventMapRecord,
+} from "@/seqta/utils/calendarSync/eventMap";
 import {
   isDateInRange,
   syncWindowRange,
 } from "@/seqta/utils/googleCalendar/syncDateRange";
 import type {
+  GoogleCalendarDeleteResult,
   GoogleCalendarSyncOptions,
   GoogleCalendarSyncProgress,
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 
 export const EVENT_MAP_PERSIST_EVERY = 10;
-/** Max UI progress refresh rate during bulk delete/upsert (reduces Svelte re-renders). */
-export const SYNC_PROGRESS_THROTTLE_MS = 1000;
-
-export type EventMapRecord = Record<string, string | { id: string; date: string }>;
 
 export type MappedLessonEvent = {
   seqtaKey: string;
   startDateTime: string;
 };
 
-type ProgressThrottleState = {
-  lastReportAt: number;
-  pending: GoogleCalendarSyncProgress | null;
-  timer: ReturnType<typeof setTimeout> | null;
-};
-
-const progressThrottleByCallback = new WeakMap<
-  NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
-  ProgressThrottleState
->();
-
-function getProgressThrottleState(
-  onProgress: NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
-): ProgressThrottleState {
-  let state = progressThrottleByCallback.get(onProgress);
-  if (!state) {
-    state = { lastReportAt: 0, pending: null, timer: null };
-    progressThrottleByCallback.set(onProgress, state);
-  }
-  return state;
-}
-
-function flushPendingSyncProgress(
-  onProgress: NonNullable<GoogleCalendarSyncOptions["onProgress"]>,
-  state: ProgressThrottleState,
-) {
-  if (state.timer) {
-    clearTimeout(state.timer);
-    state.timer = null;
-  }
-  if (!state.pending) return;
-  onProgress(state.pending);
-  state.pending = null;
-  state.lastReportAt = Date.now();
-}
-
-/** Clears any queued progress for a callback (e.g. when a sync run ends). */
-export function resetSyncProgressThrottle(
-  onProgress: GoogleCalendarSyncOptions["onProgress"],
-) {
-  if (!onProgress) return;
-  const state = progressThrottleByCallback.get(onProgress);
-  if (!state) return;
-  if (state.timer) {
-    clearTimeout(state.timer);
-    state.timer = null;
-  }
-  state.pending = null;
-}
-
 export function reportSyncProgress(
   onProgress: GoogleCalendarSyncOptions["onProgress"],
   progress: GoogleCalendarSyncProgress,
 ) {
-  if (!onProgress) return;
-
-  const state = getProgressThrottleState(onProgress);
-
-  if (progress.phase === "preparing" || progress.phase === "done") {
-    flushPendingSyncProgress(onProgress, state);
-    onProgress(progress);
-    state.lastReportAt = Date.now();
-    if (progress.phase === "done") {
-      resetSyncProgressThrottle(onProgress);
-    }
-    return;
-  }
-
-  state.pending = progress;
-  const elapsed = Date.now() - state.lastReportAt;
-  if (elapsed >= SYNC_PROGRESS_THROTTLE_MS) {
-    flushPendingSyncProgress(onProgress, state);
-    return;
-  }
-
-  if (state.timer) return;
-
-  state.timer = setTimeout(() => {
-    state.timer = null;
-    flushPendingSyncProgress(onProgress, state);
-  }, SYNC_PROGRESS_THROTTLE_MS - elapsed);
+  onProgress?.(progress);
 }
 
 export function lessonDateForEvent(startDateTime: string, seqtaKey: string): string {
@@ -126,18 +48,6 @@ export function originEventMapEntries(
   return entries;
 }
 
-function shouldPruneEntry(
-  mode: "full" | "incremental",
-  entry: { id: string; date: string },
-  mapKey: string,
-  window: ReturnType<typeof syncWindowRange>,
-  currentMapKeys: Set<string>,
-): boolean {
-  if (mode === "incremental") return false;
-  if (entry.date) return !isDateInRange(entry.date, window);
-  return !currentMapKeys.has(mapKey);
-}
-
 export function entriesToPrune(
   eventMap: EventMapRecord,
   origin: string,
@@ -145,6 +55,8 @@ export function entriesToPrune(
   weeksAhead: number,
   currentMapKeys: Set<string>,
 ): Array<[string, string]> {
+  if (mode === "incremental") return [];
+
   const window = syncWindowRange(weeksAhead);
   const prefix = `${origin}::`;
   const entries: Array<[string, string]> = [];
@@ -153,9 +65,10 @@ export function entriesToPrune(
     if (!mapKey.startsWith(prefix)) continue;
     const entry = normalizeEventMapEntry(raw);
     if (!entry) continue;
-    if (shouldPruneEntry(mode, entry, mapKey, window, currentMapKeys)) {
-      entries.push([mapKey, entry.id]);
-    }
+    const stale = entry.date
+      ? !isDateInRange(entry.date, window)
+      : !currentMapKeys.has(mapKey);
+    if (stale) entries.push([mapKey, entry.id]);
   }
 
   return entries;
@@ -176,6 +89,98 @@ export function emptyLessonsSyncResult(): GoogleCalendarSyncResult {
     connected: true,
     error: "No timetable classes found to sync for the selected range.",
   };
+}
+
+export function formatLessonSyncResultMessage(
+  result: GoogleCalendarSyncResult,
+  calendarLabel: string,
+): string {
+  const created = result.created ?? 0;
+  const updated = result.updated ?? 0;
+  const deleted = result.deleted ?? 0;
+  const parts: string[] = [];
+  if (created > 0) parts.push(`${created} new`);
+  if (updated > 0) parts.push(`${updated} updated`);
+  if (deleted > 0) parts.push(`${deleted} removed`);
+  if (parts.length === 0) return `${calendarLabel} is up to date.`;
+  return `${calendarLabel} updated (${parts.join(", ")}).`;
+}
+
+export function buildDeleteSyncResult(
+  deleted: number,
+  failed: number,
+): GoogleCalendarDeleteResult {
+  return {
+    success: failed === 0,
+    configured: true,
+    connected: true,
+    deleted,
+    failed,
+    error:
+      failed > 0
+        ? `Removed ${deleted} event${deleted === 1 ? "" : "s"} with ${failed} error${failed === 1 ? "" : "s"}.`
+        : undefined,
+  };
+}
+
+export async function deleteTrackedLessonEvents(
+  entries: Array<[string, string]>,
+  eventMap: EventMapRecord,
+  getAccessToken: () => Promise<string>,
+  deleteEvent: (
+    accessToken: string,
+    eventId: string,
+    refreshAccessToken: () => Promise<string>,
+  ) => Promise<void>,
+  writeState: (patch: { eventMap: EventMapRecord }) => Promise<unknown>,
+  options: {
+    persistProgress?: boolean;
+    onProgress?: GoogleCalendarSyncOptions["onProgress"];
+    progressOffset?: number;
+    progressTotal?: number;
+    logLabel: string;
+  },
+): Promise<{ deleted: number; failed: number }> {
+  if (entries.length === 0) return { deleted: 0, failed: 0 };
+
+  const {
+    persistProgress = false,
+    onProgress,
+    progressOffset = 0,
+    progressTotal = 0,
+    logLabel,
+  } = options;
+
+  let accessToken = await getAccessToken();
+  let deleted = 0;
+  let failed = 0;
+
+  for (const [mapKey, eventId] of entries) {
+    try {
+      await deleteEvent(accessToken, eventId, async () => {
+        accessToken = await getAccessToken();
+        return accessToken;
+      });
+      delete eventMap[mapKey];
+      deleted += 1;
+    } catch (err) {
+      verboseLog(`[BetterSEQTA+] ${logLabel} event delete failed:`, err);
+      failed += 1;
+    }
+
+    reportSyncProgress(onProgress, {
+      phase: "deleting",
+      current: progressOffset + deleted + failed,
+      total: progressTotal,
+      message: `Removing old events (${deleted + failed}/${entries.length})…`,
+    });
+
+    if (persistProgress && (deleted + failed) % EVENT_MAP_PERSIST_EVERY === 0) {
+      await writeState({ eventMap });
+    }
+  }
+
+  return { deleted, failed };
 }
 
 export function buildLessonSyncResult(
@@ -200,24 +205,6 @@ export function buildLessonSyncResult(
         ? `Synced with ${failed} error${failed === 1 ? "" : "s"}. Check the console for details.`
         : undefined,
   };
-}
-
-export async function persistFinalSyncState(
-  writeState: (patch: {
-    eventMap: EventMapRecord;
-    lastSyncAt: number;
-    lastSyncOrigin: string;
-  }) => Promise<unknown>,
-  eventMap: EventMapRecord,
-  lastSyncAt: number,
-  origin: string,
-  staleDeleted: number,
-  staleEntryCount: number,
-  eventCount: number,
-): Promise<void> {
-  if (staleDeleted > 0 || staleEntryCount > 0 || eventCount > 0) {
-    await writeState({ eventMap, lastSyncAt, lastSyncOrigin: origin });
-  }
 }
 
 type UpsertLessonEventsParams<TEvent extends MappedLessonEvent> = {
@@ -288,26 +275,20 @@ export async function upsertLessonEvents<TEvent extends MappedLessonEvent>(
         date: lessonDateForEvent(event.startDateTime, event.seqtaKey),
       };
 
-      reportSyncProgress(onProgress, {
-        phase: "upserting",
-        current: progressCurrent,
-        total: totalSteps,
-        message: progressMessage,
-      });
-
       if ((i + 1) % EVENT_MAP_PERSIST_EVERY === 0 || i === events.length - 1) {
         await writeState({ eventMap, lastSyncAt, lastSyncOrigin: origin });
       }
     } catch (err) {
       verboseLog(`[BetterSEQTA+] ${logLabel} event sync failed:`, err);
       failed += 1;
-      reportSyncProgress(onProgress, {
-        phase: "upserting",
-        current: progressCurrent,
-        total: totalSteps,
-        message: progressMessage,
-      });
     }
+
+    reportSyncProgress(onProgress, {
+      phase: "upserting",
+      current: progressCurrent,
+      total: totalSteps,
+      message: progressMessage,
+    });
   }
 
   return { created, updated, failed, accessToken };

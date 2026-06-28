@@ -9,17 +9,22 @@ jest.mock("@/utils/verboseLog", () => ({
   verboseLog: jest.fn(),
 }));
 
-jest.mock("@/seqta/utils/googleCalendar/storage", () => ({
-  eventMapKey: (origin: string, seqtaKey: string) => `${origin}::${seqtaKey}`,
-  readGoogleCalendarState: jest.fn(),
-  writeGoogleCalendarState: jest.fn(async (patch: unknown) => patch),
-}));
+jest.mock("@/seqta/utils/googleCalendar/storage", () => {
+  const actual = jest.requireActual<typeof import("@/seqta/utils/googleCalendar/storage")>(
+    "@/seqta/utils/googleCalendar/storage",
+  );
+  return {
+    ...actual,
+    readGoogleCalendarState: jest.fn(),
+    writeGoogleCalendarState: jest.fn(async (patch: unknown) => patch),
+  };
+});
 
 jest.mock("@/seqta/utils/calendarSync/settings", () => ({
   getSyncWeeksAhead: jest.fn(async () => 12),
 }));
 
-jest.mock("@/seqta/utils/googleCalendar/upsertEvent", () => ({
+jest.mock("@/seqta/utils/calendarSync/remoteEvents", () => ({
   upsertGoogleCalendarEvent: jest.fn(),
   deleteGoogleCalendarEvent: jest.fn(),
 }));
@@ -28,8 +33,8 @@ import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
 import {
   deleteGoogleCalendarEvent,
   upsertGoogleCalendarEvent,
-} from "@/seqta/utils/googleCalendar/upsertEvent";
-import { deleteSyncedEventsFromGoogleCalendar, syncLessonsToGoogleCalendar } from "./syncEngine";
+} from "@/seqta/utils/calendarSync/remoteEvents";
+import { deleteSyncedEventsFromGoogleCalendar, syncLessonsToGoogleCalendar } from "@/seqta/utils/calendarSync/syncEngine";
 
 const ORIGIN = "https://school.seqta.com.au";
 const getAccessToken = async () => "test-token";

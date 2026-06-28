@@ -76,5 +76,3 @@ export async function fetchTimetableLessons(
 export async function fetchTimetableForSync(weeksAhead?: number): Promise<SeqtaTimetableLesson[]> {
   return fetchTimetableLessons(syncWindowRange(weeksAhead));
 }
-
-export { syncWindowRange, trailingWeekRange, droppedWeekRange } from "./syncDateRange";

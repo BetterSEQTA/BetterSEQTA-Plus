@@ -1,7 +1,3 @@
-import Color from "color";
-
-type ColorInstance = ReturnType<typeof Color>;
-
 /**
  * SEQTA themes and user gradients often use uppercase `RGBA()` / `RGB()`.
  * The `color` package only accepts lowercase function names.
@@ -31,35 +27,4 @@ export function extractSolidColor(value: string): string | null {
     return match?.[0] ? normalizeCssColorString(match[0]) : null;
   }
   return null;
-}
-
-/** Parse a CSS colour for the `color` library; never throws. */
-export function parseCssColor(value: string, fallback = "#007bff"): ColorInstance {
-  const candidates = [
-    extractSolidColor(value),
-    normalizeCssColorString(value),
-  ].filter((candidate): candidate is string => Boolean(candidate));
-
-  for (const candidate of candidates) {
-    try {
-      return Color(candidate);
-    } catch {
-      // try next strategy
-    }
-
-    const rgbaMatch = candidate.match(
-      /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i,
-    );
-    if (rgbaMatch) {
-      try {
-        const [, r, g, b, a] = rgbaMatch;
-        const rgb = Color.rgb(Number(r), Number(g), Number(b));
-        return a !== undefined ? rgb.alpha(Number(a)) : rgb;
-      } catch {
-        // fall through
-      }
-    }
-  }
-
-  return Color(fallback);
 }

@@ -1,13 +1,8 @@
-/**
- * Outlook Calendar OAuth — public client config (extension).
- * Client secret and token exchange live on accounts.betterseqta.org.
- * See docs/OUTLOOK_CALENDAR_ACCOUNTS_CALLBACK.md
- */
+/** Outlook Calendar OAuth — public client config. Token exchange is on accounts.betterseqta.org. */
 
 import { ACCOUNTS_BASE } from "@/config/googleCalendar";
 
-const HARDCODED_OUTLOOK_OAUTH_CLIENT_ID =
-  "0b55168c-916c-4323-8f67-b3dd30af3c9e";
+const HARDCODED_OUTLOOK_OAUTH_CLIENT_ID = "0b55168c-916c-4323-8f67-b3dd30af3c9e";
 
 const envClientId =
   typeof __OUTLOOK_OAUTH_CLIENT_ID__ !== "undefined" ? __OUTLOOK_OAUTH_CLIENT_ID__ : "";
@@ -15,13 +10,10 @@ const envClientId =
 export const OUTLOOK_OAUTH_CLIENT_ID: string =
   envClientId.trim() || HARDCODED_OUTLOOK_OAUTH_CLIENT_ID.trim();
 
-/** Must match Azure app registration + accounts callback route exactly. */
 export const OUTLOOK_CALENDAR_OAUTH_CALLBACK = `${ACCOUNTS_BASE}/auth/microsoft/calendar/callback`;
-
 export const OUTLOOK_CALENDAR_TOKEN_URL = `${ACCOUNTS_BASE}/api/bsplus/microsoft/calendar/token`;
 export const OUTLOOK_CALENDAR_REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/microsoft/calendar/refresh`;
 
-/** Delegated Graph scopes for create/update/delete calendar events. */
 export const OUTLOOK_CALENDAR_SCOPE = "offline_access Calendars.ReadWrite User.Read";
 
 export const OUTLOOK_AUTH_URL =
