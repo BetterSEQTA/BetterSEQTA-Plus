@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { buildIndexItem } from "../extract";
 import { htmlToPlainText } from "../utils";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes per-subject course content from `/seqta/student/load/courses`.
  *

@@ -13,6 +13,10 @@
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
 
+  function setError(e: unknown) {
+    error = e instanceof Error ? e.message : 'An unknown error occurred';
+  }
+
   async function getTheme() {
     return localStorage.getItem('selectedBackground');
   }
@@ -41,11 +45,7 @@
       await writeData(fileId, fileType, blob);
       backgrounds = [...backgrounds, { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) }];
     } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      setError(e);
     }
   }
 
@@ -78,11 +78,7 @@
         selectNoBackground();
       }
     } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      setError(e);
     }
   }
 
@@ -105,11 +101,7 @@
         selectNoBackground();
       }
     } catch (e) {
-      if (e instanceof Error) {
-        error = `Failed to delete background: ${e.message}`;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      error = e instanceof Error ? `Failed to delete background: ${e.message}` : 'An unknown error occurred';
     }
   }
 

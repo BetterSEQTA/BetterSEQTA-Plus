@@ -3,7 +3,7 @@ import type { IndexItem } from "./types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseLog } from '@/utils/verboseLog';
 interface MessageMetadata {
   messageId: number;
   author: string;

@@ -2,10 +2,8 @@ import type { IndexItem, Job } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
-import { loadDynamicItems } from "../../utils/dynamicItems";
 import { loadAllStoredItems } from "../indexer";
-import { renderComponentMap } from "../renderComponents";
-import { jobs } from "../jobs";
+import { publishDynamicItemsUpdate } from "../renderComponents";
 
 import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
 const RATE_LIMIT_CONFIG = {
@@ -605,44 +603,10 @@ export const messagesJob: Job = {
 
       if (processedItems.length > 0) {
         try {
-          const currentItems = await loadAllStoredItems();
-          // Create new objects to avoid XrayWrapper issues in Firefox
-          const itemsWithComponents = currentItems.map((item) => {
-            try {
-              const jobDef =
-                jobs[item.category] ||
-                Object.values(jobs).find((j) => j.id === item.category) ||
-                jobs[item.renderComponentId];
-              let renderComponent = item.renderComponent;
-              if (jobDef) {
-                renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
-              } else if (renderComponentMap[item.renderComponentId]) {
-                renderComponent = renderComponentMap[item.renderComponentId];
-              }
-              // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
-              try {
-                const cloned = JSON.parse(JSON.stringify(item));
-                cloned.renderComponent = renderComponent;
-                return cloned;
-              } catch (e) {
-                // Fallback to shallow copy if deep clone fails
-                return { ...item, renderComponent };
-              }
-            } catch (error) {
-              // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
-              return item;
-            }
-          });
-          loadDynamicItems(itemsWithComponents);
-          window.dispatchEvent(
-            new CustomEvent("dynamic-items-updated", {
-              detail: {
-                incremental: true,
-                jobId: "messages",
-                newItemCount: processedItems.length,
-                streaming: true,
-              },
-            }),
+          publishDynamicItemsUpdate(
+            await loadAllStoredItems(),
+            "messages",
+            processedItems.length,
           );
         } catch (error) {
           console.warn(

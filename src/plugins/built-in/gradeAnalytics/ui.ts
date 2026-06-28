@@ -89,11 +89,10 @@ function syncThemeFromPage(target: HTMLElement) {
   const computed = getComputedStyle(document.documentElement);
 
   for (const name of THEME_CSS_VARS) {
-    let value = computed.getPropertyValue(name).trim();
-    value = document.documentElement.style.getPropertyValue(name).trim();
-    if (value) {
-      target.style.setProperty(name, value);
-    }
+    const value =
+      document.documentElement.style.getPropertyValue(name).trim() ||
+      computed.getPropertyValue(name).trim();
+    if (value) target.style.setProperty(name, value);
   }
 
   const accent = resolvePageAccentColor();
@@ -113,11 +112,7 @@ function syncThemeFromPage(target: HTMLElement) {
   target.style.setProperty("--better-main", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-bg", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-color", palette.onAccent);
-
-  target.classList.toggle(
-    "dark",
-    document.documentElement.classList.contains("dark"),
-  );
+  target.classList.toggle("dark", document.documentElement.classList.contains("dark"));
 }
 
 function syncThemeToAnalyticsUi() {

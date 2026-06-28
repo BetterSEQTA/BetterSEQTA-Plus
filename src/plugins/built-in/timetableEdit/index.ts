@@ -250,13 +250,16 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
         if (override.staff !== undefined && teacherEl) teacherEl.textContent = override.staff;
       }
 
-      const captureClick = () => {
-        lastClickedCi = ci;
-        lastClickedEntry = { roomEl, teacherEl, item };
-        lastSyncedQuickbarCi = null;
-        scheduleQuickbarSync();
-      };
-      entry.addEventListener("click", captureClick, true);
+      entry.addEventListener(
+        "click",
+        () => {
+          lastClickedCi = ci;
+          lastClickedEntry = { roomEl, teacherEl, item };
+          lastSyncedQuickbarCi = null;
+          scheduleQuickbarSync();
+        },
+        true,
+      );
     };
 
     const processAllEntries = () => {
@@ -266,9 +269,7 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
     };
 
     const getVisibleClassQuickbar = (): HTMLElement | null => {
-      const quickbar = document.querySelector(
-        ".timetablepage .quickbar.below.visible, .timetablepage .quickbar.above.visible, .timetablepage .quickbar.visible",
-      );
+      const quickbar = document.querySelector(".timetablepage .quickbar.visible");
       if (!quickbar || quickbar.getAttribute("data-type") !== "class") return null;
       return quickbar as HTMLElement;
     };

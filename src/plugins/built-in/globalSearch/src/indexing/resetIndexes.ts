@@ -7,7 +7,6 @@ export const RESET_INDEX_MESSAGE = "global-search-reset-index";
 
 let resetMessageListenerInstalled = false;
 
-/** Notify open SEQTA tabs to pause indexing and wipe page-origin stores. */
 export async function notifyOpenTabsResetSearchIndex(): Promise<void> {
   const tabs = await browser.tabs.query({});
   await Promise.allSettled(
@@ -19,7 +18,6 @@ export async function notifyOpenTabsResetSearchIndex(): Promise<void> {
   );
 }
 
-/** Content scripts: handle reset broadcast from the settings popup. */
 export function installResetIndexMessageListener(): void {
   if (resetMessageListenerInstalled) return;
   resetMessageListenerInstalled = true;
@@ -43,36 +41,6 @@ export function installResetIndexMessageListener(): void {
     void resetSearchIndexes();
   });
 }
-
-/**
- * Hard-reset of all global-search persistence.
- *
- * This module is intentionally dependency-free (no imports from `db.ts`,
- * the worker manager, embeddia, or any heavy bundle) so it can be
- * statically imported from:
- *
- *  - The always-loaded plugin shell (`lazy.ts`) for the manual
- *    "Reset Index" settings button. Statically importing means the button
- *    keeps working across extension updates — there's no chunk hash to
- *    chase via dynamic import, which previously produced
- *    `Failed to fetch dynamically imported module: .../assets/<chunk>.js`
- *    when an older settings page tried to load a chunk that the new build
- *    had already replaced.
- *
- *  - The version-check path (`utils/versionCheck.ts`) for the auto-reset
- *    that fires whenever the extension's manifest version changes.
- *
- * The function:
- *   1. Notifies in-process modules to drop in-memory caches and any open
- *      IndexedDB connections via custom DOM events (best effort).
- *   2. Deletes the structured `betterseqta-index` and the vector
- *      `embeddiaDB` databases.
- *   3. Clears version-tracking localStorage keys so the next indexing
- *      pass treats the world as fresh.
- *
- * It never throws on partial failure: each step is wrapped in try/catch
- * so a stuck connection on one DB doesn't block the other.
- */
 
 const STRUCTURED_DB = "betterseqta-index";
 const VECTOR_DB = "embeddiaDB";
@@ -137,11 +105,9 @@ export async function resetSearchIndexes(): Promise<void> {
       );
     }
   } catch {
-    /* ignore — events are best-effort */
+    /* ignore */
   }
 
-  // Give listeners a tick to close any open IDB connections; otherwise
-  // the delete request below comes back with `onblocked`.
   await delay(300);
 
   await Promise.allSettled([

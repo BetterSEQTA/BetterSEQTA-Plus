@@ -32,6 +32,11 @@ import {
   validateThemeDom,
   validateThemeScript,
 } from "./theme-runtime";
+import {
+  base64ToBlob,
+  blobToBase64Data,
+  stripBase64Prefix,
+} from "./themeImageUrl";
 
 type ThemeContent = {
   id: string;
@@ -652,10 +657,10 @@ export class ThemeManager {
       let coverImageBlob = null;
       if (themeData.coverImage) {
         try {
-          const strippedCoverImage = this.stripBase64Prefix(
-            themeData.coverImage,
+          coverImageBlob = base64ToBlob(
+            stripBase64Prefix(themeData.coverImage),
+            "image/png",
           );
-          coverImageBlob = this.base64ToBlob(strippedCoverImage);
         } catch (e) {
           console.warn("[ThemeManager] Failed to process cover image:", e);
           // Continue without cover image
@@ -673,7 +678,7 @@ export class ThemeManager {
               }
               return {
                 ...image,
-                blob: this.base64ToBlob(this.stripBase64Prefix(image.data)),
+                blob: base64ToBlob(stripBase64Prefix(image.data), "image/png"),
               };
             } catch (e) {
               console.warn("[ThemeManager] Failed to process image:", e);
@@ -858,13 +863,13 @@ export class ThemeManager {
         CustomImages.map(async (image) => ({
           id: image.id,
           variableName: image.variableName,
-          data: await this.blobToBase64(image.blob),
+          data: await blobToBase64Data(image.blob),
         })),
       );
 
       // Convert cover image to base64
       const coverImageBase64 = coverImage
-        ? await this.blobToBase64(coverImage)
+        ? await blobToBase64Data(coverImage)
         : null;
 
       // Create shareable theme data with only necessary fields
@@ -1042,51 +1047,6 @@ export class ThemeManager {
     } catch (error) {
       console.error("[ThemeManager] Error clearing preview:", error);
     }
-  }
-
-  // Utility methods
-  private stripBase64Prefix(base64String: string): string {
-    if (!base64String) return "";
-
-    const prefixRegex = /^data:[^;]+;base64,/;
-    try {
-      return prefixRegex.test(base64String)
-        ? base64String.replace(prefixRegex, "")
-        : base64String;
-    } catch (err) {
-      console.error("[ThemeManager] Error stripping base64 prefix:", err);
-      return "";
-    }
-  }
-
-  private base64ToBlob(base64: string): Blob {
-    try {
-      const byteString = atob(base64);
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-
-      return new Blob([ab], { type: "image/png" });
-    } catch (err) {
-      console.error("[ThemeManager] Error converting base64 to blob:", err);
-      return new Blob();
-    }
-  }
-
-  private async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(",")[1];
-        resolve(base64Data);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 
   private saveThemeFile(data: object, fileName: string): void {

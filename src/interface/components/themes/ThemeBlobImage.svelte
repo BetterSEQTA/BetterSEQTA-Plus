@@ -1,11 +1,7 @@
 <script lang="ts">
   import { blobToDataUrl } from '@/plugins/built-in/themes/themeImageUrl'
 
-  let {
-    source,
-    alt = '',
-    class: className = '',
-  } = $props<{
+  let { source, alt = '', class: className = '' } = $props<{
     source: string | Blob | null | undefined
     alt?: string
     class?: string
@@ -24,7 +20,7 @@
       return
     }
     let cancelled = false
-    blobToDataUrl(value).then((url) => {
+    void blobToDataUrl(value).then((url) => {
       if (!cancelled) src = url
     })
     return () => {
@@ -34,5 +30,5 @@
 </script>
 
 {#if src}
-  <img src={src} alt={alt} class={className} />
+  <img {src} {alt} class={className} />
 {/if}

@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes student folio entries from `/seqta/student/folio`.
  *

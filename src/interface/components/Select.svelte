@@ -11,20 +11,14 @@
   let activeIndex = $state(0);
   let root: HTMLDivElement | undefined = $state();
   let trigger: HTMLButtonElement | undefined = $state();
-  let listbox: HTMLUListElement | undefined = $state();
+  let listbox: HTMLDivElement | undefined = $state();
 
   const selectedLabel = $derived(
     options.find((option) => option.value === value)?.label ?? value,
   );
 
-  const selectedIndex = $derived(
-    options.findIndex((option) => option.value === value),
-  );
-
   const activeDescendantId = $derived(
-    isOpen && options[activeIndex]
-      ? optionId(options[activeIndex].value)
-      : undefined,
+    isOpen && options[activeIndex] ? optionId(options[activeIndex].value) : undefined,
   );
 
   function optionId(optionValue: string): string {
@@ -33,24 +27,13 @@
 
   function openMenu(preferredIndex?: number) {
     isOpen = true;
-    activeIndex =
-      preferredIndex ??
-      (selectedIndex >= 0 ? selectedIndex : 0);
+    const selectedIndex = options.findIndex((option) => option.value === value);
+    activeIndex = preferredIndex ?? (selectedIndex >= 0 ? selectedIndex : 0);
   }
 
   function closeMenu(returnFocus = true) {
     isOpen = false;
-    if (returnFocus) {
-      trigger?.focus();
-    }
-  }
-
-  function toggleOpen() {
-    if (isOpen) {
-      closeMenu();
-    } else {
-      openMenu();
-    }
+    if (returnFocus) trigger?.focus();
   }
 
   function selectValue(nextValue: string) {
@@ -58,41 +41,27 @@
     closeMenu();
   }
 
-  function selectActive() {
-    const option = options[activeIndex];
-    if (option) {
-      selectValue(option.value);
-    }
-  }
-
   function moveActive(delta: number) {
     if (!options.length) return;
     activeIndex = (activeIndex + delta + options.length) % options.length;
   }
 
-  function onTriggerKeydown(event: KeyboardEvent) {
+  function handleKeydown(event: KeyboardEvent, inListbox = false) {
     switch (event.key) {
       case "ArrowDown":
+      case "ArrowUp": {
         event.preventDefault();
-        if (isOpen) {
-          moveActive(1);
-        } else {
-          openMenu();
-        }
+        const delta = event.key === "ArrowDown" ? 1 : -1;
+        if (isOpen || inListbox) moveActive(delta);
+        else openMenu();
         break;
-      case "ArrowUp":
-        event.preventDefault();
-        if (isOpen) {
-          moveActive(-1);
-        } else {
-          openMenu();
-        }
-        break;
+      }
       case "Enter":
       case " ":
         event.preventDefault();
         if (isOpen) {
-          selectActive();
+          const option = options[activeIndex];
+          if (option) selectValue(option.value);
         } else {
           openMenu();
         }
@@ -103,38 +72,20 @@
           closeMenu();
         }
         break;
-    }
-  }
-
-  function onListboxKeydown(event: KeyboardEvent) {
-    switch (event.key) {
-      case "ArrowDown":
-        event.preventDefault();
-        moveActive(1);
-        break;
-      case "ArrowUp":
-        event.preventDefault();
-        moveActive(-1);
-        break;
       case "Home":
-        event.preventDefault();
-        activeIndex = 0;
+        if (inListbox) {
+          event.preventDefault();
+          activeIndex = 0;
+        }
         break;
       case "End":
-        event.preventDefault();
-        activeIndex = Math.max(0, options.length - 1);
-        break;
-      case "Enter":
-      case " ":
-        event.preventDefault();
-        selectActive();
-        break;
-      case "Escape":
-        event.preventDefault();
-        closeMenu();
+        if (inListbox) {
+          event.preventDefault();
+          activeIndex = Math.max(0, options.length - 1);
+        }
         break;
       case "Tab":
-        closeMenu(false);
+        if (inListbox) closeMenu(false);
         break;
     }
   }
@@ -145,8 +96,7 @@
     queueMicrotask(() => listbox?.focus());
 
     const onPointerDown = (event: PointerEvent) => {
-      const path = event.composedPath();
-      if (root && path.includes(root)) return;
+      if (root && event.composedPath().includes(root)) return;
       closeMenu(false);
     };
 
@@ -163,8 +113,8 @@
     aria-haspopup="listbox"
     aria-expanded={isOpen}
     aria-controls={listboxId}
-    onclick={toggleOpen}
-    onkeydown={onTriggerKeydown}
+    onclick={() => (isOpen ? closeMenu() : openMenu())}
+    onkeydown={(event) => handleKeydown(event)}
   >
     <span class="select-label">{selectedLabel}</span>
     <span class="select-icon" aria-hidden="true">
@@ -179,35 +129,32 @@
   </button>
 
   {#if isOpen}
-    <ul
+    <div
       bind:this={listbox}
       id={listboxId}
       class="select-menu"
       role="listbox"
       tabindex="-1"
       aria-activedescendant={activeDescendantId}
-      onkeydown={onListboxKeydown}
+      onkeydown={(event) => handleKeydown(event, true)}
     >
       {#each options as option, index (option.value)}
-        <li
+        <button
+          type="button"
           id={optionId(option.value)}
           role="option"
           aria-selected={option.value === value}
+          class="select-option"
+          class:is-selected={option.value === value}
+          class:is-active={index === activeIndex}
+          tabindex="-1"
+          onclick={() => selectValue(option.value)}
+          onmouseenter={() => (activeIndex = index)}
         >
-          <button
-            type="button"
-            class="select-option"
-            class:is-selected={option.value === value}
-            class:is-active={index === activeIndex}
-            tabindex="-1"
-            onclick={() => selectValue(option.value)}
-            onmouseenter={() => (activeIndex = index)}
-          >
-            {option.label}
-          </button>
-        </li>
+          {option.label}
+        </button>
       {/each}
-    </ul>
+    </div>
   {/if}
 </div>
 
@@ -239,14 +186,14 @@
       box-shadow 180ms ease;
   }
 
-  .select-trigger:hover {
+  .select-trigger:hover,
+  .select-trigger:focus-visible {
+    outline: none;
     background: var(--theme-secondary, #e5e7eb);
     border-color: var(--theme-offset-bg, var(--theme-secondary, #d4d4d8));
   }
 
   .select-trigger:focus-visible {
-    outline: none;
-    background: var(--theme-secondary, #e5e7eb);
     border-color: color-mix(in srgb, var(--text-primary) 22%, var(--theme-secondary, #e5e7eb) 78%);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
   }
@@ -268,9 +215,11 @@
     left: 0;
     right: 0;
     z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
     margin: 0;
     padding: 0.5rem;
-    list-style: none;
     border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
     border-radius: 14px;
     background: var(--theme-primary, #ffffff);
@@ -279,9 +228,6 @@
       0 8px 10px -6px rgb(0 0 0 / 0.2);
     max-height: 18rem;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
   }
 
   .select-menu:focus-visible {
@@ -310,12 +256,9 @@
 
   .select-option:hover,
   .select-option:focus-visible,
-  .select-option.is-active {
-    outline: none;
-    background: var(--theme-secondary, #e5e7eb);
-  }
-
+  .select-option.is-active,
   .select-option.is-selected {
+    outline: none;
     background: var(--theme-secondary, #e5e7eb);
   }
 </style>

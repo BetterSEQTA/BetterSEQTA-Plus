@@ -315,40 +315,36 @@
           <h2 class="text-sm font-bold">Maximum Subjects</h2>
           <p class="text-xs">Number of subjects to include, ordered by soonest due date</p>
         </div>
-        <div>
-          <Select
-            value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
-            onChange={(value: string) => (settingsState.homeUpcomingSubjectsMax = Number(value))}
-            options={[
-              { value: "0", label: "All" },
-              { value: "3", label: "3" },
-              { value: "5", label: "5" },
-              { value: "7", label: "7" },
-              { value: "10", label: "10" },
-              { value: "15", label: "15" },
-            ]}
-          />
-        </div>
+        <Select
+          value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
+          onChange={(value: string) => (settingsState.homeUpcomingSubjectsMax = Number(value))}
+          options={[
+            { value: "0", label: "All" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "7", label: "7" },
+            { value: "10", label: "10" },
+            { value: "15", label: "15" },
+          ]}
+        />
       </div>
       <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
           <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
           <p class="text-xs">Assessments shown for each included subject</p>
         </div>
-        <div>
-          <Select
-            value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
-            onChange={(value: string) => (settingsState.homeUpcomingAssessmentsPerSubjectMax = Number(value))}
-            options={[
-              { value: "0", label: "All" },
-              { value: "1", label: "1" },
-              { value: "2", label: "2" },
-              { value: "3", label: "3" },
-              { value: "5", label: "5" },
-              { value: "10", label: "10" },
-            ]}
-          />
-        </div>
+        <Select
+          value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
+          onChange={(value: string) => (settingsState.homeUpcomingAssessmentsPerSubjectMax = Number(value))}
+          options={[
+            { value: "0", label: "All" },
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "10", label: "10" },
+          ]}
+        />
       </div>
     </div>
   </div>

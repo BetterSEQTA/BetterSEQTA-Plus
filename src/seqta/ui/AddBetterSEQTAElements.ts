@@ -464,14 +464,11 @@ function GetLightDarkModeString() {
 }
 
 async function addDarkLightToggle(parent?: Element) {
-  const SUN_ICON_SVG = LUCIDE_SUN_ICON_SVG;
-  const MOON_ICON_SVG = LUCIDE_MOON_ICON_SVG;
-
   const toggleTarget = parent ?? document.getElementById("content")!;
   toggleTarget.append(
     stringToHTML(/* html */ `
       <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">${settingsState.DarkMode ? SUN_ICON_SVG : MOON_ICON_SVG}</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
         <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${GetLightDarkModeString()}</div>
       </button>
     `).firstChild!,
@@ -508,8 +505,8 @@ async function addDarkLightToggle(parent?: Element) {
 
     const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
     svgElement.innerHTML = settingsState.DarkMode
-      ? SUN_ICON_SVG
-      : MOON_ICON_SVG;
+      ? LUCIDE_SUN_ICON_SVG
+      : LUCIDE_MOON_ICON_SVG;
     darklightText!.innerText = GetLightDarkModeString();
   });
 }
@@ -553,10 +550,7 @@ function scheduleSidebarAccessibilityUpdate() {
     cancelAnimationFrame(sidebarTabOrderAnimationFrame);
   }
 
-  // Double rAF: SEQTA applies `.active` / updates `.sub` on the next frame
-  // after a click. Running earlier hid the submenu with `aria-hidden` while
-  // focus was still on a <label> inside it, which broke routing and sent
-  // the SPA back to home.
+  // Double rAF: SEQTA applies drill state on the next frame after click.
   sidebarTabOrderAnimationFrame = requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       sidebarTabOrderAnimationFrame = null;
@@ -619,13 +613,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   }
 }
 
-/**
- * Keyboard tab order for the drilled-in sidebar only.
- * SEQTA already sets `aria-hidden` on off-screen menu rows; we must not
- * override that or hide `.sub` ourselves — doing so while a <label> inside
- * the submenu still has focus breaks SEQTA's router and navigates to home.
- */
-/** Every folder row on the path to the open list (e.g. Assessments → 2026_S1). */
+/** Folder rows on the path to the currently open sidebar list. */
 function getDrillFolderChain(
   menu: HTMLElement,
   visibleList: HTMLElement | null,
@@ -722,15 +710,6 @@ function updateSidebarAccessibility() {
   }
 }
 
-function getVisibleSidebarEntries(menu = document.getElementById("menu")) {
-  if (!menu) return [] as HTMLElement[];
-
-  const visibleList = getVisibleSidebarList(menu);
-  if (!visibleList) return [] as HTMLElement[];
-
-  return getDirectSidebarEntries(visibleList);
-}
-
 function getDirectSidebarEntries(list: HTMLElement) {
   return Array.from(list.querySelectorAll(":scope > li, :scope > section")).filter(
     (entry): entry is HTMLElement => entry instanceof HTMLElement,
@@ -764,9 +743,8 @@ function getVisibleSidebarList(menu: HTMLElement) {
 }
 
 function getSidebarListParentEntry(list: HTMLElement) {
-  return list.closest(".sub")?.parentElement instanceof HTMLElement
-    ? (list.closest(".sub")!.parentElement as HTMLElement)
-    : null;
+  const sub = list.closest(".sub");
+  return sub?.parentElement instanceof HTMLElement ? sub.parentElement : null;
 }
 
 function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {

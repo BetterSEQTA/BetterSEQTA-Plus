@@ -1,7 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes the user's external portal entries from `/seqta/student/load/portals`.
  *

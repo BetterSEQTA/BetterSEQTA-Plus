@@ -7,7 +7,6 @@ import {
   pickId,
   buildIndexItem,
 } from "./extract";
-import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import {
   coursesPayload,
@@ -317,10 +316,6 @@ export async function runGlobalSearchSelfTests(): Promise<SelfTestReport> {
     console.warn(
       `[Global Search Self-Tests] ${report.failed} failed / ${report.passed} passed`,
       report.failures,
-    );
-  } else {
-    verboseInfo(
-      `[Global Search Self-Tests] All ${report.passed} cases passed`,
     );
   }
   return report;

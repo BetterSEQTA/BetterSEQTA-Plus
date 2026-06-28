@@ -55,39 +55,24 @@ function setupUpgradeHandler(
   };
 }
 
-function openAtVersion(version: number, extraStore?: string): Promise<IDBDatabase> {
+function openDatabase(version?: number, extraStore?: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     let request: IDBOpenDBRequest;
-
     try {
-      request = indexedDB.open(DB_NAME, version);
+      request =
+        version != null
+          ? indexedDB.open(DB_NAME, version)
+          : indexedDB.open(DB_NAME);
     } catch (error) {
       reject(error);
       return;
     }
 
     setupUpgradeHandler(request, extraStore);
-
     request.onsuccess = () => {
       attachConnection(request.result);
       resolve(request.result);
     };
-
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function openAtCurrentVersion(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME);
-
-    setupUpgradeHandler(request);
-
-    request.onsuccess = () => {
-      attachConnection(request.result);
-      resolve(request.result);
-    };
-
     request.onerror = () => reject(request.error);
   });
 }
@@ -154,7 +139,7 @@ async function openDBInternal(): Promise<IDBDatabase> {
   const storedVersion = getCurrentVersion();
 
   try {
-    return await openAtVersion(storedVersion);
+    return await openDatabase(storedVersion);
   } catch (error) {
     const domError = error as DOMException | undefined;
 
@@ -164,7 +149,7 @@ async function openDBInternal(): Promise<IDBDatabase> {
       );
       invalidateConnection();
       try {
-        return await openAtCurrentVersion();
+        return await openDatabase();
       } catch (fallbackError) {
         console.warn("[DB] Fallback open failed, recreating database:", fallbackError);
       }
@@ -173,7 +158,7 @@ async function openDBInternal(): Promise<IDBDatabase> {
     }
 
     await wipeDatabase();
-    return openAtVersion(1);
+    return openDatabase(1);
   }
 }
 
@@ -188,19 +173,26 @@ function openDB(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
-async function getStore(store: string, mode: IDBTransactionMode = "readonly") {
+function idbRequest<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function objectStore(
+  store: string,
+  mode: IDBTransactionMode = "readonly",
+): Promise<IDBObjectStore> {
   const db = await openDB();
 
   if (!db.objectStoreNames.contains(store)) {
     await upgradeDB(store);
-
     const upgradedDb = await openDB();
-    const tx = upgradedDb.transaction(store, mode);
-    return tx.objectStore(store);
+    return upgradedDb.transaction(store, mode).objectStore(store);
   }
 
-  const tx = db.transaction(store, mode);
-  return tx.objectStore(store);
+  return db.transaction(store, mode).objectStore(store);
 }
 
 async function upgradeDB(newStore: string): Promise<void> {
@@ -209,7 +201,7 @@ async function upgradeDB(newStore: string): Promise<void> {
   let baseVersion = 0;
 
   try {
-    const db = await openAtCurrentVersion();
+    const db = await openDatabase();
     baseVersion = db.version;
     db.close();
     cachedDb = null;
@@ -218,10 +210,8 @@ async function upgradeDB(newStore: string): Promise<void> {
     console.warn("[DB] Could not probe database version before upgrade:", error);
   }
 
-  const newVersion = baseVersion + 1;
-
   try {
-    await openAtVersion(newVersion, newStore);
+    await openDatabase(baseVersion + 1, newStore);
   } catch (error) {
     console.error("Error upgrading database:", error);
     throw error;
@@ -230,12 +220,8 @@ async function upgradeDB(newStore: string): Promise<void> {
 
 export async function getAll(store: string): Promise<any[]> {
   try {
-    const s = await getStore(store);
-    return new Promise((resolve, reject) => {
-      const req = s.getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store);
+    return await idbRequest(s.getAll());
   } catch (error) {
     console.error(`Error in getAll for store ${store}:`, error);
     return [];
@@ -244,12 +230,8 @@ export async function getAll(store: string): Promise<any[]> {
 
 export async function get(store: string, key: string): Promise<any> {
   try {
-    const s = await getStore(store);
-    return new Promise((resolve, reject) => {
-      const req = s.get(key);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store);
+    return await idbRequest(s.get(key));
   } catch (error) {
     console.error(`Error in get for store ${store}, key ${key}:`, error);
     return null;
@@ -262,21 +244,14 @@ export async function put(
   key?: string,
 ): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = key ? s.put(value, key) : s.put(value);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(key ? s.put(value, key) : s.put(value));
   } catch (error) {
     console.error(`Error in put for store ${store}:`, error);
     throw error;
   }
 }
 
-/**
- * Apply puts and deletes in a single readwrite transaction.
- */
 export async function applyStoreDiff(
   store: string,
   puts: Array<{ key: string; value: any }>,
@@ -286,15 +261,10 @@ export async function applyStoreDiff(
 
   try {
     const db = await openDB();
-
     if (!db.objectStoreNames.contains(store)) {
       await upgradeDB(store);
-      const upgradedDb = await openDB();
-      await runStoreDiffTransaction(upgradedDb, store, puts, removeKeys);
-      return;
     }
-
-    await runStoreDiffTransaction(db, store, puts, removeKeys);
+    await runStoreDiffTransaction(await openDB(), store, puts, removeKeys);
   } catch (error) {
     console.error(`Error in applyStoreDiff for store ${store}:`, error);
     throw error;
@@ -309,13 +279,13 @@ function runStoreDiffTransaction(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readwrite");
-    const objectStore = tx.objectStore(store);
+    const objectStoreRef = tx.objectStore(store);
 
     for (const key of removeKeys) {
-      objectStore.delete(key);
+      objectStoreRef.delete(key);
     }
     for (const { key, value } of puts) {
-      objectStore.put(value, key);
+      objectStoreRef.put(value, key);
     }
 
     tx.oncomplete = () => resolve();
@@ -326,12 +296,8 @@ function runStoreDiffTransaction(
 
 export async function remove(store: string, key: string): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = s.delete(key);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(s.delete(key));
   } catch (error) {
     console.error(`Error in remove for store ${store}, key ${key}:`, error);
     throw error;
@@ -340,12 +306,8 @@ export async function remove(store: string, key: string): Promise<void> {
 
 export async function clear(store: string): Promise<void> {
   try {
-    const s = await getStore(store, "readwrite");
-    return new Promise((resolve, reject) => {
-      const req = s.clear();
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    const s = await objectStore(store, "readwrite");
+    await idbRequest(s.clear());
   } catch (error) {
     console.error(`Error in clear for store ${store}:`, error);
     throw error;
@@ -358,7 +320,7 @@ export async function resetDatabase(): Promise<void> {
       const db = await dbPromise;
       db.close();
     } catch {
-      // Database might not be open yet, that's okay
+      // Database might not be open yet
     }
   }
 

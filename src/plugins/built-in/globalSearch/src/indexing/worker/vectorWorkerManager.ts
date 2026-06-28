@@ -4,7 +4,7 @@ import { isVectorSearchSupported } from "../../utils/browserDetection";
 import { getOrtWasmBaseUrl } from "@/lib/transformersExtension";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug, verboseLog } from '@/utils/verboseLog';
 export type ProgressCallback = (data: {
   status: "started" | "processing" | "complete" | "error" | "cancelled";
   total?: number;

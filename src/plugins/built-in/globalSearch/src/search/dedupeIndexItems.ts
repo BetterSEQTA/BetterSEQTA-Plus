@@ -12,7 +12,6 @@ function toFiniteNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-/** Same SPA destination as handlers for `course` / `subjectcourse` / passive `courses`. */
 function shouldDedupeAsSameCourseSPA(item: IndexItem): boolean {
   if (item.actionId === "subjectassessment") return false;
   if (item.metadata?.type === "assessments") return false;
@@ -90,7 +89,6 @@ function pickBetterCourseNavDuplicate(a: IndexItem, b: IndexItem): IndexItem {
   const bP = isPassiveLike(b);
   if (aP && !bP) return b;
   if (!aP && bP) return a;
-  // Prefer curated job row (courses store) vs other categories
   if (a.category === "courses" && b.category !== "courses") return a;
   if (b.category === "courses" && a.category !== "courses") return b;
   if (a.renderComponentId === "course" && b.renderComponentId !== "course")
@@ -107,15 +105,12 @@ function pickBetterAssessmentDuplicate(a: IndexItem, b: IndexItem): IndexItem {
   const bP = isPassiveLike(b);
   if (aP && !bP) return b;
   if (!aP && bP) return a;
-
   if (a.category === "assignments" && b.category !== "assignments") return a;
   if (b.category === "assignments" && a.category !== "assignments") return b;
-
   const aPm = hasProgrammeMetaclass(a);
   const bPm = hasProgrammeMetaclass(b);
   if (aPm && !bPm) return a;
   if (!aPm && bPm) return b;
-
   const ad = typeof a.dateAdded === "number" ? a.dateAdded : 0;
   const bd = typeof b.dateAdded === "number" ? b.dateAdded : 0;
   return ad >= bd ? a : b;
@@ -126,35 +121,30 @@ function pickBetterSearchDuplicate(
   b: IndexItem,
   key: string,
 ): IndexItem {
-  if (key.startsWith("assessment:")) {
-    return pickBetterAssessmentDuplicate(a, b);
-  }
-  return pickBetterCourseNavDuplicate(a, b);
+  return key.startsWith("assessment:")
+    ? pickBetterAssessmentDuplicate(a, b)
+    : pickBetterCourseNavDuplicate(a, b);
 }
 
-/**
- * Collapses multiple index rows that open the same course or assessment hash
- * route (e.g. `course` job + passive `/load/courses`, or assignments job +
- * passive `/assessment/list/past`) so search shows one hit.
- */
-export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
-  const winners = new Map<string, IndexItem>();
+function dedupeByCanonicalKey<T>(
+  items: T[],
+  getKey: (item: T) => string | undefined,
+  pickWinner: (a: T, b: T, key: string) => T,
+): T[] {
+  const winners = new Map<string, T>();
 
   for (const item of items) {
-    const key = searchDedupeKey(item);
+    const key = getKey(item);
     if (!key) continue;
     const prev = winners.get(key);
-    winners.set(
-      key,
-      prev ? pickBetterSearchDuplicate(prev, item, key) : item,
-    );
+    winners.set(key, prev ? pickWinner(prev, item, key) : item);
   }
 
   const seenCanon = new Set<string>();
-  const out: IndexItem[] = [];
+  const out: T[] = [];
 
   for (const item of items) {
-    const key = searchDedupeKey(item);
+    const key = getKey(item);
     if (!key) {
       out.push(item);
       continue;
@@ -167,15 +157,15 @@ export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
   return out;
 }
 
+export function dedupeIndexItemsForSearch(items: IndexItem[]): IndexItem[] {
+  return dedupeByCanonicalKey(items, searchDedupeKey, pickBetterSearchDuplicate);
+}
+
 function dynamicSearchKey(row: CombinedResult): string | undefined {
   if (row.type !== "dynamic") return undefined;
   return searchDedupeKey(row.item as IndexItem);
 }
 
-/**
- * Final pass after hybrid expansion: vector-only recall can still surface a
- * second row for the same SPA route using a stale passive id.
- */
 export function dedupeCombinedResultsByCourseNav(
   results: CombinedResult[],
 ): CombinedResult[] {

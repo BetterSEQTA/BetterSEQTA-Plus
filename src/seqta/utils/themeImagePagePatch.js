@@ -14,139 +14,110 @@
   var THEME_STYLE_ID = "custom-theme";
   var PREVIEW_STYLE_ID = "custom-theme-preview";
   var urlCache = {};
-  var state = {
-    customCss: "",
-    previewCss: "",
-  };
+  var cssState = { custom: "", preview: "" };
   var headObserver = null;
 
   function log(event, detail) {
     if (!document.documentElement.hasAttribute("data-bsplus-verbose-log")) return;
-    if (detail !== undefined) {
-      console.info(LOG, event, detail);
-    } else {
-      console.info(LOG, event);
-    }
+    console.info(LOG, event, detail);
   }
 
   function base64ToBlob(base64, mime) {
-    var byteString = atob(base64);
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
+    var bytes = atob(base64);
+    var ab = new ArrayBuffer(bytes.length);
+    var view = new Uint8Array(ab);
+    for (var i = 0; i < bytes.length; i++) view[i] = bytes.charCodeAt(i);
     return new Blob([ab], { type: mime || "image/png" });
   }
 
   function releaseCachedUrls() {
     for (var key in urlCache) {
-      if (!urlCache.hasOwnProperty(key)) continue;
+      if (!Object.prototype.hasOwnProperty.call(urlCache, key)) continue;
       try {
         URL.revokeObjectURL(urlCache[key]);
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     }
     urlCache = {};
   }
 
-  function ensureStyleElement(id) {
-    var style = document.getElementById(id);
-    if (!style) {
-      style = document.createElement("style");
-      style.id = id;
-      document.head.appendChild(style);
+  function styleEl(id) {
+    var el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = id;
+      document.head.appendChild(el);
     }
-    return style;
+    return el;
   }
 
-  function ensureThemeStyleLast() {
-    var style = document.getElementById(THEME_STYLE_ID);
-    if (!style || !document.head.contains(style)) return;
-    if (document.head.lastElementChild === style) return;
-    document.head.appendChild(style);
+  function keepThemeStyleLast() {
+    var themeStyle = document.getElementById(THEME_STYLE_ID);
+    if (themeStyle && document.head.contains(themeStyle) && document.head.lastElementChild !== themeStyle) {
+      document.head.appendChild(themeStyle);
+    }
   }
 
-  function ensureHeadObserver() {
+  function watchHead() {
     if (headObserver) return;
-    headObserver = new MutationObserver(function () {
-      ensureThemeStyleLast();
-    });
+    headObserver = new MutationObserver(keepThemeStyleLast);
     headObserver.observe(document.head, { childList: true });
+  }
+
+  function setStyleText(id, text, watchThemeOrder) {
+    if (!text) {
+      document.getElementById(id)?.remove();
+      return;
+    }
+    styleEl(id).textContent = text;
+    if (watchThemeOrder) {
+      watchHead();
+      keepThemeStyleLast();
+    }
   }
 
   function clearAll() {
     releaseCachedUrls();
-    state.customCss = "";
-    state.previewCss = "";
-    var imagesStyle = document.getElementById(IMAGES_STYLE_ID);
-    if (imagesStyle) imagesStyle.textContent = "";
-    var themeStyle = document.getElementById(THEME_STYLE_ID);
-    if (themeStyle) themeStyle.remove();
-    var previewStyle = document.getElementById(PREVIEW_STYLE_ID);
-    if (previewStyle) previewStyle.remove();
-    if (headObserver) {
-      headObserver.disconnect();
-      headObserver = null;
-    }
+    cssState.custom = "";
+    cssState.preview = "";
+    setStyleText(IMAGES_STYLE_ID, "");
+    document.getElementById(THEME_STYLE_ID)?.remove();
+    document.getElementById(PREVIEW_STYLE_ID)?.remove();
+    headObserver?.disconnect();
+    headObserver = null;
     log("cleared");
   }
 
   function applyThemeImages(images) {
     releaseCachedUrls();
-    if (!images || !images.length) {
-      var emptyStyle = document.getElementById(IMAGES_STYLE_ID);
-      if (emptyStyle) emptyStyle.textContent = "";
+    if (!images?.length) {
+      setStyleText(IMAGES_STYLE_ID, "");
       return;
     }
 
     var lines = [":root {"];
     for (var i = 0; i < images.length; i++) {
       var img = images[i];
-      if (!img || !img.variableName || !img.data) continue;
+      if (!img?.variableName || !img.data) continue;
       try {
-        var blob = base64ToBlob(img.data, img.mime);
-        var url = URL.createObjectURL(blob);
+        var url = URL.createObjectURL(base64ToBlob(img.data, img.mime));
         urlCache[img.variableName] = url;
-        lines.push("  --" + img.variableName + ": url(\"" + url + "\");");
+        lines.push('  --' + img.variableName + ': url("' + url + '");');
       } catch (e) {
         console.warn(LOG, "skip image", img.variableName, e);
       }
     }
     lines.push("}");
-    ensureStyleElement(IMAGES_STYLE_ID).textContent = lines.join("\n");
+    styleEl(IMAGES_STYLE_ID).textContent = lines.join("\n");
     log("images applied", { count: images.length });
   }
 
-  function applyCustomCss(css) {
-    if (!css) {
-      var existing = document.getElementById(THEME_STYLE_ID);
-      if (existing) existing.remove();
-      return;
-    }
-    ensureStyleElement(THEME_STYLE_ID).textContent = css;
-    ensureHeadObserver();
-    ensureThemeStyleLast();
-  }
-
-  function applyPreviewCss(css) {
-    if (!css) {
-      var existing = document.getElementById(PREVIEW_STYLE_ID);
-      if (existing) existing.remove();
-      return;
-    }
-    ensureStyleElement(PREVIEW_STYLE_ID).textContent = css;
-  }
-
   function processPayload() {
-    var payloadEl = document.getElementById(PAYLOAD_ID);
-    if (!payloadEl) return;
-    var raw = payloadEl.value;
+    var raw = document.getElementById(PAYLOAD_ID)?.value;
     if (!raw) {
       clearAll();
       return;
     }
+
     try {
       var payload = JSON.parse(raw);
       if (!payload || payload.clear) {
@@ -154,24 +125,22 @@
         return;
       }
 
-      if (payload.images !== undefined) {
-        applyThemeImages(payload.images);
-      }
+      if (payload.images !== undefined) applyThemeImages(payload.images);
 
       if (payload.customCss !== undefined) {
-        state.customCss = payload.customCss || "";
-        applyCustomCss(state.customCss);
+        cssState.custom = payload.customCss || "";
+        setStyleText(THEME_STYLE_ID, cssState.custom, true);
         log("custom css applied");
       }
 
       if (payload.previewCss !== undefined) {
-        state.previewCss = payload.previewCss || "";
-        applyPreviewCss(state.previewCss);
+        cssState.preview = payload.previewCss || "";
+        setStyleText(PREVIEW_STYLE_ID, cssState.preview);
       }
 
       if (payload.clearPreview) {
-        state.previewCss = "";
-        applyPreviewCss("");
+        cssState.preview = "";
+        setStyleText(PREVIEW_STYLE_ID, "");
       }
     } catch (e) {
       console.warn(LOG, "invalid payload", e);
@@ -197,10 +166,7 @@
   }
 
   ensureBridge();
-  var bridge = document.getElementById(BRIDGE_ID);
-  new MutationObserver(function () {
-    processPayload();
-  }).observe(bridge, {
+  new MutationObserver(processPayload).observe(document.getElementById(BRIDGE_ID), {
     attributes: true,
     attributeFilter: ["data-rev"],
   });

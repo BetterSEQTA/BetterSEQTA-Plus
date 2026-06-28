@@ -45,22 +45,12 @@ export function insertKeyAfterInOrder(
 
 /** Default Analytics immediately below Courses in saved menu order. */
 export function ensureAnalyticsMenuOrder(): void {
-  if (!settingsState.defaultmenuorder.includes("analytics")) {
-    settingsState.defaultmenuorder = insertKeyAfterInOrder(
-      settingsState.defaultmenuorder,
-      "analytics",
-      "courses",
-    );
-  }
-  if (
-    settingsState.menuorder.length > 0 &&
-    !settingsState.menuorder.includes("analytics")
-  ) {
-    settingsState.menuorder = insertKeyAfterInOrder(
-      settingsState.menuorder,
-      "analytics",
-      "courses",
-    );
+  for (const key of ["defaultmenuorder", "menuorder"] as const) {
+    const order = settingsState[key];
+    if (key === "menuorder" && order.length === 0) continue;
+    if (!order.includes("analytics")) {
+      settingsState[key] = insertKeyAfterInOrder(order, "analytics", "courses");
+    }
   }
 }
 

@@ -1,29 +1,19 @@
 /**
- * SEQTA Learn bug (vanilla too): MainMenu.updateColours uses
- * `.each(function (item) { this.options... }).bind(this)` — the bind is on
- * `.each()`'s return value, not the callback. Saving a timetable subject colour
- * sends `menu.update.colours` and throws.
- *
- * Also: ColourChooser (SlidePane + Modaliser) can leave a full-screen
- * uiSlidePane / empty modaliser-container that blocks timetable clicks.
- *
- * Must run in the PAGE JavaScript context — inject via web_accessible script URL.
+ * Timetable colour save recovery (#221): broken menu.update.colours in PAGE context
+ * (injected script) plus Coloris / overlay cleanup in the content script.
  */
 
-import browser from "webextension-polyfill";
 import patchScript from "@/seqta/utils/seqtaMenuColourPatch.js?url";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import { verboseInfo } from "@/utils/verboseLog";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-seqta-menu-colour-patch-loader";
 
-/** Remove empty or hidden modaliser shells left after colour dialog teardown. */
 export function dismissStaleModaliserContainers(): number {
   let removed = 0;
   for (const container of document.querySelectorAll(".modaliser-container")) {
     const modal = container.querySelector(".modaliser");
-    const empty = !modal || modal.childElementCount === 0;
-    const hidden = !container.classList.contains("visible");
-    if (empty || hidden) {
+    if (!modal?.childElementCount || !container.classList.contains("visible")) {
       container.remove();
       removed++;
     }
@@ -31,14 +21,12 @@ export function dismissStaleModaliserContainers(): number {
   return removed;
 }
 
-/** Remove stuck SEQTA colour chooser slide panes that intercept timetable clicks. */
 export function dismissStaleColourSlidePanes(
   forceColourChooser = false,
 ): number {
   let removed = 0;
   for (const pane of document.querySelectorAll(".uiSlidePane")) {
-    const isColourChooser = pane.querySelector(".pane.colourChooser");
-    if (isColourChooser) {
+    if (pane.querySelector(".pane.colourChooser")) {
       pane.remove();
       removed++;
       continue;
@@ -61,6 +49,91 @@ export function dismissStaleColourDialogs(forceColourChooser = false): {
   document.body.classList.remove("clr-open");
   document.documentElement.classList.remove("clr-open");
   return { slideRemoved, modalRemoved };
+}
+
+function setClrPickerState(reset: boolean): void {
+  document.body.classList.remove("clr-open");
+  document.documentElement.classList.remove("clr-open");
+  for (const picker of document.querySelectorAll(".clr-picker")) {
+    picker.classList.remove("clr-open");
+    if (!(picker instanceof HTMLElement)) continue;
+    if (reset) {
+      picker.style.removeProperty("display");
+      picker.style.removeProperty("pointer-events");
+      picker.style.removeProperty("visibility");
+    } else {
+      picker.style.display = "none";
+      picker.style.pointerEvents = "none";
+      picker.style.visibility = "hidden";
+    }
+  }
+}
+
+/** Hide colour-picker / modal layers that intercept clicks after a colour save. */
+export function dismissTimetableUiBlockers(): {
+  slideRemoved: number;
+  modalRemoved: number;
+} {
+  document.body.style.removeProperty("overflow");
+  setClrPickerState(false);
+  return dismissStaleColourDialogs();
+}
+
+/** Clear inline styles that can prevent Coloris from reopening. */
+export function prepareColorisPickerOpen(): void {
+  setClrPickerState(true);
+}
+
+let colorisRecoveryAttached = false;
+let dismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function attachTimetableColorisRecovery(): void {
+  if (colorisRecoveryAttached) return;
+  colorisRecoveryAttached = true;
+
+  const scheduleDismiss = () => {
+    if (dismissTimer !== null) clearTimeout(dismissTimer);
+    dismissTimer = setTimeout(() => {
+      dismissTimer = null;
+      dismissTimetableUiBlockers();
+    }, 100);
+  };
+
+  document.addEventListener("coloris:close", scheduleDismiss);
+  document.addEventListener("coloris:pick", scheduleDismiss);
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".timetablepage")) return;
+
+      if (target.closest("[title='Choose a colour']")) {
+        if (dismissTimer !== null) {
+          clearTimeout(dismissTimer);
+          dismissTimer = null;
+        }
+        prepareColorisPickerOpen();
+        return;
+      }
+
+      if (!target.closest(".entry")) return;
+
+      const pickerOpen =
+        document.body.classList.contains("clr-open") &&
+        document.querySelector(".clr-picker.clr-open");
+      if (!pickerOpen) {
+        const result = dismissTimetableUiBlockers();
+        if (result.slideRemoved > 0 || result.modalRemoved > 0) {
+          verboseInfo(
+            "[BetterSEQTA+] timetable colour: content-script cleanup",
+            result,
+          );
+        }
+      }
+    },
+    true,
+  );
 }
 
 export function installSeqtaMenuColourPatch(): void {

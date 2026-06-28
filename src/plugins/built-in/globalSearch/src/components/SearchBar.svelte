@@ -15,7 +15,6 @@
   import HighlightedText from '../utils/HighlightedText.svelte';
   import { matchesHotkey } from '../utils/hotkeyUtils';
   import browser from 'webextension-polyfill';
-  import { verboseDebug } from '@/utils/verboseLog';
 
   const { 
     transparencyEffects, 
@@ -32,12 +31,6 @@
   
   const dynamicIdToItemMap = $state(new Map<string, IndexItem>());
   const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
-
-  let isIndexing = $state(false);
-  let completedJobs = $state(0);
-  let totalJobs = $state(0);
-  let indexingStatus = $state<string | null>(null);
-  let indexingDetail = $state<string | null>(null);
 
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
@@ -119,17 +112,6 @@
   });
 
   onMount(() => {
-    const progressHandler = (event: CustomEvent) => {
-      const { completed, total, indexing, status, detail } = event.detail;
-      completedJobs = completed;
-      totalJobs = total;
-      isIndexing = indexing;
-      indexingStatus = status || null;
-      indexingDetail = detail || null;
-    };
-
-    window.addEventListener('indexing-progress', progressHandler as EventListener);
-    
     const itemsUpdatedHandler = (event: Event) => {
       const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
 
@@ -168,7 +150,6 @@
     };
 
     return () => {
-      window.removeEventListener('indexing-progress', progressHandler as EventListener);
       window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
     };
   });
@@ -184,8 +165,6 @@
     
     dynamicItems.forEach(item => dynamicIdToItemMap.set(item.id, item));
     commands.forEach(item => commandIdToItemMap.set(item.id, item));
-    
-    verboseDebug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
   }
 
   const performSearch = async () => {

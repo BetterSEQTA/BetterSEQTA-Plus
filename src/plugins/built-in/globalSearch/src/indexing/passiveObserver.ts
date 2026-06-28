@@ -6,7 +6,7 @@ import {
   pickId,
   pickTitle,
 } from "./extract";
-import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
+import { verboseDebug } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
 import { decorateIndexItems } from "./renderComponents";
@@ -453,6 +453,28 @@ async function flushDynamicItems(): Promise<void> {
 /*                          fetch hook                                */
 /* ------------------------------------------------------------------ */
 
+async function handleCapturedPayload(
+  route: string,
+  requestBody: unknown,
+  payload: unknown,
+): Promise<void> {
+  const items = synthesizeItems(
+    { route, requestBody, observedAt: Date.now() },
+    payload,
+  );
+  if (items.length > 0) {
+    await persistItems(items);
+  }
+}
+
+function parseSeqtaPayload(json: unknown): unknown | null {
+  if (!json || typeof json !== "object") return null;
+  const body = json as { status?: string; payload?: unknown };
+  if (body.status && body.status !== "200") return null;
+  if (body.payload === undefined || body.payload === null) return null;
+  return body.payload;
+}
+
 async function consumeResponse(
   response: Response,
   url: string,
@@ -462,35 +484,18 @@ async function consumeResponse(
 
   const route = normalizeSeqtaPath(url);
   if (isSensitiveSeqtaPath(route)) return;
+  if (!looksLikeJsonContentType(response.headers.get("content-type"))) return;
 
-  const contentType = response.headers.get("content-type");
-  if (!looksLikeJsonContentType(contentType)) return;
-
-  let body: any;
+  let body: unknown;
   try {
     body = await response.clone().json();
   } catch {
     return;
   }
 
-  if (!body || typeof body !== "object") return;
-  if (body.status && body.status !== "200") return;
-
-  const payload = body.payload;
-  if (payload === undefined || payload === null) return;
-
-  const items = synthesizeItems(
-    {
-      route,
-      requestBody,
-      observedAt: Date.now(),
-    },
-    payload,
-  );
-
-  if (items.length > 0) {
-    await persistItems(items);
-  }
+  const payload = parseSeqtaPayload(body);
+  if (payload === null) return;
+  await handleCapturedPayload(route, requestBody, payload);
 }
 
 function tryParseJson(value: unknown): unknown {
@@ -578,31 +583,20 @@ export function installPassiveObserver(): void {
           this.addEventListener("load", () => {
             try {
               if (this.status < 200 || this.status >= 300) return;
-              const ct = this.getResponseHeader("content-type");
-              if (!looksLikeJsonContentType(ct)) return;
+              if (!looksLikeJsonContentType(this.getResponseHeader("content-type"))) {
+                return;
+              }
               const route = normalizeSeqtaPath(url);
               if (isSensitiveSeqtaPath(route)) return;
-              let json: any;
+              let json: unknown;
               try {
                 json = JSON.parse(this.responseText);
               } catch {
                 return;
               }
-              if (!json || typeof json !== "object") return;
-              if (json.status && json.status !== "200") return;
-              const payload = json.payload;
-              if (payload === undefined || payload === null) return;
-              const items = synthesizeItems(
-                {
-                  route,
-                  requestBody: parsed,
-                  observedAt: Date.now(),
-                },
-                payload,
-              );
-              if (items.length > 0) {
-                void persistItems(items);
-              }
+              const payload = parseSeqtaPayload(json);
+              if (payload === null) return;
+              void handleCapturedPayload(route, parsed, payload);
             } catch (e) {
               verboseDebug("[Passive Observer] xhr load error:", e);
             }

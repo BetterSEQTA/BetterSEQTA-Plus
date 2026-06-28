@@ -36,29 +36,9 @@ export async function mountSearchBar(
   const searchButton = document.createElement("div");
   searchButton.className = "search-trigger";
 
-  const searchIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  searchIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  searchIcon.setAttribute("width", "16");
-  searchIcon.setAttribute("height", "16");
-  searchIcon.setAttribute("viewBox", "0 0 24 24");
-  searchIcon.setAttribute("fill", "none");
-  searchIcon.setAttribute("stroke", "currentColor");
-  searchIcon.setAttribute("stroke-width", "2");
-  searchIcon.setAttribute("stroke-linecap", "round");
-  searchIcon.setAttribute("stroke-linejoin", "round");
-
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circle.setAttribute("cx", "11");
-  circle.setAttribute("cy", "11");
-  circle.setAttribute("r", "8");
-  searchIcon.appendChild(circle);
-
-  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  line.setAttribute("x1", "21");
-  line.setAttribute("y1", "21");
-  line.setAttribute("x2", "16.65");
-  line.setAttribute("y2", "16.65");
-  searchIcon.appendChild(line);
+  const searchIcon = document.createElement("span");
+  searchIcon.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 
   const searchLabel = document.createElement("p");
   searchLabel.textContent = "Quick search...";
@@ -245,9 +225,7 @@ export async function mountSearchBar(
   
   const updateSearchButtonDisplay = () => {
     hotkeySpan.textContent = hotkeyDisplay;
-    if (!searchButton.contains(searchIcon)) {
-      searchButton.replaceChildren(searchIcon, searchLabel, hotkeySpan);
-    }
+    searchButton.replaceChildren(searchIcon, searchLabel, hotkeySpan);
   };
 
   updateSearchButtonDisplay();
@@ -282,7 +260,7 @@ export async function mountSearchBar(
   try {
     const { default: renderSvelte } = await import("@/interface/renderInShadow");
     appRef.current = renderSvelte(SearchBar, searchRootShadow, {
-      transparencyEffects: api.settings.transparencyEffects ? true : false,
+      transparencyEffects: api.settings.transparencyEffects,
       showRecentFirst: api.settings.showRecentFirst,
       searchHotkey: currentHotkey,
     });

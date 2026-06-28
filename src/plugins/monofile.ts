@@ -30,7 +30,7 @@ import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
-import { attachTimetableColorisRecovery } from "@/seqta/utils/timetableColoris";
+import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 
 // JSON content
 import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";

@@ -1,6 +1,6 @@
 import type { IndexItem, Job } from "../types";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug } from '@/utils/verboseLog';
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",

@@ -36,132 +36,107 @@ const store = localforage.createInstance({
   storeName: "music",
 });
 
-const HINT_ID = "bsplus-bg-music-hint";
+const GESTURE_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+const gestureOpts: AddEventListenerOptions = { capture: true, passive: true };
 
-let currentAudio: HTMLAudioElement | null = null;
-let currentObjectUrl: string | null = null;
-let pendingGestureCancel: (() => void) | null = null;
-let visibilityResumeTimeout: number | null = null;
-let hintElement: HTMLElement | null = null;
-let isPlaying = false;
+let audio: HTMLAudioElement | null = null;
+let objectUrl: string | null = null;
+let gestureCleanup: (() => void) | null = null;
+let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+let hintEl: HTMLElement | null = null;
+let playing = false;
 
-async function loadAudioBlob(): Promise<Blob | null> {
+const clamp = (v: number) => Math.max(0, Math.min(1, v));
+
+async function loadBlob(): Promise<Blob | null> {
   const blob = await store.getItem<Blob>("audio-blob");
-  return blob && blob instanceof Blob ? blob : null;
+  return blob instanceof Blob ? blob : null;
 }
 
-function stopAndCleanupAudio(): void {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.src = "";
-    currentAudio.remove();
-    currentAudio = null;
-  }
-  if (currentObjectUrl) {
-    URL.revokeObjectURL(currentObjectUrl);
-    currentObjectUrl = null;
-  }
-  isPlaying = false;
+function clearHint(): void {
+  hintEl?.remove();
+  hintEl = null;
 }
 
-function hideAutoplayHint(): void {
-  if (hintElement) {
-    hintElement.remove();
-    hintElement = null;
-  }
+function disarmGesture(): void {
+  gestureCleanup?.();
+  gestureCleanup = null;
 }
 
-function showAutoplayHint(onActivate: () => void): void {
-  hideAutoplayHint();
+function onPlayStarted(): void {
+  playing = true;
+  clearHint();
+  disarmGesture();
+}
+
+function stopAudio(): void {
+  audio?.pause();
+  audio?.remove();
+  audio = null;
+  if (objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl = null;
+  playing = false;
+}
+
+function showHint(onActivate: () => void): void {
+  clearHint();
   const hint = document.createElement("button");
-  hint.id = HINT_ID;
+  hint.id = "bsplus-bg-music-hint";
   hint.type = "button";
   hint.className = "bsplus-bg-music-hint";
   hint.textContent = "Tap to start background music";
-  hint.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
+  hint.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
     onActivate();
   });
-  document.body.appendChild(hint);
-  hintElement = hint;
-}
-
-function disarmGesturePlayback(): void {
-  if (pendingGestureCancel) {
-    pendingGestureCancel();
-    pendingGestureCancel = null;
-  }
+  document.body.append(hint);
+  hintEl = hint;
 }
 
 /** Prepare <audio> so play() can run synchronously inside a user-gesture handler. */
-async function prepareAudioElement(volume: number): Promise<boolean> {
-  const blob = await loadAudioBlob();
+async function prepareAudio(vol: number): Promise<boolean> {
+  const blob = await loadBlob();
   if (!blob) {
-    stopAndCleanupAudio();
-    hideAutoplayHint();
+    stopAudio();
+    clearHint();
     return false;
   }
-
-  if (!currentAudio) {
-    stopAndCleanupAudio();
-    currentObjectUrl = URL.createObjectURL(blob);
-    const audio = new Audio(currentObjectUrl);
+  if (!audio) {
+    stopAudio();
+    objectUrl = URL.createObjectURL(blob);
+    audio = new Audio(objectUrl);
     audio.loop = true;
-    audio.volume = Math.max(0, Math.min(1, volume));
     audio.preload = "auto";
     audio.style.display = "none";
-    document.body.appendChild(audio);
-    currentAudio = audio;
-  } else {
-    currentAudio.volume = Math.max(0, Math.min(1, volume));
+    document.body.append(audio);
   }
-
+  audio.volume = clamp(vol);
   return true;
 }
 
-/**
- * Must be called synchronously from a user-gesture handler (no await before this).
- */
-function playPreparedAudio(volume: number): boolean {
-  if (!currentAudio) return false;
-  currentAudio.volume = Math.max(0, Math.min(1, volume));
+/** Call synchronously from a user-gesture handler (no await before this). */
+function playPrepared(vol: number): void {
+  if (!audio) return;
+  audio.volume = clamp(vol);
+  void audio.play().then(onPlayStarted).catch(() => {
+    playing = false;
+  });
+}
+
+async function tryAutoplay(vol: number): Promise<boolean> {
+  if (!(await prepareAudio(vol)) || !audio) return false;
   try {
-    const result = currentAudio.play();
-    void result
-      .then(() => {
-        isPlaying = true;
-        hideAutoplayHint();
-        disarmGesturePlayback();
-      })
-      .catch(() => {
-        isPlaying = false;
-      });
+    await audio.play();
+    onPlayStarted();
     return true;
   } catch {
-    isPlaying = false;
+    playing = false;
     return false;
   }
 }
 
-async function tryAutoplay(volume: number): Promise<boolean> {
-  const ready = await prepareAudioElement(volume);
-  if (!ready || !currentAudio) return false;
-
-  try {
-    await currentAudio.play();
-    isPlaying = true;
-    hideAutoplayHint();
-    disarmGesturePlayback();
-    return true;
-  } catch {
-    isPlaying = false;
-    return false;
-  }
-}
-
-function armGesturePlayback(onGesture: () => void): void {
-  disarmGesturePlayback();
-
+function armGesture(onGesture: () => void): void {
+  disarmGesture();
   const listener = (event: Event) => {
     if (event.type === "keydown") {
       const key = (event as KeyboardEvent).key;
@@ -169,21 +144,23 @@ function armGesturePlayback(onGesture: () => void): void {
     }
     onGesture();
   };
-
-  const options: AddEventListenerOptions = { capture: true, passive: true };
-  const types = ["pointerdown", "keydown", "touchstart"] as const;
-  for (const type of types) {
-    document.addEventListener(type, listener, options);
+  for (const type of GESTURE_EVENTS) {
+    document.addEventListener(type, listener, gestureOpts);
   }
-
-  pendingGestureCancel = () => {
-    for (const type of types) {
-      document.removeEventListener(type, listener, options);
+  gestureCleanup = () => {
+    for (const type of GESTURE_EVENTS) {
+      document.removeEventListener(type, listener, gestureOpts);
     }
-    hideAutoplayHint();
+    clearHint();
   };
+  showHint(onGesture);
+}
 
-  showAutoplayHint(onGesture);
+function clearResumeTimer(): void {
+  if (resumeTimer !== null) {
+    clearTimeout(resumeTimer);
+    resumeTimer = null;
+  }
 }
 
 const backgroundMusicPlugin: Plugin<typeof settings> = {
@@ -199,41 +176,33 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
   run: async (api) => {
     await api.storage.loaded;
 
-    const getVolume = () =>
-      (api.settings as { volume?: number }).volume ?? 0.5;
+    type BgSettings = { volume?: number; pauseOnHidden?: boolean };
+    const s = () => api.settings as BgSettings;
+    const vol = () => s().volume ?? 0.5;
+    const pauseOnHidden = () => s().pauseOnHidden ?? true;
 
     const gestureStart = () => {
-      if (!currentAudio) return;
-      playPreparedAudio(getVolume());
+      if (audio) playPrepared(vol());
     };
 
     const ensurePlayback = async () => {
-      const vol = getVolume();
-      const ready = await prepareAudioElement(vol);
-      if (!ready) return;
-
-      if (isPlaying && currentAudio && !currentAudio.paused) {
-        hideAutoplayHint();
-        disarmGesturePlayback();
+      if (!(await prepareAudio(vol()))) return;
+      if (playing && audio && !audio.paused) {
+        clearHint();
+        disarmGesture();
         return;
       }
-
-      const autoplayed = await tryAutoplay(vol);
-      if (!autoplayed) {
-        armGesturePlayback(gestureStart);
-      }
+      if (!(await tryAutoplay(vol()))) armGesture(gestureStart);
     };
 
     api.settings.onChange("volume" as never, (value: unknown) => {
-      const vol = typeof value === "number" ? value : 0.5;
-      if (currentAudio) currentAudio.volume = Math.max(0, Math.min(1, vol));
+      if (typeof value === "number" && audio) audio.volume = clamp(value);
     });
 
     api.settings.onChange("pauseOnHidden" as never, (value: unknown) => {
-      const pauseOnHidden = typeof value === "boolean" ? value : true;
       if (
-        !pauseOnHidden &&
-        currentAudio?.paused &&
+        value === false &&
+        audio?.paused &&
         document.visibilityState === "visible"
       ) {
         void ensurePlayback();
@@ -242,73 +211,49 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
 
     await ensurePlayback();
 
-    const visHandler = () => {
-      const pauseOnHidden =
-        (api.settings as { pauseOnHidden?: boolean }).pauseOnHidden ?? true;
-
+    const onVisibility = () => {
       if (document.visibilityState === "hidden") {
-        if (!pauseOnHidden || !currentAudio) return;
-        if (visibilityResumeTimeout !== null) {
-          clearTimeout(visibilityResumeTimeout);
-          visibilityResumeTimeout = null;
-        }
-        currentAudio.pause();
-        isPlaying = false;
+        if (!pauseOnHidden() || !audio) return;
+        clearResumeTimer();
+        audio.pause();
+        playing = false;
         return;
       }
-
-      if (!currentAudio) {
+      if (!audio) {
         void ensurePlayback();
         return;
       }
-
-      if (!pauseOnHidden) return;
-
-      if (visibilityResumeTimeout !== null) {
-        clearTimeout(visibilityResumeTimeout);
-      }
-      visibilityResumeTimeout = window.setTimeout(() => {
-        visibilityResumeTimeout = null;
-        void tryAutoplay(getVolume());
+      if (!pauseOnHidden()) return;
+      clearResumeTimer();
+      resumeTimer = setTimeout(() => {
+        resumeTimer = null;
+        void tryAutoplay(vol());
       }, 200);
     };
-    document.addEventListener("visibilitychange", visHandler);
 
-    const pageshowHandler = () => void ensurePlayback();
-    window.addEventListener("pageshow", pageshowHandler);
-
-    const uploadedHandler = () => void ensurePlayback();
-    window.addEventListener(
-      "betterseqta-background-music-updated",
-      uploadedHandler,
-    );
-
-    const stopHandler = () => {
-      disarmGesturePlayback();
-      stopAndCleanupAudio();
-      hideAutoplayHint();
+    const onUpdated = () => void ensurePlayback();
+    const onStop = () => {
+      disarmGesture();
+      stopAudio();
+      clearHint();
     };
-    window.addEventListener("betterseqta-background-music-stop", stopHandler);
-
-    return () => {
-      document.removeEventListener("visibilitychange", visHandler);
-      window.removeEventListener("pageshow", pageshowHandler);
-      window.removeEventListener(
-        "betterseqta-background-music-updated",
-        uploadedHandler,
-      );
-      window.removeEventListener(
-        "betterseqta-background-music-stop",
-        stopHandler,
-      );
-      disarmGesturePlayback();
-      hideAutoplayHint();
-      if (visibilityResumeTimeout !== null) {
-        clearTimeout(visibilityResumeTimeout);
-        visibilityResumeTimeout = null;
-      }
-      stopAndCleanupAudio();
+    const teardown = () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onUpdated);
+      window.removeEventListener("betterseqta-background-music-updated", onUpdated);
+      window.removeEventListener("betterseqta-background-music-stop", onStop);
+      clearResumeTimer();
+      disarmGesture();
+      clearHint();
+      stopAudio();
     };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onUpdated);
+    window.addEventListener("betterseqta-background-music-updated", onUpdated);
+    window.addEventListener("betterseqta-background-music-stop", onStop);
+
+    return teardown;
   },
 };
 

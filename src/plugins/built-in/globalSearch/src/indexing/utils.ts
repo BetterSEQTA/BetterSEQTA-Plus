@@ -1,112 +1,82 @@
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
-/**
- * Check which items are already vectorized in embeddia's IndexedDB
- * Returns a Set of item IDs that are already indexed
- */
-export async function getVectorizedItemIds(): Promise<Set<string>> {
-  return new Promise((resolve) => {
-    const request = indexedDB.open("embeddiaDB");
-    
-    request.onerror = () => {
-      verboseDebug("Could not open embeddiaDB, assuming no items are vectorized");
-      resolve(new Set());
-    };
-    
-    request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      
-      if (!db.objectStoreNames.contains("embeddiaObjectStore")) {
-        verboseDebug("embeddiaObjectStore not found, assuming no items are vectorized");
-        db.close();
-        resolve(new Set());
-        return;
-      }
-      
-      try {
-        const transaction = db.transaction(["embeddiaObjectStore"], "readonly");
-        const store = transaction.objectStore("embeddiaObjectStore");
-        const getAllRequest = store.getAllKeys();
-        
-        getAllRequest.onsuccess = () => {
-          const vectorizedIds = new Set<string>();
-          getAllRequest.result.forEach(key => {
-            if (typeof key === 'string') {
-              vectorizedIds.add(key);
-            }
-          });
-          
-          verboseDebug(`Found ${vectorizedIds.size} already vectorized items in embeddia DB`);
-          db.close();
-          resolve(vectorizedIds);
-        };
-        
-        getAllRequest.onerror = () => {
-          console.warn("Error reading vectorized item keys, assuming no items are vectorized");
-          db.close();
-          resolve(new Set());
-        };
-      } catch (error) {
-        console.warn("Error accessing embeddia store, assuming no items are vectorized:", error);
-        db.close();
-        resolve(new Set());
-      }
-    };
-  });
-}
+import { verboseDebug } from '@/utils/verboseLog';
 
 const EMBEDDIA_DB = "embeddiaDB";
 const EMBEDDIA_STORE = "embeddiaObjectStore";
 
-/**
- * Remove vector embeddings for the given item ids from embeddiaDB.
- */
-export async function removeVectorEmbeddings(ids: string[]): Promise<void> {
-  if (ids.length === 0) return;
-
+function openEmbeddiaDb(): Promise<IDBDatabase | null> {
   return new Promise((resolve) => {
     const request = indexedDB.open(EMBEDDIA_DB);
-
-    request.onerror = () => resolve();
-
-    request.onsuccess = () => {
-      const db = request.result;
-
-      if (!db.objectStoreNames.contains(EMBEDDIA_STORE)) {
-        db.close();
-        resolve();
-        return;
-      }
-
-      try {
-        const transaction = db.transaction([EMBEDDIA_STORE], "readwrite");
-        const store = transaction.objectStore(EMBEDDIA_STORE);
-
-        for (const id of ids) {
-          store.delete(id);
-        }
-
-        transaction.oncomplete = () => {
-          db.close();
-          resolve();
-        };
-
-        transaction.onerror = () => {
-          db.close();
-          resolve();
-        };
-      } catch (error) {
-        console.warn("[Indexer] Failed to remove vector embeddings:", error);
-        db.close();
-        resolve();
-      }
-    };
+    request.onerror = () => resolve(null);
+    request.onsuccess = () => resolve(request.result);
   });
 }
 
-/**
- * Delete vector embeddings that no longer exist in the structured index.
- * Returns the number of orphaned embeddings removed.
- */
+export async function getVectorizedItemIds(): Promise<Set<string>> {
+  const db = await openEmbeddiaDb();
+  if (!db) {
+    verboseDebug("Could not open embeddiaDB, assuming no items are vectorized");
+    return new Set();
+  }
+
+  if (!db.objectStoreNames.contains(EMBEDDIA_STORE)) {
+    verboseDebug("embeddiaObjectStore not found, assuming no items are vectorized");
+    db.close();
+    return new Set();
+  }
+
+  try {
+    const store = db
+      .transaction([EMBEDDIA_STORE], "readonly")
+      .objectStore(EMBEDDIA_STORE);
+    const keys = await new Promise<IDBValidKey[]>((resolve, reject) => {
+      const req = store.getAllKeys();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    const vectorizedIds = new Set<string>();
+    for (const key of keys) {
+      if (typeof key === "string") vectorizedIds.add(key);
+    }
+
+    verboseDebug(`Found ${vectorizedIds.size} already vectorized items in embeddia DB`);
+    db.close();
+    return vectorizedIds;
+  } catch (error) {
+    console.warn("Error accessing embeddia store, assuming no items are vectorized:", error);
+    db.close();
+    return new Set();
+  }
+}
+
+export async function removeVectorEmbeddings(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  const db = await openEmbeddiaDb();
+  if (!db) return;
+
+  if (!db.objectStoreNames.contains(EMBEDDIA_STORE)) {
+    db.close();
+    return;
+  }
+
+  try {
+    const tx = db.transaction([EMBEDDIA_STORE], "readwrite");
+    const store = tx.objectStore(EMBEDDIA_STORE);
+    for (const id of ids) {
+      store.delete(id);
+    }
+    await new Promise<void>((resolve) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch (error) {
+    console.warn("[Indexer] Failed to remove vector embeddings:", error);
+  } finally {
+    db.close();
+  }
+}
+
 export async function pruneOrphanVectorEmbeddings(
   liveItemIds: Set<string>,
 ): Promise<number> {

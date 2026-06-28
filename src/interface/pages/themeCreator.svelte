@@ -76,26 +76,17 @@
     await themeManager.disableTheme();
 
     if (themeID) {
-      const tempTheme = await themeManager.getTheme(themeID)
-
-      if (!tempTheme) return
-
-      // convert temptheme to LoadedCustomTheme
-      const loadedTheme = {
-        ...tempTheme,
-        CustomImages: tempTheme.CustomImages.map(image => ({
-          ...image
-        }))
-      }
+      const tempTheme = await themeManager.getTheme(themeID);
+      if (!tempTheme) return;
 
       theme = {
-        ...loadedTheme,
-        adaptiveCssVariables: loadedTheme.adaptiveCssVariables ?? [],
+        ...tempTheme,
+        adaptiveCssVariables: tempTheme.adaptiveCssVariables ?? [],
         forceTheme:
-          loadedTheme.forceTheme ??
-          (loadedTheme.forceDark !== undefined ? true : undefined),
-      }
-      themeLoaded = true
+          tempTheme.forceTheme ??
+          (tempTheme.forceDark !== undefined ? true : undefined),
+      };
+      themeLoaded = true;
     } else {
       themeLoaded = true
     }

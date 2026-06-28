@@ -67,9 +67,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
   const env = loadEnv(viteMode, repoRoot, "");
 
   return {
-  // Content scripts run on the host page; absolute `/assets/...` URLs would
-  // resolve against SEQTA instead of chrome-extension://. Relative base makes
-  // Vite emit import.meta.url-relative chunk/CSS URLs at runtime.
   base: command === "build" ? "./" : "/",
   define: {
     __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(

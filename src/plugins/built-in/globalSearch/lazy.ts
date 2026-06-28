@@ -11,16 +11,11 @@ import {
   resetSearchIndexes,
   notifyOpenTabsResetSearchIndex,
 } from "./src/indexing/resetIndexes";
-
-// Platform-aware default hotkey
-const getDefaultHotkey = () => {
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-  return isMac ? "cmd+k" : "ctrl+k";
-};
+import { getDefaultSearchHotkey } from "./src/utils/hotkeyUtils";
 
 const settings = defineSettings({
   searchHotkey: hotkeySetting({
-    default: getDefaultHotkey(),
+    default: getDefaultSearchHotkey(),
     title: "Search Hotkey",
     description: "Keyboard shortcut to open the search",
   }),

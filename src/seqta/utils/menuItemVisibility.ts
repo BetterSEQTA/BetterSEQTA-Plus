@@ -3,32 +3,21 @@ import { verboseInfo } from "@/utils/verboseLog";
 
 const STYLE_ID = "bsplus-menuitem-visibility";
 
-function isEditSidebarOpen(): boolean {
-  return document.querySelector(".editmenuoption-container") != null;
-}
-
-function hideRule(menuItem: string): string {
-  return `li[data-key=${menuItem}],section[data-key=${menuItem}]{display:var(--menuHidden) !important;transition:1s;}`;
-}
-
 /** Whether a sidebar key is hidden via Edit Sidebar toggles. */
 export function isMenuItemHidden(key: string): boolean {
-  const items = settingsState.menuitems as Record<string, { toggle?: boolean }>;
-  const entry = items?.[key];
+  const entry = (settingsState.menuitems as Record<string, { toggle?: boolean }>)?.[key];
   return entry != null && entry.toggle === false;
 }
 
 /** Apply hide rules from `menuitems` (re-runnable after edit / storage sync). */
 export function applyMenuItemVisibility(): void {
-  if (isEditSidebarOpen()) return;
+  if (document.querySelector(".editmenuoption-container")) return;
 
   try {
     let css = "";
-    for (const [menuItem, config] of Object.entries(
-      settingsState.menuitems ?? {},
-    )) {
+    for (const [menuItem, config] of Object.entries(settingsState.menuitems ?? {})) {
       if (config && !config.toggle) {
-        css += hideRule(menuItem);
+        css += `li[data-key=${menuItem}],section[data-key=${menuItem}]{display:var(--menuHidden) !important;transition:1s;}`;
         verboseInfo(`[BetterSEQTA+] Hiding ${menuItem} menu item`);
       }
     }

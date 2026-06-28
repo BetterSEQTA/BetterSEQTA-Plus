@@ -10,7 +10,7 @@ import {
   isStrongLexicalMatch,
   STRONG_LEXICAL_THRESHOLD,
 } from "./lexicalMatch";
-import { verboseDebug, verboseInfo, verboseLog } from "@/utils/verboseLog";
+import { verboseDebug } from "@/utils/verboseLog";
 
 /** Same normalization as lexical matching (trim + lowercase). */
 function normSearchKey(s: string): string {
@@ -63,26 +63,19 @@ function syntheticIndexFromCommand(cmd: StaticCommandItem): IndexItem {
   };
 }
 
-// Search result cache for better performance
 const searchCache = new Map<string, { results: CombinedResult[]; timestamp: number }>();
-const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+const CACHE_TTL = 1000 * 60 * 5;
 const MAX_CACHE_SIZE = 100;
 
 function getCachedResults(query: string): CombinedResult[] | null {
   const cached = searchCache.get(query);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.results;
-  }
-  return null;
+  return cached && Date.now() - cached.timestamp < CACHE_TTL ? cached.results : null;
 }
 
 function setCachedResults(query: string, results: CombinedResult[]) {
-  // Limit cache size
   if (searchCache.size >= MAX_CACHE_SIZE) {
     const firstKey = searchCache.keys().next().value;
-    if (firstKey !== undefined) {
-      searchCache.delete(firstKey);
-    }
+    if (firstKey !== undefined) searchCache.delete(firstKey);
   }
   searchCache.set(query, { results, timestamp: Date.now() });
 }
@@ -95,11 +88,8 @@ export function clearSearchCache(): void {
   verboseDebug("[Search] Search result cache cleared");
 }
 
-// Listen for cache clear events (e.g., on extension update)
-if (typeof window !== 'undefined') {
-  window.addEventListener('betterseqta-clear-search-cache', () => {
-    clearSearchCache();
-  });
+if (typeof window !== "undefined") {
+  window.addEventListener("betterseqta-clear-search-cache", clearSearchCache);
 }
 
 /** Rebuild Fuse when incremental delta exceeds this count. */

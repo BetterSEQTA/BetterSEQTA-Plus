@@ -46,41 +46,25 @@ function ensureBridgeElements(): void {
   }
 }
 
-function bumpBridgeRevision(): void {
-  const bridge = document.getElementById(BRIDGE_ID);
-  if (!bridge) return;
-  const rev = Number(bridge.getAttribute("data-rev") || "0") + 1;
-  bridge.setAttribute("data-rev", String(rev));
-}
-
 function sendPayload(payload: Record<string, unknown>): void {
   installThemeImagePagePatch();
   ensureBridgeElements();
   const payloadEl = document.getElementById(PAYLOAD_ID) as HTMLTextAreaElement;
   payloadEl.value = JSON.stringify(payload);
-  bumpBridgeRevision();
+  const bridge = document.getElementById(BRIDGE_ID)!;
+  bridge.setAttribute("data-rev", String(Number(bridge.getAttribute("data-rev") || "0") + 1));
 }
 
 export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> {
-  const payload: Record<string, unknown> = {};
-
   if (input.clear) {
     sendPayload({ clear: true });
     return;
   }
 
-  if (input.clearPreview) {
-    payload.clearPreview = true;
-  }
-
-  if (input.customCss !== undefined) {
-    payload.customCss = input.customCss;
-  }
-
-  if (input.previewCss !== undefined) {
-    payload.previewCss = input.previewCss;
-  }
-
+  const payload: Record<string, unknown> = {};
+  if (input.clearPreview) payload.clearPreview = true;
+  if (input.customCss !== undefined) payload.customCss = input.customCss;
+  if (input.previewCss !== undefined) payload.previewCss = input.previewCss;
   if (input.images !== undefined) {
     payload.images = await Promise.all(
       input.images.map(async (image) => ({
@@ -97,16 +81,4 @@ export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> 
 
 export function clearThemeInPage(): void {
   sendPayload({ clear: true });
-}
-
-/** @deprecated Use clearThemeInPage */
-export function clearThemeImagesInPage(): void {
-  clearThemeInPage();
-}
-
-/** @deprecated Use syncThemeToPage */
-export async function syncThemeImagesToPage(
-  images: Array<{ variableName: string; blob: Blob }>,
-): Promise<void> {
-  await syncThemeToPage({ images });
 }

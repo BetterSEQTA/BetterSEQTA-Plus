@@ -29,6 +29,7 @@ class AnimatedBackgroundPluginClass extends BasePlugin<typeof settings> {
 }
 
 const instance = new AnimatedBackgroundPluginClass();
+const resync = (api: PluginAPI<typeof settings>) => () => void syncAnimatedBackground(api);
 
 const animatedBackgroundPlugin: Plugin<typeof settings> = {
   id: "animated-background",
@@ -43,23 +44,15 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
     await syncAnimatedBackground(api);
 
     const speedUnregister = api.settings.onChange("speed", updateAnimationSpeed);
-
-    const pageChangeUnregister = api.seqta.onPageChange(() => {
-      void syncAnimatedBackground(api);
-    });
-
+    const pageChangeUnregister = api.seqta.onPageChange(resync(api));
     const pageshowHandler = (event: PageTransitionEvent) => {
       if (event.persisted) void syncAnimatedBackground(api);
     };
     window.addEventListener("pageshow", pageshowHandler);
 
-    const containerObserver = new MutationObserver(() => {
-      void syncAnimatedBackground(api);
-    });
+    const containerObserver = new MutationObserver(resync(api));
     const container = document.getElementById("container");
-    if (container) {
-      containerObserver.observe(container, { childList: true });
-    }
+    if (container) containerObserver.observe(container, { childList: true });
 
     return () => {
       speedUnregister.unregister();

@@ -1,7 +1,7 @@
 import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../types";
 
-import { verboseDebug, verboseInfo, verboseLog } from "./workerVerboseLog";
+import { verboseDebug } from "./workerVerboseLog";
 
 let ortWasmBase: string | null = null;
 
@@ -16,18 +16,24 @@ let initializationFailed = false;
 let currentAbortController: AbortController | null = null;
 let loadedItemIds = new Set<string>();
 
-// Detect Firefox in worker context
 function isFirefoxWorker(): boolean {
   try {
-    // Check for Firefox-specific APIs or user agent
-    if (typeof navigator !== "undefined") {
-      return navigator.userAgent.toLowerCase().includes("firefox");
-    }
-    // In worker context, check for Firefox-specific behavior
-    return false;
+    return typeof navigator !== "undefined" &&
+      navigator.userAgent.toLowerCase().includes("firefox");
   } catch {
     return false;
   }
+}
+
+function postVectorUnavailable(message: string): void {
+  self.postMessage({
+    type: "progress",
+    data: { status: "complete", message },
+  });
+}
+
+function vectorUnavailable(): boolean {
+  return initializationFailed || isFirefoxWorker();
 }
 
 let streamingSession: {
@@ -118,31 +124,20 @@ async function startStreamingSession(
   totalExpected: number,
   batchSize: number = 5,
 ) {
-  if (initializationFailed || isFirefoxWorker()) {
-    self.postMessage({
-      type: "progress",
-      data: {
-        status: "complete",
-        message: "Vector search not available in Firefox - using text search only",
-      },
-    });
+  if (vectorUnavailable()) {
+    postVectorUnavailable(
+      "Vector search not available in Firefox - using text search only",
+    );
     return;
   }
-  
+
   if (!vectorIndex) {
     console.warn(
       "Streaming requested but vector index not ready. Attempting init.",
     );
     await initWorker();
     if (!vectorIndex || initializationFailed) {
-      self.postMessage({
-        type: "progress",
-        data: {
-          status: "complete",
-          message:
-            "Vector index not available - using text search only",
-        },
-      });
+      postVectorUnavailable("Vector index not available - using text search only");
       return;
     }
   }
@@ -355,14 +350,8 @@ async function endStreamingSession() {
 async function processItems(items: IndexItem[], signal: AbortSignal) {
   verboseDebug("Worker received process request.");
 
-  if (initializationFailed || isFirefoxWorker()) {
-    self.postMessage({
-      type: "progress",
-      data: {
-        status: "complete",
-        message: "Vector search not available - using text search only",
-      },
-    });
+  if (vectorUnavailable()) {
+    postVectorUnavailable("Vector search not available - using text search only");
     return;
   }
 
@@ -372,14 +361,7 @@ async function processItems(items: IndexItem[], signal: AbortSignal) {
     );
     await initWorker();
     if (!vectorIndex || initializationFailed) {
-      self.postMessage({
-        type: "progress",
-        data: {
-          status: "complete",
-          message:
-            "Vector index not available - using text search only",
-        },
-      });
+      postVectorUnavailable("Vector index not available - using text search only");
       return;
     }
   }

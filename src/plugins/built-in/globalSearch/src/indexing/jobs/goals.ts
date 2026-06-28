@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { extractTextFromValue } from "../extract";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes student goals from `/seqta/student/load/goals`.
  *

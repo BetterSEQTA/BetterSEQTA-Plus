@@ -12,14 +12,11 @@ import {
   MenuOptionsOpen,
 } from "@/seqta/utils/Openers/OpenMenuOptions";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import {
-  applyMenuItemVisibility,
-} from "@/seqta/utils/menuItemVisibility";
+import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { loadAnalyticsPage } from "../loadAnalyticsPage";
 import styles from "../styles.css?inline";
 
 const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
-
 const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 
 const gradeAnalyticsPlugin: Plugin<{}> = {
@@ -48,30 +45,21 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     analyticsItem.dataset.betterseqta = "true";
     analyticsItem.innerHTML = `<label>${ANALYTICS_MENU_ICON}<span>Analytics</span></label>`;
 
-    const placeAnalyticsItem = () => {
+    const syncAnalyticsMenu = () => {
       insertMenuItemAfterKey(menuList, analyticsItem, "courses");
+      ensureAnalyticsMenuOrder();
+      if (settingsState.menuorder.length > 0) {
+        ChangeMenuItemPositions(settingsState.menuorder);
+      }
+      processMenuItemNode(analyticsItem);
+      applyMenuItemVisibility();
     };
 
-    placeAnalyticsItem();
-    ensureAnalyticsMenuOrder();
-    if (settingsState.menuorder.length > 0) {
-      ChangeMenuItemPositions(settingsState.menuorder);
-    }
-
-    processMenuItemNode(analyticsItem);
-    applyMenuItemVisibility();
+    syncAnalyticsMenu();
 
     const menuObserver = new MutationObserver(() => {
-      if (MenuOptionsOpen) return;
-      if (!menuList.contains(analyticsItem)) {
-        placeAnalyticsItem();
-        ensureAnalyticsMenuOrder();
-        if (settingsState.menuorder.length > 0) {
-          ChangeMenuItemPositions(settingsState.menuorder);
-        }
-        processMenuItemNode(analyticsItem);
-        applyMenuItemVisibility();
-      }
+      if (MenuOptionsOpen || menuList.contains(analyticsItem)) return;
+      syncAnalyticsMenu();
     });
     menuObserver.observe(menuList, { childList: true });
 

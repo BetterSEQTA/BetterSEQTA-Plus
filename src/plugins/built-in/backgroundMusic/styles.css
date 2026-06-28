@@ -8,9 +8,7 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--theme-primary, #1a1a1a) 92%, black 8%);
   color: var(--text-primary, #fff);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.25;
+  font: 600 0.8125rem/1.25 system-ui, sans-serif;
   cursor: pointer;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   animation: bsplus-bg-music-hint-in 220ms ease-out;
@@ -21,12 +19,6 @@
 }
 
 @keyframes bsplus-bg-music-hint-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
