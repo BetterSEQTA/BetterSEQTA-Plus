@@ -3,7 +3,7 @@
 </a>
 
 <p align="center">
-  A beautiful 🤩 browser extension that transforms <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn</a> with modern themes, powerful customization, productivity tools, and an improved user experience. Contributions are always welcome!
+  A beautiful 🤩 browser extension that transforms <a href="https://www.tes.com/en-au/for-schools/seqta">SEQTA</a> with modern themes, powerful customization, productivity tools, and an improved user experience. Contributions are always welcome!
 </p>
 
 <p align="center">
