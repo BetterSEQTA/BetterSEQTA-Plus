@@ -3,7 +3,7 @@
 </a>
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
+  A beautiful 🤩 browser extension that transforms <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn</a> with modern themes, powerful customization, productivity tools, and an improved user experience. Contributions are always welcome!
 </p>
 
 <p align="center">
@@ -16,15 +16,16 @@
   <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
 </div>
 
-## 📚 Documentation
-All documentation has been moved to the [official docs site](https://docs.betterseqta.org):
+## Documentation
+
+Everything you need to get started with BetterSEQTA+ can be found in the [official documentation](https://docs.betterseqta.org).
 
 Includes:
-- Getting started
-- Development setup
+- Getting Started
+- Installation & Development
 - Architecture
-- Plugin system
-- Theme creation
+- Plugin System
+- Theme Creation
 
 ## Features
 
@@ -72,8 +73,7 @@ npm run dev
 Then load `dist` in `chrome://extensions` (Developer Mode → Load unpacked).
 
 
-Full setup guide:
-[https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment](https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment)
+Full development setup guide can be found [here](https://docs.betterseqta.org/install/#for-developers-development-environment).
 
 ## Contributors
 
