@@ -3,11 +3,11 @@
 </a>
 
 <p align="center">
-  A beautiful 🤩 Chrome Extension that adds additional features and gives an overall better experience for <a href="https://educationhorizons.com/solutions/seqta/">SEQTA Learn.</a> <strong>Currently looking for contributors</strong> 🔥
+  A beautiful 🤩 browser extension that transforms <a href="https://www.tes.com/en-au/for-schools/seqta">SEQTA</a> with modern themes, powerful customization, productivity tools, and an improved user experience. Contributions are always welcome!
 </p>
 
 <p align="center">
- <a target="_blank" href="https://chrome.google.com/webstore/detail/betterseqta%20/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png" alt="ChromeDownload" width="250"></a>
+ <a target="_blank" href="https://chromewebstore.google.com/detail/betterseqta+/afdgaoaclhkhemfkkkonemoapeinchel"><img src="https://user-images.githubusercontent.com/95666457/149519713-159d7ef7-2c21-4034-a616-f037ff46d9a4.png" alt="ChromeDownload" width="250"></a>
   <a target="_blank" href="https://discord.gg/YzmbnCDkat"><img src="https://github.com/BetterSEQTA/BetterSEQTA-Plus/assets/108050083/23055730-b16e-44c0-9bef-221d8545af92" width="240" style="border-radius:10%;" /></a>
 </p>
 
@@ -16,15 +16,16 @@
   <img src="https://img.shields.io/chrome-web-store/rating/afdgaoaclhkhemfkkkonemoapeinchel" />
 </div>
 
-## 📚 Documentation
-All documentation has been moved to the [official docs site](https://docs.betterseqta.org):
+## Documentation
+
+Everything you need to get started with BetterSEQTA+ can be found in the [official documentation](https://docs.betterseqta.org).
 
 Includes:
-- Getting started
-- Development setup
+- Getting Started
+- Installation & Development
 - Architecture
-- Plugin system
-- Theme creation
+- Plugin System
+- Theme Creation
 
 ## Features
 
@@ -72,8 +73,7 @@ npm run dev
 Then load `dist` in `chrome://extensions` (Developer Mode → Load unpacked).
 
 
-Full setup guide:
-[https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment](https://betterseqta.github.io/BetterSEQTA-Docs/install/#for-developers-development-environment)
+Full development setup guide can be found [here](https://docs.betterseqta.org/install/#for-developers-development-environment).
 
 ## Contributors
 
@@ -85,10 +85,9 @@ Want to contribute? [Click Here!](https://docs.betterseqta.org/contributing/)
 
 ## Credits
 
-This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development from lead developers [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph) with help from other volunteers.
-Originally developed by [Nulkem](https://github.com/Nulkem/betterseqta)
-Ported to Manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68)
-Maintained by [SethBurkart123](https://github.com/SethBurkart123), [Crazypersonalph](https://github.com/Crazypersonalph) & the rest of the BetterSEQTA team!
+Originally developed by [Nulkem](https://github.com/Nulkem/betterseqta)  
+Ported to Manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68)  
+Maintained by [SethBurkart123](https://github.com/SethBurkart123), [Crazypersonalph](https://github.com/Crazypersonalph) & the rest of the BetterSEQTA team!  
 
 ## Star History
 
