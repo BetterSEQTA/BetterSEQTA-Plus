@@ -85,10 +85,9 @@ Want to contribute? [Click Here!](https://docs.betterseqta.org/contributing/)
 
 ## Credits
 
-This extension was initially developed by [Nulkem](https://github.com/Nulkem/betterseqta), was ported to manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68) and is currently under active development from lead developers [SethBurkart123](https://github.com/SethBurkart123) and [Crazypersonalph](https://github.com/Crazypersonalph) with help from other volunteers.
-Originally developed by [Nulkem](https://github.com/Nulkem/betterseqta)
-Ported to Manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68)
-Maintained by [SethBurkart123](https://github.com/SethBurkart123), [Crazypersonalph](https://github.com/Crazypersonalph) & the rest of the BetterSEQTA team!
+Originally developed by [Nulkem](https://github.com/Nulkem/betterseqta)  
+Ported to Manifest V3 by [MEGA-Dawg68](https://github.com/MEGA-Dawg68)  
+Maintained by [SethBurkart123](https://github.com/SethBurkart123), [Crazypersonalph](https://github.com/Crazypersonalph) & the rest of the BetterSEQTA team!  
 
 ## Star History
 
