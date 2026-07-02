@@ -15,10 +15,15 @@ export const GOOGLE_CALENDAR_OAUTH_CALLBACK = `${ACCOUNTS_BASE}/auth/google/cale
 export const GOOGLE_CALENDAR_TOKEN_URL = `${ACCOUNTS_BASE}/api/bsplus/google/calendar/token`;
 export const GOOGLE_CALENDAR_REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/google/calendar/refresh`;
 
-export const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events";
+/** App-owned secondary calendar only — cannot read or modify the user's other calendars. */
+export const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.app.created";
 
 export const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 export const GOOGLE_CALENDAR_API = "https://www.googleapis.com/calendar/v3";
+
+export const BSPLUS_GOOGLE_CALENDAR_NAME = "BetterSEQTA+ Timetable";
+export const BSPLUS_GOOGLE_CALENDAR_DESCRIPTION =
+  "School timetable lessons synced by the BetterSEQTA+ extension.";
 
 export const BSPLUS_GOOGLE_CALENDAR_EVENT_PROP = "bsplusSeqtaKey";
 

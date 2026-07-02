@@ -30,10 +30,10 @@ import type {
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
-  GOOGLE_CALENDAR_ID,
   upsertGoogleCalendarEvent,
   upsertOutlookCalendarEvent,
 } from "@/seqta/utils/calendarSync/remoteEvents";
+import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarProvisioning";
 import {
   readOutlookCalendarState,
   writeOutlookCalendarState,
@@ -70,6 +70,15 @@ export type CalendarLessonSyncProvider = {
   toApiBody: (event: GoogleCalendarEventInput) => Record<string, unknown>;
 };
 
+async function getOrProvisionGoogleCalendarId(accessToken: string): Promise<string> {
+  const state = await readGoogleCalendarState();
+  if (state.calendarId) return state.calendarId;
+
+  const calendarId = await ensureGoogleAppCalendar(accessToken);
+  await writeGoogleCalendarState({ calendarId });
+  return calendarId;
+}
+
 export const googleLessonSyncProvider: CalendarLessonSyncProvider = {
   label: "Google Calendar",
   isConfigured: isGoogleCalendarConfigured,
@@ -77,12 +86,17 @@ export const googleLessonSyncProvider: CalendarLessonSyncProvider = {
   notConnectedError: "Connect Google Calendar first.",
   readState: readGoogleCalendarState,
   writeState: writeGoogleCalendarState,
-  deleteEvent: (accessToken, eventId, refreshAccessToken) =>
-    deleteGoogleCalendarEvent(accessToken, GOOGLE_CALENDAR_ID, eventId, refreshAccessToken),
-  upsertEvent: (accessToken, existingId, body, refreshAccessToken) =>
+  deleteEvent: async (accessToken, eventId, refreshAccessToken) =>
+    deleteGoogleCalendarEvent(
+      accessToken,
+      await getOrProvisionGoogleCalendarId(accessToken),
+      eventId,
+      refreshAccessToken,
+    ),
+  upsertEvent: async (accessToken, existingId, body, refreshAccessToken) =>
     upsertGoogleCalendarEvent(
       accessToken,
-      GOOGLE_CALENDAR_ID,
+      await getOrProvisionGoogleCalendarId(accessToken),
       existingId,
       body,
       refreshAccessToken,

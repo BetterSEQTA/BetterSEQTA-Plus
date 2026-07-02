@@ -9,6 +9,8 @@ export interface GoogleCalendarStoredState {
   refreshToken?: string;
   expiresAt?: number;
   connectedAt?: number;
+  /** Google calendar id for the app-owned "BetterSEQTA+ Timetable" secondary calendar. */
+  calendarId?: string;
   lastSyncAt?: number;
   lastWeeklySyncAt?: number;
   lastSyncOrigin?: string;

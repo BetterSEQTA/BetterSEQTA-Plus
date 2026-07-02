@@ -71,8 +71,6 @@ async function deleteRemoteEvent(
   throw new Error(err?.error?.message ?? `${label} delete failed (${res.status})`);
 }
 
-const GOOGLE_CALENDAR_ID = "primary";
-
 export function upsertGoogleCalendarEvent(
   accessToken: string,
   calendarId: string,
@@ -140,5 +138,3 @@ export function deleteOutlookCalendarEvent(
     refreshAccessToken,
   );
 }
-
-export { GOOGLE_CALENDAR_ID };

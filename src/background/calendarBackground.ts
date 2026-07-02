@@ -40,6 +40,7 @@ import {
   readGoogleCalendarState,
   writeGoogleCalendarState,
 } from "@/seqta/utils/googleCalendar/storage";
+import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarProvisioning";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncResult,
@@ -98,6 +99,7 @@ type CalendarProviderBackend = {
   refresh: (refreshToken: string) => Promise<AccountsTokenPayload>;
   applyAuthParams: (authUrl: URL) => void;
   messagePrefix: string;
+  afterConnect?: (accessToken: string) => Promise<Partial<StoredTokens>>;
 };
 
 function createProviderBackend(
@@ -145,6 +147,11 @@ const GOOGLE_BACKEND = createProviderBackend({
   tokenUrl: GOOGLE_CALENDAR_TOKEN_URL,
   refreshUrl: GOOGLE_CALENDAR_REFRESH_URL,
   notReadyHint: GOOGLE_CALENDAR_ACCOUNTS_NOT_READY_HINT,
+  async afterConnect(accessToken) {
+    const state = await readGoogleCalendarState();
+    const calendarId = await ensureGoogleAppCalendar(accessToken, state.calendarId);
+    return { calendarId };
+  },
 });
 
 const OUTLOOK_BACKEND = createProviderBackend({
@@ -393,6 +400,12 @@ async function connectCalendar(provider: CalendarProviderBackend): Promise<Googl
       expiresAt: tokenExpiresAt(tokens.expires_in),
       connectedAt: Date.now(),
     });
+    if (provider.afterConnect) {
+      const patch = await provider.afterConnect(tokens.access_token);
+      if (patch && Object.keys(patch).length > 0) {
+        await provider.write(patch);
+      }
+    }
     await ensureWeeklySyncAlarm();
     return { success: true, configured: true, connected: true };
   } catch (err) {

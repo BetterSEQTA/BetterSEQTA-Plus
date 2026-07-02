@@ -36,11 +36,14 @@ import {
 } from "@/seqta/utils/calendarSync/remoteEvents";
 import { deleteSyncedEventsFromGoogleCalendar, syncLessonsToGoogleCalendar } from "@/seqta/utils/calendarSync/syncEngine";
 
+import { syncWindowRange } from "@/seqta/utils/googleCalendar/syncDateRange";
+
 const ORIGIN = "https://school.seqta.com.au";
 const getAccessToken = async () => "test-token";
+const syncDate = syncWindowRange(12).from;
 
 const baseLesson: SeqtaTimetableLesson = {
-  date: "2026-06-27",
+  date: syncDate,
   from: "09:00:00",
   until: "10:00:00",
   description: "10 Mathematics",
@@ -56,8 +59,9 @@ describe("syncLessonsToGoogleCalendar", () => {
     jest.clearAllMocks();
     jest.mocked(readGoogleCalendarState).mockResolvedValue({
       refreshToken: "refresh",
+      calendarId: "app-calendar-id",
       eventMap: {
-        [`${ORIGIN}::${ORIGIN}:cal:12345`]: { id: "google-existing", date: "2026-06-27" },
+        [`${ORIGIN}::${ORIGIN}:cal:12345`]: { id: "google-existing", date: syncDate },
         [`${ORIGIN}::${ORIGIN}:cal:99999`]: { id: "google-stale", date: "2020-01-06" },
       },
     });
@@ -84,6 +88,7 @@ describe("syncLessonsToGoogleCalendar", () => {
   it("creates events that are not yet tracked", async () => {
     jest.mocked(readGoogleCalendarState).mockResolvedValue({
       refreshToken: "refresh",
+      calendarId: "app-calendar-id",
       eventMap: {},
     });
     jest.mocked(upsertGoogleCalendarEvent).mockResolvedValue("google-new");
@@ -135,6 +140,7 @@ describe("deleteSyncedEventsFromGoogleCalendar", () => {
     jest.clearAllMocks();
     jest.mocked(readGoogleCalendarState).mockResolvedValue({
       refreshToken: "refresh",
+      calendarId: "app-calendar-id",
       eventMap: {
         [`${ORIGIN}::${ORIGIN}:cal:12345`]: { id: "google-1", date: "2026-06-27" },
         [`${ORIGIN}::${ORIGIN}:cal:99999`]: { id: "google-2", date: "2026-06-28" },
