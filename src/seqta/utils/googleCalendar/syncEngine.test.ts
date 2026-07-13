@@ -222,11 +222,39 @@ describe("deleteSyncedEventsFromGoogleCalendar", () => {
   it("deletes only events for the requested origin", async () => {
     const result = await deleteSyncedEventsFromGoogleCalendar(ORIGIN, getAccessToken);
 
+    expect(listGoogleSyncedEvents).toHaveBeenCalled();
     expect(deleteGoogleCalendarEvent).toHaveBeenCalledTimes(2);
     expect(result).toMatchObject({
       success: true,
       deleted: 2,
       failed: 0,
     });
+  });
+
+  it("also deletes remote orphans found by list", async () => {
+    jest.mocked(readGoogleCalendarState).mockResolvedValue({
+      refreshToken: "refresh",
+      calendarId: "app-calendar-id",
+      eventMap: {},
+    });
+    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([
+      {
+        seqtaKey: `${ORIGIN}:cal:1`,
+        id: "remote-a",
+        date: "2026-06-27",
+        fingerprint: "fp",
+      },
+      {
+        seqtaKey: "",
+        id: "orphan-b",
+        date: "2026-06-28",
+        fingerprint: "fp",
+      },
+    ]);
+
+    const result = await deleteSyncedEventsFromGoogleCalendar(ORIGIN, getAccessToken);
+
+    expect(deleteGoogleCalendarEvent).toHaveBeenCalledTimes(2);
+    expect(result).toMatchObject({ success: true, deleted: 2, failed: 0 });
   });
 });

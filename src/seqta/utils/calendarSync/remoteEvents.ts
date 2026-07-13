@@ -16,20 +16,47 @@ export type RemoteSyncedEvent = {
   date: string;
 };
 
+export type ListSyncedEventsOptions = {
+  /** Include category/calendar events that are missing a seqta key (legacy orphans). */
+  includeUnkeyed?: boolean;
+};
+
+const MAX_RETRIES = 4;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 403;
+}
+
 async function authorizedFetch(
   accessToken: string,
   url: string,
   init: RequestInit,
   refreshAccessToken?: () => Promise<string>,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    ...init,
-    headers: { Authorization: `Bearer ${accessToken}`, ...init.headers },
-  });
-  if (res.status === 401 && refreshAccessToken) {
-    return authorizedFetch(await refreshAccessToken(), url, init);
+  let token = accessToken;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const res = await fetch(url, {
+      ...init,
+      headers: { Authorization: `Bearer ${token}`, ...init.headers },
+    });
+    if (res.status === 401 && refreshAccessToken) {
+      token = await refreshAccessToken();
+      continue;
+    }
+    if (isRetryableStatus(res.status) && attempt < MAX_RETRIES - 1) {
+      await sleep(250 * 2 ** attempt + Math.floor(Math.random() * 100));
+      continue;
+    }
+    return res;
   }
-  return res;
+  return fetch(url, {
+    ...init,
+    headers: { Authorization: `Bearer ${token}`, ...init.headers },
+  });
 }
 
 async function upsertRemoteEvent(
@@ -182,9 +209,13 @@ type GoogleListItem = {
   extendedProperties?: { private?: Record<string, string> };
 };
 
-function googleItemToRemote(item: GoogleListItem): RemoteSyncedEvent | null {
-  const seqtaKey = item.extendedProperties?.private?.[BSPLUS_GOOGLE_CALENDAR_EVENT_PROP];
-  if (!item.id || !seqtaKey) return null;
+function googleItemToRemote(
+  item: GoogleListItem,
+  includeUnkeyed: boolean,
+): RemoteSyncedEvent | null {
+  if (!item.id) return null;
+  const seqtaKey = item.extendedProperties?.private?.[BSPLUS_GOOGLE_CALENDAR_EVENT_PROP] ?? "";
+  if (!seqtaKey && !includeUnkeyed) return null;
   const startDateTime = item.start?.dateTime ?? (item.start?.date ? `${item.start.date}T00:00:00` : "");
   const endDateTime = item.end?.dateTime ?? (item.end?.date ? `${item.end.date}T00:00:00` : "");
   const timeZone = item.start?.timeZone ?? item.end?.timeZone ?? "UTC";
@@ -208,7 +239,9 @@ export async function listGoogleSyncedEvents(
   calendarId: string,
   range: SyncDateRange,
   refreshAccessToken?: () => Promise<string>,
+  options: ListSyncedEventsOptions = {},
 ): Promise<RemoteSyncedEvent[]> {
+  const includeUnkeyed = options.includeUnkeyed === true;
   const encodedCalendar = encodeURIComponent(calendarId);
   const out: RemoteSyncedEvent[] = [];
   let pageToken: string | undefined;
@@ -241,7 +274,7 @@ export async function listGoogleSyncedEvents(
     }
 
     for (const item of json.items ?? []) {
-      const mapped = googleItemToRemote(item);
+      const mapped = googleItemToRemote(item, includeUnkeyed);
       if (mapped) out.push(mapped);
     }
     pageToken = json.nextPageToken;
@@ -260,13 +293,16 @@ type OutlookListItem = {
   categories?: string[];
 };
 
-function outlookItemToRemote(item: OutlookListItem): RemoteSyncedEvent | null {
+function outlookItemToRemote(
+  item: OutlookListItem,
+  includeUnkeyed: boolean,
+): RemoteSyncedEvent | null {
   if (!item.id) return null;
   const categories = item.categories ?? [];
   if (!categories.includes(BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY)) return null;
   const bodyContent = item.body?.content ?? "";
-  const seqtaKey = parseOutlookSeqtaKey(bodyContent);
-  if (!seqtaKey) return null;
+  const seqtaKey = parseOutlookSeqtaKey(bodyContent) ?? "";
+  if (!seqtaKey && !includeUnkeyed) return null;
 
   const startDateTime = (item.start?.dateTime ?? "").replace(/\.\d+$/, "");
   const endDateTime = (item.end?.dateTime ?? "").replace(/\.\d+$/, "");
@@ -300,7 +336,9 @@ export async function listOutlookSyncedEvents(
   accessToken: string,
   range: SyncDateRange,
   refreshAccessToken?: () => Promise<string>,
+  options: ListSyncedEventsOptions = {},
 ): Promise<RemoteSyncedEvent[]> {
+  const includeUnkeyed = options.includeUnkeyed === true;
   const out: RemoteSyncedEvent[] = [];
   const params = new URLSearchParams({
     startDateTime: toRfc3339Start(range.from),
@@ -332,7 +370,7 @@ export async function listOutlookSyncedEvents(
     }
 
     for (const item of json.value ?? []) {
-      const mapped = outlookItemToRemote(item);
+      const mapped = outlookItemToRemote(item, includeUnkeyed);
       if (mapped) out.push(mapped);
     }
     nextUrl = json["@odata.nextLink"];

@@ -40,3 +40,13 @@ export function droppedWeekRange(weeksAhead = GOOGLE_CALENDAR_SYNC_WEEKS): SyncD
 export function isDateInRange(date: string, range: SyncDateRange): boolean {
   return date >= range.from && date <= range.until;
 }
+
+/** Wide range used when removing all synced events (covers past + future terms). */
+export function wideCleanupRange(years = 3): SyncDateRange {
+  const now = new Date();
+  const from = new Date(now);
+  from.setFullYear(from.getFullYear() - years);
+  const until = new Date(now);
+  until.setFullYear(until.getFullYear() + years);
+  return { from: toISODate(from), until: toISODate(until) };
+}

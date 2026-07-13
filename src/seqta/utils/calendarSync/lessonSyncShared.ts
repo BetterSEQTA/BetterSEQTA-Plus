@@ -22,6 +22,34 @@ import type {
 
 export const EVENT_MAP_PERSIST_EVERY = 10;
 
+/** Max concurrent Google/Outlook create/update/delete requests during sync. */
+export const SYNC_CONCURRENCY = 2;
+
+/** Same cap for deletes to avoid provider rate limits. */
+export const SYNC_DELETE_CONCURRENCY = 2;
+
+/** Run async work over items with a fixed concurrency pool. */
+export async function mapPool<T>(
+  items: readonly T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  if (items.length === 0) return;
+  const limit = Math.max(1, Math.min(concurrency, items.length));
+  let nextIndex = 0;
+
+  async function runWorker(): Promise<void> {
+    while (true) {
+      const index = nextIndex;
+      nextIndex += 1;
+      if (index >= items.length) return;
+      await worker(items[index], index);
+    }
+  }
+
+  await Promise.all(Array.from({ length: limit }, () => runWorker()));
+}
+
 export type MappedLessonEvent = {
   seqtaKey: string;
   summary: string;
@@ -101,6 +129,41 @@ export function mergeRemoteEventsIntoMap(
       // Prefer last-written local fingerprint so skip stays stable across API format quirks.
       fingerprint: existing?.fingerprint ?? remote.fingerprint,
     };
+  }
+}
+
+/**
+ * Build a deduped delete list from local map + remote events for an origin.
+ * Unkeyed remote events (empty seqtaKey) are included as orphan removals.
+ */
+export function collectOriginDeleteEntries(
+  eventMap: EventMapRecord,
+  origin: string,
+  remoteEvents: RemoteSyncedEvent[],
+  mapKey: (origin: string, seqtaKey: string) => string,
+): Array<[string, string]> {
+  const byId = new Map<string, string>();
+
+  for (const [key, id] of originEventMapEntries(eventMap, origin)) {
+    byId.set(id, key);
+  }
+
+  for (const remote of remoteEvents) {
+    if (remote.seqtaKey && !remote.seqtaKey.startsWith(origin)) continue;
+    if (byId.has(remote.id)) continue;
+    const key = remote.seqtaKey
+      ? mapKey(origin, remote.seqtaKey)
+      : `${origin}::__orphan__:${remote.id}`;
+    byId.set(remote.id, key);
+  }
+
+  return Array.from(byId.entries()).map(([id, key]) => [key, id]);
+}
+
+export function clearOriginEventMapEntries(eventMap: EventMapRecord, origin: string): void {
+  const prefix = `${origin}::`;
+  for (const key of Object.keys(eventMap)) {
+    if (key.startsWith(prefix)) delete eventMap[key];
   }
 }
 
@@ -184,6 +247,7 @@ export async function deleteTrackedLessonEvents(
     progressOffset?: number;
     progressTotal?: number;
     logLabel: string;
+    concurrency?: number;
   },
 ): Promise<{ deleted: number; failed: number }> {
   if (entries.length === 0) return { deleted: 0, failed: 0 };
@@ -194,18 +258,22 @@ export async function deleteTrackedLessonEvents(
     progressOffset = 0,
     progressTotal = 0,
     logLabel,
+    concurrency = SYNC_DELETE_CONCURRENCY,
   } = options;
 
   let accessToken = await getAccessToken();
+  const refreshAccessToken = async () => {
+    accessToken = await getAccessToken();
+    return accessToken;
+  };
   let deleted = 0;
   let failed = 0;
+  let completed = 0;
+  let persistChain: Promise<unknown> = Promise.resolve();
 
-  for (const [mapKey, eventId] of entries) {
+  await mapPool(entries, concurrency, async ([mapKey, eventId]) => {
     try {
-      await deleteEvent(accessToken, eventId, async () => {
-        accessToken = await getAccessToken();
-        return accessToken;
-      });
+      await deleteEvent(accessToken, eventId, refreshAccessToken);
       delete eventMap[mapKey];
       deleted += 1;
     } catch (err) {
@@ -213,16 +281,22 @@ export async function deleteTrackedLessonEvents(
       failed += 1;
     }
 
+    completed += 1;
     reportSyncProgress(onProgress, {
       phase: "deleting",
-      current: progressOffset + deleted + failed,
+      current: progressOffset + completed,
       total: progressTotal,
-      message: `Removing old events (${deleted + failed}/${entries.length})…`,
+      message: `Removing old events (${completed}/${entries.length})…`,
     });
 
-    if (persistProgress && (deleted + failed) % EVENT_MAP_PERSIST_EVERY === 0) {
-      await writeState({ eventMap });
+    if (persistProgress && completed % EVENT_MAP_PERSIST_EVERY === 0) {
+      persistChain = persistChain.then(() => writeState({ eventMap }));
+      await persistChain;
     }
+  });
+
+  if (persistProgress) {
+    await persistChain;
   }
 
   return { deleted, failed };
@@ -276,6 +350,7 @@ type UpsertLessonEventsParams<TEvent extends MappedLessonEvent> = {
   }) => Promise<unknown>;
   onProgress?: GoogleCalendarSyncOptions["onProgress"];
   logLabel: string;
+  concurrency?: number;
 };
 
 export async function upsertLessonEvents<TEvent extends MappedLessonEvent>(
@@ -301,60 +376,66 @@ export async function upsertLessonEvents<TEvent extends MappedLessonEvent>(
     writeState,
     onProgress,
     logLabel,
+    concurrency = SYNC_CONCURRENCY,
   } = params;
 
   let accessToken = await getAccessToken();
+  const refreshAccessToken = async () => {
+    accessToken = await getAccessToken();
+    return accessToken;
+  };
   let created = 0;
   let updated = 0;
   let skipped = 0;
   let failed = initialFailed;
+  let completed = 0;
+  let persistChain: Promise<unknown> = Promise.resolve();
 
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i];
+  const persistState = () => {
+    persistChain = persistChain.then(() =>
+      writeState({ eventMap, lastSyncAt, lastSyncOrigin: origin }),
+    );
+    return persistChain;
+  };
+
+  await mapPool(events, concurrency, async (event) => {
     const key = mapKey(origin, event.seqtaKey);
     const existingId = getStoredEventId(eventMap[key]);
     const desiredFingerprint = eventFingerprint(event);
-    const progressCurrent = staleEntryCount + i + 1;
-    const progressMessage = `Syncing events (${i + 1}/${events.length})…`;
 
     try {
       if (existingId && getStoredFingerprint(eventMap[key]) === desiredFingerprint) {
         skipped += 1;
-        reportSyncProgress(onProgress, {
-          phase: "upserting",
-          current: progressCurrent,
-          total: totalSteps,
-          message: progressMessage,
-        });
-        continue;
-      }
-
-      const remoteId = await upsert(accessToken, existingId, event, async () => {
-        accessToken = await getAccessToken();
-        return accessToken;
-      });
-      if (existingId) updated += 1;
-      else created += 1;
-      eventMap[key] = {
-        id: remoteId,
-        date: lessonDateForEvent(event.startDateTime, event.seqtaKey),
-        fingerprint: desiredFingerprint,
-      };
-
-      if ((i + 1) % EVENT_MAP_PERSIST_EVERY === 0 || i === events.length - 1) {
-        await writeState({ eventMap, lastSyncAt, lastSyncOrigin: origin });
+      } else {
+        const remoteId = await upsert(accessToken, existingId, event, refreshAccessToken);
+        if (existingId) updated += 1;
+        else created += 1;
+        eventMap[key] = {
+          id: remoteId,
+          date: lessonDateForEvent(event.startDateTime, event.seqtaKey),
+          fingerprint: desiredFingerprint,
+        };
       }
     } catch (err) {
       verboseLog(`[BetterSEQTA+] ${logLabel} event sync failed:`, err);
       failed += 1;
     }
 
+    completed += 1;
     reportSyncProgress(onProgress, {
       phase: "upserting",
-      current: progressCurrent,
+      current: staleEntryCount + completed,
       total: totalSteps,
-      message: progressMessage,
+      message: `Syncing events (${completed}/${events.length})…`,
     });
+
+    if (completed % EVENT_MAP_PERSIST_EVERY === 0) {
+      await persistState();
+    }
+  });
+
+  if (events.length > 0) {
+    await persistState();
   }
 
   return { created, updated, skipped, failed, accessToken };

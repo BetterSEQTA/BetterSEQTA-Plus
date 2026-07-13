@@ -11,8 +11,10 @@ import {
 } from "./eventFingerprint";
 import {
   buildLessonSyncResult,
+  collectOriginDeleteEntries,
   entriesToPrune,
   formatLessonSyncResultMessage,
+  mapPool,
   mergeRemoteEventsIntoMap,
   reportSyncProgress,
   upsertLessonEvents,
@@ -166,6 +168,45 @@ describe("mergeRemoteEventsIntoMap", () => {
   });
 });
 
+describe("collectOriginDeleteEntries", () => {
+  const origin = "https://school.seqta.com.au";
+  const mapKey = (o: string, seqtaKey: string) => `${o}::${seqtaKey}`;
+
+  it("includes local map entries and matching remote events", () => {
+    const eventMap = {
+      [`${origin}::${origin}:cal:1`]: { id: "local-1", date: "2026-07-13" },
+    };
+    const entries = collectOriginDeleteEntries(
+      eventMap,
+      origin,
+      [
+        {
+          seqtaKey: `${origin}:cal:2`,
+          id: "remote-2",
+          date: "2026-07-14",
+          fingerprint: "fp",
+        },
+        {
+          seqtaKey: "",
+          id: "orphan-3",
+          date: "2026-07-15",
+          fingerprint: "fp",
+        },
+        {
+          seqtaKey: "https://other.seqta.com.au:cal:9",
+          id: "other",
+          date: "2026-07-15",
+          fingerprint: "fp",
+        },
+      ],
+      mapKey,
+    );
+
+    const ids = entries.map(([, id]) => id).sort();
+    expect(ids).toEqual(["local-1", "orphan-3", "remote-2"]);
+  });
+});
+
 describe("formatLessonSyncResultMessage", () => {
   it("includes unchanged counts", () => {
     expect(
@@ -221,5 +262,62 @@ describe("upsertLessonEvents skip unchanged", () => {
 
     expect(upsert).not.toHaveBeenCalled();
     expect(result).toMatchObject({ created: 0, updated: 0, skipped: 1, failed: 0 });
+  });
+
+  it("runs upserts concurrently", async () => {
+    const origin = "https://school.seqta.com.au";
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const events = Array.from({ length: 6 }, (_, i) => ({
+      seqtaKey: `${origin}:cal:${i}`,
+      summary: `Class ${i}`,
+      description: "Synced by BetterSEQTA+",
+      startDateTime: "2026-07-13T09:00:00",
+      endDateTime: "2026-07-13T10:00:00",
+      timeZone: "UTC",
+    }));
+
+    const upsert = jest.fn(async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      inFlight -= 1;
+      return `id-${Math.random()}`;
+    });
+
+    const result = await upsertLessonEvents({
+      events,
+      eventMap: {},
+      origin,
+      staleEntryCount: 0,
+      totalSteps: events.length,
+      lastSyncAt: Date.now(),
+      initialFailed: 0,
+      getAccessToken: async () => "token",
+      mapKey: (o, k) => `${o}::${k}`,
+      upsert,
+      writeState: async () => undefined,
+      logLabel: "Test",
+      concurrency: 2,
+    });
+
+    expect(result.created).toBe(6);
+    expect(upsert).toHaveBeenCalledTimes(6);
+    expect(maxInFlight).toBeGreaterThan(1);
+    expect(maxInFlight).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("mapPool", () => {
+  it("limits concurrency", async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    await mapPool([1, 2, 3, 4, 5], 2, async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      inFlight -= 1;
+    });
+    expect(maxInFlight).toBe(2);
   });
 });

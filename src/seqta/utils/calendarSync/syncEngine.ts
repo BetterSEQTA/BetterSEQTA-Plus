@@ -6,33 +6,18 @@ import type { EventMapRecord } from "@/seqta/utils/calendarSync/eventMap";
 import {
   buildDeleteSyncResult,
   buildLessonSyncResult,
+  clearOriginEventMapEntries,
+  collectOriginDeleteEntries,
   deleteTrackedLessonEvents,
   emptyLessonsSyncResult,
   entriesToPrune,
   mergeRemoteEventsIntoMap,
   notConfiguredSyncResult,
   notConnectedSyncResult,
-  originEventMapEntries,
   reconcileRangeForMode,
   reportSyncProgress,
   upsertLessonEvents,
 } from "@/seqta/utils/calendarSync/lessonSyncShared";
-import {
-  googleApiEventBody,
-  mapLessonsToGoogleEvents,
-  outlookGraphEventBody,
-} from "@/seqta/utils/googleCalendar/eventMapper";
-import {
-  readGoogleCalendarState,
-  writeGoogleCalendarState,
-} from "@/seqta/utils/googleCalendar/storage";
-import type {
-  GoogleCalendarDeleteResult,
-  GoogleCalendarEventInput,
-  GoogleCalendarSyncOptions,
-  GoogleCalendarSyncRequest,
-  GoogleCalendarSyncResult,
-} from "@/seqta/utils/googleCalendar/types";
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
@@ -40,14 +25,32 @@ import {
   listOutlookSyncedEvents,
   upsertGoogleCalendarEvent,
   upsertOutlookCalendarEvent,
+  type ListSyncedEventsOptions,
   type RemoteSyncedEvent,
 } from "@/seqta/utils/calendarSync/remoteEvents";
+import {
+  googleApiEventBody,
+  mapLessonsToGoogleEvents,
+  outlookGraphEventBody,
+} from "@/seqta/utils/googleCalendar/eventMapper";
 import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarProvisioning";
+import {
+  readGoogleCalendarState,
+  writeGoogleCalendarState,
+} from "@/seqta/utils/googleCalendar/storage";
 import {
   syncWindowRange,
   trailingWeekRange,
+  wideCleanupRange,
   type SyncDateRange,
 } from "@/seqta/utils/googleCalendar/syncDateRange";
+import type {
+  GoogleCalendarDeleteResult,
+  GoogleCalendarEventInput,
+  GoogleCalendarSyncOptions,
+  GoogleCalendarSyncRequest,
+  GoogleCalendarSyncResult,
+} from "@/seqta/utils/googleCalendar/types";
 import {
   readOutlookCalendarState,
   writeOutlookCalendarState,
@@ -86,6 +89,7 @@ export type CalendarLessonSyncProvider = {
     accessToken: string,
     range: SyncDateRange,
     refreshAccessToken: () => Promise<string>,
+    options?: ListSyncedEventsOptions,
   ) => Promise<RemoteSyncedEvent[]>;
   toApiBody: (event: GoogleCalendarEventInput) => Record<string, unknown>;
 };
@@ -121,12 +125,13 @@ export const googleLessonSyncProvider: CalendarLessonSyncProvider = {
       body,
       refreshAccessToken,
     ),
-  listSyncedEvents: async (accessToken, range, refreshAccessToken) =>
+  listSyncedEvents: async (accessToken, range, refreshAccessToken, options) =>
     listGoogleSyncedEvents(
       accessToken,
       await getOrProvisionGoogleCalendarId(accessToken),
       range,
       refreshAccessToken,
+      options,
     ),
   toApiBody: googleApiEventBody,
 };
@@ -142,8 +147,8 @@ export const outlookLessonSyncProvider: CalendarLessonSyncProvider = {
     deleteOutlookCalendarEvent(accessToken, eventId, refreshAccessToken),
   upsertEvent: (accessToken, existingId, body, refreshAccessToken) =>
     upsertOutlookCalendarEvent(accessToken, existingId, body, refreshAccessToken),
-  listSyncedEvents: (accessToken, range, refreshAccessToken) =>
-    listOutlookSyncedEvents(accessToken, range, refreshAccessToken),
+  listSyncedEvents: (accessToken, range, refreshAccessToken, options) =>
+    listOutlookSyncedEvents(accessToken, range, refreshAccessToken, options),
   toApiBody: outlookGraphEventBody,
 };
 
@@ -167,10 +172,6 @@ export async function syncLessonsToCalendar(
   const weeksAhead = request.weeksAhead ?? (await getSyncWeeksAhead());
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
-
-  if (events.length === 0 && mode === "full") {
-    return emptyLessonsSyncResult();
-  }
 
   reportSyncProgress(options.onProgress, {
     phase: "preparing",
@@ -204,7 +205,7 @@ export async function syncLessonsToCalendar(
 
   const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
   const staleEntries = entriesToPrune(eventMap, request.origin, mode, weeksAhead, currentMapKeys);
-  const totalSteps = staleEntries.length + events.length;
+  const totalSteps = Math.max(staleEntries.length + events.length, 1);
   const lastSyncAt = Date.now();
 
   const staleResult = await deleteTrackedLessonEvents(
@@ -219,6 +220,24 @@ export async function syncLessonsToCalendar(
       logLabel: provider.label,
     },
   );
+
+  if (events.length === 0 && mode === "full") {
+    await provider.writeState({
+      eventMap,
+      lastSyncAt,
+      lastSyncOrigin: request.origin,
+    });
+    reportSyncProgress(options.onProgress, {
+      phase: "done",
+      current: totalSteps,
+      total: totalSteps,
+      message: "Sync complete",
+    });
+    if (staleResult.deleted > 0) {
+      return buildLessonSyncResult(0, 0, staleResult.deleted, 0, staleResult.failed, lastSyncAt);
+    }
+    return emptyLessonsSyncResult();
+  }
 
   const upsertResult = await upsertLessonEvents({
     events,
@@ -282,19 +301,40 @@ export async function deleteSyncedEventsFromCalendar(
     return { success: false, configured: true, connected: false, error: provider.notConnectedError };
   }
 
-  const entries = originEventMapEntries(state.eventMap ?? {}, origin);
-  if (entries.length === 0) {
-    return { success: true, configured: true, connected: true, deleted: 0, failed: 0 };
-  }
-
   reportSyncProgress(options.onProgress, {
     phase: "preparing",
     current: 0,
-    total: entries.length,
+    total: 1,
     message: "Preparing removal…",
   });
 
   const eventMap = { ...(state.eventMap ?? {}) };
+  let accessToken = await getAccessToken();
+  const refreshAccessToken = async () => {
+    accessToken = await getAccessToken();
+    return accessToken;
+  };
+
+  let remoteEvents: RemoteSyncedEvent[] = [];
+  try {
+    remoteEvents = await provider.listSyncedEvents(
+      accessToken,
+      wideCleanupRange(),
+      refreshAccessToken,
+      { includeUnkeyed: true },
+    );
+    mergeRemoteEventsIntoMap(eventMap, origin, remoteEvents, eventMapKey);
+  } catch (err) {
+    verboseLog(`[BetterSEQTA+] ${provider.label} cleanup list failed:`, err);
+  }
+
+  const entries = collectOriginDeleteEntries(eventMap, origin, remoteEvents, eventMapKey);
+  if (entries.length === 0) {
+    clearOriginEventMapEntries(eventMap, origin);
+    await provider.writeState({ eventMap });
+    return { success: true, configured: true, connected: true, deleted: 0, failed: 0 };
+  }
+
   const { deleted, failed } = await deleteTrackedLessonEvents(
     entries,
     eventMap,
@@ -309,6 +349,10 @@ export async function deleteSyncedEventsFromCalendar(
     },
   );
 
+  // Only wipe remaining origin keys when every delete succeeded — keep failed IDs for retry.
+  if (failed === 0) {
+    clearOriginEventMapEntries(eventMap, origin);
+  }
   await provider.writeState({ eventMap });
 
   reportSyncProgress(options.onProgress, {
