@@ -3,6 +3,8 @@ import browser from "webextension-polyfill";
 export interface EventMapEntry {
   id: string;
   date: string;
+  /** Last-synced content fingerprint; used to skip unchanged events. */
+  fingerprint?: string;
 }
 
 export type EventMapRecord = Record<string, string | EventMapEntry>;
@@ -17,9 +19,19 @@ export function normalizeEventMapEntry(
   if (value == null) return undefined;
   if (typeof value === "string") return { id: value, date: "" };
   if (typeof value.id === "string" && value.id.length > 0) {
-    return { id: value.id, date: value.date ?? "" };
+    return {
+      id: value.id,
+      date: value.date ?? "",
+      fingerprint: value.fingerprint,
+    };
   }
   return undefined;
+}
+
+export function getStoredFingerprint(
+  value: string | EventMapEntry | undefined,
+): string | undefined {
+  return normalizeEventMapEntry(value)?.fingerprint;
 }
 
 export function getStoredEventId(

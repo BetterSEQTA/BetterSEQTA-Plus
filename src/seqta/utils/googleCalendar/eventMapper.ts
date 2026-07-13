@@ -1,5 +1,6 @@
 import { BSPLUS_GOOGLE_CALENDAR_EVENT_PROP } from "@/config/googleCalendar";
 import { BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY } from "@/config/outlookCalendar";
+import { outlookDescriptionWithKey } from "@/seqta/utils/calendarSync/eventFingerprint";
 import type { GoogleCalendarEventInput, SeqtaTimetableLesson } from "./types";
 
 const SKIP_TYPES = new Set(["note", "holiday", "assembly-note"]);
@@ -100,7 +101,7 @@ export function outlookGraphEventBody(event: GoogleCalendarEventInput): Record<s
     subject: event.summary,
     body: {
       contentType: "text",
-      content: event.description ?? "Synced by BetterSEQTA+",
+      content: outlookDescriptionWithKey(event.description, event.seqtaKey),
     },
     start: { dateTime: event.startDateTime, timeZone: event.timeZone },
     end: { dateTime: event.endDateTime, timeZone: event.timeZone },

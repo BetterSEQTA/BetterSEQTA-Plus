@@ -3,6 +3,8 @@ import type { SeqtaTimetableLesson } from "./types";
 
 jest.mock("@/config/googleCalendar", () => ({
   isGoogleCalendarConfigured: jest.fn(() => true),
+  BSPLUS_GOOGLE_CALENDAR_EVENT_PROP: "bsplusSeqtaKey",
+  GOOGLE_CALENDAR_API: "https://www.googleapis.com/calendar/v3",
 }));
 
 jest.mock("@/utils/verboseLog", () => ({
@@ -27,14 +29,21 @@ jest.mock("@/seqta/utils/calendarSync/settings", () => ({
 jest.mock("@/seqta/utils/calendarSync/remoteEvents", () => ({
   upsertGoogleCalendarEvent: jest.fn(),
   deleteGoogleCalendarEvent: jest.fn(),
+  listGoogleSyncedEvents: jest.fn(async () => []),
 }));
 
 import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
 import {
   deleteGoogleCalendarEvent,
+  listGoogleSyncedEvents,
   upsertGoogleCalendarEvent,
 } from "@/seqta/utils/calendarSync/remoteEvents";
-import { deleteSyncedEventsFromGoogleCalendar, syncLessonsToGoogleCalendar } from "@/seqta/utils/calendarSync/syncEngine";
+import {
+  deleteSyncedEventsFromGoogleCalendar,
+  syncLessonsToGoogleCalendar,
+} from "@/seqta/utils/calendarSync/syncEngine";
+import { eventFingerprint } from "@/seqta/utils/calendarSync/eventFingerprint";
+import { lessonToGoogleEvent } from "@/seqta/utils/googleCalendar/eventMapper";
 
 import { syncWindowRange } from "@/seqta/utils/googleCalendar/syncDateRange";
 
@@ -67,6 +76,7 @@ describe("syncLessonsToGoogleCalendar", () => {
     });
     jest.mocked(upsertGoogleCalendarEvent).mockResolvedValue("google-existing");
     jest.mocked(deleteGoogleCalendarEvent).mockResolvedValue(undefined);
+    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([]);
   });
 
   it("updates existing events and removes stale tracked events on full sync", async () => {
@@ -75,6 +85,7 @@ describe("syncLessonsToGoogleCalendar", () => {
       getAccessToken,
     );
 
+    expect(listGoogleSyncedEvents).toHaveBeenCalled();
     expect(deleteGoogleCalendarEvent).toHaveBeenCalled();
     expect(upsertGoogleCalendarEvent).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
@@ -105,6 +116,64 @@ describe("syncLessonsToGoogleCalendar", () => {
       updated: 0,
       deleted: 0,
     });
+  });
+
+  it("recovers remote IDs when the local map is empty and skips unchanged", async () => {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    const mapped = lessonToGoogleEvent(ORIGIN, baseLesson, timeZone);
+    expect(mapped).not.toBeNull();
+    const fp = eventFingerprint(mapped!);
+
+    jest.mocked(readGoogleCalendarState).mockResolvedValue({
+      refreshToken: "refresh",
+      calendarId: "app-calendar-id",
+      eventMap: {},
+    });
+    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([
+      {
+        seqtaKey: `${ORIGIN}:cal:12345`,
+        id: "recovered-id",
+        date: syncDate,
+        fingerprint: fp,
+      },
+    ]);
+
+    const result = await syncLessonsToGoogleCalendar(
+      { origin: ORIGIN, lessons: [baseLesson], mode: "full" },
+      getAccessToken,
+    );
+
+    expect(upsertGoogleCalendarEvent).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      success: true,
+      created: 0,
+      updated: 0,
+      skipped: 1,
+    });
+  });
+
+  it("deletes cancelled lessons that remain inside the sync window", async () => {
+    jest.mocked(readGoogleCalendarState).mockResolvedValue({
+      refreshToken: "refresh",
+      calendarId: "app-calendar-id",
+      eventMap: {
+        [`${ORIGIN}::${ORIGIN}:cal:12345`]: { id: "keep", date: syncDate },
+        [`${ORIGIN}::${ORIGIN}:cal:cancelled`]: { id: "gone", date: syncDate },
+      },
+    });
+
+    const result = await syncLessonsToGoogleCalendar(
+      { origin: ORIGIN, lessons: [baseLesson], mode: "full" },
+      getAccessToken,
+    );
+
+    expect(deleteGoogleCalendarEvent).toHaveBeenCalledWith(
+      "test-token",
+      "app-calendar-id",
+      "gone",
+      expect.any(Function),
+    );
+    expect(result.deleted).toBeGreaterThanOrEqual(1);
   });
 
   it("does not delete events during incremental sync", async () => {

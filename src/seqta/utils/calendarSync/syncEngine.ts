@@ -9,13 +9,19 @@ import {
   deleteTrackedLessonEvents,
   emptyLessonsSyncResult,
   entriesToPrune,
+  mergeRemoteEventsIntoMap,
   notConfiguredSyncResult,
   notConnectedSyncResult,
   originEventMapEntries,
+  reconcileRangeForMode,
   reportSyncProgress,
   upsertLessonEvents,
 } from "@/seqta/utils/calendarSync/lessonSyncShared";
-import { googleApiEventBody, mapLessonsToGoogleEvents, outlookGraphEventBody } from "@/seqta/utils/googleCalendar/eventMapper";
+import {
+  googleApiEventBody,
+  mapLessonsToGoogleEvents,
+  outlookGraphEventBody,
+} from "@/seqta/utils/googleCalendar/eventMapper";
 import {
   readGoogleCalendarState,
   writeGoogleCalendarState,
@@ -30,14 +36,23 @@ import type {
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
+  listGoogleSyncedEvents,
+  listOutlookSyncedEvents,
   upsertGoogleCalendarEvent,
   upsertOutlookCalendarEvent,
+  type RemoteSyncedEvent,
 } from "@/seqta/utils/calendarSync/remoteEvents";
 import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarProvisioning";
+import {
+  syncWindowRange,
+  trailingWeekRange,
+  type SyncDateRange,
+} from "@/seqta/utils/googleCalendar/syncDateRange";
 import {
   readOutlookCalendarState,
   writeOutlookCalendarState,
 } from "@/seqta/utils/outlookCalendar/storage";
+import { verboseLog } from "@/utils/verboseLog";
 
 type CalendarStoredState = {
   refreshToken?: string;
@@ -67,6 +82,11 @@ export type CalendarLessonSyncProvider = {
     body: Record<string, unknown>,
     refreshAccessToken: () => Promise<string>,
   ) => Promise<string>;
+  listSyncedEvents: (
+    accessToken: string,
+    range: SyncDateRange,
+    refreshAccessToken: () => Promise<string>,
+  ) => Promise<RemoteSyncedEvent[]>;
   toApiBody: (event: GoogleCalendarEventInput) => Record<string, unknown>;
 };
 
@@ -101,6 +121,13 @@ export const googleLessonSyncProvider: CalendarLessonSyncProvider = {
       body,
       refreshAccessToken,
     ),
+  listSyncedEvents: async (accessToken, range, refreshAccessToken) =>
+    listGoogleSyncedEvents(
+      accessToken,
+      await getOrProvisionGoogleCalendarId(accessToken),
+      range,
+      refreshAccessToken,
+    ),
   toApiBody: googleApiEventBody,
 };
 
@@ -115,6 +142,8 @@ export const outlookLessonSyncProvider: CalendarLessonSyncProvider = {
     deleteOutlookCalendarEvent(accessToken, eventId, refreshAccessToken),
   upsertEvent: (accessToken, existingId, body, refreshAccessToken) =>
     upsertOutlookCalendarEvent(accessToken, existingId, body, refreshAccessToken),
+  listSyncedEvents: (accessToken, range, refreshAccessToken) =>
+    listOutlookSyncedEvents(accessToken, range, refreshAccessToken),
   toApiBody: outlookGraphEventBody,
 };
 
@@ -151,6 +180,28 @@ export async function syncLessonsToCalendar(
   });
 
   const eventMap = { ...(state.eventMap ?? {}) };
+  let accessToken = await getAccessToken();
+  const refreshAccessToken = async () => {
+    accessToken = await getAccessToken();
+    return accessToken;
+  };
+
+  const reconcileRange = reconcileRangeForMode(mode, weeksAhead, {
+    syncWindowRange,
+    trailingWeekRange,
+  });
+
+  try {
+    const remoteEvents = await provider.listSyncedEvents(
+      accessToken,
+      reconcileRange,
+      refreshAccessToken,
+    );
+    mergeRemoteEventsIntoMap(eventMap, request.origin, remoteEvents, eventMapKey);
+  } catch (err) {
+    verboseLog(`[BetterSEQTA+] ${provider.label} remote event list failed:`, err);
+  }
+
   const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
   const staleEntries = entriesToPrune(eventMap, request.origin, mode, weeksAhead, currentMapKeys);
   const totalSteps = staleEntries.length + events.length;
@@ -179,13 +230,8 @@ export async function syncLessonsToCalendar(
     initialFailed: staleResult.failed,
     getAccessToken,
     mapKey: eventMapKey,
-    upsert: (accessToken, existingId, event, refreshAccessToken) =>
-      provider.upsertEvent(
-        accessToken,
-        existingId,
-        provider.toApiBody(event),
-        refreshAccessToken,
-      ),
+    upsert: (token, existingId, event, refresh) =>
+      provider.upsertEvent(token, existingId, provider.toApiBody(event), refresh),
     writeState: provider.writeState,
     onProgress: options.onProgress,
     logLabel: provider.label,
@@ -210,6 +256,7 @@ export async function syncLessonsToCalendar(
     upsertResult.created,
     upsertResult.updated,
     staleResult.deleted,
+    upsertResult.skipped,
     upsertResult.failed,
     lastSyncAt,
   );

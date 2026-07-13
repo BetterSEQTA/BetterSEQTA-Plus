@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   lessonToGoogleEvent,
   mapLessonsToGoogleEvents,
+  outlookGraphEventBody,
   seqtaLessonKey,
   shouldSyncLesson,
 } from "./eventMapper";
@@ -60,5 +61,16 @@ describe("mapLessonsToGoogleEvents", () => {
       "Australia/Perth",
     );
     expect(events).toHaveLength(1);
+  });
+});
+
+describe("outlookGraphEventBody", () => {
+  it("embeds Key: seqtaKey in the body for remote reconcile", () => {
+    const event = lessonToGoogleEvent(ORIGIN, baseLesson, "Australia/Perth");
+    expect(event).not.toBeNull();
+    const body = outlookGraphEventBody(event!);
+    const content = (body.body as { content: string }).content;
+    expect(content).toContain(`Key: ${ORIGIN}:cal:12345`);
+    expect(content).toContain("Synced by BetterSEQTA+");
   });
 });
