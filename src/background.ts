@@ -14,8 +14,11 @@ import {
 } from "./background/cloudSettingsAutoSync";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
-import { registerGoogleCalendarMessageHandlers, initGoogleCalendarBackground } from "./background/googleCalendar";
-import { registerOutlookCalendarMessageHandlers } from "./background/outlookCalendar";
+import { initCalendarBackground } from "./background/calendarBackground";
+import {
+  registerGoogleCalendarMessageHandlers,
+  registerOutlookCalendarMessageHandlers,
+} from "./background/calendarBackground";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -570,7 +573,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
 
 registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
 registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
-initGoogleCalendarBackground();
+initCalendarBackground();
 
 browser.runtime.onMessage.addListener(
   // @ts-ignore - OnMessageListener expects literal true for async, we return boolean

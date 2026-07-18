@@ -1,4 +1,6 @@
 import { BSPLUS_GOOGLE_CALENDAR_EVENT_PROP } from "@/config/googleCalendar";
+import { BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY } from "@/config/outlookCalendar";
+import { outlookDescriptionWithKey } from "@/seqta/utils/calendarSync/eventFingerprint";
 import type { GoogleCalendarEventInput, SeqtaTimetableLesson } from "./types";
 
 const SKIP_TYPES = new Set(["note", "holiday", "assembly-note"]);
@@ -92,4 +94,21 @@ export function googleApiEventBody(event: GoogleCalendarEventInput): Record<stri
       },
     },
   };
+}
+
+export function outlookGraphEventBody(event: GoogleCalendarEventInput): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    subject: event.summary,
+    body: {
+      contentType: "text",
+      content: outlookDescriptionWithKey(event.description, event.seqtaKey),
+    },
+    start: { dateTime: event.startDateTime, timeZone: event.timeZone },
+    end: { dateTime: event.endDateTime, timeZone: event.timeZone },
+    categories: [BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY],
+  };
+  if (event.location) {
+    body.location = { displayName: event.location };
+  }
+  return body;
 }
