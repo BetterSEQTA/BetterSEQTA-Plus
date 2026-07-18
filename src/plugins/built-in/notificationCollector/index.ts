@@ -14,6 +14,9 @@ import {
 } from "./injectArchivedNotifications";
 import styles from "./styles.css?inline";
 
+const BUBBLE_SELECTOR = "[class*='notifications__bubble___']";
+const LIST_SELECTOR = '[class*="notifications__list___"]';
+
 const notificationCollectorSettings = {
   saveLocally: booleanSetting({
     default: true,
@@ -60,15 +63,9 @@ const notificationCollectorPlugin: Plugin<
     const baseInterval = 30000;
     const maxInterval = 300000;
 
-    if (!api.storage.lastNotificationCount) {
-      api.storage.lastNotificationCount = 0;
-    }
-    if (!api.storage.consecutiveErrors) {
-      api.storage.consecutiveErrors = 0;
-    }
-    if (!api.storage.archivesByUser) {
-      api.storage.archivesByUser = {};
-    }
+    api.storage.lastNotificationCount ||= 0;
+    api.storage.consecutiveErrors ||= 0;
+    api.storage.archivesByUser ||= {};
 
     const syncArchive = async () => {
       if (!api.settings.saveLocally || archiveSyncInFlight) return;
@@ -81,12 +78,15 @@ const notificationCollectorPlugin: Plugin<
         const notifications = await fetchAllNotifications();
         const archivesByUser = { ...(api.storage.archivesByUser ?? {}) };
         const existing = archivesByUser[userKey] ?? {};
-        const merged = mergeNotificationsIntoArchive(existing, notifications);
+        const { archive: merged, changed } = mergeNotificationsIntoArchive(
+          existing,
+          notifications,
+        );
 
-        if (JSON.stringify(existing) !== JSON.stringify(merged)) {
+        if (changed) {
           archivesByUser[userKey] = merged;
           api.storage.archivesByUser = archivesByUser;
-        } else if (document.querySelector('[class*="notifications__list___"]')) {
+        } else if (document.querySelector(LIST_SELECTOR)) {
           await injectArchivedForUser(merged);
         }
       } catch (error) {
@@ -100,9 +100,7 @@ const notificationCollectorPlugin: Plugin<
       if (!isVisible) return;
 
       try {
-        const alertDiv = document.querySelector(
-          "[class*='notifications__bubble___']",
-        ) as HTMLElement;
+        const alertDiv = document.querySelector(BUBBLE_SELECTOR) as HTMLElement;
 
         if (alertDiv && api.storage.lastNotificationCount !== 0) {
           alertDiv.textContent = api.storage.lastNotificationCount.toString();
@@ -159,9 +157,7 @@ const notificationCollectorPlugin: Plugin<
       if (pollInterval) {
         window.clearTimeout(pollInterval);
         pollInterval = null;
-        const alertDiv = document.querySelector(
-          "[class*='notifications__bubble___']",
-        ) as HTMLElement;
+        const alertDiv = document.querySelector(BUBBLE_SELECTOR) as HTMLElement;
         if (alertDiv) {
           if (api.storage.lastNotificationCount > 9) {
             alertDiv.textContent = "9+";
@@ -175,10 +171,7 @@ const notificationCollectorPlugin: Plugin<
     const handleVisibilityChange = () => {
       isVisible = !document.hidden;
       if (isVisible && !pollInterval) {
-        const alertDiv = document.querySelector(
-          "[class*='notifications__bubble___']",
-        );
-        if (alertDiv) startPolling();
+        if (document.querySelector(BUBBLE_SELECTOR)) startPolling();
       }
     };
 
@@ -195,18 +188,16 @@ const notificationCollectorPlugin: Plugin<
       resolveNotificationUserKey,
     );
 
-    api.seqta.onMount("[class*='notifications__bubble___']", () => {
+    const onBubbleMount = () => {
       startPolling();
-      if (api.settings.saveLocally) {
-        void syncArchive();
-      }
-    });
+      if (api.settings.saveLocally) void syncArchive();
+    };
+    const onListMount = () => {
+      if (api.settings.saveLocally) void syncArchive();
+    };
 
-    api.seqta.onMount("[class*='notifications__list___']", () => {
-      if (api.settings.saveLocally) {
-        void syncArchive();
-      }
-    });
+    api.seqta.onMount(BUBBLE_SELECTOR, onBubbleMount);
+    api.seqta.onMount(LIST_SELECTOR, onListMount);
 
     return () => {
       stopPolling();

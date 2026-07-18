@@ -1,5 +1,3 @@
-import { verboseDebug } from '@/utils/verboseLog';
-
 const EMBEDDIA_DB = "embeddiaDB";
 const EMBEDDIA_STORE = "embeddiaObjectStore";
 
@@ -13,13 +11,9 @@ function openEmbeddiaDb(): Promise<IDBDatabase | null> {
 
 export async function getVectorizedItemIds(): Promise<Set<string>> {
   const db = await openEmbeddiaDb();
-  if (!db) {
-    verboseDebug("Could not open embeddiaDB, assuming no items are vectorized");
-    return new Set();
-  }
+  if (!db) return new Set();
 
   if (!db.objectStoreNames.contains(EMBEDDIA_STORE)) {
-    verboseDebug("embeddiaObjectStore not found, assuming no items are vectorized");
     db.close();
     return new Set();
   }
@@ -39,7 +33,6 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
       if (typeof key === "string") vectorizedIds.add(key);
     }
 
-    verboseDebug(`Found ${vectorizedIds.size} already vectorized items in embeddia DB`);
     db.close();
     return vectorizedIds;
   } catch (error) {

@@ -7,62 +7,54 @@
   var MENU_UPDATE_COLOURS = "menu.update.colours";
   var SUBJECT_PREFIX = "timetable.subject.colour.";
   var TUTOR_PREFIX = "timetable.tutor.";
+  var CLEANUP_FOLLOWUP_MS = 300;
+  var cleanupFollowup = null;
 
   function isTesStyling() {
     var el = document.getElementById("logo-style");
     return el && el.textContent.indexOf("tesSeqta") !== -1;
   }
 
-  function dismissModalisers() {
-    var n = 0;
-    var containers = document.querySelectorAll(".modaliser-container");
-    for (var i = 0; i < containers.length; i++) {
-      var c = containers[i];
-      var m = c.querySelector(".modaliser");
-      if (!m || !m.childElementCount || !c.classList.contains("visible")) {
-        c.remove();
-        n++;
-      }
-    }
-    return n;
-  }
-
-  function dismissSlidePanes(forceColour) {
-    var n = 0;
+  function dismissStaleDialogs(forceColour) {
+    var slide = 0;
     var panes = document.querySelectorAll(".uiSlidePane");
     for (var i = 0; i < panes.length; i++) {
       var p = panes[i];
       if (p.querySelector(".pane.colourChooser")) {
         p.remove();
-        n++;
+        slide++;
         continue;
       }
       if (!forceColour && p.classList.contains("shown")) continue;
       if (!p.classList.contains("shown")) {
         p.remove();
-        n++;
+        slide++;
       }
     }
-    return n;
-  }
 
-  function dismissStaleDialogs(forceColour) {
-    var slide = dismissSlidePanes(forceColour);
-    var modal = dismissModalisers();
+    var modal = 0;
+    var containers = document.querySelectorAll(".modaliser-container");
+    for (var j = 0; j < containers.length; j++) {
+      var c = containers[j];
+      var m = c.querySelector(".modaliser");
+      if (!m || !m.childElementCount || !c.classList.contains("visible")) {
+        c.remove();
+        modal++;
+      }
+    }
+
     document.body.classList.remove("clr-open");
     document.documentElement.classList.remove("clr-open");
     return { slideRemoved: slide, modalRemoved: modal };
   }
 
   function scheduleCleanup() {
-    var delays = [0, 100, 300, 600];
-    for (var i = 0; i < delays.length; i++) {
-      (function (d) {
-        setTimeout(function () {
-          dismissStaleDialogs(true);
-        }, d);
-      })(delays[i]);
-    }
+    dismissStaleDialogs(true);
+    if (cleanupFollowup) clearTimeout(cleanupFollowup);
+    cleanupFollowup = setTimeout(function () {
+      cleanupFollowup = null;
+      dismissStaleDialogs(true);
+    }, CLEANUP_FOLLOWUP_MS);
   }
 
   function applyMenuColours() {

@@ -11,14 +11,4 @@
   font: 600 0.8125rem/1.25 system-ui, sans-serif;
   cursor: pointer;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
-  animation: bsplus-bg-music-hint-in 220ms ease-out;
-}
-
-.bsplus-bg-music-hint:hover {
-  background: color-mix(in srgb, var(--theme-secondary, #2a2a2a) 90%, var(--better-main, #22c55e) 10%);
-}
-
-@keyframes bsplus-bg-music-hint-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
 }

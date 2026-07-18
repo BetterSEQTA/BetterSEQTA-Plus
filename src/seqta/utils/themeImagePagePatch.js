@@ -14,7 +14,6 @@
   var THEME_STYLE_ID = "custom-theme";
   var PREVIEW_STYLE_ID = "custom-theme-preview";
   var urlCache = {};
-  var cssState = { custom: "", preview: "" };
   var headObserver = null;
 
   function log(event, detail) {
@@ -77,8 +76,6 @@
 
   function clearAll() {
     releaseCachedUrls();
-    cssState.custom = "";
-    cssState.preview = "";
     setStyleText(IMAGES_STYLE_ID, "");
     document.getElementById(THEME_STYLE_ID)?.remove();
     document.getElementById(PREVIEW_STYLE_ID)?.remove();
@@ -128,18 +125,15 @@
       if (payload.images !== undefined) applyThemeImages(payload.images);
 
       if (payload.customCss !== undefined) {
-        cssState.custom = payload.customCss || "";
-        setStyleText(THEME_STYLE_ID, cssState.custom, true);
+        setStyleText(THEME_STYLE_ID, payload.customCss || "", true);
         log("custom css applied");
       }
 
       if (payload.previewCss !== undefined) {
-        cssState.preview = payload.previewCss || "";
-        setStyleText(PREVIEW_STYLE_ID, cssState.preview);
+        setStyleText(PREVIEW_STYLE_ID, payload.previewCss || "");
       }
 
       if (payload.clearPreview) {
-        cssState.preview = "";
         setStyleText(PREVIEW_STYLE_ID, "");
       }
     } catch (e) {

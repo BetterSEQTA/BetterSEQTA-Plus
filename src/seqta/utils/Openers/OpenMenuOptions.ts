@@ -1,7 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
-import { insertKeyAfterInOrder } from "@/seqta/utils/sidebarMenuIcons";
+import { ensureAnalyticsMenuOrder } from "@/seqta/utils/sidebarMenuIcons";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
@@ -30,20 +30,10 @@ function syncDefaultMenuOrder(menu: HTMLElement) {
   for (let i = 0; i < childnodes.length; i++) {
     const key = (childnodes[i] as HTMLElement).dataset.key;
     if (key && settingsState.defaultmenuorder.indexOf(key) === -1) {
-      if (key === "analytics") {
-        settingsState.defaultmenuorder = insertKeyAfterInOrder(
-          settingsState.defaultmenuorder,
-          key,
-          "courses",
-        );
-      } else {
-        settingsState.defaultmenuorder = [
-          ...settingsState.defaultmenuorder,
-          key,
-        ];
-      }
+      settingsState.defaultmenuorder = [...settingsState.defaultmenuorder, key];
     }
   }
+  ensureAnalyticsMenuOrder();
 }
 
 function mergeMenuItemsFromDom(
@@ -242,7 +232,6 @@ export function OpenMenuOptions() {
     if (sortable) {
       saveNewOrder(sortable);
     }
-    applyMenuItemVisibility();
     closeAll();
   };
 

@@ -14,9 +14,6 @@ const ITEM_SELECTOR = '[class*="notifications__item___"]';
 const BACKED_UP_CLASS = "bsplus-notification-backed-up";
 const BACKUP_BADGE_CLASS = "bsplus-notification-backup-badge";
 
-const BACKUP_CHECK_SVG =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
-
 function notificationTimestamp(item: Record<string, unknown>): number {
   const ms = new Date(String(item.timestamp ?? 0)).getTime();
   return Number.isNaN(ms) ? 0 : ms;
@@ -38,17 +35,6 @@ function mergeLiveWithArchived(
   );
 }
 
-function sameItemOrder(
-  current: Record<string, unknown>[],
-  merged: Record<string, unknown>[],
-): boolean {
-  if (current.length !== merged.length) return false;
-  return current.every(
-    (item, index) =>
-      Number(item.notificationID) === Number(merged[index]?.notificationID),
-  );
-}
-
 async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   if (!document.querySelector(LIST_SELECTOR)) return false;
 
@@ -58,16 +44,22 @@ async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   const liveItems = state.items as Record<string, unknown>[];
   const merged = mergeLiveWithArchived(liveItems, archive);
   if (!merged) return true;
-  if (sameItemOrder(liveItems, merged)) return true;
+
+  const sameOrder =
+    liveItems.length === merged.length &&
+    liveItems.every(
+      (item, index) =>
+        Number(item.notificationID) === Number(merged[index]?.notificationID),
+    );
+  if (sameOrder) return true;
 
   await ReactFiber.find(LIST_SELECTOR).setState({ items: merged });
   return true;
 }
 
-async function injectWithRetries(archive: ArchiveMap, attempts = 10) {
-  for (let i = 0; i < attempts; i++) {
-    const done = await tryInjectArchived(archive);
-    if (done) break;
+async function injectWithRetries(archive: ArchiveMap) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    if (await tryInjectArchived(archive)) break;
     await delay(120);
   }
   applyBackupBadges(archive);
@@ -86,7 +78,7 @@ export function applyBackupBadges(archive: ArchiveMap) {
         const badge = document.createElement("span");
         badge.className = BACKUP_BADGE_CLASS;
         badge.title = "Saved locally";
-        badge.innerHTML = BACKUP_CHECK_SVG;
+        badge.textContent = "✓";
         itemEl.appendChild(badge);
       }
     } else {
@@ -119,30 +111,23 @@ export function mountArchivedNotificationInjection(
   const watchItemsContainer = () => {
     const itemsEl = document.querySelector(ITEMS_SELECTOR);
     if (!itemsEl) return;
-    if (observer) observer.disconnect();
-    observer = new MutationObserver(() => scheduleInject());
+    observer?.disconnect();
+    observer = new MutationObserver(scheduleInject);
     observer.observe(itemsEl, { childList: true });
   };
 
-  api.seqta.onMount(LIST_SELECTOR, () => {
+  const onNotificationsMount = () => {
     scheduleInject();
     watchItemsContainer();
-  });
-
-  api.seqta.onMount(ITEMS_SELECTOR, () => {
-    watchItemsContainer();
-    scheduleInject();
-  });
-
-  api.storage.onChange("archivesByUser", () => scheduleInject());
-
-  return () => {
-    if (observer) observer.disconnect();
   };
+
+  api.seqta.onMount(LIST_SELECTOR, onNotificationsMount);
+  api.seqta.onMount(ITEMS_SELECTOR, onNotificationsMount);
+  api.storage.onChange("archivesByUser", scheduleInject);
+
+  return () => observer?.disconnect();
 }
 
-export async function injectArchivedForUser(
-  archive: ArchiveMap,
-): Promise<void> {
+export async function injectArchivedForUser(archive: ArchiveMap): Promise<void> {
   await injectWithRetries(archive);
 }

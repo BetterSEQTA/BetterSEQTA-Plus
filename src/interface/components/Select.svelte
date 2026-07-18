@@ -9,21 +9,7 @@
 
   let isOpen = $state(false);
   let activeIndex = $state(0);
-  let root: HTMLDivElement | undefined = $state();
-  let trigger: HTMLButtonElement | undefined = $state();
-  let listbox: HTMLDivElement | undefined = $state();
-
-  const selectedLabel = $derived(
-    options.find((option) => option.value === value)?.label ?? value,
-  );
-
-  const activeDescendantId = $derived(
-    isOpen && options[activeIndex] ? optionId(options[activeIndex].value) : undefined,
-  );
-
-  function optionId(optionValue: string): string {
-    return `${listboxId}-option-${optionValue}`;
-  }
+  let trigger = $state<HTMLButtonElement>();
 
   function openMenu(preferredIndex?: number) {
     isOpen = true;
@@ -41,62 +27,59 @@
     closeMenu();
   }
 
-  function moveActive(delta: number) {
-    if (!options.length) return;
-    activeIndex = (activeIndex + delta + options.length) % options.length;
-  }
+  function onKeydown(event: KeyboardEvent, inListbox = false) {
+    const { key } = event;
 
-  function handleKeydown(event: KeyboardEvent, inListbox = false) {
-    switch (event.key) {
-      case "ArrowDown":
-      case "ArrowUp": {
-        event.preventDefault();
-        const delta = event.key === "ArrowDown" ? 1 : -1;
-        if (isOpen || inListbox) moveActive(delta);
-        else openMenu();
-        break;
+    if (key === "ArrowDown" || key === "ArrowUp") {
+      event.preventDefault();
+      const count = options.length;
+      if (!count) return;
+      if (isOpen || inListbox) {
+        activeIndex = (activeIndex + (key === "ArrowDown" ? 1 : -1) + count) % count;
+      } else {
+        openMenu();
       }
-      case "Enter":
-      case " ":
-        event.preventDefault();
-        if (isOpen) {
-          const option = options[activeIndex];
-          if (option) selectValue(option.value);
-        } else {
-          openMenu();
-        }
-        break;
-      case "Escape":
-        if (isOpen) {
-          event.preventDefault();
-          closeMenu();
-        }
-        break;
-      case "Home":
-        if (inListbox) {
-          event.preventDefault();
-          activeIndex = 0;
-        }
-        break;
-      case "End":
-        if (inListbox) {
-          event.preventDefault();
-          activeIndex = Math.max(0, options.length - 1);
-        }
-        break;
-      case "Tab":
-        if (inListbox) closeMenu(false);
-        break;
+      return;
+    }
+
+    if (key === "Enter" || key === " ") {
+      event.preventDefault();
+      if (isOpen) {
+        const option = options[activeIndex];
+        if (option) selectValue(option.value);
+      } else {
+        openMenu();
+      }
+      return;
+    }
+
+    if (key === "Escape" && isOpen) {
+      event.preventDefault();
+      closeMenu();
+      return;
+    }
+
+    if (!inListbox) return;
+
+    if (key === "Home") {
+      event.preventDefault();
+      activeIndex = 0;
+    } else if (key === "End") {
+      event.preventDefault();
+      activeIndex = Math.max(0, options.length - 1);
+    } else if (key === "Tab") {
+      closeMenu(false);
     }
   }
 
   $effect(() => {
     if (!isOpen) return;
 
-    queueMicrotask(() => listbox?.focus());
+    queueMicrotask(() => document.getElementById(listboxId)?.focus());
 
+    const wrapper = trigger?.parentElement;
     const onPointerDown = (event: PointerEvent) => {
-      if (root && event.composedPath().includes(root)) return;
+      if (wrapper && event.composedPath().includes(wrapper)) return;
       closeMenu(false);
     };
 
@@ -105,46 +88,47 @@
   });
 </script>
 
-<div class="select-wrapper" bind:this={root}>
+<div class="select relative w-full">
   <button
     bind:this={trigger}
     type="button"
-    class="select-trigger"
+    class="select-trigger flex w-full items-center justify-between gap-3 rounded-[18px] border px-4 py-2.5 text-sm font-medium leading-tight shadow-2xl transition-[background-color,border-color,box-shadow] duration-200 cursor-pointer"
     aria-haspopup="listbox"
     aria-expanded={isOpen}
     aria-controls={listboxId}
     onclick={() => (isOpen ? closeMenu() : openMenu())}
-    onkeydown={(event) => handleKeydown(event)}
+    onkeydown={onKeydown}
   >
-    <span class="select-label">{selectedLabel}</span>
-    <span class="select-icon" aria-hidden="true">
+    <span class="truncate">
+      {options.find((option) => option.value === value)?.label ?? value}
+    </span>
+    <span class="select-icon shrink-0" aria-hidden="true">
       <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
         <path
           fill-rule="evenodd"
           d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
           clip-rule="evenodd"
-        ></path>
+        />
       </svg>
     </span>
   </button>
 
   {#if isOpen}
     <div
-      bind:this={listbox}
       id={listboxId}
-      class="select-menu"
+      class="select-menu absolute inset-x-0 top-[calc(100%+0.35rem)] z-50 flex max-h-72 flex-col gap-0.5 p-2"
       role="listbox"
       tabindex="-1"
-      aria-activedescendant={activeDescendantId}
-      onkeydown={(event) => handleKeydown(event, true)}
+      aria-activedescendant={options[activeIndex] ? `${listboxId}-opt-${activeIndex}` : undefined}
+      onkeydown={(event) => onKeydown(event, true)}
     >
       {#each options as option, index (option.value)}
         <button
           type="button"
-          id={optionId(option.value)}
+          id={`${listboxId}-opt-${index}`}
           role="option"
           aria-selected={option.value === value}
-          class="select-option"
+          class="select-option block w-full rounded-[10px] border-none px-3.5 py-2.5 text-left text-sm font-medium leading-snug transition-colors duration-150 cursor-pointer"
           class:is-selected={option.value === value}
           class:is-active={index === activeIndex}
           tabindex="-1"
@@ -159,99 +143,54 @@
 </div>
 
 <style>
-  .select-wrapper {
-    position: relative;
-    width: 100%;
+  .select {
+    --sel-border: var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
+    --sel-bg: var(--theme-primary, #ffffff);
+    --sel-surface: var(--theme-secondary, #e5e7eb);
+    --sel-focus-border: color-mix(in srgb, var(--text-primary) 22%, var(--theme-secondary, #e5e7eb) 78%);
+    --sel-ring: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
+    --sel-menu-shadow:
+      0 10px 25px -5px rgb(0 0 0 / 0.25),
+      0 8px 10px -6px rgb(0 0 0 / 0.2);
   }
 
   .select-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    width: 100%;
-    border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
-    border-radius: 18px;
-    background: var(--theme-primary, #ffffff);
+    border-color: var(--sel-border);
+    background: var(--sel-bg);
     color: var(--text-primary);
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.25;
-    cursor: pointer;
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-    transition:
-      background-color 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease;
   }
 
   .select-trigger:hover,
   .select-trigger:focus-visible {
     outline: none;
-    background: var(--theme-secondary, #e5e7eb);
-    border-color: var(--theme-offset-bg, var(--theme-secondary, #d4d4d8));
+    background: var(--sel-surface);
+    border-color: var(--sel-border);
   }
 
   .select-trigger:focus-visible {
-    border-color: color-mix(in srgb, var(--text-primary) 22%, var(--theme-secondary, #e5e7eb) 78%);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
-  }
-
-  .select-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    border-color: var(--sel-focus-border);
+    box-shadow: var(--sel-ring);
   }
 
   .select-icon {
-    flex-shrink: 0;
     color: color-mix(in srgb, var(--text-primary) 60%, transparent);
   }
 
   .select-menu {
-    position: absolute;
-    top: calc(100% + 0.35rem);
-    left: 0;
-    right: 0;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    margin: 0;
-    padding: 0.5rem;
-    border: 1px solid var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
+    border: 1px solid var(--sel-border);
     border-radius: 14px;
-    background: var(--theme-primary, #ffffff);
-    box-shadow:
-      0 10px 25px -5px rgb(0 0 0 / 0.25),
-      0 8px 10px -6px rgb(0 0 0 / 0.2);
-    max-height: 18rem;
-    overflow-y: auto;
+    background: var(--sel-bg);
+    box-shadow: var(--sel-menu-shadow);
   }
 
   .select-menu:focus-visible {
     outline: none;
-    box-shadow:
-      0 10px 25px -5px rgb(0 0 0 / 0.25),
-      0 8px 10px -6px rgb(0 0 0 / 0.2),
-      0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
+    box-shadow: var(--sel-menu-shadow), var(--sel-ring);
   }
 
   .select-option {
-    display: block;
-    width: 100%;
-    border: none;
-    border-radius: 10px;
     background: transparent;
     color: var(--text-primary);
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.35;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 150ms ease;
   }
 
   .select-option:hover,
@@ -259,6 +198,6 @@
   .select-option.is-active,
   .select-option.is-selected {
     outline: none;
-    background: var(--theme-secondary, #e5e7eb);
+    background: var(--sel-surface);
   }
 </style>

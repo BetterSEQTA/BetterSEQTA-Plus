@@ -260,11 +260,12 @@ export async function applyStoreDiff(
   if (puts.length === 0 && removeKeys.length === 0) return;
 
   try {
-    const db = await openDB();
+    let db = await openDB();
     if (!db.objectStoreNames.contains(store)) {
       await upgradeDB(store);
+      db = await openDB();
     }
-    await runStoreDiffTransaction(await openDB(), store, puts, removeKeys);
+    await runStoreDiffTransaction(db, store, puts, removeKeys);
   } catch (error) {
     console.error(`Error in applyStoreDiff for store ${store}:`, error);
     throw error;

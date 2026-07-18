@@ -9,12 +9,14 @@ const LAYER_CLASSES = [
   ["bg", "bg3", ANIMATED_BG_MARKER],
 ] as const;
 
-const layerSelector = `:scope > div.bg.${ANIMATED_BG_MARKER}`;
+const bgSel = `.bg.${ANIMATED_BG_MARKER}`;
+const scopeSel = `:scope > div${bgSel}`;
+const BASE_SPEEDS = [3, 4, 5] as const;
 
 export function updateAnimationSpeed(speed: number) {
-  document.querySelectorAll(`.bg.${ANIMATED_BG_MARKER}`).forEach((element, index) => {
-    const baseSpeed = index === 0 ? 3 : index === 1 ? 4 : 5;
-    (element as HTMLElement).style.animationDuration = `${baseSpeed / speed}s`;
+  document.querySelectorAll(bgSel).forEach((element, index) => {
+    const base = BASE_SPEEDS[index] ?? BASE_SPEEDS[2];
+    (element as HTMLElement).style.animationDuration = `${base / speed}s`;
   });
 }
 
@@ -23,12 +25,12 @@ export function ensureAnimatedBackgroundLayers(
   menu: HTMLElement,
   speed: number,
 ): void {
-  if (container.querySelectorAll(layerSelector).length >= 3) {
+  if (container.querySelectorAll(scopeSel).length >= 3) {
     updateAnimationSpeed(speed);
     return;
   }
 
-  container.querySelectorAll(layerSelector).forEach((el) => el.remove());
+  container.querySelectorAll(scopeSel).forEach((el) => el.remove());
 
   for (const classes of LAYER_CLASSES) {
     const bk = document.createElement("div");
@@ -40,7 +42,7 @@ export function ensureAnimatedBackgroundLayers(
 }
 
 export function removeAnimatedBackgroundLayers(): void {
-  document.querySelectorAll(`div.bg.${ANIMATED_BG_MARKER}`).forEach((el) => el.remove());
+  document.querySelectorAll(`div${bgSel}`).forEach((el) => el.remove());
 }
 
 export async function syncAnimatedBackground(

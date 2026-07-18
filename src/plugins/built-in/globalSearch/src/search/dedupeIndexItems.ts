@@ -28,15 +28,23 @@ function shouldDedupeAsSameCourseSPA(item: IndexItem): boolean {
   return false;
 }
 
+function programmeMetaclassIds(
+  item: IndexItem,
+): { programme?: number; metaclass?: number } {
+  const md = item.metadata ?? {};
+  return {
+    programme: toFiniteNumber(
+      md.programme ?? md.programmeId ?? md.programmeID,
+    ),
+    metaclass: toFiniteNumber(
+      md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId,
+    ),
+  };
+}
+
 export function courseDestinationKey(item: IndexItem): string | undefined {
   if (!shouldDedupeAsSameCourseSPA(item)) return undefined;
-  const md = item.metadata ?? {};
-  const programme = toFiniteNumber(
-    md.programme ?? md.programmeId ?? md.programmeID,
-  );
-  const metaclass = toFiniteNumber(
-    md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId,
-  );
+  const { programme, metaclass } = programmeMetaclassIds(item);
   if (programme === undefined || metaclass === undefined) return undefined;
   return `course:${programme}:${metaclass}`;
 }
@@ -74,13 +82,7 @@ function isPassiveLike(item: IndexItem): boolean {
 }
 
 function hasProgrammeMetaclass(item: IndexItem): boolean {
-  const md = item.metadata ?? {};
-  const programme = toFiniteNumber(
-    md.programme ?? md.programmeId ?? md.programmeID,
-  );
-  const metaclass = toFiniteNumber(
-    md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId,
-  );
+  const { programme, metaclass } = programmeMetaclassIds(item);
   return programme !== undefined && metaclass !== undefined;
 }
 
@@ -166,44 +168,29 @@ function dynamicSearchKey(row: CombinedResult): string | undefined {
   return searchDedupeKey(row.item as IndexItem);
 }
 
+function mergeCombinedDuplicates(
+  a: CombinedResult,
+  b: CombinedResult,
+  key: string,
+): CombinedResult {
+  const aItem = a.item as IndexItem;
+  const bItem = b.item as IndexItem;
+  const winnerItem = pickBetterSearchDuplicate(aItem, bItem, key);
+  const envelope = winnerItem.id === aItem.id ? a : b;
+  return {
+    ...envelope,
+    score: Math.max(a.score, b.score),
+    id: winnerItem.id,
+    item: winnerItem,
+  };
+}
+
 export function dedupeCombinedResultsByCourseNav(
   results: CombinedResult[],
 ): CombinedResult[] {
-  const best = new Map<string, CombinedResult>();
-
-  for (const r of results) {
-    const key = dynamicSearchKey(r);
-    if (!key) continue;
-    const prev = best.get(key);
-    if (!prev) {
-      best.set(key, r);
-      continue;
-    }
-    const aItem = prev.item as IndexItem;
-    const bItem = r.item as IndexItem;
-    const winnerItem = pickBetterSearchDuplicate(aItem, bItem, key);
-    const envelope = winnerItem.id === aItem.id ? prev : r;
-    best.set(key, {
-      ...envelope,
-      score: Math.max(prev.score, r.score),
-      id: winnerItem.id,
-      item: winnerItem,
-    });
-  }
-
-  const seenCanon = new Set<string>();
-  const out: CombinedResult[] = [];
-
-  for (const r of results) {
-    const key = dynamicSearchKey(r);
-    if (!key) {
-      out.push(r);
-      continue;
-    }
-    if (seenCanon.has(key)) continue;
-    seenCanon.add(key);
-    out.push(best.get(key)!);
-  }
-
-  return out;
+  return dedupeByCanonicalKey(
+    results,
+    dynamicSearchKey,
+    mergeCombinedDuplicates,
+  );
 }

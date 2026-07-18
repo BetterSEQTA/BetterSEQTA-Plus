@@ -8,44 +8,36 @@ import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { verboseInfo } from "@/utils/verboseLog";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-seqta-menu-colour-patch-loader";
+let colorisRecoveryAttached = false;
+let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function dismissStaleModaliserContainers(): number {
-  let removed = 0;
-  for (const container of document.querySelectorAll(".modaliser-container")) {
-    const modal = container.querySelector(".modaliser");
-    if (!modal?.childElementCount || !container.classList.contains("visible")) {
-      container.remove();
-      removed++;
-    }
-  }
-  return removed;
-}
-
-export function dismissStaleColourSlidePanes(
-  forceColourChooser = false,
-): number {
-  let removed = 0;
+function dismissStaleColourDialogs(forceColourChooser = false): {
+  slideRemoved: number;
+  modalRemoved: number;
+} {
+  let slideRemoved = 0;
   for (const pane of document.querySelectorAll(".uiSlidePane")) {
     if (pane.querySelector(".pane.colourChooser")) {
       pane.remove();
-      removed++;
+      slideRemoved++;
       continue;
     }
     if (!forceColourChooser && pane.classList.contains("shown")) continue;
     if (!pane.classList.contains("shown")) {
       pane.remove();
-      removed++;
+      slideRemoved++;
     }
   }
-  return removed;
-}
 
-export function dismissStaleColourDialogs(forceColourChooser = false): {
-  slideRemoved: number;
-  modalRemoved: number;
-} {
-  const slideRemoved = dismissStaleColourSlidePanes(forceColourChooser);
-  const modalRemoved = dismissStaleModaliserContainers();
+  let modalRemoved = 0;
+  for (const container of document.querySelectorAll(".modaliser-container")) {
+    const modal = container.querySelector(".modaliser");
+    if (!modal?.childElementCount || !container.classList.contains("visible")) {
+      container.remove();
+      modalRemoved++;
+    }
+  }
+
   document.body.classList.remove("clr-open");
   document.documentElement.classList.remove("clr-open");
   return { slideRemoved, modalRemoved };
@@ -69,8 +61,7 @@ function setClrPickerState(reset: boolean): void {
   }
 }
 
-/** Hide colour-picker / modal layers that intercept clicks after a colour save. */
-export function dismissTimetableUiBlockers(): {
+function dismissTimetableUiBlockers(): {
   slideRemoved: number;
   modalRemoved: number;
 } {
@@ -79,13 +70,9 @@ export function dismissTimetableUiBlockers(): {
   return dismissStaleColourDialogs();
 }
 
-/** Clear inline styles that can prevent Coloris from reopening. */
-export function prepareColorisPickerOpen(): void {
+function prepareColorisPickerOpen(): void {
   setClrPickerState(true);
 }
-
-let colorisRecoveryAttached = false;
-let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function attachTimetableColorisRecovery(): void {
   if (colorisRecoveryAttached) return;

@@ -1,6 +1,6 @@
 import { applyStoreDiff, get, getAll, put, remove } from "./db";
 import { jobs } from "./jobs";
-import { decorateIndexItems, publishDynamicItemsUpdate } from "./renderComponents";
+import { decorateIndexItems } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
 import { VectorWorkerManager } from "./worker/vectorWorkerManager";
 import { loadDynamicItems } from "../utils/dynamicItems";
@@ -260,54 +260,25 @@ function dispatchVectorProgress(
   completedJobs: number,
   totalSteps: number,
 ): number {
-  let detailMessage = progress.message || "";
+  const { status, total, processed, message = "" } = progress;
+  let detail = message;
   let completed = completedJobs;
 
-  if (
-    progress.status === "processing" &&
-    progress.total &&
-    progress.processed !== undefined
-  ) {
-    detailMessage = `Vectorizing: ${progress.processed} / ${progress.total}`;
-  } else if (progress.status === "complete") {
-    detailMessage = "Vectorization complete";
-    completed++;
-    dispatchProgress(completed, totalSteps, false, "Indexing finished", detailMessage);
+  if (status === "processing" && total != null && processed != null) {
+    detail = `Vectorizing: ${processed} / ${total}`;
+  } else if (status === "started") {
+    detail = `Vectorization started for ${total} items`;
+  } else if (status === "complete") {
+    dispatchProgress(++completed, totalSteps, false, "Indexing finished", "Vectorization complete");
     return completed;
-  } else if (progress.status === "error") {
-    dispatchProgress(
-      completed,
-      totalSteps,
-      false,
-      "Vectorization failed",
-      `Vectorization error: ${progress.message}`,
-    );
+  } else if (status === "error") {
+    dispatchProgress(completed, totalSteps, false, "Vectorization failed", `Vectorization error: ${message}`);
     return completed;
-  } else if (progress.status === "cancelled") {
-    dispatchProgress(
-      completed,
-      totalSteps,
-      false,
-      "Vectorization cancelled",
-      `Vectorization cancelled: ${progress.message}`,
-    );
+  } else if (status === "cancelled") {
+    dispatchProgress(completed, totalSteps, false, "Vectorization cancelled", `Vectorization cancelled: ${message}`);
     return completed;
-  } else if (progress.status === "started") {
-    detailMessage = `Vectorization started for ${progress.total} items`;
-  }
-
-  if (
-    progress.status !== "complete" &&
-    progress.status !== "error" &&
-    progress.status !== "cancelled"
-  ) {
-    dispatchProgress(
-      completed,
-      totalSteps,
-      true,
-      "Vectorization in progress",
-      detailMessage,
-    );
+  } else {
+    dispatchProgress(completed, totalSteps, true, "Vectorization in progress", detail);
   }
 
   return completed;
@@ -322,10 +293,7 @@ export async function runIndexing(): Promise<void> {
   }
 
   await ensureSchemaCurrent();
-
-  if (isIndexingPaused()) {
-    return;
-  }
+  if (isIndexingPaused()) return;
 
   if (!(await acquireLock())) {
     verboseDebug(

@@ -63,7 +63,7 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
     });
     menuObserver.observe(menuList, { childList: true });
 
-    const onClick = (e: Event) => {
+    analyticsItem.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
       if (
         MenuOptionsOpen ||
@@ -75,12 +75,10 @@ const gradeAnalyticsPlugin: Plugin<{}> = {
       e.preventDefault();
       window.history.pushState({}, "", "/#?page=/analytics");
       void loadAnalyticsPage();
-    };
-    analyticsItem.addEventListener("click", onClick);
+    });
 
     return () => {
       menuObserver.disconnect();
-      analyticsItem.removeEventListener("click", onClick);
       analyticsItem.remove();
     };
   },

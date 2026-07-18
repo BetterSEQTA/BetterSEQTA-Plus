@@ -8,12 +8,109 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { noticeMatchesLabelFilter } from "@/seqta/utils/notices/noticeLabelFilters";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 
+const PLACEHOLDER_RE = /\[\[[\w]+[:][\w]+[\]\]]+/g;
+const SPRING_OPEN = { type: "spring" as const, stiffness: 280, damping: 24, duration: 0.5 };
+const SPRING_CLOSE = { type: "spring" as const, stiffness: 400, damping: 35, duration: 0.35 };
+
+const colourStr = (colour?: string) => colour || "#8e8e8e";
+
+function stripPlaceholders(html: string): string {
+  return html.replace(PLACEHOLDER_RE, "");
+}
+
+function noticePreview(contents: string): string {
+  const text = stripPlaceholders(contents)
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.substring(0, 150) + (contents.length > 150 ? "..." : "");
+}
+
+function noticeBody(contents: string): string {
+  return stripPlaceholders(contents).replace(/ +/, " ");
+}
+
+type NoticeCardOpts = {
+  wrapperClass?: string;
+  wrapperStyle?: string;
+  hideClose?: boolean;
+};
+
+function noticeCardHtml(
+  notice: { title: string; staff: string; label_title?: string },
+  colour: string | undefined,
+  body: string,
+  opts: NoticeCardOpts = {},
+): string {
+  const c = colourStr(colour);
+  const closeBtn = opts.hideClose
+    ? '<button class="notice-close-btn" style="opacity: 0; pointer-events: none;">&times;</button>'
+    : '<button class="notice-close-btn">&times;</button>';
+  return `<div class="notice-unified-content ${opts.wrapperClass ?? "notice-card-state"}" style="--colour: ${c}; ${opts.wrapperStyle ?? ""}">
+      <div class="notice-header">
+        <div class="notice-badge-row">
+          <span class="notice-badge" style="background: linear-gradient(135deg, ${c}, ${c}dd); color: white;">${notice.label_title || "General"}</span>
+          <span class="notice-staff">${notice.staff}</span>
+        </div>
+        ${closeBtn}
+      </div>
+      <h2 class="notice-content-title">${notice.title}</h2>
+      <div class="notice-content-body">${body}</div>
+    </div>`;
+}
+
+function modalTargetSize(sourceWidth: number, contentHeight: number) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const scrollY = Math.round(window.scrollY);
+  const width = Math.round(Math.min(Math.max(sourceWidth, 800), vw - 40));
+  const height = Math.round(Math.min(Math.max(contentHeight + 32, 200), vh * 0.9));
+  return {
+    width,
+    height,
+    left: Math.round((vw - width) / 2),
+    top: Math.round((vh - height) / 2) + scrollY,
+    scrollX: Math.round(window.scrollX),
+    scrollY,
+  };
+}
+
+function measureNoticeHeight(
+  notice: { title: string; staff: string; label_title?: string },
+  body: string,
+  targetWidth: number,
+): number {
+  const measure = document.createElement("div");
+  measure.style.cssText = `position:absolute;left:-9999px;width:${targetWidth}px;visibility:hidden`;
+  measure.innerHTML = noticeCardHtml(notice, undefined, body, {
+    wrapperClass: "notice-modal-state",
+    wrapperStyle:
+      "position:relative;width:100%;padding:16px;border:1px solid rgba(255,255,255,0.1)",
+  });
+  document.body.appendChild(measure);
+  const height = measure.firstElementChild!.getBoundingClientRect().height;
+  measure.remove();
+  return height;
+}
+
+function showSourceElement(el: HTMLElement) {
+  el.style.opacity = "1";
+  el.style.transform = "";
+}
+
+function elementScale(el: HTMLElement) {
+  const transform = getComputedStyle(el).transform;
+  if (!transform || transform === "none") return { x: 1, y: 1 };
+  const match = transform.match(/matrix.*\((.+)\)/);
+  if (!match) return { x: 1, y: 1 };
+  const values = match[1].split(", ");
+  return { x: parseFloat(values[0]), y: parseFloat(values[3]) };
+}
+
 export function processNoticeColor(colour: unknown): string | undefined {
   if (typeof colour !== "string") return undefined;
   const rgb = GetThresholdOfColor(colour);
-  if (rgb < 100 && settingsState.DarkMode) {
-    return undefined;
-  }
+  if (rgb < 100 && settingsState.DarkMode) return undefined;
   return colour;
 }
 
@@ -29,35 +126,13 @@ export function appendNoticeEmptyState(container: HTMLElement, message: string) 
 }
 
 function createNoticeElement(notice: any, colour: string | undefined): Node {
-  const textPreview =
-    notice.contents
-      .replace(/<[^>]*>/g, "")
-      .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .substring(0, 150) + (notice.contents.length > 150 ? "..." : "");
-
-  const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  const htmlContent = `
-    <div class="notice-unified-content notice-card-state" data-notice-id="${noticeId}" style="--colour: ${colour || "#8e8e8e"}; position: relative; background: var(--background-primary); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-            ${notice.label_title || "General"}
-          </span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn" style="opacity: 0; pointer-events: none;">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${textPreview}</div>
-    </div>`;
-
+  const htmlContent = noticeCardHtml(notice, colour, noticePreview(notice.contents), {
+    wrapperStyle:
+      "position: relative; background: var(--background-primary); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);",
+    hideClose: true,
+  });
   const element = stringToHTML(htmlContent).firstChild as HTMLElement;
-  element.addEventListener("click", () =>
-    openNoticeModal(notice, colour, element),
-  );
+  element.addEventListener("click", () => openNoticeModal(notice, colour, element));
   return element;
 }
 
@@ -66,10 +141,7 @@ export function openNoticeModal(
   colour: string | undefined,
   sourceElement: HTMLElement,
 ) {
-  const cleanContent = notice.contents
-    .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/ +/, " ");
-
+  const cleanContent = noticeBody(notice.contents);
   document.getElementById("notice-modal")?.remove();
 
   const sourceRect = sourceElement.getBoundingClientRect();
@@ -80,84 +152,37 @@ export function openNoticeModal(
   let sourceWidth = sourceRect.width;
   let sourceHeight = sourceRect.height;
 
-  const modalHtml = `
-    <div id="notice-modal" class="notice-modal-overlay" style="opacity: 0;">
-      <div class="notice-modal-transition" style="
-        position: fixed;
-        left: ${sourceLeft + scrollX}px;
-        top: ${sourceTop + scrollY}px;
-        width: ${sourceWidth}px;
-        height: ${sourceHeight}px;
-        transform-origin: center;
-        z-index: 10001;
-      ">
+  const modalHtml = `<div id="notice-modal" class="notice-modal-overlay" style="opacity: 0;">
+      <div class="notice-modal-transition" style="position:fixed;left:${sourceLeft + scrollX}px;top:${sourceTop + scrollY}px;width:${sourceWidth}px;height:${sourceHeight}px;transform-origin:center;z-index:10001;">
         <div class="notice-modal-content notice-transitioning">
-          <div class="notice-unified-content notice-card-state">
-            <div class="notice-header">
-              <div class="notice-badge-row">
-                <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-                  ${notice.label_title || "General"}
-                </span>
-                <span class="notice-staff">${notice.staff}</span>
-              </div>
-              <button class="notice-close-btn">&times;</button>
-            </div>
-            <h2 class="notice-content-title">${notice.title}</h2>
-            <div class="notice-content-body">${cleanContent}</div>
-          </div>
+          ${noticeCardHtml(notice, colour, cleanContent)}
         </div>
       </div>
     </div>`;
 
   const modal = stringToHTML(modalHtml).firstChild as HTMLElement;
-  const transitionContainer = modal.querySelector(
-    ".notice-modal-transition",
-  ) as HTMLElement;
-  const unifiedContent = modal.querySelector(
-    ".notice-unified-content",
-  ) as HTMLElement;
+  const transitionContainer = modal.querySelector(".notice-modal-transition") as HTMLElement;
+  const unifiedContent = modal.querySelector(".notice-unified-content") as HTMLElement;
   const closeBtn = modal.querySelector(".notice-close-btn") as HTMLElement;
-
   document.body.appendChild(modal);
 
   sourceElement.setAttribute("data-transitioning", "true");
   sourceElement.style.opacity = "0";
   sourceElement.style.transform = "scale(0.95)";
 
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  let targetWidth = Math.round(
-    Math.min(Math.max(sourceWidth, 800), viewportWidth - 40),
+  const initialWidth = Math.round(
+    Math.min(Math.max(sourceWidth, 800), window.innerWidth - 40),
   );
+  const measuredHeight = measureNoticeHeight(notice, cleanContent, initialWidth);
+  let { width: targetWidth, height: targetHeight, left: targetLeft, top: targetTop } =
+    modalTargetSize(sourceWidth, measuredHeight);
 
-  const tempMeasureDiv = document.createElement("div");
-  tempMeasureDiv.style.position = "absolute";
-  tempMeasureDiv.style.left = "-9999px";
-  tempMeasureDiv.style.width = targetWidth + "px";
-  tempMeasureDiv.style.visibility = "hidden";
-  tempMeasureDiv.innerHTML = `
-    <div class="notice-unified-content notice-modal-state" style="position: relative; width: 100%; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge">${notice.label_title || "General"}</span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${cleanContent}</div>
-    </div>
-  `;
-  document.body.appendChild(tempMeasureDiv);
-  const measuredHeight =
-    tempMeasureDiv.firstElementChild!.getBoundingClientRect().height;
-  document.body.removeChild(tempMeasureDiv);
-
-  let targetHeight = Math.round(
-    Math.min(Math.max(measuredHeight + 32, 200), viewportHeight * 0.9),
-  );
-  let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
-  let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
+  const applyTargetLayout = () => {
+    transitionContainer.style.left = `${Math.round(targetLeft + scrollX)}px`;
+    transitionContainer.style.top = `${Math.round(targetTop)}px`;
+    transitionContainer.style.width = `${Math.round(targetWidth)}px`;
+    transitionContainer.style.height = `${Math.round(targetHeight)}px`;
+  };
 
   const closeModal = () => {
     window.removeEventListener("resize", handleResize);
@@ -165,8 +190,7 @@ export function openNoticeModal(
 
     if (!settingsState.animations) {
       modal.remove();
-      sourceElement.style.opacity = "1";
-      sourceElement.style.transform = "";
+      showSourceElement(sourceElement);
       sourceElement.removeAttribute("data-transitioning");
       return;
     }
@@ -179,146 +203,65 @@ export function openNoticeModal(
       },
       { duration: 0.2 },
     );
-
-    animate(
-      transitionContainer,
-      { opacity: [1, 0] },
-      { duration: 0.2, delay: 0.3 },
-    );
-
-    sourceElement.style.opacity = "1";
-    sourceElement.style.transform = "";
-
+    animate(transitionContainer, { opacity: [1, 0] }, { duration: 0.2, delay: 0.3 });
+    showSourceElement(sourceElement);
     modal.style.pointerEvents = "none";
-
-    animate(
-      transitionContainer,
-      {
-        left: [targetLeft + scrollX, sourceLeft + scrollX],
-        top: [targetTop, sourceTop + scrollY],
-        width: [targetWidth, sourceWidth],
-        height: [targetHeight, sourceHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.35,
-        type: "spring",
-        stiffness: 400,
-        damping: 35,
-      },
-    ).finished.then(async () => {
+    animate(transitionContainer, {
+      left: [targetLeft + scrollX, sourceLeft + scrollX],
+      top: [targetTop, sourceTop + scrollY],
+      width: [targetWidth, sourceWidth],
+      height: [targetHeight, sourceHeight],
+    }, SPRING_CLOSE).finished.then(() => {
       modal.remove();
       sourceElement.removeAttribute("data-transitioning");
     });
   };
 
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
+  closeBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
   });
 
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      closeModal();
-      document.removeEventListener("keydown", handleEscape);
-      window.removeEventListener("resize", handleResize);
-    }
+    if (e.key === "Escape") closeModal();
   };
   document.addEventListener("keydown", handleEscape);
 
   const handleResize = () => {
-    const newSourceRect = sourceElement.getBoundingClientRect();
-    const newScrollY = Math.round(window.scrollY);
-    const newScrollX = Math.round(window.scrollX);
+    const rect = sourceElement.getBoundingClientRect();
+    scrollY = Math.round(window.scrollY);
+    scrollX = Math.round(window.scrollX);
+    const scale = elementScale(sourceElement);
+    sourceWidth = rect.width / scale.x;
+    sourceHeight = rect.height / scale.y;
+    sourceLeft = rect.left - (sourceWidth - rect.width) / 2;
+    sourceTop = rect.top - (sourceHeight - rect.height) / 2;
 
-    const computedStyle = getComputedStyle(sourceElement);
-    const transform = computedStyle.transform;
-    let scaleX = 1,
-      scaleY = 1;
-
-    if (transform && transform !== "none") {
-      const matrix = transform.match(/matrix.*\((.+)\)/);
-      if (matrix) {
-        const values = matrix[1].split(", ");
-        scaleX = parseFloat(values[0]);
-        scaleY = parseFloat(values[3]);
-      }
-    }
-
-    const newSourceWidth = newSourceRect.width / scaleX;
-    const newSourceHeight = newSourceRect.height / scaleY;
-
-    const deltaX = (newSourceWidth - newSourceRect.width) / 2;
-    const deltaY = (newSourceHeight - newSourceRect.height) / 2;
-
-    const newSourceLeft = newSourceRect.left - deltaX;
-    const newSourceTop = newSourceRect.top - deltaY;
-
-    const newViewportWidth = window.innerWidth;
-    const newViewportHeight = window.innerHeight;
-    const newTargetWidth = Math.round(
-      Math.min(Math.max(newSourceWidth, 800), newViewportWidth - 40),
+    const next = modalTargetSize(
+      sourceWidth,
+      unifiedContent.getBoundingClientRect().height,
     );
-    const currentHeight = unifiedContent.getBoundingClientRect().height;
-    const newTargetHeight = Math.round(
-      Math.min(Math.max(currentHeight + 32, 200), newViewportHeight * 0.9),
-    );
-    const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
-    const newTargetTop =
-      Math.round((newViewportHeight - newTargetHeight) / 2) + newScrollY;
-
-    transitionContainer.style.left =
-      Math.round(newTargetLeft + newScrollX) + "px";
-    transitionContainer.style.top = Math.round(newTargetTop) + "px";
-    transitionContainer.style.width = Math.round(newTargetWidth) + "px";
-    transitionContainer.style.height = Math.round(newTargetHeight) + "px";
-
-    sourceLeft = newSourceLeft;
-    sourceTop = newSourceTop;
-    sourceWidth = newSourceWidth;
-    sourceHeight = newSourceHeight;
-    targetLeft = newTargetLeft;
-    targetTop = newTargetTop;
-    targetWidth = newTargetWidth;
-    targetHeight = newTargetHeight;
-    scrollY = newScrollY;
-    scrollX = newScrollX;
+    targetLeft = next.left;
+    targetTop = next.top;
+    targetWidth = next.width;
+    targetHeight = next.height;
+    applyTargetLayout();
   };
 
   window.addEventListener("resize", handleResize);
 
+  unifiedContent.classList.replace("notice-card-state", "notice-modal-state");
   if (settingsState.animations) {
     animate(modal, { opacity: [0, 1] }, { duration: 0.2 });
-
-    animate(
-      transitionContainer,
-      {
-        left: [sourceLeft + scrollX, targetLeft + scrollX],
-        top: [sourceTop + scrollY, targetTop],
-        width: [sourceWidth, targetWidth],
-        height: [sourceHeight, targetHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.5,
-        type: "spring",
-        stiffness: 280,
-        damping: 24,
-      },
-    );
-
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
+    animate(transitionContainer, {
+      left: [sourceLeft + scrollX, targetLeft + scrollX],
+      top: [sourceTop + scrollY, targetTop],
+      width: [sourceWidth, targetWidth],
+      height: [sourceHeight, targetHeight],
+    }, SPRING_OPEN);
   } else {
     modal.style.opacity = "1";
-    transitionContainer.style.left = Math.round(targetLeft + scrollX) + "px";
-    transitionContainer.style.top = Math.round(targetTop) + "px";
-    transitionContainer.style.width = Math.round(targetWidth) + "px";
-    transitionContainer.style.height = Math.round(targetHeight) + "px";
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
+    applyTargetLayout();
   }
 }
 
@@ -341,22 +284,19 @@ export function renderNoticesIntoContainer(
   }
 
   const fragment = document.createDocumentFragment();
-
-  notices.forEach((notice: any) => {
-    const shouldInclude =
-      settingsState.mockNotices || noticeMatchesLabelFilter(notice, labelTokens);
-
-    if (shouldInclude) {
-      const colour = processNoticeColor(notice.colour);
-      fragment.appendChild(createNoticeElement(notice, colour));
+  for (const notice of notices) {
+    if (
+      settingsState.mockNotices ||
+      noticeMatchesLabelFilter(notice, labelTokens)
+    ) {
+      fragment.appendChild(createNoticeElement(notice, processNoticeColor(notice.colour)));
     }
-  });
+  }
 
-  if (fragment.childNodes.length === 0) {
+  if (!fragment.childNodes.length) {
     appendNoticeEmptyState(noticeContainer, emptyMessage);
     return;
   }
-
   noticeContainer.appendChild(fragment);
 }
 
@@ -372,8 +312,9 @@ export async function fetchNoticesForDate(
     container.innerHTML = "";
   }
 
+  let data: { payload?: unknown };
   try {
-    const data = settingsState.mockNotices
+    data = settingsState.mockNotices
       ? getMockNotices()
       : await (
           await fetch(noticesUrl, {
@@ -383,11 +324,10 @@ export async function fetchNoticesForDate(
             body: JSON.stringify({ date }),
           })
         ).json();
-
-    renderNoticesIntoContainer(containerId, data, labelTokens);
   } catch {
-    renderNoticesIntoContainer(containerId, { payload: [] }, labelTokens);
+    data = { payload: [] };
   }
+  renderNoticesIntoContainer(containerId, data, labelTokens);
 }
 
 export type SetupNoticesSectionOptions = {
@@ -405,9 +345,7 @@ export function setupNoticesSection(options: SetupNoticesSectionOptions): () => 
       ? (document.querySelector(options.dateInput) as HTMLInputElement | null)
       : options.dateInput;
 
-  if (dateControl) {
-    dateControl.value = options.initialDate;
-  }
+  if (dateControl) dateControl.value = options.initialDate;
 
   const debouncedInputChange = debounce((e: Event) => {
     void fetchNoticesForDate(
