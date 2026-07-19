@@ -6,18 +6,23 @@ import browser from "webextension-polyfill";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
+import { verboseInfo } from "@/utils/verboseLog";
 
 export async function SendNewsPage() {
-  console.info("[BetterSEQTA+] Started Loading News Page");
+  verboseInfo("[BetterSEQTA+] Started Loading News Page");
   document.title = "News ― SEQTA Learn";
   await delay(10);
 
   const element = document.querySelector("[data-key=news]");
-  element!.classList.add("active");
+  element?.classList.add("active");
 
-  // Remove all current elements in the main div to add new elements
   const main = document.getElementById("main");
-  main!.innerHTML = "";
+  if (!main) {
+    console.warn("[BetterSEQTA+] News page: #main not found");
+    return;
+  }
+
+  main.innerHTML = "";
 
   const displayCountry = (() => {
     switch (settingsState.newsSource?.toLowerCase()) {
@@ -41,10 +46,12 @@ export async function SendNewsPage() {
     </div>
   </div>`);
 
-  main!.append(html.firstChild!);
+  main.append(html.firstChild!);
 
-  const titlediv = document.getElementById("title")!.firstChild;
-  (titlediv! as HTMLElement).innerText = "News";
+  const titleBar = document.getElementById("title")?.firstChild;
+  if (titleBar) {
+    (titleBar as HTMLElement).innerText = "News";
+  }
   AppendLoadingSymbol("newsloading", "#news-container");
 
   const response = (await browser.runtime.sendMessage({

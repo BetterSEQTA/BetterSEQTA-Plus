@@ -7,10 +7,12 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
 
 const ADAPTIVE_THEME_TRANSITION_MS = 400;
+const LOGO_STYLE_ID = "bsplus-logo-style";
 
 let colorTransitionRafId: number | null = null;
 let lastInterpolatedHex: string | null = null;
@@ -84,6 +86,23 @@ function cancelColorTransition() {
   }
 }
 
+/** Chromium does not always resolve extension URLs inside CSS variables on ::before. */
+function applyBetterseqtaLogoBackground(isDark: boolean) {
+  const url = resolveExtensionAssetUrl(isDark ? darkLogo : lightLogo);
+  let styleEl = document.getElementById(LOGO_STYLE_ID);
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = LOGO_STYLE_ID;
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = `
+    body.student #menu > ul::before,
+    #title::before {
+      background-image: url("${url}") !important;
+    }
+  `;
+}
+
 function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: number } | null {
   const parsedHex = parseRepresentativeHex(s);
   if (!parsedHex) return null;
@@ -115,11 +134,11 @@ function applyColorsWith(selectedColor: string) {
   let modeProps = {};
   modeProps = settingsState.DarkMode
     ? {
-        "--betterseqta-logo": `url(${browser.runtime.getURL(darkLogo)})`,
+        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(darkLogo)})`,
       }
     : {
         "--better-pale": lightenAndPaleColor(selectedColor),
-        "--betterseqta-logo": `url(${browser.runtime.getURL(lightLogo)})`,
+        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(lightLogo)})`,
       };
 
   if (settingsState.DarkMode) {
@@ -128,6 +147,8 @@ function applyColorsWith(selectedColor: string) {
   } else {
     document.documentElement.classList.remove("dark");
   }
+
+  applyBetterseqtaLogoBackground(settingsState.DarkMode);
 
   // Dynamic properties, always applied
   const rgbThreshold = GetThresholdOfColor(selectedColor);

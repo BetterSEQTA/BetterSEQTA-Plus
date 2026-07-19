@@ -12,6 +12,7 @@ import type {
 import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { verboseInfo } from "@/utils/verboseLog";
 
 interface PluginSettingsStorage {
   enabled?: boolean;
@@ -178,7 +179,7 @@ export class PluginManager {
           pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
         if (!enabled) {
           this.disposePluginAPI(pluginId);
-          console.info(
+          verboseInfo(
             `Plugin "${pluginId}" is disabled, skipping initialization`,
           );
           return;
@@ -201,7 +202,7 @@ export class PluginManager {
         this.cleanupFunctions.set(plugin.id, result);
       }
       this.runningPlugins.set(pluginId, true);
-      console.info(`Plugin "${pluginId}" started successfully`);
+      verboseInfo(`Plugin "${pluginId}" started successfully`);
 
       // Process any backlogged events
       await this.processBackloggedEvents(pluginId);
@@ -288,7 +289,7 @@ export class PluginManager {
       this.cleanupFunctions.delete(pluginId);
     }
     this.runningPlugins.set(pluginId, false);
-    console.info(`Plugin "${pluginId}" stopped`);
+    verboseInfo(`Plugin "${pluginId}" stopped`);
     this.emit("plugin.stopped", pluginId);
   }
 

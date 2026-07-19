@@ -7,6 +7,8 @@ const THEME_CSS_VARS = [
   "--text-color",
   "--background-primary",
   "--background-secondary",
+  "--theme-primary",
+  "--theme-secondary",
   "--text-primary",
   "--theme-offset-bg",
   "--better-sub",

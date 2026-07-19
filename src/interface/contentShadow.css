@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button {
+  @apply cursor-pointer;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+input {
+  &:focus {
+    box-shadow: unset !important;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none !important;
+}

@@ -106,7 +106,8 @@ function buildFontOverrideCss(family: string): string {
 
     .iconFamily,
     .iconFamily *,
-    button.uiButton.timetable-zoom.iconFamily,
+    button.timetable-zoom.iconFamily,
+    button.bsplus-timetable-control.iconFamily,
     [class~="iconFamily"],
     [class~="iconFamily"] * {
       font-family: "IconFamily" !important;

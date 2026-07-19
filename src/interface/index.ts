@@ -5,9 +5,10 @@ import browser from "webextension-polyfill";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 
 function InjectCustomIcons() {
-  console.info("[BetterSEQTA+] Injecting Icons");
+  verboseInfo("[BetterSEQTA+] Injecting Icons");
 
   const style = document.createElement("style");
   style.setAttribute("type", "text/css");
@@ -31,5 +32,6 @@ InjectCustomIcons();
 
 (async () => {
   await initializeSettingsState();
+  initVerboseLogging();
   renderSvelte(Settings, mountPoint, { standalone: true });
 })();

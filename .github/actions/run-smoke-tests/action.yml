@@ -1,0 +1,9 @@
+name: Run smoke tests
+description: Verify built extension dist output.
+
+runs:
+  using: composite
+  steps:
+    - name: Smoke tests
+      shell: bash
+      run: npm run test:smoke

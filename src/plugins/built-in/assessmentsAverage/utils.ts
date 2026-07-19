@@ -11,6 +11,9 @@ import {
   getPdfjsPageContextUrls,
 } from "@/lib/pdfjsExtension.ts";
 import * as pdfjs from "pdfjs-dist";
+import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetText";
+
+export { extractWeightFromCoversheetText };
 
 ensurePdfjsWorker();
 
@@ -552,135 +555,67 @@ export async function extractPDFText(url: string): Promise<string> {
 
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
+        script.type = "module";
         const requestId = `pdf-extract-${Date.now()}-${Math.random()}`;
 
         const escapedUrl = escJsSingleQuoted(url);
 
+        // Import the legacy build in page context so it can set
+        // globalThis.pdfjsLib, then parse the coversheet PDF.
         script.textContent = `
-          (function() {
-            const requestId = '${requestId}';
-            const pageOrigin = '${escapedOrigin}';
-            const url = '${escapedUrl}';
-            const pdfLibSrc = '${pdfLibInj}';
-            const pdfWorkerSrc = '${pdfWorkerInj}';
-            
-            if (window.pdfjsLib) {
-              extractPDF();
+          const requestId = '${requestId}';
+          const pageOrigin = '${escapedOrigin}';
+          const url = '${escapedUrl}';
+          const pdfWorkerSrc = '${pdfWorkerInj}';
+
+          function postResult(payload) {
+            window.postMessage({ type: requestId, ...payload }, pageOrigin);
+          }
+
+          try {
+            await import('${pdfLibInj}');
+            const pdfjsLib = globalThis.pdfjsLib;
+            if (!pdfjsLib?.getDocument) {
+              postResult({ success: false, error: 'pdfjsLib missing after import' });
             } else {
-              const pdfjsScript = document.createElement('script');
-              pdfjsScript.src = pdfLibSrc;
-              pdfjsScript.type = 'module';
-              
-              pdfjsScript.onload = function() {
-                extractPDF();
-              };
-              pdfjsScript.onerror = function() {
-                window.postMessage({
-                  type: requestId,
-                  success: false,
-                  error: 'Failed to load pdfjs library'
-                }, pageOrigin);
-              };
-              
-              document.head.appendChild(pdfjsScript);
-            }
-            
-            function extractPDF() {
-              try {
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
-                
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                xhr.responseType = 'arraybuffer';
-                xhr.withCredentials = true;
-                
-                xhr.onload = function() {
-                  if (xhr.status !== 200) {
-                    window.postMessage({
-                      type: requestId,
-                      success: false,
-                      error: 'HTTP ' + xhr.status + ': ' + xhr.statusText
-                    }, pageOrigin);
-                    return;
-                  }
-                  
-                  try {
-                    const arrayBuffer = xhr.response;
-                    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-                      throw new Error('PDF response is empty');
-                    }
-                    
-                    window.pdfjsLib.getDocument({ 
-                      data: arrayBuffer,
-                      useSystemFonts: true,
-                      verbosity: 0,
-                      useWorkerFetch: false,
-                      isEvalSupported: false
-                    }).promise
-                      .then(pdf => {
-                        const pagePromises = [];
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                          pagePromises.push(
-                            pdf.getPage(i).then(page => {
-                              return page.getTextContent().then(content => {
-                                return content.items.map(item => item.str).join(' ');
-                              });
-                            })
-                          );
-                        }
-                        return Promise.all(pagePromises);
-                      })
-                      .then(pages => {
-                        const text = pages.join('\\n');
-                        window.postMessage({
-                          type: requestId,
-                          success: true,
-                          text: text
-                        }, pageOrigin);
-                      })
-                      .catch(error => {
-                        window.postMessage({
-                          type: requestId,
-                          success: false,
-                          error: 'PDF parsing error: ' + (error.message || String(error))
-                        }, pageOrigin);
-                      });
-                  } catch (error) {
-                    window.postMessage({
-                      type: requestId,
-                      success: false,
-                      error: 'ArrayBuffer error: ' + (error.message || String(error))
-                    }, pageOrigin);
-                  }
-                };
-                
-                xhr.onerror = function() {
-                  window.postMessage({
-                    type: requestId,
-                    success: false,
-                    error: 'Network error fetching PDF'
-                  }, pageOrigin);
-                };
-                
-                xhr.ontimeout = function() {
-                  window.postMessage({
-                    type: requestId,
-                    success: false,
-                    error: 'Timeout fetching PDF'
-                  }, pageOrigin);
-                };
-                
-                xhr.timeout = 30000;
-                xhr.send();
-              } catch (error) {
-                window.postMessage({
-                  type: requestId,
-                  success: false,
-                  error: 'Setup error: ' + (error.message || String(error))
-                }, pageOrigin);
+              pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+
+              const response = await fetch(url, {
+                credentials: 'include',
+                redirect: 'follow',
+              });
+              if (!response.ok) {
+                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
               }
+
+              const arrayBuffer = await response.arrayBuffer();
+              if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                throw new Error('PDF response is empty');
+              }
+
+              const pdf = await pdfjsLib.getDocument({
+                data: arrayBuffer,
+                useSystemFonts: true,
+                verbosity: 0,
+                useWorkerFetch: false,
+                isEvalSupported: false,
+              }).promise;
+
+              const pages = [];
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                pages.push(content.items.map((item) => item.str).join(' '));
+              }
+
+              postResult({ success: true, text: pages.join('\\n') });
             }
-          })();
+          } catch (error) {
+            postResult({
+              success: false,
+              error: 'PDF extraction error: ' + (error?.message || String(error)),
+            });
+          }
         `;
 
         const messageHandler = (event: MessageEvent) => {
@@ -723,6 +658,9 @@ export async function extractPDFText(url: string): Promise<string> {
     const pdf = await pdfjs.getDocument({
       data: arrayBuffer,
       useSystemFonts: true,
+      verbosity: 0,
+      useWorkerFetch: false,
+      isEvalSupported: false,
     }).promise;
 
     let text = "";
@@ -740,6 +678,85 @@ export async function extractPDFText(url: string): Promise<string> {
   }
 }
 
+function randomStudentPdfFileName(): string {
+  // Matches SEQTA Learn coversheet tokens, e.g. "mrr158ct.pdf".
+  return `${Math.random().toString(36).slice(2, 10)}.pdf`;
+}
+
+async function requestStudentAssessmentPdf(params: {
+  assessmentID: string | number;
+  metaclassID: string | number;
+  studentID: string | number;
+}): Promise<string> {
+  const fileName = randomStudentPdfFileName();
+
+  const printResponse = await fetch(
+    `${location.origin}/seqta/student/print/assessment`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      credentials: "include",
+      body: JSON.stringify({
+        id: Number(params.assessmentID),
+        metaclass: Number(params.metaclassID),
+        student: Number(params.studentID),
+        fileName,
+      }),
+    },
+  );
+
+  if (!printResponse.ok) {
+    throw new Error(
+      `Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`,
+    );
+  }
+
+  const data = (await printResponse.json()) as {
+    payload?: { file?: string };
+    status?: string | number;
+  };
+
+  const resolved = data.payload?.file;
+  if (!resolved) {
+    throw new Error(
+      `Print assessment response missing payload.file (status=${String(data.status)})`,
+    );
+  }
+
+  return resolved;
+}
+
+function getStudentAssessmentReportUrl(fileName: string): string {
+  const params = new URLSearchParams({
+    type: "generated_report",
+    file: fileName,
+  });
+  return `${location.origin}/seqta/student/load/file?${params.toString()}`;
+}
+
+async function extractPDFTextWithRetry(
+  url: string,
+  attempts = 3,
+  delayMs = 1500,
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await extractPDFText(url);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      const retryable =
+        message.includes("404") ||
+        message.includes("empty") ||
+        message.includes("Failed to fetch PDF");
+      if (!retryable || attempt === attempts - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw lastError;
+}
+
 async function handleWeightings(mark: any, api: any) {
   const assessmentID = assessmentIdKey(mark);
   const metaclassID = mark.metaclassID;
@@ -749,13 +766,25 @@ async function handleWeightings(mark: any, api: any) {
     | WeightingEntry
     | undefined;
 
-  const isFresh =
+  // Skip only when we already have a real numeric weight for this fingerprint.
+  // "N/A" / "processing" / in-flight refreshing must not permanently block retries.
+  const hasNumericWeight =
     existing &&
     existing.weight !== "processing" &&
-    existing.fingerprint === fingerprint &&
-    existing.pluginVersion === WEIGHTING_SCHEMA_VERSION;
+    existing.weight !== "N/A" &&
+    !Number.isNaN(parseFloat(existing.weight));
 
-  if (isFresh) return;
+  const inFlightSameFingerprint =
+    existing &&
+    existing.fingerprint === fingerprint &&
+    (existing.weight === "processing" || existing.refreshing);
+
+  const isFresh =
+    Boolean(hasNumericWeight) &&
+    existing?.fingerprint === fingerprint &&
+    existing?.pluginVersion === WEIGHTING_SCHEMA_VERSION;
+
+  if (isFresh || inFlightSameFingerprint) return;
 
   // If we have a previous usable value, keep showing it while we refetch
   // by marking the entry as refreshing instead of wiping it. We claim the
@@ -763,7 +792,7 @@ async function handleWeightings(mark: any, api: any) {
   // pass (e.g. a fast re-mount of the wrapper) doesn't kick off a duplicate
   // refetch for the same id while this one is still in flight.
   const placeholder: WeightingEntry =
-    existing && existing.weight !== "processing"
+    existing && hasNumericWeight
       ? {
           ...existing,
           fingerprint,
@@ -807,34 +836,13 @@ async function handleWeightings(mark: any, api: any) {
       const userInfo = await getUserInfo();
       const userID = userInfo.id;
 
-      const filename =
-        "BetterSEQTA-" +
-        String(Math.floor(Math.random() * 1e15)).padStart(15, "0");
-
-      const printResponse = await fetch(
-        `${location.origin}/seqta/student/print/assessment`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-          credentials: "include",
-          body: JSON.stringify({
-            fileName: filename,
-            id: assessmentID,
-            metaclass: metaclassID,
-            student: userID,
-          }),
-        },
-      );
-
-      if (!printResponse.ok) {
-        throw new Error(
-          `Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`,
-        );
-      }
-
+      const reportFile = await requestStudentAssessmentPdf({
+        assessmentID,
+        metaclassID,
+        studentID: userID,
+      });
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      pdfUrl = `${location.origin}/seqta/student/report/get?file=${filename}`;
+      pdfUrl = getStudentAssessmentReportUrl(reportFile);
     }
 
     if (pdfUrl.startsWith("blob:")) {
@@ -843,32 +851,37 @@ async function handleWeightings(mark: any, api: any) {
 
     let text: string;
     try {
-      text = await extractPDFText(pdfUrl);
+      text = await extractPDFTextWithRetry(pdfUrl);
     } catch (error: any) {
       if (
         isFirefox &&
         (error?.message?.includes("blob") ||
           error?.message?.includes("Security") ||
-          error?.message?.includes("CSP"))
+          error?.message?.includes("CSP") ||
+          error?.message?.includes("empty"))
       ) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        text = await extractPDFText(pdfUrl);
+        text = await extractPDFTextWithRetry(pdfUrl, 2, 2000);
       } else {
         throw new Error(`PDF extraction failed: ${error.message}`);
       }
     }
 
-    const match = text.match(/weight:\s*(\d+\.?\d*)/i);
+    const weight = extractWeightFromCoversheetText(text);
 
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: {
-        weight: match ? match[1] : "N/A",
+        weight: weight ?? "N/A",
         fingerprint,
         pluginVersion: WEIGHTING_SCHEMA_VERSION,
       },
     };
   } catch (error: any) {
+    console.error(
+      `[BetterSEQTA+] Weighting fetch failed for assessment ${assessmentID}:`,
+      error,
+    );
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: {

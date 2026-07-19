@@ -5,6 +5,7 @@ import SubjectItem from "../components/items/SubjectItem.svelte";
 import GenericItem from "../components/items/GenericItem.svelte";
 import type { IndexItem } from "./types";
 import { jobs } from "./jobs";
+import { loadDynamicItems } from "../utils/dynamicItems";
 
 export const renderComponentMap: Record<string, typeof SvelteComponent> = {
   assessment: AssessmentItem as unknown as typeof SvelteComponent,
@@ -57,4 +58,22 @@ export function decorateIndexItems(items: IndexItem[]): IndexItem[] {
       return item;
     }
   });
+}
+
+export function publishDynamicItemsUpdate(
+  items: IndexItem[],
+  jobId: string,
+  newItemCount: number,
+): void {
+  loadDynamicItems(decorateIndexItems(items));
+  window.dispatchEvent(
+    new CustomEvent("dynamic-items-updated", {
+      detail: {
+        incremental: true,
+        jobId,
+        newItemCount,
+        streaming: true,
+      },
+    }),
+  );
 }

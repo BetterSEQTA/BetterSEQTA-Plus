@@ -8,6 +8,7 @@ import type { BuildTarget, Manifest } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
 import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
+import { extensionChunkUrls } from "./lib/extensionChunkUrls";
 
 import million from "million/compiler";
 
@@ -66,9 +67,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
   const env = loadEnv(viteMode, repoRoot, "");
 
   return {
-  // Content scripts run on the host page; absolute `/assets/...` URLs would
-  // resolve against SEQTA instead of chrome-extension://. Relative base makes
-  // Vite emit import.meta.url-relative chunk/CSS URLs at runtime.
   base: command === "build" ? "./" : "/",
   define: {
     __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(
@@ -84,12 +82,26 @@ export default defineConfig(({ command, mode: viteMode }) => {
   },
   envDir: repoRoot,
   plugins: [
-    base64Loader,
-    InlineWorkerPlugin(),
     svelte({
       emitCss: false,
+      configFile: join(__dirname, "src", "svelte.config.js"),
     }),
-    ...(useMillion ? [million.vite({ auto: true })] : []),
+    extensionChunkUrls(),
+    base64Loader,
+    InlineWorkerPlugin(),
+    ...(useMillion && command !== "build"
+      ? [
+          million.vite({
+            auto: true,
+            filter: {
+              exclude: [
+                "**/*.svelte",
+                "node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}",
+              ],
+            },
+          }),
+        ]
+      : []),
     crx({
       manifest: withDevManifestCsp(
         targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??
@@ -126,6 +138,12 @@ export default defineConfig(({ command, mode: viteMode }) => {
     include: [
       "@babel/runtime/helpers/extends",
       "@babel/runtime/helpers/interopRequireDefault",
+      "layerchart",
+      "d3-scale",
+      "d3-shape",
+      "d3-array",
+      "d3-format",
+      "d3-time",
     ],
   },
   legacy: {

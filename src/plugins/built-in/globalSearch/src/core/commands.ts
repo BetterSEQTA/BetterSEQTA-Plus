@@ -105,7 +105,6 @@ async function navigateToSpecificLesson(lesson: any) {
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {
           // Found the exact matching lesson, click it
           (lessonElement as HTMLElement).click();
-          console.log(`Navigated to exact lesson: ${lessonDate} ${lessonPeriod}`);
           return true;
         }
       }

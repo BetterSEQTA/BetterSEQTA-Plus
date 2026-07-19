@@ -8,7 +8,7 @@ import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "webextension-polyfill";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
-import { resolveCloudPfp } from "@/seqta/utils/cloudPfpCache";
+import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
 import styles from "./styles.css?inline";
 import localforage from "localforage";
 
@@ -64,10 +64,13 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       }
 
       const useCloud = api.settings.useCloudPfp;
-      const pfpUrl = cloudAuth.state.user?.pfpUrl;
+      const userId = cloudAuth.state.user?.id;
+      const pfpUrl =
+        cloudAuth.state.user?.pfpUrl ??
+        (userId ? defaultAccountsPfpUrl(userId) : undefined);
 
-      if (useCloud && pfpUrl && cloudAuth.state.user?.id) {
-        const resolved = await resolveCloudPfp(cloudAuth.state.user.id, pfpUrl);
+      if (useCloud && pfpUrl && userId) {
+        const resolved = await resolveCloudPfp(userId, pfpUrl);
         if (resolved) {
           currentBlobUrl = resolved.src;
           img = document.createElement("img");
@@ -92,6 +95,13 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       }
     }
 
+    if (api.settings.useCloudPfp && cloudAuth.state.isLoggedIn) {
+      const { pullCloudProfilePictureFromServer } = await import(
+        "@/seqta/utils/cloudPfpSync"
+      );
+      await pullCloudProfilePictureFromServer();
+    }
+
     await applyProfileImage();
 
     const onLocalPictureUpdated = () => {
@@ -114,11 +124,9 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     });
 
     const useCloudUnreg = api.settings.onChange("useCloudPfp", (enabled: boolean) => {
-      if (enabled) {
-        void import("@/seqta/utils/cloudPfpSync").then(({ syncLocalProfilePictureToCloud }) =>
-          syncLocalProfilePictureToCloud(),
-        );
-      }
+      void import("@/seqta/utils/cloudPfpSync").then(({ onUseCloudPfpToggled }) =>
+        onUseCloudPfpToggled(enabled),
+      );
       void applyProfileImage();
     });
 

@@ -20,7 +20,7 @@ const gradeAnalyticsPluginLazy = defineLazyPlugin({
     "Grade trends, distribution charts, and assessment history synced from SEQTA",
   version: "1.0.0",
   settings,
-  disableToggle: false,
+  disableToggle: true,
   defaultEnabled: true,
   styles,
   loader: () => import("./core/index"),

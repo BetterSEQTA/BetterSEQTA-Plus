@@ -9,6 +9,9 @@ bun.lock
 # PDF.js extension assets (copied by postinstall from pdfjs-dist)
 src/public/resources/pdfjs/pdf.worker.min.mjs
 src/public/resources/pdfjs/pdf.legacy.min.mjs
+# ONNX Runtime WASM assets (copied by postinstall from @huggingface/transformers)
+src/public/resources/ort/ort-wasm-simd-threaded.jsep.mjs
+src/public/resources/ort/ort-wasm-simd-threaded.jsep.wasm
 
 # Build
 extension.zip
