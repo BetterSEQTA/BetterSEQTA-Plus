@@ -14,7 +14,7 @@ interface CachedPlatformData {
 }
 
 const STORAGE_KEY_PREFIX = "betterseqta_platform_";
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 function getCacheKey(): string {
   return `${STORAGE_KEY_PREFIX}${window.location.hostname}`;
@@ -62,17 +62,37 @@ function hasLearnDomSignals(): boolean {
 
 function isCachedPlatformStillValid(cachedPlatform: SEQTAPlatform): boolean {
   const url = hrefLower();
+  const hostname = hostnameLower();
+  const fromHost = detectFromUrlAndHost();
 
-  if (cachedPlatform === "engage" && !isEngageTitle()) {
+  // Host/URL signals win over a stale cache (teach-international pages often omit "Teach" in the title)
+  if (fromHost !== "unknown" && fromHost !== cachedPlatform) {
     return false;
   }
-  if (cachedPlatform === "teach" && (url.includes("/learn/") || url.includes("/student/"))) {
+
+  if (cachedPlatform === "engage" && !isEngageTitle() && fromHost !== "engage") {
     return false;
   }
-  if (cachedPlatform === "learn" && (url.includes("/teach/") || url.includes("/ta/"))) {
+  if (
+    cachedPlatform === "teach" &&
+    (url.includes("/learn/") || url.includes("/student/") || hostname.includes("learn."))
+  ) {
     return false;
   }
-  if (cachedPlatform === "engage" && (url.includes("/teach/") || url.includes("/ta/"))) {
+  if (
+    cachedPlatform === "learn" &&
+    (url.includes("/teach/") ||
+      url.includes("/ta/") ||
+      url.includes("/betterseqta-home") ||
+      hostname.startsWith("teach") ||
+      hostname.includes("teach."))
+  ) {
+    return false;
+  }
+  if (
+    cachedPlatform === "engage" &&
+    (url.includes("/teach/") || url.includes("/ta/") || hostname.startsWith("teach"))
+  ) {
     return false;
   }
 
@@ -118,24 +138,49 @@ async function setCachedPlatform(platform: SEQTAPlatform): Promise<void> {
   }
 }
 
-function detectFromUrlAndHost(): SEQTAPlatform {
-  const url = hrefLower();
-  const hostname = hostnameLower();
+/** Pure helper — exported for unit tests. */
+export function detectPlatformFromUrlAndHost(
+  hostname: string,
+  href: string,
+): SEQTAPlatform {
+  const host = hostname.toLowerCase();
+  const url = href.toLowerCase();
 
-  if (hostname.includes("engage.") || hostname.includes(".engage")) {
+  if (
+    host.includes("engage.") ||
+    host.includes(".engage") ||
+    host.startsWith("engage-") ||
+    host.includes("-engage.")
+  ) {
     return "engage";
   }
-  if (hostname.includes("teach.") || hostname.includes(".teach")) {
+  // teach-international.site.seqta.com.au, teach.example.edu, etc.
+  if (
+    host.includes("teach.") ||
+    host.includes(".teach") ||
+    host.startsWith("teach-") ||
+    host.includes("-teach.")
+  ) {
     return "teach";
   }
-  if (hostname.includes("learn.") || hostname.includes(".learn")) {
+  if (
+    host.includes("learn.") ||
+    host.includes(".learn") ||
+    host.startsWith("learn-") ||
+    host.includes("-learn.")
+  ) {
     return "learn";
   }
 
   if (url.includes("/engage/") || url.includes("/parent/")) {
     return "engage";
   }
-  if (url.includes("/teach/") || url.includes("/ta/")) {
+  if (
+    url.includes("/teach/") ||
+    url.includes("/ta/") ||
+    url.includes("/betterseqta-home") ||
+    url.includes("/seqta/ta/")
+  ) {
     return "teach";
   }
   if (url.includes("/learn/") || url.includes("/student/")) {
@@ -143,6 +188,10 @@ function detectFromUrlAndHost(): SEQTAPlatform {
   }
 
   return "unknown";
+}
+
+function detectFromUrlAndHost(): SEQTAPlatform {
+  return detectPlatformFromUrlAndHost(hostnameLower(), hrefLower());
 }
 
 function detectFromTitle(): SEQTAPlatform {
@@ -210,20 +259,28 @@ export function detectSEQTAPlatformSync(): SEQTAPlatform {
       .catch(() => {});
   }
 
-  if (syncCachedPlatform) {
-    return syncCachedPlatform;
-  }
-
   const platformAttr = document.body?.getAttribute("data-seqta-platform");
   if (
     platformAttr === "teach" ||
     platformAttr === "learn" ||
     platformAttr === "engage"
   ) {
+    syncCachedPlatform = platformAttr;
     return platformAttr;
   }
 
-  return detectPlatformFromSignals();
+  // Prefer live host/URL signals over a possibly-stale sync cache
+  const fromSignals = detectPlatformFromSignals();
+  if (fromSignals !== "unknown") {
+    syncCachedPlatform = fromSignals;
+    return fromSignals;
+  }
+
+  if (syncCachedPlatform) {
+    return syncCachedPlatform;
+  }
+
+  return "unknown";
 }
 
 /** @deprecated Use isSeqtaLearnExperience() from isSeqtaLearn.ts */

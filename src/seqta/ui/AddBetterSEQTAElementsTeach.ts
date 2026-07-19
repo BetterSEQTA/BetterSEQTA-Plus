@@ -16,10 +16,58 @@ import { updateAllColors } from "./colors/Manager";
 import { OpenWhatsNewPopupTeach } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 import { applySavedSubPageOrders, ChangeSpineItemPositions } from "@/seqta/utils/Openers/OpenMenuOptionsTeach";
 import { initializeSIPEnhancements } from "@/seqta/utils/SIPEnhancements";
+import { syncTeachDocumentTitle } from "@/seqta/utils/normalizeTeachTitle";
+import { syncTeachNavActiveStates } from "@/seqta/utils/teachChrome";
 
 // Track if we've set up the observer to prevent multiple observers
 let spineObserverSetup = false;
+let navigationListenerSetup = false;
+let welcomeInterceptSetup = false;
+let titleObserverSetup = false;
 let injectionInProgress = false;
+let reinjectTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleTeachReinjection(reason: string, delayMs = 150): void {
+  if (reinjectTimer) {
+    clearTimeout(reinjectTimer);
+  }
+  reinjectTimer = setTimeout(() => {
+    reinjectTimer = null;
+    if (injectionInProgress) {
+      scheduleTeachReinjection(reason, 100);
+      return;
+    }
+    if (areTeachChromeElementsPresent()) {
+      return;
+    }
+    console.debug(`[BetterSEQTA+] ${reason}, re-injecting BetterSEQTA+ elements`);
+    AddBetterSEQTAElementsTeach().catch((err) => {
+      console.error("[BetterSEQTA+] Error re-injecting elements:", err);
+    });
+  }, delayMs);
+}
+
+function areTeachChromeElementsPresent(): boolean {
+  const settingsButton = document.getElementById("AddedSettings");
+  if (!settingsButton) {
+    return false;
+  }
+
+  // Settings-only mode when extension UI is toggled off
+  if (!settingsState.onoff) {
+    return true;
+  }
+
+  const homeButton = document.getElementById("betterseqta-teach-homebutton");
+  const darkToggle = document.getElementById("LightDarkModeButton");
+  const pageListExists = !!document.querySelector(
+    "[class*='PageList__pageContainer'], [class*='PageList__PageList']",
+  );
+  const pageListHome = document.getElementById("betterseqta-teach-pagelist-home");
+  const missingPageListHome = pageListExists && !pageListHome;
+
+  return !!(homeButton && darkToggle && !missingPageListHome);
+}
 
 /**
  * Adds Teach-specific BetterSEQTA+ elements to the page
@@ -52,6 +100,7 @@ export async function AddBetterSEQTAElementsTeach() {
 
       // Create Teach-specific navigation elements
       await createTeachHomeButton();
+      injectTeachHomePageListItem();
 
       try {
         await Promise.all([
@@ -77,93 +126,104 @@ export async function AddBetterSEQTAElementsTeach() {
     
     // Set up navigation listener for Teach's React Router
     setupNavigationListener();
+    setupTeachTitleObserver();
     
     // Apply saved sub-page orders
     applySavedSubPageOrders();
+    syncTeachDocumentTitle();
+    syncTeachNavActiveStates();
   } finally {
     injectionInProgress = false;
   }
 }
 
 /**
- * Sets up a MutationObserver to watch for Spine navigation changes
- * This ensures elements are re-injected when React replaces the DOM
+ * Observe document for Spine remounts (workspace switches replace the whole Spine).
+ * Observing only the first Spine node fails after React unmounts it.
  */
 function setupSpineObserver() {
-  const spine = document.querySelector("[class*='Spine__Spine']");
-  if (!spine) {
-    // Retry after a delay if Spine isn't ready yet
-    setTimeout(() => setupSpineObserver(), 500);
+  if (!document.body) {
+    setTimeout(() => setupSpineObserver(), 100);
     return;
   }
-  
+
   const observer = new MutationObserver(() => {
-    // Check if BetterSEQTA elements were removed
-    const settingsButton = document.getElementById("AddedSettings");
-    const homeButton = document.getElementById("betterseqta-teach-homebutton");
-    const darkToggle = document.getElementById("LightDarkModeButton"); // Use correct ID
-    
-    // If any element is missing, re-inject (but only if not already in progress)
-    if (!injectionInProgress && (!settingsButton || !homeButton || !darkToggle)) {
-      console.debug("[BetterSEQTA+] Spine changed, re-injecting BetterSEQTA+ elements");
-      // Use a small delay to avoid rapid re-injections
-      setTimeout(() => {
-        AddBetterSEQTAElementsTeach().catch(err => {
-          console.error("[BetterSEQTA+] Error re-injecting elements:", err);
-        });
-      }, 100);
+    if (injectionInProgress || areTeachChromeElementsPresent()) {
+      return;
     }
+    // Only reinject when Teach chrome is expected (Spine exists)
+    if (!document.querySelector("[class*='Spine__Spine']")) {
+      return;
+    }
+    scheduleTeachReinjection("Spine remounted or chrome missing");
   });
-  
-  // Observe the Spine and its children
-  observer.observe(spine, {
+
+  observer.observe(document.body, {
     childList: true,
     subtree: true,
-    attributes: false
+    attributes: false,
   });
-  
-  console.debug("[BetterSEQTA+] Spine observer setup complete");
+
+  console.debug("[BetterSEQTA+] Document-level Spine observer setup complete");
 }
 
 /**
- * Sets up a listener for Teach's React Router navigation
+ * Sets up a listener for Teach's React Router navigation (once).
  */
 function setupNavigationListener() {
-  // Listen for popstate events (back/forward navigation)
-  window.addEventListener("popstate", () => {
-    console.debug("[BetterSEQTA+] Navigation detected (popstate), re-injecting elements");
+  if (navigationListenerSetup) {
+    return;
+  }
+  navigationListenerSetup = true;
+
+  const afterNavigate = () => {
+    scheduleTeachReinjection("Navigation", 300);
     setTimeout(() => {
-      AddBetterSEQTAElementsTeach().catch(err => {
-        console.error("[BetterSEQTA+] Error re-injecting on navigation:", err);
-      });
-    }, 300);
-  });
-  
-  // Listen for pushstate/replacestate (programmatic navigation)
-  const originalPushState = history.pushState;
-  const originalReplaceState = history.replaceState;
-  
-  history.pushState = function(...args) {
-    originalPushState.apply(history, args);
-    console.debug("[BetterSEQTA+] Navigation detected (pushState), re-injecting elements");
-    setTimeout(() => {
-      AddBetterSEQTAElementsTeach().catch(err => {
-        console.error("[BetterSEQTA+] Error re-injecting on pushState:", err);
-      });
-    }, 300);
+      syncTeachDocumentTitle();
+      syncTeachNavActiveStates();
+    }, 350);
   };
-  
-  history.replaceState = function(...args) {
-    originalReplaceState.apply(history, args);
-    console.debug("[BetterSEQTA+] Navigation detected (replaceState), re-injecting elements");
-    setTimeout(() => {
-      AddBetterSEQTAElementsTeach().catch(err => {
-        console.error("[BetterSEQTA+] Error re-injecting on replaceState:", err);
-      });
-    }, 300);
+
+  window.addEventListener("popstate", afterNavigate);
+
+  const originalPushState = history.pushState.bind(history);
+  const originalReplaceState = history.replaceState.bind(history);
+
+  history.pushState = function (...args: Parameters<History["pushState"]>) {
+    originalPushState(...args);
+    afterNavigate();
   };
-  
+
+  history.replaceState = function (...args: Parameters<History["replaceState"]>) {
+    originalReplaceState(...args);
+    afterNavigate();
+  };
+
   console.debug("[BetterSEQTA+] Navigation listener setup complete");
+}
+
+/** Keep rewriting SEQTA titles after React updates <title>. */
+function setupTeachTitleObserver() {
+  if (titleObserverSetup) {
+    return;
+  }
+  titleObserverSetup = true;
+
+  const titleEl = document.querySelector("title");
+  if (!titleEl) {
+    syncTeachDocumentTitle();
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    syncTeachDocumentTitle();
+  });
+  observer.observe(titleEl, {
+    childList: true,
+    characterData: true,
+    subtree: true,
+  });
+  syncTeachDocumentTitle();
 }
 
 /**
@@ -250,6 +310,43 @@ function findSpineNavContainer(): HTMLElement | null {
 }
 
 /**
+ * Injects a "Home" entry into Teach's page list so BetterSEQTA home
+ * sits alongside Dashboard / Timetable / Notices like Learn's sidebar.
+ */
+function injectTeachHomePageListItem(): void {
+  const pageList =
+    document.querySelector("[class*='PageList__pageContainer']") ||
+    document.querySelector("[class*='PageList__PageList']");
+  if (!pageList) return;
+
+  const existing = document.getElementById("betterseqta-teach-pagelist-home");
+  if (existing && document.body.contains(existing)) {
+    syncTeachNavActiveStates();
+    return;
+  }
+
+  const homeLink = document.createElement("a");
+  homeLink.id = "betterseqta-teach-pagelist-home";
+  homeLink.href = "/betterseqta-home";
+  homeLink.dataset.betterseqta = "true";
+  homeLink.setAttribute("aria-label", "Home");
+  homeLink.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 495.398 495.398" fill="currentColor" aria-hidden="true">
+      <path d="M487.083,225.514l-75.08-75.08V63.704c0-15.682-12.708-28.391-28.413-28.391c-15.669,0-28.377,12.709-28.377,28.391 v29.941L299.31,37.74c-27.639-27.624-75.694-27.575-103.27,0.05L8.312,225.514c-11.082,11.104-11.082,29.071,0,40.158 c11.087,11.101,29.089,11.101,40.172,0l187.71-187.729c6.115-6.083,16.893-6.083,22.976-0.018l187.742,187.747 c5.567,5.551,12.825,8.312,20.081,8.312c7.271,0,14.541-2.764,20.091-8.312C498.17,254.586,498.17,236.619,487.083,225.514z"></path>
+      <path d="M257.561,131.836c-5.454-5.451-14.285-5.451-19.723,0L72.712,296.913c-2.607,2.606-4.085,6.164-4.085,9.877v120.401 c0,28.253,22.908,51.16,51.16,51.16h81.754v-126.61h92.299v126.61h81.755c28.251,0,51.159-22.907,51.159-51.159V306.79 c0-3.713-1.465-7.271-4.085-9.877L257.561,131.836z"></path>
+    </svg>
+    <span>Home</span>
+  `;
+  homeLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    navigateToTeachHome();
+  });
+
+  pageList.insertBefore(homeLink, pageList.firstChild);
+  syncTeachNavActiveStates();
+}
+
+/**
  * Creates the home button for Teach platform
  */
 async function createTeachHomeButton() {
@@ -295,8 +392,8 @@ async function createTeachHomeButton() {
 
   // Create home button matching Teach's navigation structure (icon-only)
   const homeButton = stringToHTML(
-    /* html */`<a href="/betterseqta-home" id="betterseqta-teach-homebutton" data-betterseqta="true" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer;">
-      <svg style="width: 24px; height: 24px;" viewBox="0 0 495.398 495.398" fill="currentColor">
+    /* html */`<a href="/betterseqta-home" id="betterseqta-teach-homebutton" data-betterseqta="true" aria-label="Home" title="Home" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer;">
+      <svg style="width: 24px; height: 24px;" viewBox="0 0 495.398 495.398" fill="currentColor" aria-hidden="true">
         <path d="M487.083,225.514l-75.08-75.08V63.704c0-15.682-12.708-28.391-28.413-28.391c-15.669,0-28.377,12.709-28.377,28.391 v29.941L299.31,37.74c-27.639-27.624-75.694-27.575-103.27,0.05L8.312,225.514c-11.082,11.104-11.082,29.071,0,40.158 c11.087,11.101,29.089,11.101,40.172,0l187.71-187.729c6.115-6.083,16.893-6.083,22.976-0.018l187.742,187.747 c5.567,5.551,12.825,8.312,20.081,8.312c7.271,0,14.541-2.764,20.091-8.312C498.17,254.586,498.17,236.619,487.083,225.514z"></path>
         <path d="M257.561,131.836c-5.454-5.451-14.285-5.451-19.723,0L72.712,296.913c-2.607,2.606-4.085,6.164-4.085,9.877v120.401 c0,28.253,22.908,51.16,51.16,51.16h81.754v-126.61h92.299v126.61h81.755c28.251,0,51.159-22.907,51.159-51.159V306.79 c0-3.713-1.465-7.271-4.085-9.877L257.561,131.836z"></path>
       </svg>
@@ -343,8 +440,8 @@ async function createTeachSettingsButton() {
 
   // Create settings button matching Teach's Spine navigation structure (icon-only)
   let SettingsButton = stringToHTML(/* html */ `
-    <a href="#" id="AddedSettings" data-betterseqta="true" class="tooltip" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer; border-radius: 8px; margin: 4px; transition: all 0.2s ease;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <a href="#" id="AddedSettings" data-betterseqta="true" class="tooltip" aria-label="BetterSEQTA+ Settings" title="BetterSEQTA+ Settings" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer; border-radius: 8px; margin: 4px; transition: all 0.2s ease;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g>
       </svg>
       ${settingsState.onoff ? '<div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div>' : ""}
@@ -458,6 +555,46 @@ function setupTeachEventListeners() {
       e.preventDefault();
     });
   }
+
+  setupWelcomeWorkspaceIntercept();
+}
+
+/**
+ * Home workspace / logo often point at /welcome — send those to BetterSEQTA home.
+ */
+function setupWelcomeWorkspaceIntercept() {
+  if (welcomeInterceptSetup) {
+    return;
+  }
+  welcomeInterceptSetup = true;
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!settingsState.onoff || !isSeqtaTeachExperience()) {
+        return;
+      }
+      const target = event.target as Element | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) {
+        return;
+      }
+      const href = anchor.getAttribute("href") || "";
+      const isWelcome =
+        href === "/welcome" ||
+        href.endsWith("/welcome") ||
+        href.startsWith("/welcome?");
+      // Spine/logo root often lands on SEQTA splash — treat as BetterSEQTA home
+      const isRootLogo = href === "/";
+      if (!isWelcome && !isRootLogo) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      navigateToTeachHome();
+    },
+    true,
+  );
 }
 
 /**
@@ -512,8 +649,8 @@ async function addDarkLightToggleTeach() {
 
   // Create dark/light toggle button matching Teach's Spine navigation structure (icon-only)
   const LightDarkModeButton = stringToHTML(/* html */ `
-    <a href="#" id="LightDarkModeButton" data-betterseqta="true" class="DarkLightButton tooltip" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer; border-radius: 8px; margin: 4px; transition: all 0.2s ease;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">${initialSvgContent}</svg>
+    <a href="#" id="LightDarkModeButton" data-betterseqta="true" class="DarkLightButton tooltip" aria-label="${tooltipString}" title="${tooltipString}" style="display: flex; align-items: center; justify-content: center; padding: 12px; text-decoration: none; color: inherit; cursor: pointer; border-radius: 8px; margin: 4px; transition: all 0.2s ease;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${initialSvgContent}</svg>
       <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${tooltipString}</div>
     </a>
   `);
@@ -573,7 +710,10 @@ async function addDarkLightToggleTeach() {
       const newSvgContent = settingsState.DarkMode ? SUN_ICON_SVG : MOON_ICON_SVG;
       const svgElement = lightDarkModeButtonElement.querySelector("svg");
       if (svgElement) svgElement.innerHTML = newSvgContent;
-      darklightText!.innerText = GetLightDarkModeString();
+      const nextLabel = GetLightDarkModeString();
+      darklightText!.innerText = nextLabel;
+      lightDarkModeButtonElement.setAttribute("aria-label", nextLabel);
+      lightDarkModeButtonElement.setAttribute("title", nextLabel);
       return;
     }
 
@@ -585,6 +725,9 @@ async function addDarkLightToggleTeach() {
     const svgElement = lightDarkModeButtonElement.querySelector("svg");
     if (svgElement) svgElement.innerHTML = newSvgContent;
     
-    darklightText!.innerText = GetLightDarkModeString();
+    const nextLabel = GetLightDarkModeString();
+    darklightText!.innerText = nextLabel;
+    lightDarkModeButtonElement.setAttribute("aria-label", nextLabel);
+    lightDarkModeButtonElement.setAttribute("title", nextLabel);
   });
 }

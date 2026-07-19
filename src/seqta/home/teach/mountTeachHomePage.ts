@@ -7,6 +7,9 @@ import {
   disconnectLoadingIndicatorObserver,
   setupLoadingIndicatorObserver,
 } from "@/seqta/utils/Loaders/LoadTeachHomePage";
+import { syncTeachDocumentTitle } from "@/seqta/utils/normalizeTeachTitle";
+import { syncTeachNavActiveStates } from "@/seqta/utils/teachChrome";
+import { isTeachHomePath } from "@/seqta/utils/teachPath";
 import TeachHomePage from "./TeachHomePage.svelte";
 
 export const BETTERSEQTA_HOME_ROUTE = "/betterseqta-home";
@@ -16,22 +19,28 @@ let routeListenerSetup = false;
 let isLoadingHomePage = false;
 let teachHomeApp: ReturnType<typeof renderSvelte> | null = null;
 let widgetsSettingsRegistered = false;
+let unknownPageObserver: MutationObserver | null = null;
+let mountRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function updateTeachHomeMenuActive(isHome: boolean): void {
-  const homeButton = document.getElementById("betterseqta-teach-homebutton");
-  if (!homeButton) return;
+  const targets = [
+    document.getElementById("betterseqta-teach-homebutton"),
+    document.getElementById("betterseqta-teach-pagelist-home"),
+  ].filter(Boolean) as HTMLElement[];
 
-  if (isHome) {
-    homeButton.classList.add("active");
-    homeButton.setAttribute("aria-current", "page");
-  } else {
-    homeButton.classList.remove("active");
-    homeButton.removeAttribute("aria-current");
+  for (const el of targets) {
+    if (isHome) {
+      el.classList.add("active");
+      el.setAttribute("aria-current", "page");
+    } else {
+      el.classList.remove("active");
+      el.removeAttribute("aria-current");
+    }
   }
 }
 
 function isOnTeachHomeRoute(): boolean {
-  return window.location.pathname.includes(BETTERSEQTA_HOME_ROUTE);
+  return isTeachHomePath();
 }
 
 function hideChromeContent(): void {
@@ -57,12 +66,64 @@ function hideUnknownPageUi(): void {
     '[class*="Unknown"], [class*="NotFound"], [class*="404"]',
   );
   unknownPageElements.forEach((el) => {
-    (el as HTMLElement).style.display = "none";
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.setProperty("display", "none", "important");
+    htmlEl.setAttribute("data-betterseqta-hidden-unknown", "true");
   });
+
+  // SEQTA often renders the 404 copy as plain text under main/header
+  document.querySelectorAll("main h1, main p, main [class*='Chrome']").forEach((el) => {
+    const text = (el.textContent || "").trim().toLowerCase();
+    if (
+      text === "unknown page" ||
+      text.includes("page not found") ||
+      text.includes("could not be found")
+    ) {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.setProperty("display", "none", "important");
+      htmlEl.setAttribute("data-betterseqta-hidden-unknown", "true");
+    }
+  });
+}
+
+function observeUnknownPageWhileHome(): void {
+  unknownPageObserver?.disconnect();
+  if (!isOnTeachHomeRoute()) return;
+
+  unknownPageObserver = new MutationObserver(() => {
+    if (!isOnTeachHomeRoute()) return;
+    hideUnknownPageUi();
+    hideChromeContent();
+    if (!document.getElementById(TEACH_HOME_ROOT_ID) && !isLoadingHomePage) {
+      void mountTeachHomePageContent();
+    }
+  });
+  unknownPageObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+function stopUnknownPageObserver(): void {
+  unknownPageObserver?.disconnect();
+  unknownPageObserver = null;
+}
+
+function markHomeShellActive(): void {
+  document.body?.setAttribute("data-seqta-platform", "teach");
+  document.body?.setAttribute("data-betterseqta-home-active", "true");
+  hideChromeContent();
+  hideUnknownPageUi();
+  updateTeachHomeMenuActive(true);
 }
 
 function cleanupTeachHomePage(): void {
   disconnectLoadingIndicatorObserver();
+  stopUnknownPageObserver();
+  if (mountRetryTimer) {
+    clearTimeout(mountRetryTimer);
+    mountRetryTimer = null;
+  }
 
   if (teachHomeApp) {
     unmount(teachHomeApp);
@@ -71,16 +132,18 @@ function cleanupTeachHomePage(): void {
 
   document.getElementById(TEACH_HOME_ROOT_ID)?.remove();
   showChromeContent();
-  document.body.removeAttribute("data-betterseqta-home-active");
+  document.body?.removeAttribute("data-betterseqta-home-active");
   updateTeachHomeMenuActive(false);
 }
 
 async function mountTeachHomePageContent(): Promise<void> {
-  if (isLoadingHomePage || teachHomeApp) {
-    return;
-  }
+  if (!isOnTeachHomeRoute()) return;
+  if (isLoadingHomePage) return;
+  if (teachHomeApp && document.getElementById(TEACH_HOME_ROOT_ID)) return;
 
   isLoadingHomePage = true;
+  markHomeShellActive();
+  observeUnknownPageWhileHome();
   console.info("[BetterSEQTA+] Mounting BetterSEQTA+ Teach home (Svelte)");
 
   try {
@@ -88,11 +151,10 @@ async function mountTeachHomePageContent(): Promise<void> {
       "#root > div > main, main",
       true,
       100,
-      50,
+      80,
     )) as HTMLElement;
 
-    hideChromeContent();
-    hideUnknownPageUi();
+    markHomeShellActive();
 
     let mountPoint = document.getElementById(TEACH_HOME_ROOT_ID);
     if (!mountPoint) {
@@ -103,9 +165,7 @@ async function mountTeachHomePageContent(): Promise<void> {
       main.appendChild(mountPoint);
     }
 
-    document.body.setAttribute("data-betterseqta-home-active", "true");
-    document.title = "Home ― BetterSEQTA+";
-    updateTeachHomeMenuActive(true);
+    document.title = "Home ― SEQTA Teach";
     setupLoadingIndicatorObserver();
 
     if (!widgetsSettingsRegistered) {
@@ -115,11 +175,19 @@ async function mountTeachHomePageContent(): Promise<void> {
       });
     }
 
-    teachHomeApp = renderSvelte(TeachHomePage, mountPoint);
+    if (!teachHomeApp) {
+      teachHomeApp = renderSvelte(TeachHomePage, mountPoint);
+    }
     applyWidgetVisibility();
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to mount Teach home page:", error);
-    cleanupTeachHomePage();
+    // Keep shell active and retry — do not flash SEQTA 404
+    markHomeShellActive();
+    if (mountRetryTimer) clearTimeout(mountRetryTimer);
+    mountRetryTimer = setTimeout(() => {
+      mountRetryTimer = null;
+      void mountTeachHomePageContent();
+    }, 750);
   } finally {
     isLoadingHomePage = false;
   }
@@ -137,18 +205,26 @@ export function navigateToTeachHome(): void {
 
 export function setupRouteListener(): void {
   if (routeListenerSetup) {
+    if (isOnTeachHomeRoute()) {
+      markHomeShellActive();
+      void mountTeachHomePageContent();
+    }
     return;
   }
   routeListenerSetup = true;
 
   const checkRoute = () => {
     if (isOnTeachHomeRoute()) {
-      hideUnknownPageUi();
+      markHomeShellActive();
+      observeUnknownPageWhileHome();
       setupLoadingIndicatorObserver();
       void mountTeachHomePageContent();
     } else {
       cleanupTeachHomePage();
+      // Keep titles as "… ― SEQTA Teach" after SPA navigations
+      syncTeachDocumentTitle();
     }
+    syncTeachNavActiveStates();
   };
 
   window.addEventListener("popstate", checkRoute);
@@ -160,10 +236,14 @@ export function setupRouteListener(): void {
       lastPath = currentPath;
       checkRoute();
     }
-  }, 1000);
+  }, 400);
 
+  // Immediate + delayed checks — SEQTA often paints 404 before our mount
+  checkRoute();
   requestAnimationFrame(() => {
-    setTimeout(checkRoute, 100);
+    setTimeout(checkRoute, 50);
+    setTimeout(checkRoute, 300);
+    setTimeout(checkRoute, 1000);
   });
 }
 

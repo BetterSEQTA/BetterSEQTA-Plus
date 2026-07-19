@@ -3,6 +3,7 @@ import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 import { isSeqtaTeachExperience } from "../isSeqtaTeach";
+import { isTeachHomePath } from "../teachPath";
 
 export let SpineMenuOptionsOpen = false;
 
@@ -134,69 +135,31 @@ function getCurrentMainPage(): string | null {
 }
 
 /**
- * Detects sub-pages (tabs, secondary navigation) on the current page
- * Looks for common patterns like tabs, secondary nav menus, etc.
+ * Detects Teach page-list / subpage-list nav items only.
+ * Avoid scanning main content — home widgets and dashlets produce false positives.
  */
 function getSubPages(): HTMLElement[] {
+  const selectors = [
+    "[class*='PageList__pageContainer'] a[href]",
+    "[class*='PageList__PageList'] a[href]",
+    "[class*='SubpageList__SubpageList'] a[href]",
+    "[class*='SubpageList__'] a[href]",
+  ];
+
   const subPages: HTMLElement[] = [];
-  
-  // Strategy 1: Look for tab navigation (common pattern)
-  const tabContainers = document.querySelectorAll('[role="tablist"], [class*="Tab"], [class*="tab"], nav[class*="Nav"]');
-  for (const container of Array.from(tabContainers)) {
-    const tabs = container.querySelectorAll('[role="tab"], a[href], button');
-    for (const tab of Array.from(tabs)) {
-      const element = tab as HTMLElement;
-      // Skip if it's a main navigation item or external link
-      if (element.closest('[class*="Spine"]') || 
-          element.getAttribute('href')?.startsWith('http') ||
-          !element.getAttribute('href')) {
-        continue;
-      }
-      // Check if it's a sub-page link (usually relative URLs within the same section)
-      const href = element.getAttribute('href');
-      if (href && (href.startsWith('/') || href.startsWith('#'))) {
+  for (const selector of selectors) {
+    for (const el of Array.from(document.querySelectorAll(selector))) {
+      const element = el as HTMLElement;
+      if (element.dataset.betterseqta) continue;
+      if (element.closest("[class*='Spine']")) continue;
+      const href = element.getAttribute("href");
+      if (!href || href.startsWith("http")) continue;
+      if (href.startsWith("/") || href.startsWith("#")) {
         subPages.push(element);
       }
     }
   }
-  
-  // Strategy 2: Look for secondary navigation menus
-  const navMenus = document.querySelectorAll('nav:not([class*="Spine"]), [class*="Nav"]:not([class*="Spine"])');
-  for (const nav of Array.from(navMenus)) {
-    const links = nav.querySelectorAll('a[href], button[data-href]');
-    for (const link of Array.from(links)) {
-      const element = link as HTMLElement;
-      const href = element.getAttribute('href') || element.getAttribute('data-href');
-      if (href && (href.startsWith('/') || href.startsWith('#')) && !href.includes('http')) {
-        if (!subPages.includes(element)) {
-          subPages.push(element);
-        }
-      }
-    }
-  }
-  
-  // Strategy 3: Look for buttons/links in content area that might be sub-pages
-  // This is more aggressive and might catch some false positives
-  const contentArea = document.querySelector('main, [class*="Content"], [class*="content"], [class*="Page"]');
-  if (contentArea) {
-    const potentialSubPages = contentArea.querySelectorAll('a[href^="/"], a[href^="#"], button[data-href]');
-    for (const item of Array.from(potentialSubPages)) {
-      const element = item as HTMLElement;
-      // Skip if already added or if it's clearly not a sub-page
-      if (subPages.includes(element) || 
-          element.closest('[class*="Spine"]') ||
-          element.textContent?.trim().length === 0) {
-        continue;
-      }
-      // Only add if it looks like a navigation item (has text, is clickable)
-      const text = element.textContent?.trim();
-      if (text && text.length > 0 && text.length < 50) { // Reasonable length for a nav item
-        subPages.push(element);
-      }
-    }
-  }
-  
-  // Remove duplicates
+
   return Array.from(new Set(subPages));
 }
 
@@ -1416,6 +1379,14 @@ function addSubPageReorderButton(mainPage: string, parentContainer: HTMLElement)
  * Should be called when navigating to a page
  */
 export function applySavedSubPageOrders(): void {
+  // Custom home has no SEQTA page-list; never inject reorder chrome into widgets
+  if (isTeachHomePath()) {
+    document
+      .querySelectorAll('[id^="betterseqta-subpage-reorder-btn-"]')
+      .forEach((btn) => btn.remove());
+    return;
+  }
+
   const mainPage = getCurrentMainPage();
   if (!mainPage) return;
   
@@ -1426,6 +1397,12 @@ export function applySavedSubPageOrders(): void {
   // Find parent container
   const parentContainer = subPages[0]?.parentElement;
   if (!parentContainer) return;
+
+  // Only attach reorder UI to real page/subpage lists
+  const inNavList = !!parentContainer.closest(
+    "[class*='PageList__'], [class*='SubpageList__']",
+  );
+  if (!inNavList) return;
   
   // Apply saved order if exists
   if (settingsState.teachSubPageOrders) {

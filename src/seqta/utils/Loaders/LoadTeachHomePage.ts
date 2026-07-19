@@ -13,6 +13,10 @@ import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import {
+  noticeMatchesLabelFilter,
+  resolveNoticeFilterTokens,
+} from "@/seqta/utils/notices/noticeLabelFilters";
 
 // Flag to prevent multiple simultaneous loads — routing handled in mountTeachHomePage.ts
 let LessonInterval: any;
@@ -324,27 +328,22 @@ async function loadHomePageWidgets() {
     upcomingItems.classList.remove("loading");
   }
   
-  // Load notices widget
-  const labelArray = prefs.payload
-    ?.filter((item: any) => item.name === "notices.filters")
-    ?.map((item: any) => item.value) || [];
-  
-  if (labelArray.length > 0) {
-    const noticeContainer = document.getElementById("notice-container");
-    if (noticeContainer) {
-      const dateControl = document.querySelector('input[type="date"]') as HTMLInputElement;
-      if (dateControl) {
-        dateControl.value = TodayFormatted;
-        setupNotices(labelArray[0].split(" "), TodayFormatted);
-      }
-      noticeContainer.classList.remove("loading");
+  // Load notices — same fallback as Learn: prefer prefs, else all label IDs
+  const noticeContainer = document.getElementById("notice-container");
+  if (noticeContainer) {
+    const noticesUrl = `${location.origin}/seqta/ta/load/notices?`;
+    const labelTokens = await resolveNoticeFilterTokens(
+      prefs.payload,
+      noticesUrl,
+    );
+    const dateControl = document.querySelector(
+      'input[type="date"]',
+    ) as HTMLInputElement | null;
+    if (dateControl) {
+      dateControl.value = TodayFormatted;
     }
-  } else {
-    const noticeContainer = document.getElementById("notice-container");
-    if (noticeContainer) {
-      noticeContainer.classList.remove("loading");
-      noticeContainer.innerHTML = '<div class="dummynotice">No notice filters configured.</div>';
-    }
+    setupNotices(labelTokens, TodayFormatted);
+    noticeContainer.classList.remove("loading");
   }
   
   // Load Direqt Messages widget
@@ -408,7 +407,7 @@ async function renderMessagesWidget(messages: any[]) {
   
   if (messages.length === 0) {
     messagesContainer.innerHTML = `
-      <div class="dummynotice" style="text-align: center; padding: 24px; color: var(--text-muted, rgba(255,255,255,0.5));">
+      <div class="dummynotice" style="text-align: center; padding: 24px; color: var(--text-muted);">
         No unread messages.
       </div>
     `;
@@ -1764,7 +1763,7 @@ function processNotices(response: any, labelArray: string[]) {
   notices.forEach((notice: any) => {
     const shouldInclude =
       settingsState.mockNotices ||
-      labelArray.includes(JSON.stringify(notice.label));
+      noticeMatchesLabelFilter(notice, labelArray);
 
     if (shouldInclude) {
       const colour = processNoticeColor(notice.colour);
@@ -1772,6 +1771,14 @@ function processNotices(response: any, labelArray: string[]) {
       fragment.appendChild(noticeElement);
     }
   });
+
+  if (!fragment.childNodes.length) {
+    const dummyNotice = document.createElement("div");
+    dummyNotice.textContent = "No notices for today.";
+    dummyNotice.classList.add("dummynotice");
+    NoticeContainer.append(dummyNotice);
+    return;
+  }
 
   NoticeContainer.appendChild(fragment);
 }

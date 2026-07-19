@@ -4,6 +4,13 @@
 
   let widgetCleanup: (() => void) | undefined;
 
+  function timeGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning!";
+    if (hour < 17) return "Good afternoon!";
+    return "Good evening!";
+  }
+
   onMount(() => {
     void initTeachHomeWidgets().then((cleanup) => {
       widgetCleanup = cleanup;
@@ -16,7 +23,7 @@
 </script>
 
 <div class="home-container" id="home-container">
-  <h1 id="home-greeting" class="teach-home-greeting">BetterSEQTA+ Home</h1>
+  <h1 id="home-greeting" class="teach-home-greeting">{timeGreeting()}</h1>
 
   <div class="stats-summary" id="stats-summary"></div>
 
@@ -87,7 +94,7 @@
 
 <style>
   .teach-home-view-all {
-    color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+    color: var(--text-secondary);
     text-decoration: none;
     font-size: 14px;
     margin-right: 20px;
@@ -95,7 +102,7 @@
   }
 
   .teach-home-view-all:hover {
-    color: var(--text-primary);
+    color: var(--accent-bg);
   }
 
   .notices-header {
@@ -104,5 +111,16 @@
 
   .teach-home-notices-date {
     margin-right: 20px;
+    background: var(--background-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-family: Rubik, sans-serif;
+  }
+
+  .teach-home-greeting {
+    color: var(--text-primary);
+    font-family: Rubik, sans-serif;
   }
 </style>

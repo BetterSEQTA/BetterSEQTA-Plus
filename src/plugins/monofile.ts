@@ -29,6 +29,7 @@ import {
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
+import { getTeachPathSegment } from "@/seqta/utils/teachPath";
 import { BETTERSEQTA_HOME_ROUTE, setupRouteListener, TEACH_HOME_ROOT_ID } from "@/seqta/home/teach/mountTeachHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
@@ -198,7 +199,9 @@ async function LoadPageElements(): Promise<void> {
 
   const sublink: string | undefined = isSeqtaEngageExperience()
     ? getEngageRoutePage()
-    : window.location.href.split("/")[4];
+    : isSeqtaTeachExperience()
+      ? getTeachPathSegment()
+      : window.location.href.split("/")[4];
 
   if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
     engageHashListenerAttached = true;
@@ -320,6 +323,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
 
       finishLoad();
       break;
+    case "welcome":
     case "home":
     case "betterseqta-home":
       if (isSeqtaTeachExperience()) {
@@ -328,6 +332,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
           BETTERSEQTA_HOME_ROUTE,
         );
 
+        // SEQTA's Home workspace lands on /welcome — send users to BetterSEQTA home
         if (!isOnHomePage) {
           window.history.pushState({}, "", BETTERSEQTA_HOME_ROUTE);
           window.dispatchEvent(new PopStateEvent("popstate"));
@@ -341,7 +346,7 @@ async function handleSublink(sublink: string | undefined): Promise<void> {
         } else {
           verboseInfo("[BetterSEQTA+] Homepage already loaded");
         }
-      } else {
+      } else if (sublink !== "welcome") {
         window.location.replace(`${location.origin}/#?page=/home`);
         verboseInfo("[BetterSEQTA+] Started Init");
         if (settingsState.onoff) loadHomePage();
@@ -632,50 +637,43 @@ export function tryLoad() {
     })
     .catch(() => {});
 
+  const bootPageElements = (reason: string) => {
+    if (loadPageElementsCalled) return;
+    loadPageElementsCalled = true;
+    console.log(`[BetterSEQTA+] Calling LoadPageElements (${reason})`);
+    LoadPageElements().catch((err) => {
+      console.error("[BetterSEQTA+] Error loading page elements:", err);
+    });
+  };
+
+  // Teach has no Learn-style `.code` watermark — boot immediately when detected
+  if (isSeqtaTeachExperience()) {
+    bootPageElements("teach platform");
+    setupRouteListener();
+  }
+
   waitForElm(".code", true, 50)
     .then((elm: any) => {
-      if (!elm.innerText.includes("BetterSEQTA") && !loadPageElementsCalled) {
-        console.log(
-          "[BetterSEQTA+] .code element found, calling LoadPageElements",
-        );
-        loadPageElementsCalled = true;
-        LoadPageElements();
+      if (!elm.innerText.includes("BetterSEQTA")) {
+        bootPageElements(".code element");
       }
     })
     .catch(() => {
-      console.log(
-        "[BetterSEQTA+] .code element not found, checking if Teach platform...",
-      );
-      if (isSeqtaTeachExperience() && !loadPageElementsCalled) {
-        console.log(
-          "[BetterSEQTA+] Teach platform detected, calling LoadPageElements",
-        );
-        loadPageElementsCalled = true;
-        LoadPageElements().catch((err) => {
-          console.error("[BetterSEQTA+] Error loading page elements:", err);
-        });
+      if (isSeqtaTeachExperience()) {
+        bootPageElements("teach fallback after .code timeout");
       }
     });
 
   waitForElm(
-    "#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header",
+    "#main, .legacy-root, main, [class*='Chrome__content'], #root > div > main > header, [class*='Spine__Spine']",
     true,
     30,
   )
     .then(() => {
       console.log("[BetterSEQTA+] Main content element found");
-      const isTeach = isSeqtaTeachExperience();
-      if (isTeach && !loadPageElementsCalled) {
-        const codeElement = document.querySelector(".code");
-        if (!codeElement) {
-          console.log(
-            "[BetterSEQTA+] .code still not found, calling LoadPageElements from fallback",
-          );
-          loadPageElementsCalled = true;
-          LoadPageElements().catch((err) => {
-            console.error("[BetterSEQTA+] Error loading page elements:", err);
-          });
-        }
+      if (isSeqtaTeachExperience()) {
+        bootPageElements("teach main/spine ready");
+        setupRouteListener();
       }
       finishLoadOnce();
     })

@@ -13,10 +13,19 @@ let isMonitoring = false;
 let lastFormContainer: Element | null = null;
 
 /**
- * Checks if we're currently on the SIP/pastoral care page
+ * Checks if we're currently on the SIP / pastoral / student summary surface
  */
 function isOnSIPPage(): boolean {
-  return !!document.querySelector('[class*="Pastoral__container"]');
+  const path = window.location.pathname.toLowerCase();
+  return (
+    !!document.querySelector('[class*="Pastoral__container"]') ||
+    !!document.querySelector('[class*="StudentSummary"]') ||
+    path.includes("/studentsummary") ||
+    path.includes("/healthcentre") ||
+    path.includes("/studentgoals") ||
+    path.includes("/studentplans") ||
+    path.includes("/counterbullying")
+  );
 }
 
 /**
