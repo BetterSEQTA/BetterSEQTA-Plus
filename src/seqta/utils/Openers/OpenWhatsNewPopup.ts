@@ -42,7 +42,8 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
 
-      <h1>3.7.3 – Bugfix Bundle</h1>
+      <h1>3.7.3 – Timetable sync to Calendar & Bugfix Bundle</h1>
+      <li>Added an option in the Timetable to sync to Google Calendar and Outlook Calendar</li>
       <li>Fixed dropdown contrast and readability in settings and across SEQTA pages.</li>
       <li>Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.</li>
       <li>Fixed timetable subject colour picker not reopening after closing (#221).</li>
