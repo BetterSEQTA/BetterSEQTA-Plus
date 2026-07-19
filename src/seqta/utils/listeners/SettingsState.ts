@@ -1,6 +1,45 @@
 import browser from "webextension-polyfill";
+import { SYNCABLE_PLUGIN_SETTING_DEFAULTS } from "@/plugins/syncablePluginDefaults";
+import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import type { SettingsState } from "@/types/storage";
 import type { Subscriber, Unsubscriber } from "svelte/store";
+
+const PLUGIN_SETTINGS_KEYS = Object.keys(SYNCABLE_PLUGIN_SETTING_DEFAULTS).map(
+  (id) => `plugin.${id}.settings`,
+);
+
+const PLUGIN_STORAGE_KEYS = [
+  "plugin.assessments-average.storage.assessments",
+  "plugin.assessments-average.storage.weightings",
+  "plugin.assessments-average.storage.weightingOverrides",
+  "plugin.notificationCollector.storage.lastNotificationCount",
+  "plugin.notificationCollector.storage.lastCheckedTime",
+  "plugin.notificationCollector.storage.consecutiveErrors",
+  "plugin.notificationCollector.storage.archivesByUser",
+  "plugin.timetableEdit.storage.timetableOverrides",
+  "plugin.timetableEdit.storage.timetableOverridesBySubject",
+  "plugin.messageFolders.storage.folders",
+  "plugin.messageFolders.storage.messageAssignments",
+] as const;
+
+const SETTINGS_STORAGE_KEYS = [
+  ...new Set([
+    ...Object.keys(getDefaultSettingsState()),
+    "justupdated",
+    "devMode",
+    "verboseLogging",
+    "devGhReleaseVersionOverride",
+    "lastSeenNightlyPublishedAt",
+    "originalDarkMode",
+    "mockNotices",
+    "hideSensitiveContent",
+    "privacyStatementLastUpdated",
+    "themeOfTheMonthDismissedMonth",
+    "themeOfTheMonthLastSeenId",
+    ...PLUGIN_SETTINGS_KEYS,
+    ...PLUGIN_STORAGE_KEYS,
+  ]),
+];
 
 /** Auth/session keys live in `chrome.storage.local` only — not on the settingsState proxy. */
 const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
@@ -163,7 +202,7 @@ class StorageManager {
   }
 
   private async loadFromStorage(): Promise<void> {
-    const result = await browser.storage.local.get();
+    const result = await browser.storage.local.get(SETTINGS_STORAGE_KEYS);
     Object.entries(result).forEach(([key, value]) => {
       if (isExcludedSettingsKey(key)) return;
       Reflect.set(this.data, key, value);

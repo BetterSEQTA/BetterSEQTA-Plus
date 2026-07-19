@@ -39,7 +39,7 @@ import {
   clearGoogleCalendarState,
   readGoogleCalendarState,
   writeGoogleCalendarState,
-} from "@/seqta/utils/googleCalendar/storage";
+} from "@/seqta/utils/calendarSync/providerStorage";
 import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarProvisioning";
 import type {
   GoogleCalendarStatus,
@@ -49,8 +49,8 @@ import {
   clearOutlookCalendarState,
   readOutlookCalendarState,
   writeOutlookCalendarState,
-} from "@/seqta/utils/outlookCalendar/storage";
-import type { OutlookCalendarStatus } from "@/seqta/utils/outlookCalendar/storage";
+  type OutlookCalendarStatus,
+} from "@/seqta/utils/calendarSync/providerStorage";
 import browser from "webextension-polyfill";
 
 const WEEKLY_PERIOD_MINUTES = 7 * 24 * 60;

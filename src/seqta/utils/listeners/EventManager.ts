@@ -101,12 +101,9 @@ class EventManager {
 
     if (selector) {
       elements = Array.from(root.querySelectorAll(selector));
-      if (selector && root.matches && root.matches(selector)) {
-        elements.unshift(root);
-      }
+      if (root.matches?.(selector)) elements.unshift(root);
     } else {
-      elements = Array.from(root.getElementsByTagName("*"));
-      elements.unshift(root);
+      elements = [root];
     }
 
     for (let i = 0; i < elements.length; i += this.chunkSize) {

@@ -3,9 +3,8 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
 import { ensureFontLoaded } from "@/seqta/ui/fonts/Manager";
 import { getFontPreset } from "@/seqta/ui/fonts/presets";
-import type { GoogleCalendarSyncProgress } from "@/seqta/utils/googleCalendar/types";
-import CalendarSyncControl from "./CalendarSyncControl.svelte";
 import { registerCalendarContentHandlers } from "@/seqta/utils/googleCalendar/calendarSyncListener";
+import type { GoogleCalendarSyncProgress } from "@/seqta/utils/googleCalendar/types";
 import hostStyles from "./calendarSyncHost.css?inline";
 
 export type CalendarProvider = "google" | "outlook";
@@ -164,6 +163,7 @@ export async function mountGoogleCalendarButton(): Promise<void> {
   syncCalendarSyncTheme(mountRoot);
   controls.appendChild(mountRoot);
 
+  const { default: CalendarSyncControl } = await import("./CalendarSyncControl.svelte");
   currentApp = mount(CalendarSyncControl, { target: mountRoot });
 }
 

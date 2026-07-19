@@ -20,6 +20,7 @@ function createSEQTAAPI(): SEQTAAPI {
       return eventManager.register(
         `${selector}Added`,
         {
+          selector,
           customCheck: (element) => element.matches(selector),
         },
         callback,

@@ -11,6 +11,7 @@ import { MessageHandler } from "@/seqta/utils/listeners/MessageListener";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import debounce from "@/seqta/utils/debounce";
 
 // UI and theme management
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
@@ -29,7 +30,10 @@ import {
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
-import { updateTimetableTimes } from "@/seqta/utils/updateTimetableTimes";
+import {
+  syncTimetableUrlMonitoring,
+  updateTimetableTimes,
+} from "@/seqta/utils/updateTimetableTimes";
 import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 
 // JSON content
@@ -123,7 +127,7 @@ async function updateIframesWithDarkMode(): Promise<void> {
   eventManager.register(
     "iframeAdded",
     {
-      elementType: "iframe",
+      selector: "iframe",
       customCheck: (element: Element) =>
         !element.classList.contains("iframecss"),
     },
@@ -161,8 +165,8 @@ function applyDarkModeToIframe(
   }
 
   const head = iframeDocument.head;
-  if (head && !head.innerHTML.includes("iframecss")) {
-    head.innerHTML += cssLink.outerHTML;
+  if (head && !head.querySelector(".iframecss")) {
+    head.appendChild(cssLink.cloneNode(true));
   }
 }
 
@@ -197,71 +201,26 @@ async function LoadPageElements(): Promise<void> {
     });
   }
 
-  eventManager.register(
-    "messagesAdded",
-    {
-      elementType: "div",
-      className: "messages",
-    },
-    handleMessages,
-  );
+  eventManager.register("messagesAdded", { selector: "div.messages" }, handleMessages);
 
-  eventManager.register(
-    "noticesAdded",
-    {
-      elementType: "div",
-      className: "notices",
-    },
-    CheckNoticeTextColour,
-  );
+  eventManager.register("noticesAdded", { selector: "div.notices" }, CheckNoticeTextColour);
 
-  eventManager.register(
-    "dashboardAdded",
-    {
-      elementType: "div",
-      className: "dashboard",
-    },
-    handleDashboard,
-  );
+  eventManager.register("dashboardAdded", { selector: "div.dashboard" }, handleDashboard);
 
-  eventManager.register(
-    "documentsAdded",
-    {
-      elementType: "div",
-      className: "documents",
-    },
-    handleDocuments,
-  );
+  eventManager.register("documentsAdded", { selector: "div.documents" }, handleDocuments);
 
-  eventManager.register(
-    "reportsAdded",
-    {
-      elementType: "div",
-      className: "reports",
-    },
-    handleReports,
-  );
+  eventManager.register("reportsAdded", { selector: "div.reports" }, handleReports);
 
   eventManager.register(
     "timetableAdded",
-    {
-      elementType: "div",
-      className: "timetablepage",
-    },
+    { selector: "div.timetablepage" },
     async () => {
       attachTimetableColorisRecovery();
       await updateTimetableTimes();
     },
   );
 
-  eventManager.register(
-    "noticesAdded",
-    {
-      elementType: "div",
-      className: "notice",
-    },
-    handleNotices,
-  );
+  eventManager.register("noticesAdded", { selector: "div.notice" }, handleNotices);
 
   RegisterClickListeners();
 
@@ -480,37 +439,42 @@ async function handleReports(node: Element): Promise<void> {
   }
 }
 
+const noticeContainers = new Set<Element>();
+let noticeColourObserver: MutationObserver | null = null;
+
+const adjustNoticeColor = (node: Element) => {
+  const hex = (node as HTMLElement).style.cssText.split(" ")[1];
+  if (!hex || !settingsState.DarkMode || GetThresholdOfColor(hex.slice(0, -1)) >= 100) return;
+  (node as HTMLElement).style.cssText = "--color: undefined;";
+};
+
+const scanNotices = (el: Element) => {
+  if (el.matches("div.notice")) adjustNoticeColor(el);
+  el.querySelectorAll("div.notice").forEach(adjustNoticeColor);
+};
+
+const scanAddedNotices = debounce((mutations: MutationRecord[]) => {
+  for (const m of mutations)
+    for (const node of m.addedNodes)
+      if (node instanceof Element) scanNotices(node);
+}, 50);
+
 function CheckNoticeTextColour(notice: Element) {
-  const adjustNoticeColor = (node: Element) => {
-    const hex = (node as HTMLElement).style.cssText.split(" ")[1];
-    if (hex) {
-      const hex1 = hex.slice(0, -1);
-      const threshold = GetThresholdOfColor(hex1);
-      if (settingsState.DarkMode && threshold < 100) {
-        (node as HTMLElement).style.cssText = "--color: undefined;";
-      }
-    }
-  };
-
-  for (const node of notice.querySelectorAll("div.notice")) {
-    adjustNoticeColor(node);
+  scanNotices(notice);
+  if (noticeContainers.has(notice)) return;
+  if (!noticeColourObserver) {
+    noticeColourObserver = new MutationObserver((mutations) => {
+      scanAddedNotices(mutations);
+      for (const m of mutations)
+        for (const node of m.removedNodes)
+          if (node instanceof Element && noticeContainers.has(node)) {
+            noticeColourObserver!.unobserve(node);
+            noticeContainers.delete(node);
+          }
+    });
   }
-
-  const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      for (const added of mutation.addedNodes) {
-        if (!(added instanceof Element)) continue;
-        if (added.matches("div.notice")) {
-          adjustNoticeColor(added);
-        }
-        for (const node of added.querySelectorAll("div.notice")) {
-          adjustNoticeColor(node);
-        }
-      }
-    }
-  });
-
-  observer.observe(notice, { childList: true, subtree: true });
+  noticeContainers.add(notice);
+  noticeColourObserver.observe(notice, { childList: true, subtree: true });
 }
 
 function watchForEngageLogin() {
@@ -726,12 +690,14 @@ export function init() {
     loading();
     InjectCustomIcons();
     applyMenuItemVisibility();
+    syncTimetableUrlMonitoring();
     tryLoad();
 
     // Auto-focus WISP direct online submission editor when pane opens
     eventManager.register(
       "wispassessmentAdded",
       {
+        selector: ".uiSlidePane, .wispassessment",
         customCheck: (el) =>
           el.classList.contains("wispassessment") ||
           el.querySelector(".wispassessment") !== null,

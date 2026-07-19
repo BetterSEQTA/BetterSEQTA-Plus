@@ -177,6 +177,7 @@ export async function observeMenuItemPosition() {
   eventManager.register(
     "menuList",
     {
+      selector: "li.item, section.item",
       parentElement: document.querySelector("#menu")!.firstChild as Element,
     },
     (element: Element) => {

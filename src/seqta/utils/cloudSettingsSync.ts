@@ -1,5 +1,5 @@
 import browser from "webextension-polyfill";
-import isEqual from "lodash/isEqual";
+import isEqual from "@/seqta/utils/isEqual";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;

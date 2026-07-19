@@ -1,6 +1,6 @@
 import SearchBar from "../components/SearchBar.svelte";
 import { unmount } from "svelte";
-import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
+import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import browser from "webextension-polyfill";
 
@@ -253,17 +253,18 @@ export async function mountSearchBar(
   const searchRootShadow = searchRoot.attachShadow({ mode: "open" });
 
   searchButton.addEventListener("click", () => {
+    warmUpVectorSearchOnInteraction();
     // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen(true);
   });
 
   try {
-    const { default: renderSvelte } = await import("@/interface/renderInShadow");
+    const { default: renderSvelte } = await import("@/interface/main");
     appRef.current = renderSvelte(SearchBar, searchRootShadow, {
       transparencyEffects: api.settings.transparencyEffects,
       showRecentFirst: api.settings.showRecentFirst,
       searchHotkey: currentHotkey,
-    });
+    }, "content");
   } catch (error) {
     console.error("Error rendering Svelte component:", error);
   }
@@ -314,8 +315,10 @@ export function cleanupSearchBar(appRef: {
     searchRoot.remove();
   }
 
-  // Clean up vector worker
-  VectorWorkerManager.getInstance().terminate();
+  // Clean up vector worker when it was started (indexing or search interaction)
+  void import("../indexing/worker/vectorWorkerManager").then(({ VectorWorkerManager }) => {
+    VectorWorkerManager.getInstance().terminate();
+  }).catch(() => {});
 
   if (appRef.storageChangeHandler) {
     browser.storage.onChanged.removeListener(appRef.storageChangeHandler);

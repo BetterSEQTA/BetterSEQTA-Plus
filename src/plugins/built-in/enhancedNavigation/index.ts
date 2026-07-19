@@ -304,7 +304,6 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
     injectStyles();
 
     window.addEventListener("resize", positionArrows);
-    window.addEventListener("scroll", positionArrows, true);
 
     const navObservers: MutationObserver[] = [];
     const courseObservers: MutationObserver[] = [];
@@ -355,7 +354,6 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
 
     return () => {
       window.removeEventListener("resize", positionArrows);
-      window.removeEventListener("scroll", positionArrows, true);
       courseMount.unregister();
       navObservers.forEach((observer) => observer.disconnect());
       courseObservers.forEach((observer) => observer.disconnect());

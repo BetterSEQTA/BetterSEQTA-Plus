@@ -5,10 +5,8 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
 import { installResetIndexMessageListener } from "../indexing/resetIndexes";
 import { isIndexingPaused } from "../indexing/indexingPause";
-import { initVectorSearch } from "../search/vector/vectorSearch";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
-import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
 import { checkAndHandleUpdate } from "../utils/versionCheck";
 import {
   getStoredPassiveItems,
@@ -68,20 +66,10 @@ const globalSearchPlugin: Plugin<{}> = {
       console.error("Failed to create IndexedDB:", error);
     }
 
-    initVectorSearch();
-
-    setTimeout(async () => {
-      try {
-        const { isVectorSearchSupported } = await import("../utils/browserDetection");
-        if (isVectorSearchSupported()) VectorWorkerManager.getInstance();
-      } catch (error) {
-        console.warn("[Global Search] Vector worker warm-up failed:", error);
-      }
-    }, 1000);
-
     // @ts-ignore
     window.globalSearchDebug = {
-      resetWorker: () => VectorWorkerManager.getInstance().resetWorker(),
+      resetWorker: async () =>
+        (await import("../indexing/worker/vectorWorkerManager")).VectorWorkerManager.getInstance().resetWorker(),
       passiveItems: getStoredPassiveItems,
       runSelfTests: async () =>
         (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),

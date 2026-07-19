@@ -1,90 +1,16 @@
 import stringToHTML from "../stringToHTML";
-import { openPopup } from "./PopupManager";
+import kofi from "@/resources/kofi.png?base64";
 
-export function OpenMinecraftServerPopup() {
-  if (!document.querySelector('link[href*="minecraftia"]')) {
-    const fontLink = document.createElement("link");
-    fontLink.href = "https://fonts.cdnfonts.com/css/minecraftia";
-    fontLink.rel = "stylesheet";
-    document.head.appendChild(fontLink);
-  }
+export function createPopupSocialFooter(options?: { kofi?: boolean }): HTMLElement {
+  const kofiBlock = options?.kofi
+    ? `<div>
+          <a href="https://ko-fi.com/sethburkart" target="_blank" rel="noopener noreferrer" style="background: none !important; margin:0;margin-left:6px;padding:0; display: flex; align-items: center;">
+           <img height="25" style="border:0px; height:25px; margin-right: -6px;" src="${kofi}" border="0" alt="Buy Me a Coffee at ko-fi.com" />
+          </a>
+        </div>`
+    : "";
 
-  const header = stringToHTML(
-    /* html */
-    `<div class="whatsnewHeader">
-        <h1>Minecraft Server</h1>
-        <p>The official BetterSEQTA+ Minecraft Server</p>
-      </div>`,
-  ).firstChild as HTMLElement;
-
-  const imageContainer = document.createElement("div");
-  imageContainer.classList.add("whatsnewImgContainer");
-
-  const video = document.createElement("video");
-  video.style.aspectRatio = "16/9";
-  video.style.background = "black";
-
-  const source = document.createElement("source");
-  source.setAttribute(
-    "src",
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/server-video.mp4",
-  );
-
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.appendChild(source);
-  video.classList.add("whatsnewImg");
-  imageContainer.appendChild(video);
-
-  const text = stringToHTML(/* html */ `
-  <div class="whatsnewTextContainer" style="height: 50%; overflow-y: hidden;">
-    <h1>Join our community in Minecraft!</h1>
-    <p style="margin-left: 0;">Join the official BetterSEQTA+ Minecraft Server community now!</p>
-
-    <h1>Server Features</h1>
-    <ul>
-      <li>SMP as our first release gamemode</li>
-      <li>Community events and competitions</li>
-      <li>Custom world generation</li>
-      <li>Shop system with buying and selling</li>
-      <li>Regular updates and maintenance</li>
-      <li>The End dimension will be enabled during an upcoming live event</li>
-    </ul>
-
-<p style="
-  font-family: 'Minecraftia', sans-serif;
-  color: white;
-  font-weight: bold;
-  font-size: 34px;
-  text-align: center;
-  margin-top: 0.5em;
-  margin-bottom: 0.1em;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;">
-  mc.betterseqta.org
-</p>
-<p style="
-  font-family: 'Minecraftia', sans-serif;
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 0;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;">
-  Version: 1.21.4
-</p>
-  </div>
-`).firstChild as HTMLElement;
-
-  const footer = stringToHTML(/* html */ `
+  return stringToHTML(/* html */ `
       <div class="whatsnewFooter">
         <div>
          Resources and Feedback:
@@ -112,13 +38,7 @@ export function OpenMinecraftServerPopup() {
             </svg>
           </a>
         </div>
-        <div>
-        </div>
+        ${kofiBlock}
       </div>
     `).firstChild as HTMLElement;
-
-  openPopup({
-    header,
-    content: [imageContainer, text, footer],
-  });
 }

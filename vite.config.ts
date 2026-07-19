@@ -10,8 +10,6 @@ import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 import { extensionChunkUrls } from "./lib/extensionChunkUrls";
 
-import million from "million/compiler";
-
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 import { chrome } from "./src/manifests/chrome";
@@ -57,9 +55,6 @@ function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
 
 const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
 //const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
-/** Million's compiler can emit `new Function()`, which Firefox extension pages block (strict CSP, no unsafe-eval). */
-const useMillion = mode.toLowerCase() !== "firefox";
-
 const repoRoot = __dirname;
 
 export default defineConfig(({ command, mode: viteMode }) => {
@@ -89,19 +84,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
     extensionChunkUrls(),
     base64Loader,
     InlineWorkerPlugin(),
-    ...(useMillion && command !== "build"
-      ? [
-          million.vite({
-            auto: true,
-            filter: {
-              exclude: [
-                "**/*.svelte",
-                "node_modules/**/*.{jsx,tsx,ts,js,mjs,cjs}",
-              ],
-            },
-          }),
-        ]
-      : []),
     crx({
       manifest: withDevManifestCsp(
         targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??

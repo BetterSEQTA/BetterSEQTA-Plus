@@ -5,8 +5,10 @@ import {
 } from "@/seqta/utils/calendarSync/settings";
 import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
 import { runGoogleCalendarSync, runOutlookCalendarSync } from "@/seqta/utils/calendarSync/syncRunner";
-import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
-import { readOutlookCalendarState } from "@/seqta/utils/outlookCalendar/storage";
+import {
+  readGoogleCalendarState,
+  readOutlookCalendarState,
+} from "@/seqta/utils/calendarSync/providerStorage";
 import type { GoogleCalendarSyncResult } from "@/seqta/utils/googleCalendar/types";
 
 let listenerRegistered = false;

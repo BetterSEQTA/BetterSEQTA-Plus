@@ -2,19 +2,17 @@ import { PluginManager } from "./core/manager";
 
 // Lightweight plugins (load immediately)
 import timetablePlugin from "./built-in/timetable";
-import timetableEditPlugin from "./built-in/timetableEdit";
 import notificationCollectorPlugin from "./built-in/notificationCollector";
 import themesPlugin from "./built-in/themes";
 import animatedBackgroundPlugin from "./built-in/animatedBackground";
-import assessmentsAveragePlugin from "./built-in/assessmentsAverage";
 import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
-import messageFoldersPlugin from "./built-in/messageFolders";
-import enhancedNavigationPlugin from "./built-in/enhancedNavigation";
-//import testPlugin from './built-in/test';
 
-// Heavy plugins (lazy-loaded only when enabled)
+import assessmentsAveragePluginLazy from "./built-in/assessmentsAverage/lazy";
+import timetableEditPluginLazy from "./built-in/timetableEdit/lazy";
+import messageFoldersPluginLazy from "./built-in/messageFolders/lazy";
+import enhancedNavigationPluginLazy from "./built-in/enhancedNavigation/lazy";
 import globalSearchPluginLazy from "./built-in/globalSearch/lazy";
 import gradeAnalyticsPluginLazy from "./built-in/gradeAnalytics/lazy";
 
@@ -24,18 +22,16 @@ const pluginManager = PluginManager.getInstance();
 // Register built-in plugins
 pluginManager.registerPlugin(themesPlugin);
 pluginManager.registerPlugin(animatedBackgroundPlugin);
-pluginManager.registerPlugin(assessmentsAveragePlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);
 pluginManager.registerPlugin(timetablePlugin);
-pluginManager.registerPlugin(timetableEditPlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
-pluginManager.registerPlugin(messageFoldersPlugin);
-pluginManager.registerPlugin(enhancedNavigationPlugin);
-//pluginManager.registerPlugin(testPlugin);
 
-// Register heavy plugins with lazy loading
+pluginManager.registerPlugin(assessmentsAveragePluginLazy);
+pluginManager.registerPlugin(timetableEditPluginLazy);
+pluginManager.registerPlugin(messageFoldersPluginLazy);
+pluginManager.registerPlugin(enhancedNavigationPluginLazy);
 pluginManager.registerPlugin(globalSearchPluginLazy);
 pluginManager.registerPlugin(gradeAnalyticsPluginLazy);
 

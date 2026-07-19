@@ -15,8 +15,6 @@ import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetTe
 
 export { extractWeightFromCoversheetText };
 
-ensurePdfjsWorker();
-
 export const WEIGHTING_SCHEMA_VERSION = 1;
 
 export interface WeightingEntry {
@@ -655,6 +653,7 @@ export async function extractPDFText(url: string): Promise<string> {
       throw new Error("PDF response is empty");
     }
 
+    ensurePdfjsWorker();
     const pdf = await pdfjs.getDocument({
       data: arrayBuffer,
       useSystemFonts: true,

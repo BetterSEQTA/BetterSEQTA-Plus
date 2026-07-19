@@ -473,5 +473,6 @@ export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }
   if (autoSyncInitialized) return;
   autoSyncInitialized = true;
   browser.storage.onChanged.addListener(onStorageChanged);
+  void runCloudSettingsPoll();
 }
 

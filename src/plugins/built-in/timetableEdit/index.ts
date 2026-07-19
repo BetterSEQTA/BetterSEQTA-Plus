@@ -1,6 +1,5 @@
 import type { Plugin } from "../../core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import styles from "./styles.css?inline";
 
 interface TimetableEntryData {
   ci: number;
@@ -127,20 +126,8 @@ function showEditModal(
   roomInput?.focus();
 }
 
-const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
-  id: "timetableEdit",
-  name: "Edit Rooms & Teachers",
-  description: "Edit room and teacher names in timetable classes",
-  version: "1.0.0",
-  settings: {},
-  disableToggle: true,
-  defaultEnabled: true,
-
-  run: async (api) => {
-    const styleEl = document.createElement("style");
-    styleEl.textContent = styles;
-    document.head.appendChild(styleEl);
-
+const timetableEditPlugin = {
+  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
     await api.storage.loaded;
 
     let observer: MutationObserver | null = null;
@@ -514,7 +501,6 @@ const timetableEditPlugin: Plugin<{}, TimetableStorage> = {
       observer?.disconnect();
       quickbarObserver?.disconnect();
       if (quickbarSyncTimer !== null) clearTimeout(quickbarSyncTimer);
-      styleEl.remove();
       document.querySelectorAll("[data-timetable-edit-processed]").forEach((el) => {
         el.removeAttribute("data-timetable-edit-processed");
       });

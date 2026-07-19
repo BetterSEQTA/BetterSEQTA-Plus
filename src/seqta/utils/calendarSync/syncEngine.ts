@@ -37,7 +37,7 @@ import { ensureGoogleAppCalendar } from "@/seqta/utils/googleCalendar/calendarPr
 import {
   readGoogleCalendarState,
   writeGoogleCalendarState,
-} from "@/seqta/utils/googleCalendar/storage";
+} from "@/seqta/utils/calendarSync/providerStorage";
 import {
   syncWindowRange,
   trailingWeekRange,
@@ -54,7 +54,7 @@ import type {
 import {
   readOutlookCalendarState,
   writeOutlookCalendarState,
-} from "@/seqta/utils/outlookCalendar/storage";
+} from "@/seqta/utils/calendarSync/providerStorage";
 import { verboseLog } from "@/utils/verboseLog";
 
 type CalendarStoredState = {

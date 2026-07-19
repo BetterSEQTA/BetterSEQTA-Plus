@@ -11,9 +11,9 @@ jest.mock("@/utils/verboseLog", () => ({
   verboseLog: jest.fn(),
 }));
 
-jest.mock("@/seqta/utils/googleCalendar/storage", () => {
-  const actual = jest.requireActual<typeof import("@/seqta/utils/googleCalendar/storage")>(
-    "@/seqta/utils/googleCalendar/storage",
+jest.mock("@/seqta/utils/calendarSync/providerStorage", () => {
+  const actual = jest.requireActual<typeof import("@/seqta/utils/calendarSync/providerStorage")>(
+    "@/seqta/utils/calendarSync/providerStorage",
   );
   return {
     ...actual,
@@ -32,7 +32,7 @@ jest.mock("@/seqta/utils/calendarSync/remoteEvents", () => ({
   listGoogleSyncedEvents: jest.fn(async () => []),
 }));
 
-import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
+import { readGoogleCalendarState } from "@/seqta/utils/calendarSync/providerStorage";
 import {
   deleteGoogleCalendarEvent,
   listGoogleSyncedEvents,

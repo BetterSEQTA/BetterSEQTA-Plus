@@ -8,6 +8,13 @@ import { verboseDebug } from "@/utils/verboseLog";
 let vectorIndex: EmbeddingIndex | null = null;
 let initializationAttempted = false;
 let initializationFailed = false;
+let interactionWarmupStarted = false;
+
+export function warmUpVectorSearchOnInteraction(): void {
+  if (interactionWarmupStarted) return;
+  interactionWarmupStarted = true;
+  void initVectorSearch();
+}
 
 export async function initVectorSearch() {
   if (initializationFailed || !isVectorSearchSupported()) {

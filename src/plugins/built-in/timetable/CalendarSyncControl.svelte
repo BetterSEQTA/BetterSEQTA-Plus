@@ -2,24 +2,30 @@
   import { onMount } from "svelte";
   import type { Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import browser from "webextension-polyfill";
   import {
     GOOGLE_CALENDAR_SYNC_WEEKS_MAX,
     GOOGLE_CALENDAR_SYNC_WEEKS_MIN,
   } from "@/config/googleCalendar";
   import { maybeRunDueWeeklySync } from "@/seqta/utils/googleCalendar/calendarSyncListener";
+  import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
   import {
     deleteSyncedEventsFromGoogleCalendar,
     deleteSyncedEventsFromOutlookCalendar,
   } from "@/seqta/utils/calendarSync/syncEngine";
-  import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
-  import { runGoogleCalendarSync, runOutlookCalendarSync } from "@/seqta/utils/calendarSync/syncRunner";
+  import {
+    connectCalendarProvider,
+    disconnectCalendarProvider,
+    fetchCalendarStatuses,
+    getCalendarAccessToken,
+    runGoogleCalendarSync,
+    runOutlookCalendarSync,
+    updateGoogleSyncSettings,
+  } from "@/seqta/utils/calendarSync/syncRunner";
   import type {
     GoogleCalendarStatus,
     GoogleCalendarSyncProgress,
-    GoogleCalendarSyncResult,
   } from "@/seqta/utils/googleCalendar/types";
-  import type { OutlookCalendarStatus } from "@/seqta/utils/outlookCalendar/storage";
+  import type { OutlookCalendarStatus } from "@/seqta/utils/calendarSync/providerStorage";
   import OutlookCalendarIcon from "./OutlookCalendarIcon.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import {
@@ -31,10 +37,11 @@
     syncProgressPercent,
     type CalendarProvider,
   } from "./calendarSyncUi";
-  type BusyPhase = "connect" | "sync" | "delete" | "disconnect" | null;
-  type BusyState = { provider: CalendarProvider; phase: BusyPhase } | null;
+
   type ProviderStatus = { configured: boolean; connected: boolean; lastSyncAt?: number };
 
+  type BusyPhase = "connect" | "sync" | "delete" | "disconnect" | null;
+  type BusyState = { provider: CalendarProvider; phase: BusyPhase } | null;
   function setProviderStatus(provider: CalendarProvider, patch: Partial<ProviderStatus>) {
     if (provider === "google") googleStatus = { ...googleStatus, ...patch };
     else outlookStatus = { ...outlookStatus, ...patch };
@@ -128,28 +135,11 @@
   }
 
   async function refreshStatus() {
-    const [google, outlook] = await Promise.all([
-      browser.runtime.sendMessage({ type: "googleCalendarStatus" }) as Promise<GoogleCalendarStatus>,
-      browser.runtime.sendMessage({ type: "outlookCalendarStatus" }) as Promise<OutlookCalendarStatus>,
-    ]);
+    const { google, outlook } = await fetchCalendarStatuses();
     googleStatus = google;
     outlookStatus = outlook;
     syncWeeksAhead = google.syncWeeksAhead ?? 12;
     autoSyncWeekly = google.autoSyncWeekly !== false;
-  }
-
-  async function getAccessToken(provider: CalendarProvider): Promise<string> {
-    const messageType =
-      provider === "google" ? "googleCalendarGetAccessToken" : "outlookCalendarGetAccessToken";
-    const res = (await browser.runtime.sendMessage({ type: messageType })) as {
-      success?: boolean;
-      accessToken?: string;
-      error?: string;
-    };
-    if (!res?.success || !res.accessToken) {
-      throw new Error(res?.error ?? "Could not get calendar access token.");
-    }
-    return res.accessToken;
   }
 
   function handleSyncProgress(progress: GoogleCalendarSyncProgress) {
@@ -160,10 +150,7 @@
     syncWeeksAhead?: number;
     autoSyncWeekly?: boolean;
   }) {
-    const result = (await browser.runtime.sendMessage({
-      type: "googleCalendarUpdateSyncSettings",
-      ...patch,
-    })) as GoogleCalendarStatus & { success?: boolean };
+    const result = await updateGoogleSyncSettings(patch);
     if (result.syncWeeksAhead != null) syncWeeksAhead = result.syncWeeksAhead;
     if (result.autoSyncWeekly != null) autoSyncWeekly = result.autoSyncWeekly;
     googleStatus = { ...googleStatus, ...result };
@@ -174,12 +161,6 @@
     mode: "full" | "incremental" = "full",
   ): Promise<boolean> {
     const run = provider === "google" ? runGoogleCalendarSync : runOutlookCalendarSync;
-    const format = (result: GoogleCalendarSyncResult) =>
-      formatLessonSyncResultMessage(
-        result,
-        `${calendarProviderLabel(provider)} Calendar`,
-      );
-
     const result = await run({ mode, onProgress: handleSyncProgress });
     syncProgress = null;
 
@@ -193,7 +174,9 @@
       lastSyncAt: result.lastSyncAt ?? providerStatus(provider).lastSyncAt,
     });
 
-    showToastMessage(format(result));
+    showToastMessage(
+      formatLessonSyncResultMessage(result, `${calendarProviderLabel(provider)} Calendar`),
+    );
     return true;
   }
 
@@ -202,12 +185,8 @@
     if (!status.configured || isBusy) return;
     menuOpen = false;
     busy = { provider, phase: "connect" };
-    const connectType =
-      provider === "google" ? "googleCalendarConnect" : "outlookCalendarConnect";
     try {
-      const result = (await browser.runtime.sendMessage({
-        type: connectType,
-      })) as GoogleCalendarSyncResult;
+      const result = await connectCalendarProvider(provider);
       if (!result.success) {
         showToastMessage(
           result.error ?? `Could not connect to ${calendarProviderLabel(provider)} Calendar.`,
@@ -225,7 +204,6 @@
       busy = null;
     }
   }
-
   async function syncProvider(provider: CalendarProvider) {
     const status = providerStatus(provider);
     if (!status.configured || isBusy) return;
@@ -263,7 +241,7 @@
         provider === "google"
           ? deleteSyncedEventsFromGoogleCalendar
           : deleteSyncedEventsFromOutlookCalendar;
-      const result = await deleteFn(location.origin, () => getAccessToken(provider), {
+      const result = await deleteFn(location.origin, () => getCalendarAccessToken(provider), {
         onProgress: handleSyncProgress,
       });
 
@@ -275,11 +253,11 @@
       const removed = result.deleted ?? 0;
       modalProvider = null;
       const label = calendarProviderLabel(provider);
-      if (removed === 0) {
-        showToastMessage("No synced events to remove.");
-      } else {
-        showToastMessage(`Removed ${removed} event${removed === 1 ? "" : "s"} from ${label} Calendar.`);
-      }
+      showToastMessage(
+        removed === 0
+          ? "No synced events to remove."
+          : `Removed ${removed} event${removed === 1 ? "" : "s"} from ${label} Calendar.`,
+      );
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Remove failed.", true);
     } finally {
@@ -304,13 +282,9 @@
     if (isBusy || !modalProvider) return;
     const provider = modalProvider;
     busy = { provider, phase: "disconnect" };
-    const disconnectType =
-      provider === "google" ? "googleCalendarDisconnect" : "outlookCalendarDisconnect";
     const label = calendarProviderLabel(provider);
     try {
-      const result = (await browser.runtime.sendMessage({
-        type: disconnectType,
-      })) as { success?: boolean };
+      const result = await disconnectCalendarProvider(provider);
       if (!result?.success) {
         showToastMessage(`Could not disconnect ${label} Calendar.`, true);
         return;

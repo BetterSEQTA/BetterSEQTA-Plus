@@ -207,15 +207,11 @@
   }
 
   if (!tryPatch()) {
-    var interval = setInterval(function () {
-      if (tryPatch()) {
-        clearInterval(interval);
-      } else if (window.msg) {
-        neutralizeBrokenListeners(window.msg);
-      }
-    }, 25);
-    setTimeout(function () {
-      clearInterval(interval);
-    }, 120000);
+    var delay = 25, waited = 0;
+    (function poll() {
+      if (tryPatch() || (waited += delay) >= 120000) return;
+      if (window.msg) neutralizeBrokenListeners(window.msg);
+      setTimeout(poll, delay = Math.min(delay * 2, 2000));
+    })();
   }
 })();

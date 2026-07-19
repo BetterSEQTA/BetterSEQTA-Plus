@@ -1,18 +1,75 @@
 import browser from "webextension-polyfill";
 import { fetchTimetableForSync, fetchTimetableLessons } from "@/seqta/utils/googleCalendar/fetchTimetable";
 import { trailingWeekRange } from "@/seqta/utils/googleCalendar/syncDateRange";
-import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
-import { reportSyncProgress } from "@/seqta/utils/calendarSync/lessonSyncShared";
 import {
   googleLessonSyncProvider,
   outlookLessonSyncProvider,
   syncLessonsToCalendar,
   type CalendarLessonSyncProvider,
 } from "@/seqta/utils/calendarSync/syncEngine";
+import { reportSyncProgress } from "@/seqta/utils/calendarSync/lessonSyncShared";
+import type { OutlookCalendarStatus } from "@/seqta/utils/calendarSync/providerStorage";
+import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
 import type {
+  GoogleCalendarStatus,
   GoogleCalendarSyncProgress,
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
+
+export type CalendarProvider = "google" | "outlook";
+
+const MSG = {
+  accessToken: { google: "googleCalendarGetAccessToken", outlook: "outlookCalendarGetAccessToken" },
+  connect: { google: "googleCalendarConnect", outlook: "outlookCalendarConnect" },
+  disconnect: { google: "googleCalendarDisconnect", outlook: "outlookCalendarDisconnect" },
+  status: { google: "googleCalendarStatus", outlook: "outlookCalendarStatus" },
+} as const;
+
+async function sendMessage<T>(type: string, payload: Record<string, unknown> = {}): Promise<T> {
+  return browser.runtime.sendMessage({ type, ...payload }) as Promise<T>;
+}
+
+export async function getCalendarAccessToken(provider: CalendarProvider): Promise<string> {
+  const res = await sendMessage<{
+    success?: boolean;
+    accessToken?: string;
+    error?: string;
+  }>(MSG.accessToken[provider]);
+  if (!res?.success || !res.accessToken) {
+    throw new Error(res?.error ?? "Could not get calendar access token.");
+  }
+  return res.accessToken;
+}
+
+export async function fetchCalendarStatuses(): Promise<{
+  google: GoogleCalendarStatus;
+  outlook: OutlookCalendarStatus;
+}> {
+  const [google, outlook] = await Promise.all([
+    sendMessage<GoogleCalendarStatus>(MSG.status.google),
+    sendMessage<OutlookCalendarStatus>(MSG.status.outlook),
+  ]);
+  return { google, outlook };
+}
+
+export async function updateGoogleSyncSettings(patch: {
+  syncWeeksAhead?: number;
+  autoSyncWeekly?: boolean;
+}): Promise<GoogleCalendarStatus & { success?: boolean }> {
+  return sendMessage("googleCalendarUpdateSyncSettings", patch);
+}
+
+export async function connectCalendarProvider(
+  provider: CalendarProvider,
+): Promise<GoogleCalendarSyncResult> {
+  return sendMessage(MSG.connect[provider]);
+}
+
+export async function disconnectCalendarProvider(
+  provider: CalendarProvider,
+): Promise<{ success?: boolean }> {
+  return sendMessage(MSG.disconnect[provider]);
+}
 
 export interface RunCalendarSyncParams {
   mode?: "full" | "incremental";
@@ -20,37 +77,19 @@ export interface RunCalendarSyncParams {
 }
 
 type CalendarSyncRunnerConfig = {
-  accessTokenMessageType: string;
-  accessTokenError: string;
+  provider: CalendarProvider;
   lessonSyncProvider: CalendarLessonSyncProvider;
 };
 
 const GOOGLE_SYNC_RUNNER: CalendarSyncRunnerConfig = {
-  accessTokenMessageType: "googleCalendarGetAccessToken",
-  accessTokenError: "Could not get Google Calendar access token.",
+  provider: "google",
   lessonSyncProvider: googleLessonSyncProvider,
 };
 
 const OUTLOOK_SYNC_RUNNER: CalendarSyncRunnerConfig = {
-  accessTokenMessageType: "outlookCalendarGetAccessToken",
-  accessTokenError: "Could not get Outlook Calendar access token.",
+  provider: "outlook",
   lessonSyncProvider: outlookLessonSyncProvider,
 };
-
-async function getAccessTokenFromBackground(
-  messageType: string,
-  errorMessage: string,
-): Promise<string> {
-  const res = (await browser.runtime.sendMessage({ type: messageType })) as {
-    success?: boolean;
-    accessToken?: string;
-    error?: string;
-  };
-  if (!res?.success || !res.accessToken) {
-    throw new Error(res?.error ?? errorMessage);
-  }
-  return res.accessToken;
-}
 
 export async function runCalendarSync(
   config: CalendarSyncRunnerConfig,
@@ -74,7 +113,7 @@ export async function runCalendarSync(
   return syncLessonsToCalendar(
     config.lessonSyncProvider,
     { origin: location.origin, lessons, mode, weeksAhead },
-    () => getAccessTokenFromBackground(config.accessTokenMessageType, config.accessTokenError),
+    () => getCalendarAccessToken(config.provider),
     { onProgress: params.onProgress },
   );
 }

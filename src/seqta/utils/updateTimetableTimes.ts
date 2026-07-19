@@ -155,8 +155,13 @@ function stopUrlMonitoring(): void {
   stopTimetableMonitoring();
 }
 
+export function syncTimetableUrlMonitoring(): void {
+  if (settingsState.timeFormat === "12") startUrlMonitoring();
+  else stopUrlMonitoring();
+}
+
 export async function updateTimetableTimes(): Promise<void> {
-  if (!settingsState.timeFormat) return;
+  if (settingsState.timeFormat !== "12") return;
 
   const timetablePage = document.querySelector(".timetablepage");
   if (!timetablePage) return;
@@ -176,12 +181,6 @@ export async function updateTimetableTimes(): Promise<void> {
     startTimetableMonitoring();
     startUrlMonitoring();
   }
-}
-
-// Initialize monitoring on page load
-if (typeof window !== "undefined") {
-  // Start URL monitoring immediately
-  startUrlMonitoring();
 }
 
 // Cleanup function for when the module is unloaded

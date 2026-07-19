@@ -53,7 +53,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
     "Adds an overview option to the assessments page that organizes assessments by status",
   version: "1.0.0",
   settings: {},
-  disableToggle: false,
+  disableToggle: true,
   styles,
 
   run: async () => {

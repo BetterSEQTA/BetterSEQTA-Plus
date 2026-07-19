@@ -6,7 +6,6 @@ import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "webextension-polyfill";
 
-import { init as Monofile } from "@/plugins/monofile";
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";
 import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle";
@@ -66,10 +65,6 @@ async function init() {
     IsSEQTAPage = true;
     verboseInfo("[BetterSEQTA+] Verified SEQTA Page");
 
-    if (typeof window !== "undefined" && window === window.top) {
-      void browser.runtime.sendMessage({ type: "cloudSettingsPoll" }).catch(() => {});
-    }
-
     registerFetchSeqtaAppLinkListener();
 
     const documentLoadStyle = document.createElement("style");
@@ -112,10 +107,12 @@ async function init() {
       }
 
       await main();
+
+      const { init: Monofile } = await import("@/plugins/monofile");
       Monofile();
 
       if (settingsState.onoff) {
-        const { initializePlugins } = await import("@/plugins/runtime");
+        const { initializePlugins } = await import("@/plugins/index");
         await initializePlugins();
       }
 

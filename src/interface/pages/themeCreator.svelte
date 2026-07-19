@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { v4 as uuidv4 } from 'uuid';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
@@ -35,7 +34,7 @@
   const themeManager = ThemeManager.getInstance();
 
   let theme = $state<LoadedCustomTheme>({
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: '',
     description: '',
     defaultColour: 'blue',

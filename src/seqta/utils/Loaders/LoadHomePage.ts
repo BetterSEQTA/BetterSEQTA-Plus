@@ -23,11 +23,22 @@ import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilt
 import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
 import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
 
-let LessonInterval: any;
+let lessonInterval: ReturnType<typeof setInterval> | null = null;
+let homeTeardown: (() => void) | null = null;
 let currentSelectedDate = new Date();
-let loadingTimeout: any;
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearLessonInterval(): void {
+  if (lessonInterval !== null) {
+    clearInterval(lessonInterval);
+    lessonInterval = null;
+  }
+}
 
 export async function loadHomePage() {
+  homeTeardown?.();
+  homeTeardown = null;
+  clearLessonInterval();
   verboseInfo("[BetterSEQTA+] Started Loading Home Page");
 
   currentSelectedDate = new Date();
@@ -103,7 +114,11 @@ export async function loadHomePage() {
     );
   }
 
-  const cleanup = setupTimetableListeners();
+  const timetableCleanup = setupTimetableListeners();
+  homeTeardown = () => {
+    clearLessonInterval();
+    timetableCleanup();
+  };
 
   renderShortcuts();
 
@@ -148,7 +163,7 @@ export async function loadHomePage() {
     });
   }
 
-  return cleanup;
+  return homeTeardown;
 }
 
 let upcomingRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -395,14 +410,12 @@ function callHomeTimetable(date: string, change?: any) {
 }
 
 function CheckCurrentLessonAll(lessons: any) {
-  LessonInterval = setInterval(
-    function () {
-      for (let i = 0; i < lessons.length; i++) {
-        CheckCurrentLesson(lessons[i], i + 1);
-      }
-    }.bind(lessons),
-    60000,
-  );
+  clearLessonInterval();
+  lessonInterval = setInterval(() => {
+    for (let i = 0; i < lessons.length; i++) {
+      CheckCurrentLesson(lessons[i], i + 1);
+    }
+  }, 60000);
 }
 
 async function CheckCurrentLesson(lesson: any, num: number) {
@@ -431,7 +444,7 @@ async function CheckCurrentLesson(lesson: any, num: number) {
   const element = document.getElementById(elementId);
 
   if (!element) {
-    clearInterval(LessonInterval);
+    clearLessonInterval();
     return;
   }
 

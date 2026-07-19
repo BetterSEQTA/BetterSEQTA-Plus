@@ -4,8 +4,10 @@ import {
   GOOGLE_CALENDAR_SYNC_WEEKS_MAX,
   GOOGLE_CALENDAR_SYNC_WEEKS_MIN,
 } from "@/config/googleCalendar";
-import { readGoogleCalendarState } from "@/seqta/utils/googleCalendar/storage";
-import { readOutlookCalendarState } from "@/seqta/utils/outlookCalendar/storage";
+import {
+  readGoogleCalendarState,
+  readOutlookCalendarState,
+} from "@/seqta/utils/calendarSync/providerStorage";
 
 export const BSPLUS_CALENDAR_SYNC_SETTINGS_KEY = "bsplus_calendar_sync_settings";
 export const CALENDAR_WEEKLY_ALARM = "bsplus_calendar_weekly";

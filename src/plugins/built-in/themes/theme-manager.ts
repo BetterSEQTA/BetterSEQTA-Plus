@@ -67,7 +67,6 @@ export type InstallThemeMeta = {
 export class ThemeManager {
   private static instance: ThemeManager;
   private currentTheme: CustomTheme | null = null;
-  private previousImageVariableNames: string[] = [];
   private lastSyncedImageKey: string | null = null;
   private originalPreviewColor: string | null = null;
   private originalPreviewTheme: boolean | null = null;
@@ -914,9 +913,6 @@ export class ThemeManager {
         images: CustomImages,
       });
       this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
-      this.previousImageVariableNames = CustomImages.map(
-        (image) => image.variableName,
-      );
 
       // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
@@ -951,9 +947,6 @@ export class ThemeManager {
         }
       }
 
-      const newImageVariableNames =
-        theme.CustomImages?.map((image) => image.variableName) ?? [];
-
       const syncInput: ThemePageSyncInput = {};
 
       if (theme.CustomCSS !== undefined) {
@@ -966,7 +959,6 @@ export class ThemeManager {
           syncInput.images = theme.CustomImages;
           this.lastSyncedImageKey = imageKey;
         }
-        this.previousImageVariableNames = newImageVariableNames;
       }
 
       if (Object.keys(syncInput).length > 0) {
@@ -1009,7 +1001,6 @@ export class ThemeManager {
     try {
       void syncThemeToPage({ clearPreview: true, images: [] });
       this.lastSyncedImageKey = null;
-      this.previousImageVariableNames = [];
 
       clearCustomThemeAdaptiveCssVariables();
 

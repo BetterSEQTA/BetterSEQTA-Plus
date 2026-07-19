@@ -10,10 +10,11 @@
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
   import type { IndexItem } from '../indexing/types';
-  import debounce from 'lodash/debounce';
+  import debounce from '@/seqta/utils/debounce';
   import { renderComponentMap } from '../indexing/renderComponents';
   import HighlightedText from '../utils/HighlightedText.svelte';
   import { matchesHotkey } from '../utils/hotkeyUtils';
+  import { warmUpVectorSearchOnInteraction } from '../search/vector/vectorSearch';
   import browser from 'webextension-polyfill';
 
   const { 
@@ -93,6 +94,7 @@
     keydownHandler = (e: KeyboardEvent) => {
       if (matchesHotkey(e, currentSearchHotkey)) {
         e.preventDefault();
+        warmUpVectorSearchOnInteraction();
         commandPalleteOpen = true;
         tick().then(() => searchbar?.focus());
       }
@@ -146,6 +148,7 @@
     
     // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen = (open: boolean) => {
+      if (open) warmUpVectorSearchOnInteraction();
       commandPalleteOpen = open;
     };
 
