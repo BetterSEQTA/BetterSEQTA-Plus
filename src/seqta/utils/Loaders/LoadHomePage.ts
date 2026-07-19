@@ -1,6 +1,6 @@
 import { animate, stagger } from "motion";
-import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import assessmentsicon from "@/seqta/icons/assessmentsIcon";
 import coursesicon from "@/seqta/icons/coursesIcon";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
@@ -11,22 +11,41 @@ import stringToHTML from "../stringToHTML";
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
-import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 import { loadTeachHomePage } from "@/seqta/home/teach/mountTeachHomePage";
+import { verboseInfo } from "@/utils/verboseLog";
+import {
+  activeSubjectsFromLearnPayload,
+  activeSubjectForAssessment,
+  filterAssessmentsForActiveSubjects,
+  subjectsWithUpcomingAssessments,
+} from "@/plugins/built-in/assessmentsOverview/utils";
+import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
+import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
+import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
 
-let LessonInterval: any;
+let lessonInterval: ReturnType<typeof setInterval> | null = null;
+let homeTeardown: (() => void) | null = null;
 let currentSelectedDate = new Date();
-let loadingTimeout: any;
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearLessonInterval(): void {
+  if (lessonInterval !== null) {
+    clearInterval(lessonInterval);
+    lessonInterval = null;
+  }
+}
 
 export async function loadHomePage() {
-  // Route to Teach-specific homepage if on Teach platform
   if (isSeqtaTeachExperience()) {
     return loadTeachHomePage();
   }
 
-  console.info("[BetterSEQTA+] Started Loading Home Page");
+  homeTeardown?.();
+  homeTeardown = null;
+  clearLessonInterval();
+  verboseInfo("[BetterSEQTA+] Started Loading Home Page");
 
   currentSelectedDate = new Date();
 
@@ -101,7 +120,11 @@ export async function loadHomePage() {
     );
   }
 
-  const cleanup = setupTimetableListeners();
+  const timetableCleanup = setupTimetableListeners();
+  homeTeardown = () => {
+    clearLessonInterval();
+    timetableCleanup();
+  };
 
   renderShortcuts();
 
@@ -119,12 +142,11 @@ export async function loadHomePage() {
 
   callHomeTimetable(TodayFormatted, true);
 
-  const activeClass = classes.find((c: any) => c.hasOwnProperty("active"));
-  const activeSubjects = activeClass?.subjects || [];
-  const activeSubjectCodes = activeSubjects.map((s: any) => s.code);
-  const currentAssessments = assessments
-    .filter((a: any) => activeSubjectCodes.includes(a.code))
-    .sort(comparedate);
+  const activeSubjects = activeSubjectsFromLearnPayload(classes);
+  const currentAssessments = filterAssessmentsForActiveSubjects(
+    assessments,
+    activeSubjects,
+  ).sort(comparedate);
 
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
@@ -132,36 +154,71 @@ export async function loadHomePage() {
     upcomingItems.classList.remove("loading");
   }
 
-  const labelArray = prefs.payload
-    .filter((item: any) => item.name === "notices.filters")
-    .map((item: any) => item.value);
+  const labelTokens = await resolveNoticeFilterTokens(
+    prefs.payload,
+    `${location.origin}/seqta/student/load/notices?`,
+  );
 
-  const noticeContainer = document.getElementById("notice-container");
-  if (noticeContainer) {
-    if (labelArray.length > 0) {
-      const dateControl = document.querySelector(
-        'input[type="date"]',
-      ) as HTMLInputElement;
-      if (dateControl) {
-        dateControl.value = TodayFormatted;
-        setupNotices(labelArray[0].split(" "), TodayFormatted);
-      }
-      noticeContainer.classList.remove("loading");
-    } else {
-      noticeContainer.classList.remove("loading");
-      noticeContainer.innerHTML = "";
-      const emptyState = document.createElement("div");
-      emptyState.classList.add("day-empty");
-      const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
-      const text = document.createElement("p");
-      text.innerText = "No notices available.";
-      emptyState.append(img, text);
-      noticeContainer.append(emptyState);
-    }
+  if (document.getElementById("notice-container")) {
+    setupNoticesSection({
+      containerId: "notice-container",
+      dateInput: 'input[type="date"]',
+      noticesUrl: `${location.origin}/seqta/student/load/notices?`,
+      labelTokens,
+      initialDate: TodayFormatted,
+    });
   }
 
-  return cleanup;
+  return homeTeardown;
+}
+
+let upcomingRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
+
+/** Re-render the home page upcoming assessments block when related settings change. */
+export function refreshHomeUpcomingAssessments() {
+  if (!document.getElementById("upcoming-items")) return;
+
+  if (upcomingRefreshTimeout) clearTimeout(upcomingRefreshTimeout);
+  upcomingRefreshTimeout = setTimeout(() => {
+    upcomingRefreshTimeout = null;
+    void renderHomeUpcomingAssessments();
+  }, 150);
+}
+
+async function renderHomeUpcomingAssessments() {
+  const upcomingItems = document.getElementById("upcoming-items");
+  if (!upcomingItems) return;
+
+  upcomingItems.classList.add("loading");
+  upcomingItems.innerHTML = "";
+  const filterContainer = document.getElementById("upcoming-filters");
+  if (filterContainer) filterContainer.innerHTML = "";
+
+  const [assessments, classes] = await Promise.all([
+    GetUpcomingAssessments(),
+    GetActiveClasses(),
+  ]);
+
+  const activeSubjects = activeSubjectsFromLearnPayload(classes);
+  const currentAssessments = filterAssessmentsForActiveSubjects(
+    assessments,
+    activeSubjects,
+  ).sort(comparedate);
+
+  await CreateUpcomingSection(currentAssessments, activeSubjects);
+  upcomingItems.classList.remove("loading");
+}
+
+export function registerHomeUpcomingSettingsListeners() {
+  const keys = [
+    "homeUpcomingSubjectsMax",
+    "homeUpcomingAssessmentsPerSubjectMax",
+    "homeUpcomingIncludePast",
+  ] as const;
+
+  for (const key of keys) {
+    settingsState.register(key, () => refreshHomeUpcomingAssessments());
+  }
 }
 
 async function GetUpcomingAssessments() {
@@ -243,407 +300,14 @@ async function GetActiveClasses() {
   }
 }
 
-function setupNotices(labelArray: string[], date: string) {
-  const dateControl = document.querySelector(
-    'input[type="date"]',
-  ) as HTMLInputElement;
-
-  const fetchNotices = async (date: string) => {
-    try {
-      const data = settingsState.mockNotices
-        ? getMockNotices()
-        : await (
-            await fetch(`${location.origin}/seqta/student/load/notices?`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json; charset=utf-8" },
-              body: JSON.stringify({ date }),
-            })
-          ).json();
-
-      processNotices(data, labelArray);
-    } catch {
-      // Notices failed to load; processNotices will show empty state if container exists
-      processNotices({ payload: [] }, labelArray);
-    }
-  };
-
-  const debouncedInputChange = debounce((e: Event) => {
-    fetchNotices((e.target as HTMLInputElement).value);
-  }, 250);
-
-  dateControl?.addEventListener("input", debouncedInputChange);
-  fetchNotices(date);
-
-  return () => dateControl?.removeEventListener("input", debouncedInputChange);
-}
-
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: any;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
 function comparedate(obj1: any, obj2: any) {
-  return obj1.date < obj2.date ? -1 : obj1.date > obj2.date ? 1 : 0;
-}
-function processNotices(response: any, labelArray: string[]) {
-  const NoticeContainer = document.getElementById("notice-container");
-  if (!NoticeContainer) return;
-
-  NoticeContainer.innerHTML = "";
-
-  const notices = response?.payload;
-  if (!Array.isArray(notices)) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    NoticeContainer.append(emptyState);
-    return;
-  }
-
-  if (!notices.length) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    NoticeContainer.append(emptyState);
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  notices.forEach((notice: any) => {
-    const shouldInclude =
-      settingsState.mockNotices ||
-      labelArray.includes(JSON.stringify(notice.label));
-
-    if (shouldInclude) {
-      const colour = processNoticeColor(notice.colour);
-      const noticeElement = createNoticeElement(notice, colour);
-      fragment.appendChild(noticeElement);
-    }
-  });
-
-  NoticeContainer.appendChild(fragment);
+  const d1 = new Date(obj1.due || obj1.date || 0).getTime();
+  const d2 = new Date(obj2.due || obj2.date || 0).getTime();
+  return d1 - d2;
 }
 
-function processNoticeColor(colour: string): string | undefined {
-  if (typeof colour === "string") {
-    const rgb = GetThresholdOfColor(colour);
-    if (rgb < 100 && settingsState.DarkMode) {
-      return undefined;
-    }
-  }
-  return colour;
-}
-
-function createNoticeElement(notice: any, colour: string | undefined): Node {
-  const textPreview =
-    notice.contents
-      .replace(/<[^>]*>/g, "")
-      .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .substring(0, 150) + (notice.contents.length > 150 ? "..." : "");
-
-  const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  const htmlContent = `
-    <div class="notice-unified-content notice-card-state" data-notice-id="${noticeId}" style="--colour: ${colour || "#8e8e8e"}; position: relative; background: var(--background-primary); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-            ${notice.label_title || "General"}
-          </span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn" style="opacity: 0; pointer-events: none;">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${textPreview}</div>
-    </div>`;
-
-  const element = stringToHTML(htmlContent).firstChild as HTMLElement;
-  element.addEventListener("click", () =>
-    openNoticeModal(notice, colour, element),
-  );
-  return element;
-}
-
-function openNoticeModal(
-  notice: any,
-  colour: string | undefined,
-  sourceElement: HTMLElement,
-) {
-  const cleanContent = notice.contents
-    .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/ +/, " ");
-
-  document.getElementById("notice-modal")?.remove();
-
-  const sourceRect = sourceElement.getBoundingClientRect();
-  let scrollY = Math.round(window.scrollY);
-  let scrollX = Math.round(window.scrollX);
-  let sourceLeft = sourceRect.left;
-  let sourceTop = sourceRect.top;
-  let sourceWidth = sourceRect.width;
-  let sourceHeight = sourceRect.height;
-
-  const modalHtml = `
-    <div id="notice-modal" class="notice-modal-overlay" style="opacity: 0;">
-      <div class="notice-modal-transition" style="
-        position: fixed;
-        left: ${sourceLeft + scrollX}px;
-        top: ${sourceTop + scrollY}px;
-        width: ${sourceWidth}px;
-        height: ${sourceHeight}px;
-        transform-origin: center;
-        z-index: 10001;
-      ">
-        <div class="notice-modal-content notice-transitioning">
-          <div class="notice-unified-content notice-card-state">
-            <div class="notice-header">
-              <div class="notice-badge-row">
-                <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-                  ${notice.label_title || "General"}
-                </span>
-                <span class="notice-staff">${notice.staff}</span>
-              </div>
-              <button class="notice-close-btn">&times;</button>
-            </div>
-            <h2 class="notice-content-title">${notice.title}</h2>
-            <div class="notice-content-body">${cleanContent}</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
-
-  const modal = stringToHTML(modalHtml).firstChild as HTMLElement;
-  const transitionContainer = modal.querySelector(
-    ".notice-modal-transition",
-  ) as HTMLElement;
-  const unifiedContent = modal.querySelector(
-    ".notice-unified-content",
-  ) as HTMLElement;
-  const closeBtn = modal.querySelector(".notice-close-btn") as HTMLElement;
-
-  document.body.appendChild(modal);
-
-  sourceElement.setAttribute("data-transitioning", "true");
-  sourceElement.style.opacity = "0";
-  sourceElement.style.transform = "scale(0.95)";
-
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  let targetWidth = Math.round(
-    Math.min(Math.max(sourceWidth, 800), viewportWidth - 40),
-  );
-
-  const tempMeasureDiv = document.createElement("div");
-  tempMeasureDiv.style.position = "absolute";
-  tempMeasureDiv.style.left = "-9999px";
-  tempMeasureDiv.style.width = targetWidth + "px";
-  tempMeasureDiv.style.visibility = "hidden";
-  tempMeasureDiv.innerHTML = `
-    <div class="notice-unified-content notice-modal-state" style="position: relative; width: 100%; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge">${notice.label_title || "General"}</span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${cleanContent}</div>
-    </div>
-  `;
-  document.body.appendChild(tempMeasureDiv);
-  const measuredHeight =
-    tempMeasureDiv.firstElementChild!.getBoundingClientRect().height;
-  document.body.removeChild(tempMeasureDiv);
-
-  let targetHeight = Math.round(
-    Math.min(Math.max(measuredHeight + 32, 200), viewportHeight * 0.9),
-  );
-  let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
-  let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
-
-  const closeModal = () => {
-    window.removeEventListener("resize", handleResize);
-    document.removeEventListener("keydown", handleEscape);
-
-    if (!settingsState.animations) {
-      modal.remove();
-      sourceElement.style.opacity = "1";
-      sourceElement.style.transform = "";
-      sourceElement.removeAttribute("data-transitioning");
-      return;
-    }
-
-    animate(
-      modal,
-      {
-        backgroundColor: ["rgba(0, 0, 0, 0.5)", "rgba(0, 0, 0, 0)"],
-        backdropFilter: ["blur(4px)", "blur(0px)"],
-      },
-      { duration: 0.2 },
-    );
-
-    animate(
-      transitionContainer,
-      { opacity: [1, 0] },
-      { duration: 0.2, delay: 0.3 },
-    );
-
-    sourceElement.style.opacity = "1";
-    sourceElement.style.transform = "";
-
-    modal.style.pointerEvents = "none";
-
-    animate(
-      transitionContainer,
-      {
-        left: [targetLeft + scrollX, sourceLeft + scrollX],
-        top: [targetTop, sourceTop + scrollY],
-        width: [targetWidth, sourceWidth],
-        height: [targetHeight, sourceHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.35,
-        type: "spring",
-        stiffness: 400,
-        damping: 35,
-      },
-    ).finished.then(async () => {
-      modal.remove();
-      sourceElement.removeAttribute("data-transitioning");
-    });
-  };
-
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      closeModal();
-      document.removeEventListener("keydown", handleEscape);
-      window.removeEventListener("resize", handleResize);
-    }
-  };
-  document.addEventListener("keydown", handleEscape);
-
-  const handleResize = () => {
-    const newSourceRect = sourceElement.getBoundingClientRect();
-    const newScrollY = Math.round(window.scrollY);
-    const newScrollX = Math.round(window.scrollX);
-
-    // Get the current scale applied to the source element and compensate for it
-    const computedStyle = getComputedStyle(sourceElement);
-    const transform = computedStyle.transform;
-    let scaleX = 1,
-      scaleY = 1;
-
-    if (transform && transform !== "none") {
-      const matrix = transform.match(/matrix.*\((.+)\)/);
-      if (matrix) {
-        const values = matrix[1].split(", ");
-        scaleX = parseFloat(values[0]);
-        scaleY = parseFloat(values[3]);
-      }
-    }
-
-    // Apply inverse scale to get true original dimensions and positions
-    const newSourceWidth = newSourceRect.width / scaleX;
-    const newSourceHeight = newSourceRect.height / scaleY;
-
-    // Calculate position shift due to center-based scaling
-    const deltaX = (newSourceWidth - newSourceRect.width) / 2;
-    const deltaY = (newSourceHeight - newSourceRect.height) / 2;
-
-    const newSourceLeft = newSourceRect.left - deltaX;
-    const newSourceTop = newSourceRect.top - deltaY;
-
-    const newViewportWidth = window.innerWidth;
-    const newViewportHeight = window.innerHeight;
-    const newTargetWidth = Math.round(
-      Math.min(Math.max(newSourceWidth, 800), newViewportWidth - 40),
-    );
-    const currentHeight = unifiedContent.getBoundingClientRect().height;
-    const newTargetHeight = Math.round(
-      Math.min(Math.max(currentHeight + 32, 200), newViewportHeight * 0.9),
-    );
-    const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
-    const newTargetTop =
-      Math.round((newViewportHeight - newTargetHeight) / 2) + newScrollY;
-
-    transitionContainer.style.left =
-      Math.round(newTargetLeft + newScrollX) + "px";
-    transitionContainer.style.top = Math.round(newTargetTop) + "px";
-    transitionContainer.style.width = Math.round(newTargetWidth) + "px";
-    transitionContainer.style.height = Math.round(newTargetHeight) + "px";
-
-    sourceLeft = newSourceLeft;
-    sourceTop = newSourceTop;
-    sourceWidth = newSourceWidth;
-    sourceHeight = newSourceHeight;
-    targetLeft = newTargetLeft;
-    targetTop = newTargetTop;
-    targetWidth = newTargetWidth;
-    targetHeight = newTargetHeight;
-    scrollY = newScrollY;
-    scrollX = newScrollX;
-  };
-
-  window.addEventListener("resize", handleResize);
-
-  if (settingsState.animations) {
-    animate(modal, { opacity: [0, 1] }, { duration: 0.2 });
-
-    animate(
-      transitionContainer,
-      {
-        left: [sourceLeft + scrollX, targetLeft + scrollX],
-        top: [sourceTop + scrollY, targetTop],
-        width: [sourceWidth, targetWidth],
-        height: [sourceHeight, targetHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.5,
-        type: "spring",
-        stiffness: 280,
-        damping: 24,
-      },
-    );
-
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
-  } else {
-    modal.style.opacity = "1";
-    transitionContainer.style.left = Math.round(targetLeft + scrollX) + "px";
-    transitionContainer.style.top = Math.round(targetTop) + "px";
-    transitionContainer.style.width = Math.round(targetWidth) + "px";
-    transitionContainer.style.height = Math.round(targetHeight) + "px";
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
-  }
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function callHomeTimetable(date: string, change?: any) {
@@ -733,7 +397,7 @@ function callHomeTimetable(date: string, change?: any) {
       const dummyDay = document.createElement("div");
       dummyDay.classList.add("day-empty");
       const img = document.createElement("img");
-      img.src = browser.runtime.getURL(LogoLight);
+      img.src = resolveExtensionAssetUrl(LogoLight);
       const text = document.createElement("p");
       text.innerText = "No lessons available.";
       dummyDay.append(img, text);
@@ -752,14 +416,12 @@ function callHomeTimetable(date: string, change?: any) {
 }
 
 function CheckCurrentLessonAll(lessons: any) {
-  LessonInterval = setInterval(
-    function () {
-      for (let i = 0; i < lessons.length; i++) {
-        CheckCurrentLesson(lessons[i], i + 1);
-      }
-    }.bind(lessons),
-    60000,
-  );
+  clearLessonInterval();
+  lessonInterval = setInterval(() => {
+    for (let i = 0; i < lessons.length; i++) {
+      CheckCurrentLesson(lessons[i], i + 1);
+    }
+  }, 60000);
 }
 
 async function CheckCurrentLesson(lesson: any, num: number) {
@@ -788,7 +450,7 @@ async function CheckCurrentLesson(lesson: any, num: number) {
   const element = document.getElementById(elementId);
 
   if (!element) {
-    clearInterval(LessonInterval);
+    clearLessonInterval();
     return;
   }
 
@@ -896,20 +558,73 @@ function CheckUnmarkedAttendance(lessonattendance: any) {
   return lessonattendance ? lessonattendance.label : " ";
 }
 
+function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
+  const maxSubjects = settingsState.homeUpcomingSubjectsMax ?? 5;
+  const maxPerSubject = settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0;
+
+  for (let i = 0; i < assessments.length; i++) {
+    const subject = activeSubjectForAssessment(assessments[i], activeSubjects);
+    assessments[i].filterCode = subject?.code ?? assessments[i].code;
+  }
+
+  const bySubject = new Map<string, any[]>();
+  const subjectOrder: string[] = [];
+
+  for (const assessment of assessments) {
+    const code = assessment.filterCode;
+    if (!bySubject.has(code)) {
+      bySubject.set(code, []);
+      subjectOrder.push(code);
+    }
+    bySubject.get(code)!.push(assessment);
+  }
+
+  for (const items of bySubject.values()) {
+    items.sort(
+      (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
+    );
+  }
+
+  subjectOrder.sort(
+    (a, b) =>
+      new Date(bySubject.get(a)![0].due).getTime() -
+      new Date(bySubject.get(b)![0].due).getTime(),
+  );
+
+  const subjectLimit =
+    maxSubjects > 0 ? maxSubjects : subjectOrder.length;
+  const allowedSubjects = subjectOrder.slice(0, subjectLimit);
+
+  const limited: any[] = [];
+  for (const code of allowedSubjects) {
+    const items = bySubject.get(code)!;
+    const perSubjectLimit = maxPerSubject > 0 ? maxPerSubject : items.length;
+    limited.push(...items.slice(0, perSubjectLimit));
+  }
+
+  limited.sort(
+    (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
+  );
+
+  assessments.splice(0, assessments.length, ...limited);
+}
+
 async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   const upcomingitemcontainer = document.querySelector("#upcoming-items");
-  const overdueDates = [];
   const upcomingDates = {};
   const Today = new Date();
 
-  for (let i = 0; i < assessments.length; i++) {
-    const assessmentdue = new Date(assessments[i].due);
-    if (assessmentdue < Today && !CheckSpecialDay(Today, assessmentdue)) {
-      overdueDates.push(assessments[i]);
-      assessments.splice(i, 1);
-      i--;
+  if (!(settingsState.homeUpcomingIncludePast ?? true)) {
+    const todayStart = startOfDay(Today);
+    for (let i = assessments.length - 1; i >= 0; i--) {
+      const assessmentdue = new Date(assessments[i].due);
+      if (assessmentdue < todayStart) {
+        assessments.splice(i, 1);
+      }
     }
   }
+
+  applyHomeUpcomingLimits(assessments, activeSubjects);
 
   const colours = await GetLessonColours();
 
@@ -925,8 +640,13 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  for (let i = 0; i < activeSubjects.length; i++) {
-    const element = activeSubjects[i];
+  const filterSubjects = subjectsWithUpcomingAssessments(
+    assessments,
+    activeSubjects,
+  );
+
+  for (let i = 0; i < filterSubjects.length; i++) {
+    const element = filterSubjects[i];
     const colour = colours.find(
       (c: any) => c.name === `timetable.subject.colour.${element.code}`,
     );
@@ -940,7 +660,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  CreateFilters(activeSubjects);
+  CreateFilters(filterSubjects);
 
   for (let i = 0; i < assessments.length; i++) {
     const element: any = assessments[i];
@@ -985,7 +705,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" />
+        <img src="${resolveExtensionAssetUrl(LogoLight)}" />
         <p>No assessments available.</p>
       </div>`;
   }
@@ -1024,7 +744,7 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
     const element = assessments[i];
     const item = document.createElement("div");
     item.classList.add("upcoming-assessment");
-    item.setAttribute("data-subject", element.code);
+    item.setAttribute("data-subject", element.filterCode ?? element.code);
     item.id = `assessment${element.id}`;
     item.style.cssText = element.colour;
 
@@ -1116,15 +836,24 @@ async function GetLessonColours() {
   }
 }
 
-function CreateFilters(subjects: any) {
-  const filteroptions = settingsState.subjectfilters;
+function CreateFilters(subjects: { code: string }[]) {
+  const filteroptions = { ...settingsState.subjectfilters };
   const filterdiv = document.querySelector("#upcoming-filters");
+  if (!filterdiv) return;
+
+  filterdiv.innerHTML = "";
+  const activeCodes = new Set(subjects.map((s) => s.code));
+
+  for (const key of Object.keys(filteroptions)) {
+    if (!activeCodes.has(key)) {
+      delete filteroptions[key];
+    }
+  }
 
   for (let i = 0; i < subjects.length; i++) {
     const element = subjects[i];
     if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
       filteroptions[element.code] = true;
-      settingsState.subjectfilters = filteroptions;
     }
     filterdiv!.append(
       CreateSubjectFilter(
@@ -1134,6 +863,8 @@ function CreateFilters(subjects: any) {
       ),
     );
   }
+
+  settingsState.subjectfilters = filteroptions;
 }
 
 function CreateSubjectFilter(
@@ -1152,9 +883,9 @@ function CreateSubjectFilter(
   label.append(input, span);
 
   input.addEventListener("change", function (change) {
-    const filters = settingsState.subjectfilters;
-    const id = (change.target as HTMLInputElement).id.split("-")[1];
-    filters[id] = (change.target as HTMLInputElement).checked;
+    const checked = (change.target as HTMLInputElement).checked;
+    const filters = { ...settingsState.subjectfilters };
+    filters[subjectcode] = checked;
     settingsState.subjectfilters = filters;
   });
 
@@ -1164,32 +895,5 @@ function CreateSubjectFilter(
 function SetTimetableSubtitle() {
   const homelessonsubtitle = document.getElementById("home-lesson-subtitle");
   if (!homelessonsubtitle) return;
-
-  const date = new Date();
-  const isSameMonth =
-    date.getFullYear() === currentSelectedDate.getFullYear() &&
-    date.getMonth() === currentSelectedDate.getMonth();
-
-  if (isSameMonth) {
-    const dayDiff = date.getDate() - currentSelectedDate.getDate();
-    switch (dayDiff) {
-      case 0:
-        homelessonsubtitle.innerText = "Today's Lessons";
-        break;
-      case 1:
-        homelessonsubtitle.innerText = "Yesterday's Lessons";
-        break;
-      case -1:
-        homelessonsubtitle.innerText = "Tomorrow's Lessons";
-        break;
-      default:
-        homelessonsubtitle.innerText = formatDateString(currentSelectedDate);
-    }
-  } else {
-    homelessonsubtitle.innerText = formatDateString(currentSelectedDate);
-  }
-}
-
-function formatDateString(date: Date): string {
-  return `${date.toLocaleString("en-us", { weekday: "short" })} ${date.toLocaleDateString("en-au")}`;
+  homelessonsubtitle.innerText = lessonsSubtitleForViewDate(currentSelectedDate);
 }

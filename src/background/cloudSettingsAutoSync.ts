@@ -1,12 +1,19 @@
 import browser from "webextension-polyfill";
 import {
+  ensureSyncableStorageDefaults,
+  getSyncableStorageDefaults,
+} from "@/seqta/utils/ensureSyncableStorageDefaults";
+import {
   applyDownloadedEnvelope,
-  buildUploadPayload,
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
+  buildUploadPatch,
   CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
   isKeyIncludedInCloudUploadPayload,
+  normalizeStorageForSync,
   resolveThemeIdForPostSyncDownload,
+  saveLastUploadedSnapshot,
+  getLastUploadedSnapshot,
   setKnownRemoteUpdatedAt,
 } from "@/seqta/utils/cloudSettingsSync";
 
@@ -18,6 +25,11 @@ const REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/refresh`;
 const UPLOAD_DEBOUNCE_MS = 2000;
 const POLL_THROTTLE_MS = 24 * 60 * 60 * 1000;
 const POLL_THROTTLE_KEY = "bsplus_lastCloudPoll";
+const FETCH_TIMEOUT_MS = 30_000;
+
+function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+}
 
 type CloudSummaryResponse = {
   desqta?: unknown;
@@ -28,6 +40,7 @@ let reloadSeqtaPagesFn: (() => void) | null = null;
 let suppressAutoUploadDuringRestore = false;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let pollInFlight: Promise<void> | null = null;
+let autoSyncInitialized = false;
 
 function isAutoCloudSyncEnabled(all: Record<string, unknown>): boolean {
   return all.autoCloudSettingsSync !== false;
@@ -58,7 +71,7 @@ async function tryRefreshTokens(): Promise<boolean> {
   if (!refresh_token || !client_id) return false;
 
   try {
-    const r = await fetch(REFRESH_URL, {
+    const r = await fetchWithTimeout(REFRESH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token, client_id }),
@@ -93,7 +106,7 @@ async function fetchCloudSummaryOnce(
   | { ok: false; unauthorized: boolean; error?: string }
 > {
   try {
-    const r = await fetch(CLOUD_SUMMARY_URL, {
+    const r = await fetchWithTimeout(CLOUD_SUMMARY_URL, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -138,14 +151,39 @@ async function fetchCloudSummaryWithAuthRetry(
 }
 
 type PutResult =
-  | { ok: true; updated_at?: string }
+  | { ok: true; updated_at?: string; skipped?: boolean }
   | { ok: false; unauthorized: boolean; error?: string };
+
+async function resolveUploadBaseline(
+  normalized: Record<string, unknown>,
+  watermark: string | undefined,
+): Promise<Record<string, unknown>> {
+  const lastSnapshot = await getLastUploadedSnapshot();
+  if (lastSnapshot) return lastSnapshot;
+
+  if (watermark) {
+    await saveLastUploadedSnapshot(normalized);
+    return normalized;
+  }
+
+  return getSyncableStorageDefaults();
+}
 
 async function putSettingsOnce(token: string): Promise<PutResult> {
   try {
-    const all = await browser.storage.local.get();
-    const payload = buildUploadPayload(all as Record<string, unknown>);
-    const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
+    await ensureSyncableStorageDefaults();
+
+    const all = (await browser.storage.local.get()) as Record<string, unknown>;
+    const normalized = normalizeStorageForSync(all);
+    const watermark = all[BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY] as string | undefined;
+    const baseline = await resolveUploadBaseline(normalized, watermark);
+    const payload = buildUploadPatch(all, baseline);
+
+    if (!payload) {
+      return { ok: true, skipped: true };
+    }
+
+    const r = await fetchWithTimeout(CLOUD_SETTINGS_SYNC_URL, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -163,6 +201,7 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
       };
     }
     const updated_at = data?.updated_at as string | undefined;
+    await saveLastUploadedSnapshot(normalized);
     await setKnownRemoteUpdatedAt(updated_at);
     return { ok: true, updated_at };
   } catch (e) {
@@ -176,11 +215,13 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
 
 export async function performCloudSettingsUploadWithRetry(
   token: string,
-): Promise<{ success: boolean; error?: string; updated_at?: string }> {
+): Promise<{ success: boolean; error?: string; updated_at?: string; skipped?: boolean }> {
   let t = token;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await putSettingsOnce(t);
-    if (res.ok) return { success: true, updated_at: res.updated_at };
+    if (res.ok) {
+      return { success: true, updated_at: res.updated_at, skipped: res.skipped };
+    }
     if (res.unauthorized && attempt === 0) {
       const refreshed = await tryRefreshTokens();
       if (!refreshed) return { success: false, error: "Not authenticated" };
@@ -200,7 +241,7 @@ type GetResult =
 
 async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
   try {
-    const r = await fetch(CLOUD_SETTINGS_SYNC_URL, {
+    const r = await fetchWithTimeout(CLOUD_SETTINGS_SYNC_URL, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
@@ -234,6 +275,9 @@ async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
     reloadSeqtaPagesFn?.();
     const updated_at = data?.updated_at as string | undefined;
     await setKnownRemoteUpdatedAt(updated_at);
+    await saveLastUploadedSnapshot(
+      normalizeStorageForSync((await browser.storage.local.get()) as Record<string, unknown>),
+    );
     return { ok: true, updated_at };
   } catch (e) {
     return {
@@ -335,8 +379,8 @@ export function runCloudSettingsPoll(): Promise<void> {
     try {
       const { [POLL_THROTTLE_KEY]: last } = await browser.storage.local.get(POLL_THROTTLE_KEY);
       if (Date.now() - (Number(last) || 0) < POLL_THROTTLE_MS) return;
-      await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
       await runCloudSettingsPollInner();
+      await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
     } catch (e) {
       console.error("[BS+ cloud sync] Poll error:", e);
     } finally {
@@ -413,8 +457,22 @@ function onStorageChanged(
   })();
 }
 
+export async function withSuppressedCloudAutoUpload<T>(
+  operation: () => T | Promise<T>,
+): Promise<T> {
+  suppressAutoUploadDuringRestore = true;
+  try {
+    return await operation();
+  } finally {
+    suppressAutoUploadDuringRestore = false;
+  }
+}
+
 export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }): void {
   reloadSeqtaPagesFn = deps.reloadSeqtaPages;
+  if (autoSyncInitialized) return;
+  autoSyncInitialized = true;
   browser.storage.onChanged.addListener(onStorageChanged);
+  void runCloudSettingsPoll();
 }
 

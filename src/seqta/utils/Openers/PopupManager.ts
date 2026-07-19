@@ -54,6 +54,17 @@ interface OpenPopupOptions {
   afterClose?: () => void;
   /** When true, clears the post-update flag when this popup opens (What's New only). */
   clearJustUpdated?: boolean;
+  /** Extra classes on `.whatsnewContainer` (e.g. `whatsnewContainer--scrollBody`). */
+  containerClass?: string;
+}
+
+function chainAfterClose(next?: () => void) {
+  if (!next) return;
+  const previous = pendingAfterClose;
+  pendingAfterClose = () => {
+    next();
+    previous?.();
+  };
 }
 
 export function openPopup({
@@ -62,8 +73,14 @@ export function openPopup({
   animateSelector = ".whatsnewTextContainer *",
   afterClose,
   clearJustUpdated = false,
+  containerClass,
 }: OpenPopupOptions = {}) {
-  pendingAfterClose = afterClose;
+  if (document.getElementById("whatsnewbk")) {
+    chainAfterClose(afterClose);
+    return;
+  }
+
+  chainAfterClose(afterClose);
 
   const existingPopup = document.getElementById("whatsnewbk");
   if (existingPopup) {
@@ -77,6 +94,11 @@ export function openPopup({
 
   const container = document.createElement("div");
   container.classList.add("whatsnewContainer");
+  if (containerClass) {
+    for (const name of containerClass.split(/\s+/)) {
+      if (name) container.classList.add(name);
+    }
+  }
 
   if (header) container.append(header);
   for (const node of content) if (node) container.append(node);
@@ -86,22 +108,19 @@ export function openPopup({
   container.append(closeButton);
 
   background.append(container);
-  
-  // Find the appropriate container based on platform
+
   let parentContainer: HTMLElement | null = null;
   if (isSeqtaTeachExperience()) {
-    // For Teach, try #root first, then fall back to body
     parentContainer = document.getElementById("root") || document.body;
   } else {
-    // For Learn, use #container
     parentContainer = document.getElementById("container");
   }
-  
+
   if (!parentContainer) {
     console.error("[BetterSEQTA+] Could not find container for popup");
     return;
   }
-  
+
   parentContainer.append(background);
 
   if (settingsState.animations) {

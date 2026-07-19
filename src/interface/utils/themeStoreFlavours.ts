@@ -4,9 +4,90 @@ export function isHiddenStoreTheme(theme: Theme): boolean {
   return theme.theme_role === "slave";
 }
 
+/** Coerce API / fallback rows into the store `Theme` shape (camelCase images, safe strings). */
+export function normalizeStoreTheme(raw: Record<string, unknown>): Theme {
+  const flavours = Array.isArray(raw.flavours)
+    ? (raw.flavours as Record<string, unknown>[]).map(
+        (f): ThemeFlavour => ({
+          id: String(f.id ?? ""),
+          name: String(f.name ?? ""),
+          accent_color: String(f.accent_color ?? f.accentColor ?? ""),
+          cover_image: String(f.cover_image ?? f.coverImage ?? ""),
+          marquee_image:
+            typeof (f.marquee_image ?? f.marqueeImage) === "string"
+              ? String(f.marquee_image ?? f.marqueeImage)
+              : undefined,
+          download_count:
+            typeof f.download_count === "number"
+              ? f.download_count
+              : typeof f.downloadCount === "number"
+                ? f.downloadCount
+                : undefined,
+        }),
+      )
+    : undefined;
+
+  return {
+    id: String(raw.id ?? ""),
+    name: String(raw.name ?? "Untitled"),
+    description: String(raw.description ?? ""),
+    coverImage: String(raw.coverImage ?? raw.cover_image ?? ""),
+    marqueeImage:
+      typeof (raw.marqueeImage ?? raw.marquee_image) === "string"
+        ? String(raw.marqueeImage ?? raw.marquee_image)
+        : undefined,
+    theme_json_url:
+      typeof (raw.theme_json_url ?? raw.themeJsonUrl) === "string"
+        ? String(raw.theme_json_url ?? raw.themeJsonUrl)
+        : undefined,
+    is_favorited: raw.is_favorited === true || raw.isFavorited === true,
+    favorite_count:
+      typeof raw.favorite_count === "number"
+        ? raw.favorite_count
+        : typeof raw.favoriteCount === "number"
+          ? raw.favoriteCount
+          : undefined,
+    download_count:
+      typeof raw.download_count === "number"
+        ? raw.download_count
+        : typeof raw.downloadCount === "number"
+          ? raw.downloadCount
+          : undefined,
+    author: typeof raw.author === "string" ? raw.author : undefined,
+    featured: raw.featured === true,
+    tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : undefined,
+    created_at:
+      typeof raw.created_at === "number"
+        ? raw.created_at
+        : typeof raw.createdAt === "number"
+          ? raw.createdAt
+          : undefined,
+    updated_at:
+      typeof raw.updated_at === "number"
+        ? raw.updated_at
+        : typeof raw.updatedAt === "number"
+          ? raw.updatedAt
+          : undefined,
+    theme_role:
+      raw.theme_role === "master" || raw.theme_role === "slave" || raw.theme_role === "standard"
+        ? raw.theme_role
+        : undefined,
+    master_id:
+      typeof (raw.master_id ?? raw.masterId) === "string"
+        ? String(raw.master_id ?? raw.masterId)
+        : undefined,
+    flavours,
+  };
+}
+
 /** Grid and search: omit slave rows (when API sends a flattened list). */
 export function visibleStoreThemes(themes: Theme[]): Theme[] {
-  return themes.filter((t) => !isHiddenStoreTheme(t));
+  const visible = themes.filter((t) => !isHiddenStoreTheme(t));
+  // If every row is a slave (bad/migration payload), avoid an empty grid.
+  if (visible.length === 0 && themes.length > 0) {
+    return themes;
+  }
+  return visible;
 }
 
 function marqueeOrCoverUrl(t: { marqueeImage?: string; coverImage: string }): string {

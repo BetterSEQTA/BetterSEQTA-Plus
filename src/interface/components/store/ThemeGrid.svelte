@@ -21,9 +21,12 @@
     allStoreThemeRows?: Theme[];
   }>();
   
-  let filteredThemes = $derived(themes.filter((theme: Theme) =>
-    theme.name.toLowerCase().includes(searchTerm.toLowerCase()) || theme.description.toLowerCase().includes(searchTerm.toLowerCase())
-  ));
+  let filteredThemes = $derived(themes.filter((theme: Theme) => {
+    const q = searchTerm.toLowerCase();
+    const name = (theme.name ?? '').toLowerCase();
+    const description = (theme.description ?? '').toLowerCase();
+    return name.includes(q) || description.includes(q);
+  }));
 </script>
 
 <div class="relative" >

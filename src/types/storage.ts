@@ -6,6 +6,7 @@ export interface SettingsState {
   lessonalert: boolean;
   menuitems: {
     assessments: ToggleItem;
+    analytics: ToggleItem;
     courses: ToggleItem;
     dashboard: ToggleItem;
     documents: ToggleItem;
@@ -21,6 +22,7 @@ export interface SettingsState {
     settings: ToggleItem;
     timetable: ToggleItem;
     welcome: ToggleItem;
+    [key: string]: ToggleItem;
   };
   menuorder: any[];
   // Teach-specific spine navigation order
@@ -51,18 +53,33 @@ export interface SettingsState {
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
-  /** One-time announcement: SEQTA Engage support for parents (dismissed popup queue). */
-  engageParentsAnnouncementShown?: boolean;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
-  /** ID of the last Theme of the Month entry shown to the user (shows once per new entry). */
+  /**
+   * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
+   * Cleared automatically when a new month's entry is fetched (different `month`).
+   */
+  themeOfTheMonthDismissedMonth?: string;
+  /** @deprecated Migrated away; no longer read. */
   themeOfTheMonthLastSeenId?: string;
   /** Permanently disables Theme of the Month startup prompts. */
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
+  /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
+  homeUpcomingSubjectsMax?: number;
+  /** Max assessments shown per subject on the home page; 0 = no limit. */
+  homeUpcomingAssessmentsPerSubjectMax?: number;
+  /** When true, show past-due assessments from the upcoming list on the home page. */
+  homeUpcomingIncludePast?: boolean;
   devMode?: boolean;
+  /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
+  verboseLogging?: boolean;
+  /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
+  devGhReleaseVersionOverride?: string;
+  /** ISO timestamp of the last acknowledged nightly release publish time. */
+  lastSeenNightlyPublishedAt?: string;
   originalDarkMode?: boolean;
   newsSource?: string;
   mockNotices?: boolean;
@@ -77,6 +94,8 @@ export interface SettingsState {
   adaptiveThemeColour?: boolean;
   adaptiveThemeGradient?: boolean;
   adaptiveThemeColourTransition?: boolean;
+  /** Google Font preset id for SEQTA interface typography (`rubik` default). */
+  selectedFont?: string;
 
   // depreciated keys
   animatedbk: boolean;
@@ -85,11 +104,7 @@ export interface SettingsState {
   assessmentsAverage?: boolean;
   notificationCollector?: boolean;
 
-  // BetterSEQTA Cloud (accounts.betterseqta.org)
-  bsplus_client_id?: string;
-  bsplus_token?: string;
-  bsplus_refresh_token?: string;
-  bsplus_user?: { id: string; email?: string; username?: string; displayName?: string; pfpUrl?: string; admin_level?: number };
+  // BetterSEQTA Cloud (accounts.betterseqta.org) — stored via CloudAuth, not settingsState
   /** When not `false`, automatic cloud settings sync is enabled (default-on). */
   autoCloudSettingsSync?: boolean;
 }

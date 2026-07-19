@@ -1,5 +1,6 @@
 import type { IndexItem, Job } from "../types";
 
+import { verboseDebug } from '@/utils/verboseLog';
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",
@@ -37,7 +38,7 @@ const fetchSubjects = async () => {
 
 const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
   const map: Record<number, any> = {};
-  
+
   // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
   // This is much faster than sequential fetching
   await Promise.all(
@@ -49,7 +50,7 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
           metaclass: subject.metaclass,
           student,
         });
-        
+
         // Past assessments API can return data in payload.tasks OR payload.pending (or both)
         // Based on analytics.rs fetch_past_assessments, we need to check both arrays
         const processAssessment = (assessment: any) => {
@@ -65,13 +66,13 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
             };
           }
         };
-        
+
         // Match analytics.rs: Check both pending and tasks arrays
         // Check for pending array first (matching Rust code order)
         if (res.payload?.pending && Array.isArray(res.payload.pending)) {
           res.payload.pending.forEach(processAssessment);
         }
-        
+
         // Check for tasks array
         if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
           res.payload.tasks.forEach(processAssessment);
@@ -81,7 +82,7 @@ const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
       }
     })
   );
-  
+
   return Object.values(map);
 };
 
@@ -127,8 +128,8 @@ export const assignmentsJob: Job = {
     const existingIds = new Set(existingItems.map((i) => i.id));
 
     const student = 69; // TODO: Get from context if available
-    
-    console.debug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
+
+    verboseDebug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     
     // Fetch data in parallel
     const [upcoming, subjects] = await Promise.all([
@@ -136,12 +137,12 @@ export const assignmentsJob: Job = {
       fetchSubjects(),
     ]);
 
-    console.debug(`[Assignments job] Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`);
+    verboseDebug(`[Assignments job] Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`);
 
     // Fetch past assessments for ALL subjects to ensure we get all historical assignments
     const past = await fetchPastAssessments(student, subjects);
     
-    console.debug(`[Assignments job] Fetched ${past.length} past assessments`);
+    verboseDebug(`[Assignments job] Fetched ${past.length} past assessments`);
     
     // Create a lookup map from subject code to programme/metaclass
     const subjectLookup = new Map<string, { programme: number; metaclass: number }>();
@@ -220,7 +221,7 @@ export const assignmentsJob: Job = {
     const assessmentArray = Array.from(allAssessments.values());
     const pastCount = assessmentArray.filter(a => !a.isUpcoming).length;
     const upcomingCount = assessmentArray.filter(a => a.isUpcoming).length;
-    console.debug(`[Assignments job] Processing ${assessmentArray.length} total assessments (${upcomingCount} upcoming, ${pastCount} past)`);
+    verboseDebug(`[Assignments job] Processing ${assessmentArray.length} total assessments (${upcomingCount} upcoming, ${pastCount} past)`);
     const batchSize = 15; // Increased batch size for better performance
     
     // Skip fetching assessment details - the API endpoint doesn't exist or returns 404
@@ -321,7 +322,7 @@ export const assignmentsJob: Job = {
             renderComponentId: "assessment",
           };
           
-          console.debug(`[Assignments job] ✅ Created item for assignment ${assessment.id}:`, {
+          verboseDebug(`[Assignments job] ✅ Created item for assignment ${assessment.id}:`, {
             id: item.id,
             programmeId: item.metadata.programmeId,
             programmeID: item.metadata.programmeID,
@@ -350,7 +351,7 @@ export const assignmentsJob: Job = {
 
     const newItemsCount = items.filter(item => !existingIds.has(item.id)).length;
     const updatedItemsCount = items.length - newItemsCount;
-    console.debug(`[Assignments job] Indexed ${items.length} assignment items (${newItemsCount} new, ${updatedItemsCount} updated)`);
+    verboseDebug(`[Assignments job] Indexed ${items.length} assignment items (${newItemsCount} new, ${updatedItemsCount} updated)`);
     return items;
   },
 

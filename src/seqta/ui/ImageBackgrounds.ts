@@ -31,6 +31,7 @@ export async function appendBackgroundToUI() {
 }
 
 let lastLoadedId: string | null = null;
+let lastBlobUrl: string | null = null;
 
 export async function loadBackground() {
   if (!isIndexedDBSupported()) {
@@ -46,6 +47,10 @@ export async function loadBackground() {
         backgroundContainer.remove();
       }
       lastLoadedId = null;
+      if (lastBlobUrl) {
+        URL.revokeObjectURL(lastBlobUrl);
+        lastBlobUrl = null;
+      }
       return;
     }
 
@@ -91,12 +96,19 @@ export async function loadBackground() {
 
     mediaContainer.innerHTML = "";
 
+    if (lastBlobUrl) {
+      URL.revokeObjectURL(lastBlobUrl);
+      lastBlobUrl = null;
+    }
+
     const mediaElement =
       background.type === "video"
         ? document.createElement("video")
         : document.createElement("img");
 
-    mediaElement.src = URL.createObjectURL(background.blob);
+    const blobUrl = URL.createObjectURL(background.blob);
+    lastBlobUrl = blobUrl;
+    mediaElement.src = blobUrl;
     mediaElement.classList.add("background");
 
     if (mediaElement instanceof HTMLVideoElement) {

@@ -10,13 +10,33 @@ import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloud
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
   clearCustomThemeAdaptiveCssVariables,
   setCustomThemeAdaptiveCssVariables,
 } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import {
+  clearThemeInPage,
+  syncThemeToPage,
+  type ThemePageSyncInput,
+} from "@/seqta/utils/patchThemeImagesPageContext";
+import { verboseDebug, verboseInfo } from "@/utils/verboseLog";
+import {
+  clearThemeRuntime,
+  injectThemeDom,
+  runThemeScript,
+  type ThemeDomSpec,
+  type ThemeScriptSpec,
+  validateThemeDom,
+  validateThemeScript,
+} from "./theme-runtime";
+import {
+  base64ToBlob,
+  blobToBase64Data,
+  stripBase64Prefix,
+} from "./themeImageUrl";
 
 type ThemeContent = {
   id: string;
@@ -31,6 +51,8 @@ type ThemeContent = {
   forceDark?: boolean;
   adaptiveCssVariables?: string[];
   images?: { id: string; variableName: string; data: string }[]; // data: base64
+  themeScript?: ThemeScriptSpec;
+  themeDom?: ThemeDomSpec;
 };
 
 export type InstallThemeMeta = {
@@ -45,17 +67,14 @@ export type InstallThemeMeta = {
 export class ThemeManager {
   private static instance: ThemeManager;
   private currentTheme: CustomTheme | null = null;
-  private styleElement: HTMLStyleElement | null = null;
-  private previewStyleElement: HTMLStyleElement | null = null;
-  private previousImageVariableNames: string[] = [];
+  private lastSyncedImageKey: string | null = null;
   private originalPreviewColor: string | null = null;
   private originalPreviewTheme: boolean | null = null;
-  private imageUrlCache: Map<string, string> = new Map();
   private lastTransitionPoint: { x: number; y: number } = { x: 0, y: 0 };
   private storeUpdateCheckRunning = false;
 
   private constructor() {
-    console.debug("[ThemeManager] Initializing...");
+    verboseDebug("[ThemeManager] Initializing...");
   }
 
   public static getInstance(): ThemeManager {
@@ -76,7 +95,7 @@ export class ThemeManager {
    * Get a theme by ID from storage
    */
   public async getTheme(themeId: string): Promise<CustomTheme | null> {
-    console.debug("[ThemeManager] Getting theme:", themeId);
+    verboseDebug("[ThemeManager] Getting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       return theme;
@@ -152,17 +171,17 @@ export class ThemeManager {
    * Disable the current theme without deleting it
    */
   public async disableTheme(): Promise<void> {
-    console.debug("[ThemeManager] Disabling current theme");
+    verboseDebug("[ThemeManager] Disabling current theme");
     try {
       if (!this.currentTheme) {
-        console.debug("[ThemeManager] No theme to disable");
+        verboseDebug("[ThemeManager] No theme to disable");
         return;
       }
 
       await this.removeTheme(this.currentTheme);
       this.currentTheme = null;
       settingsState.selectedTheme = "";
-      console.debug("[ThemeManager] Theme disabled successfully");
+      verboseDebug("[ThemeManager] Theme disabled successfully");
     } catch (error) {
       console.error("[ThemeManager] Error disabling theme:", error);
     }
@@ -199,7 +218,7 @@ export class ThemeManager {
    * Initialize the theme system and restore previous state
    */
   public async initialize(): Promise<void> {
-    console.debug("[ThemeManager] Starting initialization");
+    verboseDebug("[ThemeManager] Starting initialization");
     try {
       const neumorphicThemeId = "9a9786d1-b5fc-4a91-8c7a-f8bf7f7679ad";
       const migrationCSS = "#title {\nbackground: transparent !important;\n}";
@@ -212,7 +231,7 @@ export class ThemeManager {
 
       const themeCreatorOpen = localStorage.getItem("themeCreatorOpen");
       if (themeCreatorOpen === "true") {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Theme creator was open, clearing preview state",
         );
         this.clearPreview();
@@ -220,7 +239,7 @@ export class ThemeManager {
       }
 
       if (settingsState.selectedTheme) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Found selected theme, restoring:",
           settingsState.selectedTheme,
         );
@@ -237,7 +256,7 @@ export class ThemeManager {
    * Clean up theme system resources
    */
   public async cleanup(): Promise<void> {
-    console.debug("[ThemeManager] Cleaning up resources");
+    verboseDebug("[ThemeManager] Cleaning up resources");
     try {
       if (this.currentTheme) {
         await this.removeTheme(this.currentTheme, false);
@@ -251,7 +270,7 @@ export class ThemeManager {
    * Set and apply a theme by ID
    */
   public async setTheme(themeId: string, applyViewTransition: boolean = true): Promise<void> {
-    console.debug("[ThemeManager] Setting theme:", themeId);
+    verboseDebug("[ThemeManager] Setting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       if (!theme) {
@@ -261,7 +280,7 @@ export class ThemeManager {
 
       // Store original settings before applying new theme
       if (!settingsState.selectedTheme) {
-        console.debug("[ThemeManager] Storing original settings");
+        verboseDebug("[ThemeManager] Storing original settings");
         settingsState.originalSelectedColor = settingsState.selectedColor;
 
         if (shouldForceThemeAppearance(theme)) {
@@ -274,7 +293,7 @@ export class ThemeManager {
         await this.applyViewTransition(async () => {
           // Remove current theme if exists
           if (this.currentTheme) {
-            console.debug("[ThemeManager] Removing current theme");
+            verboseDebug("[ThemeManager] Removing current theme");
             await this.removeThemeWithoutTransition(this.currentTheme);
           }
 
@@ -286,7 +305,7 @@ export class ThemeManager {
       } else {
         // Remove current theme if exists
         if (this.currentTheme) {
-          console.debug("[ThemeManager] Removing current theme");
+          verboseDebug("[ThemeManager] Removing current theme");
           await this.removeThemeWithoutTransition(this.currentTheme);
         }
 
@@ -305,42 +324,43 @@ export class ThemeManager {
    * Apply theme components (CSS, images, settings)
    */
   private async applyTheme(theme: CustomTheme): Promise<void> {
-    console.debug("[ThemeManager] Applying theme:", theme.name);
+    verboseDebug("[ThemeManager] Applying theme:", theme.name);
     try {
-      // Apply custom CSS
-      if (theme.CustomCSS) {
-        console.debug("[ThemeManager] Applying custom CSS");
-        this.applyCustomCSS(theme.CustomCSS);
-      }
+      // Run the theme script BEFORE injecting CustomCSS so any state the
+      // script publishes (e.g. `data-city-state` and `--city-sky-color` for
+      // Noir City) is already on <html> when the new CSS rules paint.
+      // Otherwise the CSS lands with var() unresolved and the page flashes
+      // its previous state before snapping to the right colour.
+      runThemeScript(theme.themeScript);
 
-      // Apply custom images
-      if (theme.CustomImages) {
-        console.debug("[ThemeManager] Applying custom images");
-        theme.CustomImages.forEach((image) => {
-          const imageUrl = URL.createObjectURL(image.blob);
-          document.documentElement.style.setProperty(
-            "--" + image.variableName,
-            `url(${imageUrl})`,
-          );
-        });
+      // Custom CSS + images must be applied in page context (Firefox).
+      verboseDebug("[ThemeManager] Applying theme styles in page context");
+      await syncThemeToPage({
+        customCss: theme.CustomCSS || "",
+        images: theme.CustomImages ?? [],
+      });
+      if (theme.CustomImages?.length) {
+        this.lastSyncedImageKey = this.imageSyncKey(theme.CustomImages);
+      } else {
+        this.lastSyncedImageKey = null;
       }
 
       // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
         const dark = getForcedDarkMode(theme);
-        console.debug("[ThemeManager] Setting dark mode:", dark);
+        verboseDebug("[ThemeManager] Setting dark mode:", dark);
         settingsState.DarkMode = dark;
       }
 
       // Use the stored selected color if available, otherwise use the default
       if (theme.selectedColor) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Restoring saved color:",
           theme.selectedColor,
         );
         settingsState.selectedColor = theme.selectedColor;
       } else if (theme.defaultColour) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Using default color:",
           theme.defaultColour,
         );
@@ -348,6 +368,8 @@ export class ThemeManager {
       }
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+
+      injectThemeDom(theme.themeDom);
     } catch (error) {
       console.error("[ThemeManager] Error applying theme:", error);
     }
@@ -360,7 +382,7 @@ export class ThemeManager {
     theme: CustomTheme,
     clearSelectedTheme: boolean = true,
   ): Promise<void> {
-    console.debug("[ThemeManager] Removing theme with transition:", theme.name);
+    verboseDebug("[ThemeManager] Removing theme with transition:", theme.name);
     try {
       await this.applyViewTransition(async () => {
         await this.removeThemeWithoutTransition(theme, clearSelectedTheme);
@@ -377,30 +399,13 @@ export class ThemeManager {
     theme: CustomTheme,
     clearSelectedTheme: boolean = true,
   ): Promise<void> {
-    console.debug("[ThemeManager] Removing theme:", theme.name);
+    verboseDebug("[ThemeManager] Removing theme:", theme.name);
     try {
-      // Remove custom CSS
-      if (this.styleElement) {
-        console.debug("[ThemeManager] Removing custom CSS");
-        this.styleElement.remove();
-        this.styleElement = null;
-      }
+      clearThemeRuntime();
 
-      // Remove custom images
-      if (theme.CustomImages) {
-        console.debug("[ThemeManager] Removing custom images");
-        theme.CustomImages.forEach((image) => {
-          const value = document.documentElement.style.getPropertyValue(
-            "--" + image.variableName,
-          );
-          if (value) {
-            URL.revokeObjectURL(value.slice(4, -1)); // Remove url() wrapper
-          }
-          document.documentElement.style.removeProperty(
-            "--" + image.variableName,
-          );
-        });
-      }
+      verboseDebug("[ThemeManager] Removing theme page styles");
+      clearThemeInPage();
+      this.lastSyncedImageKey = null;
 
       if (this.currentTheme) {
         // Store the current color with the theme before removing it
@@ -421,7 +426,7 @@ export class ThemeManager {
 
       // Restore original settings
       if (settingsState.originalSelectedColor) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Restoring original color:",
           settingsState.originalSelectedColor,
         );
@@ -429,7 +434,7 @@ export class ThemeManager {
       }
 
       if (settingsState.originalDarkMode !== undefined) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Restoring original dark mode:",
           settingsState.originalDarkMode,
         );
@@ -448,27 +453,21 @@ export class ThemeManager {
   }
 
   /**
-   * Apply custom CSS to the document
+   * Stable key so preview updates can skip re-encoding image blobs when only CSS changed.
    */
-  private applyCustomCSS(css: string): void {
-    console.debug("[ThemeManager] Applying custom CSS");
-    try {
-      if (!this.styleElement) {
-        this.styleElement = document.createElement("style");
-        this.styleElement.id = "custom-theme";
-        document.head.appendChild(this.styleElement);
-      }
-      this.styleElement.textContent = css;
-    } catch (error) {
-      console.error("[ThemeManager] Error applying custom CSS:", error);
-    }
+  private imageSyncKey(
+    images: Array<{ id: string; variableName: string; blob: Blob }>,
+  ): string {
+    return images
+      .map((image) => `${image.id}:${image.variableName}:${image.blob.size}`)
+      .join("|");
   }
 
   /**
    * Get list of available themes
    */
   public async getAvailableThemes(): Promise<CustomTheme[]> {
-    console.debug("[ThemeManager] Getting available themes");
+    verboseDebug("[ThemeManager] Getting available themes");
     try {
       const themeIds = (await localforage.getItem("customThemes")) as
         | string[]
@@ -494,7 +493,7 @@ export class ThemeManager {
    * Save or update a theme
    */
   public async saveTheme(theme: LoadedCustomTheme): Promise<void> {
-    console.debug("[ThemeManager] Saving theme:", theme.name);
+    verboseDebug("[ThemeManager] Saving theme:", theme.name);
     try {
       const existing = (await localforage.getItem(theme.id)) as CustomTheme | null;
       let toSave = theme;
@@ -524,7 +523,7 @@ export class ThemeManager {
    * Delete a theme
    */
   public async deleteTheme(themeId: string): Promise<void> {
-    console.debug("[ThemeManager] Deleting theme:", themeId);
+    verboseDebug("[ThemeManager] Deleting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       if (theme) {
@@ -594,7 +593,7 @@ export class ThemeManager {
     theme_json_url?: string;
     updated_at?: number;
   }): Promise<void> {
-    console.debug("[ThemeManager] Downloading theme:", themeContent.name);
+    verboseDebug("[ThemeManager] Downloading theme:", themeContent.name);
     if (!themeContent.id) {
       throw new Error("Missing theme id");
     }
@@ -608,8 +607,12 @@ export class ThemeManager {
       if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
         throw new Error("Failed to get theme download URL");
       }
+      const themeJsonUrl = downloadData.data.theme_json_url;
+      if (!isAllowedFetchUrl(themeJsonUrl)) {
+        throw new Error("Theme download URL not allowed");
+      }
       themeData = (await this.fetchFromUrl(
-        downloadData.data.theme_json_url,
+        themeJsonUrl,
       )) as ThemeContent;
     } catch (apiError) {
       console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
@@ -630,11 +633,20 @@ export class ThemeManager {
     themeData: ThemeContent,
     meta?: InstallThemeMeta,
   ): Promise<void> {
-    console.debug("[ThemeManager] Installing theme:", themeData.name);
+    verboseDebug("[ThemeManager] Installing theme:", themeData.name);
     try {
       // Validate required fields
       if (!themeData.id || !themeData.name) {
         throw new Error("Theme is missing required fields (id or name)");
+      }
+
+      // Validate optional runtime hooks. Reject the install if either is
+      // malformed so a tampered theme cannot smuggle in unsafe values.
+      if (!validateThemeScript(themeData.themeScript)) {
+        throw new Error("Theme has invalid themeScript");
+      }
+      if (!validateThemeDom(themeData.themeDom)) {
+        throw new Error("Theme has invalid themeDom");
       }
 
       const fromStore = meta?.fromStore ?? false;
@@ -644,10 +656,10 @@ export class ThemeManager {
       let coverImageBlob = null;
       if (themeData.coverImage) {
         try {
-          const strippedCoverImage = this.stripBase64Prefix(
-            themeData.coverImage,
+          coverImageBlob = base64ToBlob(
+            stripBase64Prefix(themeData.coverImage),
+            "image/png",
           );
-          coverImageBlob = this.base64ToBlob(strippedCoverImage);
         } catch (e) {
           console.warn("[ThemeManager] Failed to process cover image:", e);
           // Continue without cover image
@@ -665,7 +677,7 @@ export class ThemeManager {
               }
               return {
                 ...image,
-                blob: this.base64ToBlob(this.stripBase64Prefix(image.data)),
+                blob: base64ToBlob(stripBase64Prefix(image.data), "image/png"),
               };
             } catch (e) {
               console.warn("[ThemeManager] Failed to process image:", e);
@@ -701,6 +713,8 @@ export class ThemeManager {
               ? true
               : undefined,
         adaptiveCssVariables: themeData.adaptiveCssVariables,
+        themeScript: themeData.themeScript,
+        themeDom: themeData.themeDom,
       };
 
       await this.saveTheme(theme);
@@ -726,10 +740,8 @@ export class ThemeManager {
     this.storeUpdateCheckRunning = true;
     localStorage.setItem(ThemeManager.STORE_CHECK_KEY, String(Date.now()));
     try {
-      const token = await cloudAuth.getStoredToken();
       const res = (await browser.runtime.sendMessage({
         type: "fetchThemes",
-        token: token ?? undefined,
       })) as {
         success?: boolean;
         data?: { themes?: Array<{ id: string; updated_at?: number }> };
@@ -790,7 +802,7 @@ export class ThemeManager {
             name: theme.name,
             updated_at: serverUpdated,
           });
-          console.log(
+          verboseInfo(
             "[ThemeManager] Theme auto-updated from store:",
             theme.name,
           );
@@ -823,7 +835,7 @@ export class ThemeManager {
    * Share a theme by exporting it
    */
   public async shareTheme(themeId: string): Promise<void> {
-    console.debug("[ThemeManager] Sharing theme:", themeId);
+    verboseDebug("[ThemeManager] Sharing theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as LoadedCustomTheme;
       if (!theme) {
@@ -850,13 +862,13 @@ export class ThemeManager {
         CustomImages.map(async (image) => ({
           id: image.id,
           variableName: image.variableName,
-          data: await this.blobToBase64(image.blob),
+          data: await blobToBase64Data(image.blob),
         })),
       );
 
       // Convert cover image to base64
       const coverImageBase64 = coverImage
-        ? await this.blobToBase64(coverImage)
+        ? await blobToBase64Data(coverImage)
         : null;
 
       // Create shareable theme data with only necessary fields
@@ -877,7 +889,7 @@ export class ThemeManager {
    * Preview a theme without applying it
    */
   public async previewTheme(theme: LoadedCustomTheme): Promise<void> {
-    console.debug("[ThemeManager] Previewing theme:", theme.name);
+    verboseDebug("[ThemeManager] Previewing theme:", theme.name);
     try {
       const { CustomCSS, CustomImages, defaultColour } = theme;
 
@@ -895,34 +907,12 @@ export class ThemeManager {
         }
       }
 
-      // Apply custom CSS
-      if (CustomCSS) {
-        this.applyPreviewCSS(CustomCSS);
-      }
-
-      // Apply custom images
-      const newImageVariableNames = CustomImages.map(
-        (image) => image.variableName,
-      );
-
-      // Remove old preview images
-      this.previousImageVariableNames.forEach((variableName) => {
-        if (!newImageVariableNames.includes(variableName)) {
-          this.removeImageFromDocument(variableName);
-        }
+      // Apply custom CSS + images in page context (preview stylesheet)
+      await syncThemeToPage({
+        previewCss: CustomCSS,
+        images: CustomImages,
       });
-
-      // Apply new images
-      CustomImages.forEach((image) => {
-        const imageUrl = URL.createObjectURL(image.blob);
-        document.documentElement.style.setProperty(
-          `--${image.variableName}`,
-          `url(${imageUrl})`,
-        );
-      });
-
-      // Update previousImageVariableNames
-      this.previousImageVariableNames = newImageVariableNames;
+      this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
 
       // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
@@ -944,7 +934,7 @@ export class ThemeManager {
    * Update the preview of a theme in real-time (for theme creator)
    */
   public async updatePreview(theme: Partial<LoadedCustomTheme>): Promise<void> {
-    console.debug("[ThemeManager] Updating theme preview");
+    verboseDebug("[ThemeManager] Updating theme preview");
     try {
       // Only store original settings if this is a new theme (not editing)
       // We can tell it's a new theme if it has no webURL (which is set when a theme is saved/loaded)
@@ -957,47 +947,22 @@ export class ThemeManager {
         }
       }
 
-      // Apply CSS if changed
+      const syncInput: ThemePageSyncInput = {};
+
       if (theme.CustomCSS !== undefined) {
-        this.applyPreviewCSS(theme.CustomCSS);
+        syncInput.previewCss = theme.CustomCSS;
       }
 
-      // Handle images if present
       if (theme.CustomImages) {
-        const newImageVariableNames = theme.CustomImages.map(
-          (image) => image.variableName,
-        );
+        const imageKey = this.imageSyncKey(theme.CustomImages);
+        if (imageKey !== this.lastSyncedImageKey) {
+          syncInput.images = theme.CustomImages;
+          this.lastSyncedImageKey = imageKey;
+        }
+      }
 
-        // Remove old preview images that are no longer present
-        this.previousImageVariableNames.forEach((variableName) => {
-          if (!newImageVariableNames.includes(variableName)) {
-            this.removeImageFromDocument(variableName);
-            // Clean up cached URL
-            this.imageUrlCache.delete(variableName);
-          }
-        });
-
-        // Apply or update images
-        theme.CustomImages.forEach((image) => {
-          const existingUrl = this.imageUrlCache.get(image.variableName);
-          if (!existingUrl) {
-            // Only create new URL if one doesn't exist
-            const imageUrl = URL.createObjectURL(image.blob);
-            this.imageUrlCache.set(image.variableName, imageUrl);
-            document.documentElement.style.setProperty(
-              `--${image.variableName}`,
-              `url(${imageUrl})`,
-            );
-          } else {
-            // Reuse existing URL
-            document.documentElement.style.setProperty(
-              `--${image.variableName}`,
-              `url(${existingUrl})`,
-            );
-          }
-        });
-
-        this.previousImageVariableNames = newImageVariableNames;
+      if (Object.keys(syncInput).length > 0) {
+        await syncThemeToPage(syncInput);
       }
 
       // Always apply dark mode setting when theme forces appearance
@@ -1032,22 +997,10 @@ export class ThemeManager {
    * Clear theme preview
    */
   public clearPreview(): void {
-    console.debug("[ThemeManager] Clearing theme preview");
+    verboseDebug("[ThemeManager] Clearing theme preview");
     try {
-      // Remove preview images and revoke URLs
-      this.previousImageVariableNames.forEach((variableName) => {
-        this.removeImageFromDocument(variableName);
-      });
-      // Clear all cached URLs
-      this.imageUrlCache.forEach((url) => URL.revokeObjectURL(url));
-      this.imageUrlCache.clear();
-      this.previousImageVariableNames = [];
-
-      // Remove preview CSS
-      if (this.previewStyleElement) {
-        this.previewStyleElement.remove();
-        this.previewStyleElement = null;
-      }
+      void syncThemeToPage({ clearPreview: true, images: [] });
+      this.lastSyncedImageKey = null;
 
       clearCustomThemeAdaptiveCssVariables();
 
@@ -1058,22 +1011,22 @@ export class ThemeManager {
         settingsState.selectedColor = storedColor;
         localStorage.removeItem("originalPreviewColor");
       } else if (this.originalPreviewColor !== null) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Restoring color from memory:",
           this.originalPreviewColor,
         );
         settingsState.selectedColor = this.originalPreviewColor;
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Color after restore:",
           settingsState.selectedColor,
         );
       } else {
-        console.debug("[ThemeManager] No color to restore found");
+        verboseDebug("[ThemeManager] No color to restore found");
       }
       this.originalPreviewColor = null;
 
       if (this.originalPreviewTheme !== null) {
-        console.debug(
+        verboseDebug(
           "[ThemeManager] Restoring dark mode:",
           this.originalPreviewTheme,
         );
@@ -1085,51 +1038,6 @@ export class ThemeManager {
     } catch (error) {
       console.error("[ThemeManager] Error clearing preview:", error);
     }
-  }
-
-  // Utility methods
-  private stripBase64Prefix(base64String: string): string {
-    if (!base64String) return "";
-
-    const prefixRegex = /^data:[^;]+;base64,/;
-    try {
-      return prefixRegex.test(base64String)
-        ? base64String.replace(prefixRegex, "")
-        : base64String;
-    } catch (err) {
-      console.error("[ThemeManager] Error stripping base64 prefix:", err);
-      return "";
-    }
-  }
-
-  private base64ToBlob(base64: string): Blob {
-    try {
-      const byteString = atob(base64);
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-
-      return new Blob([ab], { type: "image/png" });
-    } catch (err) {
-      console.error("[ThemeManager] Error converting base64 to blob:", err);
-      return new Blob();
-    }
-  }
-
-  private async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const base64Data = base64String.split(",")[1];
-        resolve(base64Data);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 
   private saveThemeFile(data: object, fileName: string): void {
@@ -1146,38 +1054,6 @@ export class ThemeManager {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("[ThemeManager] Error saving theme file:", err);
-    }
-  }
-
-  private removeImageFromDocument(variableName: string): void {
-    try {
-      const value = document.documentElement.style.getPropertyValue(
-        "--" + variableName,
-      );
-      if (value) {
-        const url = this.imageUrlCache.get(variableName);
-        if (url) {
-          URL.revokeObjectURL(url);
-          this.imageUrlCache.delete(variableName);
-        }
-      }
-      document.documentElement.style.removeProperty("--" + variableName);
-    } catch (err) {
-      console.error("[ThemeManager] Error removing image from document:", err);
-    }
-  }
-
-  private applyPreviewCSS(css: string): void {
-    console.debug("[ThemeManager] Applying preview CSS");
-    try {
-      if (!this.previewStyleElement) {
-        this.previewStyleElement = document.createElement("style");
-        this.previewStyleElement.id = "custom-theme-preview";
-        document.head.appendChild(this.previewStyleElement);
-      }
-      this.previewStyleElement.textContent = css;
-    } catch (error) {
-      console.error("[ThemeManager] Error applying preview CSS:", error);
     }
   }
 }

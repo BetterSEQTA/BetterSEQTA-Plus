@@ -1,9 +1,3 @@
-import { BasePlugin } from "@/plugins/core/settings";
-import {
-  booleanSetting,
-  defineSettings,
-  Setting,
-} from "@/plugins/core/settingsHelpers";
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -15,44 +9,28 @@ import {
   letterToNumber,
   parseAssessments,
   processAssessments,
+  type WeightingEntry,
 } from "./utils.ts";
+import { injectRubricCopyButtons, teardownRubricCopyButtons } from "./rubricCopy.ts";
 
 interface weightingsStorage {
-  weightings: Record<string, string>;
+  weightings: Record<string, WeightingEntry>;
   assessments: Record<string, string>;
   weightingOverrides: Record<string, string>;
 }
 
-const settings = defineSettings({
-  lettergrade: booleanSetting({
-    default: false,
-    title: "Letter Grades",
-    description: "Display the average as a letter instead of a percentage",
-  }),
-});
-
-class AssessmentsAveragePluginClass extends BasePlugin<typeof settings> {
-  @Setting(settings.lettergrade)
-  lettergrade!: boolean;
-}
-
-const instance = new AssessmentsAveragePluginClass();
-
 let overrideListenerController: AbortController | null = null;
+let wrapperColourObserver: MutationObserver | null = null;
+let wrapperColourObserverTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
-  id: "assessments-average",
-  name: "Assessment Averages",
-  description: "Adds an average grade to the Assessments page",
-  version: "1.0.0",
-  disableToggle: true,
-  settings: instance.settings,
-
-  run: async (api) => {
+const assessmentsAveragePlugin = {
+  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
     await initStorage(api);
     clearStuck(api);
 
-    api.seqta.onMount(".assessmentsWrapper", async () => {
+    const { unregister: unregisterWrapperMount } = api.seqta.onMount(
+      ".assessmentsWrapper",
+      async () => {
       await waitForElm(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
         true,
@@ -60,8 +38,8 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         1000,
       );
 
-      await parseAssessments(api);
-      await renderSubjectAverage(api);
+      // Wire listeners first so the very first re-render triggered by a
+      // background handleWeightings completion can find them.
       overrideListenerController?.abort();
       overrideListenerController = new AbortController();
       document.addEventListener(
@@ -69,24 +47,73 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
         () => renderSubjectAverage(api),
         { signal: overrideListenerController.signal },
       );
+      document.addEventListener(
+        "betterseqta:weightingsChanged",
+        () => renderSubjectAverage(api),
+        { signal: overrideListenerController.signal },
+      );
+
+      // Render immediately with whatever is already cached. Fresh entries
+      // and stale-with-previous-value entries both contribute their numeric
+      // weights, so the subject average appears without waiting on any
+      // background PDF refetches.
+      await renderSubjectAverage(api);
+
+      // Kick off indexing in the background. Each completion dispatches
+      // betterseqta:weightingsChanged, which triggers a fresh render.
+      void parseAssessments(api);
       const wrapper = document.querySelector(".assessmentsWrapper");
       if (wrapper) {
-        const observer = new MutationObserver(() => {
+        wrapperColourObserver?.disconnect();
+        if (wrapperColourObserverTimeout) {
+          clearTimeout(wrapperColourObserverTimeout);
+        }
+        wrapperColourObserver = new MutationObserver(() => {
           applySubjectColourToOverallResult();
         });
-        observer.observe(wrapper, { childList: true, subtree: true });
-        setTimeout(() => observer.disconnect(), 10000);
+        wrapperColourObserver.observe(wrapper, { childList: true, subtree: true });
+        wrapperColourObserverTimeout = setTimeout(() => {
+          wrapperColourObserver?.disconnect();
+          wrapperColourObserver = null;
+          wrapperColourObserverTimeout = null;
+        }, 10000);
       }
-    });
-    api.seqta.onMount("[class*='SelectedAssessment__']", () => {
+    },
+    );
+    const { unregister: unregisterSelectedMount } = api.seqta.onMount(
+      "[class*='SelectedAssessment__']",
+      () => {
       injectWeightingsTab(api);
-    });
+      injectRubricCopyButtons();
+    },
+    );
+
+    return () => {
+      overrideListenerController?.abort();
+      overrideListenerController = null;
+      wrapperColourObserver?.disconnect();
+      wrapperColourObserver = null;
+      if (wrapperColourObserverTimeout) {
+        clearTimeout(wrapperColourObserverTimeout);
+        wrapperColourObserverTimeout = null;
+      }
+      teardownRubricCopyButtons();
+      unregisterWrapperMount();
+      unregisterSelectedMount();
+    };
   },
 };
 
 let renderInFlight = false;
+let renderQueued = false;
 async function renderSubjectAverage(api: any) {
-  if (renderInFlight) return;
+  if (renderInFlight) {
+    // Coalesce: remember that fresh data arrived during this render and
+    // re-run once the current pass finishes, so the UI catches up to the
+    // latest storage state instead of silently dropping the event.
+    renderQueued = true;
+    return;
+  }
   renderInFlight = true;
 
   try {
@@ -139,8 +166,13 @@ async function renderSubjectAverage(api: any) {
           ?.textContent?.includes("Subject Average"),
     );
 
-    const { weightedTotal, totalWeight, hasInaccurateWeighting, count } =
-      await processAssessments(api, assessmentItems);
+    const {
+      weightedTotal,
+      totalWeight,
+      hasInaccurateWeighting,
+      hasRefreshingWeighting,
+      count,
+    } = await processAssessments(api, assessmentItems);
     if (!count || totalWeight === 0) return;
 
     const thermoscoreElement = document.querySelector(
@@ -174,11 +206,22 @@ async function renderSubjectAverage(api: any) {
     let warningHTML = "";
     if (hasInaccurateWeighting) {
       warningHTML = /* html */ `
-            <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.6); opacity: 0.8; line-height: 1.3;">
+            <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.6); opacity: 0.8; line-height: 1.3; white-space: nowrap;">
               ⚠ Some weightings unavailable
             </div>
           `;
+    } else if (hasRefreshingWeighting) {
+      warningHTML = /* html */ `
+            <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.55); opacity: 0.8; line-height: 1.3; white-space: nowrap;" title="Some weightings are being re-checked; the average may change shortly">
+              ↻ Refreshing weightings
+            </div>
+          `;
     }
+    const thermoscoreTitle = hasInaccurateWeighting
+      ? `${display} (some weightings unavailable)`
+      : hasRefreshingWeighting
+        ? `${display} (re-checking weightings)`
+        : display;
     assessmentsList.insertBefore(
       stringToHTML(/* html */ `
           <div class="${assessmentItemClass}">
@@ -192,7 +235,7 @@ async function renderSubjectAverage(api: any) {
             </div>
             <div class="${thermoscoreClass}">
               <div class="${fillClass}" style="width: ${avg.toFixed(2)}%">
-                <div class="${textClass}" title="${hasInaccurateWeighting ? display + " (some weightings unavailable)" : display}">${display}</div>
+                <div class="${textClass}" title="${thermoscoreTitle}">${display}</div>
               </div>
             </div>
           </div>
@@ -202,6 +245,10 @@ async function renderSubjectAverage(api: any) {
     applySubjectColourToOverallResult();
   } finally {
     renderInFlight = false;
+    if (renderQueued) {
+      renderQueued = false;
+      void renderSubjectAverage(api);
+    }
   }
 }
 function applySubjectColourToOverallResult() {

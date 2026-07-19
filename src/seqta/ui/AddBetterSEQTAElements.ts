@@ -16,36 +16,99 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
+import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
+import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 
 let cachedUserInfo: any = null;
+let userInfoFetchPromise: Promise<any> | null = null;
+let userInfoCacheListenersAttached = false;
+
+export function invalidateCachedUserInfo(): void {
+  cachedUserInfo = null;
+  userInfoFetchPromise = null;
+}
+
+function attachUserInfoCacheInvalidation(): void {
+  if (userInfoCacheListenersAttached || typeof window === "undefined") return;
+  userInfoCacheListenersAttached = true;
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      invalidateCachedUserInfo();
+    }
+  });
+}
+
+attachUserInfoCacheInvalidation();
 
 let LightDarkModeSnakeEggButton = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
 let sidebarTabOrderAnimationFrame: number | null = null;
 let sidebarAccessibilityListenersAttached = false;
 
-export async function getUserInfo() {
-  if (cachedUserInfo) return cachedUserInfo;
+/** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
+const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
 
-  try {
-    const response = await fetch(`${location.origin}/seqta/student/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({
-        mode: "normal",
-        query: null,
-        redirect_url: location.origin,
-      }),
-    });
-
-    cachedUserInfo = (await response.json()).payload;
+export async function getUserInfo(options?: { validateSession?: boolean }) {
+  if (cachedUserInfo && !options?.validateSession) {
     return cachedUserInfo;
-  } catch (error) {
-    console.error("[BetterSEQTA+] Failed to get user info:", error);
-    throw error;
   }
+
+  if (userInfoFetchPromise && !options?.validateSession) {
+    return userInfoFetchPromise;
+  }
+
+  const fetchUserInfo = async () => {
+    try {
+      const response = await fetch(`${location.origin}/seqta/student/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+          mode: "normal",
+          query: null,
+          redirect_url: location.origin,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get user info: HTTP ${response.status}`);
+      }
+
+      const payload = (await response.json()).payload;
+
+      if (
+        cachedUserInfo &&
+        options?.validateSession &&
+        payload?.id != null &&
+        cachedUserInfo.id != null &&
+        payload.id !== cachedUserInfo.id
+      ) {
+        console.warn(
+          "[BetterSEQTA+] Session user changed; invalidating cached user info",
+        );
+        invalidateCachedUserInfo();
+      }
+
+      cachedUserInfo = payload;
+      return cachedUserInfo;
+    } catch (error) {
+      console.error("[BetterSEQTA+] Failed to get user info:", error);
+      throw error;
+    } finally {
+      if (!options?.validateSession) {
+        userInfoFetchPromise = null;
+      }
+    }
+  };
+
+  if (options?.validateSession) {
+    return fetchUserInfo();
+  }
+
+  userInfoFetchPromise = fetchUserInfo();
+  return userInfoFetchPromise;
 }
 
 export async function AddBetterSEQTAElements() {
@@ -79,11 +142,7 @@ export async function AddBetterSEQTAElements() {
     menuList.insertBefore(fragment, menuList.firstChild);
 
     try {
-      await Promise.all([
-        appendBackgroundToUI(),
-        handleUserInfo(),
-        handleStudentData(),
-      ]);
+      await Promise.all([appendBackgroundToUI(), handleUserInfoAndStudentData()]);
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to initialize UI elements:", error);
     }
@@ -113,11 +172,26 @@ function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
   );
 }
 
-async function handleUserInfo() {
+async function handleUserInfoAndStudentData() {
   try {
-    updateUserInfo(await getUserInfo());
+    const [userInfo, studentResponse] = await Promise.all([
+      getUserInfo(),
+      fetch(`${location.origin}/seqta/student/load/message/people`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({ mode: "student" }),
+      }),
+    ]);
+
+    updateUserInfo(userInfo);
+    await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
-    console.error("[BetterSEQTA+] Failed to handle user info:", error);
+    console.error(
+      "[BetterSEQTA+] Failed to handle user info and student data:",
+      error,
+    );
   }
 }
 
@@ -173,27 +247,7 @@ function updateUserInfo(info: {
     .appendChild(document.getElementsByClassName("logout")[0]);
 }
 
-async function handleStudentData() {
-  try {
-    const response = await fetch(
-      `${location.origin}/seqta/student/load/message/people`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify({ mode: "student" }),
-      },
-    );
-
-    await updateStudentInfo((await response.json()).payload);
-  } catch (error) {
-    console.error("[BetterSEQTA+] Failed to handle student data:", error);
-  }
-}
-
-async function updateStudentInfo(students: any) {
-  const info = await getUserInfo();
+async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof getUserInfo>>) {
   const index = students.findIndex(
     (person: any) =>
       person.firstname == info.userDesc.split(" ")[0] &&
@@ -287,7 +341,13 @@ function setupEventListeners() {
 }
 
 async function createSettingsButton(parent?: Element) {
-  const target = parent ?? document.getElementById("content")!;
+  if (document.getElementById("AddedSettings")) return;
+
+  const target =
+    parent ??
+    document.getElementById("content") ??
+    document.getElementById("container") ??
+    document.body;
   target.append(
     stringToHTML(/* html */ `
       <button class="addedButton tooltip" id="AddedSettings">
@@ -416,14 +476,11 @@ function GetLightDarkModeString() {
 }
 
 async function addDarkLightToggle(parent?: Element) {
-  const SUN_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_80"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_80)"><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -4,-2.2100000381469727 -4,0 C-4,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(1,0,0,1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
-  const MOON_ICON_SVG = /* html */ `<defs><clipPath id="__lottie_element_263"><rect width="24" height="24" x="0" y="0"></rect></clipPath></defs><g clip-path="url(#__lottie_element_263)"><g style="display: block;" transform="matrix(1.5,0,0,1.5,7,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,-4 C-2.2100000381469727,-4 -1.2920000553131104,-2.2100000381469727 -1.2920000553131104,0 C-1.2920000553131104,2.2100000381469727 -2.2100000381469727,4 0,4 C2.2100000381469727,4 4,2.2100000381469727 4,0 C4,-2.2100000381469727 2.2100000381469727,-4 0,-4z"></path></g></g><g style="display: block;" transform="matrix(-1,0,0,-1,12,12)" opacity="1"><g opacity="1" transform="matrix(1,0,0,1,0,0)"><path fill-opacity="1" d=" M0,6 C-3.309999942779541,6 -6,3.309999942779541 -6,0 C-6,-3.309999942779541 -3.309999942779541,-6 0,-6 C3.309999942779541,-6 6,-3.309999942779541 6,0 C6,3.309999942779541 3.309999942779541,6 0,6z M8,-3.309999942779541 C8,-3.309999942779541 8,-8 8,-8 C8,-8 3.309999942779541,-8 3.309999942779541,-8 C3.309999942779541,-8 0,-11.3100004196167 0,-11.3100004196167 C0,-11.3100004196167 -3.309999942779541,-8 -3.309999942779541,-8 C-3.309999942779541,-8 -8,-8 -8,-8 C-8,-8 -8,-3.309999942779541 -8,-3.309999942779541 C-8,-3.309999942779541 -11.3100004196167,0 -11.3100004196167,0 C-11.3100004196167,0 -8,3.309999942779541 -8,3.309999942779541 C-8,3.309999942779541 -8,8 -8,8 C-8,8 -3.309999942779541,8 -3.309999942779541,8 C-3.309999942779541,8 0,11.3100004196167 0,11.3100004196167 C0,11.3100004196167 3.309999942779541,8 3.309999942779541,8 C3.309999942779541,8 8,8 8,8 C8,8 8,3.309999942779541 8,3.309999942779541 C8,3.309999942779541 11.3100004196167,0 11.3100004196167,0 C11.3100004196167,0 8,-3.309999942779541 8,-3.309999942779541z"></path></g></g></g>`;
-
   const toggleTarget = parent ?? document.getElementById("content")!;
   toggleTarget.append(
     stringToHTML(/* html */ `
       <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
-        <svg xmlns="http://www.w3.org/2000/svg">${settingsState.DarkMode ? SUN_ICON_SVG : MOON_ICON_SVG}</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
         <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${GetLightDarkModeString()}</div>
       </button>
     `).firstChild!,
@@ -460,8 +517,8 @@ async function addDarkLightToggle(parent?: Element) {
 
     const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
     svgElement.innerHTML = settingsState.DarkMode
-      ? SUN_ICON_SVG
-      : MOON_ICON_SVG;
+      ? LUCIDE_SUN_ICON_SVG
+      : LUCIDE_MOON_ICON_SVG;
     darklightText!.innerText = GetLightDarkModeString();
   });
 }
@@ -505,9 +562,12 @@ function scheduleSidebarAccessibilityUpdate() {
     cancelAnimationFrame(sidebarTabOrderAnimationFrame);
   }
 
+  // Double rAF: SEQTA applies drill state on the next frame after click.
   sidebarTabOrderAnimationFrame = requestAnimationFrame(() => {
-    sidebarTabOrderAnimationFrame = null;
-    updateSidebarAccessibility();
+    requestAnimationFrame(() => {
+      sidebarTabOrderAnimationFrame = null;
+      updateSidebarAccessibility();
+    });
   });
 }
 
@@ -518,9 +578,10 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   const menuItem = target.closest("#menu li, #menu section") as
     | HTMLElement
     | null;
-  if (!menuItem || target !== menuItem) return;
+  if (!menuItem) return;
 
   if (event.key === "Tab") {
+    if (target !== menuItem) return;
     const menu = document.getElementById("menu");
     if (!menu) return;
 
@@ -564,11 +625,70 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   }
 }
 
-function updateSidebarAccessibility() {
+/** Folder rows on the path to the currently open sidebar list. */
+function getDrillFolderChain(
+  menu: HTMLElement,
+  visibleList: HTMLElement | null,
+): Set<HTMLElement> {
+  const chain = new Set<HTMLElement>();
+  let list: HTMLElement | null = visibleList;
+
+  while (list && menu.contains(list)) {
+    const folder = getSidebarListParentEntry(list);
+    if (!folder || !menu.contains(folder)) break;
+    chain.add(folder);
+
+    const containerUl = folder.parentElement;
+    if (!(containerUl instanceof HTMLElement)) break;
+    const parentSub = containerUl.closest(".sub");
+    if (!parentSub || !menu.contains(parentSub)) break;
+    const parentFolder = parentSub.parentElement;
+    if (!(parentFolder instanceof HTMLElement) || !menu.contains(parentFolder)) {
+      break;
+    }
+    chain.add(parentFolder);
+    list =
+      parentFolder.parentElement instanceof HTMLElement
+        ? parentFolder.parentElement
+        : null;
+  }
+
+  return chain;
+}
+
+function isSidebarEditMode(): boolean {
+  const menu = document.getElementById("menu");
+  return (
+    document.querySelector(".editmenuoption-container") != null ||
+    menu?.classList.contains("bsplus-sidebar-edit-mode") === true
+  );
+}
+
+function clearSidebarAccessibilityLocks() {
   const menu = document.getElementById("menu");
   if (!menu) return;
 
-  const visibleEntries = new Set(getVisibleSidebarEntries(menu));
+  const entries = menu.querySelectorAll("li, section");
+  for (const entry of entries) {
+    if (!(entry instanceof HTMLElement)) continue;
+    entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
+  }
+}
+
+function updateSidebarAccessibility() {
+  if (isSidebarEditMode()) {
+    clearSidebarAccessibilityLocks();
+    return;
+  }
+
+  const menu = document.getElementById("menu");
+  if (!menu) return;
+
+  const visibleList = getVisibleSidebarList(menu);
+  const visibleEntries = new Set(
+    visibleList ? getDirectSidebarEntries(visibleList) : [],
+  );
+  const drillFolders = getDrillFolderChain(menu, visibleList);
   const menuEntries = menu.querySelectorAll("li.item, section.item, li, section");
 
   for (const entry of menuEntries) {
@@ -577,28 +697,19 @@ function updateSidebarAccessibility() {
     const label = entry.querySelector(":scope > label") as HTMLLabelElement | null;
     if (!label) continue;
 
-    const childSubmenu = entry.querySelector(":scope > .sub") as HTMLElement | null;
-    const isHidden =
-      entry.offsetParent === null ||
-      window.getComputedStyle(entry).display === "none" ||
-      window.getComputedStyle(label).display === "none" ||
-      !visibleEntries.has(entry);
+    const interactive =
+      visibleEntries.has(entry) || drillFolders.has(entry);
 
-    if (isHidden) {
+    if (!interactive) {
+      entry.classList.add(BSPLUS_SIDEBAR_OFFSCREEN);
       entry.tabIndex = -1;
       label.tabIndex = -1;
-      entry.setAttribute("aria-hidden", "true");
-      label.setAttribute("aria-hidden", "true");
-      if (childSubmenu) {
-        childSubmenu.setAttribute("aria-hidden", "true");
-      }
       continue;
     }
 
+    entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
     entry.tabIndex = 0;
     label.tabIndex = -1;
-    entry.removeAttribute("aria-hidden");
-    label.removeAttribute("aria-hidden");
 
     if (!entry.hasAttribute("role")) {
       entry.setAttribute("role", "button");
@@ -608,24 +719,7 @@ function updateSidebarAccessibility() {
     if (accessibleLabel) {
       entry.setAttribute("aria-label", accessibleLabel);
     }
-
-    if (childSubmenu) {
-      const isExpanded = entry.classList.contains("active");
-      entry.setAttribute("aria-expanded", String(isExpanded));
-      childSubmenu.setAttribute("aria-hidden", String(!isExpanded));
-    } else {
-      entry.removeAttribute("aria-expanded");
-    }
   }
-}
-
-function getVisibleSidebarEntries(menu = document.getElementById("menu")) {
-  if (!menu) return [] as HTMLElement[];
-
-  const visibleList = getVisibleSidebarList(menu);
-  if (!visibleList) return [] as HTMLElement[];
-
-  return getDirectSidebarEntries(visibleList);
 }
 
 function getDirectSidebarEntries(list: HTMLElement) {
@@ -661,9 +755,8 @@ function getVisibleSidebarList(menu: HTMLElement) {
 }
 
 function getSidebarListParentEntry(list: HTMLElement) {
-  return list.closest(".sub")?.parentElement instanceof HTMLElement
-    ? (list.closest(".sub")!.parentElement as HTMLElement)
-    : null;
+  const sub = list.closest(".sub");
+  return sub?.parentElement instanceof HTMLElement ? sub.parentElement : null;
 }
 
 function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {

@@ -1,9 +1,10 @@
-interface Subject {
-  code: string;
-  programme: number;
-  metaclass: number;
-  title: string;
-}
+import {
+  activeSubjectsFromLearnPayload,
+  assessmentBelongsToActiveSubjects,
+  filterAssessmentsForActiveSubjects,
+  type OverviewSubject,
+} from "./utils";
+
 interface PrefItem {
   name: string;
   value: string;
@@ -28,14 +29,15 @@ async function fetchJSON(url: string, body: any) {
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
   return res.json();
 }
 
-async function loadSubjects() {
+async function loadSubjects(): Promise<OverviewSubject[]> {
   const res = await fetchJSON("/seqta/student/load/subjects?", {});
-  return res.payload
-    .filter((s: any) => s.active === 1)
-    .flatMap((s: any) => s.subjects);
+  return activeSubjectsFromLearnPayload(res.payload);
 }
 
 async function loadPrefs(student: number) {
@@ -61,7 +63,7 @@ async function loadUpcoming(student: number) {
   return res.payload;
 }
 
-function normalizeAssessmentDates(t: any, subject: Subject): any {
+function normalizeAssessmentDates(t: any, subject: OverviewSubject): any {
   const normalized = { ...t };
   if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
     normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
@@ -72,7 +74,7 @@ function normalizeAssessmentDates(t: any, subject: Subject): any {
   return normalized;
 }
 
-async function loadPast(student: number, subjects: Subject[]) {
+async function loadPast(student: number, subjects: OverviewSubject[]) {
   const map: Record<number, any> = {};
   await Promise.all(
     subjects.map(async (s) => {
@@ -141,14 +143,20 @@ async function getLearnAssessmentsData(studentId: number) {
   const pastMap = await loadPast(studentId, subjects);
   const map: Record<number, any> = {};
   upcoming.forEach((a: any) => {
-    map[a.id] = { ...a };
+    if (assessmentBelongsToActiveSubjects(a, subjects)) {
+      map[a.id] = { ...a };
+    }
   });
   Object.values(pastMap).forEach((t: any) => {
+    if (!assessmentBelongsToActiveSubjects(t, subjects)) return;
     if (map[t.id]) Object.assign(map[t.id], t);
     else map[t.id] = t;
   });
 
-  const allAssessments = Object.values(map);
+  const allAssessments = filterAssessmentsForActiveSubjects(
+    Object.values(map),
+    subjects,
+  );
   const submissions = await loadSubmissions(studentId, allAssessments);
 
   allAssessments.forEach((assessment: any) => {
@@ -159,7 +167,7 @@ async function getLearnAssessmentsData(studentId: number) {
 }
 
 export async function getAssessmentsData() {
-  if (settingsState.mockNotices) {
+  if (settingsState.hideSensitiveContent) {
     return getMockAssessmentsData();
   }
 

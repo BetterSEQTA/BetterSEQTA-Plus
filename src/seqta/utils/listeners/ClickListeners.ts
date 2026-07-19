@@ -22,6 +22,8 @@ const handleNotificationClick = async (target: HTMLElement) => {
       (item: any) => item.notificationID === parseInt(buttonId),
     );
 
+  if (!matchingNotification?.message?.messageID) return;
+
   await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
 
   // Select the specific direct message

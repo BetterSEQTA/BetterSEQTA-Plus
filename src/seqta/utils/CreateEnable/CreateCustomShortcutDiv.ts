@@ -1,13 +1,28 @@
 import stringToHTML from "../stringToHTML";
 
+function isSafeShortcutHref(url: string): boolean {
+  if (typeof url !== "string" || !url.trim()) return false;
+  try {
+    const parsed = new URL(url, window.location.href);
+    return ["http:", "https:", "mailto:"].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function CreateCustomShortcutDiv(element: any) {
   // Creates the stucture and element information for each seperate shortcut
   const container = document.getElementById("shortcuts");
   if (!container) return;
 
   var shortcut = document.createElement("a");
-  shortcut.setAttribute("href", element.url);
-  shortcut.setAttribute("target", "_blank");
+  if (isSafeShortcutHref(element.url)) {
+    shortcut.setAttribute("href", element.url);
+    shortcut.setAttribute("target", "_blank");
+  } else {
+    shortcut.setAttribute("href", "#");
+    shortcut.setAttribute("aria-disabled", "true");
+  }
   var shortcutdiv = document.createElement("div");
   shortcutdiv.classList.add("shortcut");
   shortcutdiv.classList.add("customshortcut");

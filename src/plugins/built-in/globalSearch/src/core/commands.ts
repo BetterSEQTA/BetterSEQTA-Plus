@@ -26,11 +26,11 @@ async function getCurrentLesson() {
   try {
     const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         from: todayFormatted,
         until: todayFormatted,
-        student: 69,
       }),
     });
     
@@ -106,7 +106,6 @@ async function navigateToSpecificLesson(lesson: any) {
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {
           // Found the exact matching lesson, click it
           (lessonElement as HTMLElement).click();
-          console.log(`Navigated to exact lesson: ${lessonDate} ${lessonPeriod}`);
           return true;
         }
       }
@@ -224,7 +223,7 @@ const staticCommands: StaticCommandItem[] = [
         code: 'KeyM',
         keyCode: 77,
         altKey: true
-      }, "*");
+      }, location.origin);
     },
     keywords: ["compose", "message", "dm", "direct message", "new message"],
     priority: 3,

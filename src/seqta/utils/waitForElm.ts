@@ -1,12 +1,9 @@
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
-import { delay } from "@/seqta/utils/delay";
-
 /**
  * Asynchronously waits for an element to be present in the DOM.
  *
- * This function can use either a polling mechanism (via `setTimeout`) or
- * a `MutationObserver` (via `eventManager.register`) to detect the element.
- * By default, it uses the `eventManager` which is more efficient.
+ * By default uses direct `querySelector` plus a targeted `MutationObserver`
+ * on `document.documentElement`. Polling via `setTimeout` is available as a
+ * fallback when `usePolling` is true.
  *
  * @param {string} selector The CSS selector for the target element.
  * @param {boolean} [usePolling=false] If true, forces the use of `setTimeout` for polling.
@@ -24,9 +21,6 @@ export async function waitForElm(
   if (usePolling) {
     return new Promise((resolve, reject) => {
       let iterations = 0;
-      if (maxIterations) {
-        iterations = 0;
-      }
       const checkForElement = () => {
         const element = document.querySelector(selector);
         if (element) {
@@ -36,6 +30,7 @@ export async function waitForElm(
             iterations++;
             if (iterations >= maxIterations) {
               reject(new Error("Element not found"));
+              return;
             }
           }
           setTimeout(checkForElement, interval);
@@ -43,47 +38,46 @@ export async function waitForElm(
       };
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", checkForElement);
+        document.addEventListener("DOMContentLoaded", checkForElement, {
+          once: true,
+        });
       } else {
         checkForElement();
       }
     });
-  } else {
-    return new Promise((resolve) => {
-      const registerObserver = () => {
-        const { unregister } = eventManager.register(
-          `${selector}`,
-          {
-            customCheck: (element) => element.matches(selector),
-          },
-          async (element) => {
-            resolve(element);
-            await delay(1);
-            unregister(); // Remove the listener once the element is found
-          },
-        );
-        return unregister;
-      };
-
-      let unregister = null;
-
-      if (document.readyState === "loading") {
-        // DOM is still loading, wait for it to be ready
-        document.addEventListener("DOMContentLoaded", () => {
-          unregister = registerObserver();
-        });
-      } else {
-        unregister = registerObserver();
-      }
-
-      const querySelector = () => document.querySelector(selector);
-      const element = querySelector();
-
-      if (element) {
-        if (unregister) unregister();
-        resolve(element);
-        return;
-      }
-    });
   }
+
+  return new Promise((resolve) => {
+    const tryResolve = (): boolean => {
+      const element = document.querySelector(selector);
+      if (element) {
+        resolve(element);
+        return true;
+      }
+      return false;
+    };
+
+    const startObserver = () => {
+      if (tryResolve()) return;
+
+      const observer = new MutationObserver(() => {
+        if (tryResolve()) {
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", startObserver, {
+        once: true,
+      });
+    } else {
+      startObserver();
+    }
+  });
 }

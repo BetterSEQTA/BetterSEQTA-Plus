@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import isEqual from "@/seqta/utils/isEqual";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
@@ -18,6 +19,13 @@ export const BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY =
   "bsplus_pending_theme_ensure_after_cloud";
 
 /**
+ * Client-only: normalized syncable storage last acked by a successful PUT.
+ * Never uploaded; used to compute sparse upload patches.
+ */
+export const BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY =
+  "bsplus_cloud_settings_last_uploaded_snapshot";
+
+/**
  * Never uploaded to the cloud backup (OAuth and legacy keys).
  * IndexedDB (e.g. Global Search’s `betterseqta-index` database) is not part of
  * `chrome.storage.local` and is never included in this payload.
@@ -29,6 +37,7 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "bsplus_user",
   "cloudAccessToken",
   "cloudUsername",
+  "bsplus_google_calendar",
 ] as const;
 
 /**
@@ -40,11 +49,15 @@ export const SENSITIVE_DEVICE_STORAGE_KEYS_EXACT = [
   "plugin.assessments-average.storage.weightings",
 ] as const;
 
-/** e.g. any future `plugin.global-search.storage.*` keys in chrome.storage */
-export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = ["plugin.global-search.storage."] as const;
+/** School-specific caches; never sync across devices. */
+export const SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES = [
+  "plugin.global-search.storage.",
+  "bsplus.analytics.",
+] as const;
 
 const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   BSPLUS_CLOUD_KNOWN_REMOTE_UPDATED_AT_KEY,
+  BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY,
   "bsplus_lastCloudPoll",
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
 ] as const;
@@ -55,13 +68,22 @@ const AUTH_KEYS_TO_PRESERVE = [
   "bsplus_refresh_token",
   "bsplus_client_id",
   "bsplus_user",
+  "bsplus_google_calendar",
 ] as const;
 
 const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   ...KEYS_OMITTED_FROM_CLOUD_UPLOAD,
   ...SENSITIVE_DEVICE_STORAGE_KEYS_EXACT,
   ...CLIENT_ONLY_CLOUD_KEYS_EXACT,
+  "devMode",
+  "devGhReleaseVersionOverride",
 ]);
+
+const UNSAFE_STORAGE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+function isUnsafeStorageKey(key: string): boolean {
+  return UNSAFE_STORAGE_KEYS.has(key);
+}
 
 /** True if a storage key is part of the upload payload (and should trigger auto-upload when changed). */
 export function isKeyIncludedInCloudUploadPayload(key: string): boolean {
@@ -69,6 +91,7 @@ export function isKeyIncludedInCloudUploadPayload(key: string): boolean {
 }
 
 function shouldOmitKeyFromCloudPayload(key: string): boolean {
+  if (isUnsafeStorageKey(key)) return true;
   if (OMIT_FROM_UPLOAD_EXACT.has(key)) return true;
   for (const prefix of SENSITIVE_DEVICE_STORAGE_KEY_PREFIXES) {
     if (key.startsWith(prefix)) return true;
@@ -103,6 +126,7 @@ function collectLocalKeysToPreserve(local: Record<string, unknown>): Record<stri
 function stripExcludedKeysFromRemoteData(remote: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(remote)) {
+    if (isUnsafeStorageKey(k)) continue;
     if (shouldOmitKeyFromCloudPayload(k)) continue;
     out[k] = v;
   }
@@ -115,30 +139,79 @@ export function normalizeThemeIdForSync(raw: unknown): string {
   return raw.trim();
 }
 
-export function buildUploadPayload(all: Record<string, unknown>): {
-  schemaVersion: number;
-  themeId: string;
-  data: Record<string, unknown>;
-} {
+/** Filter omit lists and migrate legacy keys → full syncable map for diff/export. */
+export function normalizeStorageForSync(all: Record<string, unknown>): Record<string, unknown> {
   const filtered: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(all)) {
     if (shouldOmitKeyFromCloudPayload(k)) continue;
     filtered[k] = v;
   }
-  const data = migrateLegacyToPluginSettings(filtered);
-  const themeId = normalizeThemeIdForSync(all.selectedTheme);
+  return migrateLegacyToPluginSettings(filtered);
+}
+
+/** Keys in `current` whose values differ from `baseline` (sparse PUT body). */
+export function diffSyncableStorage(
+  current: Record<string, unknown>,
+  baseline: Record<string, unknown>,
+): Record<string, unknown> {
+  const patch: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(current)) {
+    if (!isEqual(value, baseline[key])) {
+      patch[key] = value;
+    }
+  }
+  return patch;
+}
+
+export type CloudSettingsUploadEnvelope = {
+  schemaVersion: number;
+  themeId: string;
+  data: Record<string, unknown>;
+};
+
+/** Sparse upload envelope, or null when nothing changed vs baseline. */
+export function buildUploadPatch(
+  all: Record<string, unknown>,
+  baseline: Record<string, unknown>,
+): CloudSettingsUploadEnvelope | null {
+  const normalized = normalizeStorageForSync(all);
+  const data = diffSyncableStorage(normalized, baseline);
+  if (Object.keys(data).length === 0) return null;
   return {
     schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
-    themeId,
+    themeId: normalizeThemeIdForSync(all.selectedTheme),
     data,
   };
 }
 
-export async function getSnapshotForUpload(): Promise<{
-  schemaVersion: number;
-  themeId: string;
-  data: Record<string, unknown>;
-}> {
+/** Full normalized snapshot (dev export / debugging). */
+export function buildUploadPayload(all: Record<string, unknown>): CloudSettingsUploadEnvelope {
+  const data = normalizeStorageForSync(all);
+  return {
+    schemaVersion: CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
+    themeId: normalizeThemeIdForSync(all.selectedTheme),
+    data,
+  };
+}
+
+export async function getLastUploadedSnapshot(): Promise<Record<string, unknown> | null> {
+  const stored = await browser.storage.local.get(BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY);
+  const snapshot = stored[BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY];
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return null;
+  return snapshot as Record<string, unknown>;
+}
+
+export async function saveLastUploadedSnapshot(
+  snapshot: Record<string, unknown>,
+): Promise<void> {
+  await browser.storage.local.set({ [BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY]: snapshot });
+}
+
+export async function clearLastUploadedSnapshot(): Promise<void> {
+  await browser.storage.local.remove(BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY);
+}
+
+export async function getSnapshotForUpload(): Promise<CloudSettingsUploadEnvelope> {
   const all = await browser.storage.local.get();
   return buildUploadPayload(all as Record<string, unknown>);
 }
@@ -187,7 +260,7 @@ export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<
  * Only applies migrations for keys present in the data; does not overwrite
  * existing plugin settings if the legacy key is absent.
  */
-function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
+export function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
   const result = { ...data };
 
   function ensurePluginSettings(pluginId: string): Record<string, unknown> {
@@ -275,5 +348,7 @@ export async function applyDownloadedEnvelope(envelope: unknown): Promise<void> 
 
   const migrated = migrateLegacyToPluginSettings(remoteFlat);
   const remoteSanitized = stripExcludedKeysFromRemoteData(migrated);
-  await browser.storage.local.set(remoteSanitized);
+  const local = (await browser.storage.local.get()) as Record<string, unknown>;
+  const preserve = collectLocalKeysToPreserve(local);
+  await browser.storage.local.set({ ...remoteSanitized, ...preserve });
 }

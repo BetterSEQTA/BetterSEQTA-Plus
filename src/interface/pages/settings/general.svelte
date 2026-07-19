@@ -20,6 +20,7 @@
   import { OpenMenuOptionsTeach } from "@/seqta/utils/Openers/OpenMenuOptionsTeach"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
   import { getStoredOverride, setApiBase } from "@/seqta/utils/DevApiBase"
+  import { onMount } from "svelte"
 
   let devApiBaseInput = $state<string>(getStoredOverride() ?? "")
   let devApiBaseActive = $state<string | null>(getStoredOverride())
@@ -147,12 +148,13 @@
     await browser.storage.local.set({ [storageKey]: currentSettings });
   }
 
-  $effect(() => {
-    loadPluginSettings();
-  })
+  onMount(() => {
+    void loadPluginSettings();
+  });
 
-  const { showColourPicker, showDisclaimer, showCloudPanel } = $props<{ 
+  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel } = $props<{ 
     showColourPicker: () => void;
+    showFontPicker: () => void;
     showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
     showCloudPanel: () => void;
   }>();
@@ -237,6 +239,16 @@
       }
     },
     {
+      title: "Interface Font",
+      description: "Choose the typeface used across SEQTA Learn",
+      id: 16,
+      Component: Button,
+      props: {
+        onClick: showFontPicker,
+        text: "Change"
+      }
+    },
+    {
       title: "Icon Only Sidebar",
       description: "Show only icons in the sidebar for a compact layout",
       id: 14,
@@ -282,7 +294,7 @@
       id: 10,
       Component: Select,
       props: {
-        state: $settingsState.defaultPage ?? "home",
+        value: $settingsState.defaultPage ?? "home",
         onChange: (value: string) => (settingsState.defaultPage = value),
         options: [
           { value: "home", label: "Home" },
@@ -301,7 +313,7 @@
       id: 11,
       Component: Select,
       props: {
-        state: $settingsState.newsSource,
+        value: $settingsState.newsSource,
         onChange: (value: string) => settingsState.newsSource = value,
           options: [
            { value: "australia", label: "Australia" },
@@ -321,6 +333,65 @@
   ] as option}
     {@render Setting(option)}
   {/each}
+
+  <div class="border-none">
+    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Home Page Assessments</h2>
+          <p class="text-xs">Limit upcoming assessments shown on the home page by subject</p>
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Include Past Assessments</h2>
+          <p class="text-xs">Show past-due assessments from the upcoming list, matching the Assessments page</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.homeUpcomingIncludePast ?? true}
+            onChange={(isOn: boolean) => (settingsState.homeUpcomingIncludePast = isOn)}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Maximum Subjects</h2>
+          <p class="text-xs">Number of subjects to include, ordered by soonest due date</p>
+        </div>
+        <Select
+          value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
+          onChange={(value: string) => (settingsState.homeUpcomingSubjectsMax = Number(value))}
+          options={[
+            { value: "0", label: "All" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "7", label: "7" },
+            { value: "10", label: "10" },
+            { value: "15", label: "15" },
+          ]}
+        />
+      </div>
+      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
+          <p class="text-xs">Assessments shown for each included subject</p>
+        </div>
+        <Select
+          value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
+          onChange={(value: string) => (settingsState.homeUpcomingAssessmentsPerSubjectMax = Number(value))}
+          options={[
+            { value: "0", label: "All" },
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "10", label: "10" },
+          ]}
+        />
+      </div>
+    </div>
+  </div>
 
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
@@ -438,7 +509,7 @@
                     />                
                   {:else if setting.type === 'select'}
                     <Select
-                    state={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
+                    value={pluginSettingsValues[plugin.pluginId]?.[key] ?? setting.default}
                     onChange={(value) => updatePluginSetting(plugin.pluginId, key, value)}
                     options={(setting.options as string[]).map(opt => ({
                       value: opt,
@@ -467,6 +538,18 @@
           {/each}
         {/if}
       </div>
+      {#if plugin.pluginId === 'global-search'}
+        {@render Setting({
+          title: "Theme of the Month",
+          description: "Show the monthly featured theme popup when a new entry is available",
+          id: 15,
+          Component: Switch,
+          props: {
+            state: !($settingsState.themeOfTheMonthDisabled ?? false),
+            onChange: (isOn: boolean) => settingsState.themeOfTheMonthDisabled = !isOn
+          }
+        })}
+      {/if}
   </div>
   {/each}
 
@@ -511,6 +594,18 @@
         </div>
         <div>
           <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">Verbose logging</h2>
+          <p class="text-xs">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.verboseLogging ?? false}
+            onChange={(isOn: boolean) => settingsState.verboseLogging = isOn}
+          />
         </div>
       </div>
       <div class="flex justify-between items-center px-4 py-3">
@@ -605,6 +700,21 @@
             <Button onClick={clearDevApiBase} text="Clear" />
           {/if}
         </div>
+      </div>
+      <div class="flex flex-col gap-2 px-4 py-3">
+        <div>
+          <h2 class="text-sm font-bold">GitHub latest version override</h2>
+          <p class="text-xs">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
+        </div>
+        <input
+          type="text"
+          placeholder="e.g. 9.9.9"
+          value={$settingsState.devGhReleaseVersionOverride ?? ""}
+          oninput={(e) => {
+            settingsState.devGhReleaseVersionOverride = e.currentTarget.value;
+          }}
+          class="px-2 py-1 text-xs rounded border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+        />
       </div>
     </div>
   {/if}

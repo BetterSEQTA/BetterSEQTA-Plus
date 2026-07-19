@@ -1,2 +1,14 @@
-.background-music-hidden{display:none}
-
+.bsplus-bg-music-hint {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 2147483000;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--better-main, #22c55e) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-primary, #1a1a1a) 92%, black 8%);
+  color: var(--text-primary, #fff);
+  font: 600 0.8125rem/1.25 system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}

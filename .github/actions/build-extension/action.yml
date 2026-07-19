@@ -1,0 +1,59 @@
+name: Build Extension
+description: Install dependencies, build Chrome and Firefox extensions, and package zips.
+
+inputs:
+  gh_release_update_check:
+    description: Enable GitHub release update checker in the built extension.
+    required: false
+    default: "false"
+  update_channel:
+    description: Update channel baked into the build (stable or nightly).
+    required: false
+    default: stable
+  build_label:
+    description: Optional build label for nightly display (e.g. UTC build date).
+    required: false
+    default: ""
+  release_repo:
+    description: GitHub repo slug for the update checker (owner/name).
+    required: false
+    default: BetterSEQTA/BetterSEQTA-Plus
+
+outputs:
+  version:
+    description: Version from package.json
+    value: ${{ steps.version.outputs.version }}
+  chrome_zip:
+    description: Path to the Chrome extension zip
+    value: ${{ steps.zip.outputs.chrome_zip }}
+  firefox_zip:
+    description: Path to the Firefox extension zip
+    value: ${{ steps.zip.outputs.firefox_zip }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node and dependencies
+      uses: ./.github/actions/setup-node-deps
+
+    - name: Read version
+      id: version
+      shell: bash
+      run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - name: Build extension
+      shell: bash
+      env:
+        GH_RELEASE_UPDATE_CHECK: ${{ inputs.gh_release_update_check }}
+        UPDATE_CHANNEL: ${{ inputs.update_channel }}
+        GH_RELEASE_REPO: ${{ inputs.release_repo }}
+        BUILD_LABEL: ${{ inputs.build_label }}
+      run: npm run build
+
+    - name: Package zips
+      id: zip
+      shell: bash
+      env:
+        UPDATE_CHANNEL: ${{ inputs.update_channel }}
+        BUILD_LABEL: ${{ inputs.build_label }}
+      run: node scripts/package-extension-zips.mjs "${{ steps.version.outputs.version }}"

@@ -3,13 +3,11 @@ import {
   closeExtensionPopup,
   SettingsClicked,
 } from "../Closers/closeExtensionPopup";
-import renderSvelte from "@/interface/main";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
-import Settings from "@/interface/pages/settings.svelte";
-import SettingsTeach from "@/interface/pages/settings-teach.svelte";
 import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 let isSettingsRendered = false;
+let settingsLoadPromise: Promise<void> | null = null;
 
 function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
   return (event: MouseEvent) => {
@@ -48,23 +46,42 @@ export function addExtensionSettings() {
   );
 }
 
-export function renderSettingsIfNeeded() {
+async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {
+  if (isSettingsRendered) return;
+
+  const [{ default: renderSvelte }, settingsModule] = await Promise.all([
+    import("@/interface/main"),
+    isSeqtaTeachExperience()
+      ? import("@/interface/pages/settings-teach.svelte")
+      : import("@/interface/pages/settings.svelte"),
+  ]);
+  const Settings = settingsModule.default;
+
+  const shadow = extensionPopup.attachShadow({ mode: "open" });
+  const mount = () => renderSvelte(Settings, shadow);
+
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(mount);
+  } else {
+    mount();
+  }
+
+  isSettingsRendered = true;
+}
+
+export async function renderSettingsIfNeeded(): Promise<void> {
   if (isSettingsRendered) return;
 
   const extensionPopup = document.getElementById("ExtensionPopup");
   if (!extensionPopup) return;
 
-  try {
-    const shadow = extensionPopup.attachShadow({ mode: "open" });
-    const SettingsComponent = isSeqtaTeachExperience() ? SettingsTeach : Settings;
-
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => renderSvelte(SettingsComponent, shadow));
-    } else {
-      renderSvelte(SettingsComponent, shadow);
-    }
-    isSettingsRendered = true;
-  } catch (err) {
-    console.error(err);
+  if (!settingsLoadPromise) {
+    settingsLoadPromise = loadSettingsUi(extensionPopup).catch((err) => {
+      settingsLoadPromise = null;
+      console.error(err);
+      throw err;
+    });
   }
+
+  await settingsLoadPromise;
 }

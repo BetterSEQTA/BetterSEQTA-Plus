@@ -1,9 +1,12 @@
 <script lang="ts">
   import logo from '@/resources/icons/betterseqta-dark-full.png';
   import logoDark from '@/resources/icons/betterseqta-light-full.png';
-  import { closeStore } from '@/seqta/ui/renderStore'
   import browser from 'webextension-polyfill';
   import CloudHeader from './CloudHeader.svelte';
+
+  const handleCloseStore = () => {
+    void import('@/seqta/ui/renderStore').then((module) => module.closeStore());
+  };
 
   // Props
   let { searchTerm, setSearchTerm, darkMode, activeTab, setActiveTab } = $props<{
@@ -64,7 +67,7 @@
 
       <!-- Close Button -->
       <button
-        onclick={closeStore}
+        onclick={handleCloseStore}
         class="p-1 px-3"
       >
         <span class="text-2xl font-IconFamily">&#xed8a;</span>

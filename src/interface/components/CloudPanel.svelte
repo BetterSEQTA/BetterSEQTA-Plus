@@ -3,6 +3,7 @@
   import { animate } from "motion";
   import { delay } from "@/seqta/utils/delay.ts";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
 
   const { hidePanel } = $props<{
     hidePanel: () => void;
@@ -91,7 +92,7 @@
   bind:this={background}
   class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50"
   onclick={handleBackgroundClick}
-  onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick; }}
+  onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick(e as unknown as MouseEvent) }}
 >
   <div
     bind:this={content}
@@ -105,12 +106,12 @@
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
             {#if cloudState.user?.pfpUrl}
-              <img
-                src={cloudState.user.pfpUrl}
-                alt=""
+              <CloudPfpAvatar
+                user={cloudState.user}
                 class="w-12 h-12 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-600"
               />
-            {:else}
+            {/if}
+            {#if !cloudState.user?.pfpUrl}
               <div class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base">
                 {getInitials()}
               </div>

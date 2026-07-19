@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { v4 as uuidv4 } from 'uuid';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
@@ -27,12 +26,15 @@
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
+  import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import LucideMoon from '@/interface/components/icons/LucideMoon.svelte'
+  import LucideSun from '@/interface/components/icons/LucideSun.svelte'
 
   const { themeID } = $props<{ themeID: string }>()
   const themeManager = ThemeManager.getInstance();
 
   let theme = $state<LoadedCustomTheme>({
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: '',
     description: '',
     defaultColour: 'blue',
@@ -73,26 +75,17 @@
     await themeManager.disableTheme();
 
     if (themeID) {
-      const tempTheme = await themeManager.getTheme(themeID)
-
-      if (!tempTheme) return
-
-      // convert temptheme to LoadedCustomTheme
-      const loadedTheme = {
-        ...tempTheme,
-        CustomImages: tempTheme.CustomImages.map(image => ({
-          ...image
-        }))
-      }
+      const tempTheme = await themeManager.getTheme(themeID);
+      if (!tempTheme) return;
 
       theme = {
-        ...loadedTheme,
-        adaptiveCssVariables: loadedTheme.adaptiveCssVariables ?? [],
+        ...tempTheme,
+        adaptiveCssVariables: tempTheme.adaptiveCssVariables ?? [],
         forceTheme:
-          loadedTheme.forceTheme ??
-          (loadedTheme.forceDark !== undefined ? true : undefined),
-      }
-      themeLoaded = true
+          tempTheme.forceTheme ??
+          (tempTheme.forceDark !== undefined ? true : undefined),
+      };
+      themeLoaded = true;
     } else {
       themeLoaded = true
     }
@@ -230,7 +223,7 @@
             {#each theme.CustomImages as image (image.id)}
               <div class="flex gap-2 items-center px-2 py-2 mb-4 h-16 bg-white rounded-lg shadow-lg dark:bg-zinc-700">
                 <div class="h-full">
-                  <img src={URL.createObjectURL(image.blob)} alt={image.variableName} class="object-contain h-full rounded" />
+                  <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded" />
                 </div>
                 <input
                   type="text"
@@ -252,19 +245,23 @@
             </div>
           {:else if item.type === 'lightDarkToggle'}
             <button
-              class="overflow-hidden relative px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 font-IconFamily"
+              class="overflow-hidden relative flex justify-center items-center px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
               onclick={() => (item.props as LightDarkToggleProps).onChange(!(item.props as LightDarkToggleProps).state)}
             >
               {#key (item.props as LightDarkToggleProps).state}
                 <span
-                  class="absolute"
+                  class="absolute flex items-center justify-center"
                   in:fade={{ duration: 150 }}
                   out:fade={{ duration: 150 }}
                 >
-                  {(item.props as LightDarkToggleProps).state ? '\uec12' : '\uecfe'}
+                  {#if (item.props as LightDarkToggleProps).state}
+                    <LucideMoon class="w-5 h-5" />
+                  {:else}
+                    <LucideSun class="w-5 h-5" />
+                  {/if}
                 </span>
               {/key}
-              <span class='opacity-0'>{'\uec12'}</span>
+              <span class="opacity-0 inline-flex"><LucideMoon class="w-5 h-5" /></span>
             </button>
           {/if}
         </div>
@@ -330,7 +327,7 @@
       {/if}
       {#if theme.coverImage}
         <div class="absolute z-20 w-full h-full opacity-0 transition-opacity pointer-events-none group-hover:opacity-100 bg-black/20"></div>
-        <img src="{typeof theme.coverImage === 'string' ? theme.coverImage : URL.createObjectURL(theme.coverImage)}" alt='Cover' class="object-cover absolute z-0 w-full h-full rounded" />
+        <ThemeBlobImage source={theme.coverImage} alt="Cover" class="object-cover absolute z-0 w-full h-full rounded" />
       {/if}
     </div>
 

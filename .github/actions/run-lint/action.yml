@@ -1,0 +1,11 @@
+name: Run lint
+description: Run ESLint on src.
+
+runs:
+  using: composite
+  steps:
+    - name: Lint
+      shell: bash
+      run: npm run lint
+      env:
+        ESLINT_USE_FLAT_CONFIG: "false"

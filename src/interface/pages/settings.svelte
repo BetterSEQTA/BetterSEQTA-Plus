@@ -6,18 +6,25 @@
   import browser from "webextension-polyfill";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
   import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
-  //import { OpenMinecraftServerPopup } from "@/seqta/utils/Openers/OpenMinecraftServerPopup";
 
-  import ColourPicker from "../components/ColourPicker.svelte";
+  import type { Component } from "svelte";
+  import FontPickerModal from "../components/FontPickerModal.svelte";
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
-  import { settingsPopup } from "../hooks/SettingsPopup";
+  import { settingsPopup } from "@/seqta/utils/settingsPopup";
+  import {
+    checkGithubReleaseUpdate,
+    dismissNightlyUpdate,
+    getInstalledGhReleaseChannelLabel,
+    isGhReleaseUpdateCheckEnabled,
+    type GhReleaseUpdateInfo,
+  } from "@/utils/githubReleaseUpdate";
 
   let devModeSequence = "";
   let settingsActiveTab = $state(0);
@@ -25,6 +32,19 @@
   let disclaimerCallbacks = $state<{ onConfirm: () => void, onCancel: () => void } | null>(null);
   let disclaimerTitle = $state("Confirm");
   let disclaimerMessage = $state("");
+  const ghReleaseUpdateEnabled = isGhReleaseUpdateCheckEnabled();
+  const ghReleaseChannelLabel = getInstalledGhReleaseChannelLabel();
+  let ghReleaseUpdate = $state<GhReleaseUpdateInfo | null>(null);
+
+  const openGhRelease = () => {
+    const url = ghReleaseUpdate?.url
+      ?? "https://github.com/BetterSEQTA/BetterSEQTA-Plus/releases";
+    if (ghReleaseUpdate?.available) {
+      dismissNightlyUpdate();
+    }
+    window.open(url, "_blank");
+    closeExtensionPopup();
+  };
 
   const handleDevModeToggle = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -43,8 +63,17 @@
     }, 10000);
   };
 
-  const openColourPicker = () => {
+  let ColourPickerComponent = $state<Component | null>(null);
+
+  const openColourPicker = async () => {
+    if (!ColourPickerComponent) {
+      ColourPickerComponent = (await import("../components/ColourPicker.svelte")).default;
+    }
     showColourPicker = true;
+  };
+
+  const openFontPicker = () => {
+    showFontPicker = true;
   };
 
   const openChangelog = () => {
@@ -57,11 +86,6 @@
     closeExtensionPopup();
   };
 
-  /* const openMinecraftServer = () => {
-    OpenMinecraftServerPopup();
-    closeExtensionPopup();
-  }; */
-
   const openPrivacyStatement = () => {
     window.open("https://betterseqta.org/privacy", "_blank");
     closeExtensionPopup();
@@ -69,41 +93,60 @@
 
   let { standalone } = $props<{ standalone?: boolean }>();
   let showColourPicker = $state<boolean>(false);
+  let showFontPicker = $state<boolean>(false);
   let showCloudPanel = $state<boolean>(false);
 
   const openCloudPanel = () => {
     showCloudPanel = true;
   };
 
-  const showDisclaimer = (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => {
+  const showDisclaimer = (
+    onConfirm: () => void,
+    onCancel: () => void,
+    title = "Confirm",
+    message = "",
+  ) => {
     disclaimerCallbacks = { onConfirm, onCancel };
-    disclaimerTitle = title ?? "Confirm";
-    disclaimerMessage = message ?? "";
+    disclaimerTitle = title;
+    disclaimerMessage = message;
     showDisclaimerModal = true;
   };
 
+  const closePopupsOnSettingsClose = () => {
+    showColourPicker = false;
+    showFontPicker = false;
+    showCloudPanel = false;
+  };
+
   onMount(() => {
-    settingsPopup.addListener(() => {
-      showColourPicker = false;
-      showCloudPanel = false;
-    });
+    settingsPopup.addListener(closePopupsOnSettingsClose);
 
     if (standalone) {
       StandaloneStore.setStandalone(true);
     }
+
+    if (ghReleaseUpdateEnabled) {
+      void checkGithubReleaseUpdate().then((info) => {
+        ghReleaseUpdate = info;
+      });
+    }
+  });
+
+  onDestroy(() => {
+    settingsPopup.removeListener(closePopupsOnSettingsClose);
   });
 </script>
 
 <div
-  class="w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode
+  class="relative w-[384px] no-scrollbar shadow-2xl {$settingsState.DarkMode
     ? 'dark'
     : ''} {standalone ? 'h-[600px]' : 'h-full rounded-xl'} overflow-clip"
 >
   <div
-    class="flex relative flex-col gap-2 h-full overflow-clip bg-white dark:bg-zinc-800 dark:text-white"
+    class="flex relative flex-col gap-2 h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white"
   >
     <div
-      class="grid place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
+      class="grid shrink-0 place-items-center border-b border-b-zinc-200/40 dark:border-b-zinc-700/40"
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -127,7 +170,29 @@
       />
 
       {#if !standalone}
-        <div class="flex absolute top-1 right-1 gap-1 items-center">
+        <div class="flex absolute top-1 right-1 gap-1 items-start">
+          {#if ghReleaseUpdateEnabled}
+            <div class="flex flex-col items-end gap-0.5 max-w-[9rem] mr-0.5">
+              {#if ghReleaseUpdate?.available}
+                <button
+                  type="button"
+                  onclick={openGhRelease}
+                  class="px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500"
+                  title="Open GitHub release"
+                >
+                  Update available — {ghReleaseUpdate.label}
+                </button>
+              {/if}
+              <p class="text-[9px] leading-tight text-right text-zinc-500 dark:text-zinc-400">
+                {#if ghReleaseChannelLabel}
+                  {ghReleaseChannelLabel} — do not upload to extension stores.
+                {:else}
+                  GitHub release build — do not upload to extension stores.
+                {/if}
+              </p>
+            </div>
+          {/if}
+          <div class="flex gap-1 items-center">
           <button
             onclick={openAbout}
             class="flex justify-center items-center w-8 h-8 text-lg rounded-xl font-IconFamily bg-zinc-100 dark:bg-zinc-700"
@@ -149,160 +214,29 @@
           >
             {"\uecba"}
           </button>
-
-          <!-- <button
-            onclick={openMinecraftServer}
-            class="flex justify-center items-center p-1 w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-700"
-            aria-label="Open Minecraft Server"
-          >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 64 70"
-            fill="none"
-            class="w-full h-full"
-          >
-            <path
-              d="M0 0 C3.96 0 7.92 0 12 0 C12 3.96 12 7.92 12 12 C10.68 12 9.36 12 8 12 C8 10.68 8 9.36 8 8 C6.68 8 5.36 8 4 8 C4 6.68 4 5.36 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(42,10)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 6.6 4 13.2 4 20 C2.68 20 1.36 20 0 20 C0 13.4 0 6.8 0 0 Z "
-              fill="currentColor"
-              transform="translate(54,22)"
-            />
-            <path
-              d="M0 0 C6.6 0 13.2 0 20 0 C20 1.32 20 2.64 20 4 C13.4 4 6.8 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(22,6)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 5.28 4 10.56 4 16 C2.68 16 1.36 16 0 16 C0 10.72 0 5.44 0 0 Z "
-              fill="currentColor"
-              transform="translate(46,26)"
-            />
-            <path
-              d="M0 0 C5.28 0 10.56 0 16 0 C16 1.32 16 2.64 16 4 C10.72 4 5.44 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(22,14)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C5.32 4 6.64 4 8 4 C8 5.32 8 6.64 8 8 C5.36 8 2.72 8 0 8 C0 5.36 0 2.72 0 0 Z "
-              fill="currentColor"
-              transform="translate(6,50)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(14,50)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(18,46)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(10,46)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(50,42)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(22,42)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(14,42)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(26,38)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(18,38)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(30,34)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(22,34)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(34,30)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(26,30)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(38,26)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(30,26)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(42,22)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(34,22)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(38,18)"
-            />
-            <path
-              d="M0 0 C1.32 0 2.64 0 4 0 C4 1.32 4 2.64 4 4 C2.68 4 1.36 4 0 4 C0 2.68 0 1.36 0 0 Z "
-              fill="currentColor"
-              transform="translate(18,10)"
-            />
-          </svg>
-        </button> -->
+          </div>
         </div>
       {/if}
     </div>
 
-    <TabbedContainer
-      bind:activeTab={settingsActiveTab}
-      tabs={[
-        {
-          title: "Settings",
-          Content: Settings,
-          props: { showColourPicker: openColourPicker, showDisclaimer, showCloudPanel: openCloudPanel },
-        },
-        { title: "Shortcuts", Content: Shortcuts },
-        { title: "Themes", Content: Theme },
-      ]}
-    />
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <TabbedContainer
+        bind:activeTab={settingsActiveTab}
+        tabs={[
+          {
+            title: "Settings",
+            Content: Settings,
+            props: { showColourPicker: openColourPicker, showFontPicker: openFontPicker, showDisclaimer, showCloudPanel: openCloudPanel },
+          },
+          { title: "Shortcuts", Content: Shortcuts },
+          { title: "Themes", Content: Theme },
+        ]}
+      />
+    </div>
   </div>
 
-  {#if showColourPicker}
-    <ColourPicker
+  {#if showColourPicker && ColourPickerComponent}
+    <ColourPickerComponent
       hidePicker={() => {
         showColourPicker = false;
       }}
@@ -317,6 +251,14 @@
     />
   {/if}
 </div>
+
+{#if showFontPicker}
+  <FontPickerModal
+    hidePicker={() => {
+      showFontPicker = false;
+    }}
+  />
+{/if}
 
 {#if showDisclaimerModal && disclaimerCallbacks}
   <DisclaimerModal

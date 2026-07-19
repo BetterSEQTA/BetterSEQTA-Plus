@@ -7,7 +7,7 @@
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import type { Theme } from '../types/Theme'
-  import { visibleStoreThemes, buildCoverSlidesForThemes } from '@/interface/utils/themeStoreFlavours'
+  import { visibleStoreThemes, buildCoverSlidesForThemes, normalizeStoreTheme } from '@/interface/utils/themeStoreFlavours'
   import browser from 'webextension-polyfill'
   import ThemeModal from '../components/store/ThemeModal.svelte'
   import Header from '../components/store/Header.svelte'
@@ -23,7 +23,10 @@
   const themeManager = ThemeManager.getInstance();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
-  cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
+  $effect(() => {
+    const unsub = cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
+    return unsub;
+  });
 
   // State variables
   let searchTerm = $state('');
@@ -48,8 +51,21 @@
   let activeTab = $state(initialTab as 'themes' | 'backgrounds');
   
   let error = $state<string | null>(null);
+  let fetchAttempt = $state(0);
   let selectedBackground = $state<string | null>(null);
   let showSignInOverlay = $state(false);
+
+  const MAX_FETCH_ATTEMPTS = 3;
+  const FETCH_MESSAGE_TIMEOUT_MS = 25_000;
+
+  function sendMessageWithTimeout<T>(message: object): Promise<T> {
+    return Promise.race([
+      browser.runtime.sendMessage(message) as Promise<T>,
+      new Promise<T>((_, reject) => {
+        setTimeout(() => reject(new Error('Theme store request timed out — reload the SEQTA page after updating the extension.')), FETCH_MESSAGE_TIMEOUT_MS);
+      }),
+    ]);
+  }
 
   const fetchCurrentThemes = async () => {
     const themes = await themeManager.getAvailableThemes();
@@ -80,13 +96,11 @@
   }
 
   const toggleFavorite = async (theme: Theme) => {
-    const token = await cloudAuth.getStoredToken();
-    if (!token) return;
+    if (!cloudLoggedIn) return;
     const isFavorite = !theme.is_favorited;
     const result = (await browser.runtime.sendMessage({
       type: 'cloudFavorite',
       themeId: theme.id,
-      token,
       action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {
@@ -107,26 +121,40 @@
   };
 
   // Fetch themes via background script (avoids CORS when store runs inside SEQTA page)
-  const fetchThemes = async () => {
+  const fetchThemes = async (isRetry = false) => {
+    if (!isRetry) {
+      fetchAttempt = 0;
+      error = null;
+    }
     try {
-      const token = await cloudAuth.getStoredToken();
-      const data = (await browser.runtime.sendMessage({
-        type: 'fetchThemes',
-        token: token ?? undefined,
-      })) as {
+      const data = await sendMessageWithTimeout<{
         success?: boolean;
-        data?: { themes: Theme[] };
+        data?: { themes: unknown[] };
         error?: string;
-      };
-      if (!data?.success || !data?.data?.themes) {
+      }>({
+        type: 'fetchThemes',
+      });
+      if (!data?.success || !Array.isArray(data?.data?.themes)) {
         throw new Error(data?.error || 'Failed to fetch themes');
       }
-      themes = [...data.data.themes].sort(compareStoreThemes);
-
+      themes = data.data.themes
+        .map((row) => normalizeStoreTheme(row as Record<string, unknown>))
+        .filter((t) => t.id.length > 0)
+        .sort(compareStoreThemes);
+      error = null;
       loading = false;
     } catch (err) {
       console.error('Failed to fetch themes', err);
-      setTimeout(fetchThemes, 5000); // Retry after 5 seconds if failure occurs
+      fetchAttempt += 1;
+      if (fetchAttempt >= MAX_FETCH_ATTEMPTS) {
+        error =
+          err instanceof Error
+            ? err.message
+            : 'Could not load themes. Reload the SEQTA page, then open the store again.';
+        loading = false;
+        return;
+      }
+      setTimeout(() => fetchThemes(true), 5000);
     }
   };
 
@@ -167,11 +195,12 @@
 
   // Filter themes (list is already featured-first, then newest; filter preserves order)
   let filteredThemes = $derived(
-    listThemes.filter(
-      (theme) =>
-        theme.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        theme.description.toLowerCase().includes(searchTerm.toLowerCase()),
-    ),
+    listThemes.filter((theme) => {
+      const q = searchTerm.toLowerCase();
+      const name = (theme.name ?? '').toLowerCase();
+      const description = (theme.description ?? '').toLowerCase();
+      return name.includes(q) || description.includes(q);
+    }),
   );
 
   async function installThemeFromStore(themeId: string, meta: Theme) {
@@ -228,7 +257,28 @@
       <!-- Loading State -->
       {#if loading}
         <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
-          <SkeletonLoader width="100%" height="200px" />
+          {#each Array(6) as _, i (i)}
+            <SkeletonLoader width="100%" height="200px" />
+          {/each}
+        </div>
+      {:else if error}
+        <div class="flex flex-col items-center justify-center py-24 text-center max-w-lg mx-auto">
+          <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Couldn&apos;t load themes</h2>
+          <p class="mt-3 text-zinc-600 dark:text-zinc-300">{error}</p>
+          <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            After an extension update, reload your SEQTA tab so the new version can talk to the browser.
+          </p>
+          <button
+            type="button"
+            class="mt-6 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+            onclick={() => {
+              loading = true;
+              error = null;
+              void fetchThemes();
+            }}
+          >
+            Try again
+          </button>
         </div>
       {:else}
         <!-- Themes Tab Content -->

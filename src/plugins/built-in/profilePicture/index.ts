@@ -6,7 +6,9 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import browser from "webextension-polyfill";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
 import styles from "./styles.css?inline";
 import localforage from "localforage";
 
@@ -62,15 +64,22 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       }
 
       const useCloud = api.settings.useCloudPfp;
-      const pfpUrl = cloudAuth.state.user?.pfpUrl;
+      const userId = cloudAuth.state.user?.id;
+      const pfpUrl =
+        cloudAuth.state.user?.pfpUrl ??
+        (userId ? defaultAccountsPfpUrl(userId) : undefined);
 
-      if (useCloud && pfpUrl) {
-        img = document.createElement("img");
-        img.className = "userInfoImg";
-        img.src = pfpUrl;
-        if (svg) svg.style.display = "none";
-        container.appendChild(img);
-        return;
+      if (useCloud && pfpUrl && userId) {
+        const resolved = await resolveCloudPfp(userId, pfpUrl);
+        if (resolved) {
+          currentBlobUrl = resolved.src;
+          img = document.createElement("img");
+          img.className = "userInfoImg";
+          img.src = resolved.src;
+          if (svg) svg.style.display = "none";
+          container.appendChild(img);
+          return;
+        }
       }
 
       const blob = await store.getItem<Blob>("profile-picture");
@@ -86,6 +95,13 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       }
     }
 
+    if (api.settings.useCloudPfp && cloudAuth.state.isLoggedIn) {
+      const { pullCloudProfilePictureFromServer } = await import(
+        "@/seqta/utils/cloudPfpSync"
+      );
+      await pullCloudProfilePictureFromServer();
+    }
+
     await applyProfileImage();
 
     const onLocalPictureUpdated = () => {
@@ -93,11 +109,24 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     };
     window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
 
+    const onStorageRevision = (
+      changes: Record<string, browser.Storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName === "local" && changes.profile_picture_revision) {
+        void applyProfileImage();
+      }
+    };
+    browser.storage.onChanged.addListener(onStorageRevision);
+
     const cloudUnsub = cloudAuth.subscribe(() => {
       void applyProfileImage();
     });
 
-    const useCloudUnreg = api.settings.onChange("useCloudPfp", () => {
+    const useCloudUnreg = api.settings.onChange("useCloudPfp", (enabled: boolean) => {
+      void import("@/seqta/utils/cloudPfpSync").then(({ onUseCloudPfpToggled }) =>
+        onUseCloudPfpToggled(enabled),
+      );
       void applyProfileImage();
     });
 
@@ -105,6 +134,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       useCloudUnreg.unregister();
       cloudUnsub();
       window.removeEventListener("profile-picture-updated", onLocalPictureUpdated);
+      browser.storage.onChanged.removeListener(onStorageRevision);
       if (img) img.remove();
       if (svg) svg.style.display = "";
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);

@@ -62,12 +62,13 @@ export function showPrivacyNotification(onDismissed?: () => void) {
 
   attachPopupMediaFullscreenIfPresent(text, "img.aboutImg");
 
-  settingsState.privacyStatementLastUpdated = "2025-12-20";
-  settingsState.privacyStatementShown = true;
-
   openPopup({
     header,
     content: [text],
-    afterClose: onDismissed,
+    afterClose: () => {
+      settingsState.privacyStatementLastUpdated = "2025-12-20";
+      settingsState.privacyStatementShown = true;
+      onDismissed?.();
+    },
   });
 }

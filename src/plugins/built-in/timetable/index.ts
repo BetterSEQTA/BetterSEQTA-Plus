@@ -1,7 +1,10 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import type { Plugin } from "../../core/types";
+import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { verboseLog } from "@/utils/verboseLog";
+import { mountGoogleCalendarButton, unmountGoogleCalendarButton } from "./calendarSyncUi";
 
 const timetablePlugin: Plugin<{}, {}> = {
   id: "timetable",
@@ -26,6 +29,7 @@ const timetablePlugin: Plugin<{}, {}> = {
         const hideControls = document.querySelector(".timetable-hide-controls");
         if (hideControls) hideControls.remove();
 
+        unmountGoogleCalendarButton();
         resetTimetableStyles();
       }
     };
@@ -63,6 +67,8 @@ function resetTimetableStyles(): void {
 }
 
 async function handleTimetable(): Promise<void> {
+  attachTimetableColorisRecovery();
+
   // SEQTA uses `.times` blocks on entries, not necessarily `.time`; avoid infinite polling on a missing selector.
   try {
     await waitForElm(".timetablepage .times, .timetablepage .entry.class", true, 50, 200);
@@ -81,21 +87,26 @@ async function handleTimetable(): Promise<void> {
 
   handleTimetableZoom();
   handleTimetableAssessmentHide();
+  void mountGoogleCalendarButton();
 }
 
 function handleTimetableZoom(): void {
-  console.log("Initializing timetable zoom controls");
+  if (document.querySelector(".timetable-zoom-controls")) return;
+
+  verboseLog("Initializing timetable zoom controls");
 
   // Create zoom controls
   const zoomControls = document.createElement("div");
   zoomControls.className = "timetable-zoom-controls";
 
   const zoomIn = document.createElement("button");
-  zoomIn.className = "uiButton timetable-zoom iconFamily";
+  zoomIn.type = "button";
+  zoomIn.className = "timetable-zoom iconFamily bsplus-timetable-control";
   zoomIn.innerHTML = "&#xed93;"; // Unicode for zoom in icon (custom iconfamily)
 
   const zoomOut = document.createElement("button");
-  zoomOut.className = "uiButton timetable-zoom iconFamily";
+  zoomOut.type = "button";
+  zoomOut.className = "timetable-zoom iconFamily bsplus-timetable-control";
   zoomOut.innerHTML = "&#xed94;"; // Unicode for zoom out icon (custom iconfamily)
 
   zoomControls.appendChild(zoomOut);
@@ -130,11 +141,14 @@ function handleTimetableZoom(): void {
 }
 
 function handleTimetableAssessmentHide(): void {
+  if (document.querySelector(".timetable-hide-controls")) return;
+
   const hideControls = document.createElement("div");
   hideControls.className = "timetable-hide-controls";
 
   const hideOn = document.createElement("button");
-  hideOn.className = "uiButton timetable-hide iconFamily";
+  hideOn.type = "button";
+  hideOn.className = "timetable-hide iconFamily bsplus-timetable-control";
   hideOn.innerHTML = "&#xeab3;";
 
   hideControls.appendChild(hideOn);

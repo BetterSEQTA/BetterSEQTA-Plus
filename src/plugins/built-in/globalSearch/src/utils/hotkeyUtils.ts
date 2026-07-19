@@ -1,9 +1,21 @@
+export function getDefaultSearchHotkey(): string {
+  return navigator.platform.toUpperCase().includes("MAC") ? "cmd+k" : "ctrl+k";
+}
+
 export interface ParsedHotkey {
   ctrl: boolean;
   meta: boolean;
   alt: boolean;
   shift: boolean;
   key: string;
+}
+
+/** Single-key allowlist: a-z, 0-9, and F1–F12 only. */
+const ALLOWED_HOTKEY_KEY = /^([a-z0-9]|f(1[0-2]|[1-9]))$/;
+
+export function isAllowedHotkeyKey(key: string): boolean {
+  if (!key) return false;
+  return ALLOWED_HOTKEY_KEY.test(key.toLowerCase());
 }
 
 export function parseHotkey(hotkeyString: string): ParsedHotkey {
@@ -68,14 +80,14 @@ export function formatHotkeyForDisplay(hotkeyString: string): string {
       parts.push(isMac ? '⇧' : 'Shift');
     }
     
-    if (parsed.key) {
+    if (parsed.key && isAllowedHotkeyKey(parsed.key)) {
       parts.push(parsed.key.toUpperCase());
     }
     
     return parts.join(isMac ? ' ' : '+');
   } catch (error) {
     console.warn('Invalid hotkey string:', hotkeyString);
-    return hotkeyString; // Fallback to original string
+    return 'Ctrl+K';
   }
 }
 
@@ -84,7 +96,7 @@ export function matchesHotkey(event: KeyboardEvent, hotkeyString: string): boole
     const parsed = parseHotkey(hotkeyString);
     
     // If no key is specified, don't match anything
-    if (!parsed.key) {
+    if (!parsed.key || !isAllowedHotkeyKey(parsed.key)) {
       return false;
     }
     
@@ -111,8 +123,8 @@ export function matchesHotkey(event: KeyboardEvent, hotkeyString: string): boole
 export function isValidHotkey(hotkeyString: string): boolean {
   try {
     const parsed = parseHotkey(hotkeyString);
-    return parsed.key.length > 0;
+    return parsed.key.length > 0 && isAllowedHotkeyKey(parsed.key);
   } catch (error) {
     return false;
   }
-} 
+}

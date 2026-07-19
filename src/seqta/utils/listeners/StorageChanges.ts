@@ -1,9 +1,13 @@
 import { settingsState } from "./SettingsState";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 
 // Shortcuts rendering
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
+import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/Loaders/LoadHomePage";
+import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
+import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/OpenMenuOptions";
 
 import browser from "webextension-polyfill";
 import type { CustomShortcut } from "@/types/storage";
@@ -36,10 +40,18 @@ export class StorageChangeHandler {
       "subjectfilters",
       FilterUpcomingAssessments.bind(this),
     );
+    registerHomeUpcomingSettingsListeners();
     settingsState.register(
       "iconOnlySidebar",
       this.handleIconOnlySidebarChange.bind(this),
     );
+    settingsState.register("selectedFont", () => applySelectedFont());
+    settingsState.register("menuitems", () => applyMenuItemVisibility());
+    settingsState.register("menuorder", (order) => {
+      if (Array.isArray(order) && order.length > 0) {
+        ChangeMenuItemPositions(order);
+      }
+    });
   }
 
   private handleIconOnlySidebarChange(newValue: boolean | undefined) {
@@ -60,19 +72,15 @@ export class StorageChangeHandler {
     browser.runtime.sendMessage({ type: "reloadTabs" });
   }
 
-  private handleCustomShortcutsChange(
-    newValue: CustomShortcut[],
-    oldValue: CustomShortcut[],
-  ) {
-    if (!newValue || !oldValue) return;
+  private handleCustomShortcutsChange(newValue: CustomShortcut[] | undefined) {
+    if (!Array.isArray(newValue)) return;
     renderShortcuts();
   }
 
   private handleShortcutsChange(
-    newValue: { enabled: boolean; name: string }[],
-    oldValue: { enabled: boolean; name: string }[],
+    newValue: { enabled: boolean; name: string }[] | undefined,
   ) {
-    if (!newValue || !oldValue) return;
+    if (!Array.isArray(newValue)) return;
     renderShortcuts();
   }
 

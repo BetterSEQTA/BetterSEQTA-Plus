@@ -1,30 +1,34 @@
-import renderSvelte from "@/interface/main";
-import Store from "@/interface/pages/store.svelte";
-import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
-
 import { unmount } from "svelte";
+import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach";
 
 let remove: () => void;
 
-export function OpenStorePage(initialTab: 'themes' | 'backgrounds' = 'themes') {
-  // Store initial tab in sessionStorage so the component can read it
-  sessionStorage.setItem('storeInitialTab', initialTab);
-  remove = renderStore();
+export async function OpenStorePage(
+  initialTab: "themes" | "backgrounds" = "themes",
+): Promise<void> {
+  sessionStorage.setItem("storeInitialTab", initialTab);
+  remove = await renderStore();
 }
 
-export function renderStore() {
-  // For Learn, use #container; for Teach, use #root or body
+export async function renderStore() {
+  const [{ default: renderSvelte }, { default: Store }] = await Promise.all([
+    import("@/interface/main"),
+    import("@/interface/pages/store.svelte"),
+  ]);
+
   let container: HTMLElement | null = null;
-  
+
   if (isSeqtaTeachExperience()) {
     container = document.getElementById("root") || document.body;
   } else {
     container = document.querySelector("#container");
   }
-  
+
   if (!container) {
     throw new Error("Container not found");
   }
+
+  document.getElementById("store")?.remove();
 
   const child = document.createElement("div");
   child.id = "store";

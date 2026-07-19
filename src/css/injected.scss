@@ -53,7 +53,8 @@
   display: none;
 }
 
-button.uiButton.timetable-zoom.iconFamily,
+button.timetable-zoom.iconFamily,
+button.bsplus-timetable-control.iconFamily,
 .iconFamily {
   font-family: "IconFamily" !important;
 }
@@ -82,9 +83,13 @@ body {
 
 select {
   border-radius: 16px !important;
-  border: 1px solid color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 78%, transparent) !important;
-  background: color-mix(in srgb, var(--background-primary) 90%, transparent) !important;
+  border: 1px solid var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) !important;
+  background: var(--theme-primary, var(--background-primary)) !important;
   color: var(--text-primary) !important;
+  padding: 0.5rem 1rem !important;
+  min-height: 2.5rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25 !important;
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
@@ -92,14 +97,14 @@ select {
 }
 
 select:hover {
-  background: color-mix(in srgb, var(--background-primary) 94%, var(--background-secondary) 6%) !important;
-  border-color: color-mix(in srgb, var(--theme-offset-bg, var(--background-secondary)) 92%, transparent) !important;
+  background: var(--theme-secondary, var(--background-secondary)) !important;
+  border-color: var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) !important;
 }
 
 select:focus {
   outline: none !important;
-  background: color-mix(in srgb, var(--background-primary) 96%, var(--background-secondary) 4%) !important;
-  border-color: color-mix(in srgb, var(--text-primary) 18%, var(--theme-offset-bg, var(--background-secondary)) 82%) !important;
+  background: var(--theme-secondary, var(--background-secondary)) !important;
+  border-color: color-mix(in srgb, var(--text-primary) 18%, var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) 82%) !important;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
 }
 
@@ -108,12 +113,12 @@ select[size="1"] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  color-scheme: light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23999'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
   background-position: right 0.9rem center !important;
   background-repeat: no-repeat !important;
   background-size: 1rem !important;
   padding-right: 2.6rem !important;
-  color-scheme: light;
 }
 
 select::-ms-expand {
@@ -121,24 +126,25 @@ select::-ms-expand {
 }
 
 select option {
-  background: var(--background-primary) !important;
-  color: var(--text-primary) !important;
+  background-color: #ffffff !important;
+  color: #18181b !important;
+}
+
+.dark select option {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 .dark select:not([multiple]):not([size]),
 .dark select[size="1"] {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23c9c9c9'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
   color-scheme: dark;
-}
-
-.dark select option {
-  background: var(--background-primary) !important;
-  color: var(--text-primary) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23c9c9c9'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
 }
 #container {
   background: var(--auto-background) !important;
 }
-:root * {
+.legacy-root,
+.legacy-root * {
   font-family: Rubik, sans-serif !important;
   --theme-fg-parts: white;
 }
@@ -231,6 +237,13 @@ select option {
 
 .modaliser-container {
   backdrop-filter: none !important;
+  pointer-events: none !important;
+}
+
+/* Colour picker dialog teardown can leave an empty shell that blocks clicks */
+.modaliser-container:not(:has(.modaliser > *)) {
+  display: none !important;
+  visibility: hidden !important;
   pointer-events: none !important;
 }
 
@@ -352,12 +365,18 @@ select option {
 }
 
 .timetable-zoom,
-.timetable-hide {
+.timetable-hide,
+.bsplus-timetable-control {
   font-size: 14px !important;
   line-height: 1 !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px 8px;
 }
 
 #main > .dashboard {
@@ -445,6 +464,7 @@ ul.magicDelete > li.deleting {
 .addedButton svg {
   margin: 6px;
   fill: var(--theme-primary);
+  color: var(--theme-primary);
 }
 #menu,
 .sub,
@@ -534,6 +554,106 @@ body[data-seqta-platform="teach"] {
   top: 71.5px;
   margin-top: -2px;
 }
+
+/* Drill-in stack: only the current list + folder header stay clickable.
+   Class is toggled by updateSidebarAccessibility (never touches aria-hidden). */
+#menu .bsplus-sidebar-offscreen,
+#menu .bsplus-sidebar-offscreen * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+#menu > ul > .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  opacity: 0 !important;
+}
+
+#menu .sub .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  visibility: hidden !important;
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Only the frontmost open .sub panel receives pointer events */
+#menu .sub {
+  pointer-events: none;
+}
+
+#menu li.hasChildren.active > .sub {
+  pointer-events: auto;
+}
+
+#menu li.hasChildren.active > .sub:has(.hasChildren.active) {
+  pointer-events: none !important;
+}
+
+#menu li.hasChildren.active .hasChildren.active > .sub {
+  pointer-events: auto !important;
+}
+
+#menu:has(> ul > li.hasChildren.active) > ul > li:not(.hasChildren.active) {
+  pointer-events: none !important;
+}
+
+/* Edit Sidebar: every row + toggle must stay clickable (drill stack disables siblings). */
+#menu.bsplus-sidebar-edit-mode li.item,
+#menu.bsplus-sidebar-edit-mode section.item,
+#menu.bsplus-sidebar-edit-mode .bsplus-sidebar-offscreen,
+#menu.bsplus-sidebar-edit-mode .bsplus-sidebar-offscreen * {
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+#menu.bsplus-sidebar-edit-mode:has(> ul > li.hasChildren.active)
+  > ul
+  > li:not(.hasChildren.active) {
+  pointer-events: auto !important;
+}
+
+#menu.bsplus-sidebar-edit-mode > ul > .bsplus-sidebar-offscreen:not(.hasChildren.active),
+#menu.bsplus-sidebar-edit-mode .sub .bsplus-sidebar-offscreen:not(.hasChildren.active) {
+  position: relative !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
+  margin: inherit !important;
+  padding: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable > label {
+  flex: 1;
+  min-width: 0;
+}
+
+#menu.bsplus-sidebar-edit-mode .onoffswitch {
+  pointer-events: auto !important;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
 #menu section > label {
   align-items: center;
   box-sizing: border-box;
@@ -822,6 +942,11 @@ ol:has([class*="MessageList__avatar___"] svg) {
 .quickbar .actions [title="Choose a colour"] > svg {
   scale: 0.9;
 }
+
+.quickbar .actions .timetable-edit-quickbar-btn > svg {
+  scale: 0.9;
+  padding-top: 1px;
+}
 .quickbar[data-yiq="light"] .actions {
   color: white !important;
 }
@@ -1052,7 +1177,13 @@ div > ol:has(.uiFileHandlerWrapper) {
   min-height: 128px !important;
 }
 body.student #menu > ul::before {
+  content: "";
+  display: block;
+  width: 100%;
   background-image: var(--betterseqta-logo) !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto 48px;
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -2613,6 +2744,10 @@ blurred {
   height: 64px;
   cursor: pointer;
 }
+/* While a drill-in submenu is open, don't steal clicks meant for folder rows. */
+#menu:has(li.hasChildren.active) > .icon-cover {
+  pointer-events: none;
+}
 .uiSlidePane > .pane > .header button {
   color: var(--text-color) !important;
 }
@@ -3619,9 +3754,22 @@ body {
 .days {
   width: 100%;
 }
-.modaliser {
-  display: none;
+/* Do not hide .modaliser globally — SEQTA Modaliser relies on transitionend to
+   dispose; display:none prevents that and leaves empty shells that block clicks. */
+.modaliser-container:not(.visible) {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.modaliser-container.visible .modaliser {
   background: var(--better-main);
+}
+
+/* ColourChooser teardown can leave a full-screen uiSlidePane that blocks entry clicks */
+.uiSlidePane:not(.shown):has(.pane.colourChooser) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 [class*="MessageList__unread___"] {
@@ -3701,45 +3849,27 @@ body {
 .defaultWelcomeWrapper {
   background: unset !important;
 }
-.clr-swatches button::after,
-.clr-dark .clr-preview::after,
-.clr-field button::after {
-  opacity: unset;
-  padding-top: unset;
-  -webkit-transform: unset;
-  transform: unset;
-  -webkit-transform-origin: unset;
-  transform-origin: unset;
-  visibility: unset;
-  -webkit-animation-name: unset !important;
-  animation-name: unset !important;
-  background-color: currentColor !important;
-}
-.clr-swatches button {
-  align-items: unset;
-  display: block;
-  padding: unset;
-  transition: none;
-}
-.clr-clear {
-  display: none !important;
-}
-.clr-preview::before,
-.clr-preview::after {
-  visibility: unset;
-  -webkit-transform-origin: unset;
-  transform-origin: unset;
-  -webkit-transform: unset;
-  transform: unset;
-  padding-top: unset;
-  opacity: unset;
-}
+
+/* Coloris (timetable subject colours): cosmetic only — do not unset
+   transforms/animations on ::after (breaks picker reopen). */
 #clr-color-preview {
   margin: 15px 0 20px 20px;
   border: 0;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
+}
+
+.clr-swatches button {
+  border-radius: 4px;
+}
+
+/* Never let a closed Coloris picker intercept timetable clicks */
+body:not(.clr-open) .clr-picker,
+.clr-picker:not(.clr-open) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .dark
@@ -4656,6 +4786,32 @@ div.day-empty {
   color: var(--text-primary);
   transform-origin: center center;
 }
+
+/* Text-only popups (privacy notices): body fills remaining height, scrolls inside */
+.whatsnewContainer.whatsnewContainer--scrollBody {
+  .whatsnewHeader {
+    flex-shrink: 0;
+    height: auto;
+    min-height: 3em;
+  }
+
+  > .whatsnewTextContainer {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: none;
+    width: 90%;
+    margin: 0 auto 0.75rem;
+    padding-bottom: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  > .whatsnewTextContainer.privacyStatement {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+}
 .whatsnewTextContainer.privacyStatement p {
   margin-bottom: 1.5ex;
 
@@ -4685,26 +4841,6 @@ div.day-empty {
 .whatsnewHeader p {
   font-size: 1em;
   color: var(--text-primary);
-}
-.whatsnewHeader.engageParentsAnnouncementHeader {
-  height: auto;
-  min-height: unset;
-}
-.whatsnewHeader.engageParentsAnnouncementHeader h1 {
-  line-height: 1.2;
-}
-.whatsnewHeader.engageParentsAnnouncementHeader .engageParentsSubheading {
-  margin-top: 0.35rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  opacity: 0.92;
-}
-.seqtaEngageAccent {
-  color: #ea580c;
-  font-weight: 700;
-}
-.dark .seqtaEngageAccent {
-  color: #fb923c;
 }
 .whatsnewBackground {
   width: 100%;
@@ -4834,25 +4970,6 @@ div.day-empty {
   object-fit: cover;
   margin-bottom: 12px;
 }
-.whatsnewTextContainer .engageParentsPromoWrap {
-  width: 100%;
-  margin-bottom: 12px;
-  border-radius: 16px;
-  overflow: hidden;
-  aspect-ratio: 16 / 9;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.28);
-  background: color-mix(in srgb, var(--background-secondary) 88%, var(--text-primary) 12%);
-}
-.whatsnewTextContainer .engageParentsPromoWrap .engageParentsPromoImg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border-radius: 0;
-  aspect-ratio: unset;
-  object-fit: contain;
-  object-position: center;
-}
 
 .whatsnewHeader.bsCloudAutoSyncAnnouncementHeader {
   height: auto;
@@ -4880,19 +4997,306 @@ div.day-empty {
   color: var(--text-primary);
 }
 
+.themeOfTheMonthBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 47;
+  background: color-mix(in srgb, #000 52%, transparent);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.themeOfTheMonthBackdropVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
 .themeOfTheMonthCard {
   position: fixed;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
   z-index: 48;
+  margin: 0;
   width: min(360px, calc(100vw - 36px));
-  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
   border-radius: 20px;
   background: var(--background-primary);
   color: var(--text-primary);
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
-  animation: themeOfTheMonthCardIn 0.24s ease-out;
+  transform-origin: bottom right;
+  transition: none;
+  animation: themeOfTheMonthCardIn 0.28s ease-out;
+}
+.themeOfTheMonthCardExpanded {
+  transform-origin: center center;
+}
+/* translate(x,y) is set inline; transition enabled after mount */
+.themeOfTheMonthCardMorphReady:not(.themeOfTheMonthCardReducedMotion) {
+  transition:
+    transform 0.55s cubic-bezier(0.76, 0, 0.24, 1),
+    width 0.55s cubic-bezier(0.76, 0, 0.24, 1),
+    height 0.55s cubic-bezier(0.76, 0, 0.24, 1),
+    max-height 0.55s cubic-bezier(0.76, 0, 0.24, 1),
+    border-radius 0.55s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.themeOfTheMonthCardAnchoredBottom,
+.themeOfTheMonthCardCollapsing {
+  transform-origin: 100% 100% !important;
+}
+/* Expanded: fixed shell; copy scrolls; actions pinned to the bottom. */
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardExpandedShell .themeOfTheMonthCardBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+}
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardExpandedShell .themeOfTheMonthCardDescription {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 8px 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardExpandedShell .themeOfTheMonthCardActions {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 14px;
+}
+.themeOfTheMonthCardReducedMotion {
+  transition: none !important;
+}
+.themeOfTheMonthCardMedia {
+  position: relative;
+  flex-shrink: 0;
+}
+#theme-of-the-month-card .themeOfTheMonthCardPopout {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  appearance: none;
+  border: none;
+  border-radius: 50% !important;
+  aspect-ratio: 1;
+  cursor: pointer;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--background-primary) 80%, transparent);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 14%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.themeOfTheMonthCardPopoutIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  pointer-events: none;
+}
+.themeOfTheMonthCardPopout:hover {
+  background: color-mix(in srgb, var(--background-primary) 95%, transparent);
+  transform: scale(1.05);
+}
+.themeOfTheMonthCardPopout:active {
+  transform: scale(0.96);
+}
+.themeOfTheMonthCardPopout[hidden] {
+  display: none;
+}
+.themeOfTheMonthCardCompactMedia {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  line-height: 0;
+}
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardShowGallery .themeOfTheMonthCardCompactMedia {
+  display: none;
+}
+.themeOfTheMonthCardExpandedPanel {
+  display: none;
+}
+.themeOfTheMonthCardExpandedPanel[hidden] {
+  display: none !important;
+}
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardShowGallery
+  .themeOfTheMonthCardExpandedPanel:not([hidden]) {
+  display: block;
+}
+.themeOfTheMonthCardGallery {
+  position: relative;
+}
+.themeOfTheMonthCardHeroEmboss {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.themeOfTheMonthCardHeroEmbossScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, #000 8%, transparent) 40%,
+    color-mix(in srgb, #000 55%, transparent) 72%,
+    color-mix(in srgb, #000 82%, transparent) 100%
+  );
+}
+.themeOfTheMonthCardHeroEmbossContent {
+  position: relative;
+  z-index: 1;
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmboss {
+  display: flex;
+  padding: 14px 16px 16px;
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmbossTitle {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.55),
+    0 2px 14px rgba(0, 0, 0, 0.35);
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmbossAuthor {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: color-mix(in srgb, #fff 88%, transparent);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmbossDescription {
+  margin: 8px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, #fff 92%, transparent);
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmbossVariants {
+  margin: 6px 0 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: color-mix(in srgb, #fff 72%, transparent);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardShowGallery
+  .themeOfTheMonthCardGallerySlide
+  figcaption {
+  display: none;
+}
+.themeOfTheMonthCardGalleryTrack {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.themeOfTheMonthCardGalleryTrack::-webkit-scrollbar {
+  display: none;
+}
+.themeOfTheMonthCardGallerySlide {
+  flex: 0 0 100%;
+  margin: 0;
+  scroll-snap-align: start;
+}
+.themeOfTheMonthCardGallerySlide img {
+  display: block;
+  width: 100%;
+  height: min(42vh, 280px);
+  object-fit: cover;
+}
+.themeOfTheMonthCardGallerySlide figcaption {
+  padding: 8px 14px 0;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--text-primary) 68%, transparent);
+}
+.themeOfTheMonthCardGalleryPrev,
+.themeOfTheMonthCardGalleryNext {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  padding: 0;
+  appearance: none;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.themeOfTheMonthCardGalleryPrev {
+  left: 10px;
+}
+.themeOfTheMonthCardGalleryNext {
+  right: 10px;
+}
+.themeOfTheMonthCardGalleryDots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px 0;
+}
+.themeOfTheMonthCardGalleryDot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  appearance: none;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--text-primary) 28%, transparent);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.themeOfTheMonthCardGalleryDotActive {
+  background: var(--better-pri, #6366f1);
+  transform: scale(1.15);
+}
+.themeOfTheMonthCardDescriptionTyping {
+  display: block;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: unset;
 }
 .themeOfTheMonthCard::before {
   content: "";
@@ -4907,31 +5311,97 @@ div.day-empty {
   pointer-events: none;
   animation: themeOfTheMonthCardOut 0.18s ease-in forwards;
 }
-.themeOfTheMonthCardClose {
-  position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px !important;
-  background: rgba(0, 0, 0, 0.42);
-  color: white;
-  cursor: pointer;
-  font-size: 1.35rem;
-  line-height: 1;
+.themeOfTheMonthCardConfirm {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
 }
-.themeOfTheMonthCardImage {
-  display: block;
+.themeOfTheMonthCardConfirm[hidden] {
+  display: none;
+}
+.themeOfTheMonthCardConfirmVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.themeOfTheMonthCardConfirmInner {
   width: 100%;
-  height: 150px;
+  text-align: center;
+}
+.themeOfTheMonthCardConfirmInner h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.themeOfTheMonthCardConfirmInner p {
+  margin: 0 0 14px;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
+}
+.themeOfTheMonthCardConfirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.themeOfTheMonthCardConfirmCancel,
+.themeOfTheMonthCardConfirmAccept {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+}
+.themeOfTheMonthCardConfirmCancel {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
+}
+.themeOfTheMonthCardConfirmAccept {
+  background: var(--better-pri, #6366f1);
+  color: white;
+}
+.themeOfTheMonthCardConfirmCancel:hover,
+.themeOfTheMonthCardConfirmAccept:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.themeOfTheMonthCardConfirmCancel:active,
+.themeOfTheMonthCardConfirmAccept:active {
+  transform: translateY(0);
+}
+#theme-of-the-month-card .themeOfTheMonthCardImage {
+  display: block;
+  width: 100% !important;
+  min-width: 100%;
+  height: 150px !important;
+  max-width: none !important;
+  max-height: none !important;
   margin: 0;
-  border-radius: 20px 20px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   object-fit: cover;
+  object-position: center center;
+}
+.themeOfTheMonthCardExpanded .themeOfTheMonthCardGallerySlide img {
+  border-radius: 22px 22px 0 0;
 }
 .themeOfTheMonthCardBody {
-  padding: 14px 16px 16px;
+  padding: 14px 16px 12px;
 }
 .themeOfTheMonthCardEyebrow {
   margin: 0 0 6px;
@@ -4947,23 +5417,58 @@ div.day-empty {
   line-height: 1.2;
 }
 .themeOfTheMonthCardDescription {
-  display: -webkit-box;
-  margin: 8px 0 14px;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  margin: 8px 0 10px;
   font-size: 0.92rem;
   line-height: 1.45;
   color: color-mix(in srgb, var(--text-primary) 78%, transparent);
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+.themeOfTheMonthCardDescriptionClipped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.themeOfTheMonthCardDescriptionExpanded {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.themeOfTheMonthCardExpanding:not(.themeOfTheMonthCardExpandedShell)
+  .themeOfTheMonthCardDescriptionExpanded {
+  overflow: hidden;
 }
 .themeOfTheMonthCardActions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.themeOfTheMonthCardActionsStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.themeOfTheMonthCardActionsEnd {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  margin-left: auto;
+  padding: 3px;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(
+    in srgb,
+    var(--background-secondary, var(--text-primary)) 28%,
+    var(--background-primary)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 .themeOfTheMonthCardPrimary,
-.themeOfTheMonthCardSecondary {
+.themeOfTheMonthCardSecondary,
+.themeOfTheMonthCardDontShow {
   appearance: none;
   border: none;
   cursor: pointer;
@@ -4971,43 +5476,70 @@ div.day-empty {
   padding: 0.58rem 0.9rem;
   font-size: 0.86rem;
   font-weight: 700;
-  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .themeOfTheMonthCardPrimary {
   background: var(--better-pri, #6366f1);
   color: white;
 }
-.themeOfTheMonthCardSecondary {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary {
   color: var(--text-primary);
 }
-.themeOfTheMonthCardPrimary:hover,
-.themeOfTheMonthCardSecondary:hover {
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow {
+  color: color-mix(in srgb, var(--text-primary) 58%, transparent);
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:focus-visible,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:hover,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:focus-visible {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent) !important;
+  border-radius: 9999px !important;
+  filter: none !important;
+  transform: none !important;
+}
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardSecondary:active,
+#theme-of-the-month-card .themeOfTheMonthCardActionsEnd .themeOfTheMonthCardDontShow:active {
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent) !important;
+  border-radius: 9999px !important;
+}
+.themeOfTheMonthCardPrimary:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
-.themeOfTheMonthCardPrimary:active,
-.themeOfTheMonthCardSecondary:active {
+.themeOfTheMonthCardPrimary:active {
   transform: translateY(0);
 }
 @keyframes themeOfTheMonthCardIn {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 @keyframes themeOfTheMonthCardOut {
   to {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
   }
 }
+.themeOfTheMonthCardExpanded.themeOfTheMonthCardClosing {
+  animation: themeOfTheMonthCardOut 0.18s ease-in forwards;
+}
 @media (max-width: 900px) {
-  .themeOfTheMonthCard {
+  .themeOfTheMonthCard,
+  .themeOfTheMonthBackdrop {
     z-index: 2147483645;
   }
 }
@@ -19777,67 +20309,4 @@ html:not(.transparencyEffects) {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-}
-
-.bsplus-toast {
-  position: fixed;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 10000;
-  width: min(360px, calc(100vw - 36px));
-  padding: 14px 16px 16px;
-  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
-  border-radius: 20px;
-  background: var(--background-primary, #fff);
-  color: var(--text-primary, #1a1a1a);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
-  font-size: 0.9rem;
-  line-height: 1.45;
-}
-.bsplus-toast-eyebrow {
-  margin: 0 0 6px !important;
-  font-size: 0.72rem !important;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, #ea580c 82%, var(--text-primary) 18%);
-  opacity: 1 !important;
-}
-.dark .bsplus-toast-eyebrow {
-  color: color-mix(in srgb, #fb923c 82%, var(--text-primary) 18%);
-}
-.bsplus-toast-content strong {
-  display: block;
-  padding-right: 34px;
-  font-size: 1.2rem;
-  line-height: 1.2;
-}
-.bsplus-toast-content p:not(.bsplus-toast-eyebrow) {
-  display: -webkit-box;
-  margin: 8px 0 0;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  color: color-mix(in srgb, var(--text-primary) 78%, transparent);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-.bsplus-toast-close {
-  position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px !important;
-  background: rgba(0, 0, 0, 0.42);
-  color: white;
-  cursor: pointer;
-  font-size: 1.35rem;
-  line-height: 1;
-  transition: filter 0.15s ease;
-}
-.bsplus-toast-close:hover {
-  filter: brightness(1.08);
 }

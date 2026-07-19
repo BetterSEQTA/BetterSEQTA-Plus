@@ -3,11 +3,10 @@ import { htmlToPlainText } from "../utils";
 import { fetchMessageContent } from "./messages";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
-import { loadDynamicItems } from "../../utils/dynamicItems";
 import { loadAllStoredItems } from "../indexer";
-import { renderComponentMap } from "../renderComponents";
-import { jobs } from "../jobs";
+import { publishDynamicItemsUpdate } from "../renderComponents";
 
+import { verboseLog } from '@/utils/verboseLog';
 const NOTIFICATIONS_RATE_LIMIT = {
   baseDelay: 150,
   maxDelay: 3000,
@@ -198,20 +197,21 @@ export const notificationsJob: Job = {
       const estimatedTotal = Math.min(notifications.length * 1.2, 100);
 
       try {
-        await vectorWorker.startStreamingSession(
+        progress.streamingStarted = await vectorWorker.startStreamingSession(
           estimatedTotal,
           (progressData) => {
-            console.log(
+            verboseLog(
               `[Notifications job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
           NOTIFICATIONS_RATE_LIMIT.vectorBatchSize,
           "notifications",
         );
-        progress.streamingStarted = true;
-        console.log(
-          `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
-        );
+        if (progress.streamingStarted) {
+          verboseLog(
+            `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
+          );
+        }
       } catch (error) {
         console.warn(
           "[Notifications job] Failed to start streaming session:",
@@ -247,7 +247,7 @@ export const notificationsJob: Job = {
     let itemsStreamedToVector = 0;
 
     if (progress.retryQueue.length > 0) {
-      console.log(
+      verboseLog(
         `[Notifications job] Processing ${Math.min(progress.retryQueue.length, 3)} items from retry queue`,
       );
 
@@ -352,7 +352,7 @@ export const notificationsJob: Job = {
         try {
           await vectorWorker.streamItems([...itemsToStream]);
           itemsStreamedToVector += itemsToStream.length;
-          console.log(
+          verboseLog(
             `[Notifications job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
           itemsToStream.length = 0;
@@ -371,44 +371,10 @@ export const notificationsJob: Job = {
 
         if (items.length > 0) {
           try {
-            const currentItems = await loadAllStoredItems();
-            // Create new objects to avoid XrayWrapper issues in Firefox
-            const itemsWithComponents = currentItems.map((item) => {
-              try {
-                const jobDef =
-                  jobs[item.category] ||
-                  Object.values(jobs).find((j) => j.id === item.category) ||
-                  jobs[item.renderComponentId];
-                let renderComponent = item.renderComponent;
-                if (jobDef) {
-                  renderComponent = renderComponentMap[jobDef.renderComponentId] || renderComponent;
-                } else if (renderComponentMap[item.renderComponentId]) {
-                  renderComponent = renderComponentMap[item.renderComponentId];
-                }
-                // Deep clone to avoid Firefox XrayWrapper issues with nested objects like metadata
-                try {
-                  const cloned = JSON.parse(JSON.stringify(item));
-                  cloned.renderComponent = renderComponent;
-                  return cloned;
-                } catch (e) {
-                  // Fallback to shallow copy if deep clone fails
-                  return { ...item, renderComponent };
-                }
-              } catch (error) {
-                // Fallback: return item as-is if modification fails (Firefox XrayWrapper)
-                return item;
-              }
-            });
-            loadDynamicItems(itemsWithComponents);
-            window.dispatchEvent(
-              new CustomEvent("dynamic-items-updated", {
-                detail: {
-                  incremental: true,
-                  jobId: "notifications",
-                  newItemCount: items.length,
-                  streaming: true,
-                },
-              }),
+            publishDynamicItemsUpdate(
+              await loadAllStoredItems(),
+              "notifications",
+              items.length,
             );
           } catch (error) {
             console.warn(
@@ -424,7 +390,7 @@ export const notificationsJob: Job = {
       try {
         await vectorWorker.streamItems([...itemsToStream]);
         itemsStreamedToVector += itemsToStream.length;
-        console.log(
+        verboseLog(
           `[Notifications job] Streamed final ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
         );
       } catch (error) {
@@ -438,7 +404,7 @@ export const notificationsJob: Job = {
     if (progress.streamingStarted) {
       try {
         await vectorWorker.endStreamingSession();
-        console.log(
+        verboseLog(
           `[Notifications job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
         progress.streamingStarted = false;
@@ -459,7 +425,7 @@ export const notificationsJob: Job = {
     }
 
     await ctx.setProgress(progress);
-    console.log(
+    verboseLog(
       `[Notifications job] Processed ${processedCount} notifications, ${progress.retryQueue.length} in retry queue, ${progress.failedRequests} failures, ${itemsStreamedToVector} items streamed to vector worker`,
     );
 

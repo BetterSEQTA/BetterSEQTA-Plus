@@ -1,11 +1,15 @@
 import browser from "webextension-polyfill";
+import { resetSearchIndexes } from "../indexing/resetIndexes";
+import { verboseDebug, verboseLog } from "@/utils/verboseLog";
 
 const VERSION_STORAGE_KEY = "betterseqta-global-search-version";
 const VERSION_CACHE_KEY = "betterseqta-global-search-cache-version";
 
-/**
- * Gets the current extension version from the manifest
- */
+const isAssetLoadError = (e: unknown) => {
+  const msg = (e as { message?: string })?.message ?? "";
+  return msg.includes("preload CSS") || msg.includes("MIME type");
+};
+
 export function getCurrentVersion(): string {
   try {
     return browser.runtime.getManifest().version;
@@ -15,9 +19,6 @@ export function getCurrentVersion(): string {
   }
 }
 
-/**
- * Gets the last stored version from localStorage
- */
 export function getStoredVersion(): string | null {
   try {
     return localStorage.getItem(VERSION_STORAGE_KEY);
@@ -27,9 +28,6 @@ export function getStoredVersion(): string | null {
   }
 }
 
-/**
- * Stores the current version in localStorage
- */
 export function storeVersion(version: string): void {
   try {
     localStorage.setItem(VERSION_STORAGE_KEY, version);
@@ -40,76 +38,63 @@ export function storeVersion(version: string): void {
 }
 
 /**
- * Checks if the extension has been updated and clears caches if needed
- * Returns true if an update was detected
+ * Checks if the extension has been updated and clears caches + resets the
+ * search index if needed. Returns true if an update was detected.
  */
 export async function checkAndHandleUpdate(): Promise<boolean> {
   const currentVersion = getCurrentVersion();
   const storedVersion = getStoredVersion();
-  
-  // If no stored version, this is first run - store current version
+
   if (!storedVersion) {
-    console.debug(`[Version Check] First run detected, storing version ${currentVersion}`);
+    verboseDebug(`[Version Check] First run detected, storing version ${currentVersion}`);
     storeVersion(currentVersion);
     return false;
   }
-  
-  // If versions match, no update
-  if (storedVersion === currentVersion) {
-    return false;
-  }
-  
-  // Version mismatch detected - extension was updated
-  console.log(`[Version Check] Extension updated from ${storedVersion} to ${currentVersion}, clearing caches...`);
-  
-  // Clear all caches
+
+  if (storedVersion === currentVersion) return false;
+
+  verboseLog(
+    `[Version Check] Extension updated from ${storedVersion} to ${currentVersion}, resetting search index...`,
+  );
+
   await clearAllCaches();
-  
-  // Store new version
+
+  try {
+    await resetSearchIndexes();
+    verboseLog("[Version Check] Search index reset; next indexing pass will repopulate from scratch.");
+  } catch (e) {
+    console.warn("[Version Check] resetSearchIndexes failed:", e);
+  }
+
   storeVersion(currentVersion);
-  
   return true;
 }
 
-/**
- * Clears all search-related caches
- */
 export async function clearAllCaches(): Promise<void> {
   try {
-    // Clear search result cache (in-memory Map)
-    if (typeof window !== 'undefined') {
-      // Dispatch event to clear caches in other modules
-      window.dispatchEvent(new CustomEvent('betterseqta-clear-search-cache'));
-      window.dispatchEvent(new CustomEvent('betterseqta-clear-embedding-cache'));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("betterseqta-clear-search-cache"));
+      window.dispatchEvent(new CustomEvent("betterseqta-clear-embedding-cache"));
     }
-    
-    // Also try to directly clear caches if modules are already loaded
-    // Use setTimeout to avoid blocking and handle CSS preload errors
+
     setTimeout(async () => {
       try {
         const { clearSearchCache } = await import("../search/searchUtils");
         clearSearchCache();
-      } catch (e: any) {
-        // Module might not be loaded yet, or CSS preload error - that's okay
-        if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
-          console.debug("[Version Check] Could not clear search cache:", e);
-        }
+      } catch (e) {
+        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear search cache:", e);
       }
-      
+
       try {
         const { clearEmbeddingCache } = await import("../search/vector/vectorSearch");
         clearEmbeddingCache();
-      } catch (e: any) {
-        // Module might not be loaded yet, or CSS preload error - that's okay
-        if (!e?.message?.includes("preload CSS") && !e?.message?.includes("MIME type")) {
-          console.debug("[Version Check] Could not clear embedding cache:", e);
-        }
+      } catch (e) {
+        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear embedding cache:", e);
       }
     }, 50);
-    
-    console.debug("[Version Check] All caches cleared");
+
+    verboseDebug("[Version Check] All caches cleared");
   } catch (e) {
     console.error("[Version Check] Error clearing caches:", e);
   }
 }
-

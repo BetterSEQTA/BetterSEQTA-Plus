@@ -2,18 +2,20 @@ import "./index.css";
 import Settings from "./pages/settings.svelte";
 import IconFamily from "@/resources/fonts/IconFamily.woff";
 import browser from "webextension-polyfill";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 
 function InjectCustomIcons() {
-  console.info("[BetterSEQTA+] Injecting Icons");
+  verboseInfo("[BetterSEQTA+] Injecting Icons");
 
   const style = document.createElement("style");
   style.setAttribute("type", "text/css");
   style.innerHTML = `
     @font-face {
       font-family: 'IconFamily';
-      src: url('${browser.runtime.getURL(IconFamily)}') format('woff');
+      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
       font-weight: normal;
       font-style: normal;
     }`;
@@ -30,5 +32,6 @@ InjectCustomIcons();
 
 (async () => {
   await initializeSettingsState();
+  initVerboseLogging();
   renderSvelte(Settings, mountPoint, { standalone: true });
 })();

@@ -78,7 +78,7 @@
 
   const startRecording = () => {
     isRecording = true;
-    recordedKeys.clear();
+    recordedKeys = new Set();
     inputElement?.focus();
   };
 
@@ -87,7 +87,7 @@
       if (recordedKeys.has('esc')) {
         onChange('');
         isRecording = false;
-        recordedKeys.clear();
+        recordedKeys = new Set();
         inputElement?.blur();
         return;
       }
@@ -113,8 +113,14 @@
     }
     
     isRecording = false;
-    recordedKeys.clear();
+    recordedKeys = new Set();
     inputElement?.blur();
+  };
+
+  const addRecordedKey = (key: string) => {
+    const next = new Set(recordedKeys);
+    next.add(key);
+    recordedKeys = next;
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -126,14 +132,14 @@
     const key = formatKeyForHotkey(e.key);
     
     // Add modifiers
-    if (e.ctrlKey) recordedKeys.add('ctrl');
-    if (e.metaKey) recordedKeys.add('cmd');
-    if (e.altKey) recordedKeys.add('alt');
-    if (e.shiftKey) recordedKeys.add('shift');
+    if (e.ctrlKey) addRecordedKey('ctrl');
+    if (e.metaKey) addRecordedKey('cmd');
+    if (e.altKey) addRecordedKey('alt');
+    if (e.shiftKey) addRecordedKey('shift');
     
     // Add the main key (ignore modifier keys themselves)
     if (!['ctrl', 'cmd', 'alt', 'shift'].includes(key)) {
-      recordedKeys.add(key);
+      addRecordedKey(key);
     }
 
     // Auto-stop recording if we have a main key

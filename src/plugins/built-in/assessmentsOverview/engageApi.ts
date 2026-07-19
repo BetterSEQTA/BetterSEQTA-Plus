@@ -1,11 +1,10 @@
 import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";
-
-interface Subject {
-  code: string;
-  programme: number;
-  metaclass: number;
-  title: string;
-}
+import {
+  activeSubjectsFromEngageChild,
+  assessmentBelongsToActiveSubjects,
+  filterAssessmentsForActiveSubjects,
+  type OverviewSubject,
+} from "./utils";
 
 interface PrefItem {
   name: string;
@@ -39,6 +38,9 @@ async function fetchJSON(url: string, body: unknown) {
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
   return res.json();
 }
 
@@ -58,17 +60,8 @@ export async function resolveEngageStudentId(): Promise<number> {
   throw new Error("Could not resolve Engage student ID");
 }
 
-function subjectsFromChild(child: EngageChildPayload): Subject[] {
-  return (child.terms ?? [])
-    .filter((term) => term.active === 1)
-    .flatMap((term) =>
-      (term.subjects ?? []).map((subject) => ({
-        code: subject.code ?? "",
-        programme: subject.programme ?? 0,
-        metaclass: subject.metaclass ?? 0,
-        title: subject.title ?? subject.description ?? subject.code ?? "",
-      })),
-    );
+function subjectsFromChild(child: EngageChildPayload): OverviewSubject[] {
+  return activeSubjectsFromEngageChild(child);
 }
 
 async function loadEngagePrefs(): Promise<Record<string, string>> {
@@ -94,7 +87,7 @@ async function loadEngageUpcoming(studentId: number) {
   return res.payload ?? [];
 }
 
-function normalizeAssessmentDates(t: any, subject: Subject): any {
+function normalizeAssessmentDates(t: any, subject: OverviewSubject): any {
   const normalized = { ...t };
   if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
     normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
@@ -105,7 +98,7 @@ function normalizeAssessmentDates(t: any, subject: Subject): any {
   return normalized;
 }
 
-async function loadEngagePast(studentId: number, subjects: Subject[]) {
+async function loadEngagePast(studentId: number, subjects: OverviewSubject[]) {
   const map: Record<number, any> = {};
 
   await Promise.all(
@@ -179,14 +172,20 @@ async function loadEngageAssessmentsForStudent(
 
   const map: Record<number, any> = {};
   upcoming.forEach((assessment: any) => {
-    map[assessment.id] = { ...assessment };
+    if (assessmentBelongsToActiveSubjects(assessment, subjects)) {
+      map[assessment.id] = { ...assessment };
+    }
   });
   Object.values(pastMap).forEach((task: any) => {
+    if (!assessmentBelongsToActiveSubjects(task, subjects)) return;
     if (map[task.id]) Object.assign(map[task.id], task);
     else map[task.id] = task;
   });
 
-  const assessments = Object.values(map).map((assessment) => ({
+  const assessments = filterAssessmentsForActiveSubjects(
+    Object.values(map),
+    subjects,
+  ).map((assessment) => ({
     ...assessment,
     studentId,
     studentName,
@@ -218,7 +217,7 @@ export async function getEngageAssessmentsData() {
     Promise.all(childrenPayload.map((child) => loadEngageAssessmentsForStudent(child))),
   ]);
 
-  const subjectsMap = new Map<string, Subject>();
+  const subjectsMap = new Map<string, OverviewSubject>();
   childrenPayload.forEach((child) => {
     subjectsFromChild(child).forEach((subject) => {
       if (!subjectsMap.has(subject.code)) {

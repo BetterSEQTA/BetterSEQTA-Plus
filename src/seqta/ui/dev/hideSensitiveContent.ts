@@ -705,6 +705,52 @@ export function getMockNotices() {
   };
 }
 
+export function getMockGradeAnalyticsData() {
+  const { assessments } = getMockAssessmentsData();
+  return assessments
+    .filter((a: { percentage?: number; results?: { percentage?: number } }) => {
+      const pct = a.percentage ?? a.results?.percentage;
+      return pct != null;
+    })
+    .map(
+      (
+        a: {
+          id: number;
+          title: string;
+          code: string;
+          due: string;
+          percentage?: number;
+          results?: { percentage?: number };
+          programmeID: number;
+          metaclassID: number;
+        },
+      ) => {
+        const finalGrade = a.percentage ?? a.results?.percentage ?? 0;
+        return {
+          id: a.id,
+          title: a.title,
+          subject: a.code,
+          status: "MARKS_RELEASED" as const,
+          due: a.due,
+          code: a.code,
+          metaclassID: a.metaclassID,
+          programmeID: a.programmeID,
+          graded: true,
+          overdue: false,
+          hasFeedback: false,
+          expectationsEnabled: false,
+          expectationsCompleted: false,
+          reflectionsEnabled: false,
+          reflectionsCompleted: false,
+          availability: "",
+          finalGrade,
+          letterGrade:
+            finalGrade >= 85 ? "A" : finalGrade >= 70 ? "B" : "C",
+        };
+      },
+    );
+}
+
 export function getMockAssessmentsData() {
   const subjects = mockData.subjects.slice(0, 5).map((title, i) => ({
     code: `SUBJ${i + 1}`,

@@ -35,6 +35,7 @@
     "src/**/*.js",
     "src/**/*.svelte",
     "src/interface/+layout.svelte",
+    "src/env.d.ts",
     "declarations.d.ts"
   ]
 }

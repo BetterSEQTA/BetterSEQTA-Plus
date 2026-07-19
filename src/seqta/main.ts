@@ -6,7 +6,8 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { detectSEQTAPlatform } from "@/seqta/utils/platformDetection";
 
 // UI and theme management
-import pageState from "@/pageState.js?url";
+import pageState from "@/pageState.js?script&iife";
+import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 
 // Stylesheets
 import injectedCSS from "@/css/injected.scss?inline";
@@ -64,6 +65,6 @@ export async function main() {
 
 function injectPageState() {
   const mainScript = document.createElement("script");
-  mainScript.src = browser.runtime.getURL(pageState);
+  mainScript.src = extensionPageScriptUrl(pageState);
   document.head.appendChild(mainScript);
 }

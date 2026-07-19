@@ -5,15 +5,16 @@
   import { circOut, quintOut } from 'svelte/easing';
   import { type StaticCommandItem } from '../core/commands';
   import type { CombinedResult } from '../core/types';
-  import { createSearchIndexes, performSearch as doSearch } from '../search/searchUtils';
+  import { createSearchIndexes, applyDynamicIndexDelta, performSearch as doSearch, type DynamicItemsUpdatedDetail } from '../search/searchUtils';
   import Fuse from 'fuse.js';
   import Calculator from './Calculator.svelte';
   import { actionMap } from '../indexing/actions';
   import type { IndexItem } from '../indexing/types';
-  import debounce from 'lodash/debounce';
+  import debounce from '@/seqta/utils/debounce';
   import { renderComponentMap } from '../indexing/renderComponents';
   import HighlightedText from '../utils/HighlightedText.svelte';
   import { matchesHotkey } from '../utils/hotkeyUtils';
+  import { warmUpVectorSearchOnInteraction } from '../search/vector/vectorSearch';
   import browser from 'webextension-polyfill';
 
   const { 
@@ -32,12 +33,6 @@
   const dynamicIdToItemMap = $state(new Map<string, IndexItem>());
   const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
 
-  let isIndexing = $state(false);
-  let completedJobs = $state(0);
-  let totalJobs = $state(0);
-  let indexingStatus = $state<string | null>(null);
-  let indexingDetail = $state<string | null>(null);
-
   let commandPalleteOpen = $state(false);
   let searchTerm = $state('');
   let selectedIndex = $state(0);
@@ -47,6 +42,13 @@
   let isLoading = $state(false);
   let calculatorResult = $state<string | null>(null);
   let resultsList = $state<HTMLUListElement>();
+
+  // Monotonic counter so a slow async search (vector reranking) cannot
+  // overwrite results from a newer keystroke. Without this guard, the user
+  // observes results "flickering" — e.g. typing `world w` finds the assessment
+  // but `world wa` triggers a new search whose vector pass returns later than
+  // the `world w` pass and clobbers the more relevant matches.
+  let searchRequestId = 0;
 
   const updateCalculatorState = (hasResult: string | null) => {
     calculatorResult = hasResult;
@@ -92,6 +94,7 @@
     keydownHandler = (e: KeyboardEvent) => {
       if (matchesHotkey(e, currentSearchHotkey)) {
         e.preventDefault();
+        warmUpVectorSearchOnInteraction();
         commandPalleteOpen = true;
         tick().then(() => searchbar?.focus());
       }
@@ -111,18 +114,31 @@
   });
 
   onMount(() => {
-    const progressHandler = (event: CustomEvent) => {
-      const { completed, total, indexing, status, detail } = event.detail;
-      completedJobs = completed;
-      totalJobs = total;
-      isIndexing = indexing;
-      indexingStatus = status || null;
-      indexingDetail = detail || null;
-    };
+    const itemsUpdatedHandler = (event: Event) => {
+      const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
 
-    window.addEventListener('indexing-progress', progressHandler as EventListener);
-    
-    const itemsUpdatedHandler = () => {
+      if (
+        detail?.vectorUpdate &&
+        !detail.changedItems?.length &&
+        !detail.removedIds?.length
+      ) {
+        performSearch();
+        return;
+      }
+
+      if (detail?.incremental && !detail.fullRebuild) {
+        const updatedFuse = applyDynamicIndexDelta(
+          dynamicContentFuse,
+          dynamicIdToItemMap,
+          detail,
+        );
+        if (updatedFuse) {
+          dynamicContentFuse = updatedFuse;
+          performSearch();
+          return;
+        }
+      }
+
       setupSearchIndexes();
       performSearch();
     };
@@ -132,11 +148,11 @@
     
     // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen = (open: boolean) => {
+      if (open) warmUpVectorSearchOnInteraction();
       commandPalleteOpen = open;
     };
 
     return () => {
-      window.removeEventListener('indexing-progress', progressHandler as EventListener);
       window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
     };
   });
@@ -152,8 +168,6 @@
     
     dynamicItems.forEach(item => dynamicIdToItemMap.set(item.id, item));
     commands.forEach(item => commandIdToItemMap.set(item.id, item));
-    
-    console.debug(`[Global Search] Indexed ${commands.length} command items and ${dynamicItems.length} dynamic items.`);
   }
 
   const performSearch = async () => {
@@ -166,21 +180,37 @@
     });
 
     const term = searchTerm.trim().toLowerCase();
-    
-    if (commandsFuse && dynamicContentFuse) {
-      combinedResults = await doSearch(
-        term, 
-        commandsFuse, 
-        commandIdToItemMap,
-        dynamicContentFuse,
-        dynamicIdToItemMap,
-        true, // sortByRecent
-      );
-    } else {
-      combinedResults = [];
+    const requestId = ++searchRequestId;
+
+    try {
+      if (commandsFuse && dynamicContentFuse) {
+        const results = await doSearch(
+          term,
+          commandsFuse,
+          commandIdToItemMap,
+          dynamicContentFuse,
+          dynamicIdToItemMap,
+          true, // sortByRecent
+        );
+
+        // Drop the result if the user has typed since this search started, or
+        // if the current term no longer matches what we searched for. This
+        // keeps the visible list anchored to the latest query.
+        if (requestId !== searchRequestId) return;
+        if (searchTerm.trim().toLowerCase() !== term) return;
+
+        combinedResults = results;
+      } else {
+        if (requestId !== searchRequestId) return;
+        combinedResults = [];
+      }
+    } finally {
+      // Only clear loading for the latest in-flight search — stale async
+      // passes must not leave the spinner stuck after fast typing.
+      if (requestId === searchRequestId) {
+        isLoading = false;
+      }
     }
-    
-    isLoading = false;
   };
 
   // Optimized debounce: shorter delay for better responsiveness

@@ -1,10 +1,6 @@
 import { settingsState } from "../listeners/SettingsState";
 import { OpenWhatsNewPopup, OpenWhatsNewPopupTeach } from "./OpenWhatsNewPopup";
 import {
-  shouldShowEngageParentsAnnouncement,
-  showEngageParentsToast,
-} from "./OpenEngageParentsAnnouncement";
-import {
   fetchThemeOfTheMonth,
   OpenThemeOfTheMonthPopup,
   shouldShowThemeOfTheMonth,
@@ -49,8 +45,7 @@ function waitForTeachSpineReady(): Promise<void> {
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * Theme of the Month (when a new monthly entry hasn't been seen), then shows
- * the SEQTA Engage toast (once, non-blocking).
+ * Theme of the Month (when the user hasn't dismissed this calendar month).
  */
 export async function runStartupPopupQueue() {
   // Make sure the background script knows about any dev-mode API override
@@ -81,11 +76,6 @@ export async function runStartupPopupQueue() {
   function runNext() {
     const step = steps.shift();
     if (step) step(runNext);
-    else {
-      if (shouldShowEngageParentsAnnouncement()) {
-        showEngageParentsToast();
-      }
-    }
   }
 
   runNext();

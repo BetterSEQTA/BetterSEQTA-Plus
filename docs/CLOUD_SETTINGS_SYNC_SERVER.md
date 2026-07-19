@@ -28,7 +28,7 @@ Use the same **access tokens** issued by the existing BetterSEQTA+ OAuth flows (
 
 ### `PUT /api/bsplus/settings/sync`
 
-Upserts the caller’s settings backup.
+Upserts the caller’s settings backup. The server **merges** `data` into the stored JSON document; keys omitted from the patch are **not** deleted.
 
 **Request body (JSON):**
 
@@ -37,11 +37,13 @@ Upserts the caller’s settings backup.
   "schemaVersion": 1,
   "themeId": "uuid-string-or-empty",
   "data": {
-    "...": "flat key-value map mirroring extension storage (see Payload shape)",
+    "DarkMode": true,
     "selectedTheme": "uuid-or-empty-string"
   }
 }
 ```
+
+The extension sends a **sparse patch**: only keys that changed since the last successful upload (or, on first upload, keys that differ from schema defaults). A full snapshot is not required.
 
 - **`schemaVersion`**: integer. The extension currently sends `1`. The server may reject unknown major versions or store it for future migrations.
 - **`themeId`**: optional but recommended duplicate of **`data.selectedTheme`**. Should be the UUID of the **installed** BetterSEQTA store theme (`selectedTheme`). This may be a normal theme id **or** a **flavour (slave) variant** id from themes with **`flavours[]`** — the extension uses it after restore to prefetch `theme.json` when missing locally (same **`GET …/themes/{id}/download`** as the store UI). Persist and return **`themeId`** in sync with **`data.selectedTheme`**.
@@ -51,11 +53,12 @@ Upserts the caller’s settings backup.
 
 ```json
 {
-  "updated_at": "2026-04-07T12:00:00.000Z"
+  "updated_at": "2026-04-07T12:00:00.000Z",
+  "patch": { "DarkMode": true }
 }
 ```
 
-`updated_at` should be an ISO 8601 timestamp of the save time. The extension displays success without requiring extra fields.
+`updated_at` should be an ISO 8601 timestamp of the save time. The extension displays success without requiring extra fields. Optional `patch` may echo the merged keys applied server-side.
 
 **Error responses:** Standard JSON error body if applicable, e.g. `{ "error": "message" }`, with appropriate HTTP status (`401`, `413`, `422`, etc.).
 
@@ -103,7 +106,8 @@ Unique constraint on `user_id`.
 
 ## Semantics
 
-- **Last write wins:** each `PUT` replaces the stored backup for that user.
+- **Merge on PUT:** each `PUT` deep-merges `data` into the stored backup for that user. Keys not present in the request body remain unchanged on the server.
+- **Full document on GET:** restore and poll download still receive the complete hydrated settings object.
 - **Optional later:** `If-Unmodified-Since` or a `revision` field for conflict detection (not required for v1).
 
 ## Security and privacy
@@ -120,6 +124,8 @@ The backup is a flat JSON map of **`chrome.storage.local`** keys. It does **not*
 - **OAuth / session keys** — `bsplus_token`, `bsplus_refresh_token`, `bsplus_client_id`, `bsplus_user`, plus legacy `cloudAccessToken` / `cloudUsername`.
 - **Assessment Averages caches** — `plugin.assessments-average.storage.assessments`, `plugin.assessments-average.storage.weightings` (school assessment data).
 - **Keys under** `plugin.global-search.storage.*` — reserved so any future plugin storage cache there is not synced.
+- **Grade Analytics** — keys under `bsplus.analytics.*` (synced assessment cache and per-school chart preferences).
+- **`bsplus_cloud_settings_last_uploaded_snapshot`** — client-only normalized map last acked by PUT; used to compute sparse upload patches (not part of the cloud backup blob).
 - **`bsplus_cloud_settings_known_remote_updated_at`** — client-only watermark for auto-sync (not part of the cloud backup blob).
 
 On restore, those keys are **not** taken from the server; the device keeps its current local values.
@@ -135,6 +141,6 @@ This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, 
 
 ## Client reference (extension)
 
-- Upload / dev export: `buildUploadPayload` / `getSnapshotForUpload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys, sensitive device keys, **`bsplus_pending_theme_ensure_after_cloud`**, and **`bsplus_cloud_settings_known_remote_updated_at`** — includes **`themeId`** aligned with **`selectedTheme`**).
+- Upload (sparse patch): `buildUploadPatch` / `putSettingsOnce` in `src/background/cloudSettingsAutoSync.ts`; baseline from `bsplus_cloud_settings_last_uploaded_snapshot` or schema defaults; dev full export via `getSnapshotForUpload` / `buildUploadPayload` in `src/seqta/utils/cloudSettingsSync.ts` (strips OAuth-related keys, sensitive device keys, client-only metadata — includes **`themeId`** aligned with **`selectedTheme`**).
 - Download: resolve id via **`resolveThemeIdForPostSyncDownload`** → **`applyDownloadedEnvelope`** after `GET` → prefetch theme blobs in page context if needed (**`prepareThemeAfterCloudSync`** in **`ThemeManager`**) → reload SEQTA tabs; local auth keys, sensitive device keys, client-only watermark, and **`bsplus_pending_theme_ensure_after_cloud`** semantics preserved as documented above.
 - Auto sync (summary, debounced upload, alarms): `src/background/cloudSettingsAutoSync.ts`; content script triggers a poll on each verified SEQTA Learn/Engage page load (top frame) via `cloudSettingsPoll`.
