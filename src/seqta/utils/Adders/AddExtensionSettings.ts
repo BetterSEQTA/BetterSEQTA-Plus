@@ -4,6 +4,7 @@ import {
   SettingsClicked,
 } from "../Closers/closeExtensionPopup";
 import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 let isSettingsRendered = false;
 let settingsLoadPromise: Promise<void> | null = null;
@@ -26,24 +27,35 @@ export function addExtensionSettings() {
   extensionPopup.classList.add("outside-container", "hide");
   extensionPopup.id = "ExtensionPopup";
 
-  const extensionContainer =
-    document.querySelector("#container") ?? document.getElementById("container");
-  const mountParent = extensionContainer ?? document.body;
+  const mountParent = isSeqtaTeachExperience()
+    ? document.body
+    : ((document.querySelector("#container") ??
+        document.getElementById("container") ??
+        document.body) as HTMLElement);
   mountParent.appendChild(extensionPopup);
 
   new SettingsResizer();
 
-  const handler = extensionOutsideClickHandler(extensionPopup);
-  (extensionContainer ?? document.body).addEventListener("click", handler, false);
+  const clickTarget = isSeqtaTeachExperience()
+    ? document.body
+    : (document.getElementById("container") ?? document.body);
+  clickTarget.addEventListener(
+    "click",
+    extensionOutsideClickHandler(extensionPopup),
+    false,
+  );
 }
 
 async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {
   if (isSettingsRendered) return;
 
-  const [{ default: renderSvelte }, { default: Settings }] = await Promise.all([
+  const [{ default: renderSvelte }, settingsModule] = await Promise.all([
     import("@/interface/main"),
-    import("@/interface/pages/settings.svelte"),
+    isSeqtaTeachExperience()
+      ? import("@/interface/pages/settings-teach.svelte")
+      : import("@/interface/pages/settings.svelte"),
   ]);
+  const Settings = settingsModule.default;
 
   const shadow = extensionPopup.attachShadow({ mode: "open" });
   const mount = () => renderSvelte(Settings, shadow);

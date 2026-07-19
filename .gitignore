@@ -28,3 +28,6 @@ betterseqtaplus-safari/
 .env.submit
 dependency-graph.svg
 
+seqtacode/
+
+.playwright-mcp/

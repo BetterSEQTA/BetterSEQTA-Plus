@@ -1,5 +1,6 @@
 import { settingsState } from "../listeners/SettingsState";
 import { animate as motionAnimate, stagger } from "motion";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 type AnimationTarget = string | Element | Element[] | NodeList | null;
 
@@ -81,6 +82,12 @@ export function openPopup({
 
   chainAfterClose(afterClose);
 
+  const existingPopup = document.getElementById("whatsnewbk");
+  if (existingPopup) {
+    console.debug("[BetterSEQTA+] Popup already exists, skipping");
+    return;
+  }
+
   const background = document.createElement("div");
   background.id = "whatsnewbk";
   background.classList.add("whatsnewBackground");
@@ -101,9 +108,20 @@ export function openPopup({
   container.append(closeButton);
 
   background.append(container);
-  const appContainer = document.getElementById("container");
-  if (!appContainer) return;
-  appContainer.append(background);
+
+  let parentContainer: HTMLElement | null = null;
+  if (isSeqtaTeachExperience()) {
+    parentContainer = document.getElementById("root") || document.body;
+  } else {
+    parentContainer = document.getElementById("container");
+  }
+
+  if (!parentContainer) {
+    console.error("[BetterSEQTA+] Could not find container for popup");
+    return;
+  }
+
+  parentContainer.append(background);
 
   if (settingsState.animations) {
     (motionAnimate as any)(

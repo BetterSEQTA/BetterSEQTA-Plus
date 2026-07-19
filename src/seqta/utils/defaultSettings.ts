@@ -72,5 +72,12 @@ export function getDefaultSettingsState(): SettingsState {
     timeFormat: "24",
     privacyStatementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
+    teachHomeWidgets: {
+      shortcuts: { toggle: true },
+      timetable: { toggle: true },
+      upcomingAssessments: { toggle: true },
+      messages: { toggle: true },
+      notices: { toggle: true },
+    },
   };
 }

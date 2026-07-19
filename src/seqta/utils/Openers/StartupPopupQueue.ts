@@ -1,13 +1,47 @@
 import { settingsState } from "../listeners/SettingsState";
-import { OpenWhatsNewPopup } from "./OpenWhatsNewPopup";
+import { OpenWhatsNewPopup, OpenWhatsNewPopupTeach } from "./OpenWhatsNewPopup";
 import {
   fetchThemeOfTheMonth,
   OpenThemeOfTheMonthPopup,
   shouldShowThemeOfTheMonth,
 } from "./OpenThemeOfTheMonthPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
 
 type QueueStep = (goNext: () => void) => void;
+
+function waitForTeachSpineReady(): Promise<void> {
+  if (!isSeqtaTeachExperience()) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const isReady = () =>
+      document.querySelector("[class*='Spine__Spine']") !== null &&
+      document.querySelector(".tour-spine") !== null;
+
+    if (isReady()) {
+      resolve();
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      if (isReady()) {
+        observer.disconnect();
+        window.clearTimeout(timeoutId);
+        resolve();
+      }
+    });
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+    });
+    const timeoutId = window.setTimeout(() => {
+      observer.disconnect();
+      resolve();
+    }, 30_000);
+  });
+}
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
@@ -21,7 +55,13 @@ export async function runStartupPopupQueue() {
   const steps: QueueStep[] = [];
 
   if (settingsState.justupdated) {
-    steps.push((goNext) => OpenWhatsNewPopup(goNext));
+    if (isSeqtaTeachExperience()) {
+      steps.push((goNext) => {
+        void waitForTeachSpineReady().then(() => OpenWhatsNewPopupTeach(goNext));
+      });
+    } else {
+      steps.push((goNext) => OpenWhatsNewPopup(goNext));
+    }
   }
 
   // Fetch the Theme of the Month before queueing so we don't show an empty

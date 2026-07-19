@@ -17,6 +17,7 @@
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification"
   import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/Openers/OpenThemeOfTheMonthPopup"
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup"
+  import { OpenMenuOptionsTeach } from "@/seqta/utils/Openers/OpenMenuOptionsTeach"
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync"
   import { getStoredOverride, setApiBase } from "@/seqta/utils/DevApiBase"
   import { onMount } from "svelte"
@@ -47,9 +48,8 @@
 
   import { getAllPluginSettings } from "@/plugins"
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage"
+  import { isSeqtaTeachExperience } from "@/seqta/utils/isSeqtaTeach"
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
-
-  // Union type representing all possible settings
   type SettingType =
     (Omit<BooleanSetting, 'type'> & { type: 'boolean', id: string }) |
     (Omit<StringSetting, 'type'> & { type: 'string', id: string }) |
@@ -81,9 +81,28 @@
     settings: Record<string, SettingType>;
   }
 
-  const pluginSettings = getAllPluginSettings().filter(
-    (plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
-  ) as Plugin[];
+  const allPluginSettings = getAllPluginSettings() as Plugin[];
+  const pluginSettings = allPluginSettings
+    .filter((plugin) => {
+      if (isSeqtaEngageExperience() && plugin.pluginId === "global-search") {
+        return false;
+      }
+      if (
+        isSeqtaTeachExperience() &&
+        (plugin.pluginId === "assessments-average" ||
+          plugin.pluginId === "global-search")
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .map((plugin) => {
+      if (isSeqtaTeachExperience() && plugin.settings && "lettergrade" in plugin.settings) {
+        const { lettergrade, ...restSettings } = plugin.settings;
+        return { ...plugin, settings: restSettings };
+      }
+      return plugin;
+    });
   const pluginSettingsValues = $state<Record<string, Record<string, any>>>({});
 
   let cloudState = $state(cloudAuth.state);
@@ -175,7 +194,7 @@
       Component: ConnectMobileApp,
       props: {}
     },
-    {
+    ...(!isSeqtaTeachExperience() ? [{
       title: "Edit Sidebar Layout",
       description: "Reorder pages on the sidebar",
       id: 5,
@@ -184,7 +203,32 @@
         onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
         text: "Edit"
       }
-    },
+    }] : []),
+    ...(isSeqtaTeachExperience() ? [
+      {
+        title: "Reorder Spine Navigation",
+        description: "Drag and drop to reorder items in the Spine navigation menu.",
+        id: 13,
+        Component: Button,
+        props: {
+          onClick: async () => {
+            closeExtensionPopup();
+            await OpenMenuOptionsTeach();
+          },
+          text: "Reorder"
+        }
+      },
+      {
+        title: "Auto-clear Pastoral Notes on Student Change",
+        description: "Automatically clear pastoral care notes when switching to a different student.",
+        id: 14,
+        Component: Switch,
+        props: {
+          state: $settingsState.sipAutoClearOnStudentChange ?? true,
+          onChange: (isOn: boolean) => settingsState.sipAutoClearOnStudentChange = isOn
+        }
+      }
+    ] : []),
     {
       title: "Custom Theme Colour",
       description: "Customise the overall theme colour of SEQTA Learn",

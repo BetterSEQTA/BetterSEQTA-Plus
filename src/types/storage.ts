@@ -25,6 +25,25 @@ export interface SettingsState {
     [key: string]: ToggleItem;
   };
   menuorder: any[];
+  // Teach-specific spine navigation order
+  teachspineorder: any[];
+  defaultteachspineorder: any[];
+  teachspineitems: {
+    [key: string]: ToggleItem;
+  };
+  // Sub-page orders per main page (e.g., { "messages": ["inbox", "sent", "drafts"] })
+  teachSubPageOrders?: {
+    [mainPage: string]: string[];
+  };
+  defaultTeachSubPageOrders?: {
+    [mainPage: string]: string[];
+  };
+  // Sub-page visibility per main page (e.g., { "messages": { "inbox": { toggle: true }, "sent": { toggle: false } } })
+  teachSubPageItems?: {
+    [mainPage: string]: {
+      [key: string]: ToggleItem;
+    };
+  };
   onoff: boolean;
   selectedColor: string;
   originalSelectedColor: string;
@@ -65,6 +84,12 @@ export interface SettingsState {
   newsSource?: string;
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
+  sipAutoClearOnStudentChange?: boolean;
+
+  // Teach home page widget visibility
+  teachHomeWidgets?: {
+    [key: string]: ToggleItem;
+  };
   iconOnlySidebar?: boolean;
   adaptiveThemeColour?: boolean;
   adaptiveThemeGradient?: boolean;

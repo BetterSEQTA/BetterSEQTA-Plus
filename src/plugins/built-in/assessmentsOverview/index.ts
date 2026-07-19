@@ -5,9 +5,7 @@ import { renderErrorState, renderGrid, renderSkeletonLoader, teardownOverviewUi 
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import {
-  isEngageAssessmentOverviewRoute,
-} from "@/seqta/utils/engageAssessmentStudent";
+import { isEngageAssessmentOverviewRoute } from "@/seqta/utils/engageAssessmentStudent";
 import { resolveEngageStudentId } from "./engageApi";
 
 const OVERVIEW_MENU_CLASS = "betterseqta-assessments-overview-item";

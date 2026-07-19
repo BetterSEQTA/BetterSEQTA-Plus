@@ -41,7 +41,8 @@ function reloadSeqtaPages() {
     for (let tab of tabs) {
       if (
         tab.title?.includes("SEQTA Learn") ||
-        tab.title?.includes("SEQTA Engage")
+        tab.title?.includes("SEQTA Engage") ||
+        tab.title?.includes("SEQTA Teach")
       ) {
         browser.tabs.reload(tab.id);
       }

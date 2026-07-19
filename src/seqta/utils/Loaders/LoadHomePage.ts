@@ -12,6 +12,8 @@ import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
+import { isSeqtaTeachExperience } from "../isSeqtaTeach";
+import { loadTeachHomePage } from "@/seqta/home/teach/mountTeachHomePage";
 import { verboseInfo } from "@/utils/verboseLog";
 import {
   activeSubjectsFromLearnPayload,
@@ -36,6 +38,10 @@ function clearLessonInterval(): void {
 }
 
 export async function loadHomePage() {
+  if (isSeqtaTeachExperience()) {
+    return loadTeachHomePage();
+  }
+
   homeTeardown?.();
   homeTeardown = null;
   clearLessonInterval();
