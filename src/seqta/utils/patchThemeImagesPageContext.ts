@@ -2,8 +2,8 @@
  * Bridge theme CSS and decorative images into PAGE JavaScript context.
  */
 
-import patchScript from "@/seqta/utils/themeImagePagePatch.js?url";
-import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import patchScript from "@/seqta/utils/themeImagePagePatch.js?script&iife";
+import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 import { blobToBase64Data } from "@/plugins/built-in/themes/themeImageUrl";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-theme-image-page-patch-loader";
@@ -23,7 +23,7 @@ export function installThemeImagePagePatch(): void {
 
   const script = document.createElement("script");
   script.id = PAGE_PATCH_LOADER_ID;
-  script.src = resolveExtensionAssetUrl(patchScript);
+  script.src = extensionPageScriptUrl(patchScript);
   script.addEventListener("load", () => script.remove());
   (document.documentElement || document.head).appendChild(script);
 }

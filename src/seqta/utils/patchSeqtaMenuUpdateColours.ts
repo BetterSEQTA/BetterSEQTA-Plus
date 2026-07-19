@@ -3,8 +3,8 @@
  * (injected script) plus Coloris / overlay cleanup in the content script.
  */
 
-import patchScript from "@/seqta/utils/seqtaMenuColourPatch.js?url";
-import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import patchScript from "@/seqta/utils/seqtaMenuColourPatch.js?script&iife";
+import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 import { verboseInfo } from "@/utils/verboseLog";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-seqta-menu-colour-patch-loader";
@@ -128,7 +128,7 @@ export function installSeqtaMenuColourPatch(): void {
 
   const script = document.createElement("script");
   script.id = PAGE_PATCH_LOADER_ID;
-  script.src = resolveExtensionAssetUrl(patchScript);
+  script.src = extensionPageScriptUrl(patchScript);
   script.addEventListener("load", () => script.remove());
   (document.documentElement || document.head).appendChild(script);
 }

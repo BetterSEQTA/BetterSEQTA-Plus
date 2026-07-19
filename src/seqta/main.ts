@@ -5,8 +5,8 @@ import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 // UI and theme management
-import pageState from "@/pageState.js?url";
-import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import pageState from "@/pageState.js?script&iife";
+import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 import { installThemeImagePagePatch } from "@/seqta/utils/patchThemeImagesPageContext";
 
@@ -40,6 +40,6 @@ export async function main() {
 
 function injectPageState() {
   const mainScript = document.createElement("script");
-  mainScript.src = resolveExtensionAssetUrl(pageState);
+  mainScript.src = extensionPageScriptUrl(pageState);
   document.head.appendChild(mainScript);
 }
