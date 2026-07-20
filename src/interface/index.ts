@@ -1,7 +1,6 @@
 import "./index.css";
 import Settings from "./pages/settings.svelte";
 import IconFamily from "@/resources/fonts/IconFamily.woff";
-import browser from "webextension-polyfill";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -24,14 +23,18 @@ function InjectCustomIcons() {
 
 const mountPoint = document.getElementById("app");
 if (!mountPoint) {
-  console.error("Mount point #app not found");
-  throw new Error("Mount point #app not found");
+  // In production, Rollup may put this entry in a shared chunk that content
+  // scripts load via `import("@/interface/main")`. Only the settings page
+  // has `#app` — never throw on SEQTA tabs.
+  verboseInfo(
+    "[BetterSEQTA+] Settings bootstrap skipped (no #app — not the settings page)",
+  );
+} else {
+  InjectCustomIcons();
+
+  void (async () => {
+    await initializeSettingsState();
+    initVerboseLogging();
+    renderSvelte(Settings, mountPoint, { standalone: true });
+  })();
 }
-
-InjectCustomIcons();
-
-(async () => {
-  await initializeSettingsState();
-  initVerboseLogging();
-  renderSvelte(Settings, mountPoint, { standalone: true });
-})();

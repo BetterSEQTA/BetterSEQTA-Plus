@@ -147,6 +147,18 @@ export default defineConfig(({ command, mode: viteMode }) => {
       },
       output: {
         assetFileNames: "assets/[name]-[hash][extname]",
+        manualChunks(id) {
+          const normalized = id.replace(/\\/g, "/");
+          // Keep the Svelte mount helper out of the settings entry chunk so
+          // content-script `import("@/interface/main")` does not execute
+          // settings-page bootstrap (which requires #app).
+          if (
+            normalized.endsWith("/interface/main.ts") ||
+            normalized.endsWith("/interface/main.js")
+          ) {
+            return "interface-main";
+          }
+        },
       },
       onwarn(warning, warn) {
         if (warning.code === "FILE_NAME_CONFLICT") return;
