@@ -10,18 +10,11 @@ import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
+import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
 
 const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 export const ANALYTICS_MENU_KEY = "analytics";
-
-function getNativeMenuList(): HTMLElement | null {
-  const menu = document.getElementById("menu");
-  if (!menu) return null;
-  return menu.querySelector(
-    ":scope > ul:not(#bsplus-sidebar-root)",
-  ) as HTMLElement | null;
-}
 
 function loadAnalyticsPageLazy() {
   void import("./loadAnalyticsPage").then((m) => m.loadAnalyticsPage());

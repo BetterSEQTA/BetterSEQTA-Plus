@@ -8,6 +8,7 @@
     compact: boolean;
     editMode: boolean;
     visible: boolean;
+    /** Play intro fly only when the parent folder first opens. */
     drillEnter?: boolean;
     onActivate: (item: SidebarItem) => void;
     onToggleVisible?: (key: string, visible: boolean) => void;
@@ -51,7 +52,7 @@
   aria-label={item.label}
   aria-current={active ? "page" : undefined}
   draggable={editMode}
-  in:fly={{ x: drillEnter ? 24 : 0, duration: 180 }}
+  in:fly={{ x: drillEnter ? 24 : 0, duration: drillEnter ? 180 : 0 }}
   ondragstart={() => onDragStart?.(item.key)}
   ondragover={(e) => e.preventDefault()}
   ondrop={() => onDrop?.(item.key)}
@@ -97,20 +98,15 @@
 </li>
 
 <style>
-  /* Defaults only — theme #menu rules (often !important) win for look.
-     Keep folder + leaf rows left-aligned (no 85% centred width). */
+  /* Layout defaults — theme #menu rules (often !important) win for look. */
   .bsplus-sidebar-item {
     position: relative;
     list-style: none;
     width: auto;
     margin: 2px 6px;
-    /* Match leaf vertical spacing so folders don't sit lower than neighbours. */
     padding: 0;
     border-radius: 12px;
     color: var(--text-color, #fff);
-    font-family: Rubik, sans-serif;
-    font-size: 16px;
-    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -131,7 +127,6 @@
     padding: 12px;
     cursor: inherit;
     color: inherit;
-    font: inherit;
   }
 
   .bsplus-sidebar-item:hover {
@@ -149,7 +144,6 @@
   }
 
   .bsplus-sidebar-item.compact {
-    width: auto;
     justify-content: center;
   }
 
@@ -168,9 +162,6 @@
 
   .bsplus-sidebar-item :global(label > svg) {
     flex-shrink: 0;
-    margin: 0 10px 0 4px;
-    width: 28px !important;
-    height: 28px !important;
   }
 
   .compact :global(label > svg) {

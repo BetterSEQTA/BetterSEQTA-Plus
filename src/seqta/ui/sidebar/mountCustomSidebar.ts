@@ -25,24 +25,24 @@ let earlyPrepareStarted = false;
 let catchupTimer: ReturnType<typeof setInterval> | null = null;
 let nativeMenuListenerAttached = false;
 
-function onNativeMenuUpdated() {
-  if (menuEl) sidebarState.syncFromNative(menuEl);
-}
-
 const settingsListeners: Array<{
   key: keyof SettingsState;
   listener: ChangeListener;
 }> = [];
+
+function syncFromMenu() {
+  if (menuEl) sidebarState.syncFromNative(menuEl);
+}
 
 function startCatchupSync() {
   if (catchupTimer) clearInterval(catchupTimer);
   let attempts = 0;
   catchupTimer = setInterval(() => {
     attempts += 1;
-    if (menuEl) sidebarState.syncFromNative(menuEl);
+    syncFromMenu();
     // Plugins (Analytics, Overview, icons) inject shortly after first paint.
     if (attempts >= 60) {
-      if (catchupTimer) clearInterval(catchupTimer);
+      clearInterval(catchupTimer!);
       catchupTimer = null;
     }
   }, 50);
@@ -52,7 +52,7 @@ function scheduleSync() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     syncTimer = null;
-    if (menuEl) sidebarState.syncFromNative(menuEl);
+    syncFromMenu();
   }, 50);
 }
 
@@ -80,22 +80,20 @@ function onHashChange() {
 function ensureDefaultMenuOrder(menu: HTMLElement) {
   const list = getNativeMenuList(menu);
   if (!list) return;
+
   const keys = [...list.children]
     .map((node) => (node as HTMLElement).dataset.key)
     .filter((key): key is string => !!key);
 
-  if (!settingsState.defaultmenuorder?.length) {
+  const current = settingsState.defaultmenuorder ?? [];
+  if (!current.length) {
     settingsState.defaultmenuorder = keys;
     return;
   }
 
-  for (const key of keys) {
-    if (!settingsState.defaultmenuorder.includes(key)) {
-      settingsState.defaultmenuorder = [
-        ...settingsState.defaultmenuorder,
-        key,
-      ];
-    }
+  const missing = keys.filter((key) => !current.includes(key));
+  if (missing.length) {
+    settingsState.defaultmenuorder = [...current, ...missing];
   }
 }
 
@@ -139,18 +137,6 @@ export function openCustomSidebarEditor() {
   return true;
 }
 
-export function closeCustomSidebarEditor() {
-  sidebarState.setEditMode(false);
-  menuEl?.classList.remove("bsplus-sidebar-edit-mode");
-  void import("@/seqta/utils/Openers/menuOptionsState").then((mod) => {
-    mod.setMenuOptionsOpen(false);
-  });
-}
-
-export function isCustomSidebarMounted(): boolean {
-  return app != null;
-}
-
 export async function mountCustomSidebar(): Promise<boolean> {
   if (isSeqtaEngageExperience()) return false;
   if (!settingsState.onoff) return false;
@@ -159,7 +145,7 @@ export async function mountCustomSidebar(): Promise<boolean> {
   if (app && menuEl) {
     ensureDefaultMenuOrder(menuEl);
     sidebarState.syncSettings();
-    sidebarState.syncFromNative(menuEl);
+    syncFromMenu();
     startCatchupSync();
     clearPendingClass();
     return true;
@@ -178,25 +164,19 @@ export async function mountCustomSidebar(): Promise<boolean> {
   }
   if (!list) return false;
 
+  menuEl = menu;
+  ensureDefaultMenuOrder(menu);
+  sidebarState.syncSettings();
+  syncFromMenu();
+
   if (app) {
-    menuEl = menu;
-    ensureDefaultMenuOrder(menu);
-    sidebarState.syncFromNative(menu);
     clearPendingClass();
     return true;
   }
 
-  menuEl = menu;
   menu.classList.add(MENU_CLASS);
-
-  // Remove a stale root from a previous HMR / partial mount.
   document.getElementById(ROOT_ID)?.remove();
 
-  ensureDefaultMenuOrder(menu);
-  sidebarState.syncSettings();
-  sidebarState.syncFromNative(menu);
-
-  // Mount as a direct child of `#menu` so root is `#menu > ul#bsplus-sidebar-root`.
   app = mount(Sidebar, {
     target: menu,
     props: { menuEl: menu },
@@ -209,14 +189,21 @@ export async function mountCustomSidebar(): Promise<boolean> {
   menuObserver?.disconnect();
   menuObserver = new MutationObserver((mutations) => {
     const ours = document.getElementById(ROOT_ID);
-    if (ours && mutations.every((m) => ours.contains(m.target))) return;
+    // Ignore our list entirely. Also ignore native `class` toggles — SEQTA
+    // re-adds drill `.active` after we clear it; syncing on that freezes the tab.
+    const relevant = mutations.some((m) => {
+      if (ours?.contains(m.target as Node)) return false;
+      if (m.type === "attributes" && m.attributeName === "class") return false;
+      return true;
+    });
+    if (!relevant) return;
     scheduleSync();
   });
   menuObserver.observe(menu, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["class", "style", "data-key", "data-path", "data-colour"],
+    attributeFilter: ["style", "data-key", "data-path", "data-colour"],
   });
 
   if (!hashListenerAttached) {
@@ -225,20 +212,15 @@ export async function mountCustomSidebar(): Promise<boolean> {
   }
 
   if (!nativeMenuListenerAttached) {
-    window.addEventListener("bsplus-native-menu-updated", onNativeMenuUpdated);
+    window.addEventListener("bsplus-native-menu-updated", syncFromMenu);
     nativeMenuListenerAttached = true;
   }
 
   clearSettingListeners();
-  registerSetting("iconOnlySidebar", () => {
-    sidebarState.syncSettings();
-  });
-  registerSetting("menuorder", () => {
-    if (menuEl) sidebarState.syncFromNative(menuEl);
-  });
-  registerSetting("menuitems", () => {
-    if (menuEl) sidebarState.syncFromNative(menuEl);
-  });
+  registerSetting("iconOnlySidebar", () => sidebarState.syncSettings());
+  const resync = () => syncFromMenu();
+  registerSetting("menuorder", resync);
+  registerSetting("menuitems", resync);
 
   startCatchupSync();
   clearPendingClass();
@@ -261,10 +243,7 @@ export function unmountCustomSidebar() {
   }
 
   if (nativeMenuListenerAttached) {
-    window.removeEventListener(
-      "bsplus-native-menu-updated",
-      onNativeMenuUpdated,
-    );
+    window.removeEventListener("bsplus-native-menu-updated", syncFromMenu);
     nativeMenuListenerAttached = false;
   }
 
@@ -278,7 +257,6 @@ export function unmountCustomSidebar() {
   menuEl = null;
   sidebarState.resetDrill();
   sidebarState.setEditMode(false);
-  sidebarState.ready = false;
   earlyPrepareStarted = false;
   clearPendingClass();
 }

@@ -6,7 +6,6 @@ export type SidebarItem = {
   /** Outer HTML of the label's leading SVG (if any). */
   iconHtml: string;
   hasChildren: boolean;
-  colour: string | null;
   itemColour: string | null;
   betterseqta: boolean;
   children: SidebarItem[];

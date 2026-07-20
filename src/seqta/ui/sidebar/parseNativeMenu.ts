@@ -1,12 +1,13 @@
 import type { SidebarItem } from "./types";
 
 /** Native SEQTA list only — never the custom Svelte `#bsplus-sidebar-root`. */
-export function getNativeMenuList(menu: HTMLElement): HTMLElement | null {
-  return (
-    (menu.querySelector(
-      ":scope > ul:not(#bsplus-sidebar-root)",
-    ) as HTMLElement | null) ?? null
-  );
+export function getNativeMenuList(
+  menu: HTMLElement | null = document.getElementById("menu"),
+): HTMLElement | null {
+  if (!menu) return null;
+  return menu.querySelector(
+    ":scope > ul:not(#bsplus-sidebar-root)",
+  ) as HTMLElement | null;
 }
 
 function readLabelText(label: HTMLElement | null): string {
@@ -60,7 +61,6 @@ function parseEntry(entry: HTMLElement): SidebarItem | null {
     label: labelText,
     iconHtml: readIconHtml(label),
     hasChildren: entry.classList.contains("hasChildren") || children.length > 0,
-    colour: entry.getAttribute("data-colour"),
     itemColour: entry.style.getPropertyValue("--item-colour") || null,
     betterseqta: entry.dataset.betterseqta === "true",
     children,

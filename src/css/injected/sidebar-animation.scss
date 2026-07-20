@@ -8,12 +8,16 @@
 }
 
 #menu > ul:has(li.hasChildren.active) > li::before,
+#menu > ul:has(li.hasChildren.active) > li::after,
 #menu > ul ul:has(li.hasChildren.active) > li::before,
+#menu > ul ul:has(li.hasChildren.active) > li::after,
 #menu > ul:has(li.hasChildren.active) > li > label,
 #menu > ul:has(li.hasChildren.active) > li > svg,
 #menu > ul ul:has(li.hasChildren.active) > li > label,
 #menu > ul ul:has(li.hasChildren.active) > li > svg {
-  transform: translateX(-320px);
+  /* !important beats theme animations (e.g. Beach palm-slide forwards). */
+  transform: translateX(-320px) !important;
+  animation: none !important;
 }
 
 #menu li.hasChildren:not(.active) li .sub {

@@ -10,6 +10,8 @@ import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/cus
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
+import darkIcon from "@/resources/icons/betterseqta-light-icon.png";
+import lightIcon from "@/resources/icons/betterseqta-dark-icon.png";
 
 const ADAPTIVE_THEME_TRANSITION_MS = 400;
 const LOGO_STYLE_ID = "bsplus-logo-style";
@@ -88,7 +90,8 @@ function cancelColorTransition() {
 
 /** Chromium does not always resolve extension URLs inside CSS variables on ::before. */
 function applyBetterseqtaLogoBackground(isDark: boolean) {
-  const url = resolveExtensionAssetUrl(isDark ? darkLogo : lightLogo);
+  const fullUrl = resolveExtensionAssetUrl(isDark ? darkLogo : lightLogo);
+  const iconUrl = resolveExtensionAssetUrl(isDark ? darkIcon : lightIcon);
   let styleEl = document.getElementById(LOGO_STYLE_ID);
   if (!styleEl) {
     styleEl = document.createElement("style");
@@ -98,7 +101,11 @@ function applyBetterseqtaLogoBackground(isDark: boolean) {
   styleEl.textContent = `
     body.student #menu > ul::before,
     #title::before {
-      background-image: url("${url}") !important;
+      background-image: url("${fullUrl}") !important;
+    }
+    /* Icon-only sidebar: wordmark → compact mark (theme-aware). */
+    body.student.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul::before {
+      background-image: url("${iconUrl}") !important;
     }
   `;
 }

@@ -34,33 +34,17 @@
 
   function closeEdit() {
     sidebarState.setEditMode(false);
-    menuEl.classList.remove("bsplus-sidebar-edit-mode");
     void import("@/seqta/utils/Openers/menuOptionsState").then((mod) => {
       mod.setMenuOptionsOpen(false);
     });
   }
 
-  function findFolder(
-    items: SidebarItemModel[],
-    key: string,
-  ): SidebarItemModel | null {
-    for (const item of items) {
-      if (item.key === key) return item;
-      if (item.children.length) {
-        const nested = findFolder(item.children, key);
-        if (nested) return nested;
-      }
-    }
-    return null;
-  }
-
-  /** Folder meta for each drill frame (icon/label from the live tree). */
-  const drillFolders = $derived.by(() => {
-    return sidebarState.drillStack.map((frame) => {
-      const folder = findFolder(sidebarState.items, frame.key);
-      return { frame, folder };
-    });
-  });
+  const drillFolders = $derived(
+    sidebarState.drillStack.map((frame) => ({
+      frame,
+      folder: sidebarState.findByKey(frame.key),
+    })),
+  );
 
   function onToggleVisible(key: string, visible: boolean) {
     sidebarState.setItemVisibility(key, visible);
@@ -105,26 +89,13 @@
     };
   });
 
-  // SEQTA strips `.active` from `#menu li` after clicks — keep it on our custom
-  // rows so theme animations (palm/sand) and drill `.sub` chrome stay applied.
+  // SEQTA strips `.active` from `#menu li` after clicks — re-apply from state.
+  // Do NOT MutationObserver class changes here: restore writes `.active`, SEQTA
+  // strips it again, and the feedback loop freezes the tab.
   $effect(() => {
-    // Re-run when the route-active key changes so we re-bind the observer target.
     void sidebarState.activeKey;
     void sidebarState.isDrilling;
-
-    const root = document.getElementById("bsplus-sidebar-root");
-    if (!root) return;
-
     restoreCustomMenuActive();
-
-    const observer = new MutationObserver(() => restoreCustomMenuActive());
-    observer.observe(root, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   });
 </script>
 
@@ -151,9 +122,8 @@
         {item}
         active={sidebarState.activeKey === item.key}
         compact={sidebarState.compact}
-        editMode={sidebarState.editMode}
+        editMode={true}
         visible={itemVisible(item.key)}
-        drillEnter={false}
         {onActivate}
         {onToggleVisible}
         {onDragStart}
@@ -173,21 +143,19 @@
       </button>
     </li>
   {:else if drillFolders.length}
-    <!--
-      Keep all root rows in the DOM (like native SEQTA) so sidebar-animation.scss
-      can slide sibling labels away when a folder opens.
-    -->
+    <!-- Keep root rows in the DOM so sidebar-animation.scss can slide siblings.
+         Never mark root leaves active while drilling — theme decorations
+         (Beach palm/sand) would show through the transparent .sub panel. -->
     {#each sidebarState.visibleRootItems as item (item.key)}
       {#if item.key === drillFolders[0].frame.key}
         {@render drillLevel(drillFolders, 0)}
       {:else}
         <SidebarItem
           {item}
-          active={sidebarState.activeKey === item.key}
+          active={false}
           compact={false}
           editMode={false}
-          visible={itemVisible(item.key)}
-          drillEnter={false}
+          visible={true}
           {onActivate}
         />
       {/if}
@@ -198,13 +166,9 @@
         {item}
         active={sidebarState.activeKey === item.key}
         compact={sidebarState.compact}
-        editMode={sidebarState.editMode}
-        visible={itemVisible(item.key)}
-        drillEnter={false}
+        editMode={false}
+        visible={true}
         {onActivate}
-        {onToggleVisible}
-        {onDragStart}
-        {onDrop}
       />
     {/each}
   {/if}
@@ -232,7 +196,15 @@
       {/if}
       <span class="label">{current.frame.label}</span>
     </label>
-    <div class="sub">
+    <div
+      class="sub"
+      class:bsplus-sub-enter={sidebarState.enterFrameKey === current.frame.key}
+      onanimationend={(e) => {
+        if (e.target === e.currentTarget) {
+          sidebarState.clearEnterFrame(current.frame.key);
+        }
+      }}
+    >
       <div class="nav">
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
@@ -260,13 +232,12 @@
               active={sidebarState.activeKey === item.key}
               compact={false}
               editMode={false}
-              visible={itemVisible(item.key)}
-              drillEnter={true}
+              visible={true}
+              drillEnter={sidebarState.enterFrameKey === current.frame.key}
               {onActivate}
             />
           {/each}
         {:else}
-          <!-- Keep nested siblings for the same slide-away animation. -->
           {#each current.frame.items as item (item.key)}
             {#if item.key === nextKey}
               {@render drillLevel(frames, depth + 1)}
@@ -276,8 +247,7 @@
                 active={sidebarState.activeKey === item.key}
                 compact={false}
                 editMode={false}
-                visible={itemVisible(item.key)}
-                drillEnter={false}
+                visible={true}
                 {onActivate}
               />
             {/if}
@@ -302,7 +272,6 @@
     position: relative;
     box-sizing: border-box;
     color: var(--text-color, #fff);
-    font-family: Rubik, sans-serif;
     scrollbar-width: thin;
     z-index: 2;
   }

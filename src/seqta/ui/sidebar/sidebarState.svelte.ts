@@ -37,50 +37,61 @@ function filterVisible(items: SidebarItem[]): SidebarItem[] {
   return items.filter((item) => menuItems[item.key]?.toggle !== false);
 }
 
+function ensureActive(el: Element | null | undefined) {
+  if (el instanceof HTMLElement && !el.classList.contains("active")) {
+    el.classList.add("active");
+  }
+}
+
 /**
  * SEQTA (and some themes) strip `.active` from `#menu li` after navigation.
- * Theme decorations (e.g. beach palm/sand) and drill `.sub` chrome all depend
- * on that class staying on our custom list — re-apply it from known state.
+ * Theme decorations and drill `.sub` chrome depend on that class on our list.
+ *
+ * While drilling, never re-apply route-active on root leaves — themes like Beach
+ * paint palm/sand on `#menu > ul > li:not(.hasChildren).active`, and our `.sub`
+ * is transparent so those decorations show through over folder contents.
  */
 export function restoreCustomMenuActive() {
   const root = document.getElementById("bsplus-sidebar-root");
   if (!root) return;
 
-  // Open drill folders (must keep `.active` for `.sub` layout + theme selectors).
   for (const li of root.querySelectorAll("li.hasChildren")) {
     if (!(li instanceof HTMLElement)) continue;
     if (!li.querySelector(":scope > .sub")) continue;
-    if (!li.classList.contains("active")) li.classList.add("active");
+    ensureActive(li);
   }
 
-  // Route-active row — Svelte sets aria-current, but SEQTA often removes `.active`.
   const activeKey = sidebarState.activeKey;
-  if (activeKey) {
-    const activeLi = root.querySelector(
-      `li.item[data-key="${CSS.escape(activeKey)}"]`,
-    );
-    if (
-      activeLi instanceof HTMLElement &&
-      !activeLi.classList.contains("active")
-    ) {
-      activeLi.classList.add("active");
+  const drilling = sidebarState.isDrilling;
+
+  if (drilling) {
+    if (activeKey) {
+      ensureActive(
+        root.querySelector(`.sub li.item[data-key="${CSS.escape(activeKey)}"]`),
+      );
     }
+    for (const li of root.querySelectorAll(
+      '.sub li.item[aria-current="page"]',
+    )) {
+      ensureActive(li);
+    }
+    return;
+  }
+
+  if (activeKey) {
+    ensureActive(
+      root.querySelector(`li.item[data-key="${CSS.escape(activeKey)}"]`),
+    );
   }
 
   for (const li of root.querySelectorAll('li.item[aria-current="page"]')) {
-    if (li instanceof HTMLElement && !li.classList.contains("active")) {
-      li.classList.add("active");
-    }
+    ensureActive(li);
   }
 }
 
-/** @deprecated Use restoreCustomMenuActive */
-export const restoreCustomDrillActive = restoreCustomMenuActive;
-
 /** Clear native drill state so it cannot steal pointer-events from the custom list. */
 export function clearNativeDrillActive(menu: HTMLElement) {
-  const nativeList = getNativeMenuList(menu);
-  nativeList
+  getNativeMenuList(menu)
     ?.querySelectorAll("li.hasChildren.active, section.hasChildren.active")
     .forEach((node) => node.classList.remove("active"));
 }
@@ -113,6 +124,50 @@ function findItemByKey(
   return null;
 }
 
+function menuTreeEqual(a: SidebarItem[], b: SidebarItem[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const left = a[i];
+    const right = b[i];
+    if (
+      left.key !== right.key ||
+      left.path !== right.path ||
+      left.label !== right.label ||
+      left.iconHtml !== right.iconHtml ||
+      left.hasChildren !== right.hasChildren ||
+      left.itemColour !== right.itemColour ||
+      left.betterseqta !== right.betterseqta ||
+      left.id !== right.id ||
+      !menuTreeEqual(left.children, right.children)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function drillStackEqual(
+  a: SidebarDrillFrame[],
+  b: SidebarDrillFrame[],
+): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const left = a[i];
+    const right = b[i];
+    if (
+      left.key !== right.key ||
+      left.label !== right.label ||
+      left.items.length !== right.items.length ||
+      left.items.some((item, j) => item.key !== right.items[j]?.key)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 class SidebarState {
   items = $state.raw<SidebarItem[]>([]);
   drillStack = $state.raw<SidebarDrillFrame[]>([]);
@@ -120,22 +175,11 @@ class SidebarState {
   activePath = $state("");
   editMode = $state(false);
   iconOnly = $state(false);
-  ready = $state(false);
+  /** Frame key whose `.sub` should play the one-shot enter animation. */
+  enterFrameKey = $state<string | null>(null);
 
   visibleRootItems = $derived(
     filterVisible(orderItems(this.items, settingsState.menuorder ?? [])),
-  );
-
-  currentItems = $derived(
-    this.drillStack.length > 0
-      ? this.drillStack[this.drillStack.length - 1].items
-      : this.visibleRootItems,
-  );
-
-  currentTitle = $derived(
-    this.drillStack.length > 0
-      ? this.drillStack[this.drillStack.length - 1].label
-      : null,
   );
 
   isDrilling = $derived(this.drillStack.length > 0);
@@ -143,8 +187,10 @@ class SidebarState {
   compact = $derived(this.iconOnly && !this.isDrilling && !this.editMode);
 
   syncFromNative(menu: HTMLElement) {
-    this.items = parseNativeMenu(menu);
-    this.ready = this.items.length > 0;
+    const next = parseNativeMenu(menu);
+    if (!menuTreeEqual(this.items, next)) {
+      this.items = next;
+    }
     this.syncActiveFromLocation();
     this.pruneDrillStack();
   }
@@ -172,8 +218,7 @@ class SidebarState {
     const segments = path.split("/").filter(Boolean);
     while (segments.length > 1) {
       segments.pop();
-      const parentPath = `/${segments.join("/")}`;
-      const parent = findItemByPath(this.items, parentPath);
+      const parent = findItemByPath(this.items, `/${segments.join("/")}`);
       if (parent) {
         this.activeKey = parent.key;
         return;
@@ -197,11 +242,14 @@ class SidebarState {
       cursor = children;
     }
 
-    this.drillStack = next;
+    if (!drillStackEqual(this.drillStack, next)) {
+      this.drillStack = next;
+    }
   }
 
   openFolder(item: SidebarItem) {
     if (!item.hasChildren) return;
+    this.enterFrameKey = item.key;
     this.drillStack = [
       ...this.drillStack,
       {
@@ -212,12 +260,20 @@ class SidebarState {
     ];
   }
 
+  clearEnterFrame(key?: string) {
+    if (key == null || this.enterFrameKey === key) {
+      this.enterFrameKey = null;
+    }
+  }
+
   goBack() {
     if (!this.drillStack.length) return;
+    this.enterFrameKey = null;
     this.drillStack = this.drillStack.slice(0, -1);
   }
 
   resetDrill() {
+    this.enterFrameKey = null;
     this.drillStack = [];
   }
 
@@ -273,28 +329,18 @@ class SidebarState {
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {
-      // Never strip `.active` from custom `#bsplus-sidebar-root` folders.
+      // Clear native drill once only — repeating clearNativeDrillActive fights
+      // SEQTA (it re-adds .active) and used to freeze the tab via menu sync.
       clearNativeDrillActive(menu);
       native.click();
-      // SEQTA re-opens native drill and strips `.active` after click — undo both.
       clearNativeDrillActive(menu);
       restoreCustomMenuActive();
       requestAnimationFrame(() => {
         clearNativeDrillActive(menu);
         restoreCustomMenuActive();
       });
-      setTimeout(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      }, 0);
-      setTimeout(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      }, 50);
-      setTimeout(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      }, 100);
+      // Later pass restores custom `.active` only (no native clear loop).
+      setTimeout(() => restoreCustomMenuActive(), 50);
       return;
     }
 
