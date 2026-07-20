@@ -1,11 +1,17 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
-import { ensureAnalyticsMenuOrder } from "@/seqta/utils/sidebarMenuIcons";
+import { ensureAnalyticsMenuOrder } from "@/seqta/utils/Openers/analyticsMenuOrder";
+import {
+  isMenuOptionsOpen,
+  setMenuOptionsOpen,
+} from "@/seqta/utils/Openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
-export let MenuOptionsOpen = false;
+export { MenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+export { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
 
 function escapeHtmlAttr(value: string): string {
   return value
@@ -190,14 +196,22 @@ function restoreMenuItemsFromEditMode(
 }
 
 export function OpenMenuOptions() {
-  if (MenuOptionsOpen) return;
+  if (isMenuOptionsOpen()) return;
+
+  // Custom Svelte sidebar owns edit mode when mounted.
+  if (document.getElementById("bsplus-sidebar-root")) {
+    void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
+      if (mod.openCustomSidebarEditor()) setMenuOptionsOpen(true);
+    });
+    return;
+  }
 
   const container = document.getElementById("container");
   const menu = document.getElementById("menu");
   if (!container || !menu) return;
 
   syncDefaultMenuOrder(menu);
-  MenuOptionsOpen = true;
+  setMenuOptionsOpen(true);
   menu.classList.add("bsplus-sidebar-edit-mode");
 
   const { cover, menusettings, defaultbutton, savebutton } =
@@ -220,7 +234,7 @@ export function OpenMenuOptions() {
   const closeAll = () => {
     menusettings.remove();
     cover.remove();
-    MenuOptionsOpen = false;
+    setMenuOptionsOpen(false);
     menu.classList.remove("bsplus-sidebar-edit-mode");
     menu.style.setProperty("--menuHidden", "none");
     restoreMenuItemsFromEditMode(menu, listItems);
@@ -266,35 +280,4 @@ function cloneAttributes(target: any, source: any) {
   [...source.attributes].forEach((attr) => {
     target.setAttribute(attr.nodeName, attr.nodeValue);
   });
-}
-
-export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
-  var menuList = document.querySelector("#menu")!.firstChild!.childNodes;
-
-  let listorder = [];
-  for (let i = 0; i < menuList.length; i++) {
-    const menu = menuList[i] as HTMLElement;
-
-    let a = menuorder.indexOf(menu.dataset.key);
-
-    listorder.push(a);
-  }
-
-  var newArr = [];
-  for (var i = 0; i < listorder.length; i++) {
-    const index = listorder[i];
-    if (index >= 0) {
-      newArr[index] = menuList[i];
-    }
-  }
-
-  let listItemsDOM = document.getElementById("menu")!.firstChild;
-  for (let i = 0; i < newArr.length; i++) {
-    const element = newArr[i];
-    if (element) {
-      const elem = element as HTMLElement;
-      elem.setAttribute("data-checked", "true");
-      listItemsDOM!.appendChild(element);
-    }
-  }
 }

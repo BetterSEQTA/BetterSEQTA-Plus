@@ -144,6 +144,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
+    // Kept as fallback if the custom Svelte sidebar fails to mount.
     setupSidebarAccessibility();
   }
 
@@ -672,6 +673,20 @@ function updateSidebarAccessibility() {
   const menu = document.getElementById("menu");
   if (!menu) return;
 
+  // Custom Svelte sidebar owns its own a11y / drill UI — do not mark its
+  // `#bsplus-sidebar-root` items offscreen based on the hidden native list.
+  if (menu.classList.contains("bsplus-custom-sidebar")) {
+    const root = document.getElementById("bsplus-sidebar-root");
+    if (root) {
+      for (const entry of root.querySelectorAll(`.${BSPLUS_SIDEBAR_OFFSCREEN}`)) {
+        if (entry instanceof HTMLElement) {
+          entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
+        }
+      }
+    }
+    return;
+  }
+
   const visibleList = getVisibleSidebarList(menu);
   const visibleEntries = new Set(
     visibleList ? getDirectSidebarEntries(visibleList) : [],
@@ -717,7 +732,9 @@ function getDirectSidebarEntries(list: HTMLElement) {
 }
 
 function getVisibleSidebarList(menu: HTMLElement) {
-  let currentList = menu.querySelector(":scope > ul") as HTMLElement | null;
+  let currentList = menu.querySelector(
+    ":scope > ul:not(#bsplus-sidebar-root)",
+  ) as HTMLElement | null;
 
   while (currentList) {
     const activeSubmenuParent = currentList.querySelector(

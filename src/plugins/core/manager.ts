@@ -37,8 +37,10 @@ const PLUGIN_START_PHASES: readonly string[][] = [
     "messageFolders",
     "profile-picture",
     "background-music",
+    // Menu icon is eager; page UI still loads on demand via dynamic import.
+    "grade-analytics",
   ],
-  ["global-search", "grade-analytics"],
+  ["global-search"],
 ];
 
 /**

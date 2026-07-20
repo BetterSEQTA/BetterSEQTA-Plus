@@ -1,8 +1,6 @@
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
-import {
-  ChangeMenuItemPositions,
-  MenuOptionsOpen,
-} from "@/seqta/utils/Openers/OpenMenuOptions";
+import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
+import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
@@ -11,48 +9,6 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const BETTERSEQTA_ICON_ATTR = "data-betterseqta-icon";
-
-export function insertMenuItemAfterKey(
-  menuList: HTMLElement,
-  item: HTMLElement,
-  afterKey: string,
-): void {
-  const after = menuList.querySelector(
-    `:scope > li[data-key="${afterKey}"], :scope > section[data-key="${afterKey}"]`,
-  );
-  if (after instanceof HTMLElement) {
-    after.insertAdjacentElement("afterend", item);
-  } else {
-    menuList.appendChild(item);
-  }
-}
-
-export function insertKeyAfterInOrder(
-  order: string[],
-  key: string,
-  afterKey: string,
-): string[] {
-  if (order.includes(key)) return order;
-  const copy = [...order];
-  const afterIdx = copy.indexOf(afterKey);
-  if (afterIdx >= 0) {
-    copy.splice(afterIdx + 1, 0, key);
-  } else {
-    copy.push(key);
-  }
-  return copy;
-}
-
-/** Default Analytics immediately below Courses in saved menu order. */
-export function ensureAnalyticsMenuOrder(): void {
-  for (const key of ["defaultmenuorder", "menuorder"] as const) {
-    const order = settingsState[key];
-    if (key === "menuorder" && order.length === 0) continue;
-    if (!order.includes("analytics")) {
-      settingsState[key] = insertKeyAfterInOrder(order, "analytics", "courses");
-    }
-  }
-}
 
 function getMenuLabel(element: HTMLElement): HTMLElement | null {
   const label = element.querySelector(":scope > label");
@@ -107,7 +63,7 @@ export function replaceMenuSVG(element: HTMLElement, svg: string) {
 }
 
 export function processMenuItemNode(node: HTMLElement) {
-  if (!isTopLevelSidebarItem(node) || MenuOptionsOpen) return;
+  if (!isTopLevelSidebarItem(node) || isMenuOptionsOpen()) return;
 
   const key = node.dataset.key as keyof typeof MenuitemSVGKey | undefined;
   if (key && MenuitemSVGKey[key]) {
@@ -119,7 +75,7 @@ export function processMenuItemNode(node: HTMLElement) {
 }
 
 function processTopLevelMenuItems(reorder = !isSeqtaEngageExperience()) {
-  if (MenuOptionsOpen) return;
+  if (isMenuOptionsOpen()) return;
 
   const topList = getTopLevelMenuList();
   if (!topList) return;
@@ -186,7 +142,7 @@ export async function observeMenuItemPosition() {
       if (!isTopLevelSidebarItem(node)) return;
       if ((element as any)[processedSymbol]) return;
 
-      if (!MenuOptionsOpen) {
+      if (!isMenuOptionsOpen()) {
         processMenuItemNode(node);
         ChangeMenuItemPositions(settingsState.menuorder);
         (element as any)[processedSymbol] = true;

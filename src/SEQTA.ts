@@ -37,8 +37,6 @@ function registerFetchSeqtaAppLinkListener() {
   });
 }
 
-export let MenuOptionsOpen = false;
-
 var IsSEQTAPage = false;
 let hasSEQTAText = false;
 

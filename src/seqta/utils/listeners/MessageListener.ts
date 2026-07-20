@@ -1,10 +1,8 @@
 import browser from "webextension-polyfill";
 
 import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
-import {
-  MenuOptionsOpen,
-  OpenMenuOptions,
-} from "@/seqta/utils/Openers/OpenMenuOptions";
+import { OpenMenuOptions } from "@/seqta/utils/Openers/OpenMenuOptions";
+import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
 
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
@@ -144,7 +142,7 @@ export class MessageHandler {
   }
 
   editSidebar() {
-    if (!MenuOptionsOpen) {
+    if (!isMenuOptionsOpen()) {
       OpenMenuOptions();
     }
   }

@@ -614,6 +614,154 @@ ul.magicDelete > li.deleting {
   border-right: none;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Hide native menu as soon as possible (during loading), before Svelte mounts.
+   Keep `#bsplus-sidebar-root` visible — themes target `#menu > ul > li.item` on it. */
+html.bsplus-custom-sidebar-pending #menu > ul:not(#bsplus-sidebar-root),
+html.bsplus-custom-sidebar-pending #menu > #userInfo,
+html.bsplus-custom-sidebar-pending #menu > .icon-cover,
+#menu.bsplus-custom-sidebar > ul:not(#bsplus-sidebar-root),
+#menu.bsplus-custom-sidebar > #userInfo,
+#menu.bsplus-custom-sidebar > .icon-cover {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  clip: rect(0, 0, 0, 0) !important;
+}
+
+/* Custom Svelte sidebar: SEQTA-like `#menu > ul > li.item` / `.sub` for theme CSS. */
+#menu.bsplus-custom-sidebar {
+  /* SEQTA uses absolute top/bottom:0 — do not switch to relative or height collapses. */
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* No padding-top: logo `ul::before` + theme `.sub { top: 71.5px }` match native. */
+  box-sizing: border-box !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: hidden !important;
+
+  > #bsplus-sidebar-root {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    position: relative;
+  }
+
+  /* Theme drill panels assume static hasChildren + absolute .sub filling #menu. */
+  li.hasChildren {
+    position: static !important;
+  }
+
+  /*
+   * Native SEQTA leaves `li.hasChildren.active` on the hidden list after click-through.
+   * Global `#menu:has(> ul > li.hasChildren.active) > ul > li:not(.hasChildren.active)`
+   * then sets pointer-events:none on our custom root rows. Override that here; drill
+   * locking only follows the custom list's own active folder.
+   */
+  > #bsplus-sidebar-root > li.item {
+    pointer-events: auto !important;
+  }
+
+  /* Only lock siblings while a drill `.sub` is open — not when a folder is
+     merely route-highlighted with `.active` at the root list. */
+  &:has(> #bsplus-sidebar-root > li.hasChildren.active > .sub)
+    > #bsplus-sidebar-root
+    > li:not(.hasChildren.active),
+  &:has(> #bsplus-sidebar-root > li.hasChildren.active > .sub)
+    > #bsplus-sidebar-root
+    > li:not(.hasChildren.active)
+    * {
+    pointer-events: none !important;
+  }
+
+  > #bsplus-sidebar-root .sub {
+    pointer-events: none;
+  }
+
+  > #bsplus-sidebar-root li.hasChildren.active > .sub {
+    pointer-events: auto;
+    /* Let the #menu chrome (gradient / theme) show through — themes often paint
+       `.sub` with flat `--background-primary` which reads as a white slab. */
+    background: transparent !important;
+    background-image: none !important;
+    animation: bsplus-submenu-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  > #bsplus-sidebar-root li.hasChildren.active > .sub:has(.hasChildren.active) {
+    pointer-events: none !important;
+    animation: none;
+  }
+
+  > #bsplus-sidebar-root li.hasChildren.active .hasChildren.active > .sub {
+    pointer-events: auto !important;
+    background: transparent !important;
+    background-image: none !important;
+    animation: bsplus-submenu-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Keep folder + leaf rows on the same rhythm (themes often only style
+     `:not(.hasChildren)`, which left folders centred / differently spaced). */
+  > #bsplus-sidebar-root li.item {
+    width: auto !important;
+    max-width: none !important;
+    margin: 2px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Folder label stays in flow so sidebar-animation translateX can run.
+     Visually covered by the absolute `.sub` panel. */
+  > #bsplus-sidebar-root > li.hasChildren.active > label {
+    pointer-events: none !important;
+  }
+
+  #bsplus-sidebar-root .sub .back {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px 8px;
+    cursor: pointer;
+    font-weight: 700;
+    color: inherit;
+  }
+
+  #bsplus-sidebar-root .sub .back:hover {
+    opacity: 0.9;
+  }
+
+  #bsplus-sidebar-root .sub .backLabel {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  #bsplus-sidebar-root .sub > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 16px;
+  }
+}
+
+@keyframes bsplus-submenu-enter {
+  from {
+    opacity: 0.35;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 #menu li > label > svg,
 #menu section > label > svg {
   margin: 0 10px 0 4px;

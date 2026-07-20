@@ -10,7 +10,9 @@ export function applyMenuItemVisibility(): void {
     let css = "";
     for (const [menuItem, config] of Object.entries(settingsState.menuitems ?? {})) {
       if (config && !config.toggle) {
-        css += `li[data-key=${menuItem}],section[data-key=${menuItem}]{display:var(--menuHidden) !important;transition:1s;}`;
+        // Scope to the native SEQTA list only — the custom Svelte sidebar
+        // filters visibility in JS and must not be forced hidden by this rule.
+        css += `#menu > ul:not(#bsplus-sidebar-root) li[data-key=${menuItem}],#menu > ul:not(#bsplus-sidebar-root) section[data-key=${menuItem}]{display:var(--menuHidden) !important;transition:1s;}`;
       }
     }
 

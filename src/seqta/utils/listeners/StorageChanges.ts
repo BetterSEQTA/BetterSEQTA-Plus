@@ -7,7 +7,7 @@ import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/Loaders/LoadHomePage";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/OpenMenuOptions";
+import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
 
 import browser from "webextension-polyfill";
 import type { CustomShortcut } from "@/types/storage";

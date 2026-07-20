@@ -188,6 +188,9 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
+  void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
+    void mod.mountCustomSidebar();
+  });
   const sublink: string | undefined = getEngageRoutePage();
 
   if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
@@ -676,6 +679,13 @@ export function init() {
     }
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
+
+    // Hide native sidebar + mount Svelte replacement during the loading overlay.
+    document.documentElement.classList.add("bsplus-custom-sidebar-pending");
+    void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
+      mod.prepareCustomSidebarEarly();
+    });
+
     void observeMenuItemPosition();
 
     new StorageChangeHandler();
