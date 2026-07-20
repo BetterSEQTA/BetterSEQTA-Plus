@@ -8,11 +8,17 @@ export default {
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
+    '^.+\\.js$': ['ts-jest', { tsconfig: { allowJs: true } }],
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(color|color-string|color-convert|color-name)/)',
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^color$': '<rootDir>/src/test/mocks/color.ts',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
   },
+  setupFilesAfterEnv: ['<rootDir>/src/test/jest.setup.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverageFrom: [
     'src/**/*.ts',

@@ -1,14 +1,11 @@
-import { animate } from "motion";
-import browser from "webextension-polyfill";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
-import debounce from "@/seqta/utils/debounce";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
+import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
 import {
   type EngageParentChild,
   type EngageParentTimetableItem,
@@ -18,6 +15,8 @@ import {
   toISODate,
   weekRangeContaining,
 } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
+import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
 
 export function updateEngageHomeMenuActive(isHome: boolean): void {
   const home = document.getElementById("homebutton");
@@ -42,37 +41,10 @@ let engageWeekItems: EngageParentTimetableItem[] = [];
 let engageSelectedStudentId: string | null = null;
 let engageListenersCleanup: (() => void) | null = null;
 
-function formatDateString(date: Date): string {
-  return `${date.toLocaleString("en-us", { weekday: "short" })} ${date.toLocaleDateString("en-au")}`;
-}
-
 function setEngageTimetableSubtitle(): void {
   const el = document.getElementById("engage-home-lesson-subtitle");
   if (!el) return;
-
-  const today = new Date();
-  const isSameMonth =
-    today.getFullYear() === engageViewDate.getFullYear() &&
-    today.getMonth() === engageViewDate.getMonth();
-
-  if (isSameMonth) {
-    const dayDiff = today.getDate() - engageViewDate.getDate();
-    switch (dayDiff) {
-      case 0:
-        el.textContent = "Today's Lessons";
-        break;
-      case 1:
-        el.textContent = "Yesterday's Lessons";
-        break;
-      case -1:
-        el.textContent = "Tomorrow's Lessons";
-        break;
-      default:
-        el.textContent = formatDateString(engageViewDate);
-    }
-  } else {
-    el.textContent = formatDateString(engageViewDate);
-  }
+  el.textContent = lessonsSubtitleForViewDate(engageViewDate);
 }
 
 function makeEngageLessonDiv(
@@ -129,7 +101,7 @@ function renderEngageDayLessons(): void {
   if (lessons.length === 0) {
     dayContainer.innerHTML = `
       <div class="day-empty">
-        <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+        <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
         <p>No lessons for this day.</p>
       </div>`;
   } else {
@@ -249,420 +221,14 @@ function bindEngageTimetableUi(): void {
   };
 }
 
-/* ——— Notices (duplicated from Learn `LoadHomePage`; fetch uses `/seqta/parent/load/notices`.) ——— */
-
 const ENGAGE_NOTICE_CONTAINER_ID = "engage-notice-container";
 const ENGAGE_NOTICES_DATE_ID = "engage-notices-date";
-
-function processEngageNoticeColor(colour: unknown): string | undefined {
-  if (typeof colour !== "string") return undefined;
-  const rgb = GetThresholdOfColor(colour);
-  if (rgb < 100 && settingsState.DarkMode) {
-    return undefined;
-  }
-  return colour;
-}
-
-function processEngageNotices(response: any, labelArray: string[]): void {
-  const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
-  if (!noticeContainer) return;
-
-  noticeContainer.innerHTML = "";
-
-  const notices = response?.payload;
-  if (!Array.isArray(notices)) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    noticeContainer.append(emptyState);
-    return;
-  }
-
-  if (!notices.length) {
-    const emptyState = document.createElement("div");
-    emptyState.classList.add("day-empty");
-    const img = document.createElement("img");
-    img.src = browser.runtime.getURL(LogoLight);
-    const text = document.createElement("p");
-    text.innerText = "No notices for today.";
-    emptyState.append(img, text);
-    noticeContainer.append(emptyState);
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  notices.forEach((notice: any) => {
-    const shouldInclude =
-      settingsState.mockNotices ||
-      labelArray.length === 0 ||
-      labelArray.includes(JSON.stringify(notice.label));
-
-    if (shouldInclude) {
-      const colour = processEngageNoticeColor(notice.colour);
-      const noticeElement = createEngageNoticeElement(notice, colour);
-      fragment.appendChild(noticeElement);
-    }
-  });
-
-  noticeContainer.appendChild(fragment);
-}
-
-function createEngageNoticeElement(
-  notice: any,
-  colour: string | undefined,
-): Node {
-  const textPreview =
-    notice.contents
-      .replace(/<[^>]*>/g, "")
-      .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .substring(0, 150) + (notice.contents.length > 150 ? "..." : "");
-
-  const noticeId = `notice-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  const htmlContent = `
-    <div class="notice-unified-content notice-card-state" data-notice-id="${noticeId}" style="--colour: ${colour || "#8e8e8e"}; position: relative; background: var(--background-primary); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-            ${notice.label_title || "General"}
-          </span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn" style="opacity: 0; pointer-events: none;">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${textPreview}</div>
-    </div>`;
-
-  const element = stringToHTML(htmlContent).firstChild as HTMLElement;
-  element.addEventListener("click", () =>
-    openEngageNoticeModal(notice, colour, element),
-  );
-  return element;
-}
-
-function openEngageNoticeModal(
-  notice: any,
-  colour: string | undefined,
-  sourceElement: HTMLElement,
-) {
-  const cleanContent = notice.contents
-    .replace(/\[\[[\w]+[:][\w]+[\]\]]+/g, "")
-    .replace(/ +/, " ");
-
-  document.getElementById("notice-modal")?.remove();
-
-  const sourceRect = sourceElement.getBoundingClientRect();
-  let scrollY = Math.round(window.scrollY);
-  let scrollX = Math.round(window.scrollX);
-  let sourceLeft = sourceRect.left;
-  let sourceTop = sourceRect.top;
-  let sourceWidth = sourceRect.width;
-  let sourceHeight = sourceRect.height;
-
-  const modalHtml = `
-    <div id="notice-modal" class="notice-modal-overlay" style="opacity: 0;">
-      <div class="notice-modal-transition" style="
-        position: fixed;
-        left: ${sourceLeft + scrollX}px;
-        top: ${sourceTop + scrollY}px;
-        width: ${sourceWidth}px;
-        height: ${sourceHeight}px;
-        transform-origin: center;
-        z-index: 10001;
-      ">
-        <div class="notice-modal-content notice-transitioning">
-          <div class="notice-unified-content notice-card-state">
-            <div class="notice-header">
-              <div class="notice-badge-row">
-                <span class="notice-badge" style="background: linear-gradient(135deg, ${colour || "#8e8e8e"}, ${colour || "#8e8e8e"}dd); color: white;">
-                  ${notice.label_title || "General"}
-                </span>
-                <span class="notice-staff">${notice.staff}</span>
-              </div>
-              <button class="notice-close-btn">&times;</button>
-            </div>
-            <h2 class="notice-content-title">${notice.title}</h2>
-            <div class="notice-content-body">${cleanContent}</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
-
-  const modal = stringToHTML(modalHtml).firstChild as HTMLElement;
-  const transitionContainer = modal.querySelector(
-    ".notice-modal-transition",
-  ) as HTMLElement;
-  const unifiedContent = modal.querySelector(
-    ".notice-unified-content",
-  ) as HTMLElement;
-  const closeBtn = modal.querySelector(".notice-close-btn") as HTMLElement;
-
-  document.body.appendChild(modal);
-
-  sourceElement.setAttribute("data-transitioning", "true");
-  sourceElement.style.opacity = "0";
-  sourceElement.style.transform = "scale(0.95)";
-
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  let targetWidth = Math.round(
-    Math.min(Math.max(sourceWidth, 800), viewportWidth - 40),
-  );
-
-  const tempMeasureDiv = document.createElement("div");
-  tempMeasureDiv.style.position = "absolute";
-  tempMeasureDiv.style.left = "-9999px";
-  tempMeasureDiv.style.width = targetWidth + "px";
-  tempMeasureDiv.style.visibility = "hidden";
-  tempMeasureDiv.innerHTML = `
-    <div class="notice-unified-content notice-modal-state" style="position: relative; width: 100%; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.1);">
-      <div class="notice-header">
-        <div class="notice-badge-row">
-          <span class="notice-badge">${notice.label_title || "General"}</span>
-          <span class="notice-staff">${notice.staff}</span>
-        </div>
-        <button class="notice-close-btn">&times;</button>
-      </div>
-      <h2 class="notice-content-title">${notice.title}</h2>
-      <div class="notice-content-body">${cleanContent}</div>
-    </div>
-  `;
-  document.body.appendChild(tempMeasureDiv);
-  const measuredHeight =
-    tempMeasureDiv.firstElementChild!.getBoundingClientRect().height;
-  document.body.removeChild(tempMeasureDiv);
-
-  let targetHeight = Math.round(
-    Math.min(Math.max(measuredHeight + 32, 200), viewportHeight * 0.9),
-  );
-  let targetLeft = Math.round((viewportWidth - targetWidth) / 2);
-  let targetTop = Math.round((viewportHeight - targetHeight) / 2) + scrollY;
-
-  const closeModal = () => {
-    window.removeEventListener("resize", handleResize);
-    document.removeEventListener("keydown", handleEscape);
-
-    if (!settingsState.animations) {
-      modal.remove();
-      sourceElement.style.opacity = "1";
-      sourceElement.style.transform = "";
-      sourceElement.removeAttribute("data-transitioning");
-      return;
-    }
-
-    animate(
-      modal,
-      {
-        backgroundColor: ["rgba(0, 0, 0, 0.5)", "rgba(0, 0, 0, 0)"],
-        backdropFilter: ["blur(4px)", "blur(0px)"],
-      },
-      { duration: 0.2 },
-    );
-
-    animate(
-      transitionContainer,
-      { opacity: [1, 0] },
-      { duration: 0.2, delay: 0.3 },
-    );
-
-    sourceElement.style.opacity = "1";
-    sourceElement.style.transform = "";
-
-    modal.style.pointerEvents = "none";
-
-    animate(
-      transitionContainer,
-      {
-        left: [targetLeft + scrollX, sourceLeft + scrollX],
-        top: [targetTop, sourceTop + scrollY],
-        width: [targetWidth, sourceWidth],
-        height: [targetHeight, sourceHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.35,
-        type: "spring",
-        stiffness: 400,
-        damping: 35,
-      },
-    ).finished.then(async () => {
-      modal.remove();
-      sourceElement.removeAttribute("data-transitioning");
-    });
-  };
-
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      closeModal();
-      document.removeEventListener("keydown", handleEscape);
-      window.removeEventListener("resize", handleResize);
-    }
-  };
-  document.addEventListener("keydown", handleEscape);
-
-  const handleResize = () => {
-    const newSourceRect = sourceElement.getBoundingClientRect();
-    const newScrollY = Math.round(window.scrollY);
-    const newScrollX = Math.round(window.scrollX);
-
-    const computedStyle = getComputedStyle(sourceElement);
-    const transform = computedStyle.transform;
-    let scaleX = 1,
-      scaleY = 1;
-
-    if (transform && transform !== "none") {
-      const matrix = transform.match(/matrix.*\((.+)\)/);
-      if (matrix) {
-        const values = matrix[1].split(", ");
-        scaleX = parseFloat(values[0]);
-        scaleY = parseFloat(values[3]);
-      }
-    }
-
-    const newSourceWidth = newSourceRect.width / scaleX;
-    const newSourceHeight = newSourceRect.height / scaleY;
-
-    const deltaX = (newSourceWidth - newSourceRect.width) / 2;
-    const deltaY = (newSourceHeight - newSourceRect.height) / 2;
-
-    const newSourceLeft = newSourceRect.left - deltaX;
-    const newSourceTop = newSourceRect.top - deltaY;
-
-    const newViewportWidth = window.innerWidth;
-    const newViewportHeight = window.innerHeight;
-    const newTargetWidth = Math.round(
-      Math.min(Math.max(newSourceWidth, 800), newViewportWidth - 40),
-    );
-    const currentHeight = unifiedContent.getBoundingClientRect().height;
-    const newTargetHeight = Math.round(
-      Math.min(Math.max(currentHeight + 32, 200), newViewportHeight * 0.9),
-    );
-    const newTargetLeft = Math.round((newViewportWidth - newTargetWidth) / 2);
-    const newTargetTop =
-      Math.round((newViewportHeight - newTargetHeight) / 2) + newScrollY;
-
-    transitionContainer.style.left =
-      Math.round(newTargetLeft + newScrollX) + "px";
-    transitionContainer.style.top = Math.round(newTargetTop) + "px";
-    transitionContainer.style.width = Math.round(newTargetWidth) + "px";
-    transitionContainer.style.height = Math.round(newTargetHeight) + "px";
-
-    sourceLeft = newSourceLeft;
-    sourceTop = newSourceTop;
-    sourceWidth = newSourceWidth;
-    sourceHeight = newSourceHeight;
-    targetLeft = newTargetLeft;
-    targetTop = newTargetTop;
-    targetWidth = newTargetWidth;
-    targetHeight = newTargetHeight;
-    scrollY = newScrollY;
-    scrollX = newScrollX;
-  };
-
-  window.addEventListener("resize", handleResize);
-
-  if (settingsState.animations) {
-    animate(modal, { opacity: [0, 1] }, { duration: 0.2 });
-
-    animate(
-      transitionContainer,
-      {
-        left: [sourceLeft + scrollX, targetLeft + scrollX],
-        top: [sourceTop + scrollY, targetTop],
-        width: [sourceWidth, targetWidth],
-        height: [sourceHeight, targetHeight],
-        scale: [1, 1],
-      },
-      {
-        duration: 0.5,
-        type: "spring",
-        stiffness: 280,
-        damping: 24,
-      },
-    );
-
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
-  } else {
-    modal.style.opacity = "1";
-    transitionContainer.style.left = Math.round(targetLeft + scrollX) + "px";
-    transitionContainer.style.top = Math.round(targetTop) + "px";
-    transitionContainer.style.width = Math.round(targetWidth) + "px";
-    transitionContainer.style.height = Math.round(targetHeight) + "px";
-    unifiedContent.classList.remove("notice-card-state");
-    unifiedContent.classList.add("notice-modal-state");
-  }
-}
-
-async function fetchEngageNoticesFromApi(
-  date: string,
-  labelTokens: string[],
-): Promise<void> {
-  try {
-    const data = settingsState.mockNotices
-      ? getMockNotices()
-      : await (
-          await fetch(`${location.origin}/seqta/parent/load/notices`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-            credentials: "include",
-            body: JSON.stringify({ date }),
-          })
-        ).json();
-
-    processEngageNotices(data, labelTokens);
-  } catch (e) {
-    console.warn("[BetterSEQTA+] Engage notices request failed:", e);
-    processEngageNotices({ payload: [] }, labelTokens);
-  }
-}
-
-function bindEngageNoticesDateInput(
-  labelTokens: string[],
-  initialDate: string,
-): () => void {
-  const dateControl = document.getElementById(
-    ENGAGE_NOTICES_DATE_ID,
-  ) as HTMLInputElement | null;
-
-  if (!dateControl) {
-    return () => {};
-  }
-
-  dateControl.value = initialDate;
-
-  const debouncedInputChange = debounce((e: Event) => {
-    void fetchEngageNoticesFromApi(
-      (e.target as HTMLInputElement).value,
-      labelTokens,
-    );
-  }, 250);
-
-  dateControl.addEventListener("input", debouncedInputChange);
-
-  return () => dateControl.removeEventListener("input", debouncedInputChange);
-}
 
 async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
   const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
   if (!noticeContainer) return;
 
-  let labelFilterValues: string[] = [];
+  let prefsPayload: unknown = [];
   try {
     const prefsRes = await fetch(`${location.origin}/seqta/parent/load/prefs?`, {
       method: "POST",
@@ -671,33 +237,24 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
       body: JSON.stringify({ asArray: true, request: "userPrefs" }),
     });
     const prefs = await prefsRes.json();
-    const payload = prefs?.payload;
-    if (Array.isArray(payload)) {
-      labelFilterValues = payload
-        .filter((item: { name?: string }) => item.name === "notices.filters")
-        .map((item: { value?: string }) => item.value)
-        .filter((v): v is string => typeof v === "string");
-    }
+    prefsPayload = prefs?.payload ?? [];
   } catch {
-    labelFilterValues = [];
+    prefsPayload = [];
   }
 
-  const labelTokens =
-    labelFilterValues.length > 0
-      ? String(labelFilterValues[0]).split(" ").filter(Boolean)
-      : [];
+  const labelTokens = await resolveNoticeFilterTokens(
+    prefsPayload,
+    `${location.origin}/seqta/parent/load/notices`,
+  );
 
-  const dateControl = document.getElementById(ENGAGE_NOTICES_DATE_ID);
-  if (dateControl) {
-    (dateControl as HTMLInputElement).value = todayFormatted;
-  }
-
-  await fetchEngageNoticesFromApi(todayFormatted, labelTokens);
-
-  const cleanup = bindEngageNoticesDateInput(labelTokens, todayFormatted);
+  const cleanup = setupNoticesSection({
+    containerId: ENGAGE_NOTICE_CONTAINER_ID,
+    dateInput: `#${ENGAGE_NOTICES_DATE_ID}`,
+    noticesUrl: `${location.origin}/seqta/parent/load/notices`,
+    labelTokens,
+    initialDate: todayFormatted,
+  });
   engageMergeNoticeCleanup(cleanup);
-
-  noticeContainer.classList.remove("loading");
 }
 
 function engageMergeNoticeCleanup(noticeCleanup: () => void): void {
@@ -714,7 +271,7 @@ function showEngageTimetableError(message: string): void {
   dayContainer.classList.remove("loading");
   dayContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }
@@ -725,7 +282,7 @@ function showEngageNoticesSectionError(message: string): void {
   noticeContainer.classList.remove("loading");
   noticeContainer.innerHTML = `
     <div class="day-empty">
-      <img src="${browser.runtime.getURL(LogoLight)}" alt="" />
+      <img src="${resolveExtensionAssetUrl(LogoLight)}" alt="" />
       <p>${message}</p>
     </div>`;
 }

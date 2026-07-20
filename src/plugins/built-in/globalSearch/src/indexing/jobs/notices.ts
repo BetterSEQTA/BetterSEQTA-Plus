@@ -3,6 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes daily notices from `/seqta/student/load/notices`.
  *
@@ -205,7 +206,7 @@ export const noticesJob: Job = {
     await ctx.setProgress(progress);
 
     const newCount = items.filter((i) => !existingIds.has(i.id)).length;
-    console.debug(
+    verboseDebug(
       `[Notices job] Indexed ${items.length} notices across ${dates.length} dates (${newCount} new).`,
     );
     return items;

@@ -215,6 +215,7 @@ export async function checkGithubReleaseUpdate(): Promise<GhReleaseUpdateInfo> {
 }
 
 export function dismissNightlyUpdate(): void {
+  cachedResult = null;
   void (async () => {
     const release = await fetchJson<GhRelease>(
       `https://api.github.com/repos/${getRepoSlug()}/releases/tags/${NIGHTLY_TAG}`,

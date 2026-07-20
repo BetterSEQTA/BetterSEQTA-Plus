@@ -255,9 +255,9 @@ const watchNavigator = (navigator: Element, onChange: () => void) => {
   return observer;
 };
 
-const handleSlidePane = (pane: Element) => {
+const handleSlidePane = (pane: Element): (() => void) => {
   const navigator = pane.querySelector(".navigator");
-  if (!navigator) return;
+  if (!navigator) return () => {};
 
   requestAnimationFrame(() => scrollSelectedIntoView(navigator));
   setTimeout(() => scrollSelectedIntoView(navigator), 50);
@@ -272,17 +272,22 @@ const handleSlidePane = (pane: Element) => {
     childList: true,
   });
 
-  const cleanup = new MutationObserver((muts) => {
+  const paneCleanup = new MutationObserver((muts) => {
     muts.forEach((m) => {
       m.removedNodes.forEach((n) => {
         if (n === pane) {
           observer.disconnect();
-          cleanup.disconnect();
+          paneCleanup.disconnect();
         }
       });
     });
   });
-  cleanup.observe(document.body, { childList: true });
+  paneCleanup.observe(document.body, { childList: true });
+
+  return () => {
+    observer.disconnect();
+    paneCleanup.disconnect();
+  };
 };
 
 const enhancedNavigationPlugin: Plugin<typeof settings> = {
@@ -299,9 +304,12 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
     injectStyles();
 
     window.addEventListener("resize", positionArrows);
-    window.addEventListener("scroll", positionArrows, true);
 
-    api.seqta.onMount(".course", async (element) => {
+    const navObservers: MutationObserver[] = [];
+    const courseObservers: MutationObserver[] = [];
+    const slidePaneCleanups: Array<() => void> = [];
+
+    const courseMount = api.seqta.onMount(".course", async (element) => {
       const course = element as HTMLElement;
       let navObserver: MutationObserver | null = null;
 
@@ -318,6 +326,7 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
           }
           ensureArrows(course);
         });
+        navObservers.push(navObserver);
         return true;
       };
 
@@ -325,6 +334,7 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
         const courseObserver = new MutationObserver(() => {
           if (setup()) courseObserver.disconnect();
         });
+        courseObservers.push(courseObserver);
         courseObserver.observe(course, { childList: true, subtree: true });
       }
     });
@@ -334,13 +344,20 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
         m.addedNodes.forEach((n) => {
           if (n.nodeType !== 1) return;
           const el = n as Element;
-          if (el.classList?.contains("uiSlidePane")) handleSlidePane(el);
+          if (el.classList?.contains("uiSlidePane")) {
+            slidePaneCleanups.push(handleSlidePane(el));
+          }
         });
       });
     });
     bodyObserver.observe(document.body, { childList: true });
 
     return () => {
+      window.removeEventListener("resize", positionArrows);
+      courseMount.unregister();
+      navObservers.forEach((observer) => observer.disconnect());
+      courseObservers.forEach((observer) => observer.disconnect());
+      slidePaneCleanups.forEach((cleanup) => cleanup());
       bodyObserver.disconnect();
       document.getElementById(ARROW_CONTAINER_ID)?.remove();
       document.getElementById(STYLE_ID)?.remove();

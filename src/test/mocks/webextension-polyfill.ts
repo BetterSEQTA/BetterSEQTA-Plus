@@ -23,8 +23,16 @@ const local = {
   }),
 };
 
+const onChanged = {
+  addListener: jest.fn(),
+  removeListener: jest.fn(),
+};
+
 export default {
-  storage: { local },
+  storage: { local, onChanged },
+  runtime: {
+    sendMessage: jest.fn(async () => undefined),
+  },
 };
 
 export function __resetBrowserStorageMock() {
@@ -32,4 +40,6 @@ export function __resetBrowserStorageMock() {
   local.get.mockClear();
   local.set.mockClear();
   local.remove.mockClear();
+  onChanged.addListener.mockClear();
+  onChanged.removeListener.mockClear();
 }

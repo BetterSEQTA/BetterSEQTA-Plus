@@ -92,7 +92,7 @@
   bind:this={background}
   class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50"
   onclick={handleBackgroundClick}
-  onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick; }}
+  onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick(e as unknown as MouseEvent) }}
 >
   <div
     bind:this={content}

@@ -1,11 +1,10 @@
-import renderSvelte from "@/interface/main";
 import SearchBar from "../components/SearchBar.svelte";
 import { unmount } from "svelte";
-import { VectorWorkerManager } from "../indexing/worker/vectorWorkerManager";
+import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import browser from "webextension-polyfill";
 
-export function mountSearchBar(
+export async function mountSearchBar(
   titleElement: Element,
   api: any,
   appRef: {
@@ -36,6 +35,21 @@ export function mountSearchBar(
 
   const searchButton = document.createElement("div");
   searchButton.className = "search-trigger";
+
+  const searchIcon = document.createElement("span");
+  searchIcon.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+
+  const searchLabel = document.createElement("p");
+  searchLabel.textContent = "Quick search...";
+
+  const hotkeySpan = document.createElement("span");
+  hotkeySpan.className = "search-trigger-hotkey";
+  hotkeySpan.style.marginLeft = "auto";
+  hotkeySpan.style.display = "flex";
+  hotkeySpan.style.alignItems = "center";
+  hotkeySpan.style.color = "#777";
+  hotkeySpan.style.fontSize = "12px";
 
   const progressBarWrapper = document.createElement("div");
   progressBarWrapper.className = "search-progress-bar-wrapper";
@@ -94,102 +108,9 @@ export function mountSearchBar(
     }
   };
 
-  const updateProgressDisplay = () => {
-    const indexingStoppedThisTick = indexingJustStoppedFlag;
-    indexingJustStoppedFlag = false;
-
-    const active = isIndexing && totalJobs > 0;
-
-    // Stray pulses (missing total, 0 completed, etc.) used to hit the idle
-    // branch and call clearDoneFlashTimer(), killing the Done! hold/fade.
-    if (doneFlashTimer !== null || doneFadeTimer !== null) {
-      if (!active) {
-        return;
-      }
-      clearDoneFlashTimer();
-    }
-
-    const completionEligible =
-      ranIndexingCycle &&
-      !active &&
-      totalJobs > 0 &&
-      (completedJobs >= totalJobs || indexingStoppedThisTick);
-
-    if (active) {
-      clearDoneFlashTimer();
-      progressBarWrapper.classList.remove("is-rough-complete");
-      progressText.classList.remove(
-        "is-rough",
-        "is-fading-done",
-        "is-done-message",
-      );
-      const percentage = Math.round((completedJobs / totalJobs) * 100);
-      progressBar.style.width = `${Math.max(2, percentage)}%`;
-      progressBarWrapper.classList.add("is-active");
-      searchAnchor.classList.add("is-indexing");
-      searchButton.classList.add("is-indexing");
-
-      if (indexingStatus) {
-        progressText.textContent = `${truncateStatus(indexingStatus)} · ${percentage}%`;
-      } else {
-        progressText.textContent = `Indexing ${completedJobs}/${totalJobs} (${percentage}%)`;
-      }
-      progressText.classList.add("is-active");
-      return;
-    }
-
-    if (completionEligible) {
-      // Duplicate end-of-run ticks must not reschedule hold/fade timers
-      if (doneFlashTimer !== null || doneFadeTimer !== null) {
-        return;
-      }
-
-      const rough =
-        indexingStatus != null && statusLooksRough(indexingStatus);
-
-      progressBar.style.width = "0%";
-      progressBarWrapper.classList.remove("is-active");
-      searchAnchor.classList.remove("is-indexing");
-      searchButton.classList.remove("is-indexing");
-      progressText.classList.remove("is-fading-done");
-
-      progressText.textContent = rough ? truncateStatus(indexingStatus!, 52) : "Done!";
-      if (rough) {
-        progressText.classList.add("is-rough");
-        progressBarWrapper.classList.add("is-rough-complete");
-      } else {
-        progressText.classList.remove("is-rough");
-        progressBarWrapper.classList.remove("is-rough-complete");
-      }
-      progressText.classList.add("is-active", "is-done-message");
-
-      doneFlashTimer = setTimeout(() => {
-        doneFlashTimer = null;
-        progressText.classList.add("is-fading-done");
-        doneFadeTimer = setTimeout(() => {
-          doneFadeTimer = null;
-          ranIndexingCycle = false;
-          indexingStatus = null;
-          progressBar.style.width = "0%";
-          progressBarWrapper.classList.remove("is-active");
-          progressBarWrapper.classList.remove("is-rough-complete");
-          searchAnchor.classList.remove("is-indexing");
-          searchButton.classList.remove("is-indexing");
-          progressText.classList.remove(
-            "is-active",
-            "is-rough",
-            "is-fading-done",
-            "is-done-message",
-          );
-          progressText.textContent = "";
-        }, DONE_FADE_MS);
-      }, DONE_HOLD_MS);
-      return;
-    }
-
+  const resetIdleProgressUi = () => {
     clearDoneFlashTimer();
-    progressBarWrapper.classList.remove("is-active");
-    progressBarWrapper.classList.remove("is-rough-complete");
+    progressBarWrapper.classList.remove("is-active", "is-rough-complete");
     searchAnchor.classList.remove("is-indexing");
     searchButton.classList.remove("is-indexing");
     progressText.classList.remove(
@@ -202,6 +123,75 @@ export function mountSearchBar(
     progressText.textContent = "";
     ranIndexingCycle = false;
     indexingStatus = null;
+  };
+
+  const showActiveIndexingUi = (percentage: number) => {
+    clearDoneFlashTimer();
+    progressBarWrapper.classList.remove("is-rough-complete");
+    progressText.classList.remove("is-rough", "is-fading-done", "is-done-message");
+    progressBar.style.width = `${Math.max(2, percentage)}%`;
+    progressBarWrapper.classList.add("is-active");
+    searchAnchor.classList.add("is-indexing");
+    searchButton.classList.add("is-indexing");
+    progressText.textContent = indexingStatus
+      ? `${truncateStatus(indexingStatus)} · ${percentage}%`
+      : `Indexing ${completedJobs}/${totalJobs} (${percentage}%)`;
+    progressText.classList.add("is-active");
+  };
+
+  const scheduleCompletionFlash = (rough: boolean) => {
+    progressBar.style.width = "0%";
+    progressBarWrapper.classList.remove("is-active");
+    searchAnchor.classList.remove("is-indexing");
+    searchButton.classList.remove("is-indexing");
+    progressText.classList.remove("is-fading-done");
+    progressText.textContent = rough ? truncateStatus(indexingStatus!, 52) : "Done!";
+    progressText.classList.toggle("is-rough", rough);
+    progressBarWrapper.classList.toggle("is-rough-complete", rough);
+    progressText.classList.add("is-active", "is-done-message");
+
+    doneFlashTimer = setTimeout(() => {
+      doneFlashTimer = null;
+      progressText.classList.add("is-fading-done");
+      doneFadeTimer = setTimeout(() => {
+        doneFadeTimer = null;
+        resetIdleProgressUi();
+      }, DONE_FADE_MS);
+    }, DONE_HOLD_MS);
+  };
+
+  const updateProgressDisplay = () => {
+    const indexingStoppedThisTick = indexingJustStoppedFlag;
+    indexingJustStoppedFlag = false;
+
+    const active = isIndexing && totalJobs > 0;
+
+    // Stray pulses (missing total, 0 completed, etc.) used to hit the idle
+    // branch and call clearDoneFlashTimer(), killing the Done! hold/fade.
+    if (doneFlashTimer !== null || doneFadeTimer !== null) {
+      if (!active) return;
+      clearDoneFlashTimer();
+    }
+
+    const completionEligible =
+      ranIndexingCycle &&
+      !active &&
+      totalJobs > 0 &&
+      (completedJobs >= totalJobs || indexingStoppedThisTick);
+
+    if (active) {
+      showActiveIndexingUi(Math.round((completedJobs / totalJobs) * 100));
+      return;
+    }
+
+    if (completionEligible) {
+      if (doneFlashTimer !== null || doneFadeTimer !== null) return;
+      const rough = indexingStatus != null && statusLooksRough(indexingStatus);
+      scheduleCompletionFlash(rough);
+      return;
+    }
+
+    resetIdleProgressUi();
   };
 
   // Listen for indexing progress events
@@ -234,14 +224,8 @@ export function mountSearchBar(
   appRef.clearDoneFlashTimer = clearDoneFlashTimer;
   
   const updateSearchButtonDisplay = () => {
-    searchButton.innerHTML = /* html */ `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <p>Quick search...</p>
-      <span style="margin-left: auto; display: flex; align-items: center; color: #777; font-size: 12px;">${hotkeyDisplay}</span>
-    `;
+    hotkeySpan.textContent = hotkeyDisplay;
+    searchButton.replaceChildren(searchIcon, searchLabel, hotkeySpan);
   };
 
   updateSearchButtonDisplay();
@@ -269,16 +253,18 @@ export function mountSearchBar(
   const searchRootShadow = searchRoot.attachShadow({ mode: "open" });
 
   searchButton.addEventListener("click", () => {
+    warmUpVectorSearchOnInteraction();
     // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen(true);
   });
 
   try {
+    const { default: renderSvelte } = await import("@/interface/main");
     appRef.current = renderSvelte(SearchBar, searchRootShadow, {
-      transparencyEffects: api.settings.transparencyEffects ? true : false,
+      transparencyEffects: api.settings.transparencyEffects,
       showRecentFirst: api.settings.showRecentFirst,
       searchHotkey: currentHotkey,
-    });
+    }, "content");
   } catch (error) {
     console.error("Error rendering Svelte component:", error);
   }
@@ -329,8 +315,10 @@ export function cleanupSearchBar(appRef: {
     searchRoot.remove();
   }
 
-  // Clean up vector worker
-  VectorWorkerManager.getInstance().terminate();
+  // Clean up vector worker when it was started (indexing or search interaction)
+  void import("../indexing/worker/vectorWorkerManager").then(({ VectorWorkerManager }) => {
+    VectorWorkerManager.getInstance().terminate();
+  }).catch(() => {});
 
   if (appRef.storageChangeHandler) {
     browser.storage.onChanged.removeListener(appRef.storageChangeHandler);

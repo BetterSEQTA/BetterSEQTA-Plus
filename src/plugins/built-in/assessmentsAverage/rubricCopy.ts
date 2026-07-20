@@ -1,3 +1,5 @@
+import debounce from "@/seqta/utils/debounce";
+
 const RUBRIC_SELECTOR =
   "[class*='AssessableCriterion__rubric___'][class*='Rubric__Rubric___'], [class*='Rubric__Rubric___'][class*='AssessableCriterion__rubric___']";
 const ENHANCED_ATTR = "data-betterseqta-rubric-copy";
@@ -365,13 +367,13 @@ function enhanceRubrics(root: ParentNode = document) {
   root.querySelectorAll<HTMLElement>(RUBRIC_SELECTOR).forEach(enhanceRubric);
 }
 
+const debouncedEnhanceRubrics = debounce(enhanceRubrics, 50);
+
 function watchRubrics(root: ParentNode) {
   observer?.disconnect();
   enhanceRubrics(root);
 
-  observer = new MutationObserver(() => {
-    enhanceRubrics(root);
-  });
+  observer = new MutationObserver(() => debouncedEnhanceRubrics(root));
 
   observer.observe(root, { childList: true, subtree: true });
 }

@@ -35,18 +35,9 @@ const DEFAULT_INTERVAL_MS = 600_000;
 
 /**
  * IDs of decorative city layers injected when `themeDom.cityLayers` is on.
- * Order matters: earlier entries paint behind later ones. Buildings sit
- * behind the lit batches (so windows draw over the silhouettes); flicker
- * frames sit over the lit batches so blinking windows hide steady ones.
- * Sun and moon are last so they paint over everything else in the
- * wallpaper stack (still behind #main via z-index 0).
+ * `city-buildings` paints the night panorama; `city-day` paints the day
+ * panorama on top with opacity controlled by `--city-day-opacity`.
  */
-/**
- * `city-buildings` always paints the night panorama; `city-day` paints
- * the day panorama on top with opacity controlled by `--city-day-
- * opacity`. The two stack so we can CSS-transition opacity between
- * them at the day boundary, instead of snapping background-image (which
- * doesn't animate). */
 const CITY_LAYER_IDS = [
   "city-buildings",
   "city-day",
@@ -61,7 +52,7 @@ const CITY_LAYER_IDS = [
 
 // Built-in functions themes may reference by exact string match.
 const BUILTINS: Record<string, () => void> = {
-  "setTimeState()": setTimeState,
+  "setTimeState()": setCityTime,
   "setCityTime()": setCityTime,
 };
 
@@ -137,10 +128,7 @@ function readDevOverride(): number | null {
  *   19:00 .. 21:00   evening  (deep indigo, fading toward night)
  *   21:00 .. 24:00   night
  *
- * The discrete bucket here drives `data-city-state` (used by the car
- * sprite swap and the day panorama). The continuous sky-colour lerp in
- * `TIME_BOUNDARIES` MUST use the same minute markers so the boundary
- * the user sees in the dev slider matches the visible colour change.
+ * The discrete bucket here drives `data-city-state` (car sprites, day panorama).
  */
 function timeStateForMinutes(minutes: number): TimeState {
   if (minutes < 5 * 60 + 30) return "night";
@@ -165,19 +153,6 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-/**
- * Sky colour publishing is intentionally NOT time-interpolated. We
- * publish exactly one of the five `SKY_COLOR` anchors based on the
- * discrete state from `timeStateForMinutes()`, and let CSS handle the
- * cross-fade via its own `transition: background-color` on #content.
- *
- * That way the sky is a flat colour for the entire duration of each
- * phase, and only animates between two anchors AT THE MOMENT the state
- * boundary is crossed. The animation duration is decoupled from how
- * long the phase lasts.
- *
- * Removed: the previous `lerpColor` + `TIME_BOUNDARIES` minute table.
- */
 function skyColorForState(state: TimeState): string {
   return SKY_COLOR[state];
 }
@@ -247,18 +222,7 @@ function formatMinutes(minutes: number): string {
 }
 
 /**
- * Read the clock and update `data-city-state` + sky colour on <html>. Only
- * writes when the state actually changes, so CSS transitions are driven by
- * real state changes rather than every tick.
- */
-export function setTimeState(): void {
-  setCityTime();
-}
-
-/**
- * Read the clock and publish continuous city variables plus the discrete
- * `data-city-state` bucket used by CSS that still needs hard cuts (e.g. day
- * panorama swap, night car sprites).
+ * Read the clock and publish city variables plus `data-city-state`.
  */
 export function setCityTime(): void {
   const minutes = getMinutesOfDay();

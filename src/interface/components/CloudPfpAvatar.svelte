@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { resolveCloudPfp } from "@/seqta/utils/cloudPfpCache";
+  import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
   import type { CloudUser } from "@/seqta/utils/CloudAuth";
 
   const { user, class: className = "" } = $props<{
@@ -18,10 +18,12 @@
     }
     avatarSrc = undefined;
 
-    if (!u?.pfpUrl || !u.id) return;
+    if (!u?.id) return;
+
+    const pfpUrl = u.pfpUrl ?? defaultAccountsPfpUrl(u.id);
 
     let cancelled = false;
-    void resolveCloudPfp(u.id, u.pfpUrl).then((resolved) => {
+    void resolveCloudPfp(u.id, pfpUrl).then((resolved) => {
       if (cancelled || !resolved) return;
       if (resolved.fromCache) {
         revokeUrl = resolved.src;

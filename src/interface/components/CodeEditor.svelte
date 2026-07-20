@@ -19,6 +19,7 @@
 
   let editor = $state<HTMLDivElement | null>(null)
   let view: EditorView | null = null;
+  let unsubSettings: (() => void) | undefined;
   let editorTheme = new Compartment();
   let { value, onChange, className } = $props<{value: string, onChange: (value: string) => void, className?: string}>()
 
@@ -73,7 +74,7 @@
       view = createEditorView(state, editor as HTMLElement);
     }
 
-    settingsState.subscribe((settings) => {
+    unsubSettings = settingsState.subscribe((settings) => {
       if (view) {
         view.dispatch({
           effects: editorTheme.reconfigure(
@@ -85,6 +86,7 @@
   });
 
   onDestroy(() => {
+    unsubSettings?.();
     if (view) {
       view.destroy();
     }

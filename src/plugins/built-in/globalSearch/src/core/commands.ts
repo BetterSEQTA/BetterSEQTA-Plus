@@ -105,7 +105,6 @@ async function navigateToSpecificLesson(lesson: any) {
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {
           // Found the exact matching lesson, click it
           (lessonElement as HTMLElement).click();
-          console.log(`Navigated to exact lesson: ${lessonDate} ${lessonPeriod}`);
           return true;
         }
       }
@@ -214,7 +213,7 @@ const staticCommands: StaticCommandItem[] = [
         code: 'KeyM',
         keyCode: 77,
         altKey: true
-      }, "*");
+      }, location.origin);
     },
     keywords: ["compose", "message", "dm", "direct message", "new message"],
     priority: 3,

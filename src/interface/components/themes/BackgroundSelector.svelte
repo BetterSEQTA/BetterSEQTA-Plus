@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader'
+  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader'
   import BackgroundUploader from './BackgroundUploader.svelte';
   import BackgroundItem from './BackgroundItem.svelte'
   import { onMount, onDestroy } from 'svelte'
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
-  import { delay } from 'lodash'
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
@@ -14,10 +13,9 @@
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
 
-  let isVisible = $state(false);
-  let element: HTMLElement;
-  let observer: MutationObserver;
-  let parentElement: HTMLElement | null = null;
+  function setError(e: unknown) {
+    error = e instanceof Error ? e.message : 'An unknown error occurred';
+  }
 
   async function getTheme() {
     return localStorage.getItem('selectedBackground');
@@ -47,34 +45,7 @@
       await writeData(fileId, fileType, blob);
       backgrounds = [...backgrounds, { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) }];
     } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
-    }
-  }
-
-  async function loadBackgroundMetadata(): Promise<void> {
-    try {
-      error = null;
-
-      if (!isIndexedDBSupported()) {
-        throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
-      }
-
-      await openDatabase();
-      const data = await readAllData();
-      selectedBackground = await getTheme();
-      
-      // Only load metadata (id and type) for placeholders
-      backgrounds = data.map(({ id, type }) => ({ id, type, blob: null }));
-    } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      setError(e);
     }
   }
 
@@ -86,8 +57,9 @@
         throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
       }
 
+      selectedBackground = await getTheme();
       const dbData = await readAllData();
-      
+
       // Release existing object URLs to prevent memory leaks
       backgrounds.forEach(bg => {
         if (bg.url) URL.revokeObjectURL(bg.url);
@@ -106,11 +78,7 @@
         selectNoBackground();
       }
     } catch (e) {
-      if (e instanceof Error) {
-        error = e.message;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      setError(e);
     }
   }
 
@@ -119,7 +87,7 @@
       selectNoBackground();
       return;
     }
-    
+
     selectedBackground = fileId;
     setTheme(fileId);
   }
@@ -133,11 +101,7 @@
         selectNoBackground();
       }
     } catch (e) {
-      if (e instanceof Error) {
-        error = `Failed to delete background: ${e.message}`;
-      } else {
-        error = 'An unknown error occurred';
-      }
+      error = e instanceof Error ? `Failed to delete background: ${e.message}` : 'An unknown error occurred';
     }
   }
 
@@ -157,39 +121,23 @@
     }
   });
 
-  function checkActiveClass() {
-    if (parentElement?.classList.contains('active')) {
-      delay(() => {
-        isVisible = true;
-        syncBackgrounds();
-      }, 600);
-    }
-  }
-
   onMount(() => {
-    loadBackgroundMetadata();
+    syncBackgrounds();
     backgroundUpdates.addListener(syncBackgrounds);
-    
-    parentElement = element.closest('.tab');
-    if (parentElement) {
-      observer = new MutationObserver(checkActiveClass);
-      observer.observe(parentElement, { attributes: true, attributeFilter: ['class'] });
 
-      return () => {
-        observer.disconnect();
-        backgroundUpdates.removeListener(syncBackgrounds);
-      };
-    }
+    return () => {
+      backgroundUpdates.removeListener(syncBackgrounds);
+    };
   });
 
   onDestroy(() => {
-    if (observer) {
-      observer.disconnect();
-    }
+    backgrounds.forEach((bg) => {
+      if (bg.url) URL.revokeObjectURL(bg.url);
+    });
   });
 </script>
 
-<div bind:this={element} class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
+<div class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
   {#if !(imageBackgrounds.length === 0 && isEditMode)}
     <h2 class="pb-2 text-lg font-bold">Background Images</h2>
     <div class="flex flex-wrap gap-4 mb-4">
@@ -197,7 +145,7 @@
         <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
       {/if}
       {#each imageBackgrounds as bg (bg.id)}
-        {#if isVisible && bg.blob}
+        {#if bg.url}
           <BackgroundItem
             bg={bg}
             isSelected={selectedBackground === bg.id}
@@ -218,7 +166,7 @@
         <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
       {/if}
       {#each videoBackgrounds as bg (bg.id)}
-        {#if isVisible && bg.blob}
+        {#if bg.url}
           <BackgroundItem
             bg={bg}
             isSelected={selectedBackground === bg.id}

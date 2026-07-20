@@ -388,8 +388,8 @@
   right: 0;
   margin-top: 4px;
   min-width: 180px;
-  background: var(--background-primary, #fff);
-  border: 1px solid var(--background-secondary, #e0e0e0);
+  background: var(--theme-primary, var(--background-primary, #fff));
+  border: 1px solid var(--theme-secondary, var(--background-secondary, #e0e0e0));
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 1000;

@@ -10,6 +10,22 @@ declare module "*?inlineWorker" {
   export default value;
 }
 
+/** CRXJS dynamic content / main-world script path (relative to extension root). */
+declare module "*?script" {
+  const path: string;
+  export default path;
+}
+
+declare module "*?script&iife" {
+  const path: string;
+  export default path;
+}
+
+declare module "*?script&module" {
+  const path: string;
+  export default path;
+}
+
 declare module "*.png?base64" {
   const value: string;
   export default value;

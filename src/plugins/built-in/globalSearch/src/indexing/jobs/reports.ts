@@ -1,6 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
+import { verboseDebug } from '@/utils/verboseLog';
 /**
  * Indexes report metadata from `/seqta/student/load/reports`.
  *
@@ -89,7 +90,7 @@ export const reportsJob: Job = {
       });
     }
 
-    console.debug(`[Reports job] Indexed ${items.length} reports.`);
+    verboseDebug(`[Reports job] Indexed ${items.length} reports.`);
     return items;
   },
 

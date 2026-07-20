@@ -38,6 +38,9 @@ async function fetchJSON(url: string, body: unknown) {
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} for ${url}`);
+  }
   return res.json();
 }
 

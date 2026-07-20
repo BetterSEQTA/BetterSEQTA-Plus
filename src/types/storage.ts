@@ -6,6 +6,7 @@ export interface SettingsState {
   lessonalert: boolean;
   menuitems: {
     assessments: ToggleItem;
+    analytics: ToggleItem;
     courses: ToggleItem;
     dashboard: ToggleItem;
     documents: ToggleItem;
@@ -21,6 +22,7 @@ export interface SettingsState {
     settings: ToggleItem;
     timetable: ToggleItem;
     welcome: ToggleItem;
+    [key: string]: ToggleItem;
   };
   menuorder: any[];
   onoff: boolean;
@@ -46,7 +48,15 @@ export interface SettingsState {
   timeFormat?: string;
   animations: boolean;
   defaultPage: string;
+  /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
+  homeUpcomingSubjectsMax?: number;
+  /** Max assessments shown per subject on the home page; 0 = no limit. */
+  homeUpcomingAssessmentsPerSubjectMax?: number;
+  /** When true, show past-due assessments from the upcoming list on the home page. */
+  homeUpcomingIncludePast?: boolean;
   devMode?: boolean;
+  /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
+  verboseLogging?: boolean;
   /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
   devGhReleaseVersionOverride?: string;
   /** ISO timestamp of the last acknowledged nightly release publish time. */
@@ -69,11 +79,7 @@ export interface SettingsState {
   assessmentsAverage?: boolean;
   notificationCollector?: boolean;
 
-  // BetterSEQTA Cloud (accounts.betterseqta.org)
-  bsplus_client_id?: string;
-  bsplus_token?: string;
-  bsplus_refresh_token?: string;
-  bsplus_user?: { id: string; email?: string; username?: string; displayName?: string; pfpUrl?: string; pfpHash?: string | null; admin_level?: number };
+  // BetterSEQTA Cloud (accounts.betterseqta.org) — stored via CloudAuth, not settingsState
   /** When not `false`, automatic cloud settings sync is enabled (default-on). */
   autoCloudSettingsSync?: boolean;
 }

@@ -1,4 +1,4 @@
-import { debounce } from "lodash";
+import debounce from "@/seqta/utils/debounce";
 
 /**
  * Automatically resizes the popup to fit the screen, checks on resize but is debounced to prevent intense utilisation.

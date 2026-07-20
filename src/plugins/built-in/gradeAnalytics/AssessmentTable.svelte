@@ -35,6 +35,15 @@
     ),
   );
 
+  $effect(() => {
+    sortedData.length;
+    itemsPerPage;
+    const maxPage = Math.max(0, pageCount - 1);
+    if (currentPage > maxPage) {
+      currentPage = maxPage;
+    }
+  });
+
   function toggleSort(column: keyof Assessment) {
     if (sortColumn === column) {
       sortDirection = sortDirection === "asc" ? "desc" : "asc";

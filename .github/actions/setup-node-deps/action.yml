@@ -1,0 +1,14 @@
+name: Setup Node and dependencies
+description: Install Node.js 22.x and npm dependencies.
+
+runs:
+  using: composite
+  steps:
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+
+    - name: Install dependencies
+      shell: bash
+      run: npm install --legacy-peer-deps

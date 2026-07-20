@@ -3,6 +3,7 @@ interface EventListenerOptions {
   textContent?: string;
   className?: string;
   id?: string;
+  selector?: string;
   customCheck?: (element: Element) => boolean;
   once?: boolean;
   parentElement?: Element;
@@ -20,6 +21,7 @@ class EventManager {
   private listeners: Map<string, EventListener[]> = new Map();
   private mutationObservers: Map<Element, MutationObserver> = new Map();
   private pendingElements: Set<Element> = new Set();
+  private firedOnceIds: Set<string> = new Set();
   private throttleTimeout: number = 5; // 5ms throttle
   private throttleTimer: number | undefined;
   private chunkSize: number = 50; // Process 50 elements per chunk
@@ -58,6 +60,7 @@ class EventManager {
   }
 
   private buildSelector(options: EventListenerOptions): string | null {
+    if (options.selector) return options.selector;
     if (options.textContent || options.customCheck) return null;
 
     let selector = options.elementType || "";
@@ -71,6 +74,23 @@ class EventManager {
     return selector.trim() || null;
   }
 
+  private getElementsToCheck(
+    element: Element,
+    options: EventListenerOptions,
+  ): Element[] {
+    const selector = this.buildSelector(options);
+    if (!selector) return [element];
+
+    const targets = new Set<Element>();
+    if (element.matches(selector)) {
+      targets.add(element);
+    }
+    for (const match of element.querySelectorAll(selector)) {
+      targets.add(match);
+    }
+    return Array.from(targets);
+  }
+
   private async scanExistingElements(
     options: EventListenerOptions,
     callback: (element: Element) => void,
@@ -81,12 +101,9 @@ class EventManager {
 
     if (selector) {
       elements = Array.from(root.querySelectorAll(selector));
-      if (selector && root.matches && root.matches(selector)) {
-        elements.unshift(root);
-      }
+      if (root.matches?.(selector)) elements.unshift(root);
     } else {
-      elements = Array.from(root.getElementsByTagName("*"));
-      elements.unshift(root);
+      elements = [root];
     }
 
     for (let i = 0; i < elements.length; i += this.chunkSize) {
@@ -174,10 +191,17 @@ class EventManager {
   private async checkElement(element: Element): Promise<void> {
     for (const [event, listeners] of this.listeners.entries()) {
       for (const { id, options, callback } of listeners) {
-        if (this.matchesOptions(element, options)) {
-          callback(element);
+        if (options.once && this.firedOnceIds.has(id)) continue;
+
+        const targets = this.getElementsToCheck(element, options);
+        for (const target of targets) {
+          if (!this.matchesOptions(target, options)) continue;
+
+          callback(target);
           if (options.once) {
+            this.firedOnceIds.add(id);
             this.unregisterById(event, id);
+            break;
           }
         }
       }

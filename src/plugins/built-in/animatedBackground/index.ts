@@ -6,7 +6,11 @@ import {
   Setting,
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
-import { waitForElm } from "@/seqta/utils/waitForElm";
+import {
+  removeAnimatedBackgroundLayers,
+  syncAnimatedBackground,
+  updateAnimationSpeed,
+} from "./backgroundLayers";
 
 const settings = defineSettings({
   speed: numberSetting({
@@ -36,48 +40,25 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
-    const [container, menu] = await Promise.all([
-      waitForElm("#container", true),
-      waitForElm("#menu", true),
-    ]);
+    await syncAnimatedBackground(api);
+    const resync = () => void syncAnimatedBackground(api);
 
-    const backgrounds = [
-      { classes: ["bg"] },
-      { classes: ["bg", "bg2"] },
-      { classes: ["bg", "bg3"] },
-    ];
+    const speedUnregister = api.settings.onChange("speed", updateAnimationSpeed);
+    const pageChangeUnregister = api.seqta.onPageChange(resync);
+    window.addEventListener("pageshow", resync);
 
-    backgrounds.forEach(({ classes }) => {
-      const bk = document.createElement("div");
-      classes.forEach((cls) => bk.classList.add(cls));
-      container.insertBefore(bk, menu);
-    });
+    const containerObserver = new MutationObserver(resync);
+    const container = document.getElementById("container");
+    if (container) containerObserver.observe(container, { childList: true });
 
-    // Set initial speed
-    updateAnimationSpeed(api.settings.speed);
-
-    // Listen for speed changes
-    const speedUnregister = api.settings.onChange(
-      "speed",
-      updateAnimationSpeed,
-    );
-
-    // Return cleanup function
     return () => {
       speedUnregister.unregister();
-      // Remove background elements
-      const backgrounds = document.getElementsByClassName("bg");
-      Array.from(backgrounds).forEach((element) => element.remove());
+      pageChangeUnregister.unregister();
+      window.removeEventListener("pageshow", resync);
+      containerObserver.disconnect();
+      removeAnimatedBackgroundLayers();
     };
   },
 };
-
-function updateAnimationSpeed(speed: number) {
-  const bgElements = document.getElementsByClassName("bg");
-  Array.from(bgElements).forEach((element, index) => {
-    const baseSpeed = index === 0 ? 3 : index === 1 ? 4 : 5;
-    (element as HTMLElement).style.animationDuration = `${baseSpeed / speed}s`;
-  });
-}
 
 export default animatedBackgroundPlugin;

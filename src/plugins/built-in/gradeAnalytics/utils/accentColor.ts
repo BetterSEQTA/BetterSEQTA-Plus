@@ -1,4 +1,5 @@
 import Color from "color";
+import { parseCssColor } from "@/seqta/ui/colors/parseCssColor";
 
 export type ContrastAccentPalette = {
   accent: string;
@@ -52,8 +53,8 @@ export function buildContrastAccentPalette(
   accentRaw: string,
   backgroundRaw: string,
 ): ContrastAccentPalette {
-  const accent = Color(accentRaw);
-  const background = Color(backgroundRaw);
+  const accent = parseCssColor(accentRaw);
+  const background = parseCssColor(backgroundRaw, "#ffffff");
   const isDark = background.isDark();
 
   const { h, s } = accent.hsl().object();

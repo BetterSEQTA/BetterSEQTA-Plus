@@ -1,16 +1,17 @@
 import type { IndexItem } from "./types";
-import { put, getAll } from "./db";
+import { getAll, put } from "./db";
 import {
   buildIndexItem,
   extractTextFromValue,
   pickId,
   pickTitle,
 } from "./extract";
+import { verboseDebug } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
-import { loadAllStoredItems } from "./indexer";
-import { loadDynamicItems } from "../utils/dynamicItems";
-import { renderComponentMap } from "./renderComponents";
-import { jobs } from "./jobs";
+import { mergeDynamicItems } from "../utils/dynamicItems";
+import { decorateIndexItems } from "./renderComponents";
+import { isIndexingPaused } from "./indexingPause";
+import { isAssessmentListRoute } from "./routeFilters";
 
 /**
  * Passive network observer.
@@ -41,6 +42,8 @@ const MAX_PER_RESPONSE_TEXT_CHARS = 1500;
 let installed = false;
 let pendingFlush: ReturnType<typeof setTimeout> | null = null;
 let pendingDirty = false;
+/** Items persisted since the last flush — only these are pushed to the search layer. */
+const pendingChangedItems = new Map<string, IndexItem>();
 
 export function isPassiveObserverInstalled(): boolean {
   return installed;
@@ -296,6 +299,8 @@ function synthesizeItems(
   ctx: CapturedContext,
   payload: unknown,
 ): IndexItem[] {
+  if (isAssessmentListRoute(ctx.route)) return [];
+
   const entities = entitiesFromPayload(payload);
   if (entities.length === 0) return [];
 
@@ -379,13 +384,14 @@ function synthesizeItems(
 /* ------------------------------------------------------------------ */
 
 async function persistItems(items: IndexItem[]): Promise<void> {
-  if (items.length === 0) return;
+  if (items.length === 0 || isIndexingPaused()) return;
 
   // Dedupe against existing entries. We replace on collision so the latest
   // observation wins (e.g. if a message changes title).
   for (const item of items) {
     try {
       await put(STORE_ID, item, item.id);
+      pendingChangedItems.set(item.id, item);
     } catch (e) {
       console.warn(
         `[Passive Observer] Failed to persist item ${item.id}:`,
@@ -399,48 +405,41 @@ async function persistItems(items: IndexItem[]): Promise<void> {
 }
 
 function scheduleFlush() {
-  if (pendingFlush) return;
+  if (pendingFlush || isIndexingPaused()) return;
   pendingFlush = setTimeout(() => {
     pendingFlush = null;
-    if (!pendingDirty) return;
+    if (!pendingDirty || isIndexingPaused()) return;
     pendingDirty = false;
     void flushDynamicItems();
   }, FLUSH_DEBOUNCE_MS);
 }
 
+/** Drop queued passive captures after a manual index reset. */
+export function pausePassiveObserver(): void {
+  pendingChangedItems.clear();
+  pendingDirty = false;
+  if (pendingFlush) {
+    clearTimeout(pendingFlush);
+    pendingFlush = null;
+  }
+}
+
 async function flushDynamicItems(): Promise<void> {
+  if (isIndexingPaused()) return;
+  if (pendingChangedItems.size === 0) return;
+
+  const rawChanged = Array.from(pendingChangedItems.values());
+  pendingChangedItems.clear();
+
   try {
-    const all = await loadAllStoredItems();
-    const decorated = all.map((item) => {
-      try {
-        const jobDef =
-          jobs[item.category] ||
-          Object.values(jobs).find((j) => j.id === item.category) ||
-          jobs[item.renderComponentId];
-        let renderComponent = item.renderComponent;
-        if (jobDef) {
-          renderComponent =
-            renderComponentMap[jobDef.renderComponentId] || renderComponent;
-        } else if (renderComponentMap[item.renderComponentId]) {
-          renderComponent = renderComponentMap[item.renderComponentId];
-        }
-        try {
-          const cloned = JSON.parse(JSON.stringify(item));
-          cloned.renderComponent = renderComponent;
-          return cloned;
-        } catch {
-          return { ...item, renderComponent };
-        }
-      } catch {
-        return item;
-      }
-    });
-    loadDynamicItems(decorated);
+    const decorated = decorateIndexItems(rawChanged);
+    mergeDynamicItems(decorated);
     window.dispatchEvent(
       new CustomEvent("dynamic-items-updated", {
         detail: {
           incremental: true,
           jobId: STORE_ID,
+          changedItems: decorated,
           streaming: false,
         },
       }),
@@ -454,6 +453,28 @@ async function flushDynamicItems(): Promise<void> {
 /*                          fetch hook                                */
 /* ------------------------------------------------------------------ */
 
+async function handleCapturedPayload(
+  route: string,
+  requestBody: unknown,
+  payload: unknown,
+): Promise<void> {
+  const items = synthesizeItems(
+    { route, requestBody, observedAt: Date.now() },
+    payload,
+  );
+  if (items.length > 0) {
+    await persistItems(items);
+  }
+}
+
+function parseSeqtaPayload(json: unknown): unknown | null {
+  if (!json || typeof json !== "object") return null;
+  const body = json as { status?: string; payload?: unknown };
+  if (body.status && body.status !== "200") return null;
+  if (body.payload === undefined || body.payload === null) return null;
+  return body.payload;
+}
+
 async function consumeResponse(
   response: Response,
   url: string,
@@ -463,35 +484,18 @@ async function consumeResponse(
 
   const route = normalizeSeqtaPath(url);
   if (isSensitiveSeqtaPath(route)) return;
+  if (!looksLikeJsonContentType(response.headers.get("content-type"))) return;
 
-  const contentType = response.headers.get("content-type");
-  if (!looksLikeJsonContentType(contentType)) return;
-
-  let body: any;
+  let body: unknown;
   try {
     body = await response.clone().json();
   } catch {
     return;
   }
 
-  if (!body || typeof body !== "object") return;
-  if (body.status && body.status !== "200") return;
-
-  const payload = body.payload;
-  if (payload === undefined || payload === null) return;
-
-  const items = synthesizeItems(
-    {
-      route,
-      requestBody,
-      observedAt: Date.now(),
-    },
-    payload,
-  );
-
-  if (items.length > 0) {
-    await persistItems(items);
-  }
+  const payload = parseSeqtaPayload(body);
+  if (payload === null) return;
+  await handleCapturedPayload(route, requestBody, payload);
 }
 
 function tryParseJson(value: unknown): unknown {
@@ -542,7 +546,7 @@ export function installPassiveObserver(): void {
       }
     } catch (e) {
       // Never let observer errors bubble up to the host page.
-      console.debug("[Passive Observer] fetch hook error:", e);
+      verboseDebug("[Passive Observer] fetch hook error:", e);
     }
 
     return response;
@@ -579,33 +583,22 @@ export function installPassiveObserver(): void {
           this.addEventListener("load", () => {
             try {
               if (this.status < 200 || this.status >= 300) return;
-              const ct = this.getResponseHeader("content-type");
-              if (!looksLikeJsonContentType(ct)) return;
+              if (!looksLikeJsonContentType(this.getResponseHeader("content-type"))) {
+                return;
+              }
               const route = normalizeSeqtaPath(url);
               if (isSensitiveSeqtaPath(route)) return;
-              let json: any;
+              let json: unknown;
               try {
                 json = JSON.parse(this.responseText);
               } catch {
                 return;
               }
-              if (!json || typeof json !== "object") return;
-              if (json.status && json.status !== "200") return;
-              const payload = json.payload;
-              if (payload === undefined || payload === null) return;
-              const items = synthesizeItems(
-                {
-                  route,
-                  requestBody: parsed,
-                  observedAt: Date.now(),
-                },
-                payload,
-              );
-              if (items.length > 0) {
-                void persistItems(items);
-              }
+              const payload = parseSeqtaPayload(json);
+              if (payload === null) return;
+              void handleCapturedPayload(route, parsed, payload);
             } catch (e) {
-              console.debug("[Passive Observer] xhr load error:", e);
+              verboseDebug("[Passive Observer] xhr load error:", e);
             }
           });
         }
@@ -616,7 +609,7 @@ export function installPassiveObserver(): void {
     };
   }
 
-  console.debug("[Passive Observer] Installed.");
+  verboseDebug("[Passive Observer] Installed.");
 }
 
 /**

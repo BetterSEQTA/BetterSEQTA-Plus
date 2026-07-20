@@ -1,0 +1,28 @@
+.timetablepage #toolbar {
+  position: relative;
+  z-index: 100;
+}
+
+.timetable-calendar-controls {
+  position: relative;
+  z-index: 100001;
+  display: inline-flex;
+  align-items: center;
+}
+
+.timetable-calendar-controls.bsplus-cal-menu-open {
+  z-index: 2147483645;
+}
+
+.timetablepage #toolbar:has(.bsplus-cal-menu-open) {
+  z-index: 2147483645 !important;
+}
+
+:root {
+  --bsplus-cal-z-menu: 2147483646;
+  --bsplus-cal-z-modal: 2147483647;
+}
+
+.bsplus-calendar-sync-mount {
+  display: inline-flex;
+}

@@ -1,22 +1,5 @@
 import type { Plugin } from "../../core/types";
-import { booleanSetting } from "@/plugins/core/settingsHelpers";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import styles from "./styles.css?inline";
-
-const messageFoldersSettings = {
-  showTagsInAllMessages: booleanSetting({
-    default: true,
-    title: "Show folder tags in All Messages",
-    description:
-      "When off, folder tags are not shown on the message list until you select a folder.",
-  }),
-  hideFolderedMessagesInAll: booleanSetting({
-    default: true,
-    title: "Hide foldered messages in All Messages",
-    description:
-      "When on, messages assigned to a custom folder are hidden from the inbox until you open that folder.",
-  }),
-} as const;
 
 interface Folder {
   id: string;
@@ -25,33 +8,31 @@ interface Folder {
   emoji: string;
 }
 
-interface MessageFoldersStorage {
-  folders: Folder[];
-  messageAssignments: Record<string, string[]>;
-}
-
 const FOLDER_COLORS = [
   "#3b82f6", "#ef4444", "#22c55e", "#f59e0b",
   "#8b5cf6", "#ec4899", "#14b8a6", "#f97316",
 ];
 
+const folderHeroicon = (inner: string) =>
+  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+
 const FOLDER_HEROICONS = [
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  folderHeroicon('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'),
+  folderHeroicon('<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'),
+  folderHeroicon('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
+  folderHeroicon('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'),
+  folderHeroicon('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+  folderHeroicon('<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>'),
+  folderHeroicon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'),
+  folderHeroicon('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+  folderHeroicon('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
+  folderHeroicon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'),
+  folderHeroicon('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  folderHeroicon('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+  folderHeroicon('<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
+  folderHeroicon('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
+  folderHeroicon('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>'),
+  folderHeroicon('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
 ];
 
 const FOLDER_ICON_SVG = `<svg style="width:24px;height:24px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
@@ -67,20 +48,118 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFoldersStorage> = {
-  id: "messageFolders",
-  name: "Message Folders",
-  description: "Organize direct messages into custom folders",
-  version: "2.0.0",
-  settings: messageFoldersSettings,
-  disableToggle: true,
-  defaultEnabled: true,
+function isAllowedFolderColor(color: unknown): color is string {
+  return typeof color === "string" && FOLDER_COLORS.includes(color);
+}
 
-  run: async (api) => {
-    const styleEl = document.createElement("style");
-    styleEl.textContent = styles;
-    document.head.appendChild(styleEl);
+function isAllowedFolderIcon(icon: unknown): icon is string {
+  return typeof icon === "string" && FOLDER_HEROICONS.includes(icon);
+}
 
+function normalizeFolder(folder: Folder): Folder {
+  return {
+    id: typeof folder.id === "string" && folder.id ? folder.id : generateId(),
+    name: typeof folder.name === "string" ? folder.name.trim().slice(0, 30) : "Folder",
+    color: isAllowedFolderColor(folder.color) ? folder.color : FOLDER_COLORS[0],
+    emoji: isAllowedFolderIcon(folder.emoji) ? folder.emoji : FOLDER_HEROICONS[0],
+  };
+}
+
+function setSvgIconContent(parent: HTMLElement, svgMarkup: string): void {
+  parent.replaceChildren();
+  const template = document.createElement("template");
+  template.innerHTML = svgMarkup.trim();
+  const node = template.content.firstElementChild;
+  if (node) parent.appendChild(node);
+}
+
+function appendFolderBadgeContent(badge: HTMLElement, folder: Folder): void {
+  badge.replaceChildren();
+  if (folder.emoji) {
+    const iconWrap = document.createElement("span");
+    iconWrap.style.display = "inline-flex";
+    iconWrap.style.verticalAlign = "middle";
+    iconWrap.style.marginRight = "2px";
+    setSvgIconContent(iconWrap, folder.emoji);
+    badge.appendChild(iconWrap);
+  }
+  badge.appendChild(document.createTextNode(folder.name));
+}
+
+const MESSAGE_LIST_ITEM_SELECTOR =
+  "[class*='MessageList__MessageList___'] ol > li[data-message]";
+
+function getMessageListItems(): NodeListOf<Element> {
+  return document.querySelectorAll(MESSAGE_LIST_ITEM_SELECTOR);
+}
+
+function clearMessageListBadges(
+  messageItems: NodeListOf<Element>,
+  restoreSubjectPlain: (subject: Element) => void,
+): void {
+  for (const li of messageItems) {
+    const subject = li.querySelector("[class*='MessageList__subject___']");
+    if (
+      subject &&
+      (subject.querySelector(".bsplus-msg-badges") ||
+        subject.querySelector(".bsplus-subject-text"))
+    ) {
+      restoreSubjectPlain(subject);
+    } else {
+      li.querySelector(".bsplus-msg-badges")?.remove();
+    }
+  }
+}
+
+function getAssignedFolderIds(
+  msgId: string,
+  assignments: Record<string, string[]>,
+): string[] {
+  return Object.entries(assignments)
+    .filter(([, messageIds]) => messageIds.includes(msgId))
+    .map(([folderId]) => folderId);
+}
+
+function ensureMessageBadgeContainer(li: Element): HTMLElement {
+  const existing = li.querySelector(".bsplus-msg-badges") as HTMLElement | null;
+  if (existing) return existing;
+
+  const badgeContainer = document.createElement("div");
+  badgeContainer.className = "bsplus-msg-badges";
+  const subject = li.querySelector("[class*='MessageList__subject___']");
+  if (subject) {
+    if (!subject.querySelector(".bsplus-subject-text")) {
+      const textWrap = document.createElement("span");
+      textWrap.className = "bsplus-subject-text";
+      textWrap.textContent = subject.textContent;
+      subject.textContent = "";
+      subject.appendChild(textWrap);
+    }
+    subject.appendChild(badgeContainer);
+  } else {
+    li.appendChild(badgeContainer);
+  }
+  return badgeContainer;
+}
+
+function createFolderBadge(
+  folder: Folder,
+  onFilter: (folderId: string) => void,
+): HTMLElement {
+  const badge = document.createElement("span");
+  badge.className = "bsplus-msg-badge";
+  badge.style.background = folder.color;
+  appendFolderBadgeContent(badge, folder);
+  badge.title = `Filter by "${folder.name}"`;
+  badge.addEventListener("click", (e) => {
+    e.stopPropagation();
+    onFilter(folder.id);
+  });
+  return badge;
+}
+
+const messageFoldersPlugin = {
+  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
     await api.storage.loaded;
 
     if (!api.storage.folders) api.storage.folders = [];
@@ -92,10 +171,10 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     let actionsObserver: MutationObserver | null = null;
     let openDropdown: HTMLElement | null = null;
     let dropdownCloseHandler: ((e: MouseEvent) => void) | null = null;
-    let foldedSection: HTMLElement | null = null;
     const unregisters: Array<{ unregister: () => void }> = [];
 
-    const getFolders = (): Folder[] => api.storage.folders ?? [];
+    const getFolders = (): Folder[] =>
+      (api.storage.folders ?? []).map((folder) => normalizeFolder(folder));
     const getAssignments = (): Record<string, string[]> => api.storage.messageAssignments ?? {};
 
     const saveFolders = (folders: Folder[]) => {
@@ -106,23 +185,11 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       api.storage.messageAssignments = { ...assignments };
     };
 
-    const getMessageFolderIds = (messageId: string): string[] => {
-      const assignments = getAssignments();
-      const ids: string[] = [];
-      for (const [folderId, msgIds] of Object.entries(assignments)) {
-        if (msgIds.includes(messageId)) ids.push(folderId);
-      }
-      return ids;
-    };
-
-    const assignMessageToFolder = (messageId: string, folderId: string, add: boolean) => {
+    const assignMessageToFolder = (messageId: string, folderId: string) => {
       const assignments = getAssignments();
       if (!assignments[folderId]) assignments[folderId] = [];
-      const idx = assignments[folderId].indexOf(messageId);
-      if (add && idx < 0) {
+      if (!assignments[folderId].includes(messageId)) {
         assignments[folderId].push(messageId);
-      } else if (!add && idx >= 0) {
-        assignments[folderId].splice(idx, 1);
       }
       saveAssignments(assignments);
     };
@@ -151,34 +218,11 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       }
     };
 
-    const isMessageInAnyCustomFolder = (messageId: string): boolean => {
-      for (const msgIds of Object.values(getAssignments())) {
-        if (msgIds.includes(messageId)) return true;
-      }
-      return false;
-    };
+    const isMessageInAnyCustomFolder = (messageId: string): boolean =>
+      getAssignedFolderIds(messageId, getAssignments()).length > 0;
 
     const shouldShowBadgesInList = (): boolean => {
       return api.settings.showTagsInAllMessages || activeFolderId !== null;
-    };
-
-    const getSelectedMessageId = (): string | null => {
-      const selectedMsg = document.querySelector("[class*='MessageList__selected___']");
-      return selectedMsg?.getAttribute("data-message") ?? null;
-    };
-
-    const getMessageIdFromEvent = (target: HTMLElement): string | null => {
-      const li = target.closest("li[data-message]");
-      return li?.getAttribute("data-message") ?? null;
-    };
-
-    const getAllVisibleMessageIds = (): string[] => {
-      const ids: string[] = [];
-      document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]").forEach((li) => {
-        const id = li.getAttribute("data-message");
-        if (id) ids.push(id);
-      });
-      return ids;
     };
 
     const showConfirmModal = (title: string, message: string, onConfirm: () => void) => {
@@ -227,13 +271,11 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
         ol.appendChild(section);
       }
 
-      foldedSection = section;
       const folders = getFolders();
       section.innerHTML = "";
 
       const header = document.createElement("div");
       header.className = "bsplus-folders-header";
-      header.dataset.folded = "false";
 
       const collapseBtn = document.createElement("button");
       collapseBtn.className = "bsplus-folders-collapse";
@@ -298,7 +340,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
         const iconSpan = document.createElement("span");
         iconSpan.className = "bsplus-folder-icon";
-        iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+        setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
         item.appendChild(iconSpan);
 
         const name = document.createElement("span");
@@ -315,7 +357,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
         editBtn.innerHTML = EDIT_SVG;
         editBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          showEditFolderInput(section!, folder);
+          showNewFolderInput(section!, folder);
         });
         actions.appendChild(editBtn);
 
@@ -407,7 +449,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
           const messageId = data.replace("msg:", "");
           const folderId = (e.target as HTMLElement).closest("[data-folder-id]")?.getAttribute("data-folder-id");
           if (messageId && folderId) {
-            assignMessageToFolder(messageId, folderId, true);
+            assignMessageToFolder(messageId, folderId);
             applyBadges();
             applyFolderFilter();
             renderSidebarFolders();
@@ -419,7 +461,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     };
 
     const attachDragListeners = () => {
-      document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]").forEach((li) => {
+      getMessageListItems().forEach((li) => {
         if (li.getAttribute("data-bsplus-drag") === "true") return;
         li.setAttribute("data-bsplus-drag", "true");
         li.draggable = true;
@@ -554,10 +596,6 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       container.appendChild(picker);
     };
 
-    const showEditFolderInput = (container: Element, folder: Folder) => {
-      showNewFolderInput(container, folder);
-    };
-
     const attachNativeSidebarListeners = () => {
       const sidebar = document.querySelector("[class*='Viewer__sidebar___']");
       if (!sidebar) return;
@@ -596,7 +634,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       dropdown.dataset.msgId = messageId;
 
       const folders = getFolders();
-      const currentFolderIds = getMessageFolderIds(messageId);
+      const currentFolderIds = getAssignedFolderIds(messageId, getAssignments());
 
       if (folders.length === 0) {
         const empty = document.createElement("div");
@@ -622,7 +660,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
 
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
 
           const name = document.createElement("span");
           name.textContent = folder.name;
@@ -636,7 +674,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
             e.stopPropagation();
             e.preventDefault();
             toggleMessageInFolder(messageId, folder.id);
-            const nowChecked = getMessageFolderIds(messageId).includes(folder.id);
+            const nowChecked = getAssignedFolderIds(messageId, getAssignments()).includes(folder.id);
             item.classList.toggle("bsplus-checked", nowChecked);
             check.style.borderColor = nowChecked ? folder.color : "";
             check.style.background = nowChecked ? folder.color : "";
@@ -708,7 +746,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       menu.appendChild(title);
 
       const folders = getFolders();
-      const currentFolderIds = getMessageFolderIds(messageId);
+      const currentFolderIds = getAssignedFolderIds(messageId, getAssignments());
 
       if (folders.length === 0) {
         const empty = document.createElement("div");
@@ -725,7 +763,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
           dot.style.background = folder.color;
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          iconSpan.innerHTML = folder.emoji || FOLDER_HEROICONS[0];
+          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
           const name = document.createElement("span");
           name.textContent = folder.name;
           item.appendChild(dot);
@@ -760,72 +798,43 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     };
 
     const applyBadges = () => {
-      const messageItems = document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]");
+      const messageItems = getMessageListItems();
       if (!shouldShowBadgesInList()) {
-        for (const li of messageItems) {
-          const subject = li.querySelector("[class*='MessageList__subject___']");
-          if (subject && (subject.querySelector(".bsplus-msg-badges") || subject.querySelector(".bsplus-subject-text"))) {
-            restoreSubjectPlain(subject);
-          } else {
-            li.querySelector(".bsplus-msg-badges")?.remove();
-          }
-        }
+        clearMessageListBadges(messageItems, restoreSubjectPlain);
         return;
       }
+
       const folders = getFolders();
       const assignments = getAssignments();
+      const selectFolder = (folderId: string) => {
+        activeFolderId = folderId;
+        applyFolderFilter();
+        applyBadges();
+        renderSidebarFolders();
+      };
+
       for (const li of messageItems) {
         const msgId = li.getAttribute("data-message");
         if (!msgId) continue;
-        let badgeContainer = li.querySelector(".bsplus-msg-badges") as HTMLElement | null;
-        const folderIds: string[] = [];
-        for (const [fId, mIds] of Object.entries(assignments)) {
-          if (mIds.includes(msgId)) folderIds.push(fId);
-        }
+
+        const folderIds = getAssignedFolderIds(msgId, assignments);
         if (folderIds.length === 0) {
-          badgeContainer?.remove();
+          li.querySelector(".bsplus-msg-badges")?.remove();
           continue;
         }
-        if (!badgeContainer) {
-          badgeContainer = document.createElement("div");
-          badgeContainer.className = "bsplus-msg-badges";
-          const subject = li.querySelector("[class*='MessageList__subject___']");
-          if (subject) {
-            if (!subject.querySelector(".bsplus-subject-text")) {
-              const textWrap = document.createElement("span");
-              textWrap.className = "bsplus-subject-text";
-              textWrap.textContent = subject.textContent;
-              subject.textContent = "";
-              subject.appendChild(textWrap);
-            }
-            subject.appendChild(badgeContainer);
-          } else {
-            li.appendChild(badgeContainer);
-          }
-        }
-        badgeContainer.innerHTML = "";
-        for (const fId of folderIds) {
-          const folder = folders.find((f) => f.id === fId);
+
+        const badgeContainer = ensureMessageBadgeContainer(li);
+        badgeContainer.replaceChildren();
+        for (const folderId of folderIds) {
+          const folder = folders.find((f) => f.id === folderId);
           if (!folder) continue;
-          const badge = document.createElement("span");
-          badge.className = "bsplus-msg-badge";
-          badge.style.background = folder.color;
-          badge.innerHTML = `${folder.emoji ? `<span style="display:inline-flex;vertical-align:middle;margin-right:2px">${folder.emoji}</span>` : ""}${folder.name}`;
-          badge.title = `Filter by "${folder.name}"`;
-          badge.addEventListener("click", (e) => {
-            e.stopPropagation();
-            activeFolderId = folder.id;
-            applyFolderFilter();
-            applyBadges();
-            renderSidebarFolders();
-          });
-          badgeContainer.appendChild(badge);
+          badgeContainer.appendChild(createFolderBadge(folder, selectFolder));
         }
       }
     };
 
     const applyFolderFilter = () => {
-      const messageItems = document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]");
+      const messageItems = getMessageListItems();
       const moreBtn = document.querySelector("[class*='MessageList__MessageList___'] ol > button");
       if (activeFolderId === null) {
         if (api.settings.hideFolderedMessagesInAll) {
@@ -870,7 +879,7 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
     };
 
     const attachContextMenuListeners = () => {
-      document.querySelectorAll("[class*='MessageList__MessageList___'] ol > li[data-message]").forEach((li) => {
+      getMessageListItems().forEach((li) => {
         if (li.getAttribute("data-bsplus-ctx") === "true") return;
         li.setAttribute("data-bsplus-ctx", "true");
         li.addEventListener("contextmenu", (e) => {
@@ -940,7 +949,6 @@ const messageFoldersPlugin: Plugin<typeof messageFoldersSettings, MessageFolders
       sidebarObserver?.disconnect();
       actionsObserver?.disconnect();
       closeDropdown();
-      styleEl.remove();
       document.querySelectorAll(".bsplus-folders-section").forEach((el) => el.remove());
       document.querySelectorAll(".bsplus-folder-btn").forEach((el) => el.remove());
       document.querySelectorAll(".bsplus-msg-badges").forEach((el) => el.remove());

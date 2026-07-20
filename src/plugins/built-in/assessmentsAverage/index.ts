@@ -1,9 +1,3 @@
-import { BasePlugin } from "@/plugins/core/settings";
-import {
-  booleanSetting,
-  defineSettings,
-  Setting,
-} from "@/plugins/core/settingsHelpers";
 import { type Plugin } from "@/plugins/core/types";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -17,7 +11,7 @@ import {
   processAssessments,
   type WeightingEntry,
 } from "./utils.ts";
-import { injectRubricCopyButtons } from "./rubricCopy.ts";
+import { injectRubricCopyButtons, teardownRubricCopyButtons } from "./rubricCopy.ts";
 
 interface weightingsStorage {
   weightings: Record<string, WeightingEntry>;
@@ -25,36 +19,18 @@ interface weightingsStorage {
   weightingOverrides: Record<string, string>;
 }
 
-const settings = defineSettings({
-  lettergrade: booleanSetting({
-    default: false,
-    title: "Letter Grades",
-    description: "Display the average as a letter instead of a percentage",
-  }),
-});
-
-class AssessmentsAveragePluginClass extends BasePlugin<typeof settings> {
-  @Setting(settings.lettergrade)
-  lettergrade!: boolean;
-}
-
-const instance = new AssessmentsAveragePluginClass();
-
 let overrideListenerController: AbortController | null = null;
+let wrapperColourObserver: MutationObserver | null = null;
+let wrapperColourObserverTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
-  id: "assessments-average",
-  name: "Assessment Averages",
-  description: "Adds an average grade to the Assessments page",
-  version: "1.0.0",
-  disableToggle: true,
-  settings: instance.settings,
-
-  run: async (api) => {
+const assessmentsAveragePlugin = {
+  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
     await initStorage(api);
     clearStuck(api);
 
-    api.seqta.onMount(".assessmentsWrapper", async () => {
+    const { unregister: unregisterWrapperMount } = api.seqta.onMount(
+      ".assessmentsWrapper",
+      async () => {
       await waitForElm(
         "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
         true,
@@ -88,17 +64,43 @@ const assessmentsAveragePlugin: Plugin<typeof settings, weightingsStorage> = {
       void parseAssessments(api);
       const wrapper = document.querySelector(".assessmentsWrapper");
       if (wrapper) {
-        const observer = new MutationObserver(() => {
+        wrapperColourObserver?.disconnect();
+        if (wrapperColourObserverTimeout) {
+          clearTimeout(wrapperColourObserverTimeout);
+        }
+        wrapperColourObserver = new MutationObserver(() => {
           applySubjectColourToOverallResult();
         });
-        observer.observe(wrapper, { childList: true, subtree: true });
-        setTimeout(() => observer.disconnect(), 10000);
+        wrapperColourObserver.observe(wrapper, { childList: true, subtree: true });
+        wrapperColourObserverTimeout = setTimeout(() => {
+          wrapperColourObserver?.disconnect();
+          wrapperColourObserver = null;
+          wrapperColourObserverTimeout = null;
+        }, 10000);
       }
-    });
-    api.seqta.onMount("[class*='SelectedAssessment__']", () => {
+    },
+    );
+    const { unregister: unregisterSelectedMount } = api.seqta.onMount(
+      "[class*='SelectedAssessment__']",
+      () => {
       injectWeightingsTab(api);
       injectRubricCopyButtons();
-    });
+    },
+    );
+
+    return () => {
+      overrideListenerController?.abort();
+      overrideListenerController = null;
+      wrapperColourObserver?.disconnect();
+      wrapperColourObserver = null;
+      if (wrapperColourObserverTimeout) {
+        clearTimeout(wrapperColourObserverTimeout);
+        wrapperColourObserverTimeout = null;
+      }
+      teardownRubricCopyButtons();
+      unregisterWrapperMount();
+      unregisterSelectedMount();
+    };
   },
 };
 

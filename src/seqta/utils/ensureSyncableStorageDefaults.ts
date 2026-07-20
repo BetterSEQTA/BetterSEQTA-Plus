@@ -29,13 +29,18 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "themeOfTheMonthLastSeenId",
   "justupdated",
   "devMode",
+  "verboseLogging",
   "hideSensitiveContent",
   "mockNotices",
+  "homeUpcomingAssessmentsPerSubjectMax",
+  "homeUpcomingIncludePast",
   "devGhReleaseVersionOverride",
   "lastSeenNightlyPublishedAt",
   "originalDarkMode",
   "profile_picture_revision",
 ] as const;
+
+let defaultsEnsured = false;
 
 /**
  * Flat default map in upload shape (plugin-format only; no legacy keys).
@@ -76,6 +81,8 @@ function mergePluginSettingsDefaults(
  * Never overwrites existing values. Missing plugin settings respect legacy keys.
  */
 export async function ensureSyncableStorageDefaults(): Promise<void> {
+  if (defaultsEnsured) return;
+
   const existing = await browser.storage.local.get();
   const migratedFromExisting = migrateLegacyToPluginSettings({
     ...existing,
@@ -101,4 +108,6 @@ export async function ensureSyncableStorageDefaults(): Promise<void> {
   if (Object.keys(patch).length > 0) {
     await browser.storage.local.set(patch);
   }
+
+  defaultsEnsured = true;
 }

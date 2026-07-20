@@ -1,5 +1,6 @@
 import type { IndexItem, Job } from "../types";
 
+import { verboseDebug } from '@/utils/verboseLog';
 const fetchSubjects = async () => {
   const res = await fetch(`${location.origin}/seqta/student/load/subjects`, {
     method: "POST",
@@ -129,7 +130,7 @@ export const subjectsJob: Job = {
       }
     }
 
-    console.debug(`[Subjects job] Indexed ${items.length} subject items`);
+    verboseDebug(`[Subjects job] Indexed ${items.length} subject items`);
     return items;
   },
 

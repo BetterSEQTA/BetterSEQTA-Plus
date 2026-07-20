@@ -38,6 +38,7 @@ export function getDefaultSettingsState(): SettingsState {
       settings: { toggle: true },
       timetable: { toggle: true },
       welcome: { toggle: true },
+      analytics: { toggle: true },
     },
     menuorder: [],
     subjectfilters: {},
@@ -49,6 +50,9 @@ export function getDefaultSettingsState(): SettingsState {
     animations: !isLowEndDevice,
     assessmentsAverage: false,
     defaultPage: "home",
+    homeUpcomingSubjectsMax: 5,
+    homeUpcomingAssessmentsPerSubjectMax: 0,
+    homeUpcomingIncludePast: true,
     shortcuts: [
       { name: "Outlook", enabled: true },
       { name: "Office", enabled: true },
