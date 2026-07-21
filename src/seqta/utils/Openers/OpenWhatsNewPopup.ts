@@ -4,6 +4,7 @@ import { openPopup } from "./PopupManager";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";
 import { renderWhatsNewChangelogHtml } from "./whatsNewChangelog";
+import updateVideo from "@/resources/update-video.webm";
 
 export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
@@ -17,13 +18,18 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const imageContainer = document.createElement("div");
   imageContainer.classList.add("whatsnewImgContainer");
 
-  const heroImage = document.createElement("img");
-  heroImage.src =
-    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/updateimage1.webp";
-  heroImage.alt = "BetterSEQTA+ update preview";
-  heroImage.classList.add("whatsnewImg");
-  imageContainer.appendChild(heroImage);
-  attachPopupMediaFullscreen(heroImage);
+  const heroVideo = document.createElement("video");
+  heroVideo.src = updateVideo;
+  heroVideo.classList.add("whatsnewImg");
+  heroVideo.autoplay = true;
+  heroVideo.muted = true;
+  heroVideo.loop = true;
+  heroVideo.playsInline = true;
+  heroVideo.setAttribute("playsinline", "");
+  heroVideo.setAttribute("aria-label", "BetterSEQTA+ update preview");
+  imageContainer.appendChild(heroVideo);
+  attachPopupMediaFullscreen(heroVideo);
+  void heroVideo.play().catch(() => {});
 
   const text = stringToHTML(/* html */ `
     <div class="whatsnewTextContainer" style="height: 50%;overflow-y: auto;">
