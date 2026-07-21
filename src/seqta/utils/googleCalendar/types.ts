@@ -10,6 +10,8 @@ export interface SeqtaTimetableLesson {
   period?: string;
   calendarid?: string | number;
   ci?: number;
+  /** SEQTA subject colour (hex/rgb) used for Google Calendar event colour. */
+  colour?: string;
 }
 
 export interface GoogleCalendarEventInput {
@@ -20,6 +22,8 @@ export interface GoogleCalendarEventInput {
   startDateTime: string;
   endDateTime: string;
   timeZone: string;
+  /** Google Calendar event colorId ("1"–"11"). */
+  colorId?: string;
 }
 
 export interface GoogleCalendarSyncRequest {

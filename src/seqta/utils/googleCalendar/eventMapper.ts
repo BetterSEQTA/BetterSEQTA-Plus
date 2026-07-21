@@ -1,6 +1,7 @@
 import { BSPLUS_GOOGLE_CALENDAR_EVENT_PROP } from "@/config/googleCalendar";
 import { BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY } from "@/config/outlookCalendar";
 import { outlookDescriptionWithKey } from "@/seqta/utils/calendarSync/eventFingerprint";
+import { nearestGoogleEventColorId } from "./eventColor";
 import type { GoogleCalendarEventInput, SeqtaTimetableLesson } from "./types";
 
 const SKIP_TYPES = new Set(["note", "holiday", "assembly-note"]);
@@ -54,6 +55,8 @@ export function lessonToGoogleEvent(
   if (lesson.code) descriptionLines.push(`Code: ${lesson.code}`);
   if (lesson.period) descriptionLines.push(`Period: ${lesson.period}`);
 
+  const colorId = nearestGoogleEventColorId(lesson.colour);
+
   return {
     seqtaKey: seqtaLessonKey(origin, lesson),
     summary,
@@ -62,6 +65,7 @@ export function lessonToGoogleEvent(
     startDateTime: `${lesson.date}T${from}:00`,
     endDateTime: `${lesson.date}T${until}:00`,
     timeZone,
+    ...(colorId ? { colorId } : {}),
   };
 }
 
@@ -82,7 +86,7 @@ export function mapLessonsToGoogleEvents(
 }
 
 export function googleApiEventBody(event: GoogleCalendarEventInput): Record<string, unknown> {
-  return {
+  const body: Record<string, unknown> = {
     summary: event.summary,
     location: event.location,
     description: event.description,
@@ -94,6 +98,10 @@ export function googleApiEventBody(event: GoogleCalendarEventInput): Record<stri
       },
     },
   };
+  if (event.colorId) {
+    body.colorId = event.colorId;
+  }
+  return body;
 }
 
 export function outlookGraphEventBody(event: GoogleCalendarEventInput): Record<string, unknown> {

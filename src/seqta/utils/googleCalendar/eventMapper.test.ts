@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+  googleApiEventBody,
   lessonToGoogleEvent,
   mapLessonsToGoogleEvents,
   outlookGraphEventBody,
@@ -50,6 +51,27 @@ describe("lessonToGoogleEvent", () => {
       timeZone: "Australia/Perth",
     });
     expect(event?.description).toContain("Mr Smith");
+  });
+
+  it("maps subject colour to a Google colorId", () => {
+    const event = lessonToGoogleEvent(
+      ORIGIN,
+      { ...baseLesson, colour: "#dc2127" },
+      "Australia/Perth",
+    );
+    expect(event?.colorId).toBe("11");
+  });
+});
+
+describe("googleApiEventBody", () => {
+  it("includes colorId when present", () => {
+    const event = lessonToGoogleEvent(
+      ORIGIN,
+      { ...baseLesson, colour: "#dc2127" },
+      "Australia/Perth",
+    );
+    expect(event).not.toBeNull();
+    expect(googleApiEventBody(event!)).toMatchObject({ colorId: "11" });
   });
 });
 
