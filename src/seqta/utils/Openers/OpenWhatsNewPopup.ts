@@ -4,7 +4,9 @@ import { openPopup } from "./PopupManager";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";
 import { renderWhatsNewChangelogHtml } from "./whatsNewChangelog";
-import updateVideo from "@/resources/update-video.webm";
+
+const UPDATE_VIDEO_URL =
+  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/17e077d5315be6d7d23dc68776cfe7bb175c5079/src/resources/update-video.webm";
 
 export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
@@ -19,7 +21,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
   imageContainer.classList.add("whatsnewImgContainer");
 
   const heroVideo = document.createElement("video");
-  heroVideo.src = updateVideo;
+  heroVideo.src = UPDATE_VIDEO_URL;
   heroVideo.classList.add("whatsnewImg");
   heroVideo.autoplay = true;
   heroVideo.muted = true;
