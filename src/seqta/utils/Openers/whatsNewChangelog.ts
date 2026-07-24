@@ -8,6 +8,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
     "title": "3.7.3 – Timetable sync to Calendar & Bugfix Bundle",
     "items": [
       "Added an option in the Timetable to sync to Google Calendar and Outlook Calendar",
+      "Improved the sidebar to be more stable and performant.",
       "Fixed dropdown contrast and readability in settings and across SEQTA pages.",
       "Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.",
       "Fixed timetable subject colour picker not reopening after closing (#221).",
@@ -17,7 +18,6 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Fixed assessment overview showing <code>Undefined%</code> for letter grades (#430).",
       "Fixed notifications older than a year being removed; added local per-account archive (#443).",
       "Fixed notices on the home screen sometimes failing to load (#388).",
-      "Fixed nightly/CI release builds (Windows runners, zip packaging, layerchart compile).",
       "Fixed multi-target builds exiting early and masking Vite errors.",
       "Improved background music autoplay with a tap-to-start hint when blocked.",
       "Added verbose logging toggle under Developer settings.",

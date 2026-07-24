@@ -43,6 +43,15 @@ function ensureActive(el: Element | null | undefined) {
   }
 }
 
+function resetSidebarScroll() {
+  const root = document.getElementById("bsplus-sidebar-root");
+  if (!(root instanceof HTMLElement)) return;
+  root.scrollTop = 0;
+  requestAnimationFrame(() => {
+    root.scrollTop = 0;
+  });
+}
+
 /**
  * SEQTA (and some themes) strip `.active` from `#menu li` after navigation.
  * Theme decorations and drill `.sub` chrome depend on that class on our list.
@@ -247,17 +256,29 @@ class SidebarState {
     }
   }
 
-  openFolder(item: SidebarItem) {
+  openFolder(item: SidebarItem, menu?: HTMLElement) {
     if (!item.hasChildren) return;
+    // Ignore duplicate opens (double-firing click / label + li).
+    if (this.drillStack.at(-1)?.key === item.key) return;
+
+    const frame: SidebarDrillFrame = {
+      key: item.key,
+      label: item.label,
+      items: filterVisible(item.children),
+    };
+    const isRoot = this.visibleRootItems.some((entry) => entry.key === item.key);
+
     this.enterFrameKey = item.key;
-    this.drillStack = [
-      ...this.drillStack,
-      {
-        key: item.key,
-        label: item.label,
-        items: filterVisible(item.children),
-      },
-    ];
+    // Root folders replace the stack; nested folders append.
+    this.drillStack = isRoot ? [frame] : [...this.drillStack, frame];
+
+    // Keep native drill closed so SEQTA CSS :has(> ul > li.hasChildren.active)
+    // does not lock pointer-events on the custom list.
+    if (menu) clearNativeDrillActive(menu);
+
+    // Absolute `.sub` panels live inside the scrollport — jump to top so the
+    // drilled page isn't left under the logo when the list was scrolled down.
+    resetSidebarScroll();
   }
 
   clearEnterFrame(key?: string) {
@@ -270,11 +291,13 @@ class SidebarState {
     if (!this.drillStack.length) return;
     this.enterFrameKey = null;
     this.drillStack = this.drillStack.slice(0, -1);
+    resetSidebarScroll();
   }
 
   resetDrill() {
     this.enterFrameKey = null;
     this.drillStack = [];
+    resetSidebarScroll();
   }
 
   setEditMode(enabled: boolean) {
@@ -320,7 +343,7 @@ class SidebarState {
     if (this.editMode) return;
 
     if (item.hasChildren) {
-      this.openFolder(item);
+      this.openFolder(item, menu);
       return;
     }
 

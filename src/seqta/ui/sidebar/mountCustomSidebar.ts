@@ -21,6 +21,7 @@ let menuEl: HTMLElement | null = null;
 let menuObserver: MutationObserver | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let hashListenerAttached = false;
+let sidebarCaptureAttached = false;
 let earlyPrepareStarted = false;
 let catchupTimer: ReturnType<typeof setInterval> | null = null;
 let nativeMenuListenerAttached = false;
@@ -54,6 +55,44 @@ function scheduleSync() {
     syncTimer = null;
     syncFromMenu();
   }, 50);
+}
+
+/**
+ * Capture-phase: own all clicks inside the custom list so SEQTA's #menu handlers
+ * never see them. Opening Goals/Folios via SEQTA + our drill UI freezes the tab.
+ */
+function onCustomSidebarCaptureClick(event: MouseEvent) {
+  if (!menuEl || sidebarState.editMode) return;
+
+  const root = document.getElementById(ROOT_ID);
+  const target = event.target;
+  if (!(target instanceof Element) || !root?.contains(target)) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+
+  const back = target.closest(".back");
+  if (back instanceof HTMLElement && root.contains(back)) {
+    sidebarState.goBack();
+    return;
+  }
+
+  const li = target.closest("li.item[data-key]");
+  if (!(li instanceof HTMLElement) || !root.contains(li)) return;
+
+  // Already-open folder chrome (renders its own `.sub`) — ignore; use Back.
+  if (
+    li.classList.contains("hasChildren") &&
+    li.querySelector(":scope > .sub")
+  ) {
+    return;
+  }
+
+  const key = li.dataset.key;
+  if (!key) return;
+  const item = sidebarState.findByKey(key);
+  if (item) sidebarState.activateItem(item, menuEl);
 }
 
 function onHashChange() {
@@ -189,11 +228,14 @@ export async function mountCustomSidebar(): Promise<boolean> {
   menuObserver?.disconnect();
   menuObserver = new MutationObserver((mutations) => {
     const ours = document.getElementById(ROOT_ID);
-    // Ignore our list entirely. Also ignore native `class` toggles — SEQTA
-    // re-adds drill `.active` after we clear it; syncing on that freezes the tab.
+    // Ignore our list entirely. Ignore native class/style churn — SEQTA and
+    // theme transitions rewrite those constantly; syncing on them freezes the tab.
     const relevant = mutations.some((m) => {
       if (ours?.contains(m.target as Node)) return false;
-      if (m.type === "attributes" && m.attributeName === "class") return false;
+      if (m.type === "attributes") {
+        const attr = m.attributeName;
+        if (attr === "class" || attr === "style") return false;
+      }
       return true;
     });
     if (!relevant) return;
@@ -203,8 +245,13 @@ export async function mountCustomSidebar(): Promise<boolean> {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["style", "data-key", "data-path", "data-colour"],
+    attributeFilter: ["data-key", "data-path", "data-colour"],
   });
+
+  if (!sidebarCaptureAttached) {
+    document.addEventListener("click", onCustomSidebarCaptureClick, true);
+    sidebarCaptureAttached = true;
+  }
 
   if (!hashListenerAttached) {
     window.addEventListener("hashchange", onHashChange);
@@ -240,6 +287,11 @@ export function unmountCustomSidebar() {
   if (hashListenerAttached) {
     window.removeEventListener("hashchange", onHashChange);
     hashListenerAttached = false;
+  }
+
+  if (sidebarCaptureAttached) {
+    document.removeEventListener("click", onCustomSidebarCaptureClick, true);
+    sidebarCaptureAttached = false;
   }
 
   if (nativeMenuListenerAttached) {

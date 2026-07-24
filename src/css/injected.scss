@@ -561,16 +561,32 @@ ul.magicDelete > li.deleting {
   display: flex !important;
   align-items: center;
   gap: 0.5rem;
+  width: calc(100% - 12px) !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
 }
 
-#menu.bsplus-sidebar-edit-mode .item.draggable > label {
-  flex: 1;
-  min-width: 0;
+#menu.bsplus-sidebar-edit-mode .item.draggable > label:not(.toggle) {
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
 }
 
+#menu.bsplus-sidebar-edit-mode .item.draggable .label {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  overflow-wrap: normal !important;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable > .toggle,
 #menu.bsplus-sidebar-edit-mode .onoffswitch {
   pointer-events: auto !important;
-  flex-shrink: 0;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  margin: 0 10px 0 0 !important;
   position: relative;
   z-index: 2;
 }
@@ -655,6 +671,17 @@ html.bsplus-custom-sidebar-pending #menu > .icon-cover,
     height: 100%;
     z-index: 2;
     position: relative;
+    padding-top: 0 !important;
+
+    /*
+     * Extend the logo spacer for the same gap as between items.
+     * SEQTA's #menu>ul::before border-bottom is the hairline under the logo.
+     */
+    &::before {
+      box-shadow: none !important;
+      border-bottom: none !important;
+      height: calc(69.5px + 8px) !important;
+    }
   }
 
   li.hasChildren {
@@ -667,7 +694,7 @@ html.bsplus-custom-sidebar-pending #menu > .icon-cover,
     pointer-events: auto !important;
     width: auto !important;
     max-width: none !important;
-    margin: 2px 6px !important;
+    margin: 0 6px 8px !important;
     box-sizing: border-box !important;
   }
 
@@ -1044,6 +1071,12 @@ ol:has([class*="MessageList__avatar___"] svg) {
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
   box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2) !important;
 }
+/* Custom sidebar: keep title depth to the right, not a hairline under the logo into the menu. */
+body:has(#menu.bsplus-custom-sidebar) #container #content #title,
+body:has(#menu.bsplus-custom-sidebar).menuShown #container #content #title {
+  -webkit-box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
+}
 #main .timetablepage .quickbar {
   border: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -1279,8 +1312,11 @@ html.transparencyEffects
 .assessmentsWrapper .message {
   display: none;
 }
-#menu li:hover {
+#menu li:hover:not(.active) {
   background: rgba(0, 0, 0, 0.15) !important;
+}
+#menu li.active:hover {
+  background: rgba(0, 0, 0, 0.35) !important;
 }
 
 #menu li:focus-visible,

@@ -155,8 +155,18 @@ export async function mountGoogleCalendarButton(): Promise<void> {
   registerCalendarContentHandlers();
 
   const controls = document.createElement("div");
-  controls.className = `${CONTROLS_CLASS} bsplus-timetable-control`;
-  toolbar.appendChild(controls);
+  controls.className = CONTROLS_CLASS;
+
+  // Sit between the date selector and zoom controls (same spacing as neighbours).
+  const zoomControls = toolbar.querySelector(".timetable-zoom-controls");
+  const dateButton = toolbar.querySelector(".buttonCalendar, button.calendar");
+  if (zoomControls) {
+    toolbar.insertBefore(controls, zoomControls);
+  } else if (dateButton?.nextSibling) {
+    toolbar.insertBefore(controls, dateButton.nextSibling);
+  } else {
+    toolbar.appendChild(controls);
+  }
 
   const mountRoot = document.createElement("div");
   mountRoot.className = "bsplus-calendar-sync-mount";

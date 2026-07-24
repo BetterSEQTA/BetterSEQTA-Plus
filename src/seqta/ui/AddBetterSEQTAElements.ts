@@ -530,7 +530,30 @@ function setupSidebarAccessibility() {
   if (!menu) return;
 
   sidebarAccessibilityObserver?.disconnect();
-  sidebarAccessibilityObserver = new MutationObserver(() => {
+  sidebarAccessibilityObserver = new MutationObserver((mutations) => {
+    // Custom Svelte sidebar owns drill a11y — ignore its DOM (opening Goals/Folios
+    // mutates a lot; re-running here used to help freeze the tab).
+    if (menu.classList.contains("bsplus-custom-sidebar")) {
+      const root = document.getElementById("bsplus-sidebar-root");
+      if (
+        root &&
+        mutations.every(
+          (m) => root === m.target || root.contains(m.target as Node),
+        )
+      ) {
+        return;
+      }
+      // Still ignore class/style-only native noise while custom sidebar is on.
+      if (
+        mutations.every(
+          (m) =>
+            m.type === "attributes" &&
+            (m.attributeName === "class" || m.attributeName === "style"),
+        )
+      ) {
+        return;
+      }
+    }
     scheduleSidebarAccessibilityUpdate();
   });
   sidebarAccessibilityObserver.observe(menu, {

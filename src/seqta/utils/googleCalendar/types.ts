@@ -8,6 +8,7 @@ export interface SeqtaTimetableLesson {
   code?: string;
   type?: string;
   period?: string;
+  notes?: string;
   calendarid?: string | number;
   ci?: number;
   /** SEQTA subject colour (hex/rgb) used for Google Calendar event colour. */

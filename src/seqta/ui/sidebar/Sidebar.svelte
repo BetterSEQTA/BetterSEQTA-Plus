@@ -97,6 +97,20 @@
     void sidebarState.isDrilling;
     restoreCustomMenuActive();
   });
+
+  // Drill `.sub` is position:absolute inside this scrollport — if the list was
+  // scrolled down (e.g. Folios/Goals near the bottom), the panel sits under the
+  // logo until we reset. Also reset when going back up the stack.
+  $effect(() => {
+    void sidebarState.drillStack.length;
+    void sidebarState.enterFrameKey;
+    const root = document.getElementById("bsplus-sidebar-root");
+    if (!root) return;
+    root.scrollTop = 0;
+    requestAnimationFrame(() => {
+      root.scrollTop = 0;
+    });
+  });
 </script>
 
 <!--
@@ -212,10 +226,15 @@
           role="button"
           tabindex="0"
           aria-label="Back"
-          onclick={() => sidebarState.goBack()}
+          onclick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebarState.goBack();
+          }}
           onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
+              e.stopPropagation();
               sidebarState.goBack();
             }
           }}
@@ -303,22 +322,27 @@
   .bsplus-sidebar-edit-actions {
     display: flex;
     gap: 8px;
-    width: 85%;
-    margin: 12px auto 16px;
+    width: calc(100% - 12px);
+    margin: 12px 6px 16px;
     padding: 0;
     list-style: none;
     cursor: default;
+    box-sizing: border-box;
   }
 
   .edit-btn {
-    flex: 1;
-    padding: 10px 12px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 8px;
     border: none;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.2);
     color: inherit;
-    font: inherit;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       background-color 0.2s ease,

@@ -56,13 +56,18 @@
   ondragstart={() => onDragStart?.(item.key)}
   ondragover={(e) => e.preventDefault()}
   ondrop={() => onDrop?.(item.key)}
-  onclick={() => {
+  onclick={(e) => {
+    // Keep SEQTA's #menu handlers from seeing custom-list clicks — that fights
+    // our drill UI and can freeze the tab (Goals / Folios / etc.).
+    e.preventDefault();
+    e.stopPropagation();
     if (!editMode) onActivate(item);
   }}
   onkeydown={(e) => {
     if (editMode) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
+      e.stopPropagation();
       onActivate(item);
     }
   }}
@@ -118,10 +123,11 @@
     user-select: none;
   }
 
-  .bsplus-sidebar-item > label {
+  .bsplus-sidebar-item > label:not(.toggle) {
     display: flex;
     align-items: center;
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
     min-width: 0;
     margin: 0;
     padding: 12px;
@@ -129,7 +135,7 @@
     color: inherit;
   }
 
-  .bsplus-sidebar-item:hover {
+  .bsplus-sidebar-item:hover:not(.active) {
     background: rgba(0, 0, 0, 0.15);
   }
 
@@ -138,7 +144,8 @@
     box-shadow: 0 0 0 2px var(--theme-primary, #fff);
   }
 
-  .bsplus-sidebar-item.active:not(.hasChildren) {
+  .bsplus-sidebar-item.active:not(.hasChildren),
+  .bsplus-sidebar-item.active:not(.hasChildren):hover {
     background: rgba(0, 0, 0, 0.35);
     color: #fff;
   }
@@ -147,7 +154,7 @@
     justify-content: center;
   }
 
-  .bsplus-sidebar-item.compact > label {
+  .bsplus-sidebar-item.compact > label:not(.toggle) {
     padding: 8px;
     justify-content: center;
   }
@@ -158,6 +165,18 @@
 
   .bsplus-sidebar-item.edit-mode {
     cursor: grab;
+    width: 100%;
+    max-width: 100%;
+    gap: 4px;
+    padding-right: 4px;
+    box-sizing: border-box;
+  }
+
+  .bsplus-sidebar-item.edit-mode > label:not(.toggle) {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    padding-right: 4px;
   }
 
   .bsplus-sidebar-item :global(label > svg) {
@@ -171,8 +190,9 @@
   .label {
     flex: 1;
     min-width: 0;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.2;
   }
 
@@ -194,17 +214,23 @@
   }
 
   .toggle {
-    margin-right: 12px;
+    margin: 0 10px 0 0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    width: auto;
     padding: 0;
+    position: relative;
+    z-index: 2;
   }
 
   .toggle input {
     width: 18px;
     height: 18px;
+    margin: 0;
+    flex-shrink: 0;
     accent-color: var(--theme-primary, #fff);
   }
 

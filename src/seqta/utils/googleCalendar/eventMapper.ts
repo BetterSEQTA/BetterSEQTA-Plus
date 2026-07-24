@@ -50,10 +50,18 @@ export function lessonToGoogleEvent(
   const staff = lesson.staff?.trim();
   const room = lesson.room?.trim();
 
+  const isAppointment = (lesson.type ?? "").toLowerCase() === "appointment";
+  const notes = lesson.notes?.trim();
   const descriptionLines = ["Synced by BetterSEQTA+"];
-  if (staff) descriptionLines.push(`Teacher: ${staff}`);
-  if (lesson.code) descriptionLines.push(`Code: ${lesson.code}`);
-  if (lesson.period) descriptionLines.push(`Period: ${lesson.period}`);
+  if (isAppointment) {
+    descriptionLines.push("Type: Appointment");
+    if (notes) descriptionLines.push(`Notes: ${notes}`);
+  } else {
+    if (staff) descriptionLines.push(`Teacher: ${staff}`);
+    if (lesson.code) descriptionLines.push(`Code: ${lesson.code}`);
+    if (lesson.period) descriptionLines.push(`Period: ${lesson.period}`);
+    if (notes) descriptionLines.push(`Notes: ${notes}`);
+  }
 
   const colorId = nearestGoogleEventColorId(lesson.colour);
 

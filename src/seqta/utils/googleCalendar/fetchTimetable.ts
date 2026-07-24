@@ -69,17 +69,40 @@ function withSubjectColours(
   });
 }
 
-export async function resolveStudentId(): Promise<number | undefined> {
+type SeqtaLoginPayload = {
+  id?: number;
+  student?: number;
+  type?: string;
+};
+
+let cachedLogin: SeqtaLoginPayload | null = null;
+
+async function resolveLoginPayload(): Promise<SeqtaLoginPayload | undefined> {
+  if (cachedLogin?.id != null) return cachedLogin;
   try {
-    const json = await postSeqtaJson<{ payload?: { id?: number; student?: number } }>(
+    const json = await postSeqtaJson<{ payload?: SeqtaLoginPayload }>(
       "/seqta/student/login",
-      { mode: "normal", query: null, redirect_url: location.origin },
+      { mode: "normal", query: null, redirect_url: location.href },
     );
-    const id = json?.payload?.id ?? json?.payload?.student;
-    return typeof id === "number" && Number.isFinite(id) ? id : undefined;
+    const payload = json?.payload;
+    if (!payload) return undefined;
+    cachedLogin = payload;
+    return payload;
   } catch {
     return undefined;
   }
+}
+
+export async function resolveStudentId(): Promise<number | undefined> {
+  const payload = await resolveLoginPayload();
+  const id = payload?.id ?? payload?.student;
+  return typeof id === "number" && Number.isFinite(id) ? id : undefined;
+}
+
+async function resolvePersonType(): Promise<string> {
+  const payload = await resolveLoginPayload();
+  const type = payload?.type?.trim().toLowerCase();
+  return type || "student";
 }
 
 function isEngageParentContext(): boolean {
@@ -90,11 +113,83 @@ function isEngageParentContext(): boolean {
   );
 }
 
+type SeqtaAppointmentPayload = {
+  id?: number;
+  from?: string;
+  until?: string;
+  event?: {
+    id?: number;
+    title?: string;
+    notes?: string;
+    colour?: string;
+    event_type?: string;
+  };
+};
+
+/** Parse SEQTA datetimes like `2026-07-20 09:30:00.0` into lesson date/time fields. */
+export function parseSeqtaDateTime(value: string | undefined): { date: string; time: string } | null {
+  if (!value) return null;
+  const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2})/);
+  if (!match) return null;
+  return { date: match[1], time: match[2] };
+}
+
+export function appointmentToLesson(item: SeqtaAppointmentPayload): SeqtaTimetableLesson | null {
+  const start = parseSeqtaDateTime(item.from);
+  const end = parseSeqtaDateTime(item.until);
+  const title = item.event?.title?.trim();
+  const eventId = item.event?.id ?? item.id;
+  if (!start || !end || !title || eventId == null) return null;
+
+  const notes = item.event?.notes?.trim();
+  return {
+    date: start.date,
+    from: start.time,
+    until: end.time,
+    description: title,
+    type: item.event?.event_type?.trim() || "appointment",
+    calendarid: `event:${eventId}`,
+    colour: item.event?.colour?.trim() || undefined,
+    ...(notes ? { notes } : {}),
+  };
+}
+
+export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTimetableLesson[]> {
+  if (isEngageParentContext()) return [];
+
+  try {
+    const person = await resolveStudentId();
+    if (person == null) return [];
+
+    const personType = await resolvePersonType();
+    const data = await postSeqtaJson<{ payload?: SeqtaAppointmentPayload[] }>(
+      "/seqta/student/events/load",
+      {
+        dateFrom: range.from,
+        dateTo: range.until,
+        person,
+        personType,
+      },
+    );
+
+    const payload = Array.isArray(data?.payload) ? data.payload : [];
+    const lessons: SeqtaTimetableLesson[] = [];
+    for (const item of payload) {
+      const lesson = appointmentToLesson(item);
+      if (lesson) lessons.push(lesson);
+    }
+    return lessons;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchTimetableLessons(
   range: SyncDateRange,
 ): Promise<SeqtaTimetableLesson[]> {
   const { from, until } = range;
   const coloursPromise = fetchSubjectColours();
+  const appointmentsPromise = fetchAppointments(range);
 
   let lessons: SeqtaTimetableLesson[] = [];
 
@@ -125,7 +220,9 @@ export async function fetchTimetableLessons(
     lessons = Array.isArray(data?.payload?.items) ? data.payload.items : [];
   }
 
-  return withSubjectColours(lessons, await coloursPromise);
+  const coloured = withSubjectColours(lessons, await coloursPromise);
+  const appointments = await appointmentsPromise;
+  return [...coloured, ...appointments];
 }
 
 export async function fetchTimetableForSync(weeksAhead?: number): Promise<SeqtaTimetableLesson[]> {

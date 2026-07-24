@@ -63,9 +63,12 @@
       {#if activeTab === index}
         <div
           role="tabpanel"
-          class="focus:outline-none w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active"
+          class="focus:outline-none w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
         >
-          <div class="sticky top-0 w-full h-8 bg-gradient-to-b to-transparent pointer-events-none z-[100] from-white dark:from-zinc-800 dark:to-transparent"></div>
+          <div
+            class="sticky top-0 w-full h-3 -mb-3 bg-gradient-to-b from-white/80 dark:from-zinc-800/80 to-transparent pointer-events-none z-[1]"
+            aria-hidden="true"
+          ></div>
           <Content {...props} />
         </div>
       {/if}

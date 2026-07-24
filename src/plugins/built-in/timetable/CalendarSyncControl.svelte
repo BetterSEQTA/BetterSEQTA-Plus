@@ -328,12 +328,6 @@
   }
 
   $effect(() => {
-    const host = rootEl?.closest(".timetable-calendar-controls");
-    host?.classList.toggle("bsplus-cal-menu-open", menuOpen);
-    return () => host?.classList.remove("bsplus-cal-menu-open");
-  });
-
-  $effect(() => {
     if (menuOpen && menuEl) syncHostTheme();
   });
 
@@ -496,7 +490,7 @@
     >
       <div class="bsplus-cal-menu-header">
         <span class="bsplus-cal-menu-title">Calendar sync</span>
-        <span class="bsplus-cal-menu-sub">Copy your SEQTA timetable classes to Google or Outlook</span>
+        <span class="bsplus-cal-menu-sub">Copy your SEQTA classes and appointments to Google or Outlook</span>
       </div>
 
       {@render providerPanel(
@@ -697,10 +691,14 @@
     min-width: auto;
     height: auto;
     padding: 0 10px;
-    margin-left: 4px;
+    margin: 0;
     border-radius: 16px !important;
     font-family: inherit;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    background: var(--bsplus-cal-surface, var(--background-primary, #232323)) !important;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease,
+      background-color 0.2s ease;
     overflow: hidden;
     isolation: isolate;
   }
@@ -751,8 +749,13 @@
     transform: scale(0.97);
   }
 
-  .bsplus-cal-trigger--open {
-    background: color-mix(in srgb, var(--bsplus-cal-accent, var(--better-main, #3b82f6)) 14%, transparent) !important;
+  .bsplus-cal-trigger--open,
+  .bsplus-cal-trigger--open:hover,
+  .bsplus-cal-trigger--open:active {
+    background: var(
+      --bsplus-cal-surface-muted,
+      color-mix(in srgb, var(--bsplus-cal-text, #fff) 12%, var(--bsplus-cal-surface, #232323))
+    ) !important;
   }
 
   .bsplus-cal-trigger--busy {
@@ -829,7 +832,7 @@
 
   .bsplus-cal-menu {
     position: fixed;
-    z-index: var(--bsplus-cal-z-menu, 2147483646);
+    z-index: var(--bsplus-cal-z-menu, 1200);
     width: min(320px, calc(100vw - 24px));
     padding: 10px;
     border-radius: 14px;
@@ -951,7 +954,7 @@
   .bsplus-cal-modal-backdrop {
     position: fixed;
     inset: 0;
-    z-index: var(--bsplus-cal-z-modal, 2147483647);
+    z-index: var(--bsplus-cal-z-modal, 1300);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1027,7 +1030,7 @@
     position: fixed;
     right: 16px;
     bottom: 16px;
-    z-index: 100000;
+    z-index: var(--bsplus-cal-z-modal, 1300);
     max-width: min(360px, calc(100vw - 32px));
     padding: 12px 14px;
     border-radius: 12px;

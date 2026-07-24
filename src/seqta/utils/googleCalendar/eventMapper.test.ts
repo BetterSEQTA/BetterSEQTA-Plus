@@ -61,6 +61,31 @@ describe("lessonToGoogleEvent", () => {
     );
     expect(event?.colorId).toBe("11");
   });
+
+  it("maps appointments with notes", () => {
+    const event = lessonToGoogleEvent(
+      ORIGIN,
+      {
+        date: "2026-07-20",
+        from: "09:30",
+        until: "13:10",
+        description: "Advisor meeting",
+        type: "appointment",
+        calendarid: "event:5",
+        colour: "#ffc107",
+        notes: "Bring forms",
+      },
+      "Australia/Perth",
+    );
+    expect(event).toMatchObject({
+      summary: "Advisor meeting",
+      startDateTime: "2026-07-20T09:30:00",
+      endDateTime: "2026-07-20T13:10:00",
+      seqtaKey: `${ORIGIN}:cal:event:5`,
+    });
+    expect(event?.description).toContain("Type: Appointment");
+    expect(event?.description).toContain("Bring forms");
+  });
 });
 
 describe("googleApiEventBody", () => {
