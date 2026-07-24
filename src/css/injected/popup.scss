@@ -14,11 +14,12 @@
 .outside-container {
   margin: 0;
   overflow: hidden;
-  position: absolute;
-  right: 10px;
-  top: 80px;
-  height: 590px;
-  z-index: 100;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Above Engage React chrome / MUI layers; below rare fullscreen media overlays */
+  z-index: 200000;
   transition-duration: 100ms;
 }
 
@@ -31,12 +32,11 @@
 }
 
 #ExtensionPopup {
-  border-radius: 1rem;
-  filter: drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.6));
-  transform-origin: 70% 0;
-  will-change: opacity, transform;
-  transform: translateZ(0); // promotes GPU rendering
-  transition:
-    opacity 0.05s,
-    transform 0.05s;
+  border-radius: 0;
+  filter: none;
+  /* Avoid transform on the host — it makes shadow `position: fixed` children
+     size to the host instead of the viewport on Engage stacking contexts. */
+  transform-origin: center center;
+  will-change: opacity;
+  transition: opacity 0.05s;
 }

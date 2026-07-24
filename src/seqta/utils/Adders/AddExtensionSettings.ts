@@ -13,12 +13,18 @@ function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
     if (!SettingsClicked) return;
 
     if (!(event.target as HTMLElement).closest("#AddedSettings")) {
+      // Clicks inside the shadow tree retarget to the host — keep open.
       if (event.target == extensionPopup) return;
       changeSettingsClicked(closeExtensionPopup());
     }
   };
 }
 
+/**
+ * Mount the settings host on `document.body` so `position: fixed` covers the
+ * viewport on both SEQTA Learn and SEQTA Engage (Engage often lacks `#container`
+ * or wraps the app in stacking contexts that clip in-app overlays).
+ */
 export function addExtensionSettings() {
   if (document.getElementById("ExtensionPopup")) return;
 
@@ -26,15 +32,12 @@ export function addExtensionSettings() {
   extensionPopup.classList.add("outside-container", "hide");
   extensionPopup.id = "ExtensionPopup";
 
-  const extensionContainer =
-    document.querySelector("#container") ?? document.getElementById("container");
-  const mountParent = extensionContainer ?? document.body;
-  mountParent.appendChild(extensionPopup);
+  document.body.appendChild(extensionPopup);
 
   new SettingsResizer();
 
   const handler = extensionOutsideClickHandler(extensionPopup);
-  (extensionContainer ?? document.body).addEventListener("click", handler, false);
+  document.body.addEventListener("click", handler, false);
 }
 
 async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {

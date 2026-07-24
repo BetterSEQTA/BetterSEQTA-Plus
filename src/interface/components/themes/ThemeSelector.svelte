@@ -128,7 +128,8 @@
 
   const openStorePage = async () => {
     const { OpenStorePage } = await import('@/seqta/ui/renderStore')
-    OpenStorePage()
+    closeExtensionPopup()
+    await OpenStorePage()
   }
 
   const openThemeCreator = async (themeId?: string) => {

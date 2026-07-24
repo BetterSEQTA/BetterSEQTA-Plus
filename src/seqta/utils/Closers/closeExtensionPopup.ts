@@ -14,7 +14,6 @@ export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
     animate(1, 0, {
       onUpdate: (progress) => {
         extensionPopup.style.opacity = Math.max(0, progress).toString();
-        extensionPopup.style.transform = `scale(${Math.max(0, progress)})`;
       },
       type: "spring",
       stiffness: 520,
@@ -22,7 +21,6 @@ export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
     });
   } else {
     extensionPopup.style.opacity = "0";
-    extensionPopup.style.transform = "scale(0)";
   }
 
   settingsPopup.triggerClose();

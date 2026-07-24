@@ -12,10 +12,10 @@ export async function renderStore() {
     import("@/interface/pages/store.svelte"),
   ]);
 
-  const container = document.querySelector("#container");
-  if (!container) {
-    throw new Error("Container not found");
-  }
+  const container =
+    document.querySelector("#container") ??
+    document.getElementById("content") ??
+    document.body;
 
   document.getElementById("store")?.remove();
 

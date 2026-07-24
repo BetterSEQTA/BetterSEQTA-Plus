@@ -1,7 +1,7 @@
 import debounce from "@/seqta/utils/debounce";
 
 /**
- * Automatically resizes the popup to fit the screen, checks on resize but is debounced to prevent intense utilisation.
+ * Keeps the settings overlay covering the viewport.
  */
 export class SettingsResizer {
   constructor() {
@@ -17,10 +17,10 @@ export class SettingsResizer {
     const iframePopup = document.getElementById("ExtensionPopup");
     if (!iframePopup) return;
 
-    const viewportHeight = window.innerHeight;
-    const rawIdeal = viewportHeight - 80 - 15; // room below top chrome
-    const idealHeight = Math.min(Math.max(rawIdeal, 280), 600);
-
-    iframePopup.style.height = `${idealHeight}px`;
+    iframePopup.style.inset = "0";
+    iframePopup.style.top = "0";
+    iframePopup.style.right = "0";
+    iframePopup.style.width = "100%";
+    iframePopup.style.height = "100%";
   }
 }

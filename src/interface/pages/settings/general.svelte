@@ -47,6 +47,8 @@
 
   import { getAllPluginSettings } from "@/plugins"
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage"
+
+  const isEngage = isSeqtaEngageExperience();
   import type { BooleanSetting, StringSetting, NumberSetting, SelectSetting, ButtonSetting, HotkeySetting, ComponentSetting } from "@/plugins/core/types"
 
   // Union type representing all possible settings
@@ -133,12 +135,19 @@
     void loadPluginSettings();
   });
 
-  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel } = $props<{ 
+  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel, activeSection = "general" } = $props<{
     showColourPicker: () => void;
     showFontPicker: () => void;
     showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
     showCloudPanel: () => void;
+    activeSection?: string;
   }>();
+
+  const activePluginId = $derived(
+    activeSection.startsWith("plugin:")
+      ? activeSection.slice("plugin:".length)
+      : null,
+  );
 
   async function exportCloudSettingsJsonToFile() {
     const payload = await getSnapshotForUpload();
@@ -155,153 +164,244 @@
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
-<div class="flex justify-between items-center px-4 py-3">
-  <div class="pr-4">
-    <h2 class="text-sm font-bold">{title}</h2>
-    <p class="text-xs">{description}</p>
+<div class="flex justify-between items-center px-5 py-4">
+  <div class="pr-5">
+    <h2 class="text-base font-bold">{title}</h2>
+    <p class="text-sm text-zinc-600 dark:text-zinc-300">{description}</p>
   </div>
-  <div>
+  <div class="shrink-0">
      <Component {...props} />
   </div>
 </div>
 {/snippet}
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
-  {#each [
-    {
+  {#if activeSection === "account"}
+    {@render Setting({
       title: "Connect Mobile App",
       description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn",
       id: 0,
       Component: ConnectMobileApp,
       props: {}
-    },
-    {
-      title: "Edit Sidebar Layout",
-      description: "Reorder pages on the sidebar",
-      id: 5,
-      Component: Button,
-      props: {
-        onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
-        text: "Edit"
-      }
-    },
-    {
-      title: "Custom Theme Colour",
-      description: "Customise the overall theme colour of SEQTA Learn",
-      id: 4,
-      Component: PickerSwatch,
-      props: {
-        onClick: showColourPicker
-      }
-    },
-    {
-      title: "Interface Font",
-      description: "Choose the typeface used across SEQTA Learn",
-      id: 16,
-      Component: Button,
-      props: {
-        onClick: showFontPicker,
-        text: "Change"
-      }
-    },
-    {
-      title: "Icon Only Sidebar",
-      description: "Show only icons in the sidebar for a compact layout",
-      id: 14,
-      Component: Switch,
-      props: {
-        state: $settingsState.iconOnlySidebar ?? false,
-        onChange: (isOn: boolean) => settingsState.iconOnlySidebar = isOn
-      }
-    },
-    {
-      title: "Animations",
-      description: "Enable animations on certain pages",
-      id: 6,
-      Component: Switch,
-      props: {
-        state: $settingsState.animations,
-        onChange: (isOn: boolean) => settingsState.animations = isOn
-      }
-    },
-    {
-      title: "12 Hour Time",
-      description: "Prefer 12 hour time format for SEQTA",
-      id: 9,
-      Component: Switch,
-      props: {
-        state: $settingsState.timeFormat === "12",
-        onChange: (isOn: boolean) => settingsState.timeFormat = isOn ? "12" : "24"
-      }
-    },
-    {
-      title: "Transparency Effects",
-      description: "Enable transparency effects on certain elements, such as blur (May impact battery life)",
-      id: 1,
-      Component: Switch,
-      props: {
-        state: $settingsState.transparencyEffects,
-        onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
-      }
-    },
-    {
-      title: "Default Page",
-      description: "Choose which page loads first when you open SEQTA",
-      id: 10,
-      Component: Select,
-      props: {
-        value: $settingsState.defaultPage ?? "home",
-        onChange: (value: string) => (settingsState.defaultPage = value),
-        options: [
-          { value: "home", label: "Home" },
-          { value: "dashboard", label: "Dashboard" },
-          { value: "timetable", label: "Timetable" },
-          { value: "welcome", label: "Welcome" },
-          { value: "messages", label: "Messages" },
-          { value: "documents", label: "Documents" },
-          { value: "reports", label: "Reports" },
-        ],
+    })}
+
+    <div class="border-none">
+      <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+        <div class="flex justify-between items-center px-5 py-4">
+          <div class="pr-4">
+            <h2 class="text-base font-bold">BetterSEQTA Cloud</h2>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Account & sync</p>
+          </div>
+          <div>
+            <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
+          </div>
+        </div>
+        {#if cloudState.isLoggedIn}
+          <div class="px-3 pb-3">
+            <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
+
+  {#if activeSection === "general"}
+    {#each [
+      ...(!isEngage
+        ? [
+            {
+              title: "Edit Sidebar Layout",
+              description: "Reorder pages on the sidebar",
+              id: 5,
+              Component: Button,
+              props: {
+                onClick: () => browser.runtime.sendMessage({ type: 'currentTab', info: 'EditSidebar' }),
+                text: "Edit"
+              }
+            },
+            {
+              title: "Icon Only Sidebar",
+              description: "Show only icons in the sidebar for a compact layout",
+              id: 14,
+              Component: Switch,
+              props: {
+                state: $settingsState.iconOnlySidebar ?? false,
+                onChange: (isOn: boolean) => settingsState.iconOnlySidebar = isOn
+              }
+            },
+          ]
+        : []),
+      {
+        title: "Animations",
+        description: "Enable animations on certain pages",
+        id: 6,
+        Component: Switch,
+        props: {
+          state: $settingsState.animations,
+          onChange: (isOn: boolean) => settingsState.animations = isOn
+        }
       },
-    },
-    {
-      title: "News Feed Source",
-      description: "Choose the sources for your news feed",
-      id: 11,
-      Component: Select,
-      props: {
-        value: $settingsState.newsSource,
-        onChange: (value: string) => settingsState.newsSource = value,
-          options: [
-           { value: "australia", label: "Australia" },
-           { value: "usa", label: "USA" },
-           { value: "uk", label: "UK" },
-           { value: "taiwan", label: "Taiwan" },
-           { value: "hong_kong", label: "Hong Kong" },
-           { value: "panama", label: "Panama" },
-           { value: "canada", label: "Canada" },
-           { value: "singapore", label: "Singapore" },
-           { value: "japan", label: "Japan" },
-           { value: "netherlands", label: "Netherlands" }
-        ]
+      {
+        title: "12 Hour Time",
+        description: "Prefer 12 hour time format for SEQTA",
+        id: 9,
+        Component: Switch,
+        props: {
+          state: $settingsState.timeFormat === "12",
+          onChange: (isOn: boolean) => settingsState.timeFormat = isOn ? "12" : "24"
+        }
+      },
+      {
+        title: "Transparency Effects",
+        description: "Enable transparency effects on certain elements, such as blur (May impact battery life)",
+        id: 1,
+        Component: Switch,
+        props: {
+          state: $settingsState.transparencyEffects,
+          onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
+        }
+      },
+      {
+        title: "Default Page",
+        description: "Choose which page loads first when you open SEQTA",
+        id: 10,
+        Component: Select,
+        props: {
+          value: $settingsState.defaultPage ?? "home",
+          onChange: (value: string) => (settingsState.defaultPage = value),
+          options: isEngage
+            ? [
+                { value: "home", label: "Home" },
+                { value: "dashboard", label: "Dashboard" },
+                { value: "timetable", label: "Timetable" },
+                { value: "messages", label: "Messages" },
+                { value: "documents", label: "Documents" },
+                { value: "reports", label: "Reports" },
+              ]
+            : [
+                { value: "home", label: "Home" },
+                { value: "dashboard", label: "Dashboard" },
+                { value: "timetable", label: "Timetable" },
+                { value: "welcome", label: "Welcome" },
+                { value: "messages", label: "Messages" },
+                { value: "documents", label: "Documents" },
+                { value: "reports", label: "Reports" },
+              ],
+        },
+      },
+      ...(!isEngage
+        ? [
+            {
+              title: "News Feed Source",
+              description: "Choose the sources for your news feed",
+              id: 11,
+              Component: Select,
+              props: {
+                value: $settingsState.newsSource,
+                onChange: (value: string) => settingsState.newsSource = value,
+                options: [
+                  { value: "australia", label: "Australia" },
+                  { value: "usa", label: "USA" },
+                  { value: "uk", label: "UK" },
+                  { value: "taiwan", label: "Taiwan" },
+                  { value: "hong_kong", label: "Hong Kong" },
+                  { value: "panama", label: "Panama" },
+                  { value: "canada", label: "Canada" },
+                  { value: "singapore", label: "Singapore" },
+                  { value: "japan", label: "Japan" },
+                  { value: "netherlands", label: "Netherlands" },
+                ],
+              },
+            },
+          ]
+        : []),
+    ] as option (option.id)}
+      {@render Setting(option)}
+    {/each}
+  {/if}
 
-      }
-    }
-  ] as option}
-    {@render Setting(option)}
-  {/each}
+  {#if activeSection === "appearance"}
+    {#each [
+      {
+        title: "Custom Theme Colour",
+        description: "Customise the overall theme colour of SEQTA Learn",
+        id: 4,
+        Component: PickerSwatch,
+        props: {
+          onClick: showColourPicker
+        }
+      },
+      {
+        title: "Interface Font",
+        description: "Choose the typeface used across SEQTA Learn",
+        id: 16,
+        Component: Button,
+        props: {
+          onClick: showFontPicker,
+          text: "Change"
+        }
+      },
+    ] as option (option.id)}
+      {@render Setting(option)}
+    {/each}
 
+    <div class="border-none">
+      <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+        <div class="flex justify-between items-center px-5 py-4">
+          <div class="pr-4">
+            <h2 class="text-base font-bold">Adaptive Theme Colour</h2>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
+          </div>
+          <div>
+            <Switch
+              state={$settingsState.adaptiveThemeColour ?? false}
+              onChange={(isOn: boolean) => settingsState.adaptiveThemeColour = isOn}
+            />
+          </div>
+        </div>
+        {#if $settingsState.adaptiveThemeColour}
+          <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
+            <div class="pr-4">
+              <h2 class="text-base font-bold">Soft Gradient</h2>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">Use a soft gradient instead of a solid colour when viewing a class</p>
+            </div>
+            <div>
+              <Switch
+                state={$settingsState.adaptiveThemeGradient ?? false}
+                onChange={(isOn: boolean) => settingsState.adaptiveThemeGradient = isOn}
+              />
+            </div>
+          </div>
+          <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
+            <div class="pr-4">
+              <h2 class="text-base font-bold">Smooth colour transition</h2>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">Ease between class/subject colours when navigating instead of switching instantly</p>
+            </div>
+            <div>
+              <Switch
+                state={$settingsState.adaptiveThemeColourTransition ?? true}
+                onChange={(isOn: boolean) => settingsState.adaptiveThemeColourTransition = isOn}
+              />
+            </div>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
+
+  {#if activeSection === "home"}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Home Page Assessments</h2>
-          <p class="text-xs">Limit upcoming assessments shown on the home page by subject</p>
+          <h2 class="text-base font-bold">Home Page Assessments</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Limit upcoming assessments shown on the home page by subject</p>
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+      <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Include Past Assessments</h2>
-          <p class="text-xs">Show past-due assessments from the upcoming list, matching the Assessments page</p>
+          <h2 class="text-base font-bold">Include Past Assessments</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show past-due assessments from the upcoming list, matching the Assessments page</p>
         </div>
         <div>
           <Switch
@@ -310,10 +410,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+      <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Maximum Subjects</h2>
-          <p class="text-xs">Number of subjects to include, ordered by soonest due date</p>
+          <h2 class="text-base font-bold">Maximum Subjects</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Number of subjects to include, ordered by soonest due date</p>
         </div>
         <Select
           value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
@@ -328,10 +428,10 @@
           ]}
         />
       </div>
-      <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
+      <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
-          <p class="text-xs">Assessments shown for each included subject</p>
+          <h2 class="text-base font-bold">Maximum Assessments per Subject</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Assessments shown for each included subject</p>
         </div>
         <Select
           value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
@@ -348,58 +448,17 @@
       </div>
     </div>
   </div>
+  {/if}
 
-  <div class="border-none">
-    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
-      <div class="flex justify-between items-center px-4 py-3">
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
-          <p class="text-xs">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
-        </div>
-        <div>
-          <Switch
-            state={$settingsState.adaptiveThemeColour ?? false}
-            onChange={(isOn: boolean) => settingsState.adaptiveThemeColour = isOn}
-          />
-        </div>
-      </div>
-      {#if $settingsState.adaptiveThemeColour}
-        <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
-          <div class="pr-4">
-            <h2 class="text-sm font-bold">Soft Gradient</h2>
-            <p class="text-xs">Use a soft gradient instead of a solid colour when viewing a class</p>
-          </div>
-          <div>
-            <Switch
-              state={$settingsState.adaptiveThemeGradient ?? false}
-              onChange={(isOn: boolean) => settingsState.adaptiveThemeGradient = isOn}
-            />
-          </div>
-        </div>
-        <div class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50">
-          <div class="pr-4">
-            <h2 class="text-sm font-bold">Smooth colour transition</h2>
-            <p class="text-xs">Ease between class/subject colours when navigating instead of switching instantly</p>
-          </div>
-          <div>
-            <Switch
-              state={$settingsState.adaptiveThemeColourTransition ?? true}
-              onChange={(isOn: boolean) => settingsState.adaptiveThemeColourTransition = isOn}
-            />
-          </div>
-        </div>
-      {/if}
-    </div>
-  </div>
-
-  {#each pluginSettings as plugin}
+  {#each pluginSettings as plugin (plugin.pluginId)}
+  {#if activePluginId === plugin.pluginId}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
       <!-- Always show enable toggle if disableToggle is true -->
         {#if (plugin as any).disableToggle}
-          <div class="flex justify-between items-center px-4 py-3">
+          <div class="flex justify-between items-center px-5 py-4">
             <div class="pr-4">
-              <h2 class="flex gap-2 items-center text-sm font-bold">
+              <h2 class="flex gap-2 items-center text-base font-bold">
                 Enable {plugin.name}
                 {#if plugin.beta}
                   <span class="px-2 py-0.5 text-xs font-medium text-orange-800 bg-orange-100 rounded-full border border-orange-300/30 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-900/30">
@@ -407,7 +466,7 @@
                   </span>
                 {/if}
               </h2>
-              <p class="text-xs">{plugin.description}</p>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">{plugin.description}</p>
             </div>
             <div>
               <Switch
@@ -432,13 +491,13 @@
         {/if}
   
         {#if !((plugin as any).disableToggle) || (pluginSettingsValues[plugin.pluginId]?.enabled ?? true)}
-          {#each Object.entries(plugin.settings) as [key, setting]}
+          {#each Object.entries(plugin.settings) as [key, setting] (key)}
             <!-- Skip the 'enabled' setting and hide cloud-only settings when not signed in -->
             {#if key !== 'enabled' && !(key === 'useCloudPfp' && !cloudState.isLoggedIn)}
-              <div class="flex justify-between items-center px-4 py-3">
+              <div class="flex justify-between items-center px-5 py-4">
                 <div class="pr-4">
-                  <h2 class="text-sm font-bold">{setting.title || key}</h2>
-                  <p class="text-xs">{setting.description || ''}</p>
+                  <h2 class="text-base font-bold">{setting.title || key}</h2>
+                  <p class="text-sm text-zinc-600 dark:text-zinc-300">{setting.description || ''}</p>
                 </div>
                 <div>
                   {#if setting.type === 'boolean'}
@@ -507,29 +566,10 @@
         })}
       {/if}
   </div>
+  {/if}
   {/each}
 
-  <div class="border-none">
-    <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
-      <div class="flex justify-between items-center px-4 py-3">
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">BetterSEQTA Cloud</h2>
-          <p class="text-xs">Account & sync</p>
-        </div>
-        <div>
-          <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
-        </div>
-      </div>
-      {#if cloudState.isLoggedIn}
-        <div class="px-3 pb-3">
-          <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
-        </div>
-      {/if}
-    </div>
-  </div>
-
-  <div class="p-1 border-none"></div>
-
+  {#if activeSection === "advanced"}
   {@render Setting({
     title: "BetterSEQTA+",
     description: "Enables BetterSEQTA+ features",
@@ -543,19 +583,19 @@
 
   {#if $settingsState.devMode}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Developer Mode</h2>
-          <p class="text-xs">Enables developer mode, allowing you to test new features and changes.</p>
+          <h2 class="text-base font-bold">Developer Mode</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Enables developer mode, allowing you to test new features and changes.</p>
         </div>
         <div>
           <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Verbose logging</h2>
-          <p class="text-xs">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
+          <h2 class="text-base font-bold">Verbose logging</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
         </div>
         <div>
           <Switch
@@ -564,10 +604,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Sensitive Hider</h2>
-          <p class="text-xs">Replace sensitive content with mock data</p>
+          <h2 class="text-base font-bold">Sensitive Hider</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Replace sensitive content with mock data</p>
         </div>
         <div>
           <Switch
@@ -576,10 +616,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Mock Notices</h2>
-          <p class="text-xs">Use fake notice data on homepage instead of real data</p>
+          <h2 class="text-base font-bold">Mock Notices</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Use fake notice data on homepage instead of real data</p>
         </div>
         <div>
           <Switch 
@@ -588,10 +628,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Show Privacy Notification</h2>
-          <p class="text-xs">Show the privacy notification popup on next page load</p>
+          <h2 class="text-base font-bold">Show Privacy Notification</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show the privacy notification popup on next page load</p>
         </div>
         <div>
           <Button
@@ -607,10 +647,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Show Theme of the Month</h2>
-          <p class="text-xs">Fetch and show the current month's popup now (ignores dismissed state)</p>
+          <h2 class="text-base font-bold">Show Theme of the Month</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Fetch and show the current month's popup now (ignores dismissed state)</p>
         </div>
         <div>
           <Button
@@ -623,10 +663,10 @@
           />
         </div>
       </div>
-      <div class="flex justify-between items-center px-4 py-3">
+      <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Export cloud settings JSON</h2>
-          <p class="text-xs">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
+          <h2 class="text-base font-bold">Export cloud settings JSON</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
         </div>
         <div>
           <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
@@ -635,8 +675,8 @@
       <div class="flex flex-col gap-2 px-4 py-3">
         <div class="flex justify-between items-start gap-3">
           <div class="pr-4">
-            <h2 class="text-sm font-bold">API Base URL (session only)</h2>
-            <p class="text-xs">Override the content API host for this browser session. Cleared on restart. Affects themes, theme of the month, and other server-driven content.</p>
+            <h2 class="text-base font-bold">API Base URL (session only)</h2>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Override the content API host for this browser session. Cleared on restart. Affects themes, theme of the month, and other server-driven content.</p>
             {#if devApiBaseActive}
               <p class="text-xs mt-1 text-amber-600 dark:text-amber-400">
                 Override active: <span class="font-mono">{devApiBaseActive}</span>
@@ -659,8 +699,8 @@
       </div>
       <div class="flex flex-col gap-2 px-4 py-3">
         <div>
-          <h2 class="text-sm font-bold">GitHub latest version override</h2>
-          <p class="text-xs">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
+          <h2 class="text-base font-bold">GitHub latest version override</h2>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
         </div>
         <input
           type="text"
@@ -673,5 +713,6 @@
         />
       </div>
     </div>
+  {/if}
   {/if}
 </div>

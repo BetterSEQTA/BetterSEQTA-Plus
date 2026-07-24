@@ -832,12 +832,17 @@ export function AppendElementsToDisabledPage() {
     margin: 6px;
   }
   .outside-container {
-    top: 48px !important;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 200000 !important;
   }
   #ExtensionPopup {
-    border-radius: 1rem;
-    box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.6);
-    transform-origin: 70% 0;
+    border-radius: 0;
+    box-shadow: none;
+    transform-origin: center center;
   }
   `;
   document.head.append(settingsStyle);

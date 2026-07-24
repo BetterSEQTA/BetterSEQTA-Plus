@@ -440,22 +440,56 @@ async function addEngageUserInfo() {
   });
 }
 
-async function setupEngageSettingsButton() {
-  try {
-    const notificationsWrapper = await waitForElm(
-      "#content > div.connectedNotificationsWrapper > div",
-    );
-    const parent = notificationsWrapper.parentElement!;
+async function mountEngageToolbarControls(parent?: Element) {
+  // React can remount the notifications chrome — recreate missing controls.
+  if (!document.getElementById("LightDarkModeButton")) {
     await addDarkLightToggle(parent);
-    await createSettingsButton(parent);
-    setupSettingsButton();
-    attachNotificationsPanelAnimation();
-  } catch {
-    await addDarkLightToggle();
-    await createSettingsButton();
-    setupSettingsButton();
-    attachNotificationsPanelAnimation();
   }
+  if (!document.getElementById("AddedSettings")) {
+    await createSettingsButton(parent);
+  }
+  setupSettingsButton();
+  attachNotificationsPanelAnimation();
+}
+
+async function setupEngageSettingsButton() {
+  let mounting = false;
+
+  const tryMount = async () => {
+    if (mounting || document.getElementById("AddedSettings")) return;
+    mounting = true;
+    try {
+      try {
+        const notificationsWrapper = await waitForElm(
+          "#content > div.connectedNotificationsWrapper > div",
+          true,
+          100,
+          40,
+        );
+        const parent = notificationsWrapper.parentElement!;
+        await mountEngageToolbarControls(parent);
+      } catch {
+        await mountEngageToolbarControls();
+      }
+    } finally {
+      mounting = false;
+    }
+  };
+
+  await tryMount();
+
+  // Re-inject if Engage's React shell wipes the toolbar controls.
+  const content = document.getElementById("content");
+  if (!content || (content as HTMLElement).dataset.bsplusEngageSettingsWatch === "1") {
+    return;
+  }
+  (content as HTMLElement).dataset.bsplusEngageSettingsWatch = "1";
+
+  const observer = new MutationObserver(() => {
+    if (document.getElementById("AddedSettings")) return;
+    void tryMount();
+  });
+  observer.observe(content, { childList: true, subtree: true });
 }
 
 function GetLightDarkModeString() {

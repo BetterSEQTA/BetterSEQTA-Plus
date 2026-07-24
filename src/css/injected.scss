@@ -274,6 +274,14 @@ select option {
   justify-content: center;
   width: 35px !important;
 }
+
+/* Engage toolbar: keep settings/theme buttons above React chrome */
+.connectedNotificationsWrapper .addedButton,
+.connectedNotificationsWrapper #AddedSettings,
+.connectedNotificationsWrapper #LightDarkModeButton {
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
 [style="background-color: rgb(255, 255, 255);"] {
   color: black;
 }
