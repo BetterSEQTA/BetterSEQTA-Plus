@@ -680,11 +680,16 @@ export function init() {
 
     document.querySelector(".legacy-root")?.classList.add("hidden");
 
-    // Hide native sidebar + mount Svelte replacement during the loading overlay.
-    document.documentElement.classList.add("bsplus-custom-sidebar-pending");
-    void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
-      mod.prepareCustomSidebarEarly();
-    });
+    // Learn only: hide native sidebar + mount Svelte replacement during loading.
+    // Engage keeps its native React menu — never apply the pending hide class there.
+    if (!isSeqtaEngageExperience()) {
+      document.documentElement.classList.add("bsplus-custom-sidebar-pending");
+      void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
+        mod.prepareCustomSidebarEarly();
+      });
+    } else {
+      document.documentElement.classList.remove("bsplus-custom-sidebar-pending");
+    }
 
     void observeMenuItemPosition();
 
