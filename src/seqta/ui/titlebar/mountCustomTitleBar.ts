@@ -1,7 +1,7 @@
 import { mount, unmount } from "svelte";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { waitForElm } from "@/seqta/utils/waitForElm";
+import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import TitleBar from "./TitleBar.svelte";
 import { titleBarState } from "./titleBarState.svelte";
 
@@ -105,7 +105,7 @@ export async function mountCustomTitleBar(): Promise<boolean> {
 
   let title: HTMLElement;
   try {
-    title = (await waitForElm("#title", true, 50, 200)) as HTMLElement;
+    title = (await waitForSeqtaTitle(50, 200)) as HTMLElement;
   } catch {
     return false;
   }

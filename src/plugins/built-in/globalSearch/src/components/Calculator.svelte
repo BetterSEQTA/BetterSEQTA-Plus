@@ -14,12 +14,16 @@
   let outputUnit = $state<string>('');
   let isPartial = $state(false);
   
-  const processInput = (input: string) => {
+  let calcGen = 0;
+
+  const processInput = async (input: string) => {
+    const gen = ++calcGen;
     isCalculating = true;
-    
+
     try {
-      const calcResult = calculateExpression(input);
-      
+      const calcResult = await calculateExpression(input);
+      if (gen !== calcGen) return;
+
       if (calcResult.isValid) {
         result = calcResult.result;
         inputUnit = calcResult.inputUnit;
@@ -33,19 +37,20 @@
         isPartial = false;
         dispatch('hasResult', null);
       }
-    } catch (e) {
+    } catch {
+      if (gen !== calcGen) return;
       result = null;
       inputUnit = '';
       outputUnit = '';
       isPartial = false;
       dispatch('hasResult', null);
     } finally {
-      isCalculating = false;
+      if (gen === calcGen) isCalculating = false;
     }
-  }
-  
+  };
+
   $effect(() => {
-    processInput(searchTerm);
+    void processInput(searchTerm);
   });
   
   onDestroy(() => {

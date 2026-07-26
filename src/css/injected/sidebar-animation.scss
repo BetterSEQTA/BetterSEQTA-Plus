@@ -20,6 +20,37 @@
   animation: none !important;
 }
 
+/*
+ * Custom sidebar: park sibling chrome while `.drilling` is set.
+ * SEQTA strips/restores `.active` on every nested leaf click; keying only off
+ * `:has(.active)` briefly undoes the translate and the 0.3s transform
+ * transition makes that look like the open animation flashing again.
+ *
+ * Scope carefully — only root siblings (and nested-folder siblings via
+ * `.sub:has(.sub)`), never the visible leaf rows in the current panel.
+ */
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::before,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::after,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg {
+  transform: translateX(-320px) !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::before,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::after,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
+  transform: translateX(-320px) !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling {
+  overflow: hidden !important;
+}
+
 #menu li.hasChildren:not(.active) li .sub {
   display: none; // improves performance
 }
@@ -38,6 +69,13 @@
   transition: transform 0.3s ease;
 }
 
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
+  transition: none !important;
+}
+
 #menu .sub {
   transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -54,4 +92,14 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > label,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > svg {
   transform: translateX(-70px);
+}
+
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::before,
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg,
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::before,
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
+  transform: translateX(-70px) !important;
+  transition: none !important;
 }

@@ -1,5 +1,6 @@
 import type { PluginAPI } from "@/plugins/core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 
 export const ANIMATED_BG_MARKER = "bsplus-animated-bg";
 
@@ -51,7 +52,7 @@ export async function syncAnimatedBackground(
   try {
     const [container, menu] = await Promise.all([
       waitForElm("#container", true),
-      waitForElm("#menu", true),
+      waitForSeqtaMenu(),
     ]);
     ensureAnimatedBackgroundLayers(
       container as HTMLElement,

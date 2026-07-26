@@ -1,7 +1,7 @@
 import type { Plugin } from "@/plugins/core/types";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";
 import styles from "./styles.css?inline";
-import { waitForElm } from "@/seqta/utils/waitForElm";
+import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
 import { installResetIndexMessageListener } from "../indexing/resetIndexes";
 import { isIndexingPaused } from "../indexing/indexingPause";
@@ -12,6 +12,14 @@ import {
   getStoredPassiveItems,
   installPassiveObserver,
 } from "../indexing/passiveObserver";
+
+function scheduleIdleIndexing(run: () => void): void {
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(() => run(), { timeout: 5000 });
+    return;
+  }
+  setTimeout(run, 2000);
+}
 
 const globalSearchPlugin: Plugin<{}> = {
   id: "global-search",
@@ -84,17 +92,12 @@ const globalSearchPlugin: Plugin<{}> = {
     }
 
     if (api.settings.runIndexingOnLoad && !isIndexingPaused()) {
-      setTimeout(async () => {
-        if (!isIndexingPaused()) await runIndexing();
-      }, 2000);
+      scheduleIdleIndexing(() => {
+        if (!isIndexingPaused()) void runIndexing();
+      });
     }
 
-    const title = document.querySelector("#title");
-    if (title) {
-      void mountSearchBar(title, api, appRef);
-    } else {
-      void mountSearchBar(await waitForElm("#title", true, 100, 60), api, appRef);
-    }
+    void mountSearchBar(await waitForSeqtaTitle(100, 60), api, appRef);
 
     return () => cleanupSearchBar(appRef);
   },

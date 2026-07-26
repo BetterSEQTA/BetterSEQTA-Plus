@@ -48,7 +48,7 @@
   tabindex={editMode ? -1 : 0}
   aria-label={item.label}
   aria-current={active ? "page" : undefined}
-  in:fly={{ x: drillEnter ? 24 : 0, duration: drillEnter ? 180 : 0 }}
+  in:fly={drillEnter ? { x: 24, duration: 180 } : undefined}
   onclick={(e) => {
     // Keep SEQTA's #menu handlers from seeing custom-list clicks — that fights
     // our drill UI and can freeze the tab (Goals / Folios / etc.).

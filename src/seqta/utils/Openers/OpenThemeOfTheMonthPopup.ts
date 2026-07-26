@@ -24,20 +24,58 @@ export interface ThemeOfTheMonthEntry {
   updated_at: number;
 }
 
+const TOTM_FETCH_TIMEOUT_MS = 800;
+const TOTM_CACHE_KEY = "bsplus_theme_of_the_month_cache";
+
+function isValidTotmEntry(data: unknown): data is ThemeOfTheMonthEntry {
+  return (
+    !!data &&
+    typeof data === "object" &&
+    typeof (data as ThemeOfTheMonthEntry).id === "string" &&
+    !!(data as ThemeOfTheMonthEntry).id
+  );
+}
+
+async function readCachedThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | null> {
+  try {
+    const stored = await browser.storage.local.get(TOTM_CACHE_KEY);
+    const cached = stored[TOTM_CACHE_KEY];
+    return isValidTotmEntry(cached) ? cached : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCachedThemeOfTheMonth(
+  entry: ThemeOfTheMonthEntry,
+): Promise<void> {
+  try {
+    await browser.storage.local.set({ [TOTM_CACHE_KEY]: entry });
+  } catch {
+    /* ignore cache write failures */
+  }
+}
+
+/**
+ * Fetches Theme of the Month with a hard timeout so a hung API cannot stall
+ * the startup popup queue. Falls back to last-good cached entry on timeout/error.
+ */
 export async function fetchThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | null> {
   try {
     const res = await fetch(`${getApiBase()}/api/theme-of-the-month/current`, {
       cache: "no-store",
+      signal: AbortSignal.timeout(TOTM_FETCH_TIMEOUT_MS),
     });
-    if (!res.ok) return null;
+    if (!res.ok) return readCachedThemeOfTheMonth();
     const text = await res.text();
-    if (!text) return null;
+    if (!text) return readCachedThemeOfTheMonth();
     const data = JSON.parse(text);
-    if (!data || typeof data !== "object" || !data.id) return null;
-    return data as ThemeOfTheMonthEntry;
+    if (!isValidTotmEntry(data)) return readCachedThemeOfTheMonth();
+    void writeCachedThemeOfTheMonth(data);
+    return data;
   } catch (err) {
     console.warn("[ThemeOfTheMonth] Failed to fetch current entry:", err);
-    return null;
+    return readCachedThemeOfTheMonth();
   }
 }
 

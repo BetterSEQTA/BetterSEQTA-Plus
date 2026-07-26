@@ -114,7 +114,7 @@
   });
 
   onMount(() => {
-    const itemsUpdatedHandler = (event: Event) => {
+    const applyItemsUpdate = (event: Event) => {
       const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
 
       if (
@@ -142,6 +142,21 @@
       setupSearchIndexes();
       performSearch();
     };
+
+    // Trace showed ~18ms itemsUpdatedHandler spikes; coalesce bursts via rAF.
+    let itemsUpdateRaf = 0;
+    let pendingItemsEvent: Event | null = null;
+    const itemsUpdatedHandler = (event: Event) => {
+      pendingItemsEvent = event;
+      if (itemsUpdateRaf) return;
+      itemsUpdateRaf = requestAnimationFrame(() => {
+        itemsUpdateRaf = 0;
+        const next = pendingItemsEvent;
+        pendingItemsEvent = null;
+        if (next) applyItemsUpdate(next);
+      });
+    };
+
     window.addEventListener('dynamic-items-updated', itemsUpdatedHandler);
 
     setupSearchIndexes();
@@ -153,6 +168,7 @@
     };
 
     return () => {
+      if (itemsUpdateRaf) cancelAnimationFrame(itemsUpdateRaf);
       window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
     };
   });

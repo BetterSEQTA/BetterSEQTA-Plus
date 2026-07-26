@@ -3,6 +3,7 @@ import type { SettingsState } from "@/types/storage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 import Sidebar from "./Sidebar.svelte";
 import { getNativeMenuList } from "./parseNativeMenu";
 import {
@@ -28,30 +29,62 @@ let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let hashListenerAttached = false;
 let sidebarCaptureAttached = false;
 let earlyPrepareStarted = false;
-let catchupTimer: ReturnType<typeof setInterval> | null = null;
+let catchupTimers: ReturnType<typeof setTimeout>[] = [];
 let nativeMenuListenerAttached = false;
+let lastMenuFingerprint = "";
 
 const settingsListeners: Array<{
   key: keyof SettingsState;
   listener: ChangeListener;
 }> = [];
 
-function syncFromMenu() {
-  if (menuEl) sidebarState.syncFromNative(menuEl);
+/** Stable fingerprint of native menu keys so unchanged DOM does not re-sync. */
+function menuFingerprint(menu: HTMLElement): string {
+  const list = getNativeMenuList(menu);
+  if (!list) return "";
+  const keys: string[] = [];
+  for (const node of list.children) {
+    const el = node as HTMLElement;
+    if (el.id === ROOT_ID) continue;
+    const key = el.dataset.key ?? "";
+    const path = el.dataset.path ?? "";
+    const colour = el.dataset.colour ?? "";
+    keys.push(`${key}|${path}|${colour}`);
+  }
+  return `${keys.length}:${keys.join(",")}`;
 }
 
+function syncFromMenu(force = false) {
+  if (!menuEl) return;
+  const next = menuFingerprint(menuEl);
+  if (!force && next === lastMenuFingerprint) return;
+  lastMenuFingerprint = next;
+  sidebarState.syncFromNative(menuEl);
+}
+
+/**
+ * Sparse catch-up after mount: plugins inject menu items shortly after first paint.
+ * MutationObserver + scheduleSync cover ongoing changes; this only covers a short window.
+ */
 function startCatchupSync() {
-  if (catchupTimer) clearInterval(catchupTimer);
-  let attempts = 0;
-  catchupTimer = setInterval(() => {
-    attempts += 1;
-    syncFromMenu();
-    // Plugins (Analytics, Overview, icons) inject shortly after first paint.
-    if (attempts >= 60) {
-      clearInterval(catchupTimer!);
-      catchupTimer = null;
-    }
-  }, 50);
+  for (const t of catchupTimers) clearTimeout(t);
+  catchupTimers = [];
+  // Immediate, then a few delayed passes (~1s total) instead of 50ms×60.
+  const delays = [0, 200, 500, 1000];
+  for (const ms of delays) {
+    catchupTimers.push(
+      setTimeout(() => {
+        syncFromMenu();
+      }, ms),
+    );
+  }
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(() => syncFromMenu(), { timeout: 1500 });
+  }
+}
+
+function onNativeMenuUpdated() {
+  syncFromMenu(true);
 }
 
 function scheduleSync() {
@@ -201,7 +234,12 @@ export async function mountCustomSidebar(): Promise<boolean> {
 
   document.documentElement.classList.add(PENDING_CLASS);
 
-  const menu = (await waitForElm("#menu", true, 50, 200)) as HTMLElement | null;
+  let menu: HTMLElement | null = null;
+  try {
+    menu = (await waitForSeqtaMenu(50, 200)) as HTMLElement;
+  } catch {
+    return false;
+  }
   if (!menu) return false;
 
   // Prefer a populated native list, but don't block forever during loading.
@@ -270,7 +308,7 @@ export async function mountCustomSidebar(): Promise<boolean> {
   }
 
   if (!nativeMenuListenerAttached) {
-    window.addEventListener("bsplus-native-menu-updated", syncFromMenu);
+    window.addEventListener("bsplus-native-menu-updated", onNativeMenuUpdated);
     nativeMenuListenerAttached = true;
   }
 
@@ -288,7 +326,7 @@ export async function mountCustomSidebar(): Promise<boolean> {
   ] as const) {
     registerSetting(key, () => applySidebarLook(menuEl));
   }
-  const resync = () => syncFromMenu();
+  const resync = () => syncFromMenu(true);
   registerSetting("menuorder", resync);
   registerSetting("menuitems", resync);
 
@@ -302,8 +340,9 @@ export function unmountCustomSidebar() {
   menuObserver = null;
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = null;
-  if (catchupTimer) clearInterval(catchupTimer);
-  catchupTimer = null;
+  for (const t of catchupTimers) clearTimeout(t);
+  catchupTimers = [];
+  lastMenuFingerprint = "";
 
   clearSettingListeners();
 
@@ -318,7 +357,7 @@ export function unmountCustomSidebar() {
   }
 
   if (nativeMenuListenerAttached) {
-    window.removeEventListener("bsplus-native-menu-updated", syncFromMenu);
+    window.removeEventListener("bsplus-native-menu-updated", onNativeMenuUpdated);
     nativeMenuListenerAttached = false;
   }
 

@@ -311,10 +311,10 @@ export async function loadEngageHomePage(): Promise<void> {
   const engageHomeBody = stringToHTML(/* html */ `
       <div class="home-root" id="engage-home-root">
         <div class="home-container" id="engage-home-container">
-          <div class="border shortcut-container">
-            <div class="border shortcuts" id="shortcuts"></div>
+          <div class="bsplus-rounded shortcut-container">
+            <div class="bsplus-rounded shortcuts" id="shortcuts"></div>
           </div>
-          <div class="border timetable-container">
+          <div class="bsplus-rounded timetable-container">
             <div class="home-subtitle">
               <div class="engage-timetable-title-cluster">
                 <h2 id="engage-home-lesson-subtitle">Today's Lessons</h2>
@@ -331,7 +331,7 @@ export async function loadEngageHomePage(): Promise<void> {
             </div>
             <div class="day-container loading" id="engage-day-container"></div>
           </div>
-          <div class="border notices-container">
+          <div class="bsplus-rounded notices-container">
             <div style="display: flex; justify-content: space-between">
               <h2 class="home-subtitle">Notices</h2>
               <input type="date" id="engage-notices-date" />

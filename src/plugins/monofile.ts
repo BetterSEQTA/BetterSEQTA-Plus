@@ -1,6 +1,5 @@
 // Third-party libraries
 import browser from "webextension-polyfill";
-import { animate, stagger } from "motion";
 
 // Internal utilities and functions
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
@@ -47,6 +46,11 @@ import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import iframeCSS from "@/css/iframe.scss?raw";
 
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
+
+/** Lazy-load Motion so first-paint shell (loading overlay / sidebar) stays free of it. */
+function loadMotion() {
+  return import("motion");
+}
 
 export function hideSideBar() {
   const sidebar = document.getElementById("menu"); // The sidebar element to be closed
@@ -250,6 +254,7 @@ async function handleNotices(node: Element): Promise<void> {
   // get index of node in relation to parent
   const index = Array.from(node.parentElement!.children).indexOf(node);
 
+  const { animate } = await loadMotion();
   animate(
     node,
     { opacity: [0, 1], y: [50, 0], scale: [0.99, 1] },
@@ -371,6 +376,7 @@ async function handleMessages(node: Element): Promise<void> {
   const messages = Array.from(
     document.querySelectorAll("[data-message]"),
   ).slice(0, 35);
+  const { animate, stagger } = await loadMotion();
   animate(
     messages,
     { opacity: [0, 1], y: [10, 0] },
@@ -397,6 +403,7 @@ async function handleDashboard(node: Element): Promise<void> {
   try {
     const children = document.querySelectorAll(".dashboard > *");
     if (children.length) {
+      const { animate, stagger } = await loadMotion();
       animate(
         children,
         { opacity: [0, 1], y: [10, 0] },
@@ -422,6 +429,7 @@ async function handleDocuments(node: Element): Promise<void> {
   try {
     const rows = document.querySelectorAll(".documents tbody tr.document");
     if (rows.length) {
+      const { animate, stagger } = await loadMotion();
       animate(
         rows,
         { opacity: [0, 1], y: [10, 0] },
@@ -445,6 +453,7 @@ async function handleReports(node: Element): Promise<void> {
   try {
     const items = document.querySelectorAll(".reports .item");
     if (items.length) {
+      const { animate, stagger } = await loadMotion();
       animate(
         items,
         { opacity: [0, 1], y: [10, 0] },
@@ -647,8 +656,14 @@ export function showConflictPopup() {
 
   document.getElementById("container")?.append(background);
 
+  // CSS fade — avoid Motion on conflict overlay (not critical-path shell, but keeps Motion off this import path).
   if (settingsState.animations) {
-    animate([background as HTMLElement], { opacity: [0, 1] });
+    const el = background as HTMLElement;
+    el.style.opacity = "0";
+    el.style.transition = "opacity 200ms ease-in-out";
+    requestAnimationFrame(() => {
+      el.style.opacity = "1";
+    });
   }
 
   background.addEventListener("click", (event) => {
