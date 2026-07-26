@@ -7,6 +7,7 @@ import { base64Loader } from "./lib/base64loader";
 import type { BuildTarget, Manifest } from "./lib/types";
 import ClosePlugin from "./lib/closePlugin";
 import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
+import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 import { extensionChunkUrls } from "./lib/extensionChunkUrls";
 
@@ -93,6 +94,7 @@ export default defineConfig(({ command, mode: viteMode }) => {
       browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
     }),
     fixCrxWorkerLiveReload(),
+    stabilizeCrxDevHmr(),
     touchGlobalCSSPlugin(),
     ...(command === "build" ? [ClosePlugin(), firefoxStripFunctionProbe()] : []),
   ],

@@ -10,6 +10,7 @@
   import type { SettingsList } from "@/interface/types/SettingsProps"
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import PickerSwatch from "@/interface/components/PickerSwatch.svelte"
+  import SidebarAppearance from "@/interface/components/SidebarAppearance.svelte"
   import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte"
   import CloudSettingsSync from "@/interface/components/CloudSettingsSync.svelte"
   import CloudHeader from "@/interface/components/store/CloudHeader.svelte"
@@ -143,11 +144,25 @@
     activeSection?: string;
   }>();
 
-  const activePluginId = $derived(
-    activeSection.startsWith("plugin:")
-      ? activeSection.slice("plugin:".length)
-      : null,
-  );
+  /** Map each plugin into the settings sidebar category that fits its purpose. */
+  const pluginSectionById: Record<string, string> = {
+    "profile-picture": "account",
+    "animated-background": "appearance",
+    "background-music": "appearance",
+    timetable: "timetable",
+    timetableEdit: "timetable",
+    "assessments-overview": "assessments",
+    "assessments-average": "assessments",
+    "grade-analytics": "assessments",
+    "global-search": "features",
+    "enhanced-navigation": "features",
+    messageFolders: "features",
+    notificationCollector: "features",
+  };
+
+  const pluginBelongsInSection = (pluginId: string) =>
+    (pluginSectionById[pluginId] ?? "features") === activeSection;
+
 
   async function exportCloudSettingsJsonToFile() {
     const payload = await getSnapshotForUpload();
@@ -164,10 +179,10 @@
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
-<div class="flex justify-between items-center px-5 py-4">
+<div class="flex justify-between items-center px-5 py-5">
   <div class="pr-5">
-    <h2 class="text-base font-bold">{title}</h2>
-    <p class="text-sm text-zinc-600 dark:text-zinc-300">{description}</p>
+    <h2 class="text-xl font-bold">{title}</h2>
+    <p class="text-base text-zinc-600 dark:text-zinc-300">{description}</p>
   </div>
   <div class="shrink-0">
      <Component {...props} />
@@ -189,8 +204,8 @@
       <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
         <div class="flex justify-between items-center px-5 py-4">
           <div class="pr-4">
-            <h2 class="text-base font-bold">BetterSEQTA Cloud</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-300">Account & sync</p>
+            <h2 class="text-xl font-bold">BetterSEQTA Cloud</h2>
+            <p class="text-base text-zinc-600 dark:text-zinc-300">Account & sync</p>
           </div>
           <div>
             <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
@@ -345,12 +360,18 @@
       {@render Setting(option)}
     {/each}
 
+    {#if !isEngage}
+      <div class="border-none">
+        <SidebarAppearance />
+      </div>
+    {/if}
+
     <div class="border-none">
       <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
         <div class="flex justify-between items-center px-5 py-4">
           <div class="pr-4">
-            <h2 class="text-base font-bold">Adaptive Theme Colour</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-300">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
+            <h2 class="text-xl font-bold">Adaptive Theme Colour</h2>
+            <p class="text-base text-zinc-600 dark:text-zinc-300">Change the theme colour based on the current class (e.g. when viewing a course or assessments page)</p>
           </div>
           <div>
             <Switch
@@ -362,8 +383,8 @@
         {#if $settingsState.adaptiveThemeColour}
           <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
             <div class="pr-4">
-              <h2 class="text-base font-bold">Soft Gradient</h2>
-              <p class="text-sm text-zinc-600 dark:text-zinc-300">Use a soft gradient instead of a solid colour when viewing a class</p>
+              <h2 class="text-xl font-bold">Soft Gradient</h2>
+              <p class="text-base text-zinc-600 dark:text-zinc-300">Use a soft gradient instead of a solid colour when viewing a class</p>
             </div>
             <div>
               <Switch
@@ -374,8 +395,8 @@
           </div>
           <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
             <div class="pr-4">
-              <h2 class="text-base font-bold">Smooth colour transition</h2>
-              <p class="text-sm text-zinc-600 dark:text-zinc-300">Ease between class/subject colours when navigating instead of switching instantly</p>
+              <h2 class="text-xl font-bold">Smooth colour transition</h2>
+              <p class="text-base text-zinc-600 dark:text-zinc-300">Ease between class/subject colours when navigating instead of switching instantly</p>
             </div>
             <div>
               <Switch
@@ -389,19 +410,19 @@
     </div>
   {/if}
 
-  {#if activeSection === "home"}
+  {#if activeSection === "general"}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Home Page Assessments</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Limit upcoming assessments shown on the home page by subject</p>
+          <h2 class="text-xl font-bold">Home Page Assessments</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Limit upcoming assessments shown on the home page by subject</p>
         </div>
       </div>
       <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Include Past Assessments</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show past-due assessments from the upcoming list, matching the Assessments page</p>
+          <h2 class="text-xl font-bold">Include Past Assessments</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Show past-due assessments from the upcoming list, matching the Assessments page</p>
         </div>
         <div>
           <Switch
@@ -412,8 +433,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Maximum Subjects</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Number of subjects to include, ordered by soonest due date</p>
+          <h2 class="text-xl font-bold">Maximum Subjects</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Number of subjects to include, ordered by soonest due date</p>
         </div>
         <Select
           value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
@@ -430,8 +451,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Maximum Assessments per Subject</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Assessments shown for each included subject</p>
+          <h2 class="text-xl font-bold">Maximum Assessments per Subject</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Assessments shown for each included subject</p>
         </div>
         <Select
           value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
@@ -451,14 +472,14 @@
   {/if}
 
   {#each pluginSettings as plugin (plugin.pluginId)}
-  {#if activePluginId === plugin.pluginId}
+  {#if pluginBelongsInSection(plugin.pluginId)}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
       <!-- Always show enable toggle if disableToggle is true -->
         {#if (plugin as any).disableToggle}
           <div class="flex justify-between items-center px-5 py-4">
             <div class="pr-4">
-              <h2 class="flex gap-2 items-center text-base font-bold">
+              <h2 class="flex gap-2 items-center text-xl font-bold">
                 Enable {plugin.name}
                 {#if plugin.beta}
                   <span class="px-2 py-0.5 text-xs font-medium text-orange-800 bg-orange-100 rounded-full border border-orange-300/30 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-900/30">
@@ -466,7 +487,7 @@
                   </span>
                 {/if}
               </h2>
-              <p class="text-sm text-zinc-600 dark:text-zinc-300">{plugin.description}</p>
+              <p class="text-base text-zinc-600 dark:text-zinc-300">{plugin.description}</p>
             </div>
             <div>
               <Switch
@@ -496,8 +517,8 @@
             {#if key !== 'enabled' && !(key === 'useCloudPfp' && !cloudState.isLoggedIn)}
               <div class="flex justify-between items-center px-5 py-4">
                 <div class="pr-4">
-                  <h2 class="text-base font-bold">{setting.title || key}</h2>
-                  <p class="text-sm text-zinc-600 dark:text-zinc-300">{setting.description || ''}</p>
+                  <h2 class="text-xl font-bold">{setting.title || key}</h2>
+                  <p class="text-base text-zinc-600 dark:text-zinc-300">{setting.description || ''}</p>
                 </div>
                 <div>
                   {#if setting.type === 'boolean'}
@@ -585,8 +606,8 @@
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Developer Mode</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Enables developer mode, allowing you to test new features and changes.</p>
+          <h2 class="text-xl font-bold">Developer Mode</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Enables developer mode, allowing you to test new features and changes.</p>
         </div>
         <div>
           <Switch state={$settingsState.devMode} onChange={(isOn: boolean) => settingsState.devMode = isOn} />
@@ -594,8 +615,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Verbose logging</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
+          <h2 class="text-xl font-bold">Verbose logging</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)</p>
         </div>
         <div>
           <Switch
@@ -606,8 +627,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Sensitive Hider</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Replace sensitive content with mock data</p>
+          <h2 class="text-xl font-bold">Sensitive Hider</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Replace sensitive content with mock data</p>
         </div>
         <div>
           <Switch
@@ -618,8 +639,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Mock Notices</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Use fake notice data on homepage instead of real data</p>
+          <h2 class="text-xl font-bold">Mock Notices</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Use fake notice data on homepage instead of real data</p>
         </div>
         <div>
           <Switch 
@@ -630,8 +651,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Show Privacy Notification</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Show the privacy notification popup on next page load</p>
+          <h2 class="text-xl font-bold">Show Privacy Notification</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Show the privacy notification popup on next page load</p>
         </div>
         <div>
           <Button
@@ -649,8 +670,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Show Theme of the Month</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Fetch and show the current month's popup now (ignores dismissed state)</p>
+          <h2 class="text-xl font-bold">Show Theme of the Month</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Fetch and show the current month's popup now (ignores dismissed state)</p>
         </div>
         <div>
           <Button
@@ -665,8 +686,8 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
-          <h2 class="text-base font-bold">Export cloud settings JSON</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
+          <h2 class="text-xl font-bold">Export cloud settings JSON</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server testing.</p>
         </div>
         <div>
           <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
@@ -675,8 +696,8 @@
       <div class="flex flex-col gap-2 px-4 py-3">
         <div class="flex justify-between items-start gap-3">
           <div class="pr-4">
-            <h2 class="text-base font-bold">API Base URL (session only)</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-300">Override the content API host for this browser session. Cleared on restart. Affects themes, theme of the month, and other server-driven content.</p>
+            <h2 class="text-xl font-bold">API Base URL (session only)</h2>
+            <p class="text-base text-zinc-600 dark:text-zinc-300">Override the content API host for this browser session. Cleared on restart. Affects themes, theme of the month, and other server-driven content.</p>
             {#if devApiBaseActive}
               <p class="text-xs mt-1 text-amber-600 dark:text-amber-400">
                 Override active: <span class="font-mono">{devApiBaseActive}</span>
@@ -699,8 +720,8 @@
       </div>
       <div class="flex flex-col gap-2 px-4 py-3">
         <div>
-          <h2 class="text-base font-bold">GitHub latest version override</h2>
-          <p class="text-sm text-zinc-600 dark:text-zinc-300">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
+          <h2 class="text-xl font-bold">GitHub latest version override</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode is on.</p>
         </div>
         <input
           type="text"

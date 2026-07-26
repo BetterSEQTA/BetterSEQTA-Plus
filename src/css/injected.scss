@@ -13,6 +13,7 @@
 }
 
 @include meta.load-css("injected/sidebar-animation.scss");
+@include meta.load-css("injected/sidebar-styles.scss");
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
 
@@ -565,21 +566,26 @@ ul.magicDelete > li.deleting {
   visibility: visible !important;
 }
 
+/* Edit rows should match normal custom-sidebar item size (not shrunk). */
+#menu.bsplus-sidebar-edit-mode > #bsplus-sidebar-root > li.item.draggable,
 #menu.bsplus-sidebar-edit-mode .item.draggable {
   display: flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  width: calc(100% - 12px) !important;
+  align-items: center !important;
+  width: auto !important;
   max-width: none !important;
   box-sizing: border-box !important;
   padding: 0 !important;
+  margin: 0 6px 8px !important;
 }
 
 #menu.bsplus-sidebar-edit-mode .item.draggable > label:not(.toggle) {
-  flex: 1 1 0 !important;
-  width: 0 !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
   min-width: 0 !important;
   max-width: none !important;
+  padding: 12px !important;
+  padding-left: 4px !important;
+  box-sizing: border-box !important;
 }
 
 #menu.bsplus-sidebar-edit-mode .item.draggable .label {
@@ -587,6 +593,14 @@ ul.magicDelete > li.deleting {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   overflow-wrap: normal !important;
+  font-size: inherit !important;
+  line-height: 1.2 !important;
+}
+
+#menu.bsplus-sidebar-edit-mode .item.draggable > label:not(.toggle) > svg {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0 !important;
 }
 
 #menu.bsplus-sidebar-edit-mode .item.draggable > .toggle,
@@ -594,7 +608,7 @@ ul.magicDelete > li.deleting {
   pointer-events: auto !important;
   flex: 0 0 auto !important;
   width: auto !important;
-  margin: 0 10px 0 0 !important;
+  margin: 0 12px 0 0 !important;
   position: relative;
   z-index: 2;
 }
@@ -631,7 +645,7 @@ ul.magicDelete > li.deleting {
 }
 
 #menu {
-  width: 270px;
+  width: var(--bsplus-sidebar-width, 270px);
   z-index: 19;
   background: var(--better-main) !important;
   color: var(--text-color);
@@ -907,7 +921,9 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
   margin-bottom: 8px !important;
   width: 85% !important;
 }
-.item.draggable {
+/* Keep width scoped to #menu — fallback drag clones append to body, and
+   width:100% there stretches across the viewport. */
+#menu .item.draggable {
   width: 100% !important;
   cursor: grab;
 
@@ -919,6 +935,19 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
     top: 17.6px;
     left: -8px;
   }
+}
+
+/* Sortable forceFallback clone (on body) — match source row size. */
+body > .bsplus-sortable-drag,
+body > .sortable-fallback.bsplus-sortable-drag,
+.bsplus-sortable-drag.sortable-fallback {
+  width: var(--bsplus-drag-width, 240px) !important;
+  max-width: var(--bsplus-drag-width, 240px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  list-style: none !important;
 }
 
 #menu {
@@ -1340,7 +1369,7 @@ html.transparencyEffects
 
 #content {
   transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s ease;
-  left: 270px;
+  left: var(--bsplus-sidebar-width, 270px);
   background: unset;
 }
 
@@ -1368,8 +1397,8 @@ html.transparencyEffects
     display: none;
   }
   #menu {
-    -webkit-transform: translatex(-270px);
-    transform: translatex(-270px);
+    -webkit-transform: translatex(calc(-1 * var(--bsplus-sidebar-width, 270px)));
+    transform: translatex(calc(-1 * var(--bsplus-sidebar-width, 270px)));
   }
   .menuShown #menu {
     -webkit-transform: translatex(0);
@@ -1379,8 +1408,8 @@ html.transparencyEffects
     left: 0;
   }
   .menuShown #content {
-    -webkit-transform: translatex(270px);
-    transform: translatex(270px);
+    -webkit-transform: translatex(var(--bsplus-sidebar-width, 270px));
+    transform: translatex(var(--bsplus-sidebar-width, 270px));
   }
 
   body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {

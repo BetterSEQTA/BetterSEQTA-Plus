@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
+  import Sortable from "sortablejs";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import {
     restoreCustomMenuActive,
@@ -16,8 +18,10 @@
 
   let { menuEl }: Props = $props();
 
-  let dragKey = $state<string | null>(null);
+  let listEl = $state<HTMLElement | null>(null);
   let coverEl: HTMLElement | null = null;
+  let sortable: Sortable | null = null;
+  let dragging = $state(false);
 
   const BACK_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><g style="fill: currentcolor;"><path d="M15.422 16.078l-1.406 1.406-6-6 6-6 1.406 1.406-4.594 4.594z"></path></g></svg>`;
 
@@ -50,16 +54,79 @@
     sidebarState.setItemVisibility(key, visible);
   }
 
-  function onDragStart(key: string) {
-    dragKey = key;
+  function destroySortable() {
+    sortable?.destroy();
+    sortable = null;
+    dragging = false;
+    document.documentElement.style.removeProperty("--bsplus-drag-width");
   }
 
-  function onDrop(key: string) {
-    if (dragKey && sidebarState.editMode) {
-      sidebarState.reorderRoot(dragKey, key);
-    }
-    dragKey = null;
+  function syncSortableFromState() {
+    if (!sortable || dragging) return;
+    const order = sidebarState.editRootItems.map((item) => item.key);
+    sortable.sort(order, true);
   }
+
+  function restoreDefault() {
+    sidebarState.restoreDefaultOrder();
+    queueMicrotask(syncSortableFromState);
+  }
+
+  $effect(() => {
+    const editing = sidebarState.editMode;
+    const list = listEl;
+
+    destroySortable();
+    if (!editing || !list) return;
+
+    sortable = Sortable.create(list, {
+      animation: 220,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+      draggable: ".bsplus-sidebar-item.draggable",
+      filter: ".toggle, .toggle input, .bsplus-sidebar-edit-header, .bsplus-sidebar-edit-actions",
+      preventOnFilter: false,
+      dataIdAttr: "data-key",
+      ghostClass: "bsplus-sortable-ghost",
+      chosenClass: "bsplus-sortable-chosen",
+      dragClass: "bsplus-sortable-drag",
+      forceFallback: true,
+      fallbackOnBody: true,
+      fallbackTolerance: 3,
+      swapThreshold: 0.65,
+      direction: "vertical",
+      onStart: (evt) => {
+        dragging = true;
+        const width = evt.item.getBoundingClientRect().width;
+        document.documentElement.style.setProperty(
+          "--bsplus-drag-width",
+          `${Math.round(width)}px`,
+        );
+        // Fallback clone is created just after onStart; pin size + drop
+        // `.active` so theme/active rules don't expand it to full width.
+        requestAnimationFrame(() => {
+          const dragEl = document.querySelector(
+            ".bsplus-sortable-drag",
+          ) as HTMLElement | null;
+          if (!dragEl) return;
+          dragEl.style.width = `${Math.round(width)}px`;
+          dragEl.style.maxWidth = `${Math.round(width)}px`;
+          dragEl.classList.remove("active");
+        });
+      },
+      onEnd: (evt) => {
+        dragging = false;
+        document.documentElement.style.removeProperty("--bsplus-drag-width");
+        if (evt.from !== evt.to) return;
+        if (evt.oldIndex == null || evt.newIndex == null) return;
+        if (evt.oldIndex === evt.newIndex) return;
+        sidebarState.applyMenuOrder(sortable?.toArray() ?? []);
+      },
+    });
+
+    return () => {
+      destroySortable();
+    };
+  });
 
   $effect(() => {
     const editing = sidebarState.editMode;
@@ -111,6 +178,12 @@
       root.scrollTop = 0;
     });
   });
+
+  onDestroy(() => {
+    destroySortable();
+    coverEl?.remove();
+    coverEl = null;
+  });
 </script>
 
 <!--
@@ -124,32 +197,28 @@
   class:drilling={sidebarState.isDrilling}
   class:compact={sidebarState.compact}
   class:edit-mode={sidebarState.editMode}
+  class:is-sorting={dragging}
   aria-label="Main"
+  bind:this={listEl}
 >
   {#if sidebarState.editMode}
     <li class="item bsplus-sidebar-edit-header" aria-hidden="true">
       <!-- svelte-ignore a11y_label_has_associated_control -->
       <label><span class="label">Edit Sidebar</span></label>
     </li>
-    {#each sidebarState.items as item (item.key)}
+    {#each sidebarState.editRootItems as item (item.key)}
       <SidebarItem
         {item}
         active={sidebarState.activeKey === item.key}
-        compact={sidebarState.compact}
+        compact={false}
         editMode={true}
         visible={itemVisible(item.key)}
         {onActivate}
         {onToggleVisible}
-        {onDragStart}
-        {onDrop}
       />
     {/each}
     <li class="item bsplus-sidebar-edit-actions">
-      <button
-        type="button"
-        class="edit-btn"
-        onclick={() => sidebarState.restoreDefaultOrder()}
-      >
+      <button type="button" class="edit-btn" onclick={restoreDefault}>
         Restore Default
       </button>
       <button type="button" class="edit-btn primary" onclick={closeEdit}>
@@ -306,6 +375,11 @@
     align-items: center;
   }
 
+  .bsplus-sidebar-list.is-sorting {
+    cursor: grabbing;
+    user-select: none;
+  }
+
   .bsplus-sidebar-edit-header {
     pointer-events: none;
     width: 85%;
@@ -360,5 +434,31 @@
 
   .edit-btn.primary {
     background: rgba(0, 0, 0, 0.4);
+  }
+
+  /* SortableJS classes (applied to our items; must be :global). */
+  .bsplus-sidebar-list :global(.bsplus-sortable-ghost) {
+    opacity: 0.35 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  .bsplus-sidebar-list :global(.bsplus-sortable-chosen) {
+    background: rgba(0, 0, 0, 0.28) !important;
+  }
+
+  .bsplus-sidebar-list :global(.bsplus-sortable-drag),
+  :global(.bsplus-sortable-drag) {
+    opacity: 1 !important;
+    cursor: grabbing !important;
+    z-index: 10000 !important;
+    width: var(--bsplus-drag-width, 240px) !important;
+    max-width: var(--bsplus-drag-width, 240px) !important;
+    box-sizing: border-box !important;
+    box-shadow:
+      0 14px 32px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+    transform: scale(1.03);
+    background: rgba(0, 0, 0, 0.45) !important;
   }
 </style>

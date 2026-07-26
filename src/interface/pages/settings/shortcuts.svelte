@@ -196,7 +196,7 @@
         transition={{ duration: 0.3 }}
       >
         <button
-          class="w-full px-4 py-2 mb-4 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50"
+          class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50"
           onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
         >
           {#if isFormVisible}
@@ -224,7 +224,7 @@
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
           <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
-          <h2 class="text-sm">{shortcut[1].DisplayName || shortcut[0]}</h2>
+          <h2 class="text-lg font-medium">{shortcut[1].DisplayName || shortcut[0]}</h2>
         </div>
         <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
       </div>

@@ -66,6 +66,18 @@ export interface SettingsState {
   mockNotices?: boolean;
   hideSensitiveContent?: boolean;
   iconOnlySidebar?: boolean;
+  /** Visual style for the custom Learn sidebar (`classic` default). */
+  sidebarStyle?: string;
+  /** Item density: `compact` | `comfortable` (default) | `large`. */
+  sidebarDensity?: string;
+  /** Corner radius in px for sidebar items (default `12`). */
+  sidebarCornerRadius?: number;
+  /** Active item indicator: `fill` (default) | `bar` | `outline` | `underline`. */
+  sidebarActiveIndicator?: string;
+  /** Sidebar width: `narrow` | `default` (270px) | `wide`. */
+  sidebarWidth?: string;
+  /** Backdrop blur strength in px when transparency is on (default `50`). */
+  sidebarBlur?: number;
   adaptiveThemeColour?: boolean;
   adaptiveThemeGradient?: boolean;
   adaptiveThemeColourTransition?: boolean;

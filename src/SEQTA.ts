@@ -53,6 +53,12 @@ if (document.childNodes[1]) {
   init();
 }
 
+if (import.meta.env.DEV) {
+  window.addEventListener("unhandledrejection", (event) => {
+    recoverFromStaleDevModuleGraph(event.reason);
+  });
+}
+
 async function init() {
   if (
     hasSEQTAText &&
@@ -118,11 +124,16 @@ async function init() {
         initializeHideSensitiveToggle();
       }
 
+      if (import.meta.env.DEV) {
+        sessionStorage.removeItem("bsplus-dev-export-recovery");
+      }
+
       verboseInfo(
         "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
       );
     } catch (error) {
       console.error(error);
+      recoverFromStaleDevModuleGraph(error);
     }
   }
 }
@@ -135,4 +146,27 @@ function replaceIcons() {
         link.href = icon48;
       }
     });
+}
+
+/** Vite/CRX HMR can leave modules with missing named exports until the graph is cleared. */
+function recoverFromStaleDevModuleGraph(error: unknown) {
+  if (!import.meta.env.DEV) return;
+
+  const message = error instanceof Error ? error.message : String(error);
+  if (!/does not provide an export named/.test(message)) return;
+
+  const key = "bsplus-dev-export-recovery";
+  if (!sessionStorage.getItem(key)) {
+    sessionStorage.setItem(key, "1");
+    import.meta.hot?.send("bsplus:reset-module-graph");
+    setTimeout(() => {
+      location.reload();
+    }, 80);
+    return;
+  }
+
+  sessionStorage.removeItem(key);
+  console.error(
+    "[BetterSEQTA+] Dev module graph is still stale after recovery. Restart `npm run dev`, then reload this page.",
+  );
 }

@@ -191,6 +191,11 @@ class SidebarState {
     filterVisible(orderItems(this.items, settingsState.menuorder ?? [])),
   );
 
+  /** Full ordered root list for edit mode (includes hidden items). */
+  editRootItems = $derived(
+    orderItems(this.items, settingsState.menuorder ?? []),
+  );
+
   isDrilling = $derived(this.drillStack.length > 0);
 
   compact = $derived(this.iconOnly && !this.isDrilling && !this.editMode);
@@ -305,9 +310,14 @@ class SidebarState {
     if (enabled) this.resetDrill();
   }
 
+  applyMenuOrder(keys: string[]) {
+    if (!keys.length) return;
+    settingsState.menuorder = [...keys];
+  }
+
   reorderRoot(fromKey: string, toKey: string) {
     if (fromKey === toKey) return;
-    const keys = this.visibleRootItems.map((item) => item.key);
+    const keys = this.editRootItems.map((item) => item.key);
     const from = keys.indexOf(fromKey);
     const to = keys.indexOf(toKey);
     if (from < 0 || to < 0) return;
@@ -315,7 +325,7 @@ class SidebarState {
     const next = [...keys];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
-    settingsState.menuorder = next;
+    this.applyMenuOrder(next);
   }
 
   setItemVisibility(key: string, visible: boolean) {

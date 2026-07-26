@@ -12,8 +12,6 @@
     drillEnter?: boolean;
     onActivate: (item: SidebarItem) => void;
     onToggleVisible?: (key: string, visible: boolean) => void;
-    onDragStart?: (key: string) => void;
-    onDrop?: (key: string) => void;
   };
 
   let {
@@ -25,11 +23,10 @@
     drillEnter = false,
     onActivate,
     onToggleVisible,
-    onDragStart,
-    onDrop,
   }: Props = $props();
 
   const CHEVRON_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g></svg>`;
+  const GRIP_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="5" cy="3" r="1.35" fill="currentColor"/><circle cx="11" cy="3" r="1.35" fill="currentColor"/><circle cx="5" cy="8" r="1.35" fill="currentColor"/><circle cx="11" cy="8" r="1.35" fill="currentColor"/><circle cx="5" cy="13" r="1.35" fill="currentColor"/><circle cx="11" cy="13" r="1.35" fill="currentColor"/></svg>`;
 </script>
 
 <!-- SEQTA class names (item / hasChildren / active) so theme CSS keeps matching. -->
@@ -51,11 +48,7 @@
   tabindex={editMode ? -1 : 0}
   aria-label={item.label}
   aria-current={active ? "page" : undefined}
-  draggable={editMode}
   in:fly={{ x: drillEnter ? 24 : 0, duration: drillEnter ? 180 : 0 }}
-  ondragstart={() => onDragStart?.(item.key)}
-  ondragover={(e) => e.preventDefault()}
-  ondrop={() => onDrop?.(item.key)}
   onclick={(e) => {
     // Keep SEQTA's #menu handlers from seeing custom-list clicks — that fights
     // our drill UI and can freeze the tab (Goals / Folios / etc.).
@@ -72,6 +65,9 @@
     }
   }}
 >
+  {#if editMode}
+    <span class="drag-grip" aria-hidden="true">{@html GRIP_SVG}</span>
+  {/if}
   <!-- svelte-ignore a11y_label_has_associated_control -->
   <label>
     {#if item.iconHtml}
@@ -118,7 +114,7 @@
     box-sizing: border-box;
     transition:
       background-color 0.2s ease,
-      transform 0.2s ease,
+      box-shadow 0.2s ease,
       opacity 0.2s ease;
     user-select: none;
   }
@@ -165,18 +161,36 @@
 
   .bsplus-sidebar-item.edit-mode {
     cursor: grab;
-    width: 100%;
-    max-width: 100%;
-    gap: 4px;
-    padding-right: 4px;
-    box-sizing: border-box;
+    gap: 0;
   }
 
+  .bsplus-sidebar-item.edit-mode:active {
+    cursor: grabbing;
+  }
+
+  /* Keep the same label padding/size as normal items; only reserve toggle space. */
   .bsplus-sidebar-item.edit-mode > label:not(.toggle) {
-    flex: 1 1 0;
-    width: 0;
+    flex: 1 1 auto;
+    width: auto;
     min-width: 0;
-    padding-right: 4px;
+    padding: 12px;
+    padding-left: 4px;
+  }
+
+  .drag-grip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 20px;
+    margin-left: 10px;
+    opacity: 0.45;
+    color: inherit;
+    pointer-events: none;
+  }
+
+  .bsplus-sidebar-item.edit-mode:hover .drag-grip {
+    opacity: 0.8;
   }
 
   .bsplus-sidebar-item :global(label > svg) {

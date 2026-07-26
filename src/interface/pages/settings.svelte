@@ -24,9 +24,6 @@
     isGhReleaseUpdateCheckEnabled,
     type GhReleaseUpdateInfo,
   } from "@/utils/githubReleaseUpdate";
-  import { getAllPluginSettings } from "@/plugins";
-  import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-
   type PageId = "settings" | "shortcuts" | "themes";
 
   type NavItem = {
@@ -37,6 +34,37 @@
   let devModeSequence = "";
   let activePage = $state<PageId>("settings");
   let activeSection = $state("general");
+  let navTrackEl = $state<HTMLElement | null>(null);
+  let indicatorY = $state(0);
+  let indicatorH = $state(40);
+  let indicatorReady = $state(false);
+
+  const updateNavIndicator = () => {
+    if (!navTrackEl || activePage !== "settings") {
+      indicatorReady = false;
+      return;
+    }
+    const btn = navTrackEl.querySelector<HTMLElement>(
+      `[data-nav-section="${activeSection}"]`,
+    );
+    if (!btn) {
+      indicatorReady = false;
+      return;
+    }
+    const trackRect = navTrackEl.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    indicatorY = btnRect.top - trackRect.top + navTrackEl.scrollTop;
+    indicatorH = btnRect.height;
+    indicatorReady = true;
+  };
+
+  $effect(() => {
+    activeSection;
+    activePage;
+    navTrackEl;
+    queueMicrotask(updateNavIndicator);
+  });
+
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void; onCancel: () => void } | null>(null);
   let disclaimerTitle = $state("Confirm");
@@ -51,26 +79,18 @@
     { id: "themes", title: "Themes" },
   ];
 
-  const pluginNavItems = getAllPluginSettings()
-    .filter((plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"))
-    .filter(
-      (plugin) =>
-        (plugin as { disableToggle?: boolean }).disableToggle ||
-        Object.keys(plugin.settings ?? {}).length > 0,
-    )
-    .map((plugin) => ({
-      id: `plugin:${plugin.pluginId}`,
-      label: plugin.name,
-    }));
-
   const userNav: NavItem[] = [
     { id: "account", label: "My Account" },
     { id: "general", label: "General" },
     { id: "appearance", label: "Appearance" },
-    { id: "home", label: "Home" },
   ];
 
-  const appNav: NavItem[] = [...pluginNavItems, { id: "advanced", label: "Advanced" }];
+  const appNav: NavItem[] = [
+    { id: "timetable", label: "Timetable" },
+    { id: "assessments", label: "Assessments" },
+    { id: "features", label: "Features" },
+    { id: "advanced", label: "Advanced" },
+  ];
 
   const sectionTitle = $derived.by(() => {
     if (activePage === "shortcuts") return "Shortcuts";
@@ -209,11 +229,12 @@
 {#snippet navButton(item: NavItem)}
   <button
     type="button"
+    data-nav-section={item.id}
     onclick={() => selectSection(item.id)}
-    class="w-full px-3 py-2 text-left text-base rounded-lg transition-all duration-200
+    class="relative z-10 w-full px-3 py-2.5 text-left text-lg rounded-lg transition-colors duration-200
       {activePage === 'settings' && activeSection === item.id
-      ? 'bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white font-medium'
-      : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/40 hover:text-zinc-900 dark:hover:text-white'}"
+      ? 'text-zinc-900 dark:text-white font-medium'
+      : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white'}"
   >
     {item.label}
   </button>
@@ -221,7 +242,7 @@
 
 {#snippet settingsShell()}
   <div
-    class="flex flex-col h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white {standalone
+    class="flex flex-col h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white text-[18px] {standalone
       ? ''
       : 'rounded-xl shadow-2xl border border-zinc-200/60 dark:border-zinc-700/60'}"
   >
@@ -257,7 +278,7 @@
             role="tab"
             aria-selected={activePage === page.id}
             onclick={() => selectPage(page.id)}
-            class="flex-1 px-4 py-2 text-base rounded-full transition-all duration-200
+            class="flex-1 px-4 py-2.5 text-lg rounded-full transition-all duration-200
               {activePage === page.id
               ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white font-semibold shadow-sm'
               : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'}"
@@ -334,61 +355,72 @@
           : 'w-[260px] px-4 py-5'}"
         aria-label="Settings categories"
       >
-        {#if activePage === "settings"}
-          <div class="flex flex-col gap-1">
-            <p
-              class="px-3 mb-1.5 text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-            >
-              User Settings
-            </p>
-            {#each userNav as item (item.id)}
-              {@render navButton(item)}
-            {/each}
-          </div>
-          <div class="flex flex-col gap-1">
-            <p
-              class="px-3 mb-1.5 text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-            >
-              App Settings
-            </p>
-            {#each appNav as item (item.id)}
-              {@render navButton(item)}
-            {/each}
-          </div>
-        {:else if activePage === "shortcuts"}
-          <div class="flex flex-col gap-1">
-            <p
-              class="px-3 mb-1.5 text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-            >
-              Shortcuts
-            </p>
-            <button
-              type="button"
-              class="w-full px-3 py-2 text-left text-base rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
-            >
-              Shortcuts
-            </button>
-          </div>
-        {:else}
-          <div class="flex flex-col gap-1">
-            <p
-              class="px-3 mb-1.5 text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-            >
-              Themes
-            </p>
-            <button
-              type="button"
-              class="w-full px-3 py-2 text-left text-base rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
-            >
-              Themes
-            </button>
-          </div>
-        {/if}
+        <div class="relative flex flex-col gap-5" bind:this={navTrackEl}>
+          {#if activePage === "settings" && indicatorReady}
+            <div
+              class="absolute left-0 right-0 top-0 z-0 rounded-lg bg-zinc-200/90 dark:bg-zinc-700/90 pointer-events-none"
+              style="transform: translateY({indicatorY}px); height: {indicatorH}px; transition: {$settingsState.animations
+                ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), height 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+                : 'none'};"
+            ></div>
+          {/if}
+
+          {#if activePage === "settings"}
+            <div class="flex flex-col gap-1">
+              <p
+                class="relative z-10 px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
+              >
+                User Settings
+              </p>
+              {#each userNav as item (item.id)}
+                {@render navButton(item)}
+              {/each}
+            </div>
+            <div class="flex flex-col gap-1">
+              <p
+                class="relative z-10 px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
+              >
+                App Settings
+              </p>
+              {#each appNav as item (item.id)}
+                {@render navButton(item)}
+              {/each}
+            </div>
+          {:else if activePage === "shortcuts"}
+            <div class="flex flex-col gap-1">
+              <p
+                class="px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
+              >
+                Shortcuts
+              </p>
+              <button
+                type="button"
+                class="w-full px-3 py-2.5 text-left text-lg rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
+              >
+                Shortcuts
+              </button>
+            </div>
+          {:else}
+            <div class="flex flex-col gap-1">
+              <p
+                class="px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
+              >
+                Themes
+              </p>
+              <button
+                type="button"
+                class="w-full px-3 py-2.5 text-left text-lg rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
+              >
+                Themes
+              </button>
+            </div>
+          {/if}
+        </div>
       </nav>
 
       <div class="flex flex-col flex-1 min-w-0 min-h-0">
         <div class="shrink-0 px-6 pt-5 pb-3">
-          <h1 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             {sectionTitle}
           </h1>
         </div>

@@ -51,7 +51,10 @@ html.transparencyEffects {
     backdrop-filter: blur(10px) !important;
   }
 
-  #menu,
+  #menu {
+    backdrop-filter: blur(var(--bsplus-sidebar-blur, 50px));
+  }
+
   .kanban-column,
   .whatsnewContainer,
   [class*="Message__Message___"] {

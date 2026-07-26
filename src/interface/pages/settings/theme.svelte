@@ -15,7 +15,7 @@
   {#if !standalone.standalone}
     <button
       onclick={() => selectNoBackground()}
-      class="w-full px-4 py-2 mb-4 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
+      class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
       { clearTheme ? 'Clear Theme' : 'Select a Theme' }
     </button>
     <div class="relative w-full">

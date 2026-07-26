@@ -1,0 +1,220 @@
+/* Custom sidebar style presets + Look (density / radius / indicator). */
+
+$sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+@mixin accent-bar($shadow: 0.55) {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 10px !important;
+  bottom: 10px !important;
+  width: 4px !important;
+  border-radius: 2px !important;
+  background: #fff !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, $shadow) !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+#menu.bsplus-custom-sidebar {
+  $item: "> #bsplus-sidebar-root > li.item:not(.bsplus-sidebar-edit-header):not(.bsplus-sidebar-edit-actions)";
+  $label: "> #bsplus-sidebar-root > li.item > label:not(.toggle)";
+  $active: "> #bsplus-sidebar-root > li.item.active:not(.hasChildren)";
+
+  /* Look: base radius (pill / sharp / strip override).
+     Density/radius animate with the same easing as sidebar width. */
+  #{$item} {
+    border-radius: var(--bsplus-sidebar-radius, 12px) !important;
+    transition:
+      padding $sidebar-motion,
+      margin $sidebar-motion,
+      border-radius $sidebar-motion,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  #{$label} {
+    transition:
+      font-size $sidebar-motion,
+      line-height $sidebar-motion,
+      padding $sidebar-motion,
+      margin $sidebar-motion;
+
+    > svg {
+      transition:
+        width $sidebar-motion,
+        height $sidebar-motion,
+        margin $sidebar-motion;
+    }
+  }
+
+  /* —— Style presets —— */
+  &.bsplus-sidebar-style-soft {
+    #{$item} {
+      margin: 0 8px 10px !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+    #{$active} {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      background: rgba(0, 0, 0, 0.38) !important;
+    }
+  }
+
+  &.bsplus-sidebar-style-pill {
+    #{$item} {
+      margin: 0 10px 8px !important;
+      border-radius: 999px !important;
+    }
+    #{$active} {
+      background: rgba(0, 0, 0, 0.4) !important;
+    }
+  }
+
+  &.bsplus-sidebar-style-glass {
+    #{$item} {
+      margin: 0 8px 8px !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+    #{$active} {
+      background: rgba(255, 255, 255, 0.2) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+        0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &.bsplus-sidebar-style-sharp {
+    #{$item},
+    #{$active} {
+      border-radius: 4px !important;
+    }
+    #{$item} {
+      margin: 0 4px 4px !important;
+    }
+    #{$active} {
+      background: rgba(0, 0, 0, 0.42) !important;
+    }
+  }
+
+  &.bsplus-sidebar-style-strip {
+    #{$item} {
+      margin: 0 0 2px !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    #{$active} {
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: none !important;
+      &::after {
+        @include accent-bar(0.55);
+      }
+    }
+  }
+
+  &.bsplus-sidebar-style-neon #{$active} {
+    background: rgba(255, 255, 255, 0.1) !important;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.55),
+      0 0 14px rgba(255, 255, 255, 0.4),
+      0 0 28px rgba(255, 255, 255, 0.22) !important;
+  }
+
+  &.bsplus-sidebar-style-neon #{$item} {
+    margin: 0 8px 8px !important;
+  }
+
+  /* —— Density (comfortable = no class / no overrides) —— */
+  &.bsplus-sidebar-density-compact {
+    #{$item},
+    #{$active} {
+      padding: 6px 8px !important;
+      min-height: 0 !important;
+    }
+    #{$item} {
+      margin: 0 6px 4px !important;
+      height: auto !important;
+    }
+    #{$label} {
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 13px !important;
+      line-height: 1.2 !important;
+      min-height: 0 !important;
+      height: auto !important;
+      white-space: nowrap !important;
+
+      > svg {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 8px 0 2px !important;
+        flex-shrink: 0 !important;
+      }
+    }
+  }
+
+  &.bsplus-sidebar-density-large {
+    #{$item} {
+      margin: 0 8px 10px !important;
+      padding: 14px 12px !important;
+    }
+    #{$label} {
+      padding: 0 !important;
+      font-size: 17px !important;
+      line-height: 1.25 !important;
+
+      > svg {
+        width: 30px !important;
+        height: 30px !important;
+        margin: 0 10px 0 4px !important;
+      }
+    }
+  }
+
+  /* —— Active indicator (fill = default, no class) —— */
+  &.bsplus-sidebar-indicator-bar:not(.bsplus-sidebar-style-strip) #{$active} {
+    position: relative !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+    &::after {
+      @include accent-bar(0.45);
+    }
+  }
+
+  &.bsplus-sidebar-indicator-outline #{$active} {
+    background: transparent !important;
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+  }
+
+  &.bsplus-sidebar-indicator-underline:not(.bsplus-sidebar-style-strip) #{$active} {
+    position: relative !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    &::after {
+      content: "" !important;
+      position: absolute !important;
+      left: 14px !important;
+      right: 14px !important;
+      bottom: 6px !important;
+      top: auto !important;
+      width: auto !important;
+      height: 3px !important;
+      border-radius: 999px !important;
+      background: #fff !important;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
+      pointer-events: none !important;
+      z-index: 3 !important;
+      opacity: 1 !important;
+      display: block !important;
+    }
+  }
+}

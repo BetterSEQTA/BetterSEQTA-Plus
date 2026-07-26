@@ -9,6 +9,11 @@ import {
   clearNativeDrillActive,
   sidebarState,
 } from "./sidebarState.svelte";
+import {
+  applySidebarLook,
+  applySidebarStyleClass,
+  clearSidebarAppearance,
+} from "./sidebarStyles";
 
 const ROOT_ID = "bsplus-sidebar-root";
 const MENU_CLASS = "bsplus-custom-sidebar";
@@ -166,6 +171,8 @@ export function prepareCustomSidebarEarly() {
 
   earlyPrepareStarted = true;
   document.documentElement.classList.add(PENDING_CLASS);
+  // Width/blur vars before mount so layout doesn't jump.
+  applySidebarLook(document.getElementById("menu"));
   void mountCustomSidebar();
 }
 
@@ -183,6 +190,8 @@ export async function mountCustomSidebar(): Promise<boolean> {
   // Already mounted — re-sync after Home/News/Analytics injections.
   if (app && menuEl) {
     ensureDefaultMenuOrder(menuEl);
+    applySidebarStyleClass(menuEl, settingsState.sidebarStyle);
+    applySidebarLook(menuEl);
     sidebarState.syncSettings();
     syncFromMenu();
     startCatchupSync();
@@ -214,6 +223,8 @@ export async function mountCustomSidebar(): Promise<boolean> {
   }
 
   menu.classList.add(MENU_CLASS);
+  applySidebarStyleClass(menu, settingsState.sidebarStyle);
+  applySidebarLook(menu);
   document.getElementById(ROOT_ID)?.remove();
 
   app = mount(Sidebar, {
@@ -265,6 +276,18 @@ export async function mountCustomSidebar(): Promise<boolean> {
 
   clearSettingListeners();
   registerSetting("iconOnlySidebar", () => sidebarState.syncSettings());
+  registerSetting("sidebarStyle", () =>
+    applySidebarStyleClass(menuEl, settingsState.sidebarStyle),
+  );
+  for (const key of [
+    "sidebarDensity",
+    "sidebarCornerRadius",
+    "sidebarActiveIndicator",
+    "sidebarWidth",
+    "sidebarBlur",
+  ] as const) {
+    registerSetting(key, () => applySidebarLook(menuEl));
+  }
   const resync = () => syncFromMenu();
   registerSetting("menuorder", resync);
   registerSetting("menuitems", resync);
@@ -305,7 +328,10 @@ export function unmountCustomSidebar() {
   }
 
   document.getElementById(ROOT_ID)?.remove();
-  menuEl?.classList.remove(MENU_CLASS, "bsplus-sidebar-edit-mode");
+  if (menuEl) {
+    menuEl.classList.remove(MENU_CLASS, "bsplus-sidebar-edit-mode");
+    clearSidebarAppearance(menuEl);
+  }
   menuEl = null;
   sidebarState.resetDrill();
   sidebarState.setEditMode(false);
