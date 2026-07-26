@@ -6,7 +6,7 @@ const local = {
       return Object.fromEntries(storage);
     }
     if (typeof keys === "string") {
-      return keys in storage ? { [keys]: storage.get(keys) } : {};
+      return storage.has(keys) ? { [keys]: storage.get(keys) } : {};
     }
     const out: Record<string, unknown> = {};
     for (const key of keys) {

@@ -77,6 +77,14 @@ export async function finishLoad() {
   betterSeqtaFinishLoadDone = true;
 
   try {
+    // Keep the loading overlay up until the custom title bar is fully ready.
+    if (!isSeqtaEngageExperience() && settingsState.onoff) {
+      const { waitForCustomTitleBarReady } = await import(
+        "@/seqta/ui/titlebar/mountCustomTitleBar"
+      );
+      await waitForCustomTitleBarReady();
+    }
+
     document.querySelector(".legacy-root")?.classList.remove("hidden");
 
     const loadingbk = document.getElementById("loading");
@@ -190,6 +198,9 @@ async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
   void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
     void mod.mountCustomSidebar();
+  });
+  void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+    void mod.mountCustomTitleBar();
   });
   const sublink: string | undefined = getEngageRoutePage();
 
@@ -336,8 +347,15 @@ async function handleDefault(): Promise<void> {
 async function handleMessages(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
 
-  const element = document.getElementById("title")!.firstChild as HTMLElement;
-  element.innerText = "Direct Messages";
+  const titleText = "Direct Messages";
+  void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+    mod.setCustomTitleBarText(titleText);
+  });
+  // Fallback when the custom title bar is not mounted yet.
+  if (!document.getElementById("bsplus-title-root")) {
+    const legacy = document.getElementById("title")?.firstChild;
+    if (legacy instanceof HTMLElement) legacy.innerText = titleText;
+  }
   document.title = "Direct Messages ― SEQTA Learn";
   SortMessagePageItems(node);
 
@@ -684,11 +702,16 @@ export function init() {
     // Engage keeps its native React menu — never apply the pending hide class there.
     if (!isSeqtaEngageExperience()) {
       document.documentElement.classList.add("bsplus-custom-sidebar-pending");
+      document.documentElement.classList.add("bsplus-custom-title-pending");
       void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
         mod.prepareCustomSidebarEarly();
       });
+      void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+        mod.prepareCustomTitleBarEarly();
+      });
     } else {
       document.documentElement.classList.remove("bsplus-custom-sidebar-pending");
+      document.documentElement.classList.remove("bsplus-custom-title-pending");
     }
 
     void observeMenuItemPosition();

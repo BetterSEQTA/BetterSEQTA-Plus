@@ -16,7 +16,9 @@
   import FontPickerModal from "../components/FontPickerModal.svelte";
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
+  import FeedbackModal from "../components/FeedbackModal.svelte";
   import { settingsPopup } from "@/seqta/utils/settingsPopup";
+  import { consumeOpenFeedbackRequest } from "@/seqta/utils/feedback/client";
   import {
     checkGithubReleaseUpdate,
     dismissNightlyUpdate,
@@ -158,9 +160,16 @@
   let showColourPicker = $state<boolean>(false);
   let showFontPicker = $state<boolean>(false);
   let showCloudPanel = $state<boolean>(false);
+  let showFeedbackModal = $state<boolean>(false);
+  let feedbackFocusId = $state<string | null>(null);
 
   const openCloudPanel = () => {
     showCloudPanel = true;
+  };
+
+  const openFeedback = (feedbackId?: string | null) => {
+    feedbackFocusId = feedbackId ?? null;
+    showFeedbackModal = true;
   };
 
   const showDisclaimer = (
@@ -179,6 +188,8 @@
     showColourPicker = false;
     showFontPicker = false;
     showCloudPanel = false;
+    showFeedbackModal = false;
+    feedbackFocusId = null;
   };
 
   const handleClose = () => {
@@ -209,6 +220,17 @@
       });
     }
 
+    const pendingFeedbackId = consumeOpenFeedbackRequest();
+    if (pendingFeedbackId) {
+      openFeedback(pendingFeedbackId);
+    }
+
+    const onOpenFeedback = (event: Event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      if (typeof id === "string" && id) openFeedback(id);
+    };
+    window.addEventListener("bsplus:open-feedback", onOpenFeedback);
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !standalone) {
         closeExtensionPopup();
@@ -218,6 +240,7 @@
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("bsplus:open-feedback", onOpenFeedback);
     };
   });
 
@@ -350,12 +373,12 @@
     <!-- Body: left nav + content -->
     <div class="flex flex-1 min-h-0 overflow-hidden">
       <nav
-        class="flex flex-col shrink-0 gap-5 overflow-y-auto no-scrollbar border-r border-zinc-200/60 dark:border-zinc-700/50 bg-zinc-50/80 dark:bg-zinc-900/40 {standalone
+        class="flex flex-col shrink-0 min-h-0 border-r border-zinc-200/60 dark:border-zinc-700/50 bg-zinc-50/80 dark:bg-zinc-900/40 {standalone
           ? 'w-[140px] px-2 py-3'
           : 'w-[260px] px-4 py-5'}"
         aria-label="Settings categories"
       >
-        <div class="relative flex flex-col gap-5" bind:this={navTrackEl}>
+        <div class="relative flex flex-col flex-1 min-h-0 gap-5 overflow-y-auto no-scrollbar" bind:this={navTrackEl}>
           {#if activePage === "settings" && indicatorReady}
             <div
               class="absolute left-0 right-0 top-0 z-0 rounded-lg bg-zinc-200/90 dark:bg-zinc-700/90 pointer-events-none"
@@ -416,6 +439,33 @@
             </div>
           {/if}
         </div>
+
+        <button
+          type="button"
+          onclick={openFeedback}
+          class="shrink-0 mt-4 w-full px-3 py-2.5 text-left text-[18px] font-medium rounded-lg transition-all duration-200
+            text-zinc-700 dark:text-zinc-200
+            bg-zinc-200/70 dark:bg-zinc-800/80
+            hover:bg-zinc-300/80 dark:hover:bg-zinc-700
+            hover:scale-[1.02] active:scale-95
+            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+        >
+          <span class="flex items-center gap-2">
+            <svg
+              class="w-5 h-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Send us feedback!</span>
+          </span>
+        </button>
       </nav>
 
       <div class="flex flex-col flex-1 min-w-0 min-h-0">
@@ -513,6 +563,16 @@
       disclaimerCallbacks?.onCancel();
       showDisclaimerModal = false;
       disclaimerCallbacks = null;
+    }}
+  />
+{/if}
+
+{#if showFeedbackModal}
+  <FeedbackModal
+    initialFeedbackId={feedbackFocusId}
+    onClose={() => {
+      showFeedbackModal = false;
+      feedbackFocusId = null;
     }}
   />
 {/if}

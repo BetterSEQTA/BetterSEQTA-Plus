@@ -47,8 +47,13 @@ async function loadAnalyticsPageInner(): Promise<void> {
   main.appendChild(viewShell);
   const container = viewShell;
 
-  const titlediv = document.getElementById("title")?.firstChild;
-  if (titlediv) (titlediv as HTMLElement).innerText = "Analytics";
+  void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+    mod.setCustomTitleBarText("Analytics");
+  });
+  if (!document.getElementById("bsplus-title-root")) {
+    const titlediv = document.getElementById("title")?.firstChild;
+    if (titlediv instanceof HTMLElement) titlediv.innerText = "Analytics";
+  }
 
   renderAnalyticsPage(container);
 }

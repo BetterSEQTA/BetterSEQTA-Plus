@@ -673,6 +673,32 @@ html.bsplus-custom-sidebar-pending #menu > .icon-cover,
   clip: rect(0, 0, 0, 0) !important;
 }
 
+/* Custom title bar: keep native `#title` children for sync, hide them visually.
+   Loading overlay stays until waitForCustomTitleBarReady() so this is ready underneath. */
+html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
+#title.bsplus-custom-title > :not(#bsplus-title-root) {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  clip: rect(0, 0, 0, 0) !important;
+}
+
+#bsplus-title-root {
+  display: contents;
+}
+
+/* `#title span { display: none }` hides the page title; keep search chip icons visible. */
+#title.bsplus-custom-title .search-trigger > span {
+  display: inline-flex !important;
+  align-items: center;
+}
+
 /* Custom Svelte sidebar: keep `#menu > ul > li.item` / `.sub` shape for theme CSS. */
 #menu.bsplus-custom-sidebar {
   position: absolute !important;

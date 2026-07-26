@@ -49,6 +49,8 @@ const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
   "bsplus_user",
   "cloudAccessToken",
   "cloudUsername",
+  "bsplus_install_id",
+  "bsplus_pending_feedback_ids",
 ]);
 
 function isExcludedSettingsKey(key: string): boolean {

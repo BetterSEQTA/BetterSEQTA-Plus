@@ -38,6 +38,10 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "cloudAccessToken",
   "cloudUsername",
   "bsplus_google_calendar",
+  /** Anonymous feedback install id — device-local, never synced. */
+  "bsplus_install_id",
+  /** Pending feedback ids awaiting a reply notification — device-local. */
+  "bsplus_pending_feedback_ids",
 ] as const;
 
 /**

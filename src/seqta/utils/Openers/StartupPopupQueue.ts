@@ -5,13 +5,15 @@ import {
   OpenThemeOfTheMonthPopup,
   shouldShowThemeOfTheMonth,
 } from "./OpenThemeOfTheMonthPopup";
+import { maybeQueueFeedbackReplyPopup } from "./OpenFeedbackReplyPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
 
 type QueueStep = (goNext: () => void) => void;
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * Theme of the Month (when the user hasn't dismissed this calendar month).
+ * Theme of the Month (when the user hasn't dismissed this calendar month),
+ * then feedback reply notifications for pending submissions.
  */
 export async function runStartupPopupQueue() {
   // Make sure the background script knows about any dev-mode API override
@@ -31,6 +33,11 @@ export async function runStartupPopupQueue() {
     steps.push((goNext) => {
       void OpenThemeOfTheMonthPopup(themeOfTheMonth!, goNext);
     });
+  }
+
+  const feedbackReplyStep = await maybeQueueFeedbackReplyPopup();
+  if (feedbackReplyStep) {
+    steps.push(feedbackReplyStep);
   }
 
   function runNext() {

@@ -11,7 +11,12 @@ import {
   resetSearchIndexes,
   notifyOpenTabsResetSearchIndex,
 } from "./src/indexing/resetIndexes";
-import { getDefaultSearchHotkey } from "./src/utils/hotkeyUtils";
+import {
+  formatHotkeyForDisplay,
+  getDefaultSearchHotkey,
+  isValidHotkey,
+} from "./src/utils/hotkeyUtils";
+import { titleBarState } from "@/seqta/ui/titlebar/titleBarState.svelte";
 
 const settings = defineSettings({
   searchHotkey: hotkeySetting({
@@ -66,7 +71,10 @@ const settings = defineSettings({
   }),
 });
 
-// Create the lazy plugin definition - this loads immediately but doesn't import heavy dependencies
+/**
+ * Shell loads immediately so the Quick Search chip can show in the title bar.
+ * Heavy indexing / SearchBar chunk stays in the lazy core loader.
+ */
 const globalSearchPlugin = defineLazyPlugin({
   id: "global-search",
   name: "Global Search",
@@ -75,20 +83,34 @@ const globalSearchPlugin = defineLazyPlugin({
   settings,
   disableToggle: true,
   defaultEnabled: false,
-  styles: styles,
-  
-  // Lazy loader - only imports the heavy plugin when actually needed
-  loader: () => import("./src/core/index")
+  styles,
+  loader: () => import("./src/core/index"),
 });
 
 const runGlobalSearch = globalSearchPlugin.run!;
 
 globalSearchPlugin.run = async (api) => {
-  if (isSeqtaEngageExperience()) {
-    return () => {};
-  }
+  if (isSeqtaEngageExperience()) return () => {};
 
-  return runGlobalSearch(api);
+  // Eager chrome (like Analytics menu injection) — heavy chunk loads behind it.
+  const hotkey = isValidHotkey(api.settings.searchHotkey ?? "")
+    ? (api.settings.searchHotkey as string)
+    : getDefaultSearchHotkey();
+  titleBarState.searchHotkeyLabel = formatHotkeyForDisplay(hotkey);
+  titleBarState.showSearch = true;
+
+  let heavyCleanup: (() => void) | void;
+  const heavyPromise = runGlobalSearch(api).then((cleanup) => {
+    heavyCleanup = cleanup;
+  });
+
+  return () => {
+    titleBarState.showSearch = false;
+    void heavyPromise.then(() => {
+      if (typeof heavyCleanup === "function") heavyCleanup();
+    });
+    if (typeof heavyCleanup === "function") heavyCleanup();
+  };
 };
 
 export default globalSearchPlugin;

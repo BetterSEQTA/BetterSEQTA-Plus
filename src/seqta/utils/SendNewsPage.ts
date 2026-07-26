@@ -48,9 +48,12 @@ export async function SendNewsPage() {
 
   main.append(html.firstChild!);
 
-  const titleBar = document.getElementById("title")?.firstChild;
-  if (titleBar) {
-    (titleBar as HTMLElement).innerText = "News";
+  void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+    mod.setCustomTitleBarText("News");
+  });
+  if (!document.getElementById("bsplus-title-root")) {
+    const titleBar = document.getElementById("title")?.firstChild;
+    if (titleBar instanceof HTMLElement) titleBar.innerText = "News";
   }
   AppendLoadingSymbol("newsloading", "#news-container");
 

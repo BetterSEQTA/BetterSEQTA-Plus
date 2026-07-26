@@ -11,6 +11,7 @@ describe("normalizeStorageForSync", () => {
     const normalized = normalizeStorageForSync({
       DarkMode: true,
       bsplus_token: "secret",
+      bsplus_install_id: "550e8400-e29b-41d4-a716-446655440000",
       bsplus_cloud_settings_known_remote_updated_at: "2026-01-01T00:00:00.000Z",
       "bsplus.analytics.v2.school.1": { cached: true },
     });
