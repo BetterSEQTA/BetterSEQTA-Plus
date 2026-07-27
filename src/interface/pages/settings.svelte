@@ -168,7 +168,7 @@
   };
 
   const openFeedback = (feedbackId?: string | null) => {
-    feedbackFocusId = feedbackId ?? null;
+    feedbackFocusId = typeof feedbackId === "string" && feedbackId ? feedbackId : null;
     showFeedbackModal = true;
   };
 
@@ -442,7 +442,7 @@
 
         <button
           type="button"
-          onclick={openFeedback}
+          onclick={() => openFeedback()}
           class="shrink-0 mt-4 w-full px-3 py-2.5 text-left text-[18px] font-medium rounded-lg transition-all duration-200
             text-zinc-700 dark:text-zinc-200
             bg-zinc-200/70 dark:bg-zinc-800/80

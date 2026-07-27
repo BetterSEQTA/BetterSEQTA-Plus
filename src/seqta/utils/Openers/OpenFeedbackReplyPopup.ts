@@ -44,8 +44,8 @@ export function OpenFeedbackReplyPopup(
       <p style="margin-bottom:.75rem"><strong>${esc(title)}</strong></p>
       <div style="padding:.9rem 1rem;border-radius:.75rem;background:color-mix(in srgb,currentColor 8%,transparent);white-space:pre-wrap">${esc(response)}</div>
       <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.25rem;flex-wrap:wrap">
-        <button type="button" id="bsplus-feedback-reply-dismiss" style="padding:.55rem 1rem;border-radius:.6rem;border:none;cursor:pointer;font-size:1rem;background:color-mix(in srgb,currentColor 12%,transparent);color:inherit">Dismiss</button>
-        <button type="button" id="bsplus-feedback-reply-view" style="padding:.55rem 1rem;border-radius:.6rem;border:none;cursor:pointer;font-size:1rem;font-weight:600;background:currentColor;color:Canvas">View reply</button>
+        <button type="button" id="bsplus-feedback-reply-dismiss" style="padding:.55rem 1rem;border-radius:.6rem;border:1px solid color-mix(in srgb,var(--text-primary,#18181b) 20%,transparent);cursor:pointer;font-size:1rem;background:transparent;color:var(--text-primary,#18181b)">Dismiss</button>
+        <button type="button" id="bsplus-feedback-reply-view" style="padding:.55rem 1rem;border-radius:.6rem;border:none;cursor:pointer;font-size:1rem;font-weight:600;background:var(--text-primary,#18181b);color:var(--background-primary,#fff)">View reply</button>
       </div>
     </div>
   `).firstChild as HTMLElement;

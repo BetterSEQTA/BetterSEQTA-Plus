@@ -29,7 +29,9 @@
     initialFeedbackId?: string | null;
   }>();
 
-  let tab = $state<"send" | "status">(initialFeedbackId ? "status" : "send");
+  let tab = $state<"send" | "status">(
+    typeof initialFeedbackId === "string" && initialFeedbackId ? "status" : "send",
+  );
   let category = $state<FeedbackCategory>("bug");
   let subject = $state("");
   let message = $state("");
@@ -110,7 +112,9 @@
   }
 
   onMount(() => {
-    if (initialFeedbackId) void openStatusItem(initialFeedbackId);
+    if (typeof initialFeedbackId === "string" && initialFeedbackId) {
+      void openStatusItem(initialFeedbackId);
+    }
   });
 
   async function handleSubmit() {
