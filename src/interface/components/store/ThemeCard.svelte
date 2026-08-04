@@ -4,8 +4,6 @@
     masterGridDisplayDownloadCount,
     gridCardPreviewImageUrls,
   } from '@/interface/utils/themeStoreFlavours'
-  import { fade } from 'svelte/transition';
-  import { onMount } from 'svelte';
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
   let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows } = $props<{
@@ -49,21 +47,8 @@
     ];
   });
 
-  let menuOpen = $state(false);
-  let menuRef: HTMLDivElement;
-
-  onMount(() => {
-    const closeMenu = (e: MouseEvent) => {
-      if (menuOpen && menuRef && !menuRef.contains(e.target as Node)) {
-        menuOpen = false;
-      }
-    };
-    document.addEventListener('click', closeMenu);
-    return () => document.removeEventListener('click', closeMenu);
-  });
-
   function handleCardClick(e: MouseEvent) {
-    if ((e.target as HTMLElement).closest('[data-theme-menu]')) return;
+    if ((e.target as HTMLElement).closest('[data-theme-favorite]')) return;
     onClick();
   }
 
@@ -74,7 +59,6 @@
     } else {
       onRequestSignIn?.();
     }
-    menuOpen = false;
   }
 </script>
 
@@ -86,8 +70,7 @@
   onclick={handleCardClick}
 >
   <div
-    class="bg-gray-50 w-full transition-all duration-500 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] dark:hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
-    transition:fade
+    class="theme-card isolate bg-gray-50 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
   >
     {#if theme.featured === true}
       <div class="absolute top-2 left-2 z-20 pointer-events-none">
@@ -102,45 +85,34 @@
         </span>
       </div>
     {/if}
-    <!-- Menu dropdown -->
-    <div class="absolute top-2 right-2 z-20" data-theme-menu bind:this={menuRef}>
-      <button
-        type="button"
-        class="flex justify-center items-center w-8 h-8 rounded-lg bg-black/40 hover:bg-black/60 text-white transition-all"
-        onclick={(e) => { e.stopPropagation(); menuOpen = !menuOpen; }}
-        aria-label="Theme options"
+    <button
+      type="button"
+      data-theme-favorite
+      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scAle-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-[4px] transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      onclick={handleFavoriteClick}
+      aria-label={isLoggedIn
+        ? theme.is_favorited
+          ? 'Remove from favourites'
+          : 'Add to favourites'
+        : 'Sign in to favourite themes'}
+      title={isLoggedIn
+        ? theme.is_favorited
+          ? 'Remove from favourites'
+          : 'Add to favourites'
+        : 'Sign in to favourite themes'}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill={theme.is_favorited ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        stroke-width="2"
+        class="h-5 w-5 {theme.is_favorited ? 'text-red-500' : ''}"
+        aria-hidden="true"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
-          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-        </svg>
-      </button>
-      {#if menuOpen}
-        <div
-          class="absolute right-0 top-full mt-1 py-1 min-w-[140px] rounded-lg bg-white dark:bg-zinc-800 shadow-lg border border-zinc-200 dark:border-zinc-700"
-          role="menu"
-        >
-          <button
-            type="button"
-            class="flex gap-2 items-center w-full px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700"
-            role="menuitem"
-            onclick={handleFavoriteClick}
-            title={isLoggedIn ? (theme.is_favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill={theme.is_favorited ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              stroke-width="2"
-              class="w-5 h-5 {theme.is_favorited ? 'text-red-500' : ''}"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            {theme.is_favorited ? 'Favorited' : 'Favorite'}
-          </button>
-        </div>
-      {/if}
-    </div>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
+      </svg>
+    </button>
     <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
       <span class="text-xl font-bold text-white drop-shadow-md">{theme.name}</span>
       {#if theme.author}
@@ -161,7 +133,6 @@
         </span>
       </div>
     </div>
-    <div class='absolute bottom-0 z-0 w-full h-3/4 bg-linear-to-t to-transparent from-black/80'></div>
     {#if gridRotatorUrls.length === 0}
       <div class="relative w-full h-48 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></div>
     {:else if !allowSlideAutoplay || gridRotatorUrls.length === 1}
@@ -199,3 +170,22 @@
     {/if}
   </div>
 </div>
+
+<style>
+  .theme-card::after {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 92%) 0%,
+      rgb(0 0 0 / 85%) 18%,
+      rgb(0 0 0 / 68%) 36%,
+      rgb(0 0 0 / 42%) 54%,
+      rgb(0 0 0 / 16%) 72%,
+      transparent 88%
+    );
+    content: '';
+    pointer-events: none;
+  }
+</style>

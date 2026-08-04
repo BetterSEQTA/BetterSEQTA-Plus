@@ -1,77 +1,120 @@
 <script lang="ts">
-  import logo from '@/resources/icons/betterseqta-dark-full.png';
-  import logoDark from '@/resources/icons/betterseqta-light-full.png';
-  import browser from 'webextension-polyfill';
-  import CloudHeader from './CloudHeader.svelte';
+  import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
+  import lightLogo from "@/resources/icons/betterseqta-light-full.png";
+  import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+  import MotionDiv from "../MotionDiv.svelte";
+  import PlainCloseButton from "../PlainCloseButton.svelte";
+  import CloudHeader from "./CloudHeader.svelte";
 
-  const handleCloseStore = () => {
-    void import('@/seqta/ui/renderStore').then((module) => module.closeStore());
-  };
+  type SettingsPage = "settings" | "themes" | "backgrounds";
 
-  // Props
-  let { searchTerm, setSearchTerm, darkMode, activeTab, setActiveTab } = $props<{
-    searchTerm: string,
-    setSearchTerm: (term: string) => void,
-    darkMode: boolean,
-    activeTab: string,
-    setActiveTab: (tab: string) => void
+  let {
+    searchTerm,
+    setSearchTerm,
+    activePage,
+    setActivePage,
+    showStoreTools,
+    onLogoClick,
+    onClose,
+  } = $props<{
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
+    activePage: SettingsPage;
+    setActivePage: (page: SettingsPage) => void;
+    showStoreTools: boolean;
+    onLogoClick: () => void;
+    onClose: () => void;
   }>();
 
-  // Clear search input function
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
+  const tabs: { id: SettingsPage; title: string }[] = [
+    { id: "settings", title: "Settings" },
+    { id: "themes", title: "Themes" },
+    { id: "backgrounds", title: "Backgrounds" },
+  ];
+
+  const activeIndex = $derived(tabs.findIndex((tab) => tab.id === activePage));
 </script>
 
-<header class="fixed top-0 z-50 w-full h-[4.25rem] bg-white border-b shadow-md border-b-white/10 dark:bg-zinc-950/90 backdrop-blur-xl dark:text-white">
-  <div class="flex justify-between items-center px-4 py-1">
-    <div class="flex gap-4 place-items-center cursor-pointer" onkeydown={(e) => { if (e.key === 'Enter') clearSearch() }} onclick={clearSearch} role="button" tabindex="0">
-      <img src={browser.runtime.getURL(logo)} class="h-14 {darkMode ? 'hidden' : ''}" alt="Logo" />
-      <img src={browser.runtime.getURL(logoDark)} class="h-14 {darkMode ? '' : 'hidden'}" alt="Dark Logo" />
+<header
+  class="flex shrink-0 items-center gap-4 border-b border-zinc-200/60 px-5 py-4 dark:border-zinc-700/50"
+>
+  <button type="button" class="hidden shrink-0 lg:block" onclick={onLogoClick}>
+    <img
+      src={resolveExtensionAssetUrl(darkLogo)}
+      class="h-11 w-52 object-cover dark:hidden"
+      alt="BetterSEQTA+"
+    />
+    <img
+      src={resolveExtensionAssetUrl(lightLogo)}
+      class="hidden h-11 w-52 object-cover dark:block"
+      alt="BetterSEQTA+"
+    />
+  </button>
 
-      <div class="w-[1px] h-10 my-auto bg-zinc-400 dark:bg-zinc-600"></div>
-
-      <button
-        class="px-4 py-2 font-semibold text-lg transition-colors duration-200 {activeTab === 'themes' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'}"
-        onclick={() => setActiveTab('themes')}
-      >
-        Themes
-      </button>
-      <button
-        class="px-4 py-2 font-semibold text-lg transition-colors duration-200 {activeTab === 'backgrounds' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'}"
-        onclick={() => setActiveTab('backgrounds')}
-      >
-        Backgrounds
-      </button>
-
-      <CloudHeader />
-    </div>
-
-    <div class="flex relative gap-2">
-      <input
-        type="text"
-        placeholder="Search themes..."
-        value={searchTerm}
-        oninput={(e: any) => setSearchTerm(e.target.value)}
-        class="px-4 py-2 pl-10 text-lg transition bg-gray-100/80 rounded-lg ring-0 focus:bg-gray-100/0 dark:focus:bg-zinc-700/50 focus:ring-[1px] ring-zinc-200 dark:ring-zinc-600 dark:bg-zinc-700/80 dark:text-gray-100 focus:outline-none focus:border-transparent" />
-      <svg
-        class="absolute left-3 top-1/2 w-5 h-5 text-gray-400 transform -translate-y-1/2 dark:text-gray-200"
-        fill="none"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
-
-      <!-- Close Button -->
-      <button
-        onclick={handleCloseStore}
-        class="p-1 px-3"
-      >
-        <span class="text-2xl font-IconFamily">&#xed8a;</span>
-      </button>
+  <div
+    class="h-12 min-w-[14rem] flex-1 rounded-full bg-zinc-100/80 p-1 dark:bg-zinc-900/50"
+    role="tablist"
+    aria-label="Settings pages"
+  >
+    <div class="relative flex">
+      <MotionDiv
+        class="absolute inset-y-0 left-0 z-0 w-1/3 rounded-full bg-white shadow-sm dark:bg-zinc-700"
+        animate={{ x: `${activeIndex * 100}%` }}
+        transition={{ type: "spring", stiffness: 250, damping: 25 }}
+      />
+      {#each tabs as tab (tab.id)}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePage === tab.id}
+          onclick={() => setActivePage(tab.id)}
+          class="relative z-10 h-10 flex-1 rounded-full px-4 text-base transition-colors duration-200
+            {activePage === tab.id
+            ? 'font-semibold text-zinc-900 dark:text-white'
+            : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
+        >
+          {tab.title}
+        </button>
+      {/each}
     </div>
   </div>
+
+  <div class="flex shrink-0 items-center gap-2">
+    {#if showStoreTools}
+      <label class="relative hidden w-40 md:block xl:w-56">
+        <span class="sr-only">Search {activePage}</span>
+        <svg
+          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+        </svg>
+        <input
+          type="search"
+          placeholder={activePage === "themes" ? "Search themes" : "Search backgrounds"}
+          value={searchTerm}
+          oninput={(event) => setSearchTerm(event.currentTarget.value)}
+          class="store-search h-12 w-full rounded-full bg-zinc-100/80 pl-9 pr-4 text-sm text-zinc-900 transition-colors duration-150 placeholder:text-zinc-400 focus:bg-zinc-200/70 dark:bg-zinc-900/50 dark:text-white dark:focus:bg-zinc-700"
+        />
+      </label>
+
+      <CloudHeader />
+    {/if}
+
+    <PlainCloseButton onclick={onClose} label="Close settings" />
+  </div>
 </header>
+
+<style>
+  .store-search,
+  .store-search:focus,
+  .store-search:focus-visible {
+    appearance: none;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+  }
+</style>

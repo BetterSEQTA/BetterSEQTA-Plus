@@ -1,6 +1,5 @@
 <script lang="ts">
   import MotionDiv from './MotionDiv.svelte';
-  import './TabbedContainer.css';
   import { onMount } from 'svelte';
 
   let { tabs, activeTab = $bindable(0) } = $props<{ tabs: { title: string, Content: any, props?: any }[]; activeTab?: number }>();

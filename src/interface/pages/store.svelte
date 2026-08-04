@@ -5,12 +5,10 @@
   import CoverSwiper from '../components/store/CoverSwiper.svelte';
   import ThemeGrid from '../components/store/ThemeGrid.svelte';
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
   import type { Theme } from '../types/Theme'
   import { visibleStoreThemes, buildCoverSlidesForThemes, normalizeStoreTheme } from '@/interface/utils/themeStoreFlavours'
   import browser from 'webextension-polyfill'
   import ThemeModal from '../components/store/ThemeModal.svelte'
-  import Header from '../components/store/Header.svelte'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
@@ -21,6 +19,22 @@
   import { consumePendingHighlightThemeId } from '@/seqta/utils/openThemeStoreWithHighlight'
 
   const themeManager = ThemeManager.getInstance();
+  type StoreTab = 'themes' | 'backgrounds';
+  let {
+    activeTab,
+    searchTerm,
+    selectedBackgroundCategory,
+    setActiveTab,
+    setSearchTerm,
+    setBackgroundCategories,
+  } = $props<{
+    activeTab: StoreTab;
+    searchTerm: string;
+    selectedBackgroundCategory: string;
+    setActiveTab: (tab: StoreTab) => void;
+    setSearchTerm: (term: string) => void;
+    setBackgroundCategories: (categories: string[]) => void;
+  }>();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
   $effect(() => {
@@ -29,7 +43,6 @@
   });
 
   // State variables
-  let searchTerm = $state('');
   let themes = $state<Theme[]>([]);
 
   /** Grid/search/cover: hides flat-listed slaves when API sends them */
@@ -38,10 +51,8 @@
   /** Cover marquee slides (master + flavour imagery for top masters) */
   let coverSlides = $derived(buildCoverSlidesForThemes(listThemes.slice(0, 3)));
   let loading = $state(true);
-  let darkMode = $state(false);
   let displayTheme = $state<Theme | null>(null);
   let currentThemes = $state<string[]>([]);
-  let activeTab = $state('themes');
   
   let error = $state<string | null>(null);
   let fetchAttempt = $state(0);
@@ -69,14 +80,6 @@
     displayTheme = theme;
   };
   
-  const setSearchTerm = (term: string) => {
-    searchTerm = term;
-  };
-
-  const setActiveTab = (tab: string) => {
-    activeTab = tab;
-  };
-
   /** Featured themes first; within each group, newest by `created_at` (API: Unix seconds). */
   function compareStoreThemes(a: Theme, b: Theme): number {
     const fa = a.featured === true ? 1 : 0;
@@ -155,8 +158,8 @@
     const match = themes.find((t) => t.id === themeId)
       ?? themes.find((t) => t.flavours?.some((f) => f.id === themeId));
     if (match) {
-      activeTab = 'themes';
-      searchTerm = '';
+      setActiveTab('themes');
+      setSearchTerm('');
       displayTheme = match;
     }
   }
@@ -175,9 +178,6 @@
     await fetchThemes();
     await fetchCurrentThemes();
     
-    darkMode = (await browser.storage.local.get('DarkMode')).DarkMode === 'true';
-    darkMode = $settingsState.DarkMode;
-
     const pending = consumePendingHighlightThemeId();
     if (pending) focusThemeById(pending);
 
@@ -242,13 +242,11 @@
   });
 </script>
 
-<div class="w-screen h-screen bg-white {darkMode ? 'dark' : ''}">
-  <div class="h-full overflow-y-scroll bg-zinc-200/50 dark:bg-zinc-900 dark:text-white pt-[4.25rem]">
-    <Header {searchTerm} {setSearchTerm} {darkMode} {activeTab} {setActiveTab} />
-    
-    <div class={`px-12 h-full ${activeTab === 'backgrounds' ? 'pt-0' : 'pt-6 md:px-24 lg:px-48'}`}>
-      <!-- Loading State -->
-      {#if loading}
+<div class="relative flex h-full min-h-0 flex-col overflow-hidden text-zinc-900 dark:text-white">
+    <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 dark:bg-zinc-900/40">
+      <div class={activeTab === 'backgrounds' ? 'h-full' : 'px-6 py-6 md:px-8 lg:px-10'}>
+        <!-- Loading State -->
+        {#if loading}
         <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
           {#each Array(6) as _, i (i)}
             <SkeletonLoader width="100%" height="200px" />
@@ -263,7 +261,7 @@
           </p>
           <button
             type="button"
-            class="mt-6 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+            class="mt-6 rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
             onclick={() => {
               loading = true;
               error = null;
@@ -312,11 +310,15 @@
             />
           {/if}
         {:else if activeTab === 'backgrounds'}
-          <Backgrounds {searchTerm} />
+          <Backgrounds
+            {searchTerm}
+            selectedCategory={selectedBackgroundCategory}
+            onCategoriesChange={setBackgroundCategories}
+          />
         {/if}
-      {/if}
-    </div>
-  </div>
+        {/if}
+      </div>
+    </main>
 
   {#if showSignInOverlay}
     <SignInToFavoriteModal onClose={() => (showSignInOverlay = false)} />

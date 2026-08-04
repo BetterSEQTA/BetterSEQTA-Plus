@@ -1,6 +1,7 @@
 <script lang="ts">
   import Select from "@/interface/components/Select.svelte";
   import Slider from "@/interface/components/Slider.svelte";
+  import Switch from "@/interface/components/Switch.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import {
     DEFAULT_SIDEBAR_BLUR,
@@ -187,27 +188,36 @@
       </div>
     </div>
 
-    <div class="row" class:disabled={!transparencyOn}>
+    <div class="row">
       <div class="copy">
-        <h3 class="row-title">Blur Strength</h3>
-        <p class="row-desc">
-          {#if transparencyOn}
-            Glass blur on the sidebar ({blur}px)
-          {:else}
-            Enable Transparency Effects to use blur
-          {/if}
-        </p>
+        <h3 class="row-title">Transparency Effects</h3>
+        <p class="row-desc">Use glass effects on supported surfaces (may impact battery life)</p>
       </div>
-      <div class="control slider">
-        <Slider
-          state={blur}
-          min={0}
-          max={80}
-          step={1}
-          onChange={(value) => (settingsState.sidebarBlur = value)}
+      <div class="control toggle">
+        <Switch
+          state={transparencyOn}
+          onChange={(value) => (settingsState.transparencyEffects = value)}
         />
       </div>
     </div>
+
+    {#if transparencyOn}
+      <div class="row">
+        <div class="copy">
+          <h3 class="row-title">Blur Strength</h3>
+          <p class="row-desc">Glass blur on the sidebar ({blur}px)</p>
+        </div>
+        <div class="control slider">
+          <Slider
+            state={blur}
+            min={0}
+            max={80}
+            step={1}
+            onChange={(value) => (settingsState.sidebarBlur = value)}
+          />
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -538,10 +548,6 @@
     border-top: none;
   }
 
-  .row.disabled {
-    opacity: 0.55;
-  }
-
   .copy {
     min-width: 0;
     flex: 1 1 auto;
@@ -573,5 +579,10 @@
   .control.slider {
     min-width: 10rem;
     width: 11rem;
+  }
+
+  .control.toggle {
+    display: flex;
+    justify-content: flex-end;
   }
 </style>

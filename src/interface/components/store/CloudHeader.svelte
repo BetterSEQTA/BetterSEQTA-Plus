@@ -69,7 +69,7 @@
   <button
     type="button"
     onclick={handleButtonClick}
-    class="flex items-center gap-2 px-3 py-1.5 text-[0.75rem] rounded-lg shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white transition-colors duration-200"
+    class="flex h-12 items-center gap-2 rounded-full bg-zinc-100/80 px-4 text-sm font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-none dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
@@ -85,14 +85,14 @@
       {/if}
       <span
         class={alwaysShowUserName
-          ? "inline max-w-[10rem] truncate text-[0.75rem]"
-          : "hidden max-w-24 truncate sm:inline text-[0.75rem]"}
+          ? "inline max-w-[10rem] truncate"
+          : "hidden max-w-24 truncate sm:inline"}
       >
         {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
       </span>
     {:else}
       <span class="text-sm font-IconFamily" aria-hidden="true">{'\ued53'}</span>
-      <span class="text-[0.75rem]">Sign in</span>
+      <span>Sign in</span>
     {/if}
   </button>
 

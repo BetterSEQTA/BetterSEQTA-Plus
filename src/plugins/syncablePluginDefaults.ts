@@ -27,7 +27,6 @@ export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<
   "background-music": { volume: 0.5, pauseOnHidden: true },
   messageFolders: {
     showTagsInAllMessages: true,
-    hideFolderedMessagesInAll: true,
   },
   "enhanced-navigation": { autoScrollOnClick: false },
   "global-search": {

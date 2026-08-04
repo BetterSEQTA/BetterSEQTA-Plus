@@ -160,7 +160,11 @@
     notificationCollector: "features",
   };
 
+  const showsSection = (section: string) =>
+    activeSection === "all" || activeSection === section;
+
   const pluginBelongsInSection = (pluginId: string) =>
+    activeSection === "all" ||
     (pluginSectionById[pluginId] ?? "features") === activeSection;
 
 
@@ -191,7 +195,7 @@
 {/snippet}
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
-  {#if activeSection === "account"}
+  {#if showsSection("account")}
     {@render Setting({
       title: "Connect Mobile App",
       description: "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn",
@@ -220,7 +224,7 @@
     </div>
   {/if}
 
-  {#if activeSection === "general"}
+  {#if showsSection("general")}
     {#each [
       ...(!isEngage
         ? [
@@ -264,16 +268,6 @@
         props: {
           state: $settingsState.timeFormat === "12",
           onChange: (isOn: boolean) => settingsState.timeFormat = isOn ? "12" : "24"
-        }
-      },
-      {
-        title: "Transparency Effects",
-        description: "Enable transparency effects on certain elements, such as blur (May impact battery life)",
-        id: 1,
-        Component: Switch,
-        props: {
-          state: $settingsState.transparencyEffects,
-          onChange: (isOn: boolean) => settingsState.transparencyEffects = isOn
         }
       },
       {
@@ -335,7 +329,7 @@
     {/each}
   {/if}
 
-  {#if activeSection === "appearance"}
+  {#if showsSection("appearance")}
     {#each [
       {
         title: "Custom Theme Colour",
@@ -410,7 +404,7 @@
     </div>
   {/if}
 
-  {#if activeSection === "general"}
+  {#if showsSection("general")}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">
@@ -590,7 +584,7 @@
   {/if}
   {/each}
 
-  {#if activeSection === "advanced"}
+  {#if showsSection("advanced")}
   {@render Setting({
     title: "BetterSEQTA+",
     description: "Enables BetterSEQTA+ features",

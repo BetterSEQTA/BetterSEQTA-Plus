@@ -2,6 +2,10 @@
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
+
+  let { section = "all" } = $props<{
+    section?: "all" | "themes" | "backgrounds";
+  }>();
   
   // backgrounds
   let selectedBackground = $state<string | null>(null);
@@ -9,15 +13,22 @@
     
   let clearTheme = $derived(selectedBackground !== null);
   let editMode = $state<boolean>(false);
+  let showBackgrounds = $derived(section !== "themes");
+  let showThemes = $derived(section !== "backgrounds");
 </script>
 
 <div class="py-4">
   {#if !standalone.standalone}
-    <button
-      onclick={() => selectNoBackground()}
-      class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
-      { clearTheme ? 'Clear Theme' : 'Select a Theme' }
-    </button>
+    {#if showBackgrounds}
+      <button
+        onclick={() => selectNoBackground()}
+        disabled={section === "backgrounds" && !clearTheme}
+        class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 disabled:opacity-50">
+        {section === "all"
+          ? clearTheme ? 'Clear Theme' : 'Select a Theme'
+          : clearTheme ? 'Clear Background' : 'No Background Selected'}
+      </button>
+    {/if}
     <div class="relative w-full">
       <button
         onclick={() => editMode = !editMode}
@@ -26,8 +37,12 @@
         <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
       </button>
 
-      <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
-      <ThemeSelector isEditMode={editMode} />
+      {#if showBackgrounds}
+        <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
+      {/if}
+      {#if showThemes}
+        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
+      {/if}
     </div>
   {:else}
     <div class="flex justify-center items-center w-full h-full">

@@ -52,7 +52,12 @@ async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {
   const mount = () => renderSvelte(Settings, shadow);
 
   if ("requestIdleCallback" in window) {
-    requestIdleCallback(mount);
+    await new Promise<void>((resolve) => {
+      requestIdleCallback(() => {
+        mount();
+        resolve();
+      });
+    });
   } else {
     mount();
   }

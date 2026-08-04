@@ -34,16 +34,16 @@
 </script>
 
 {#if slides.length > 0}
-  <div class="relative w-full overflow-clip rounded-xl transition-opacity" transition:fade>
+  <div class="relative w-full overflow-clip rounded-xl ring-1 ring-black/10 transition-opacity dark:ring-white/10" transition:fade>
     <div
-      class="w-full aspect-[5/1] max-h-[500px]"
+      class="w-full overflow-hidden"
       use:emblaCarouselSvelte={{ options, plugins }}
       onemblaInit={onInit}
     >
       <div class="flex">
         {#each slides as slide (slide.imageUrl + slide.title + (slide.subtitle ?? ''))}
           <div
-            class="relative flex-[0_0_100%] cursor-pointer rounded-xl overflow-clip"
+            class="cover-slide relative isolate min-w-0 flex-[0_0_100%] cursor-pointer overflow-hidden"
             role="button"
             tabindex="0"
             onkeydown={(e) => {
@@ -51,7 +51,7 @@
             }}
             onclick={() => setDisplayTheme(slide.openTheme)}
           >
-            <img src={slide.imageUrl} alt="" class="object-cover w-full h-full" />
+            <img src={slide.imageUrl} alt="" class="absolute inset-0 z-0 h-full w-full object-cover" />
             {#if slide.badgeFeatured === true}
               <div class="absolute top-4 left-4 z-[2] pointer-events-none">
                 <span
@@ -69,7 +69,7 @@
                 </span>
               </div>
             {/if}
-            <div class="absolute bottom-0 left-0 p-8 z-[1]">
+            <div class="absolute bottom-0 left-0 z-[2] p-8">
               <h2 class="text-4xl font-bold text-white">{slide.title}</h2>
               {#if slide.subtitle}
                 <p class="text-lg font-medium text-white/95 mt-1 line-clamp-2">{slide.subtitle}</p>
@@ -81,7 +81,6 @@
                 <p class="text-lg text-white line-clamp-3">{slide.openTheme.description}</p>
               {/if}
             </div>
-            <div class="absolute bottom-0 left-0 w-full h-1/2 to-transparent bg-linear-to-t from-black/80"></div>
           </div>
         {/each}
       </div>
@@ -111,3 +110,26 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .cover-slide {
+    aspect-ratio: 3 / 1;
+  }
+
+  .cover-slide::after {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 46%) 0%,
+      rgb(0 0 0 / 42.5%) 18%,
+      rgb(0 0 0 / 34%) 36%,
+      rgb(0 0 0 / 21%) 54%,
+      rgb(0 0 0 / 8%) 72%,
+      transparent 88%
+    );
+    content: '';
+    pointer-events: none;
+  }
+</style>

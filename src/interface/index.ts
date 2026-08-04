@@ -1,4 +1,3 @@
-import "./index.css";
 import Settings from "./pages/settings.svelte";
 import IconFamily from "@/resources/fonts/IconFamily.woff";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";

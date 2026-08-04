@@ -8,11 +8,14 @@
   const themeManager = ThemeManager.getInstance();
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
-  let { searchTerm } = $props<{ searchTerm: string }>();
+  let { searchTerm, selectedCategory, onCategoriesChange } = $props<{
+    searchTerm: string;
+    selectedCategory: string;
+    onCategoriesChange: (categories: string[]) => void;
+  }>();
 
   // Existing states
   let backgrounds = $state<Background[]>([]);
-  let selectedCategory = $state<string>('All');
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
   let isLoading = $state<boolean>(true);
@@ -33,6 +36,7 @@
       }
       const data = await response.json();
       backgrounds = data.backgrounds;
+      onCategoriesChange([...new Set(backgrounds.map((background) => background.category))]);
       debugInfo = `Loaded ${backgrounds.length} backgrounds`;
       await loadSavedBackgrounds();
     } catch (e) {
@@ -97,7 +101,6 @@
   })());
 
   let categories = $derived([...new Set(backgrounds.map(bg => bg.category))]);
-
   // Background management functions
   async function saveBackgroundFromUrl(url: string, id: string, fileType: string): Promise<void> {
     try {
@@ -162,41 +165,7 @@
   }
 </script>
 
-<div class="flex h-full">
-  <!-- Sidebar -->
-  <div class="p-4 w-64 h-full border-r border-zinc-200 dark:border-zinc-700">
-    <div class="mb-8">
-      <h2 class="mb-4 text-lg font-semibold">Categories</h2>
-      <nav class="space-y-2">
-        <button
-          class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === 'All' ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
-          onclick={() => selectedCategory = 'All'}
-        >
-          All
-        </button>
-        <button
-          class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === 'Featured' ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
-          onclick={() => selectedCategory = 'Featured'}
-        >
-          Featured
-        </button>
-        
-        <div class="my-2 border-b border-zinc-200 dark:border-zinc-700"></div>
-        
-        {#each categories as category}
-          <button
-            class={`w-full px-4 py-2 text-left bg-transparent rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ${selectedCategory === category ? 'bg-blue-100 dark:bg-zinc-800' : ''}`}
-            onclick={() => selectedCategory = category}
-          >
-            {category}
-          </button>
-        {/each}
-      </nav>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="overflow-auto flex-1">
+<div class="h-full overflow-auto">
     <!-- Header -->
     <div class="sticky top-0 z-10 p-4 border-b bg-[#F1F1F3] dark:bg-zinc-900 dark:border-zinc-700">
       <div class="flex justify-between items-center mb-4">
@@ -294,7 +263,6 @@
         </div>
       {/if}
     </div>
-  </div>
 </div>
 
 {#if settingsState.devMode}
@@ -307,4 +275,3 @@
     <p>Selected Category: {selectedCategory}</p>
   </div>
 {/if}
-

@@ -162,40 +162,6 @@ select option {
   }
 }
 
-#store {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9998;
-  animation: fadeIn 500ms forwards;
-  animation-delay: 200ms;
-  opacity: 0;
-
-  &.hide {
-    animation: fadeOut 500ms forwards;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
 .dark .resizeBar {
   background-color: rgb(28 28 30);
 }
@@ -1817,12 +1783,10 @@ html.transparencyEffects
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.3);
 }
-/* Not named `.border` — Tailwind’s utility of that name is injected into the
-   page via content-script CSS in production and would paint a 1px outline. */
-.bsplus-rounded {
+/* `.border` is also a public hook used by existing themes. */
+.home-container .border {
   border-radius: 16px;
   overflow: clip;
-  border-width: 0;
 }
 .shortcut-container h2 {
   font-size: 20px;

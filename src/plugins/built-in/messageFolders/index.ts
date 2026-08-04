@@ -167,6 +167,7 @@ const messageFoldersPlugin = {
 
     let activeFolderId: string | null = null;
     let messageListObserver: MutationObserver | null = null;
+    let observedMessageList: Element | null = null;
     let sidebarObserver: MutationObserver | null = null;
     let actionsObserver: MutationObserver | null = null;
     let openDropdown: HTMLElement | null = null;
@@ -217,9 +218,6 @@ const messageFoldersPlugin = {
         subject.textContent = textWrap.textContent ?? "";
       }
     };
-
-    const isMessageInAnyCustomFolder = (messageId: string): boolean =>
-      getAssignedFolderIds(messageId, getAssignments()).length > 0;
 
     const shouldShowBadgesInList = (): boolean => {
       return api.settings.showTagsInAllMessages || activeFolderId !== null;
@@ -837,19 +835,8 @@ const messageFoldersPlugin = {
       const messageItems = getMessageListItems();
       const moreBtn = document.querySelector("[class*='MessageList__MessageList___'] ol > button");
       if (activeFolderId === null) {
-        if (api.settings.hideFolderedMessagesInAll) {
-          for (const li of messageItems) {
-            const msgId = li.getAttribute("data-message");
-            if (msgId && isMessageInAnyCustomFolder(msgId)) {
-              li.classList.add("bsplus-folder-hidden");
-            } else {
-              li.classList.remove("bsplus-folder-hidden");
-            }
-          }
-        } else {
-          for (const li of messageItems) {
-            li.classList.remove("bsplus-folder-hidden");
-          }
+        for (const li of messageItems) {
+          li.classList.remove("bsplus-folder-hidden");
         }
         if (moreBtn) (moreBtn as HTMLElement).classList.remove("bsplus-folder-hidden");
         return;
@@ -868,14 +855,29 @@ const messageFoldersPlugin = {
 
     const setupMessageListObserver = () => {
       const messageList = document.querySelector("[class*='MessageList__MessageList___'] ol");
-      if (!messageList || messageListObserver) return;
-      messageListObserver = new MutationObserver(() => {
+      if (!messageList || messageList === observedMessageList) return;
+      messageListObserver?.disconnect();
+      observedMessageList = messageList;
+      messageListObserver = new MutationObserver((mutations) => {
+        const messageRowsChanged = mutations.some((mutation) =>
+          mutation.type === "childList"
+            ? mutation.target === messageList
+            : mutation.target instanceof Element &&
+              mutation.target.parentElement === messageList &&
+              mutation.target.matches("li[data-message]"),
+        );
+        if (!messageRowsChanged) return;
         applyBadges();
         applyFolderFilter();
         attachDragListeners();
         attachContextMenuListeners();
       });
-      messageListObserver.observe(messageList, { childList: true, subtree: false });
+      messageListObserver.observe(messageList, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class", "data-message"],
+      });
     };
 
     const attachContextMenuListeners = () => {
@@ -925,6 +927,7 @@ const messageFoldersPlugin = {
             renderSidebarFolders();
             attachNativeSidebarListeners();
           }
+          setupMessageListObserver();
         });
         sidebarObserver.observe(sidebar, { childList: true, subtree: true });
       }
@@ -937,12 +940,6 @@ const messageFoldersPlugin = {
         applyBadges();
       }),
     );
-    unregisters.push(
-      api.settings.onChange("hideFolderedMessagesInAll", () => {
-        applyFolderFilter();
-      }),
-    );
-
     return () => {
       for (const u of unregisters) u.unregister();
       messageListObserver?.disconnect();

@@ -11,15 +11,9 @@ export function consumePendingHighlightThemeId(): string | null {
 
 export async function openThemeStoreWithHighlight(themeId: string): Promise<void> {
   pendingHighlightThemeId = themeId;
-
-  const existing = document.getElementById("store");
-  if (existing) {
-    window.dispatchEvent(
-      new CustomEvent("bsplus:highlight-theme", { detail: { themeId } }),
-    );
-    return;
-  }
-
   const { OpenStorePage } = await import("@/seqta/ui/renderStore");
   await OpenStorePage();
+  window.dispatchEvent(
+    new CustomEvent("bsplus:highlight-theme", { detail: { themeId } }),
+  );
 }

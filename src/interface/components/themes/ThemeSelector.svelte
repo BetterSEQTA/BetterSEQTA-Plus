@@ -12,7 +12,10 @@
   const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
-  let { isEditMode } = $props<{ isEditMode: boolean }>();
+  let { isEditMode, showNavigation = true } = $props<{
+    isEditMode: boolean;
+    showNavigation?: boolean;
+  }>();
   let isDragging = $state(false);
   let tempTheme = $state(null);
   let favoriteStatus = $state<Record<string, boolean>>({});
@@ -128,7 +131,6 @@
 
   const openStorePage = async () => {
     const { OpenStorePage } = await import('@/seqta/ui/renderStore')
-    closeExtensionPopup()
     await OpenStorePage()
   }
 
@@ -166,7 +168,7 @@
 </script>
 
 <div
-  class="pt-5 mb-1 w-full"
+  class="pt-5 mb-1 w-full max-w-lg mx-auto"
   role="list"
   tabindex="-1"
   ondragover={handleDragOver}
@@ -188,7 +190,6 @@
       </div>
     </div>
   </div>
-  <h2 class="pb-2 text-lg font-bold">Themes</h2>
   <div class="flex flex-col gap-2 px-2">
     {#if themes}
       {#each themes.themes as theme (theme.id)}
@@ -267,25 +268,54 @@
       </div>
     {/if}
 
-    {#if themes && themes.themes.length > 0}
-      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
+    {#if themes && themes.themes.length === 0 && !tempTheme}
+      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center">
+        <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
+          No themes installed
+        </h3>
+        <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
+          Install a theme from the store or create one of your own.
+        </p>
+        <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onclick={() => void openStorePage()}
+            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+          >
+            <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
+            Install a theme
+          </button>
+          <button
+            type="button"
+            onclick={() => void openThemeCreator()}
+            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+          >
+            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
+            Create a theme
+          </button>
+        </div>
+      </div>
     {/if}
 
-    <button
-      onclick={() => void openStorePage()}
-      class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-    >
-      <span class="text-xl font-IconFamily">&#xecc5;</span>
-      <span class="ml-2">Theme Store</span>
-    </button>
+    {#if showNavigation && themes && themes.themes.length > 0}
+      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
 
-    <button
-      onclick={() => void openThemeCreator()}
-      class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-    >
-      <span class="text-xl font-IconFamily">&#xec60;</span>
-      <span class="ml-2">Create your own</span>
-    </button>
+      <button
+        onclick={() => void openStorePage()}
+        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      >
+        <span class="text-xl font-IconFamily">&#xecc5;</span>
+        <span class="ml-2">Theme Store</span>
+      </button>
+
+      <button
+        onclick={() => void openThemeCreator()}
+        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      >
+        <span class="text-xl font-IconFamily">&#xec60;</span>
+        <span class="ml-2">Create your own</span>
+      </button>
+    {/if}
   </div>
 </div>
 

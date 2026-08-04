@@ -16,6 +16,14 @@ export default function renderSvelte(
   props: Record<string, any> = {},
   shadowStyle: ShadowStyleVariant = "settings",
 ) {
+  if (mountPoint instanceof ShadowRoot || props.standalone === true) {
+    const styleElement = document.createElement("style");
+    styleElement.textContent = shadowStyles[shadowStyle];
+    (mountPoint instanceof ShadowRoot ? mountPoint : document.head).appendChild(
+      styleElement,
+    );
+  }
+
   const app = mount(Component, {
     target: mountPoint,
     props: {
@@ -23,12 +31,6 @@ export default function renderSvelte(
       ...props,
     },
   });
-
-  if (mountPoint instanceof ShadowRoot) {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = shadowStyles[shadowStyle];
-    mountPoint.appendChild(styleElement);
-  }
 
   return app;
 }

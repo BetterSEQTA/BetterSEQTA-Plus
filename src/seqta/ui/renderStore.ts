@@ -1,39 +1,9 @@
-import { unmount } from "svelte";
-
-let remove: () => void;
-
 export async function OpenStorePage(): Promise<void> {
-  remove = await renderStore();
-}
-
-export async function renderStore() {
-  const [{ default: renderSvelte }, { default: Store }] = await Promise.all([
-    import("@/interface/main"),
-    import("@/interface/pages/store.svelte"),
-  ]);
-
-  const container =
-    document.querySelector("#container") ??
-    document.getElementById("content") ??
-    document.body;
-
-  document.getElementById("store")?.remove();
-
-  const child = document.createElement("div");
-  child.id = "store";
-  container.appendChild(child);
-
-  const shadow = child.attachShadow({ mode: "open" });
-  const app = renderSvelte(Store, shadow);
-
-  return () => unmount(app);
-}
-
-export function closeStore() {
-  document.getElementById("store")!.classList.add("hide");
-
-  setTimeout(() => {
-    remove();
-    document.getElementById("store")!.remove();
-  }, 500);
+  const [{ requestSettingsDestination }, { openSettingsPopup }] =
+    await Promise.all([
+      import("@/seqta/utils/settingsNavigation"),
+      import("@/seqta/utils/setupSettingsButton"),
+    ]);
+  requestSettingsDestination({ page: "themes", view: "store" });
+  await openSettingsPopup();
 }

@@ -2,7 +2,11 @@
   import Settings from "./settings/general.svelte";
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
-  import browser from "webextension-polyfill";
+  import Store from "./store.svelte";
+  import TabbedContainer from "../components/TabbedContainer.svelte";
+  import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
+  import lightLogo from "@/resources/icons/betterseqta-light-full.png";
+  import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
   import { onMount, onDestroy } from "svelte";
@@ -17,8 +21,15 @@
   import CloudPanel from "../components/CloudPanel.svelte";
   import DisclaimerModal from "../components/DisclaimerModal.svelte";
   import FeedbackModal from "../components/FeedbackModal.svelte";
+  import SidebarNav from "../components/SidebarNav.svelte";
+  import StoreHeader from "../components/store/Header.svelte";
   import { settingsPopup } from "@/seqta/utils/settingsPopup";
   import { consumeOpenFeedbackRequest } from "@/seqta/utils/feedback/client";
+  import {
+    consumeSettingsDestination,
+    SETTINGS_NAVIGATION_EVENT,
+    type SettingsDestination,
+  } from "@/seqta/utils/settingsNavigation";
   import {
     checkGithubReleaseUpdate,
     dismissNightlyUpdate,
@@ -26,46 +37,30 @@
     isGhReleaseUpdateCheckEnabled,
     type GhReleaseUpdateInfo,
   } from "@/utils/githubReleaseUpdate";
-  type PageId = "settings" | "shortcuts" | "themes";
+  type PageId = "settings" | "themes" | "backgrounds";
+  type StoreTab = "themes" | "backgrounds";
+  type ThemeView = "theme-settings" | "theme-store";
+  type BackgroundView = "background-settings" | "background-store";
 
   type NavItem = {
     id: string;
     label: string;
+    divided?: boolean;
+    nested?: boolean;
+    expanded?: boolean;
   };
+
+  const BACKGROUND_CATEGORY_PREFIX = "background-category:";
 
   let devModeSequence = "";
+  let compactActiveTab = $state(0);
   let activePage = $state<PageId>("settings");
   let activeSection = $state("general");
-  let navTrackEl = $state<HTMLElement | null>(null);
-  let indicatorY = $state(0);
-  let indicatorH = $state(40);
-  let indicatorReady = $state(false);
-
-  const updateNavIndicator = () => {
-    if (!navTrackEl || activePage !== "settings") {
-      indicatorReady = false;
-      return;
-    }
-    const btn = navTrackEl.querySelector<HTMLElement>(
-      `[data-nav-section="${activeSection}"]`,
-    );
-    if (!btn) {
-      indicatorReady = false;
-      return;
-    }
-    const trackRect = navTrackEl.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    indicatorY = btnRect.top - trackRect.top + navTrackEl.scrollTop;
-    indicatorH = btnRect.height;
-    indicatorReady = true;
-  };
-
-  $effect(() => {
-    activeSection;
-    activePage;
-    navTrackEl;
-    queueMicrotask(updateNavIndicator);
-  });
+  let activeThemeView = $state<ThemeView>("theme-settings");
+  let activeBackgroundView = $state<BackgroundView>("background-settings");
+  let selectedBackgroundCategory = $state("All");
+  let backgroundCategories = $state<string[]>([]);
+  let storeSearchTerm = $state("");
 
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void; onCancel: () => void } | null>(null);
@@ -74,12 +69,6 @@
   const ghReleaseUpdateEnabled = isGhReleaseUpdateCheckEnabled();
   const ghReleaseChannelLabel = getInstalledGhReleaseChannelLabel();
   let ghReleaseUpdate = $state<GhReleaseUpdateInfo | null>(null);
-
-  const pages: { id: PageId; title: string }[] = [
-    { id: "settings", title: "Settings" },
-    { id: "shortcuts", title: "Shortcuts" },
-    { id: "themes", title: "Themes" },
-  ];
 
   const userNav: NavItem[] = [
     { id: "account", label: "My Account" },
@@ -92,14 +81,76 @@
     { id: "assessments", label: "Assessments" },
     { id: "features", label: "Features" },
     { id: "advanced", label: "Advanced" },
+    { id: "shortcuts", label: "Shortcuts" },
   ];
 
-  const sectionTitle = $derived.by(() => {
-    if (activePage === "shortcuts") return "Shortcuts";
-    if (activePage === "themes") return "Themes";
-    const all = [...userNav, ...appNav];
-    return all.find((item) => item.id === activeSection)?.label ?? "Settings";
+  const settingsNavGroups = [
+    { label: "User Settings", items: userNav },
+    { label: "App Settings", items: appNav },
+  ];
+
+  const themeNavGroups = [
+    {
+      label: "Themes",
+      items: [
+        { id: "theme-settings", label: "Theme settings" },
+        { id: "create-theme", label: "Create theme" },
+        { id: "theme-store", label: "Store" },
+      ],
+    },
+  ];
+
+  const backgroundNavGroups = $derived.by(() => {
+    const storeOpen = activeBackgroundView === "background-store";
+    const categoryItems: NavItem[] = storeOpen
+      ? ["All", "Featured", ...backgroundCategories].map((category, index) => ({
+          id: `${BACKGROUND_CATEGORY_PREFIX}${category}`,
+          label: category,
+          nested: true,
+          divided: index === 2,
+        }))
+      : [];
+
+    return [
+      {
+        label: "Backgrounds",
+        items: [
+          { id: "background-settings", label: "Background settings" },
+          { id: "background-store", label: "Store", expanded: storeOpen },
+          ...categoryItems,
+        ],
+      },
+    ];
   });
+
+  const navGroups = $derived(
+    activePage === "settings"
+      ? settingsNavGroups
+      : activePage === "themes"
+        ? themeNavGroups
+        : backgroundNavGroups,
+  );
+
+  const selectedNavId = $derived(
+    activePage === "settings"
+      ? activeSection
+      : activePage === "themes"
+        ? activeThemeView
+        : activeBackgroundView === "background-store"
+          ? `${BACKGROUND_CATEGORY_PREFIX}${selectedBackgroundCategory}`
+          : activeBackgroundView,
+  );
+
+  const sectionTitle = $derived.by(() => {
+    if (activePage === "themes") return "Themes";
+    if (activePage === "backgrounds") return "Backgrounds";
+    return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
+  });
+
+  const isStoreView = $derived(
+    (activePage === "themes" && activeThemeView === "theme-store") ||
+      (activePage === "backgrounds" && activeBackgroundView === "background-store"),
+  );
 
   const openGhRelease = () => {
     const url =
@@ -198,14 +249,51 @@
     }
   };
 
-  const selectPage = (page: PageId) => {
-    activePage = page;
+  const selectNavItem = (id: string) => {
+    if (activePage === "settings") {
+      activeSection = id;
+      return;
+    }
+
+    if (activePage === "themes") {
+      if (id === "create-theme") {
+        void openThemeCreator();
+      } else {
+        activeThemeView = id as ThemeView;
+      }
+      return;
+    }
+
+    if (id.startsWith(BACKGROUND_CATEGORY_PREFIX)) {
+      activeBackgroundView = "background-store";
+      selectedBackgroundCategory = id.slice(BACKGROUND_CATEGORY_PREFIX.length);
+    } else {
+      activeBackgroundView = id as BackgroundView;
+    }
   };
 
-  const selectSection = (id: string) => {
-    activeSection = id;
-    activePage = "settings";
+  const openThemeCreator = async () => {
+    const { OpenThemeCreator } = await import("@/plugins/built-in/themes/ThemeCreator");
+    OpenThemeCreator();
+    closeExtensionPopup();
   };
+
+  const applyDestination = (destination: SettingsDestination) => {
+    activePage = destination.page;
+    if (destination.page === "settings" && destination.section) {
+      activeSection = destination.section;
+    } else if (destination.page === "themes" && destination.view) {
+      activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
+    } else if (destination.page === "backgrounds" && destination.view) {
+      activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
+    }
+  };
+
+  const utilityActions = [
+    { label: "About", icon: "\ueb73", onclick: openAbout },
+    { label: "What's new", icon: "\ue929", onclick: openChangelog },
+    { label: "Privacy", icon: "\uecba", onclick: openPrivacyStatement },
+  ] as const;
 
   onMount(() => {
     settingsPopup.addListener(closePopupsOnSettingsClose);
@@ -231,6 +319,14 @@
     };
     window.addEventListener("bsplus:open-feedback", onOpenFeedback);
 
+    const onNavigateSettings = (event: Event) => {
+      applyDestination((event as CustomEvent<SettingsDestination>).detail);
+      consumeSettingsDestination();
+    };
+    window.addEventListener(SETTINGS_NAVIGATION_EVENT, onNavigateSettings);
+    const pendingDestination = consumeSettingsDestination();
+    if (pendingDestination) applyDestination(pendingDestination);
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !standalone) {
         closeExtensionPopup();
@@ -241,6 +337,7 @@
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("bsplus:open-feedback", onOpenFeedback);
+      window.removeEventListener(SETTINGS_NAVIGATION_EVENT, onNavigateSettings);
     };
   });
 
@@ -249,126 +346,21 @@
   });
 </script>
 
-{#snippet navButton(item: NavItem)}
-  <button
-    type="button"
-    data-nav-section={item.id}
-    onclick={() => selectSection(item.id)}
-    class="relative z-10 w-full px-3 py-2.5 text-left text-lg rounded-lg transition-colors duration-200
-      {activePage === 'settings' && activeSection === item.id
-      ? 'text-zinc-900 dark:text-white font-medium'
-      : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white'}"
-  >
-    {item.label}
-  </button>
-{/snippet}
-
 {#snippet settingsShell()}
   <div
     class="flex flex-col h-full min-h-0 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white text-[18px] {standalone
       ? ''
       : 'rounded-xl shadow-2xl border border-zinc-200/60 dark:border-zinc-700/60'}"
   >
-    <!-- Top bar: logo + page selectors + actions -->
-    <div
-      class="flex shrink-0 items-center gap-4 px-5 py-4 border-b border-zinc-200/60 dark:border-zinc-700/50"
-    >
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <img
-        src={browser.runtime.getURL("resources/icons/betterseqta-dark-full.png")}
-        class="h-9 w-auto dark:hidden shrink-0 cursor-pointer"
-        alt="BetterSEQTA+"
-        onclick={handleDevModeToggle}
-      />
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <img
-        src={browser.runtime.getURL("resources/icons/betterseqta-light-full.png")}
-        class="hidden h-9 w-auto dark:block shrink-0 cursor-pointer"
-        alt="BetterSEQTA+"
-        onclick={handleDevModeToggle}
-      />
-
-      <div
-        class="flex flex-1 items-center justify-center gap-1 p-1.5 rounded-full bg-zinc-100/80 dark:bg-zinc-900/50"
-        role="tablist"
-        aria-label="Settings pages"
-      >
-        {#each pages as page (page.id)}
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activePage === page.id}
-            onclick={() => selectPage(page.id)}
-            class="flex-1 px-4 py-2.5 text-lg rounded-full transition-all duration-200
-              {activePage === page.id
-              ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white font-semibold shadow-sm'
-              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'}"
-          >
-            {page.title}
-          </button>
-        {/each}
-      </div>
-
-      {#if !standalone}
-        <div class="flex items-center gap-1 shrink-0">
-          {#if ghReleaseUpdateEnabled}
-            <div class="flex flex-col items-end gap-0.5 max-w-[8.5rem] mr-0.5">
-              {#if ghReleaseUpdate?.available}
-                <button
-                  type="button"
-                  onclick={openGhRelease}
-                  class="px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 transition-colors duration-200"
-                  title="Open GitHub release"
-                >
-                  Update — {ghReleaseUpdate.label}
-                </button>
-              {/if}
-              <p class="text-[9px] leading-tight text-right text-zinc-500 dark:text-zinc-400">
-                {#if ghReleaseChannelLabel}
-                  {ghReleaseChannelLabel} — do not upload to stores.
-                {:else}
-                  GitHub build — do not upload to stores.
-                {/if}
-              </p>
-            </div>
-          {/if}
-          <button
-            type="button"
-            onclick={openAbout}
-            class="flex justify-center items-center w-9 h-9 text-xl rounded-lg font-IconFamily bg-zinc-100 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
-            aria-label="About"
-          >
-            &#xeb73;
-          </button>
-          <button
-            type="button"
-            onclick={openChangelog}
-            class="flex justify-center items-center w-9 h-9 text-xl rounded-lg font-IconFamily bg-zinc-100 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
-            aria-label="Changelog"
-          >
-            &#xe929;
-          </button>
-          <button
-            type="button"
-            onclick={openPrivacyStatement}
-            class="flex justify-center items-center w-9 h-9 text-xl rounded-lg font-IconFamily bg-zinc-100 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
-            aria-label="Privacy Statement"
-          >
-            &#xecba;
-          </button>
-          <button
-            type="button"
-            onclick={handleClose}
-            class="flex justify-center items-center w-9 h-9 text-xl rounded-lg font-IconFamily bg-zinc-100 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
-            aria-label="Close settings"
-          >
-            &#xea0f;
-          </button>
-        </div>
-      {/if}
-    </div>
+    <StoreHeader
+      searchTerm={storeSearchTerm}
+      setSearchTerm={(term) => (storeSearchTerm = term)}
+      {activePage}
+      setActivePage={(page) => (activePage = page)}
+      showStoreTools={isStoreView}
+      onLogoClick={handleDevModeToggle}
+      onClose={handleClose}
+    />
 
     <!-- Body: left nav + content -->
     <div class="flex flex-1 min-h-0 overflow-hidden">
@@ -378,79 +370,47 @@
           : 'w-[260px] px-4 py-5'}"
         aria-label="Settings categories"
       >
-        <div class="relative flex flex-col flex-1 min-h-0 gap-5 overflow-y-auto no-scrollbar" bind:this={navTrackEl}>
-          {#if activePage === "settings" && indicatorReady}
-            <div
-              class="absolute left-0 right-0 top-0 z-0 rounded-lg bg-zinc-200/90 dark:bg-zinc-700/90 pointer-events-none"
-              style="transform: translateY({indicatorY}px); height: {indicatorH}px; transition: {$settingsState.animations
-                ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), height 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
-                : 'none'};"
-            ></div>
+        <SidebarNav
+          groups={navGroups}
+          selectedId={selectedNavId}
+          onselect={selectNavItem}
+        />
+
+        <div class="mt-4 flex shrink-0 flex-col gap-1 border-t border-zinc-200/60 pt-4 dark:border-zinc-700/50">
+          {#if ghReleaseUpdateEnabled}
+            <div class="px-3 pb-2">
+              {#if ghReleaseUpdate?.available}
+                <button
+                  type="button"
+                  onclick={openGhRelease}
+                  class="mb-1 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 transition-colors duration-200"
+                  title="Open GitHub release"
+                >
+                  Update — {ghReleaseUpdate.label}
+                </button>
+              {/if}
+              <p class="text-[9px] leading-tight text-zinc-500 dark:text-zinc-400">
+                {ghReleaseChannelLabel ?? "GitHub build"} — do not upload to stores.
+              </p>
+            </div>
           {/if}
 
-          {#if activePage === "settings"}
-            <div class="flex flex-col gap-1">
-              <p
-                class="relative z-10 px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-              >
-                User Settings
-              </p>
-              {#each userNav as item (item.id)}
-                {@render navButton(item)}
-              {/each}
-            </div>
-            <div class="flex flex-col gap-1">
-              <p
-                class="relative z-10 px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-              >
-                App Settings
-              </p>
-              {#each appNav as item (item.id)}
-                {@render navButton(item)}
-              {/each}
-            </div>
-          {:else if activePage === "shortcuts"}
-            <div class="flex flex-col gap-1">
-              <p
-                class="px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-              >
-                Shortcuts
-              </p>
-              <button
-                type="button"
-                class="w-full px-3 py-2.5 text-left text-lg rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
-              >
-                Shortcuts
-              </button>
-            </div>
-          {:else}
-            <div class="flex flex-col gap-1">
-              <p
-                class="px-3 mb-1.5 text-sm font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500"
-              >
-                Themes
-              </p>
-              <button
-                type="button"
-                class="w-full px-3 py-2.5 text-left text-lg rounded-lg font-medium bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-white"
-              >
-                Themes
-              </button>
-            </div>
-          {/if}
-        </div>
+          {#each utilityActions as action (action.label)}
+            <button
+              type="button"
+              onclick={action.onclick}
+              class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white dark:focus:ring-offset-zinc-900"
+            >
+              <span class="w-5 text-center font-IconFamily text-[18px]" aria-hidden="true">{action.icon}</span>
+              <span>{action.label}</span>
+            </button>
+          {/each}
 
-        <button
-          type="button"
-          onclick={() => openFeedback()}
-          class="shrink-0 mt-4 w-full px-3 py-2.5 text-left text-[18px] font-medium rounded-lg transition-all duration-200
-            text-zinc-700 dark:text-zinc-200
-            bg-zinc-200/70 dark:bg-zinc-800/80
-            hover:bg-zinc-300/80 dark:hover:bg-zinc-700
-            hover:scale-[1.02] active:scale-95
-            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
-        >
-          <span class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick={() => openFeedback()}
+            class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus:ring-offset-zinc-900"
+          >
             <svg
               class="w-5 h-5 shrink-0"
               viewBox="0 0 24 24"
@@ -464,32 +424,101 @@
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             <span>Send us feedback!</span>
-          </span>
-        </button>
+          </button>
+        </div>
       </nav>
 
-      <div class="flex flex-col flex-1 min-w-0 min-h-0">
-        <div class="shrink-0 px-6 pt-5 pb-3">
-          <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            {sectionTitle}
-          </h1>
+      {#if isStoreView}
+        <div class="min-w-0 min-h-0 flex-1">
+          <Store
+            activeTab={activePage as StoreTab}
+            searchTerm={storeSearchTerm}
+            {selectedBackgroundCategory}
+            setActiveTab={(tab) => {
+              activePage = tab;
+              if (tab === "themes") activeThemeView = "theme-store";
+              else activeBackgroundView = "background-store";
+            }}
+            setSearchTerm={(term) => (storeSearchTerm = term)}
+            setBackgroundCategories={(categories) => (backgroundCategories = categories)}
+          />
         </div>
-        <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
-          {#if activePage === "settings"}
-            <Settings
-              showColourPicker={openColourPicker}
-              showFontPicker={openFontPicker}
-              {showDisclaimer}
-              showCloudPanel={openCloudPanel}
-              {activeSection}
-            />
-          {:else if activePage === "shortcuts"}
-            <Shortcuts />
-          {:else}
-            <Theme />
-          {/if}
+      {:else}
+        <div class="flex flex-col flex-1 min-w-0 min-h-0">
+          <div class="shrink-0 px-6 pt-5 pb-3">
+            <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+              {sectionTitle}
+            </h1>
+          </div>
+          <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
+            {#if activePage === "settings"}
+              {#if activeSection === "shortcuts"}
+                <Shortcuts />
+              {:else}
+                <Settings
+                  showColourPicker={openColourPicker}
+                  showFontPicker={openFontPicker}
+                  {showDisclaimer}
+                  showCloudPanel={openCloudPanel}
+                  {activeSection}
+                />
+              {/if}
+            {:else if activePage === "themes"}
+              <Theme section="themes" />
+            {:else}
+              <Theme section="backgrounds" />
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
+    </div>
+  </div>
+{/snippet}
+
+{#snippet compactSettings()}
+  <div
+    class="flex h-full min-h-0 flex-col gap-2 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white"
+  >
+    <div
+      class="grid shrink-0 place-items-center border-b border-zinc-200/40 dark:border-zinc-700/40"
+    >
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <img
+        src={resolveExtensionAssetUrl(darkLogo)}
+        class="w-4/5 dark:hidden"
+        alt="BetterSEQTA+"
+        onclick={handleDevModeToggle}
+      />
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <img
+        src={resolveExtensionAssetUrl(lightLogo)}
+        class="hidden w-4/5 dark:block"
+        alt="BetterSEQTA+"
+        onclick={handleDevModeToggle}
+      />
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-hidden">
+      <TabbedContainer
+        bind:activeTab={compactActiveTab}
+        tabs={[
+          {
+            title: "Settings",
+            Content: Settings,
+            props: {
+              showColourPicker: openColourPicker,
+              showFontPicker: openFontPicker,
+              showDisclaimer,
+              showCloudPanel: openCloudPanel,
+              activeSection: "all",
+            },
+          },
+          { title: "Shortcuts", Content: Shortcuts },
+          { title: "Themes", Content: Theme },
+        ]}
+      />
     </div>
   </div>
 {/snippet}
@@ -500,7 +529,7 @@
       ? 'dark'
       : ''}"
   >
-    {@render settingsShell()}
+    {@render compactSettings()}
   </div>
 {:else}
   <div
@@ -520,6 +549,7 @@
 
     <div
       class="relative z-10 w-[min(1180px,96vw)] h-[min(860px,92vh)] no-scrollbar overflow-clip"
+      data-settings-panel
     >
       {@render settingsShell()}
     </div>

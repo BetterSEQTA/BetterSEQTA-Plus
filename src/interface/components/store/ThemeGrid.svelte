@@ -30,7 +30,7 @@
 </script>
 
 <div class="relative" >
-  <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid grid-cols-1 gap-4 py-6 mx-auto sm:grid-cols-2 lg:grid-cols-3">
     {#each filteredThemes as theme (theme.id)}
       <ThemeCard
         {theme}
@@ -44,7 +44,7 @@
   
     {#if filteredThemes.length !== 0}
       <a href="https://docs.betterseqta.org/theme-creation/" class="block relative z-0 hover:z-20 w-full cursor-pointer">
-        <div class="bg-zinc-50 h-48 w-full transition-all duration-500 ease-out relative overflow-clip rounded-xl border group group/card flex flex-col justify-center items-center hover:scale-105 hover:shadow-2xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1]">
+        <div class="bg-zinc-50 h-48 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative overflow-clip rounded-xl border group group/card flex flex-col justify-center items-center hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1]">
           <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
           <div class="text-xl font-bold text-center transition-all duration-500 dark:text-white">
             Got a Theme Idea?
