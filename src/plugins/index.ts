@@ -8,6 +8,7 @@ import animatedBackgroundPlugin from "./built-in/animatedBackground";
 import profilePicturePlugin from "./built-in/profilePicture";
 import assessmentsOverviewPlugin from "./built-in/assessmentsOverview";
 import backgroundMusicPlugin from "./built-in/backgroundMusic";
+import appIconPlugin from "./built-in/appIcons";
 
 import assessmentsAveragePluginLazy from "./built-in/assessmentsAverage/lazy";
 import timetableEditPluginLazy from "./built-in/timetableEdit/lazy";
@@ -27,6 +28,7 @@ pluginManager.registerPlugin(timetablePlugin);
 pluginManager.registerPlugin(profilePicturePlugin);
 pluginManager.registerPlugin(assessmentsOverviewPlugin);
 pluginManager.registerPlugin(backgroundMusicPlugin);
+pluginManager.registerPlugin(appIconPlugin);
 
 pluginManager.registerPlugin(assessmentsAveragePluginLazy);
 pluginManager.registerPlugin(timetableEditPluginLazy);
