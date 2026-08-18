@@ -19,7 +19,7 @@ import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 import { verboseInfo, verboseLog } from "@/utils/verboseLog";
-import loading from "@/seqta/ui/Loading";
+import loading, { stopLoadingAnimation } from "@/seqta/ui/Loading";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
@@ -78,6 +78,7 @@ let engageHashListenerAttached = false;
 
 export async function finishLoad() {
   if (betterSeqtaFinishLoadDone) return;
+
   betterSeqtaFinishLoadDone = true;
 
   try {
@@ -93,6 +94,7 @@ export async function finishLoad() {
 
     const loadingbk = document.getElementById("loading");
     loadingbk?.classList.add("closeLoading");
+    stopLoadingAnimation();
     await delay(501);
     loadingbk?.remove();
   } catch (err) {
