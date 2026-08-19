@@ -1,0 +1,7 @@
+.bsplus-googleplay-badge {
+  width: 130px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
