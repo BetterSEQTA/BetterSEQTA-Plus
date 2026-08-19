@@ -5,8 +5,9 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.3 – Timetable sync into Calendars, Sidebar Customisation & Bugfix Bundle",
+    "title": "3.7.3 – Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
+      "Added a few new loading screens you will see when opening SEQTA with BetterSEQTA",
       "Added an option in the Timetable to sync to Google Calendar and Outlook Calendar",
       "Added a new sidebar customisation page in the settings menu to change the sidebar layout, icons, and more.",
       "Added extension feedback in settings.",

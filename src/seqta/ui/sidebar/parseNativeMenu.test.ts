@@ -1,7 +1,11 @@
 /**
  * @jest-environment jsdom
  */
-import { getPagePathFromHash, parseNativeMenu } from "./parseNativeMenu";
+import {
+  findNativeMenuEntry,
+  getPagePathFromHash,
+  parseNativeMenu,
+} from "./parseNativeMenu";
 
 describe("parseNativeMenu", () => {
   it("parses top-level items and nested folders", () => {
@@ -66,5 +70,47 @@ describe("parseNativeMenu", () => {
     const items = parseNativeMenu(menu);
 
     expect(items.map((i) => i.key)).toEqual(["home"]);
+  });
+
+  it("findNativeMenuEntry prefers path over duplicate data-key", () => {
+    document.body.innerHTML = `
+      <div id="menu">
+        <ul>
+          <li class="item hasChildren" data-key="courses" data-path="/courses">
+            <label>Courses</label>
+            <div class="sub"><ul>
+              <li class="item hasChildren" data-key="4804:11066">
+                <label>English</label>
+                <div class="sub"><ul>
+                  <li class="item" data-key="4804:11066" data-path="/courses/4804:11066">
+                    <label>Course</label>
+                  </li>
+                  <li class="item" data-key="4804:11066" data-path="/assessments/4804:11066">
+                    <label>Assessments</label>
+                  </li>
+                </ul></div>
+              </li>
+            </ul></div>
+          </li>
+        </ul>
+      </div>
+    `;
+
+    const menu = document.getElementById("menu")!;
+    const course = findNativeMenuEntry(menu, {
+      key: "4804:11066",
+      id: null,
+      path: "/courses/4804:11066",
+      label: "Course",
+    });
+    const assessments = findNativeMenuEntry(menu, {
+      key: "4804:11066",
+      id: null,
+      path: "/assessments/4804:11066",
+      label: "Assessments",
+    });
+
+    expect(course?.dataset.path).toBe("/courses/4804:11066");
+    expect(assessments?.dataset.path).toBe("/assessments/4804:11066");
   });
 });

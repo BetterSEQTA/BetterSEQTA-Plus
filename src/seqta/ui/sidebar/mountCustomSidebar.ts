@@ -128,8 +128,8 @@ function onCustomSidebarCaptureClick(event: MouseEvent) {
   }
 
   const key = li.dataset.key;
-  if (!key) return;
-  const item = sidebarState.findByKey(key);
+  const path = li.dataset.path;
+  const item = sidebarState.resolveItem(key, path);
   if (item) sidebarState.activateItem(item, menuEl);
 }
 

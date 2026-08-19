@@ -97,18 +97,18 @@ export function findNativeMenuEntry(
     if (byId instanceof HTMLElement) return byId;
   }
 
-  if (item.key) {
-    const byKey = list.querySelector(
-      `li[data-key="${CSS.escape(item.key)}"], section[data-key="${CSS.escape(item.key)}"]`,
-    );
-    if (byKey instanceof HTMLElement) return byKey;
-  }
-
   if (item.path) {
     const byPath = list.querySelector(
       `li[data-path="${CSS.escape(item.path)}"], section[data-path="${CSS.escape(item.path)}"]`,
     );
     if (byPath instanceof HTMLElement) return byPath;
+  }
+
+  if (item.key) {
+    const byKey = list.querySelector(
+      `li[data-key="${CSS.escape(item.key)}"], section[data-key="${CSS.escape(item.key)}"]`,
+    );
+    if (byKey instanceof HTMLElement) return byKey;
   }
 
   if (item.label) {

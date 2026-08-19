@@ -105,7 +105,7 @@ export function clearNativeDrillActive(menu: HTMLElement) {
     .forEach((node) => node.classList.remove("active"));
 }
 
-function findItemByPath(
+export function findItemByPath(
   items: SidebarItem[],
   path: string,
 ): SidebarItem | null {
@@ -119,14 +119,14 @@ function findItemByPath(
   return null;
 }
 
-function findItemByKey(
+function findItemByKeyInList(
   items: SidebarItem[],
   key: string,
 ): SidebarItem | null {
   for (const item of items) {
     if (item.key === key) return item;
     if (item.children.length) {
-      const nested = findItemByKey(item.children, key);
+      const nested = findItemByKeyInList(item.children, key);
       if (nested) return nested;
     }
   }
@@ -383,7 +383,24 @@ class SidebarState {
   }
 
   findByKey(key: string) {
-    return findItemByKey(this.items, key);
+    for (let i = this.drillStack.length - 1; i >= 0; i--) {
+      const hit = this.drillStack[i].items.find((item) => item.key === key);
+      if (hit) return hit;
+    }
+    return findItemByKeyInList(this.items, key);
+  }
+
+  findByPath(path: string) {
+    return findItemByPath(this.items, path);
+  }
+
+  resolveItem(key: string | undefined, path: string | undefined) {
+    if (path) {
+      const byPath = this.findByPath(path);
+      if (byPath) return byPath;
+    }
+    if (key) return this.findByKey(key);
+    return null;
   }
 }
 

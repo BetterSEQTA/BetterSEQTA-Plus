@@ -1469,6 +1469,35 @@ html.transparencyEffects
   color: var(--text-primary) !important;
   box-shadow: none;
 }
+
+// Engage lesson/course Lexical editor ships inline light-mode colours on canvas + text nodes.
+[class*="Canvas__canvas___"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--text-primary) !important;
+}
+
+[class*="LexicalEditor__editor-container___"],
+[class*="LexicalEditor__editor-inner___"],
+[class*="LexicalEditor__editor-input___"],
+[class*="LexicalEditor__editor-paragraph___"],
+[class*="LexicalEditor__editor-text-bold___"],
+[class*="LexicalEditor__editor-text-italic___"],
+[class*="LexicalEditor__editor-text-underline___"],
+[class*="TextModuleBody__lexicalEditor___"] {
+  color: var(--text-primary) !important;
+}
+
+[class*="Module__module___"],
+[class*="Module__content___"] {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.dark [class*="LexicalEditor__editor-input___"] img[data-lexical-decorator] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 .course .composer {
   background: transparent !important;
   overflow: hidden;
