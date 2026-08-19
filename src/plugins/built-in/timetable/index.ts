@@ -5,6 +5,7 @@ import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { verboseLog } from "@/utils/verboseLog";
 import { mountGoogleCalendarButton, unmountGoogleCalendarButton } from "./calendarSyncUi";
+import { registerCalendarContentHandlers } from "@/seqta/utils/googleCalendar/calendarSyncListener";
 
 const timetablePlugin: Plugin<{}, {}> = {
   id: "timetable",
@@ -15,6 +16,8 @@ const timetablePlugin: Plugin<{}, {}> = {
   disableToggle: true,
 
   run: async (api) => {
+    registerCalendarContentHandlers();
+
     const { unregister } = api.seqta.onMount(".timetablepage", handleTimetable);
 
     return () => {

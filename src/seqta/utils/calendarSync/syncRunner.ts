@@ -9,7 +9,15 @@ import {
 } from "@/seqta/utils/calendarSync/syncEngine";
 import { reportSyncProgress } from "@/seqta/utils/calendarSync/lessonSyncShared";
 import type { OutlookCalendarStatus } from "@/seqta/utils/calendarSync/providerStorage";
-import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
+import {
+  readGoogleCalendarState,
+  readOutlookCalendarState,
+} from "@/seqta/utils/calendarSync/providerStorage";
+import {
+  BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
+  getSyncWeeksAhead,
+  readResumableCalendarSync,
+} from "@/seqta/utils/calendarSync/settings";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncProgress,
@@ -98,24 +106,56 @@ export async function runCalendarSync(
   const mode = params.mode ?? "full";
   const weeksAhead = await getSyncWeeksAhead();
 
-  reportSyncProgress(params.onProgress, {
-    phase: "preparing",
-    current: 0,
-    total: 1,
-    message: mode === "incremental" ? "Fetching new week…" : "Fetching timetable…",
+  await browser.storage.local.set({
+    [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: {
+      provider: config.provider,
+      mode,
+      origin: location.origin,
+      startedAt: Date.now(),
+    },
   });
 
-  const lessons =
-    mode === "incremental"
-      ? await fetchTimetableLessons(trailingWeekRange(weeksAhead))
-      : await fetchTimetableForSync(weeksAhead);
+  try {
+    reportSyncProgress(params.onProgress, {
+      phase: "preparing",
+      current: 0,
+      total: 1,
+      message: mode === "incremental" ? "Fetching new week…" : "Fetching timetable…",
+    });
 
-  return syncLessonsToCalendar(
-    config.lessonSyncProvider,
-    { origin: location.origin, lessons, mode, weeksAhead },
-    () => getCalendarAccessToken(config.provider),
-    { onProgress: params.onProgress },
-  );
+    const lessons =
+      mode === "incremental"
+        ? await fetchTimetableLessons(trailingWeekRange(weeksAhead))
+        : await fetchTimetableForSync(weeksAhead);
+
+    return await syncLessonsToCalendar(
+      config.lessonSyncProvider,
+      { origin: location.origin, lessons, mode, weeksAhead },
+      () => getCalendarAccessToken(config.provider),
+      { onProgress: params.onProgress },
+    );
+  } finally {
+    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+  }
+}
+
+export async function resumeInterruptedCalendarSync(
+  params: RunCalendarSyncParams = {},
+): Promise<GoogleCalendarSyncResult | null> {
+  const pending = await readResumableCalendarSync();
+  if (!pending) return null;
+
+  const state =
+    pending.provider === "google"
+      ? await readGoogleCalendarState()
+      : await readOutlookCalendarState();
+  if (!state.refreshToken && !state.accessToken) {
+    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    return null;
+  }
+
+  const config = pending.provider === "google" ? GOOGLE_SYNC_RUNNER : OUTLOOK_SYNC_RUNNER;
+  return runCalendarSync(config, { ...params, mode: pending.mode });
 }
 
 export const runGoogleCalendarSync = (params?: RunCalendarSyncParams) =>

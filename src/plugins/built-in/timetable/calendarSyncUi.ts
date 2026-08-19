@@ -3,7 +3,6 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
 import { ensureFontLoaded } from "@/seqta/ui/fonts/Manager";
 import { getFontPreset } from "@/seqta/ui/fonts/presets";
-import { registerCalendarContentHandlers } from "@/seqta/utils/googleCalendar/calendarSyncListener";
 import type { GoogleCalendarSyncProgress } from "@/seqta/utils/googleCalendar/types";
 import hostStyles from "./calendarSyncHost.css?inline";
 
@@ -152,7 +151,6 @@ export async function mountGoogleCalendarButton(): Promise<void> {
   if (!toolbar) return;
 
   ensureHostStyles();
-  registerCalendarContentHandlers();
 
   const controls = document.createElement("div");
   controls.className = CONTROLS_CLASS;

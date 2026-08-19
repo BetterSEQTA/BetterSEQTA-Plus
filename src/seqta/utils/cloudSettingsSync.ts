@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import isEqual from "@/seqta/utils/isEqual";
+import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
@@ -42,6 +43,7 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "bsplus_install_id",
   /** Pending feedback ids awaiting a reply notification — device-local. */
   "bsplus_pending_feedback_ids",
+  BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
 ] as const;
 
 /**
@@ -64,6 +66,7 @@ const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY,
   "bsplus_lastCloudPoll",
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
+  BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
 ] as const;
 
 /** After restoring from cloud, keep local session so the user stays signed in. */

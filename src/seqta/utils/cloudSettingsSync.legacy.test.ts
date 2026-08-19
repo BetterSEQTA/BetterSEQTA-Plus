@@ -4,6 +4,7 @@ import {
   normalizeThemeIdForSync,
   resolveThemeIdForPostSyncDownload,
 } from "./cloudSettingsSync";
+import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
 
 describe("migrateLegacyToPluginSettings", () => {
   it("maps animatedbk without overwriting existing plugin fields", () => {
@@ -30,6 +31,7 @@ describe("isKeyIncludedInCloudUploadPayload", () => {
   it("excludes auth and device cache prefixes", () => {
     expect(isKeyIncludedInCloudUploadPayload("bsplus_token")).toBe(false);
     expect(isKeyIncludedInCloudUploadPayload("bsplus_install_id")).toBe(false);
+    expect(isKeyIncludedInCloudUploadPayload(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY)).toBe(false);
     expect(isKeyIncludedInCloudUploadPayload("plugin.global-search.storage.index")).toBe(
       false,
     );

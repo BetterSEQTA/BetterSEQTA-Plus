@@ -10,6 +10,8 @@ import {
 } from "@/seqta/utils/calendarSync/providerStorage";
 
 export const BSPLUS_CALENDAR_SYNC_SETTINGS_KEY = "bsplus_calendar_sync_settings";
+/** Device-local interrupted sync marker — never cloud-synced. */
+export const BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY = "bsplus_calendar_sync_in_progress";
 export const CALENDAR_WEEKLY_ALARM = "bsplus_calendar_weekly";
 export const WEEKLY_SYNC_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -97,4 +99,35 @@ export async function markWeeklySyncComplete(): Promise<void> {
 
 export async function markWeeklySyncPending(): Promise<void> {
   await writeSharedCalendarSyncSettings({ pendingWeeklySync: true });
+}
+
+type PendingCalendarSync = {
+  provider: "google" | "outlook";
+  mode: "full" | "incremental";
+  origin: string;
+  startedAt: number;
+};
+
+/** Returns a pending sync worth resuming, or clears and returns null. */
+export async function readResumableCalendarSync(): Promise<PendingCalendarSync | null> {
+  const got = await browser.storage.local.get(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+  const raw = got[BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY];
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+
+  const pending = raw as PendingCalendarSync;
+  const validProvider = pending.provider === "google" || pending.provider === "outlook";
+  const validMode = pending.mode === "full" || pending.mode === "incremental";
+  const fresh = Date.now() - pending.startedAt < 24 * 60 * 60 * 1000;
+
+  if (
+    !validProvider ||
+    !validMode ||
+    pending.origin !== location.origin ||
+    !fresh
+  ) {
+    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    return null;
+  }
+
+  return pending;
 }

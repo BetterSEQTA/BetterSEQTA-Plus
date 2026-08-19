@@ -4,7 +4,11 @@ import {
   shouldRunWeeklySync,
 } from "@/seqta/utils/calendarSync/settings";
 import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
-import { runGoogleCalendarSync, runOutlookCalendarSync } from "@/seqta/utils/calendarSync/syncRunner";
+import {
+  resumeInterruptedCalendarSync,
+  runGoogleCalendarSync,
+  runOutlookCalendarSync,
+} from "@/seqta/utils/calendarSync/syncRunner";
 import {
   readGoogleCalendarState,
   readOutlookCalendarState,
@@ -12,6 +16,7 @@ import {
 import type { GoogleCalendarSyncResult } from "@/seqta/utils/googleCalendar/types";
 
 let listenerRegistered = false;
+let resumeChecked = false;
 
 const WEEKLY_PROVIDERS = [
   { label: "Google Calendar", read: readGoogleCalendarState, run: runGoogleCalendarSync },
@@ -44,6 +49,10 @@ async function runWeeklySyncForConnectedProviders(): Promise<
 }
 
 export function registerCalendarContentHandlers(): void {
+  if (!resumeChecked) {
+    resumeChecked = true;
+    void resumeInterruptedCalendarSync();
+  }
   if (listenerRegistered) return;
   listenerRegistered = true;
 
