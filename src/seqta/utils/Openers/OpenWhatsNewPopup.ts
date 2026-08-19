@@ -6,7 +6,7 @@ import { createPopupSocialFooter } from "./createPopupSocialFooter";
 import { renderWhatsNewChangelogHtml } from "./whatsNewChangelog";
 
 const UPDATE_VIDEO_URL =
-  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/17e077d5315be6d7d23dc68776cfe7bb175c5079/src/resources/update-video.webm";
+  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm";
 
 export function OpenWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
