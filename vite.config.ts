@@ -138,7 +138,7 @@ export default defineConfig(({ command, mode: viteMode }) => {
   },
   build: {
     outDir: resolve(__dirname, "dist", mode),
-    emptyOutDir: false,
+    emptyOutDir: true,
     minify: true,
     //sourcemap: sourcemap,
     chunkSizeWarningLimit: 4000,

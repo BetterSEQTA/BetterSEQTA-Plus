@@ -858,26 +858,13 @@ const messageFoldersPlugin = {
       if (!messageList || messageList === observedMessageList) return;
       messageListObserver?.disconnect();
       observedMessageList = messageList;
-      messageListObserver = new MutationObserver((mutations) => {
-        const messageRowsChanged = mutations.some((mutation) =>
-          mutation.type === "childList"
-            ? mutation.target === messageList
-            : mutation.target instanceof Element &&
-              mutation.target.parentElement === messageList &&
-              mutation.target.matches("li[data-message]"),
-        );
-        if (!messageRowsChanged) return;
+      messageListObserver = new MutationObserver(() => {
         applyBadges();
         applyFolderFilter();
         attachDragListeners();
         attachContextMenuListeners();
       });
-      messageListObserver.observe(messageList, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class", "data-message"],
-      });
+      messageListObserver.observe(messageList, { childList: true });
     };
 
     const attachContextMenuListeners = () => {

@@ -56,6 +56,7 @@ function menuFingerprint(menu: HTMLElement): string {
 
 function syncFromMenu(force = false) {
   if (!menuEl) return;
+  getNativeMenuList(menuEl)?.setAttribute("aria-hidden", "true");
   const next = menuFingerprint(menuEl);
   if (!force && next === lastMenuFingerprint) return;
   lastMenuFingerprint = next;
@@ -368,6 +369,7 @@ export function unmountCustomSidebar() {
 
   document.getElementById(ROOT_ID)?.remove();
   if (menuEl) {
+    getNativeMenuList(menuEl)?.removeAttribute("aria-hidden");
     menuEl.classList.remove(MENU_CLASS, "bsplus-sidebar-edit-mode");
     clearSidebarAppearance(menuEl);
   }
