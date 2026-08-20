@@ -199,6 +199,10 @@ const updateArrowState = (course: HTMLElement) => {
   if (next) next.disabled = idx === -1 || idx >= items.length - 1;
 };
 
+const removeArrows = () => {
+  document.getElementById(ARROW_CONTAINER_ID)?.remove();
+};
+
 const ensureArrows = (course: HTMLElement) => {
   if (!course.querySelector(".programmeNavigator")) return;
 
@@ -340,7 +344,15 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
     });
 
     const bodyObserver = new MutationObserver((muts) => {
+      let courseMaybeRemoved = false;
       muts.forEach((m) => {
+        m.removedNodes.forEach((n) => {
+          if (n.nodeType !== 1) return;
+          const el = n as Element;
+          if (el.matches(".course") || el.querySelector(".course")) {
+            courseMaybeRemoved = true;
+          }
+        });
         m.addedNodes.forEach((n) => {
           if (n.nodeType !== 1) return;
           const el = n as Element;
@@ -349,17 +361,25 @@ const enhancedNavigationPlugin: Plugin<typeof settings> = {
           }
         });
       });
+      if (courseMaybeRemoved && !document.querySelector(".course")) removeArrows();
     });
-    bodyObserver.observe(document.body, { childList: true });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+    const pageChange = api.seqta.onPageChange(() => {
+      requestAnimationFrame(() => {
+        if (!document.querySelector(".course")) removeArrows();
+      });
+    });
 
     return () => {
       window.removeEventListener("resize", positionArrows);
+      pageChange.unregister();
       courseMount.unregister();
       navObservers.forEach((observer) => observer.disconnect());
       courseObservers.forEach((observer) => observer.disconnect());
       slidePaneCleanups.forEach((cleanup) => cleanup());
       bodyObserver.disconnect();
-      document.getElementById(ARROW_CONTAINER_ID)?.remove();
+      removeArrows();
       document.getElementById(STYLE_ID)?.remove();
     };
   },
