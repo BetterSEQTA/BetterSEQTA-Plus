@@ -79,8 +79,8 @@ export function extractLetterGradeStringFromPayload(data: {
 export function resolveNumericGradeFromAssessmentPayload(data: {
   status?: string;
   finalGrade?: unknown;
-  criteria?: { results?: { percentage?: unknown; grade?: unknown } }[];
-  results?: { percentage?: unknown; grade?: unknown };
+  criteria?: { results?: { percentage?: unknown; score?: unknown; grade?: unknown } }[];
+  results?: { percentage?: unknown; score?: unknown; grade?: unknown };
   letterGrade?: unknown;
   extra?: Record<string, unknown>;
 }): number | undefined {
@@ -95,19 +95,22 @@ export function resolveNumericGradeFromAssessmentPayload(data: {
   if (merged.status && merged.status !== "MARKS_RELEASED") return undefined;
 
   const criteria = merged.criteria as
-    | { results?: { percentage?: unknown; grade?: unknown } }[]
+    | { results?: { percentage?: unknown; score?: unknown; grade?: unknown } }[]
     | undefined;
-  if (criteria?.[0]?.results?.percentage !== undefined) {
-    const n = Number(criteria[0].results!.percentage);
+  const cResults = criteria?.[0]?.results;
+  if (cResults?.percentage !== undefined && cResults?.score !== undefined) {
+    const n = Number(cResults.percentage);
     if (!isNaN(n)) return n;
   }
   const results = merged.results as
-    | { percentage?: unknown; grade?: unknown }
+    | { percentage?: unknown; score?: unknown; grade?: unknown }
     | undefined;
-  if (results?.percentage !== undefined) {
+  if (results?.percentage !== undefined && results?.score !== undefined) {
     const n = Number(results.percentage);
     if (!isNaN(n)) return n;
   }
+
+  if (cResults != null || results != null) return undefined;
 
   const letter = extractLetterGradeStringFromPayload(
     merged as Parameters<typeof extractLetterGradeStringFromPayload>[0],
