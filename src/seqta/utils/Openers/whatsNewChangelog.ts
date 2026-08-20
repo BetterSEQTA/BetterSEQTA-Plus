@@ -18,6 +18,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Fixed theme wallpaper images not applying on Firefox (#206).",
       "Fixed missing subjects in upcoming assessments on the home page (#454).",
       "Added home page assessment limits (subjects, per-subject count, include past).",
+      "Fixed Enhanced Navigation arrows not dissapearing when navigating away from courses.",
       "Fixed assessment overview showing <code>Undefined%</code> for letter grades (#430).",
       "Fixed notifications older than a year being removed; added local per-account archive (#443).",
       "Fixed notices on the home screen sometimes failing to load (#388).",
