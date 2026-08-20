@@ -1,39 +1,117 @@
 import type { Assessment } from "./types";
 
-export type TimeRange = "all" | "365d" | "90d" | "30d" | "7d";
+export type TimeRange = "all" | "ytd" | "365d" | "90d" | "30d" | "7d" | "custom";
+
+export type CustomTimeRange = { from: string; to: string };
 
 export const TIME_RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: "all", label: "All time" },
+  { value: "ytd", label: "This year" },
   { value: "365d", label: "Last 12 months" },
   { value: "90d", label: "Last 3 months" },
   { value: "30d", label: "Last 30 days" },
   { value: "7d", label: "Last 7 days" },
+  { value: "custom", label: "Custom range" },
 ];
 
-export function getTimeRangeLabel(timeRange: TimeRange): string {
+export function defaultCustomTimeRange(referenceDate = new Date()): CustomTimeRange {
+  return {
+    from: `${referenceDate.getFullYear()}-01-01`,
+    to: referenceDate.toISOString().slice(0, 10),
+  };
+}
+
+function parseDateOnly(iso: string): Date {
+  const date = new Date(`${iso}T00:00:00`);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+export function getTimeRangeBounds(
+  timeRange: TimeRange,
+  custom?: CustomTimeRange,
+  referenceDate = new Date(),
+): { start: Date | null; end: Date | null } {
+  if (timeRange === "all") return { start: null, end: null };
+
+  if (timeRange === "ytd") {
+    const start = new Date(referenceDate.getFullYear(), 0, 1);
+    start.setHours(0, 0, 0, 0);
+    return { start, end: null };
+  }
+
+  if (timeRange === "custom") {
+    if (!custom?.from || !custom?.to) return { start: null, end: null };
+    let start = parseDateOnly(custom.from);
+    let end = parseDateOnly(custom.to);
+    end.setHours(23, 59, 59, 999);
+    if (start > end) [start, end] = [end, start];
+    return { start, end };
+  }
+
+  let days = 90;
+  if (timeRange === "30d") days = 30;
+  else if (timeRange === "7d") days = 7;
+  else if (timeRange === "365d") days = 365;
+
+  const start = new Date(referenceDate);
+  start.setDate(start.getDate() - days);
+  start.setHours(0, 0, 0, 0);
+  return { start, end: null };
+}
+
+export function getTimeRangeCutoff(
+  timeRange: TimeRange,
+  custom?: CustomTimeRange,
+): Date | null {
+  return getTimeRangeBounds(timeRange, custom).start;
+}
+
+export function getTimeRangeLabel(
+  timeRange: TimeRange,
+  custom?: CustomTimeRange,
+): string {
+  if (timeRange === "custom" && custom?.from && custom?.to) {
+    const fmt = (iso: string) =>
+      parseDateOnly(iso).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    return `${fmt(custom.from)} – ${fmt(custom.to)}`;
+  }
   return TIME_RANGE_OPTIONS.find((o) => o.value === timeRange)?.label ?? "All time";
 }
 
-export function getTimeRangeCutoff(timeRange: TimeRange): Date | null {
-  if (timeRange === "all") return null;
-  const referenceDate = new Date();
-  let daysToSubtract = 90;
-  if (timeRange === "30d") daysToSubtract = 30;
-  else if (timeRange === "7d") daysToSubtract = 7;
-  else if (timeRange === "365d") daysToSubtract = 365;
-  const cutoff = new Date(referenceDate);
-  cutoff.setDate(cutoff.getDate() - daysToSubtract);
-  cutoff.setHours(0, 0, 0, 0);
-  return cutoff;
+function assessmentInRange(
+  due: string,
+  bounds: { start: Date | null; end: Date | null },
+): boolean {
+  const date = new Date(due);
+  if (bounds.start && date < bounds.start) return false;
+  if (bounds.end && date > bounds.end) return false;
+  return true;
 }
 
 export function filterAssessmentsByTimeRange(
   assessments: Assessment[],
   timeRange: TimeRange,
+  custom?: CustomTimeRange,
 ): Assessment[] {
-  const cutoff = getTimeRangeCutoff(timeRange);
-  if (!cutoff) return assessments;
-  return assessments.filter((a) => new Date(a.due) >= cutoff);
+  const bounds = getTimeRangeBounds(timeRange, custom);
+  if (!bounds.start && !bounds.end) return assessments;
+  return assessments.filter((a) => assessmentInRange(a.due, bounds));
+}
+
+function usesMonthlyGrouping(
+  timeRange: TimeRange,
+  custom?: CustomTimeRange,
+): boolean {
+  if (timeRange === "365d" || timeRange === "all" || timeRange === "ytd") return true;
+  if (timeRange !== "custom" || !custom?.from || !custom?.to) return false;
+  const { start, end } = getTimeRangeBounds(timeRange, custom);
+  if (!start || !end) return true;
+  return end.getTime() - start.getTime() > 90 * 86_400_000;
 }
 
 export type TrendPoint = {
@@ -115,7 +193,7 @@ function slugSubjectKey(name: string, keyBySubject: Map<string, string>): string
 export function buildGradeTrendChart(
   data: Assessment[],
   timeRange: TimeRange,
-  options: { showPerSubject?: boolean } = {},
+  options: { showPerSubject?: boolean; custom?: CustomTimeRange } = {},
 ): { points: TrendPoint[]; series: TrendSeries[]; accentColor: string } {
   const accentColor =
     "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
@@ -127,8 +205,8 @@ export function buildGradeTrendChart(
     return { points: [], series: [], accentColor };
   }
 
-  const useMonthlyGrouping = timeRange === "365d" || timeRange === "all";
-  const cutoff = getTimeRangeCutoff(timeRange);
+  const bounds = getTimeRangeBounds(timeRange, options.custom);
+  const useMonthlyGrouping = usesMonthlyGrouping(timeRange, options.custom);
 
   const overallBuckets = new Map<string, number[]>();
   const subjectBuckets = new Map<string, Map<string, number[]>>();
@@ -136,10 +214,13 @@ export function buildGradeTrendChart(
   const keyBySubject = new Map<string, string>();
 
   for (const assessment of graded) {
+    if (!assessmentInRange(assessment.due, bounds)) continue;
+
     const grade = assessment.finalGrade!;
     const periodKey = periodKeyForAssessment(assessment, useMonthlyGrouping);
     const periodDateValue = periodDate(periodKey, useMonthlyGrouping);
-    if (cutoff && periodDateValue < cutoff) continue;
+    if (bounds.start && periodDateValue < bounds.start) continue;
+    if (bounds.end && periodDateValue > bounds.end) continue;
 
     if (!overallBuckets.has(periodKey)) overallBuckets.set(periodKey, []);
     overallBuckets.get(periodKey)!.push(grade);

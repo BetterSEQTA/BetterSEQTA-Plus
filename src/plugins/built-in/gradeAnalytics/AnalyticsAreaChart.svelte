@@ -8,6 +8,7 @@
   import {
     buildGradeTrendChart,
     getTimeRangeLabel,
+    type CustomTimeRange,
     type TimeRange,
     type TrendPoint,
   } from "./timeRange";
@@ -17,10 +18,11 @@
   interface Props {
     data: Assessment[];
     timeRange: TimeRange;
+    customTimeRange?: CustomTimeRange;
     showSubjectTrends?: boolean;
   }
 
-  let { data, timeRange, showSubjectTrends = false }: Props = $props();
+  let { data, timeRange, customTimeRange, showSubjectTrends = false }: Props = $props();
 
   let showPrediction = $state(false);
   let predictionMonths = $state(3);
@@ -30,8 +32,11 @@
   const chartResult = $derived.by(() =>
     buildGradeTrendChart(data, timeRange, {
       showPerSubject: showSubjectTrends,
+      custom: customTimeRange,
     }),
   );
+
+  const timeRangeText = $derived(() => getTimeRangeLabel(timeRange, customTimeRange));
 
   const historicalData = $derived(chartResult.points);
   const chartSeries = $derived(chartResult.series);
@@ -205,9 +210,9 @@
       </div>
       <p class="bsplus-analytics-card-desc">
         {#if showSubjectTrends}
-          Overall and per-subject averages · {getTimeRangeLabel(timeRange)}
+          Overall and per-subject averages · {timeRangeText()}
         {:else}
-          Average grades over time · {getTimeRangeLabel(timeRange)}
+          Average grades over time · {timeRangeText()}
         {/if}
       </p>
     </div>
@@ -357,7 +362,7 @@
     {/if}
     <br />
     <span>
-      {historicalData.length} data points · {getTimeRangeLabel(timeRange)}
+      {historicalData.length} data points · {timeRangeText()}
       {#if showSubjectTrends && chartSeries.length > 1}
         · {chartSeries.length - 1} subject{chartSeries.length - 1 === 1 ? "" : "s"}
       {/if}

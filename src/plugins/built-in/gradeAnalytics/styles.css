@@ -130,21 +130,24 @@
   animation-delay: 400ms;
 }
 
-/* ─── Header ─── */
-.bsplus-analytics-header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
+/* ─── Sidebar page title ─── */
+.bsplus-analytics-sidebar-head {
+  margin: 0 0 0.35rem;
 }
 
-.bsplus-analytics-header-actions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
+.bsplus-analytics-sidebar-head h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--bsplus-analytics-text);
+}
+
+.bsplus-analytics-sidebar-head .bsplus-analytics-badge {
+  display: block;
+  width: fit-content;
+  margin: 0.35rem 0 0;
 }
 
 .bsplus-analytics-btn-privacy {
@@ -164,26 +167,11 @@
   box-shadow: var(--bsplus-theme-btn-privacy-hover-shadow, none);
 }
 
-.bsplus-analytics-header-text h1 {
-  margin: 0 0 0.2rem;
-  font-size: 1.875rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  color: var(--bsplus-analytics-text);
-}
-
-.bsplus-analytics-header-text p {
-  margin: 0;
-  color: var(--bsplus-analytics-muted);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-}
-
 .bsplus-analytics-meta {
-  margin-top: 0.15rem;
+  margin: 0;
   font-size: 0.75rem;
   color: var(--bsplus-analytics-muted);
+  line-height: 1.4;
 }
 
 .bsplus-analytics-badge {
@@ -369,6 +357,23 @@
   gap: 0.25rem;
   min-width: 0;
   position: relative;
+}
+
+.bsplus-analytics-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bsplus-analytics-border);
+}
+
+.bsplus-analytics-sidebar-actions .bsplus-analytics-btn {
+  width: 100%;
+}
+
+.bsplus-analytics-sidebar-actions .bsplus-analytics-meta {
+  padding-bottom: 0.15rem;
 }
 
 .bsplus-analytics-filter-group .bsplus-analytics-field-label {

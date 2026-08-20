@@ -12,9 +12,11 @@
   import AssessmentTable from "./AssessmentTable.svelte";
   import GradeRangeSlider from "./GradeRangeSlider.svelte";
   import {
+    defaultCustomTimeRange,
     filterAssessmentsByTimeRange,
     getTimeRangeLabel,
     TIME_RANGE_OPTIONS,
+    type CustomTimeRange,
     type TimeRange,
   } from "./timeRange";
   import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
@@ -32,6 +34,7 @@
   let showSubjectsDropdown = $state(false);
   let showTimeRangeDropdown = $state(false);
   let timeRange: TimeRange = $state("all");
+  let customTimeRange: CustomTimeRange = $state(defaultCustomTimeRange());
   let showSubjectTrends = $state(false);
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
@@ -68,7 +71,7 @@
   });
 
   const timeScopedData = $derived(() =>
-    filterAssessmentsByTimeRange(filteredData(), timeRange),
+    filterAssessmentsByTimeRange(filteredData(), timeRange, customTimeRange),
   );
 
   const gradedFiltered = $derived(() =>
@@ -138,7 +141,7 @@
     }
   }
 
-  const timeRangeLabel = $derived(() => getTimeRangeLabel(timeRange));
+  const timeRangeLabel = $derived(() => getTimeRangeLabel(timeRange, customTimeRange));
 
   function closeToolbarDropdowns() {
     showSubjectsDropdown = false;
@@ -155,6 +158,7 @@
 
   function selectTimeRange(value: TimeRange) {
     timeRange = value;
+    if (value === "custom") customTimeRange = defaultCustomTimeRange();
     showTimeRangeDropdown = false;
   }
 
@@ -199,8 +203,14 @@
 />
 
 <div class="bsplus-analytics-root">
-  <header class="bsplus-analytics-header bsplus-analytics-animate">
-    <div class="bsplus-analytics-header-text">
+  {#if error}
+    <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: 200 }}>
+      {error}
+    </p>
+  {/if}
+
+  {#snippet sidebarTitle()}
+    <header class="bsplus-analytics-sidebar-head bsplus-analytics-animate">
       <h1>
         Analytics
         {#if syncing}
@@ -210,11 +220,14 @@
           </span>
         {/if}
       </h1>
-      {#if lastUpdated && analyticsData && analyticsData.length > 0}
+    </header>
+  {/snippet}
+
+  {#snippet sidebarActions()}
+    <div class="bsplus-analytics-sidebar-actions">
+      {#if lastUpdated}
         <p class="bsplus-analytics-meta">Last updated: {formattedTimestamp()}</p>
       {/if}
-    </div>
-    <div class="bsplus-analytics-header-actions">
       <button
         type="button"
         class="bsplus-analytics-btn bsplus-analytics-btn-privacy"
@@ -231,21 +244,25 @@
         {syncing ? "Syncing…" : "Refresh data"}
       </button>
     </div>
-  </header>
-
-  {#if error}
-    <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: 200 }}>
-      {error}
-    </p>
-  {/if}
+  {/snippet}
 
   {#if loading || !contentReady}
-    <div class="bsplus-analytics-loading bsplus-analytics-animate">
-      <div class="bsplus-analytics-spinner" aria-label="Loading analytics"></div>
+    <div class="bsplus-analytics-layout bsplus-analytics-animate">
+      <aside class="bsplus-analytics-filters" aria-label="Analytics">
+        {@render sidebarTitle()}
+        {@render sidebarActions()}
+      </aside>
+      <div class="bsplus-analytics-main">
+        <div class="bsplus-analytics-loading">
+          <div class="bsplus-analytics-spinner" aria-label="Loading analytics"></div>
+        </div>
+      </div>
     </div>
   {:else if analyticsData && analyticsData.length > 0}
     <div class="bsplus-analytics-layout bsplus-analytics-animate bsplus-analytics-delay-1">
       <aside class="bsplus-analytics-filters" aria-label="Filters">
+        {@render sidebarTitle()}
+
         <div class="bsplus-analytics-filters-head">
           <h2 class="bsplus-analytics-filters-title">Filters</h2>
           {#if hasActiveFilters()}
@@ -297,6 +314,22 @@
               </div>
             {/if}
           </div>
+          {#if timeRange === "custom"}
+            <input
+              type="date"
+              class="bsplus-analytics-input"
+              bind:value={customTimeRange.from}
+              max={customTimeRange.to}
+              aria-label="Custom range start date"
+            />
+            <input
+              type="date"
+              class="bsplus-analytics-input"
+              bind:value={customTimeRange.to}
+              min={customTimeRange.from}
+              aria-label="Custom range end date"
+            />
+          {/if}
         </div>
 
         <div class="bsplus-analytics-filter-group" data-analytics-dropdown>
@@ -378,6 +411,8 @@
             <span>Per-subject trends</span>
           </label>
         </div>
+
+        {@render sidebarActions()}
       </aside>
 
       <div class="bsplus-analytics-main">
@@ -404,11 +439,12 @@
               <AnalyticsAreaChart
                 data={gradedFiltered()}
                 {timeRange}
+                {customTimeRange}
                 showSubjectTrends={showSubjectTrends}
               />
             </div>
             <div class="bsplus-analytics-chart-cell">
-              <AnalyticsBarChart data={gradedFiltered()} {timeRange} />
+              <AnalyticsBarChart data={gradedFiltered()} {timeRange} {customTimeRange} />
             </div>
           </div>
 
@@ -426,20 +462,20 @@
       </div>
     </div>
   {:else}
-    <div class="bsplus-analytics-empty bsplus-analytics-animate" transition:fade={{ duration: 300 }}>
-      <h2>No analytics data yet</h2>
-      <p>
-        Data syncs when you visit this page. Assessments with released marks will
-        appear here with trends and grade breakdowns.
-      </p>
-      <button
-        type="button"
-        class="bsplus-analytics-btn bsplus-analytics-btn-primary"
-        disabled={syncing}
-        onclick={() => runSync()}
-      >
-        Sync now
-      </button>
+    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: 300 }}>
+      <aside class="bsplus-analytics-filters" aria-label="Analytics">
+        {@render sidebarTitle()}
+        {@render sidebarActions()}
+      </aside>
+      <div class="bsplus-analytics-main">
+        <div class="bsplus-analytics-empty">
+          <h2>No analytics data yet</h2>
+          <p>
+            Data syncs when you visit this page. Assessments with released marks will
+            appear here with trends and grade breakdowns.
+          </p>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

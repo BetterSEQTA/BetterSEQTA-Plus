@@ -14,7 +14,7 @@
 
   import type { Assessment } from "./types";
 
-  import { getTimeRangeLabel, type TimeRange } from "./timeRange";
+  import { getTimeRangeLabel, type CustomTimeRange, type TimeRange } from "./timeRange";
 
   import {
 
@@ -36,11 +36,15 @@
 
     timeRange: TimeRange;
 
+    customTimeRange?: CustomTimeRange;
+
   }
 
 
 
-  let { data, timeRange }: Props = $props();
+  let { data, timeRange, customTimeRange }: Props = $props();
+
+  const timeRangeText = $derived(() => getTimeRangeLabel(timeRange, customTimeRange));
 
 
 
@@ -152,11 +156,11 @@
 
     if (d.modeUsed === "letter") {
 
-      return `Assessments per letter grade · ${getTimeRangeLabel(timeRange)}`;
+      return `Assessments per letter grade · ${timeRangeText()}`;
 
     }
 
-    return `Assessments per grade band · ${getTimeRangeLabel(timeRange)}`;
+    return `Assessments per grade band · ${timeRangeText()}`;
 
   });
 
@@ -360,7 +364,7 @@
 
         <strong>No graded assessments</strong>
 
-        <span>for {getTimeRangeLabel(timeRange).toLowerCase()}</span>
+        <span>for {timeRangeText().toLowerCase()}</span>
 
       </div>
 
