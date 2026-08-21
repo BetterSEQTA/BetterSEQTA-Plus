@@ -5,6 +5,7 @@
   import MotionDiv from "../MotionDiv.svelte";
   import PlainCloseButton from "../PlainCloseButton.svelte";
   import CloudHeader from "./CloudHeader.svelte";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   type SettingsPage = "settings" | "themes" | "backgrounds";
 
@@ -33,10 +34,12 @@
   ];
 
   const activeIndex = $derived(tabs.findIndex((tab) => tab.id === activePage));
+  const motion = $derived($settingsState.animations ? "var(--bs-settings-ease)" : "0s");
 </script>
 
 <header
   class="flex shrink-0 items-center gap-4 border-b border-zinc-200/60 px-5 py-4 dark:border-zinc-700/50"
+  style="--bs-settings-ease: 0.28s cubic-bezier(0.22, 1, 0.36, 1)"
 >
   <button type="button" class="hidden shrink-0 lg:block" onclick={onLogoClick}>
     <img
@@ -52,7 +55,7 @@
   </button>
 
   <div
-    class="h-12 min-w-[14rem] flex-1 rounded-full bg-zinc-100/80 p-1 dark:bg-zinc-900/50"
+    class="tab-track h-12 min-w-0 flex-1 rounded-full bg-zinc-100/80 p-1 dark:bg-zinc-900/50"
     role="tablist"
     aria-label="Settings pages"
   >
@@ -68,7 +71,7 @@
           role="tab"
           aria-selected={activePage === tab.id}
           onclick={() => setActivePage(tab.id)}
-          class="relative z-10 h-10 flex-1 rounded-full px-4 text-base transition-colors duration-200
+          class="relative z-10 h-10 flex-1 whitespace-nowrap rounded-full px-4 text-base transition-colors duration-200
             {activePage === tab.id
             ? 'font-semibold text-zinc-900 dark:text-white'
             : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
@@ -80,8 +83,13 @@
   </div>
 
   <div class="flex shrink-0 items-center gap-2">
-    {#if showStoreTools}
-      <label class="relative hidden w-40 md:block xl:w-56">
+    <div
+      class="store-search-wrap hidden md:block"
+      class:store-search-wrap--open={showStoreTools}
+      style="transition: max-width {motion}, opacity {motion}, transform {motion}"
+      aria-hidden={!showStoreTools}
+    >
+      <label class="relative block w-40 md:w-48 xl:w-56">
         <span class="sr-only">Search {activePage}</span>
         <svg
           class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
@@ -96,11 +104,14 @@
           type="search"
           placeholder={activePage === "themes" ? "Search themes" : "Search backgrounds"}
           value={searchTerm}
+          tabindex={showStoreTools ? undefined : -1}
           oninput={(event) => setSearchTerm(event.currentTarget.value)}
           class="store-search h-12 w-full rounded-full bg-zinc-100/80 pl-9 pr-4 text-sm text-zinc-900 transition-colors duration-150 placeholder:text-zinc-400 focus:bg-zinc-200/70 dark:bg-zinc-900/50 dark:text-white dark:focus:bg-zinc-700"
         />
       </label>
+    </div>
 
+    {#if showStoreTools}
       <CloudHeader />
     {/if}
 
@@ -109,6 +120,27 @@
 </header>
 
 <style>
+  .store-search-wrap {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(8px);
+    pointer-events: none;
+  }
+
+  .store-search-wrap--open {
+    max-width: 10rem;
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  @media (min-width: 1280px) {
+    .store-search-wrap--open {
+      max-width: 14rem;
+    }
+  }
+
   .store-search,
   .store-search:focus,
   .store-search:focus-visible {

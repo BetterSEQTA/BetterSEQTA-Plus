@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import { onMount } from "svelte";
+  import { fade, scale } from "svelte/transition";
+  import { onMount, tick } from "svelte";
   import Switch from "./Switch.svelte";
   import {
     FEEDBACK_CATEGORIES,
@@ -23,6 +23,7 @@
     type FeedbackStatusItem,
   } from "@/seqta/utils/feedback/client";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import Spinner from "./Spinner.svelte";
 
   let { onClose, initialFeedbackId = null } = $props<{
     onClose: () => void;
@@ -65,6 +66,63 @@
   const btnPrimary = $derived(
     `${btn} ${isDark ? "bg-zinc-200 text-zinc-900" : "bg-zinc-800 text-white"}`,
   );
+  const panelKey = $derived(
+    tab === "send"
+      ? successId
+        ? "send-success"
+        : "send-form"
+      : selectedItem
+        ? `status-${selectedItem.id}`
+        : "status-list",
+  );
+
+  let panelBodyEl = $state<HTMLDivElement | null>(null);
+  let panelHeightPx = $state<number | null>(null);
+
+  const panelHeightEase = "cubic-bezier(0.22, 1, 0.36, 1)";
+  const panelHeightMotion = $derived(
+    $settingsState.animations && panelHeightPx !== null
+      ? `height 280ms ${panelHeightEase}`
+      : "none",
+  );
+
+  function measurePanelHeight() {
+    if (!panelBodyEl) return;
+    panelHeightPx = panelBodyEl.scrollHeight;
+  }
+
+  function panelMeasure(node: HTMLDivElement) {
+    panelBodyEl = node;
+
+    const update = () => {
+      panelHeightPx = node.scrollHeight;
+    };
+
+    update();
+    const ro = new ResizeObserver(() => update());
+    ro.observe(node);
+
+    return {
+      destroy() {
+        ro.disconnect();
+        if (panelBodyEl === node) panelBodyEl = null;
+      },
+    };
+  }
+
+  $effect(() => {
+    panelKey;
+    includeContact;
+    errorMessage;
+    statusLoading;
+    statusItems.length;
+    selectedItem;
+    void tick().then(() => measurePanelHeight());
+  });
+
+  function isStatusDetailKey(key: string): boolean {
+    return key.startsWith("status-") && key !== "status-list";
+  }
 
   function errText(e: unknown): string {
     if (e instanceof FeedbackApiError) return e.message;
@@ -112,6 +170,7 @@
   }
 
   onMount(() => {
+    void tick().then(() => measurePanelHeight());
     if (typeof initialFeedbackId === "string" && initialFeedbackId) {
       void openStatusItem(initialFeedbackId);
     }
@@ -166,11 +225,11 @@
   }}
   role="button"
   tabindex="-1"
-  transition:fade={{ duration: 150 }}
+  transition:fade={{ duration: $settingsState.animations ? 200 : 0 }}
 >
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class="p-5 mx-4 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border text-[18px] {isDark
+    class="feedback-dialog p-5 mx-4 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border text-[18px] {isDark
       ? 'bg-zinc-800 text-white border-zinc-700'
       : 'bg-white text-zinc-900 border-zinc-200'}"
     onclick={(e) => e.stopPropagation()}
@@ -179,6 +238,12 @@
     aria-modal="true"
     aria-labelledby="feedback-modal-title"
     tabindex="-1"
+    in:scale={{
+      duration: $settingsState.animations ? 280 : 0,
+      start: 0.92,
+      opacity: 0,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
+    }}
   >
     <div
       class="flex gap-1 p-1 mb-4 rounded-full {isDark ? 'bg-zinc-900' : 'bg-zinc-100'}"
@@ -193,8 +258,13 @@
       </button>
     </div>
 
-    {#if tab === "send"}
-      {#if successId}
+    <div
+      class="feedback-panel"
+      style:height={panelHeightPx === null ? "auto" : `${panelHeightPx}px`}
+      style:transition={panelHeightMotion}
+    >
+      <div class="feedback-panel__body" use:panelMeasure>
+    {#if panelKey === "send-success" && successId}
         <h2 id="feedback-modal-title" class="mb-3 text-xl font-bold">Thanks for the feedback</h2>
         <p class="mb-2 text-zinc-600 dark:text-zinc-300">Reference ID:</p>
         <p class="mb-4 px-3 py-2 font-mono text-base rounded-lg {isDark ? 'bg-zinc-900' : 'bg-zinc-100'} break-all">{successId}</p>
@@ -202,7 +272,7 @@
           <button type="button" class={btnMuted} onclick={() => successId && openStatusItem(successId)}>Check status</button>
           <button type="button" class={btnPrimary} onclick={onClose}>Done</button>
         </div>
-      {:else}
+      {:else if panelKey === "send-form"}
         <h2 id="feedback-modal-title" class="mb-1 text-xl font-bold">Send feedback</h2>
         <p class="mb-4 text-zinc-600 dark:text-zinc-400">Anonymous by default. Contact and school details are optional.</p>
 
@@ -274,8 +344,7 @@
             </button>
           </div>
         </div>
-      {/if}
-    {:else if selectedItem}
+    {:else if isStatusDetailKey(panelKey) && selectedItem}
       <div class="flex items-start justify-between gap-3 mb-3">
         <h2 id="feedback-modal-title" class="text-xl font-bold">Feedback status</h2>
         <button type="button" class="{btnMuted} !text-base !px-3 !py-1.5" onclick={() => { selectedItem = null; void loadStatusList(); }}>Back</button>
@@ -292,7 +361,7 @@
       {/if}
       {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">{statusError}</p>{/if}
       <div class="flex gap-3 justify-end">
-        <button type="button" class={btnMuted} onclick={() => openStatusItem(selectedItem.id)} disabled={statusLoading}>
+        <button type="button" class={btnMuted} onclick={() => openStatusItem(selectedItem!.id)} disabled={statusLoading}>
           {statusLoading ? "Refreshing…" : "Refresh"}
         </button>
         <button type="button" class={btnPrimary} onclick={onClose}>Close</button>
@@ -306,7 +375,15 @@
       </div>
       {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">{statusError}</p>{/if}
       {#if statusLoading && !statusItems.length}
-        <p class="text-zinc-500">Loading…</p>
+        <div class="feedback-loading" aria-busy="true" aria-live="polite">
+          <Spinner size="md" />
+          <p class="text-zinc-500">Checking your feedback…</p>
+          <div class="feedback-loading__skeleton" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
       {:else if !statusItems.length}
         <p class="mb-4 text-zinc-500">No feedback yet.</p>
         <button type="button" class={btnPrimary} onclick={() => selectTab("send")}>Send feedback</button>
@@ -334,10 +411,71 @@
         <button type="button" class={btnMuted} onclick={onClose}>Close</button>
       </div>
     {/if}
+      </div>
+    </div>
   </div>
 </div>
 
 <style>
+  .feedback-dialog {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feedback-panel {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .feedback-panel__body {
+    width: 100%;
+  }
+
+  .feedback-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 14rem;
+    padding: 1rem 0 1.5rem;
+  }
+
+  .feedback-loading__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .feedback-loading__skeleton span {
+    display: block;
+    height: 3.5rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    animation: feedback-skeleton-pulse 1.2s ease-in-out infinite;
+  }
+
+  .feedback-loading__skeleton span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .feedback-loading__skeleton span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes feedback-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
   :global(.feedback-field),
   :global(.feedback-field option) {
     -webkit-text-fill-color: currentColor !important;

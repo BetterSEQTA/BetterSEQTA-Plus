@@ -78,8 +78,8 @@ function cycle(
   return { t: fadeT, fade: true, ambient: smooth((len - tick) / revealMs) };
 }
 
-function cssVar(root: HTMLElement, name: string, fallback: string): string {
-  return getComputedStyle(root).getPropertyValue(name).trim() || fallback;
+function cssVar(_root: HTMLElement, _name: string, fallback: string): string {
+  return fallback;
 }
 
 function drawGrid(

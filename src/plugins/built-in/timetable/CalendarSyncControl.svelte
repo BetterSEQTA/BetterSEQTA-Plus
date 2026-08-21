@@ -66,6 +66,7 @@
   let rootEl = $state<HTMLDivElement | null>(null);
   let triggerEl = $state<HTMLButtonElement | null>(null);
   let menuEl = $state<HTMLDivElement | null>(null);
+  let modalEl = $state<HTMLDivElement | null>(null);
   let menuStyle = $state("");
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -325,10 +326,15 @@
     const themeHost = rootEl?.closest(".bsplus-calendar-sync-mount");
     if (themeHost instanceof HTMLElement) syncCalendarSyncTheme(themeHost);
     if (menuEl) syncCalendarSyncTheme(menuEl);
+    if (modalEl) syncCalendarSyncTheme(modalEl);
   }
 
   $effect(() => {
     if (menuOpen && menuEl) syncHostTheme();
+  });
+
+  $effect(() => {
+    if (modalOpen && modalEl) syncHostTheme();
   });
 
   $effect(() => {
@@ -550,6 +556,7 @@
   {#if modalOpen}
     <div
       class="bsplus-cal-modal-backdrop"
+      bind:this={modalEl}
       use:portalToBody
       onclick={(e) => {
         if (e.target === e.currentTarget && !modalBusy) closeModal();
@@ -961,6 +968,10 @@
     padding: 16px;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+  }
+
+  .bsplus-cal-modal-backdrop.dark .bsplus-cal-modal {
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
   }
 
   .bsplus-cal-modal {

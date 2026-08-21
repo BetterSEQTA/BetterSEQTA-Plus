@@ -56,7 +56,7 @@
   let compactActiveTab = $state(0);
   let activePage = $state<PageId>("settings");
   let activeSection = $state("general");
-  let activeThemeView = $state<ThemeView>("theme-settings");
+  let activeThemeView = $state<ThemeView>("theme-store");
   let activeBackgroundView = $state<BackgroundView>("background-settings");
   let selectedBackgroundCategory = $state("All");
   let backgroundCategories = $state<string[]>([]);
@@ -93,9 +93,9 @@
     {
       label: "Themes",
       items: [
+        { id: "theme-store", label: "Store" },
         { id: "theme-settings", label: "Theme settings" },
         { id: "create-theme", label: "Create theme" },
-        { id: "theme-store", label: "Store" },
       ],
     },
   ];
@@ -356,7 +356,10 @@
       searchTerm={storeSearchTerm}
       setSearchTerm={(term) => (storeSearchTerm = term)}
       {activePage}
-      setActivePage={(page) => (activePage = page)}
+      setActivePage={(page) => {
+        activePage = page;
+        if (page === "themes") activeThemeView = "theme-store";
+      }}
       showStoreTools={isStoreView}
       onLogoClick={handleDevModeToggle}
       onClose={handleClose}
