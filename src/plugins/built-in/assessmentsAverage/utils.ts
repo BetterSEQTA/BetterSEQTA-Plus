@@ -67,6 +67,7 @@ function collectMarksFromFiberState(state: Record<string, unknown>): MarkLike[] 
     ...(Array.isArray(state.marks) ? state.marks : []),
     ...(Array.isArray(state.upcoming) ? state.upcoming : []),
     ...(Array.isArray(state.pending) ? state.pending : []),
+    ...(Array.isArray(state.feedback) ? state.feedback : []),
   ] as MarkLike[];
 }
 
@@ -903,6 +904,7 @@ export async function parseAssessments(api: any) {
     ...(state["marks"] ?? []),
     ...(state["upcoming"] ?? []),
     ...(state["pending"] ?? []),
+    ...(state["feedback"] ?? []),
   ];
   if (!marks) return;
 
