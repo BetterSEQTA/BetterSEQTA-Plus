@@ -26,6 +26,9 @@ interface StorageChange<T = any> {
 
 /** Phased plugin startup: critical UI first, light DOM next, heavy plugins last. */
 const PLUGIN_START_PHASES: readonly string[][] = [
+  // 404 page boot is a tiny standalone path; start it first so the kitten
+  // card renders before any SPA work. A no-op on normal SEQTA pages.
+  ["error-page-kitten"],
   ["themes", "animated-background"],
   [
     "timetable",

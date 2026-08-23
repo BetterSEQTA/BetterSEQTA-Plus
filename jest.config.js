@@ -14,6 +14,8 @@ export default {
     '/node_modules/(?!(color|color-string|color-convert|color-name)/)',
   ],
   moduleNameMapper: {
+    '\\.png$': '<rootDir>/src/test/mocks/assetStub.ts',
+    '\\?inline$': '<rootDir>/src/test/mocks/inlineStub.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^color$': '<rootDir>/src/test/mocks/color.ts',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
