@@ -32,6 +32,9 @@ export default {
   storage: { local, onChanged },
   runtime: {
     sendMessage: jest.fn(async () => undefined),
+    getURL: jest.fn(
+      (path: string) => `chrome-extension://test/${String(path).replace(/^\/+/, "")}`,
+    ),
   },
 };
 

@@ -16,6 +16,7 @@ import messageFoldersPluginLazy from "./built-in/messageFolders/lazy";
 import enhancedNavigationPluginLazy from "./built-in/enhancedNavigation/lazy";
 import globalSearchPluginLazy from "./built-in/globalSearch/lazy";
 import gradeAnalyticsPluginLazy from "./built-in/gradeAnalytics/lazy";
+import errorPageKittenPluginLazy from "./built-in/errorPageKitten/lazy";
 
 // Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
@@ -36,6 +37,7 @@ pluginManager.registerPlugin(messageFoldersPluginLazy);
 pluginManager.registerPlugin(enhancedNavigationPluginLazy);
 pluginManager.registerPlugin(globalSearchPluginLazy);
 pluginManager.registerPlugin(gradeAnalyticsPluginLazy);
+pluginManager.registerPlugin(errorPageKittenPluginLazy);
 
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();
