@@ -722,6 +722,13 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     pointer-events: none !important;
   }
 
+  /* Same locks keyed off `.drilling` so nested leaf clicks do not flicker when
+     SEQTA briefly strips `.active` from folder rows. */
+  > #bsplus-sidebar-root.drilling > li:not(.hasChildren),
+  > #bsplus-sidebar-root.drilling > li:not(.hasChildren) * {
+    pointer-events: none !important;
+  }
+
   > #bsplus-sidebar-root .sub {
     pointer-events: none;
   }
@@ -742,13 +749,24 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     background-image: none !important;
   }
 
-  /* One-shot enter — not tied to `.active` (SEQTA strips/restores that on every
-     nested click, which would restart the animation). */
-  > #bsplus-sidebar-root .sub.bsplus-sub-enter {
-    animation: bsplus-submenu-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:not(:has(.sub)) {
+    pointer-events: auto !important;
+    background: transparent !important;
+    background-image: none !important;
   }
 
-  > #bsplus-sidebar-root > li.hasChildren.active > label {
+  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:has(.sub) {
+    pointer-events: none !important;
+  }
+
+  > #bsplus-sidebar-root.drilling li.hasChildren > .sub .sub {
+    pointer-events: auto !important;
+    background: transparent !important;
+    background-image: none !important;
+  }
+
+  > #bsplus-sidebar-root > li.hasChildren.active > label,
+  > #bsplus-sidebar-root.drilling > li.hasChildren > label {
     pointer-events: none !important;
   }
 
@@ -758,6 +776,14 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     > li:not(.hasChildren.active)::before,
   > #bsplus-sidebar-root:has(> li.hasChildren.active > .sub)
     > li:not(.hasChildren.active)::after {
+    content: none !important;
+    display: none !important;
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::before,
+  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::after {
     content: none !important;
     display: none !important;
     animation: none !important;
@@ -790,16 +816,6 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
   }
 }
 
-@keyframes bsplus-submenu-enter {
-  from {
-    opacity: 0.35;
-    transform: translateX(28px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 #menu li > label > svg,
 #menu section > label > svg {
   margin: 0 10px 0 4px;

@@ -184,8 +184,9 @@ class SidebarState {
   activePath = $state("");
   editMode = $state(false);
   iconOnly = $state(false);
-  /** Frame key whose `.sub` should play the one-shot enter animation. */
+  /** Folder key playing the one-shot panel enter animation. */
   enterFrameKey = $state<string | null>(null);
+  drillReturning = $state(false);
 
   visibleRootItems = $derived(
     filterVisible(orderItems(this.items, settingsState.menuorder ?? [])),
@@ -262,9 +263,10 @@ class SidebarState {
   }
 
   openFolder(item: SidebarItem, menu?: HTMLElement) {
-    if (!item.hasChildren) return;
-    // Ignore duplicate opens (double-firing click / label + li).
+    if (!item.hasChildren || this.drillReturning) return;
     if (this.drillStack.at(-1)?.key === item.key) return;
+
+    this.drillReturning = false;
 
     const frame: SidebarDrillFrame = {
       key: item.key,
@@ -293,14 +295,23 @@ class SidebarState {
   }
 
   goBack() {
-    if (!this.drillStack.length) return;
+    if (!this.drillStack.length || this.drillReturning) return;
+
     this.enterFrameKey = null;
     this.drillStack = this.drillStack.slice(0, -1);
     resetSidebarScroll();
+
+    if (settingsState.animations !== true) return;
+
+    this.drillReturning = true;
+    window.setTimeout(() => {
+      this.drillReturning = false;
+    }, 360);
   }
 
   resetDrill() {
     this.enterFrameKey = null;
+    this.drillReturning = false;
     this.drillStack = [];
     resetSidebarScroll();
   }
@@ -350,7 +361,7 @@ class SidebarState {
   }
 
   activateItem(item: SidebarItem, menu: HTMLElement) {
-    if (this.editMode) return;
+    if (this.editMode || this.drillReturning) return;
 
     if (item.hasChildren) {
       this.openFolder(item, menu);
@@ -359,6 +370,13 @@ class SidebarState {
 
     this.activeKey = item.key;
     if (item.path) this.activePath = item.path;
+
+    // Already inside this folder — never replay the one-shot enter animation when
+    // SEQTA rewrites `.active` on the route change.
+    if (this.isDrilling) {
+      this.enterFrameKey = null;
+      restoreCustomMenuActive();
+    }
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {

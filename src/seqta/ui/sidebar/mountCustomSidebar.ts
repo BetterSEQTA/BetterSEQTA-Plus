@@ -101,7 +101,7 @@ function scheduleSync() {
  * never see them. Opening Goals/Folios via SEQTA + our drill UI freezes the tab.
  */
 function onCustomSidebarCaptureClick(event: MouseEvent) {
-  if (!menuEl || sidebarState.editMode) return;
+  if (!menuEl || sidebarState.editMode || sidebarState.drillReturning) return;
 
   const root = document.getElementById(ROOT_ID);
   const target = event.target;

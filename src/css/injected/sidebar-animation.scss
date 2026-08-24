@@ -15,44 +15,25 @@
 #menu > ul:has(li.hasChildren.active) > li > svg,
 #menu > ul ul:has(li.hasChildren.active) > li > label,
 #menu > ul ul:has(li.hasChildren.active) > li > svg {
-  /* !important beats theme animations (e.g. Beach palm-slide forwards). */
   transform: translateX(-320px) !important;
   animation: none !important;
 }
 
-/*
- * Custom sidebar: park sibling chrome while `.drilling` is set.
- * SEQTA strips/restores `.active` on every nested leaf click; keying only off
- * `:has(.active)` briefly undoes the translate and the 0.3s transform
- * transition makes that look like the open animation flashing again.
- *
- * Scope carefully — only root siblings (and nested-folder siblings via
- * `.sub:has(.sub)`), never the visible leaf rows in the current panel.
- */
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::before,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::after,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg {
-  transform: translateX(-320px) !important;
-  animation: none !important;
-  transition: none !important;
+#menu ul > li > label,
+#menu ul > li > svg {
+  transition: transform 0.3s ease;
 }
 
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::before,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::after,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
-  transform: translateX(-320px) !important;
-  animation: none !important;
-  transition: none !important;
+#menu .sub {
+  transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling {
-  overflow: hidden !important;
+#menu > ul:has(li.hasChildren.active) > li.active {
+  background: transparent !important;
 }
 
 #menu li.hasChildren:not(.active) li .sub {
-  display: none; // improves performance
+  display: none;
 }
 
 .sub .sub {
@@ -64,27 +45,6 @@
   display: none !important;
 }
 
-#menu ul > li > label,
-#menu ul > li > svg {
-  transition: transform 0.3s ease;
-}
-
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
-  transition: none !important;
-}
-
-#menu .sub {
-  transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#menu > ul:has(li.hasChildren.active) > li.active {
-  background: transparent !important;
-}
-
-/* Icon-only collapsed: submenu slides over narrow icons */
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li::before,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li::before,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li > label,
@@ -94,12 +54,92 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(
   transform: translateX(-70px);
 }
 
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li::before,
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > label,
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling > li > svg,
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li::before,
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > label,
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling .sub:has(.sub) > ul > li > svg {
-  transform: translateX(-70px) !important;
-  transition: none !important;
+/*
+ * Custom sidebar drill slides — use `.drilling` / `.drill-entering` / `.drill-returning`,
+ * not `:has(.active)` (SEQTA strips `.active` on nested clicks).
+ */
+#menu.bsplus-custom-sidebar #bsplus-sidebar-root {
+  --bsplus-slide-off: -320px;
+
+  .sub {
+    transition: none !important;
+  }
+
+  &.drilling {
+    overflow: hidden !important;
+
+    &:not(.drill-returning) > li::before,
+    &:not(.drill-returning) > li::after,
+    &:not(.drill-returning) > li > label,
+    &:not(.drill-returning) > li > svg,
+    &:not(.drill-returning) .sub:has(.sub) > ul > li::before,
+    &:not(.drill-returning) .sub:has(.sub) > ul > li::after,
+    &:not(.drill-returning) .sub:has(.sub) > ul > li > label,
+    &:not(.drill-returning) .sub:has(.sub) > ul > li > svg {
+      transform: translateX(var(--bsplus-slide-off)) !important;
+      animation: none !important;
+    }
+
+    &:not(.drill-entering):not(.drill-returning) {
+      > li::before,
+      > li::after,
+      > li > label,
+      > li > svg,
+      .sub:has(.sub) > ul > li::before,
+      .sub:has(.sub) > ul > li::after,
+      .sub:has(.sub) > ul > li > label,
+      .sub:has(.sub) > ul > li > svg {
+        transition: none !important;
+      }
+
+      .sub {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+      }
+    }
+
+    .sub:has(.sub) > .nav > .back {
+      display: none !important;
+    }
+  }
+
+  &.drill-entering .sub.bsplus-sub-enter {
+    animation: bsplus-submenu-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &.drill-returning:not(.drilling) > li::before,
+  &.drill-returning:not(.drilling) > li::after,
+  &.drill-returning:not(.drilling) > li > label,
+  &.drill-returning:not(.drilling) > li > svg,
+  &.drilling.drill-returning > li.hasChildren > .sub > ul > li::before,
+  &.drilling.drill-returning > li.hasChildren > .sub > ul > li::after,
+  &.drilling.drill-returning > li.hasChildren > .sub > ul > li > label,
+  &.drilling.drill-returning > li.hasChildren > .sub > ul > li > svg {
+    transition: none !important;
+    animation: bsplus-sidebar-return 0.32s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  }
+}
+
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root {
+  --bsplus-slide-off: -70px;
+}
+
+@keyframes bsplus-sidebar-return {
+  from {
+    transform: translateX(var(--bsplus-slide-off, -320px));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes bsplus-submenu-enter {
+  from {
+    opacity: 0.35;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

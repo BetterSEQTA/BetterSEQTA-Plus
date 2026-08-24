@@ -195,6 +195,8 @@
   class="logo-link bsplus-sidebar-list"
   class:noscroll={sidebarState.isDrilling}
   class:drilling={sidebarState.isDrilling}
+  class:drill-entering={sidebarState.enterFrameKey != null}
+  class:drill-returning={sidebarState.drillReturning}
   class:compact={sidebarState.compact}
   class:edit-mode={sidebarState.editMode}
   class:is-sorting={dragging}
@@ -283,7 +285,8 @@
       class="sub"
       class:bsplus-sub-enter={sidebarState.enterFrameKey === current.frame.key}
       onanimationend={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target !== e.currentTarget) return;
+        if (sidebarState.enterFrameKey === current.frame.key) {
           sidebarState.clearEnterFrame(current.frame.key);
         }
       }}
