@@ -58,6 +58,7 @@
   let modalProvider = $state<CalendarProvider | null>(null);
   let showDisconnect = $state(false);
   let showDeleteEvents = $state(false);
+  let disconnectOverlay = $state(false);
   let toast = $state<{ message: string; error: boolean } | null>(null);
   let syncProgress = $state<GoogleCalendarSyncProgress | null>(null);
   let syncWeeksAhead = $state(12);
@@ -67,20 +68,20 @@
   let triggerEl = $state<HTMLButtonElement | null>(null);
   let menuEl = $state<HTMLDivElement | null>(null);
   let modalEl = $state<HTMLDivElement | null>(null);
+  let overlayEl = $state<HTMLDivElement | null>(null);
   let menuStyle = $state("");
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   const isBusy = $derived(busy !== null);
   const anyConnected = $derived(googleStatus.connected || outlookStatus.connected);
   const modalOpen = $derived(showDisconnect || showDeleteEvents);
-  const modalBusy = $derived(
-    showDisconnect ? busy?.phase === "disconnect" : busy?.phase === "delete",
-  );
+  const modalBusy = $derived(showDisconnect ? busy?.phase === "disconnect" : busy?.phase === "delete");
   const providerLabel = $derived(calendarProviderLabel(modalProvider ?? "google"));
   const showTriggerProgress = $derived(
     isBusy &&
       (busy?.phase === "sync" ||
         busy?.phase === "delete" ||
+        busy?.phase === "disconnect" ||
         busy?.phase === "connect" ||
         (syncProgress !== null && syncProgress.phase !== "done")),
   );
@@ -93,7 +94,12 @@
   });
   const triggerStatusText = $derived.by(() => {
     if (!showTriggerProgress) return "Sync with Calendar";
-    const verb = busy?.phase === "delete" ? "Deleting" : "Syncing";
+    const verb =
+      busy?.phase === "delete"
+        ? "Deleting"
+        : busy?.phase === "disconnect"
+          ? "Disconnecting"
+          : "Syncing";
     if (syncProgress?.total) return `${verb} ${triggerProgressPercent}%`;
     return `${verb}…`;
   });
@@ -102,14 +108,26 @@
       return anyConnected ? "Calendar sync options" : "Sync with Calendar";
     }
     if (syncProgress?.total) {
-      const verb = busy?.phase === "delete" ? "Deleting" : "Syncing";
+      const verb =
+        busy?.phase === "delete"
+          ? "Deleting"
+          : busy?.phase === "disconnect"
+            ? "Disconnecting"
+            : "Syncing";
       return `Calendar ${verb.toLowerCase()} in progress, ${triggerProgressPercent} percent complete`;
     }
-    return busy?.phase === "delete"
-      ? "Calendar deletion in progress"
-      : "Calendar sync in progress";
+    if (busy?.phase === "delete") return "Calendar deletion in progress";
+    if (busy?.phase === "disconnect") return "Calendar disconnect in progress";
+    return "Calendar sync in progress";
   });
   const accent = "var(--bsplus-cal-accent, var(--better-main, #3b82f6))";
+
+  const overlayProgressPercent = $derived(syncProgressPercent(syncProgress));
+  const overlayStatusText = $derived.by(() => {
+    if (busy?.phase === "disconnect") return "Disconnecting account…";
+    if (syncProgress?.message) return syncProgress.message;
+    return "Removing synced classes…";
+  });
 
   function providerPhase(provider: CalendarProvider): BusyPhase {
     return busy?.provider === provider ? busy.phase : null;
@@ -225,6 +243,16 @@
     }
   }
 
+  async function deleteProviderEvents(provider: CalendarProvider) {
+    const deleteFn =
+      provider === "google"
+        ? deleteSyncedEventsFromGoogleCalendar
+        : deleteSyncedEventsFromOutlookCalendar;
+    return deleteFn(location.origin, () => getCalendarAccessToken(provider), {
+      onProgress: handleSyncProgress,
+    });
+  }
+
   async function confirmDeleteEvents() {
     if (isBusy || !modalProvider) return;
     const provider = modalProvider;
@@ -238,13 +266,7 @@
       message: "Preparing removal…",
     };
     try {
-      const deleteFn =
-        provider === "google"
-          ? deleteSyncedEventsFromGoogleCalendar
-          : deleteSyncedEventsFromOutlookCalendar;
-      const result = await deleteFn(location.origin, () => getCalendarAccessToken(provider), {
-        onProgress: handleSyncProgress,
-      });
+      const result = await deleteProviderEvents(provider);
 
       if (!result.success) {
         showToastMessage(result.error ?? "Could not remove calendar events.", true);
@@ -279,22 +301,77 @@
     await saveSyncSettings({ autoSyncWeekly: checked });
   }
 
-  async function confirmDisconnect() {
+  async function disconnectProvider(
+    provider: CalendarProvider,
+    label: string,
+    toastMessage?: string,
+  ) {
+    const result = await disconnectCalendarProvider(provider);
+    if (!result?.success) {
+      showToastMessage(`Could not disconnect ${label} Calendar.`, true);
+      return false;
+    }
+    setProviderStatus(provider, { connected: false, lastSyncAt: undefined });
+    modalProvider = null;
+    if (toastMessage) showToastMessage(toastMessage);
+    return true;
+  }
+
+  async function confirmDisconnect(deleteEvents: boolean) {
     if (isBusy || !modalProvider) return;
     const provider = modalProvider;
-    busy = { provider, phase: "disconnect" };
     const label = calendarProviderLabel(provider);
-    try {
-      const result = await disconnectCalendarProvider(provider);
-      if (!result?.success) {
-        showToastMessage(`Could not disconnect ${label} Calendar.`, true);
-        return;
-      }
-      setProviderStatus(provider, { connected: false, lastSyncAt: undefined });
+    menuOpen = false;
+
+    if (deleteEvents) {
       showDisconnect = false;
-      menuOpen = false;
-      modalProvider = null;
-      showToastMessage(`Disconnected from ${label} Calendar.`);
+      disconnectOverlay = true;
+      busy = { provider, phase: "delete" };
+      syncProgress = {
+        phase: "preparing",
+        current: 0,
+        total: 1,
+        message: "Preparing removal…",
+      };
+      try {
+        const deleteResult = await deleteProviderEvents(provider);
+        if (!deleteResult.success) {
+          showToastMessage(deleteResult.error ?? "Could not remove calendar events.", true);
+          return;
+        }
+
+        busy = { provider, phase: "disconnect" };
+        syncProgress = {
+          phase: "preparing",
+          current: 0,
+          total: 1,
+          message: "Disconnecting account…",
+        };
+
+        const removed = deleteResult.deleted ?? 0;
+        const toastMessage =
+          removed > 0
+            ? `Removed ${removed} event${removed === 1 ? "" : "s"} and disconnected from ${label} Calendar.`
+            : `Disconnected from ${label} Calendar.`;
+        await disconnectProvider(provider, label, toastMessage);
+      } catch (err) {
+        showToastMessage(err instanceof Error ? err.message : "Disconnect failed.", true);
+      } finally {
+        syncProgress = null;
+        busy = null;
+        disconnectOverlay = false;
+      }
+      return;
+    }
+
+    busy = { provider, phase: "disconnect" };
+    try {
+      const ok = await disconnectProvider(
+        provider,
+        label,
+        `Disconnected from ${label} Calendar.`,
+      );
+      if (ok) showDisconnect = false;
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Disconnect failed.", true);
     } finally {
@@ -327,6 +404,7 @@
     if (themeHost instanceof HTMLElement) syncCalendarSyncTheme(themeHost);
     if (menuEl) syncCalendarSyncTheme(menuEl);
     if (modalEl) syncCalendarSyncTheme(modalEl);
+    if (overlayEl) syncCalendarSyncTheme(overlayEl);
   }
 
   $effect(() => {
@@ -335,6 +413,20 @@
 
   $effect(() => {
     if (modalOpen && modalEl) syncHostTheme();
+  });
+
+  $effect(() => {
+    if (disconnectOverlay && overlayEl) syncHostTheme();
+  });
+
+  $effect(() => {
+    if (!disconnectOverlay) return;
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
   });
 
   $effect(() => {
@@ -579,10 +671,10 @@
             Disconnect {providerLabel} Calendar?
           </h2>
           <p class="bsplus-cal-modal-body">
-            Stops BetterSEQTA+ from updating your calendar. Synced classes stay in {providerLabel} Calendar
-            until you delete them or connect again.
+            Disconnecting normally removes synced classes from {providerLabel} Calendar and signs you out.
+            Keep this tab open while that runs. You can also disconnect without deleting your events.
           </p>
-          <div class="bsplus-cal-modal-actions">
+          <div class="bsplus-cal-modal-actions bsplus-cal-modal-actions--disconnect">
             <button
               type="button"
               class="bsplus-cal-btn bsplus-cal-btn--ghost"
@@ -593,11 +685,19 @@
             </button>
             <button
               type="button"
+              class="bsplus-cal-btn bsplus-cal-btn--ghost"
+              disabled={modalBusy}
+              onclick={() => void confirmDisconnect(false)}
+            >
+              {modalBusy ? "Disconnecting…" : "Disconnect without deleting"}
+            </button>
+            <button
+              type="button"
               class="bsplus-cal-btn bsplus-cal-btn--danger"
               disabled={modalBusy}
-              onclick={() => void confirmDisconnect()}
+              onclick={() => void confirmDisconnect(true)}
             >
-              {modalBusy ? "Disconnecting…" : "Disconnect account"}
+              Disconnect & delete classes
             </button>
           </div>
         {:else}
@@ -627,6 +727,43 @@
             </button>
           </div>
         {/if}
+      </div>
+    </div>
+  {/if}
+
+  {#if disconnectOverlay}
+    <div
+      class="bsplus-cal-disconnect-overlay"
+      bind:this={overlayEl}
+      use:portalToBody
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="bsplus-cal-disconnect-title"
+      aria-describedby="bsplus-cal-disconnect-desc"
+      transition:fade={{ duration: 150 }}
+    >
+      <div class="bsplus-cal-disconnect-card">
+        <h2 id="bsplus-cal-disconnect-title" class="bsplus-cal-disconnect-title">
+          Do not close this tab
+        </h2>
+        <p id="bsplus-cal-disconnect-desc" class="bsplus-cal-disconnect-body">
+          Removing synced classes and disconnecting {providerLabel} Calendar. Closing SEQTA now may
+          leave events behind or interrupt sign-out.
+        </p>
+        <div
+          class="bsplus-cal-disconnect-progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={overlayProgressPercent}
+          aria-label={overlayStatusText}
+        >
+          <span
+            class="bsplus-cal-disconnect-progress-fill"
+            style:width="{overlayProgressPercent}%"
+          ></span>
+        </div>
+        <p class="bsplus-cal-disconnect-status">{overlayStatusText}</p>
       </div>
     </div>
   {/if}
@@ -1001,7 +1138,79 @@
   .bsplus-cal-modal-actions {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .bsplus-cal-modal-actions--disconnect {
+    justify-content: stretch;
+  }
+
+  .bsplus-cal-modal-actions--disconnect .bsplus-cal-btn {
+    flex: 1 1 auto;
+    min-width: fit-content;
+  }
+
+  .bsplus-cal-disconnect-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--bsplus-cal-z-modal, 1300) + 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    pointer-events: all;
+  }
+
+  .bsplus-cal-disconnect-card {
+    width: min(100%, 420px);
+    padding: 24px;
+    border-radius: 16px;
+    background: var(--bsplus-cal-surface, #fff);
+    color: var(--bsplus-cal-text, #111);
+    border: 1px solid color-mix(in srgb, var(--bsplus-cal-text, #111) 12%, transparent);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+    text-align: center;
+  }
+
+  .bsplus-cal-disconnect-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #dc2626;
+  }
+
+  .bsplus-cal-disconnect-body {
+    margin: 0 0 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 78%, transparent);
+  }
+
+  .bsplus-cal-disconnect-progress {
+    height: 8px;
+    margin: 0 0 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bsplus-cal-text, #111) 10%, transparent);
+  }
+
+  .bsplus-cal-disconnect-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--bsplus-cal-accent, var(--better-main, #3b82f6));
+    transition: width 0.25s ease;
+  }
+
+  .bsplus-cal-disconnect-status {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--bsplus-cal-text, #111) 72%, transparent);
   }
 
   .bsplus-cal-btn {

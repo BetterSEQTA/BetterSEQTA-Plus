@@ -13,7 +13,7 @@ import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import debounce from "@/seqta/utils/debounce";
 
 // UI and theme management
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
@@ -509,10 +509,8 @@ function CheckNoticeTextColour(notice: Element) {
   noticeColourObserver.observe(notice, { childList: true, subtree: true });
 }
 
-function watchForEngageLogin() {
-  if (!document.querySelector(".login")) {
-    return;
-  }
+function watchForLoginDismiss() {
+  if (!document.querySelector(".login")) return;
   const observer = new MutationObserver(() => {
     if (!document.querySelector(".login")) {
       observer.disconnect();
@@ -570,7 +568,7 @@ export function tryLoad() {
       const mode = await waitForEngageLoginOrContent();
       if (mode === "login") {
         finishLoad();
-        watchForEngageLogin();
+        watchForLoginDismiss();
         return;
       }
       if (mode === "timeout") {
@@ -589,8 +587,15 @@ export function tryLoad() {
     return;
   }
 
+  if (isSeqtaLoginPage()) {
+    finishLoad();
+    watchForLoginDismiss();
+    return;
+  }
+
   waitForElm(".login").then(() => {
     finishLoad();
+    watchForLoginDismiss();
   });
 
   waitForElm(".day-container").then(() => {
@@ -702,6 +707,7 @@ export function init() {
 
   if (settingsState.onoff) {
     verboseInfo("[BetterSEQTA+] Enabled");
+    const onLogin = isSeqtaLoginPage();
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
     if (settingsState.iconOnlySidebar) {
       if (document.body) {
@@ -713,11 +719,13 @@ export function init() {
       }
     }
 
-    document.querySelector(".legacy-root")?.classList.add("hidden");
+    if (!onLogin) {
+      document.querySelector(".legacy-root")?.classList.add("hidden");
+    }
 
     // Learn only: hide native sidebar + mount Svelte replacement during loading.
     // Engage keeps its native React menu — never apply the pending hide class there.
-    if (!isSeqtaEngageExperience()) {
+    if (!onLogin && !isSeqtaEngageExperience()) {
       document.documentElement.classList.add("bsplus-custom-sidebar-pending");
       document.documentElement.classList.add("bsplus-custom-title-pending");
       void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
@@ -742,7 +750,9 @@ export function init() {
     window.addEventListener("hashchange", () => {
       if (settingsState.adaptiveThemeColour) void updateAllColors();
     });
-    loading();
+    if (!onLogin) {
+      loading();
+    }
     InjectCustomIcons();
     applyMenuItemVisibility();
     syncTimetableUrlMonitoring();

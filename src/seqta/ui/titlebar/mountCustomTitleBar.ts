@@ -1,6 +1,6 @@
 import { mount, unmount } from "svelte";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import TitleBar from "./TitleBar.svelte";
 import { titleBarState } from "./titleBarState.svelte";
@@ -46,7 +46,7 @@ function isReady() {
 
 /** finishLoad waits here so the overlay stays until the title bar is ready. */
 export async function waitForCustomTitleBarReady(timeoutMs = 10000) {
-  if (isSeqtaEngageExperience() || !settingsState.onoff) {
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff) {
     document.documentElement.classList.remove(PENDING_CLASS);
     return;
   }
@@ -85,7 +85,7 @@ function observeHost(host: HTMLElement) {
 }
 
 export function prepareCustomTitleBarEarly() {
-  if (isSeqtaEngageExperience() || !settingsState.onoff || earlyPrepareStarted) {
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff || earlyPrepareStarted) {
     return;
   }
   earlyPrepareStarted = true;
@@ -94,7 +94,7 @@ export function prepareCustomTitleBarEarly() {
 }
 
 export async function mountCustomTitleBar(): Promise<boolean> {
-  if (isSeqtaEngageExperience() || !settingsState.onoff) return false;
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff) return false;
 
   if (app && titleEl && document.getElementById(ROOT_ID)) {
     observeHost(titleEl);

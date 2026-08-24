@@ -1,7 +1,7 @@
 import { mount, unmount } from "svelte";
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 import Sidebar from "./Sidebar.svelte";
@@ -199,7 +199,7 @@ function clearPendingClass() {
  * and begin mounting the Svelte sidebar as soon as `#menu` exists.
  */
 export function prepareCustomSidebarEarly() {
-  if (isSeqtaEngageExperience()) return;
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage()) return;
   if (!settingsState.onoff) return;
   if (earlyPrepareStarted) return;
 
