@@ -53,9 +53,8 @@ if (document.childNodes[1]) {
   init();
 }
 
-// The 404 page is a bare document with no second childNode, so it must be
-// booted unconditionally (outside the gate above). It self-guards on title.
-bootErrorPage();
+// Standalone 404 documents never pass the SEQTA SPA gate above.
+void bootErrorPage();
 
 if (import.meta.env.DEV) {
   window.addEventListener("unhandledrejection", (event) => {
@@ -142,62 +141,65 @@ async function init() {
   }
 }
 
-// The 404 page is a standalone document that never passes the SPA gate above,
-// so the normal plugin path never boots there; start just the classic kitten
-// 404 plugin so it renders without any SPA work.
+function shouldBootKitten404(): boolean {
+  if (IsSEQTAPage || document.getElementById("container")) return false;
+  return /404|not found/i.test(document.title);
+}
+
+/** Hide the rebranded 404 before the kitten card mounts (removed after boot). */
+function inject404FlashHide(): void {
+  if (document.getElementById("bsplus-404-flash-hide")) return;
+  const style = document.createElement("style");
+  style.id = "bsplus-404-flash-hide";
+  style.textContent =
+    "html,body{background:#333!important}.message{display:none!important}";
+  (document.head ?? document.documentElement).appendChild(style);
+}
+
 async function bootErrorPage() {
   if (IsSEQTAPage) return;
 
-  // Runs at document_start, so <title> and body are not available yet; wait
-  // for the DOM before testing the 404 title.
-  await new Promise<void>((resolve) => {
-    if (document.readyState !== "loading") {
-      resolve();
-      return;
-    }
-    document.addEventListener("DOMContentLoaded", () => resolve(), {
-      once: true,
-    });
-  });
-
-  const is404Page =
-    /404/.test(document.title) || /not found/i.test(document.title);
-  if (!is404Page) return;
-
-  const stored = await browser.storage.local.get([
+  const storagePromise = browser.storage.local.get([
     "onoff",
     "plugin.error-page-kitten.settings",
   ]);
-  if ((stored.onoff ?? true) === false) return;
-  const kittenEnabled = (
-    stored["plugin.error-page-kitten.settings"] as
-      | { enabled?: boolean }
-      | undefined
-  )?.enabled;
-  if (kittenEnabled === false) return;
 
-  hideRebranded404();
+  const watchTitle = () => {
+    if (shouldBootKitten404()) inject404FlashHide();
+  };
+  watchTitle();
+  if (document.readyState === "loading") {
+    document.addEventListener("readystatechange", watchTitle);
+  }
+
+  if (document.readyState === "loading") {
+    await new Promise<void>((resolve) => {
+      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    });
+  }
+  document.removeEventListener("readystatechange", watchTitle);
+
+  if (!shouldBootKitten404()) return;
+
+  const stored = await storagePromise;
+  if ((stored.onoff ?? true) === false) return;
+  const kittenSettings = stored["plugin.error-page-kitten.settings"] as
+    | { enabled?: boolean }
+    | undefined;
+  if (kittenSettings?.enabled === false) return;
 
   try {
-    const { pluginManager } = await import("@/plugins/index");
-    await pluginManager.startPlugin("error-page-kitten");
+    const { mountErrorPageKitten } = await import(
+      "@/plugins/built-in/errorPageKitten"
+    );
+    mountErrorPageKitten();
+    document.getElementById("bsplus-404-flash-hide")?.remove();
   } catch (error) {
-    // Restore the rebranded page so the user is not left with a blank document.
+    document.getElementById("bsplus-404-flash-hide")?.remove();
     document
-      .querySelectorAll<HTMLElement>(".bsplus-kitten-404-hidden")
-      .forEach((el) => {
-        el.classList.remove("bsplus-kitten-404-hidden");
-        el.style.display = "";
-      });
+      .querySelectorAll(".bsplus-kitten-404-hidden")
+      .forEach((el) => el.classList.remove("bsplus-kitten-404-hidden"));
     console.error("[BetterSEQTA+] Failed to boot 404 page:", error);
-  }
-}
-
-function hideRebranded404() {
-  const message = document.querySelector<HTMLElement>(".message");
-  if (message) {
-    message.classList.add("bsplus-kitten-404-hidden");
-    message.style.display = "none";
   }
 }
 

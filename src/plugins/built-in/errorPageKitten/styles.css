@@ -1,10 +1,5 @@
-/* Classic SEQTA 404 page, restored one-to-one over the rebranded document.
-   Scoped under html.bsplus-kitten-404 so it can never leak into the SPA;
-   the card element itself carries the .bsplus-kitten-404 class. */
+/* Classic SEQTA 404 page — scoped under html.bsplus-kitten-404 so it never leaks into the SPA. */
 
-/* The rebranded page styles <body> (Arial / flex / 25vh top / line-height
-   1.5 / letter-spacing). line-height and letter-spacing are reset because
-   the rebranded body sets them and the classic page uses browser defaults. */
 html.bsplus-kitten-404 {
   background: #333;
 }
@@ -20,7 +15,6 @@ html.bsplus-kitten-404 body {
   letter-spacing: normal;
 }
 
-/* Hide the rebranded page content while the classic card is shown. */
 html.bsplus-kitten-404 .bsplus-kitten-404-hidden {
   display: none !important;
 }
@@ -38,10 +32,6 @@ html.bsplus-kitten-404 .bsplus-kitten-404 {
 
 html.bsplus-kitten-404 .bsplus-kitten-404 > h1 {
   background: #612;
-  /* Valid modern baseline; the reference's exact vendor-prefixed declarations
-     are injected at runtime (H1_STRIPE_CSS in index.ts), which win over this.
-     The vendor-prefixed lines can't live in this file because the CSS
-     minifier drops them. */
   background-image: repeating-linear-gradient(
       135deg,
       rgba(0, 0, 0, 0),
