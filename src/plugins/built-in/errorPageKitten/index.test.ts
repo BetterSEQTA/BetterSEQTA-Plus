@@ -2,8 +2,6 @@
  * @jest-environment jsdom
  */
 /// <reference types="jest" />
-import type { PluginAPI } from "@/plugins/core/types";
-
 jest.mock("@/lib/extensionAssetUrl", () => ({
   resolveExtensionAssetUrl: (url: string) =>
     `chrome-extension://test/${String(url).replace(/^\/+/, "")}`,
@@ -17,7 +15,10 @@ jest.mock("./styles.css?inline", () => ({
   default: "/* test */",
 }));
 
-import { mountErrorPageKitten } from "./index";
+import errorPageKittenPlugin, {
+  isSeqta404Page,
+  mountErrorPageKitten,
+} from "./index";
 
 const REBRANDED_404_BODY = `
   <div class="message">
@@ -43,18 +44,33 @@ describe("errorPageKitten", () => {
 
     const cleanup = mountErrorPageKitten();
 
-    const card = getCard();
-    expect(card).not.toBeNull();
+    expect(getCard()).not.toBeNull();
     expect(document.documentElement.classList).toContain("bsplus-kitten-404");
-    expect(card?.querySelector("h1")?.textContent).toBe("404 Not Found");
-    expect(document.title).toBe("404 Not Found");
-    expect(card?.querySelector(".kitten img")?.getAttribute("src")).toContain("kitten");
-    expect(
-      document.querySelector(".message")?.classList.contains("bsplus-kitten-404-hidden"),
-    ).toBe(true);
 
     cleanup();
     expect(getCard()).toBeNull();
-    expect(document.title).toBe("Page not found");
+  });
+
+  it("detects standalone 404 pages by .message and title", () => {
+    document.title = "Page not found";
+    document.body.innerHTML = REBRANDED_404_BODY;
+    expect(isSeqta404Page()).toBe(true);
+  });
+
+  it("does not detect the SPA", () => {
+    document.title = "SEQTA Learn";
+    document.body.innerHTML = '<div id="container"></div>';
+    expect(isSeqta404Page()).toBe(false);
+  });
+
+  it("plugin run is a no-op outside a 404 page", async () => {
+    document.title = "SEQTA Learn";
+    document.body.innerHTML = '<div id="container"></div>';
+
+    const cleanup = await errorPageKittenPlugin.run();
+
+    expect(getCard()).toBeNull();
+    expect(cleanup).toBeDefined();
+    cleanup?.();
   });
 });

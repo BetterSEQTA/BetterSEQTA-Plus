@@ -16,7 +16,14 @@ const CARD_HTML = `<h1>404 Not Found</h1>
 </div>
 <a href="http://www.seqta.com.au">SEQTA</a>`;
 
-/** Boot path in SEQTA.ts gates when this runs; keep render-only here. */
+/** Standalone SEQTA 404 document — not the SPA (#container). */
+export function isSeqta404Page(): boolean {
+  if (document.getElementById("container")) return false;
+  const heading = document.querySelector(".message > h1");
+  const text = heading?.textContent ?? document.title;
+  return /not found/i.test(text) || /404/.test(document.title);
+}
+
 export function mountErrorPageKitten(): () => void {
   const styleEl = document.createElement("style");
   styleEl.textContent = styles;
@@ -52,7 +59,7 @@ const errorPageKittenPlugin: Plugin = {
   disableToggle: true,
   defaultEnabled: true,
   styles,
-  run: async () => mountErrorPageKitten(),
+  run: async () => (isSeqta404Page() ? mountErrorPageKitten() : () => {}),
 };
 
 export default errorPageKittenPlugin;

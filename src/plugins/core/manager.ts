@@ -43,6 +43,9 @@ const PLUGIN_START_PHASES: readonly string[][] = [
   ["global-search"],
 ];
 
+/** Booted only from SEQTA.ts on standalone 404 documents — never auto-start in the SPA. */
+const PLUGIN_BOOT_ONLY_IDS = new Set(["error-page-kitten"]);
+
 /**
  * Singleton class responsible for the entire lifecycle of plugins.
  * This includes registration, starting, stopping, event dispatching,
@@ -263,7 +266,7 @@ export class PluginManager {
 
     const phasedIds = new Set(PLUGIN_START_PHASES.flat());
     const remainingIds = Array.from(this.plugins.keys()).filter(
-      (id) => !phasedIds.has(id),
+      (id) => !phasedIds.has(id) && !PLUGIN_BOOT_ONLY_IDS.has(id),
     );
     if (remainingIds.length > 0) {
       await this.startPluginPhase(remainingIds);

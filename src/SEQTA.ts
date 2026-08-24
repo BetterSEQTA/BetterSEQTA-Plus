@@ -141,11 +141,6 @@ async function init() {
   }
 }
 
-function shouldBootKitten404(): boolean {
-  if (IsSEQTAPage || document.getElementById("container")) return false;
-  return /404|not found/i.test(document.title);
-}
-
 /** Hide the rebranded 404 before the kitten card mounts (removed after boot). */
 function inject404FlashHide(): void {
   if (document.getElementById("bsplus-404-flash-hide")) return;
@@ -159,13 +154,17 @@ function inject404FlashHide(): void {
 async function bootErrorPage() {
   if (IsSEQTAPage) return;
 
+  const { isSeqta404Page, mountErrorPageKitten } = await import(
+    "@/plugins/built-in/errorPageKitten"
+  );
+
   const storagePromise = browser.storage.local.get([
     "onoff",
     "plugin.error-page-kitten.settings",
   ]);
 
   const watchTitle = () => {
-    if (shouldBootKitten404()) inject404FlashHide();
+    if (isSeqta404Page()) inject404FlashHide();
   };
   watchTitle();
   if (document.readyState === "loading") {
@@ -179,7 +178,7 @@ async function bootErrorPage() {
   }
   document.removeEventListener("readystatechange", watchTitle);
 
-  if (!shouldBootKitten404()) return;
+  if (!isSeqta404Page()) return;
 
   const stored = await storagePromise;
   if ((stored.onoff ?? true) === false) return;
@@ -189,9 +188,6 @@ async function bootErrorPage() {
   if (kittenSettings?.enabled === false) return;
 
   try {
-    const { mountErrorPageKitten } = await import(
-      "@/plugins/built-in/errorPageKitten"
-    );
     mountErrorPageKitten();
     document.getElementById("bsplus-404-flash-hide")?.remove();
   } catch (error) {
