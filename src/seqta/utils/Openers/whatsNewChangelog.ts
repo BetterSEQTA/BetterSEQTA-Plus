@@ -15,6 +15,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Removed white background around SEQTA Learn mobile App icons in settings.",
       "Re-added the kitten back to the 404 Error pages.",
       "Improved the sidebar to be more stable and performant.",
+      "Fixed Analytics page not respecting no animations setting. (#474)",
       "Fixed dropdown contrast and readability in settings and across SEQTA pages.",
       "Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.",
       "Fixed timetable subject colour picker not reopening after closing (#221).",
