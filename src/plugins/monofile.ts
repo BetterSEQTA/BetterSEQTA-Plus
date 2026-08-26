@@ -520,6 +520,12 @@ function watchForLoginDismiss() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+function mountCustomLoginPortal() {
+  void import("@/seqta/ui/login/mountCustomLogin").then((mod) =>
+    mod.mountCustomLogin(),
+  );
+}
+
 /** Wait until Engage shows either the login shell or the main app (`#content`), so we never call `LoadPageElements` while still on login (which would hang on `waitForElm("#content")`). */
 function waitForEngageLoginOrContent(): Promise<"login" | "app" | "timeout"> {
   if (document.querySelector(".login")) {
@@ -568,6 +574,7 @@ export function tryLoad() {
       const mode = await waitForEngageLoginOrContent();
       if (mode === "login") {
         finishLoad();
+        mountCustomLoginPortal();
         watchForLoginDismiss();
         return;
       }
@@ -589,12 +596,14 @@ export function tryLoad() {
 
   if (isSeqtaLoginPage()) {
     finishLoad();
+    mountCustomLoginPortal();
     watchForLoginDismiss();
     return;
   }
 
   waitForElm(".login").then(() => {
     finishLoad();
+    mountCustomLoginPortal();
     watchForLoginDismiss();
   });
 
@@ -708,6 +717,11 @@ export function init() {
   if (settingsState.onoff) {
     verboseInfo("[BetterSEQTA+] Enabled");
     const onLogin = isSeqtaLoginPage();
+    if (!onLogin) {
+      void import("@/seqta/ui/login/seqtaSessionPersistence").then((mod) =>
+        mod.enforceEphemeralSessionIfNeeded(),
+      );
+    }
     if (settingsState.DarkMode) document.documentElement.classList.add("dark");
     if (settingsState.iconOnlySidebar) {
       if (document.body) {
@@ -750,7 +764,9 @@ export function init() {
     window.addEventListener("hashchange", () => {
       if (settingsState.adaptiveThemeColour) void updateAllColors();
     });
-    if (!onLogin) {
+    if (onLogin) {
+      mountCustomLoginPortal();
+    } else {
       loading();
     }
     InjectCustomIcons();
