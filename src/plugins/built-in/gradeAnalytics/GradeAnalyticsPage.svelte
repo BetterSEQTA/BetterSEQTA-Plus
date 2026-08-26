@@ -20,6 +20,7 @@
     type TimeRange,
   } from "./timeRange";
   import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   let analyticsData: Assessment[] | null = $state(null);
   let loading = $state(true);
@@ -39,6 +40,8 @@
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
+  const fadeDuration = $derived($settingsState.animations ? 200 : 0);
+  const emptyFadeDuration = $derived($settingsState.animations ? 300 : 0);
 
   const formattedTimestamp = $derived(() => {
     if (!lastUpdated) return "";
@@ -204,7 +207,7 @@
 
 <div class="bsplus-analytics-root">
   {#if error}
-    <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: 200 }}>
+    <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: fadeDuration }}>
       {error}
     </p>
   {/if}
@@ -462,7 +465,7 @@
       </div>
     </div>
   {:else}
-    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: 300 }}>
+    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: emptyFadeDuration }}>
       <aside class="bsplus-analytics-filters" aria-label="Analytics">
         {@render sidebarTitle()}
         {@render sidebarActions()}

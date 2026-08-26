@@ -114,6 +114,25 @@
   }
 }
 
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-animate {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-btn,
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-card,
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-dropdown-trigger,
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-select {
+  transition: none;
+}
+
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-btn:hover:not(:disabled),
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-btn:active:not(:disabled),
+.bsplus-analytics-mount:not(.bsplus-analytics-motion) .bsplus-analytics-dropdown-trigger:hover {
+  transform: none;
+}
+
 .bsplus-analytics-delay-1 {
   animation-delay: 80ms;
 }

@@ -5,13 +5,15 @@ import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
+import { applyAnalyticsMotionClass } from "./motion";
 
 type ThemeSettingKey =
   | "selectedColor"
   | "DarkMode"
   | "adaptiveThemeColour"
   | "adaptiveThemeGradient"
-  | "selectedTheme";
+  | "selectedTheme"
+  | "animations";
 
 type ThemeListenerRegistration = {
   key: ThemeSettingKey;
@@ -117,7 +119,10 @@ function syncThemeFromPage(target: HTMLElement) {
 
 function syncThemeToAnalyticsUi() {
   if (shadowHost) syncThemeFromPage(shadowHost);
-  if (analyticsRoot) syncThemeFromPage(analyticsRoot);
+  if (analyticsRoot) {
+    syncThemeFromPage(analyticsRoot);
+    applyAnalyticsMotionClass(analyticsRoot, settingsState.animations);
+  }
 }
 
 function clearThemeListeners() {
@@ -136,6 +141,7 @@ function watchThemeChanges() {
     "adaptiveThemeColour",
     "adaptiveThemeGradient",
     "selectedTheme",
+    "animations",
   ];
 
   const listener = () => syncThemeToAnalyticsUi();
