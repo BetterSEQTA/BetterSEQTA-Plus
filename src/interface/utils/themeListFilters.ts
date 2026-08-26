@@ -42,6 +42,18 @@ export function filterThemesByMode(themes: CustomTheme[], mode: ThemeListMode): 
   return themes.filter(isDownloadedTheme);
 }
 
+/** Installed theme ids from the official store only (excludes file imports / custom copies). */
+export function getStoreInstalledThemeIds(themes: CustomTheme[]): string[] {
+  return themes.filter((theme) => theme.installedFromStore === true).map((theme) => theme.id);
+}
+
+/** Installed theme ids from the community API only (excludes file imports / custom copies). */
+export function getCommunityInstalledThemeIds(themes: CustomTheme[]): string[] {
+  return themes
+    .filter((theme) => theme.installedFromCommunity === true)
+    .map((theme) => theme.id);
+}
+
 export function isStoreThemeInstalled(theme: Theme, installedIds: string[]): boolean {
   const installed = new Set(installedIds);
   if (installed.has(theme.id)) return true;

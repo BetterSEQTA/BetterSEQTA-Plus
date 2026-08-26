@@ -3,6 +3,8 @@ import type { Theme } from '@/interface/types/Theme';
 import {
   filterThemesByMode,
   getThemeApplyButtonStyles,
+  getCommunityInstalledThemeIds,
+  getStoreInstalledThemeIds,
   isDownloadedTheme,
   isLocalCustomTheme,
   isStoreThemeInstalled,
@@ -124,6 +126,31 @@ describe('filterThemesByMode', () => {
     expect(isLocalCustomTheme(storeTheme)).toBe(false);
     expect(isDownloadedTheme(localTheme)).toBe(false);
     expect(isLocalCustomTheme(localTheme)).toBe(true);
+  });
+});
+
+describe('getStoreInstalledThemeIds', () => {
+  it('returns only store-installed theme ids', () => {
+    const themes = [
+      makeCustomTheme({ id: 'store-1', name: 'Store', installedFromStore: true }),
+      makeCustomTheme({ id: 'local-1', name: 'Local' }),
+      makeCustomTheme({
+        id: 'same-as-store',
+        name: 'Imported copy',
+        installedFromStore: false,
+      }),
+    ];
+    expect(getStoreInstalledThemeIds(themes)).toEqual(['store-1']);
+  });
+});
+
+describe('getCommunityInstalledThemeIds', () => {
+  it('returns only community-installed theme ids', () => {
+    const themes = [
+      makeCustomTheme({ id: 'community-1', name: 'Community', installedFromCommunity: true }),
+      makeCustomTheme({ id: 'local-1', name: 'Local' }),
+    ];
+    expect(getCommunityInstalledThemeIds(themes)).toEqual(['community-1']);
   });
 });
 

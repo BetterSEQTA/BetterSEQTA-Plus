@@ -232,18 +232,6 @@
   const useTwoColumnLayout = $derived(listMode === 'downloaded' || listMode === 'custom');
 </script>
 
-{#snippet customThemeUploadZone()}
-  <button
-    type="button"
-    onclick={triggerFileUpload}
-    class="flex aspect-theme w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-center transition hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-900/40 dark:hover:border-zinc-500 dark:hover:bg-zinc-900 {useTwoColumnLayout ? 'col-span-2' : ''}"
-  >
-    <span class="text-2xl font-IconFamily text-zinc-500 dark:text-zinc-400" aria-hidden="true">&#xe9fc;</span>
-    <span class="text-base font-medium text-zinc-700 dark:text-zinc-200">Drag and drop theme files here</span>
-    <span class="text-sm text-zinc-500 dark:text-zinc-400">or click to upload</span>
-  </button>
-{/snippet}
-
 <div
   class="relative mb-1 w-full {useTwoColumnLayout ? '' : 'max-w-lg mx-auto'}"
   role="list"
@@ -278,6 +266,19 @@
   {/if}
 
   <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
+    {#if allowsFileImport}
+      <button
+        type="button"
+        onclick={triggerFileUpload}
+        class="flex aspect-[10/1] w-full items-center justify-center gap-3 rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 text-center transition hover:border-zinc-400 hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-900/40 dark:hover:border-zinc-500 dark:hover:bg-zinc-900 {useTwoColumnLayout ? 'col-span-2' : ''}"
+      >
+        <span class="text-xl font-IconFamily text-zinc-500 dark:text-zinc-400" aria-hidden="true">&#xe9fc;</span>
+        <div class="text-left">
+          <span class="block text-sm font-medium text-zinc-700 dark:text-zinc-200">Drag and drop theme files here</span>
+          <span class="block text-xs text-zinc-500 dark:text-zinc-400">or click to upload</span>
+        </div>
+      </button>
+    {/if}
     {#if themes}
       {#each visibleThemes as theme (theme.id)}
         <button
@@ -371,11 +372,8 @@
             No custom themes yet
           </h3>
           <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-            Create your own theme, or follow our guide to get started.
+            Drag and drop a theme file above, create your own theme, or follow our guide to get started.
           </p>
-          <div class="mt-6 w-full max-w-md">
-            {@render customThemeUploadZone()}
-          </div>
         {:else if listMode === 'downloaded'}
           <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
             No downloaded themes
@@ -420,10 +418,6 @@
           </div>
         {/if}
       </div>
-    {/if}
-
-    {#if allowsFileImport && themes && visibleThemes.length > 0 && !tempTheme}
-      {@render customThemeUploadZone()}
     {/if}
 
     {#if themes && (listMode === 'custom' || (showNavigation && visibleThemes.length > 0) || (listMode === 'downloaded' && visibleThemes.length > 0))}

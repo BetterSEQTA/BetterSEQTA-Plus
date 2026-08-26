@@ -16,7 +16,7 @@
   import Backgrounds from '../components/store/Backgrounds.svelte'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '../components/SignInToFavoriteModal.svelte'
-  import { consumePendingHighlightThemeId } from '@/seqta/utils/openThemeStoreWithHighlight'
+  import { getStoreInstalledThemeIds } from '@/interface/utils/themeListFilters'
 
   const themeManager = ThemeManager.getInstance();
   type StoreTab = 'themes' | 'backgrounds';
@@ -75,10 +75,12 @@
 
   const fetchCurrentThemes = async () => {
     const themes = await themeManager.getAvailableThemes();
-    currentThemes = themes.filter(theme => theme !== null).map(theme => theme.id);
+    currentThemes = getStoreInstalledThemeIds(themes);
     selectedThemeId = themeManager.getSelectedThemeId() || '';
     installedThemeColors = Object.fromEntries(
-      themes.filter((theme) => theme != null).map((theme) => [theme.id, theme.defaultColour]),
+      themes
+        .filter((theme) => theme != null && theme.installedFromStore === true)
+        .map((theme) => [theme.id, theme.defaultColour]),
     );
   };
 

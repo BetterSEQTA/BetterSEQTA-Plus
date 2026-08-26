@@ -34,7 +34,7 @@
   } from "@/seqta/utils/customThemes/buildThemeUploadFormData";
   import type { CustomThemeOwner, CustomThemeFile } from "@/seqta/utils/customThemes/types";
   import type { LoadedCustomTheme } from "@/types/CustomThemes";
-  import { isLocalCustomTheme } from "@/interface/utils/themeListFilters";
+  import { getCommunityInstalledThemeIds, isLocalCustomTheme } from "@/interface/utils/themeListFilters";
 
   let {
     searchTerm,
@@ -94,10 +94,12 @@
 
   async function refreshInstalledThemes() {
     const themes = await themeManager.getAvailableThemes();
-    currentThemes = themes.filter((t) => t !== null).map((t) => t.id);
+    currentThemes = getCommunityInstalledThemeIds(themes);
     selectedThemeId = themeManager.getSelectedThemeId() || "";
     installedThemeColors = Object.fromEntries(
-      themes.filter((t) => t != null).map((t) => [t.id, t.defaultColour]),
+      themes
+        .filter((t) => t != null && t.installedFromCommunity === true)
+        .map((t) => [t.id, t.defaultColour]),
     );
   }
 
