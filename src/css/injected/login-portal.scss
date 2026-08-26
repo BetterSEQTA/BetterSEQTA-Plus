@@ -8,7 +8,11 @@
     -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 
-  --login-card-bg: var(--background-primary, #fff);
+  --login-card-bg: color-mix(
+    in srgb,
+    var(--background-primary, #fff) 85%,
+    transparent
+  );
   --login-text: var(--text-primary, #111827);
   --login-muted: color-mix(
     in srgb,
@@ -75,7 +79,8 @@
   border-radius: 16px;
   background: var(--login-card-bg);
   color: var(--login-text);
-  border: 1px solid var(--login-input-border);
+  border: 1px solid
+    color-mix(in srgb, var(--login-input-border) 85%, transparent);
   box-shadow: 0 1px 2px color-mix(in srgb, var(--login-text) 8%, transparent);
 }
 
