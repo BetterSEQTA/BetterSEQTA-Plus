@@ -10,6 +10,7 @@
     isLoggedIn,
     onRequestSignIn,
     allStoreThemeRows,
+    installedThemeIds = [],
   } = $props<{
     themes: Theme[];
     searchTerm: string;
@@ -19,6 +20,7 @@
     onRequestSignIn?: () => void;
     /** Raw API list (includes `slave` rows) for master download aggregation */
     allStoreThemeRows?: Theme[];
+    installedThemeIds?: string[];
   }>();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) => {
@@ -39,20 +41,9 @@
         {isLoggedIn}
         {onRequestSignIn}
         {allStoreThemeRows}
+        {installedThemeIds}
       />
     {/each}
-  
-    {#if filteredThemes.length !== 0}
-      <a href="https://docs.betterseqta.org/theme-creation/" class="block relative z-0 hover:z-20 w-full cursor-pointer">
-        <div class="bg-zinc-50 h-48 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative overflow-clip rounded-xl border group group/card flex flex-col justify-center items-center hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1]">
-          <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
-          <div class="text-xl font-bold text-center transition-all duration-500 dark:text-white">
-            Got a Theme Idea?
-            <p class="text-lg font-light subtitle">Transform it into a stunning theme!</p>
-          </div>
-        </div>
-      </a>
-    {/if}
   
   </div>
   {#if filteredThemes.length === 0}

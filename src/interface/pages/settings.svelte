@@ -39,7 +39,7 @@
   } from "@/utils/githubReleaseUpdate";
   type PageId = "settings" | "themes" | "backgrounds";
   type StoreTab = "themes" | "backgrounds";
-  type ThemeView = "theme-settings" | "theme-store";
+  type ThemeView = "theme-settings" | "theme-store" | "create-theme";
   type BackgroundView = "background-settings" | "background-store";
 
   type NavItem = {
@@ -94,8 +94,8 @@
       label: "Themes",
       items: [
         { id: "theme-store", label: "Store" },
-        { id: "theme-settings", label: "Theme settings" },
-        { id: "create-theme", label: "Create theme" },
+        { id: "theme-settings", label: "Downloaded themes" },
+        { id: "create-theme", label: "Custom themes" },
       ],
     },
   ];
@@ -142,9 +142,19 @@
   );
 
   const sectionTitle = $derived.by(() => {
-    if (activePage === "themes") return "Themes";
+    if (activePage === "themes") {
+      if (activeThemeView === "theme-settings") return "Downloaded themes";
+      if (activeThemeView === "create-theme") return "Custom themes";
+      return "Themes";
+    }
     if (activePage === "backgrounds") return "Backgrounds";
     return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
+  });
+
+  const activeThemeListMode = $derived.by(() => {
+    if (activeThemeView === "create-theme") return "custom" as const;
+    if (activeThemeView === "theme-settings") return "downloaded" as const;
+    return "all" as const;
   });
 
   const isStoreView = $derived(
@@ -256,11 +266,7 @@
     }
 
     if (activePage === "themes") {
-      if (id === "create-theme") {
-        void openThemeCreator();
-      } else {
-        activeThemeView = id as ThemeView;
-      }
+      activeThemeView = id as ThemeView;
       return;
     }
 
@@ -272,18 +278,17 @@
     }
   };
 
-  const openThemeCreator = async () => {
-    const { OpenThemeCreator } = await import("@/plugins/built-in/themes/ThemeCreator");
-    OpenThemeCreator();
-    closeExtensionPopup();
-  };
-
   const applyDestination = (destination: SettingsDestination) => {
     activePage = destination.page;
     if (destination.page === "settings" && destination.section) {
       activeSection = destination.section;
     } else if (destination.page === "themes" && destination.view) {
-      activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
+      activeThemeView =
+        destination.view === "store"
+          ? "theme-store"
+          : destination.view === "custom"
+            ? "create-theme"
+            : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
       activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
     }
@@ -467,7 +472,7 @@
                 />
               {/if}
             {:else if activePage === "themes"}
-              <Theme section="themes" />
+              <Theme section="themes" listMode={activeThemeListMode} />
             {:else}
               <Theme section="backgrounds" />
             {/if}

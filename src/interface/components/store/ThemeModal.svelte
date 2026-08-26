@@ -15,18 +15,21 @@ currentThemes,
 setDisplayTheme,
 onInstall,
 onRemove,
+onApply,
 allThemes,
 allStoreThemeRows,
 displayTheme,
 toggleFavorite,
 isLoggedIn,
 onRequestSignIn,
+selectedThemeId = '',
 } = $props<{
 theme: Theme | null
 currentThemes: string[]
 setDisplayTheme: (theme: Theme | null) => void
 onInstall: (themeId: string) => void | Promise<void>
 onRemove: (themeId: string) => void | Promise<void>
+onApply: (themeId: string) => void | Promise<void>
 allThemes: Theme[]
 /** Raw API themes (includes slaves) — same aggregation as grid download count */
 allStoreThemeRows?: Theme[]
@@ -34,6 +37,7 @@ displayTheme: Theme | null
 toggleFavorite?: (theme: Theme) => void
 isLoggedIn?: boolean
 onRequestSignIn?: () => void
+selectedThemeId?: string
 }>()
 const modalDisplayDownloadCount = $derived.by(() => {
 const t = theme
@@ -141,6 +145,14 @@ async function runRemove(id: string) {
 installingId = id
 try {
 await onRemove(id)
+} finally {
+installingId = null
+}
+}
+async function runApply(id: string) {
+installingId = id
+try {
+await onApply(id)
 } finally {
 installingId = null
 }
@@ -277,12 +289,8 @@ aria-label="Next hero slide"
 <p class="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">Variants</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
 {#if currentThemes.includes(theme.id)}
-<button
-type="button"
-onclick={() => onMasterVariantClick('remove')}
-disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
-title="Remove {theme.name} (master)"
+<div
+class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 group ring-1 ring-black/10 dark:ring-white/10"
 >
 {#if masterThumb}
                   <img src={masterThumb} alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" draggable="false" />
@@ -297,11 +305,31 @@ title="Remove {theme.name} (master)"
 </span>
 {/if}
 <span class="text-lg sm:text-xl font-bold text-white drop-shadow-md tracking-tight leading-snug">
-Remove · {theme.name}
+{theme.id === selectedThemeId ? 'Applied · ' : ''}{theme.name}
 </span>
-<span class="mt-1 text-sm font-medium text-white/85">Master</span>
-</div>
+<span class="mt-1 text-sm font-medium text-white/85">Master · Installed</span>
+<div class="mt-3 flex flex-wrap gap-2">
+{#if theme.id !== selectedThemeId}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void runApply(theme.id) }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-70"
+>
+Apply
 </button>
+{/if}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void onMasterVariantClick('remove') }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-white/20 text-white hover:bg-white/30 disabled:opacity-70"
+>
+Remove
+</button>
+</div>
+</div>
+</div>
 {:else}
 <button
 type="button"
@@ -330,12 +358,8 @@ title="Install {theme.name} (master)"
 {#each theme.flavours ?? [] as f, flavourIdx (f.id)}
 {@const thumb = flavourCarouselImageUrl(f)}
 {#if currentThemes.includes(f.id)}
-<button
-type="button"
-onclick={() => onFlavourClick(flavourIdx, f.id, 'remove')}
-disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
-title="Remove {f.name}"
+<div
+class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 group ring-1 ring-black/10 dark:ring-white/10"
 >
 {#if thumb}
                     <img src={thumb} alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" draggable="false" />
@@ -350,10 +374,31 @@ title="Remove {f.name}"
 </span>
 {/if}
 <span class="text-lg sm:text-xl font-bold text-white drop-shadow-md tracking-tight leading-snug">
-Remove · {f.name}
+{f.id === selectedThemeId ? 'Applied · ' : ''}{f.name}
 </span>
-</div>
+<span class="mt-1 text-sm font-medium text-white/85">Installed</span>
+<div class="mt-3 flex flex-wrap gap-2">
+{#if f.id !== selectedThemeId}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); scrollHeroToFlavourIndex(flavourIdx); void runApply(f.id) }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-70"
+>
+Apply
 </button>
+{/if}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void onFlavourClick(flavourIdx, f.id, 'remove') }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-white/20 text-white hover:bg-white/30 disabled:opacity-70"
+>
+Remove
+</button>
+</div>
+</div>
+</div>
 {:else}
 <button
 type="button"
@@ -401,6 +446,29 @@ aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
 {/if}
 {#if !hasFlavours}
 {#if currentThemes.includes(theme.id)}
+{#if theme.id === selectedThemeId}
+<button
+type="button"
+disabled
+class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-emerald-700 rounded-lg dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/50 opacity-90"
+>
+Applied
+</button>
+{:else}
+<button
+type="button"
+onclick={() => runApply(theme.id)}
+disabled={installingId !== null}
+class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+>
+{#if installingId === theme.id}
+<svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
+</svg>
+{/if}
+<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Apply</span>
+</button>
+{/if}
 <button
 type="button"
 onclick={() => runRemove(theme.id)}

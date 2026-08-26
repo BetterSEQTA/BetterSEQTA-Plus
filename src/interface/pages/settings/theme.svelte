@@ -2,9 +2,11 @@
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
+  import type { ThemeListMode } from "@/interface/utils/themeListFilters"
 
-  let { section = "all" } = $props<{
+  let { section = "all", listMode = "all" } = $props<{
     section?: "all" | "themes" | "backgrounds";
+    listMode?: ThemeListMode;
   }>();
   
   // backgrounds
@@ -41,7 +43,7 @@
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       {/if}
       {#if showThemes}
-        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
+        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} {listMode} />
       {/if}
     </div>
   {:else}

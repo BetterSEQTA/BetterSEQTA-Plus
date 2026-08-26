@@ -8,13 +8,15 @@
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import { filterThemesByMode, type ThemeListMode } from '@/interface/utils/themeListFilters'
 
   const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
-  let { isEditMode, showNavigation = true } = $props<{
+  let { isEditMode, showNavigation = true, listMode = 'all' } = $props<{
     isEditMode: boolean;
     showNavigation?: boolean;
+    listMode?: ThemeListMode;
   }>();
   let isDragging = $state(false);
   let tempTheme = $state(null);
@@ -165,6 +167,10 @@
   onDestroy(() => {
     themeUpdates.removeListener(fetchThemes);
   })
+
+  const visibleThemes = $derived(
+    themes ? filterThemesByMode(themes.themes, listMode) : [],
+  );
 </script>
 
 <div
@@ -192,7 +198,7 @@
   </div>
   <div class="flex flex-col gap-2 px-2">
     {#if themes}
-      {#each themes.themes as theme (theme.id)}
+      {#each visibleThemes as theme (theme.id)}
         <button
           class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={(e) => handleThemeClick(theme, e)}
@@ -222,15 +228,17 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
-            <div
-              class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
-              onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
-              role="button"
-              tabindex="-1"
-            >
-              <span class="text-lg font-IconFamily">&#xeaa5;</span>
-            </div>
+            {#if theme.isEditable}
+              <div
+                class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
+                onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
+                onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
+                role="button"
+                tabindex="-1"
+              >
+                <span class="text-lg font-IconFamily">&#xeaa5;</span>
+              </div>
+            {/if}
 
             <div
               class="flex absolute right-12 top-1/4 z-20 place-items-center p-2 w-8 h-8 text-center rounded-full opacity-0 transition-all -translate-y-1/2 text-white/80 bg-black/50 group-hover:opacity-100 group-hover:top-1/2"
@@ -268,53 +276,117 @@
       </div>
     {/if}
 
-    {#if themes && themes.themes.length === 0 && !tempTheme}
+    {#if themes && visibleThemes.length === 0 && !tempTheme}
       <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center">
-        <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-          No themes installed
-        </h3>
-        <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-          Install a theme from the store or create one of your own.
-        </p>
-        <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
-          <button
-            type="button"
-            onclick={() => void openStorePage()}
-            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-          >
-            <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
-            Install a theme
-          </button>
-          <button
-            type="button"
-            onclick={() => void openThemeCreator()}
-            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-          >
-            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
-            Create a theme
-          </button>
-        </div>
+        {#if listMode === 'custom'}
+          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
+            No custom themes yet
+          </h3>
+          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
+            Create your own theme or follow our guide to get started.
+          </p>
+          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2">
+            <button
+              type="button"
+              onclick={() => void openThemeCreator()}
+              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+            >
+              <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
+              Create a theme
+            </button>
+          </div>
+        {:else if listMode === 'downloaded'}
+          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
+            No downloaded themes
+          </h3>
+          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
+            Browse the theme store to find and install themes.
+          </p>
+          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2">
+            <button
+              type="button"
+              onclick={() => void openStorePage()}
+              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+            >
+              <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
+              Browse the store
+            </button>
+          </div>
+        {:else}
+          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
+            No themes installed
+          </h3>
+          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
+            Install a theme from the store or create one of your own.
+          </p>
+          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onclick={() => void openStorePage()}
+              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+            >
+              <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
+              Install a theme
+            </button>
+            <button
+              type="button"
+              onclick={() => void openThemeCreator()}
+              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
+            >
+              <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
+              Create a theme
+            </button>
+          </div>
+        {/if}
       </div>
     {/if}
 
-    {#if showNavigation && themes && themes.themes.length > 0}
+    {#if themes && ((showNavigation && visibleThemes.length > 0) || (listMode === 'custom' && visibleThemes.length > 0) || (listMode === 'downloaded' && visibleThemes.length > 0))}
       <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
 
-      <button
-        onclick={() => void openStorePage()}
-        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-      >
-        <span class="text-xl font-IconFamily">&#xecc5;</span>
-        <span class="ml-2">Theme Store</span>
-      </button>
+      {#if listMode === 'custom'}
+        <button
+          onclick={() => void openThemeCreator()}
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+        >
+          <span class="text-xl font-IconFamily">&#xec60;</span>
+          <span class="ml-2">Create theme</span>
+        </button>
 
-      <button
-        onclick={() => void openThemeCreator()}
-        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-      >
-        <span class="text-xl font-IconFamily">&#xec60;</span>
-        <span class="ml-2">Create your own</span>
-      </button>
+        <a href="https://docs.betterseqta.org/theme-creation/" class="block w-full cursor-pointer">
+          <div class="flex flex-col justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800">
+            <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
+            <div class="text-lg font-bold text-center">
+              Got a Theme Idea?
+              <p class="text-base font-light text-zinc-600 dark:text-zinc-400">Transform it into a stunning theme!</p>
+            </div>
+          </div>
+        </a>
+      {:else if listMode === 'downloaded'}
+        <button
+          onclick={() => void openStorePage()}
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+        >
+          <span class="text-xl font-IconFamily">&#xecc5;</span>
+          <span class="ml-2">Theme Store</span>
+        </button>
+      {:else}
+        <button
+          onclick={() => void openStorePage()}
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+        >
+          <span class="text-xl font-IconFamily">&#xecc5;</span>
+          <span class="ml-2">Theme Store</span>
+        </button>
+
+        <button
+          onclick={() => void openThemeCreator()}
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+        >
+          <span class="text-xl font-IconFamily">&#xec60;</span>
+          <span class="ml-2">Create your own</span>
+        </button>
+      {/if}
     {/if}
   </div>
 </div>

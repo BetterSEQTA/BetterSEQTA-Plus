@@ -53,6 +53,7 @@
   let loading = $state(true);
   let displayTheme = $state<Theme | null>(null);
   let currentThemes = $state<string[]>([]);
+  let selectedThemeId = $state('');
   
   let error = $state<string | null>(null);
   let fetchAttempt = $state(0);
@@ -74,6 +75,7 @@
   const fetchCurrentThemes = async () => {
     const themes = await themeManager.getAvailableThemes();
     currentThemes = themes.filter(theme => theme !== null).map(theme => theme.id);
+    selectedThemeId = themeManager.getSelectedThemeId() || '';
   };
 
   const setDisplayTheme = (theme: Theme | null) => {
@@ -174,6 +176,7 @@
   // On mount
   onMount(async () => {
     window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+    themeUpdates.addListener(fetchCurrentThemes);
 
     await fetchThemes();
     await fetchCurrentThemes();
@@ -183,6 +186,7 @@
 
     return () => {
       window.removeEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+      themeUpdates.removeListener(fetchCurrentThemes);
     };
   });
 
@@ -217,6 +221,13 @@
     await themeManager.deleteTheme(themeId);
     themeUpdates.triggerUpdate();
     await fetchCurrentThemes();
+  }
+
+  async function applyThemeFromStore(themeId: string) {
+    await themeManager.setTheme(themeId);
+    selectedThemeId = themeId;
+    themeUpdates.triggerUpdate();
+    void browser.runtime.sendMessage({ type: 'cloudSettingsRequestDebouncedUpload' }).catch(() => {});
   }
 
   $effect(() => {
@@ -287,6 +298,7 @@
             {toggleFavorite}
             isLoggedIn={cloudLoggedIn}
             onRequestSignIn={() => (showSignInOverlay = true)}
+            installedThemeIds={currentThemes}
           />
     
           {#if displayTheme}
@@ -300,12 +312,16 @@
               {toggleFavorite}
               isLoggedIn={cloudLoggedIn}
               onRequestSignIn={() => (showSignInOverlay = true)}
+              {selectedThemeId}
               onInstall={async (themeId: string) => {
                 if (displayTheme) await installThemeFromStore(themeId, displayTheme);
               }}
               onRemove={async (themeId: string) => {
                 console.debug('deleting theme', themeId);
                 await removeThemeFromStore(themeId);
+              }}
+              onApply={async (themeId: string) => {
+                await applyThemeFromStore(themeId);
               }}
             />
           {/if}
