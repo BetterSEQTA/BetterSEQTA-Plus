@@ -704,20 +704,23 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
 
   /* Native list may keep `.active` after click-through; force our rows clickable,
      then lock siblings only while a custom drill `.sub` is open. */
-  > #bsplus-sidebar-root > li.item {
-    pointer-events: auto !important;
+  > #bsplus-sidebar-root .bsplus-sidebar-item {
     width: auto !important;
     max-width: none !important;
     margin: 0 6px 8px !important;
     box-sizing: border-box !important;
   }
 
-  &:has(> #bsplus-sidebar-root > li.hasChildren.active > .sub)
+  > #bsplus-sidebar-root > li.item {
+    pointer-events: auto !important;
+  }
+
+  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
     > #bsplus-sidebar-root
-    > li:not(.hasChildren.active),
-  &:has(> #bsplus-sidebar-root > li.hasChildren.active > .sub)
+    > li:not(.hasChildren.bsplus-active),
+  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
     > #bsplus-sidebar-root
-    > li:not(.hasChildren.active)
+    > li:not(.hasChildren.bsplus-active)
     * {
     pointer-events: none !important;
   }
@@ -733,17 +736,21 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     pointer-events: none;
   }
 
-  > #bsplus-sidebar-root li.hasChildren.active > .sub {
+  > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub {
     pointer-events: auto;
+    transform: none;
     background: transparent !important;
     background-image: none !important;
   }
 
-  > #bsplus-sidebar-root li.hasChildren.active > .sub:has(.hasChildren.active) {
+  > #bsplus-sidebar-root li.hasChildren.bsplus-active
+    > .sub:has(.hasChildren.bsplus-active) {
     pointer-events: none !important;
   }
 
-  > #bsplus-sidebar-root li.hasChildren.active .hasChildren.active > .sub {
+  > #bsplus-sidebar-root li.hasChildren.bsplus-active
+    .hasChildren.bsplus-active
+    > .sub {
     pointer-events: auto !important;
     background: transparent !important;
     background-image: none !important;
@@ -765,17 +772,17 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     background-image: none !important;
   }
 
-  > #bsplus-sidebar-root > li.hasChildren.active > label,
+  > #bsplus-sidebar-root > li.hasChildren.bsplus-active > label,
   > #bsplus-sidebar-root.drilling > li.hasChildren > label {
     pointer-events: none !important;
   }
 
   /* Theme decorations on root leaves (Beach palm/sand) must not show through
      the transparent drill `.sub` panel. */
-  > #bsplus-sidebar-root:has(> li.hasChildren.active > .sub)
-    > li:not(.hasChildren.active)::before,
-  > #bsplus-sidebar-root:has(> li.hasChildren.active > .sub)
-    > li:not(.hasChildren.active)::after {
+  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
+    > li:not(.hasChildren.bsplus-active)::before,
+  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
+    > li:not(.hasChildren.bsplus-active)::after {
     content: none !important;
     display: none !important;
     animation: none !important;
@@ -812,8 +819,9 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
   #bsplus-sidebar-root .sub > ul {
     list-style: none;
     margin: 0;
-    padding: 0 0 16px;
+    padding: 8px 0 16px;
   }
+
 }
 
 #menu li > label > svg,

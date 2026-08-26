@@ -37,12 +37,6 @@ function filterVisible(items: SidebarItem[]): SidebarItem[] {
   return items.filter((item) => menuItems[item.key]?.toggle !== false);
 }
 
-function ensureActive(el: Element | null | undefined) {
-  if (el instanceof HTMLElement && !el.classList.contains("active")) {
-    el.classList.add("active");
-  }
-}
-
 function resetSidebarScroll() {
   const root = document.getElementById("bsplus-sidebar-root");
   if (!(root instanceof HTMLElement)) return;
@@ -50,52 +44,6 @@ function resetSidebarScroll() {
   requestAnimationFrame(() => {
     root.scrollTop = 0;
   });
-}
-
-/**
- * SEQTA (and some themes) strip `.active` from `#menu li` after navigation.
- * Theme decorations and drill `.sub` chrome depend on that class on our list.
- *
- * While drilling, never re-apply route-active on root leaves — themes like Beach
- * paint palm/sand on `#menu > ul > li:not(.hasChildren).active`, and our `.sub`
- * is transparent so those decorations show through over folder contents.
- */
-export function restoreCustomMenuActive() {
-  const root = document.getElementById("bsplus-sidebar-root");
-  if (!root) return;
-
-  for (const li of root.querySelectorAll("li.hasChildren")) {
-    if (!(li instanceof HTMLElement)) continue;
-    if (!li.querySelector(":scope > .sub")) continue;
-    ensureActive(li);
-  }
-
-  const activeKey = sidebarState.activeKey;
-  const drilling = sidebarState.isDrilling;
-
-  if (drilling) {
-    if (activeKey) {
-      ensureActive(
-        root.querySelector(`.sub li.item[data-key="${CSS.escape(activeKey)}"]`),
-      );
-    }
-    for (const li of root.querySelectorAll(
-      '.sub li.item[aria-current="page"]',
-    )) {
-      ensureActive(li);
-    }
-    return;
-  }
-
-  if (activeKey) {
-    ensureActive(
-      root.querySelector(`li.item[data-key="${CSS.escape(activeKey)}"]`),
-    );
-  }
-
-  for (const li of root.querySelectorAll('li.item[aria-current="page"]')) {
-    ensureActive(li);
-  }
 }
 
 /** Clear native drill state so it cannot steal pointer-events from the custom list. */
@@ -251,7 +199,10 @@ class SidebarState {
 
     for (const frame of this.drillStack) {
       const folder = cursor.find((item) => item.key === frame.key);
-      if (!folder?.hasChildren) break;
+      if (!folder?.hasChildren) {
+        next.push(...this.drillStack.slice(next.length));
+        break;
+      }
       const children = filterVisible(folder.children);
       next.push({ key: folder.key, label: folder.label, items: children });
       cursor = children;
@@ -380,18 +331,7 @@ class SidebarState {
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {
-      // Clear native drill once only — repeating clearNativeDrillActive fights
-      // SEQTA (it re-adds .active) and used to freeze the tab via menu sync.
-      clearNativeDrillActive(menu);
       native.click();
-      clearNativeDrillActive(menu);
-      restoreCustomMenuActive();
-      requestAnimationFrame(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      });
-      // Later pass restores custom `.active` only (no native clear loop).
-      setTimeout(() => restoreCustomMenuActive(), 50);
       return;
     }
 
