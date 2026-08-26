@@ -5,7 +5,6 @@ import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
-import { applyAnalyticsMotionClass } from "./motion";
 
 type ThemeSettingKey =
   | "selectedColor"
@@ -121,7 +120,7 @@ function syncThemeToAnalyticsUi() {
   if (shadowHost) syncThemeFromPage(shadowHost);
   if (analyticsRoot) {
     syncThemeFromPage(analyticsRoot);
-    applyAnalyticsMotionClass(analyticsRoot, settingsState.animations);
+    analyticsRoot.classList.toggle("bsplus-analytics-motion", !!settingsState.animations);
   }
 }
 

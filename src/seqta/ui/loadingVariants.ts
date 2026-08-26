@@ -11,17 +11,6 @@ export type Line = {
   ) => void;
 };
 
-export type LoadingTheme = {
-  background: string;
-  vignetteOpacity: number;
-  vignetteFill: string;
-  spinOuter: string;
-  spinInner: string;
-  spinSmall: string;
-  stageName: string;
-  stageDuration: string;
-};
-
 export type LoadingVariant = {
   id: string;
   visual?: "lines" | "blobs" | "globe";
@@ -29,8 +18,15 @@ export type LoadingVariant = {
   holdMs: number;
   grid: { cols: number; rows: number };
   lines: Line[];
-  theme: LoadingTheme;
-  lightTheme: LoadingTheme;
+  theme: {
+    background: string;
+    vignetteOpacity: number;
+    spinOuter: string;
+    spinInner: string;
+    spinSmall: string;
+    stageName: string;
+    stageDuration: string;
+  };
 };
 
 const curve = (
@@ -67,10 +63,6 @@ const BASE = "linear-gradient(180deg, #010101 0%, #040404 50%, #080808 100%)";
 const BASE_LIGHT =
   "linear-gradient(180deg, #fafafa 0%, #f4f4f5 50%, #ececef 100%)";
 const STAGE = "bkloading-stage-in";
-const DARK_VIGNETTE =
-  "radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%)";
-const LIGHT_VIGNETTE =
-  "radial-gradient(ellipse at center, transparent 32%, rgba(250, 250, 250, 0.88) 100%)";
 
 function theme(
   background: string,
@@ -79,12 +71,10 @@ function theme(
   spinInner: string,
   spinSmall: string,
   stageDuration: string,
-  light = false,
-): LoadingTheme {
+) {
   return {
     background,
     vignetteOpacity,
-    vignetteFill: light ? LIGHT_VIGNETTE : DARK_VIGNETTE,
     spinOuter,
     spinInner,
     spinSmall,
@@ -97,8 +87,7 @@ function canvasVariant(
   id: string,
   visual: "blobs" | "globe",
   holdMs: number,
-  t: LoadingTheme,
-  lightTheme: LoadingTheme,
+  t: ReturnType<typeof theme>,
   blobStyle?: "diffuse" | "tide",
 ): LoadingVariant {
   return {
@@ -109,15 +98,18 @@ function canvasVariant(
     grid: { cols: 0, rows: 0 },
     lines: [],
     theme: t,
-    lightTheme,
   };
 }
 
 export function resolveLoadingTheme(
   variant: LoadingVariant,
   darkMode: boolean,
-): LoadingTheme {
-  return darkMode ? variant.theme : variant.lightTheme;
+): LoadingVariant["theme"] {
+  if (darkMode) return variant.theme;
+  return {
+    ...variant.theme,
+    background: variant.theme.background.replaceAll(BASE, BASE_LIGHT),
+  };
 }
 
 const VARIANTS: LoadingVariant[] = [
@@ -132,15 +124,6 @@ const VARIANTS: LoadingVariant[] = [
       "3s",
       "3s",
       "0.85s",
-    ),
-    lightTheme: theme(
-      `radial-gradient(ellipse 70% 45% at 50% 95%, rgba(37, 99, 235, 0.16), transparent 62%), ${BASE_LIGHT}`,
-      0.72,
-      "1s",
-      "3s",
-      "3s",
-      "0.85s",
-      true,
     ),
     lines: [
       {
@@ -207,15 +190,6 @@ const VARIANTS: LoadingVariant[] = [
       "2.6s",
       "0.75s",
     ),
-    lightTheme: theme(
-      `radial-gradient(ellipse 40% 30% at 80% 20%, rgba(59, 130, 246, 0.12), transparent 70%), ${BASE_LIGHT}`,
-      0.74,
-      "0.85s",
-      "2.6s",
-      "2.6s",
-      "0.75s",
-      true,
-    ),
     lines: [
       { delay: 0, dur: 1200, stroke: segment(0.5, 0.06, 0.5, 0.94) },
       { delay: 80, dur: 1200, stroke: segment(0.04, 0.5, 0.96, 0.5) },
@@ -241,7 +215,6 @@ const VARIANTS: LoadingVariant[] = [
     "blobs",
     0,
     theme(BASE, 0.78, "1.3s", "3.8s", "3.8s", "0.9s"),
-    theme(BASE_LIGHT, 0.62, "1.3s", "3.8s", "3.8s", "0.9s", true),
     "diffuse",
   ),
   canvasVariant(
@@ -256,15 +229,6 @@ const VARIANTS: LoadingVariant[] = [
       "4.2s",
       "1s",
     ),
-    theme(
-      `radial-gradient(ellipse 85% 45% at 50% 100%, rgba(37, 99, 235, 0.14), transparent 72%), ${BASE_LIGHT}`,
-      0.64,
-      "1.5s",
-      "4.2s",
-      "4.2s",
-      "1s",
-      true,
-    ),
     "tide",
   ),
   canvasVariant(
@@ -278,15 +242,6 @@ const VARIANTS: LoadingVariant[] = [
       "3.5s",
       "3.5s",
       "0.9s",
-    ),
-    theme(
-      `radial-gradient(ellipse 55% 50% at 50% 48%, rgba(37, 99, 235, 0.14), transparent 70%), ${BASE_LIGHT}`,
-      0.7,
-      "1.2s",
-      "3.5s",
-      "3.5s",
-      "0.9s",
-      true,
     ),
   ),
 ];

@@ -79,10 +79,7 @@ function cycle(
 }
 
 function cssVar(root: HTMLElement, name: string, fallback: string): string {
-  const inline = root.style.getPropertyValue(name).trim();
-  if (inline) return inline;
-  const computed = getComputedStyle(root).getPropertyValue(name).trim();
-  return computed || fallback;
+  return getComputedStyle(root).getPropertyValue(name).trim() || fallback;
 }
 
 function isLightScheme(root: HTMLElement): boolean {
@@ -129,11 +126,9 @@ function drawSoftBlobs(
   blur: number,
   fadeMs: number,
   tide: boolean,
-  light: boolean,
 ) {
   const time = reduced ? 0 : elapsed * 0.001;
   const fadeIn = reduced ? 1 : smooth(Math.min(1, elapsed / fadeMs));
-  const alphaBoost = light ? 1.18 : 1;
 
   ctx.save();
   ctx.globalAlpha = fadeIn;
@@ -154,8 +149,8 @@ function drawSoftBlobs(
       y = b.cy * h + Math.sin(t * 0.48 + b.phase) * h * 0.025;
       rx = b.rx * w;
       ry = b.ry * h * breathe;
-      a0 = 0.38 * alphaBoost;
-      a1 = 0.14 * alphaBoost;
+      a0 = 0.38;
+      a1 = 0.14;
     } else {
       const amp = b.amp ?? 0.2;
       const scale = 1 + Math.sin(t * 1.35) * amp;
@@ -164,8 +159,8 @@ function drawSoftBlobs(
       y = b.cy * h + Math.sin(t * 0.41) * h * 0.01;
       rx = b.rx * w * scale;
       ry = b.ry * h * stretch;
-      a0 = 0.5 * alphaBoost;
-      a1 = 0.18 * alphaBoost;
+      a0 = 0.5;
+      a1 = 0.18;
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(t * (b.rot ?? 0));
@@ -266,13 +261,10 @@ function drawDotGlobe(
     const size = (1.2 + depth * 2.2) * dot.p;
     const alpha = (0.12 + brightness * 0.75) * dot.p;
 
-    ctx.fillStyle = light
-      ? brightness > 0.52
-        ? `rgba(29, 78, 216, ${alpha})`
-        : `rgba(24, 24, 27, ${0.1 + brightness * 0.28 * dot.p})`
-      : brightness > 0.52
-        ? `rgba(96, 165, 250, ${alpha})`
-        : `rgba(255, 255, 255, ${0.08 + brightness * 0.22 * dot.p})`;
+    ctx.fillStyle =
+      brightness > 0.52
+        ? `rgba(${light ? "29, 78, 216" : "96, 165, 250"}, ${alpha})`
+        : `rgba(${light ? "24, 24, 27" : "255, 255, 255"}, ${0.08 + brightness * 0.22 * dot.p})`;
     ctx.beginPath();
     ctx.arc(dot.px, dot.py, size, 0, Math.PI * 2);
     ctx.fill();
@@ -316,11 +308,20 @@ export function startLoadingCanvas(
 
     const elapsed = now - start;
     ctx.clearRect(0, 0, w, h);
-    const light = isLightScheme(root);
 
     if (visual === "globe") {
       const { t, fade, ambient } = cycle(elapsed, revealMs, holdMs);
-      drawDotGlobe(ctx, w, h, elapsed, reduced, t, fade, reduced ? 1 : ambient, light);
+      drawDotGlobe(
+        ctx,
+        w,
+        h,
+        elapsed,
+        reduced,
+        t,
+        fade,
+        reduced ? 1 : ambient,
+        isLightScheme(root),
+      );
     } else if (visual === "blobs") {
       const tide = variant.blobStyle === "tide";
       drawSoftBlobs(
@@ -333,7 +334,6 @@ export function startLoadingCanvas(
         tide ? 58 : 52,
         tide ? 1800 : 1600,
         tide,
-        light,
       );
     } else {
       const { t, fade } = cycle(elapsed, revealMs, holdMs);

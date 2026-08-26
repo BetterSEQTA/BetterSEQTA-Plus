@@ -41,7 +41,6 @@
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
   const fadeDuration = $derived($settingsState.animations ? 200 : 0);
-  const emptyFadeDuration = $derived($settingsState.animations ? 300 : 0);
 
   const formattedTimestamp = $derived(() => {
     if (!lastUpdated) return "";
@@ -465,7 +464,7 @@
       </div>
     </div>
   {:else}
-    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: emptyFadeDuration }}>
+    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: fadeDuration }}>
       <aside class="bsplus-analytics-filters" aria-label="Analytics">
         {@render sidebarTitle()}
         {@render sidebarActions()}
