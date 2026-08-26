@@ -33,6 +33,7 @@ export function extractSchoolLoginName(
     const selectors = [
       "[data-site-name]",
       ".site-name",
+      ".siteName",
       ".school-name",
       ".school",
       ".login-title",

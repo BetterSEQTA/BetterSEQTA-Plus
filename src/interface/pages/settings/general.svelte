@@ -596,6 +596,19 @@
     }
   })}
 
+  {#if $settingsState.onoff}
+  {@render Setting({
+    title: "Custom login screen",
+    description: "Use BetterSEQTA's themed login portal. Turn off to keep your school's default SEQTA login page.",
+    id: 16,
+    Component: Switch,
+    props: {
+      state: $settingsState.customLoginPortal !== false,
+      onChange: (isOn: boolean) => settingsState.customLoginPortal = isOn
+    }
+  })}
+  {/if}
+
   {#if $settingsState.devMode}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">

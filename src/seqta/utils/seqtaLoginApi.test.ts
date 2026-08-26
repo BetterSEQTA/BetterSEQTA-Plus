@@ -1,9 +1,13 @@
 import {
   buildSeqtaLoginBody,
   parseSeqtaLoginResponse,
+  parseSeqtaRecoverResponse,
   resolveSeqtaLoginRole,
   seqtaLoginEndpoint,
+  seqtaRecoverEndpoint,
+  submitSeqtaGoogleLogin,
   submitSeqtaLogin,
+  submitSeqtaRecover,
 } from "./seqtaLoginApi";
 
 describe("resolveSeqtaLoginRole", () => {
@@ -34,6 +38,13 @@ describe("seqtaLoginEndpoint", () => {
   it("maps roles to API paths", () => {
     expect(seqtaLoginEndpoint("student")).toBe("/seqta/student/login");
     expect(seqtaLoginEndpoint("parent")).toBe("/seqta/parent/login");
+  });
+});
+
+describe("seqtaRecoverEndpoint", () => {
+  it("maps roles to recover paths", () => {
+    expect(seqtaRecoverEndpoint("student")).toBe("/seqta/student/recover");
+    expect(seqtaRecoverEndpoint("parent")).toBe("/seqta/parent/recover");
   });
 });
 
@@ -133,5 +144,62 @@ describe("submitSeqtaLogin", () => {
       success: false,
       error: "Login failed (HTTP 500)",
     });
+  });
+});
+
+describe("submitSeqtaGoogleLogin", () => {
+  it("posts the Google credential token", async () => {
+    const fetchImpl = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: "200", payload: { id: 1 } }),
+    });
+
+    const result = await submitSeqtaGoogleLogin("google-jwt-token", {
+      role: "student",
+      origin: "https://learn.example.edu.au",
+      fetchImpl,
+    });
+
+    expect(result.success).toBe(true);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://learn.example.edu.au/seqta/student/login",
+      expect.objectContaining({
+        body: JSON.stringify({ googleToken: "google-jwt-token" }),
+      }),
+    );
+  });
+});
+
+describe("parseSeqtaRecoverResponse", () => {
+  it("accepts successful recover responses", () => {
+    expect(parseSeqtaRecoverResponse({ status: "200", payload: {} })).toEqual({
+      success: true,
+    });
+  });
+});
+
+describe("submitSeqtaRecover", () => {
+  it("posts recover requests to the resolved endpoint", async () => {
+    const fetchImpl = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: "200", payload: { status: "200" } }),
+    });
+
+    const result = await submitSeqtaRecover("test@example.com", {
+      role: "student",
+      origin: "https://learn.example.edu.au",
+      fetchImpl,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://learn.example.edu.au/seqta/student/recover",
+      expect.objectContaining({
+        body: JSON.stringify({
+          mode: "request",
+          email: "test@example.com",
+        }),
+      }),
+    );
   });
 });

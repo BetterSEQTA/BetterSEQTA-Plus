@@ -36,6 +36,10 @@ export function seqtaLoginEndpoint(role: SeqtaLoginRole): string {
   return `/seqta/${role}/login`;
 }
 
+export function seqtaRecoverEndpoint(role: SeqtaLoginRole): string {
+  return `/seqta/${role}/recover`;
+}
+
 export function buildSeqtaLoginBody(
   credentials: SeqtaLoginCredentials,
   redirectUrl: string = location.origin,
@@ -117,4 +121,111 @@ export async function submitSeqtaLogin(
   }
 
   return parseSeqtaLoginResponse(data);
+}
+
+export async function submitSeqtaGoogleLogin(
+  googleToken: string,
+  options: {
+    role?: SeqtaLoginRole;
+    fetchImpl?: typeof fetch;
+    origin?: string;
+  } = {},
+): Promise<SeqtaLoginResult> {
+  const role = options.role ?? resolveSeqtaLoginRole();
+  const endpoint = seqtaLoginEndpoint(role);
+  const origin = options.origin ?? location.origin;
+  const fetchImpl = options.fetchImpl ?? fetch;
+
+  const response = await fetchImpl(`${origin}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    credentials: "include",
+    body: JSON.stringify({ googleToken }),
+  });
+
+  if (!response.ok) {
+    return {
+      success: false,
+      error: `Login failed (HTTP ${response.status})`,
+    };
+  }
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch {
+    return { success: false, error: "Unexpected response from server" };
+  }
+
+  return parseSeqtaLoginResponse(data);
+}
+
+export type SeqtaRecoverResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export function parseSeqtaRecoverResponse(data: unknown): SeqtaRecoverResult {
+  if (!data || typeof data !== "object") {
+    return { success: false, error: "Unexpected response from server" };
+  }
+
+  const record = data as Record<string, unknown>;
+  const status = record.status;
+  if (status === "200" || status === 200) {
+    return { success: true };
+  }
+
+  const payload = record.payload;
+  if (payload && typeof payload === "object") {
+    const payloadRecord = payload as Record<string, unknown>;
+    for (const key of ["message", "error", "reason"]) {
+      const value = payloadRecord[key];
+      if (typeof value === "string" && value.trim()) {
+        return { success: false, error: value.trim() };
+      }
+    }
+  }
+
+  if (typeof record.message === "string" && record.message.trim()) {
+    return { success: false, error: record.message.trim() };
+  }
+
+  return { success: false, error: "Could not send reset email" };
+}
+
+export async function submitSeqtaRecover(
+  email: string,
+  options: {
+    role?: SeqtaLoginRole;
+    fetchImpl?: typeof fetch;
+    origin?: string;
+  } = {},
+): Promise<SeqtaRecoverResult> {
+  const role = options.role ?? resolveSeqtaLoginRole();
+  const endpoint = seqtaRecoverEndpoint(role);
+  const origin = options.origin ?? location.origin;
+  const fetchImpl = options.fetchImpl ?? fetch;
+
+  const response = await fetchImpl(`${origin}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    credentials: "include",
+    body: JSON.stringify({ mode: "request", email: email.trim() }),
+  });
+
+  if (!response.ok) {
+    return {
+      success: false,
+      error: `Reset failed (HTTP ${response.status})`,
+    };
+  }
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch {
+    return { success: false, error: "Unexpected response from server" };
+  }
+
+  return parseSeqtaRecoverResponse(data);
 }
