@@ -6,6 +6,7 @@ import loadingOverlay from "./loading-overlay.html?raw";
 import { startLoadingCanvas } from "./loadingCanvas";
 import {
   pickLoadingVariant,
+  resolveLoadingTheme,
   type LoadingVariant,
 } from "./loadingVariants";
 
@@ -25,26 +26,42 @@ const THEME_GUARD_KEYS = [
   "selectedFont",
 ] as const;
 
-const LOADING_PALETTE = {
+const LOADING_PALETTE_DARK = {
   line: "rgba(255, 255, 255, 0.08)",
   lineAccent: "rgba(255, 255, 255, 0.15)",
   lineBlue: "rgba(96, 165, 250, 0.42)",
   grid: "rgba(255, 255, 255, 0.028)",
   text: "#f4f4f5",
+  version: "rgba(255, 255, 255, 0.35)",
 } as const;
+
+const LOADING_PALETTE_LIGHT = {
+  line: "rgba(24, 24, 27, 0.1)",
+  lineAccent: "rgba(24, 24, 27, 0.18)",
+  lineBlue: "rgba(37, 99, 235, 0.5)",
+  grid: "rgba(24, 24, 27, 0.055)",
+  text: "#18181b",
+  version: "rgba(24, 24, 27, 0.42)",
+} as const;
+
+function loadingPalette(darkMode: boolean) {
+  return darkMode ? LOADING_PALETTE_DARK : LOADING_PALETTE_LIGHT;
+}
 
 const loadingStyles = /* css */ `
   :host {
-    --bk-line-color: ${LOADING_PALETTE.line};
-    --bk-line-accent: ${LOADING_PALETTE.lineAccent};
-    --bk-line-blue: ${LOADING_PALETTE.lineBlue};
-    --bk-grid-color: ${LOADING_PALETTE.grid};
+    --bk-line-color: ${LOADING_PALETTE_DARK.line};
+    --bk-line-accent: ${LOADING_PALETTE_DARK.lineAccent};
+    --bk-line-blue: ${LOADING_PALETTE_DARK.lineBlue};
+    --bk-grid-color: ${LOADING_PALETTE_DARK.grid};
     --bk-spin-outer: 1s;
     --bk-spin-inner: 3s;
     --bk-spin-small: 3s;
     --bk-stage-name: bkloading-stage-in;
     --bk-stage-duration: 0.85s;
-    color: ${LOADING_PALETTE.text};
+    --bk-vignette-fill: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
+    --bk-version-color: ${LOADING_PALETTE_DARK.version};
+    color: ${LOADING_PALETTE_DARK.text};
     opacity: 1;
     transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -66,7 +83,7 @@ const loadingStyles = /* css */ `
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
+    background: var(--bk-vignette-fill);
     opacity: 0.88;
   }
 
@@ -153,7 +170,7 @@ const loadingStyles = /* css */ `
     bottom: 10px;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--bk-version-color);
     pointer-events: none;
   }
 
@@ -199,7 +216,8 @@ function overlayWithSpinner(): string {
   );
 }
 
-function applyHostShell(host: HTMLElement) {
+function applyHostShell(host: HTMLElement, darkMode: boolean) {
+  const palette = loadingPalette(darkMode);
   const shell = [
     ["position", "fixed"],
     ["inset", "0"],
@@ -209,11 +227,12 @@ function applyHostShell(host: HTMLElement) {
     ["contain", "strict"],
     ["visibility", "visible"],
     ["pointer-events", "auto"],
-    ["color", LOADING_PALETTE.text],
-    ["--bk-line-color", LOADING_PALETTE.line],
-    ["--bk-line-accent", LOADING_PALETTE.lineAccent],
-    ["--bk-line-blue", LOADING_PALETTE.lineBlue],
-    ["--bk-grid-color", LOADING_PALETTE.grid],
+    ["color", palette.text],
+    ["--bk-line-color", palette.line],
+    ["--bk-line-accent", palette.lineAccent],
+    ["--bk-line-blue", palette.lineBlue],
+    ["--bk-grid-color", palette.grid],
+    ["--bk-version-color", palette.version],
   ] as const;
 
   for (const [prop, value] of shell) {
@@ -226,18 +245,24 @@ function applyVariantTheme(
   shadow: ShadowRoot,
   variant: LoadingVariant,
 ) {
-  const { theme } = variant;
+  const darkMode = !!settingsState.DarkMode;
+  const theme = resolveLoadingTheme(variant, darkMode);
   host.dataset.variant = variant.id;
-  applyHostShell(host);
+  host.dataset.scheme = darkMode ? "dark" : "light";
+  applyHostShell(host, darkMode);
   host.style.setProperty("background", theme.background, "important");
   host.style.setProperty("--bk-spin-outer", theme.spinOuter, "important");
   host.style.setProperty("--bk-spin-inner", theme.spinInner, "important");
-  host.style.setProperty("--bk-spin-small", theme.spinSmall, "important");
   host.style.setProperty("--bk-stage-name", theme.stageName, "important");
+  host.style.setProperty("--bk-spin-small", theme.spinSmall, "important");
   host.style.setProperty("--bk-stage-duration", theme.stageDuration, "important");
+  host.style.setProperty("--bk-vignette-fill", theme.vignetteFill, "important");
 
   const vignette = shadow.querySelector(".bkloading__vignette") as HTMLElement | null;
-  if (vignette) vignette.style.opacity = String(theme.vignetteOpacity);
+  if (vignette) {
+    vignette.style.opacity = String(theme.vignetteOpacity);
+    vignette.style.background = theme.vignetteFill;
+  }
 }
 
 function refreshActiveLoadingTheme() {

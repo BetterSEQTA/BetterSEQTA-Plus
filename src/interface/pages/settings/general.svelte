@@ -621,6 +621,18 @@
       </div>
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
+          <h2 class="text-xl font-bold">Delay loading screen</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Keep the loading overlay visible for 5 extra seconds so you can preview canvas variants.</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.devDelayLoadingScreen ?? false}
+            onChange={(isOn: boolean) => settingsState.devDelayLoadingScreen = isOn}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-5 py-4">
+        <div class="pr-4">
           <h2 class="text-xl font-bold">Sensitive Hider</h2>
           <p class="text-base text-zinc-600 dark:text-zinc-300">Replace sensitive content with mock data</p>
         </div>

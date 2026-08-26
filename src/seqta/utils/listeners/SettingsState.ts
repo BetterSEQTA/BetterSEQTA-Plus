@@ -28,6 +28,7 @@ const SETTINGS_STORAGE_KEYS = [
     "justupdated",
     "devMode",
     "verboseLogging",
+    "devDelayLoadingScreen",
     "devGhReleaseVersionOverride",
     "lastSeenNightlyPublishedAt",
     "originalDarkMode",

@@ -57,6 +57,8 @@ export interface SettingsState {
   devMode?: boolean;
   /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
   verboseLogging?: boolean;
+  /** Dev-only: keep the loading overlay visible for 5 extra seconds. */
+  devDelayLoadingScreen?: boolean;
   /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
   devGhReleaseVersionOverride?: string;
   /** ISO timestamp of the last acknowledged nightly release publish time. */

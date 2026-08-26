@@ -20,6 +20,7 @@ import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 import { verboseInfo, verboseLog } from "@/utils/verboseLog";
 import loading, { stopLoadingAnimation } from "@/seqta/ui/Loading";
+import { loadingScreenHoldMs } from "@/seqta/ui/loadingHold";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
@@ -91,6 +92,9 @@ export async function finishLoad() {
     }
 
     document.querySelector(".legacy-root")?.classList.remove("hidden");
+
+    const holdMs = loadingScreenHoldMs(settingsState);
+    if (holdMs > 0) await delay(holdMs);
 
     const loadingbk = document.getElementById("loading");
     loadingbk?.classList.add("closeLoading");
