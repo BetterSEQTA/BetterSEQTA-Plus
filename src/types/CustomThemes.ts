@@ -20,6 +20,8 @@ export type CustomTheme = {
   forceDark?: boolean;
   /** True if installed from the BetterSEQTA theme store (not file import). */
   installedFromStore?: boolean;
+  /** True if installed from the community custom-themes API. */
+  installedFromCommunity?: boolean;
   /** Server `updated_at` (Unix seconds) when this copy was installed or last auto-updated. */
   storeSyncedAtSec?: number;
   /** User saved edits in theme creator or popup; blocks store auto-update. */

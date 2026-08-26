@@ -11,6 +11,7 @@
     onRequestSignIn,
     allStoreThemeRows,
     installedThemeIds = [],
+    variant = 'official',
   } = $props<{
     themes: Theme[];
     searchTerm: string;
@@ -21,6 +22,7 @@
     /** Raw API list (includes `slave` rows) for master download aggregation */
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
+    variant?: 'official' | 'community';
   }>();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) => {
@@ -42,6 +44,7 @@
         {onRequestSignIn}
         {allStoreThemeRows}
         {installedThemeIds}
+        {variant}
       />
     {/each}
   

@@ -142,6 +142,18 @@
     closeExtensionPopup()
   }
 
+  const openCommunitySubmit = async () => {
+    const { openCommunityThemeSubmit } = await import('@/seqta/utils/openCommunityThemeSubmit')
+    await openCommunityThemeSubmit()
+    closeExtensionPopup()
+  }
+
+  const customThemeActionClass =
+    'flex items-center justify-center gap-2 w-full rounded-xl transition bg-zinc-100 text-xl dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
+
+  const customThemeActionCompactClass =
+    `${customThemeActionClass} h-full min-h-0`
+
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
     if (!cloudLoggedIn) {
@@ -347,23 +359,37 @@
       <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600 {useTwoColumnLayout ? 'col-span-2' : ''}"></div>
 
       {#if listMode === 'custom'}
-        <button
-          onclick={() => void openThemeCreator()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white {useTwoColumnLayout ? 'col-span-2' : ''}"
-        >
-          <span class="text-xl font-IconFamily">&#xec60;</span>
-          <span class="ml-2">Create theme</span>
-        </button>
+        <div class="grid gap-2 {useTwoColumnLayout ? 'col-span-2' : ''}">
+          <div class="grid w-full grid-cols-2 gap-2 aspect-[10/1]">
+            <button
+              type="button"
+              onclick={() => void openThemeCreator()}
+              class={customThemeActionCompactClass}
+            >
+              <span class="text-2xl font-IconFamily" aria-hidden="true">&#xec60;</span>
+              <span>Create theme</span>
+            </button>
 
-        <a
-          href="https://docs.betterseqta.org/theme-creation/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 {useTwoColumnLayout ? 'col-span-2' : ''}"
-        >
-          <span class="text-xl font-IconFamily">{'\uecb3'}</span>
-          <span class="ml-2">View theme creation docs</span>
-        </a>
+            <a
+              href="https://docs.betterseqta.org/theme-creation/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class={customThemeActionCompactClass}
+            >
+              <span class="text-2xl font-IconFamily" aria-hidden="true">{'\uecb3'}</span>
+              <span>View docs</span>
+            </a>
+          </div>
+
+          <button
+            type="button"
+            onclick={() => void openCommunitySubmit()}
+            class="{customThemeActionClass} aspect-[10/1]"
+          >
+            <span class="text-2xl font-IconFamily" aria-hidden="true">&#xe9fc;</span>
+            <span>Submit theme</span>
+          </button>
+        </div>
       {:else if listMode === 'downloaded'}
         <button
           onclick={() => void openStorePage()}

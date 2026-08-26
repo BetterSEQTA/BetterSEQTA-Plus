@@ -3,6 +3,7 @@
   import Shortcuts from "./settings/shortcuts.svelte";
   import Theme from "./settings/theme.svelte";
   import Store from "./store.svelte";
+  import CommunityThemes from "./communityThemes.svelte";
   import TabbedContainer from "../components/TabbedContainer.svelte";
   import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
   import lightLogo from "@/resources/icons/betterseqta-light-full.png";
@@ -39,7 +40,7 @@
   } from "@/utils/githubReleaseUpdate";
   type PageId = "settings" | "themes" | "backgrounds";
   type StoreTab = "themes" | "backgrounds";
-  type ThemeView = "theme-settings" | "theme-store" | "create-theme";
+  type ThemeView = "theme-settings" | "theme-store" | "community-themes" | "create-theme";
   type BackgroundView = "background-settings" | "background-store";
 
   type NavItem = {
@@ -93,7 +94,8 @@
     {
       label: "Themes",
       items: [
-        { id: "theme-store", label: "Store" },
+        { id: "theme-store", label: "Theme store" },
+        { id: "community-themes", label: "Community themes" },
         { id: "theme-settings", label: "Downloaded themes" },
         { id: "create-theme", label: "Custom themes" },
       ],
@@ -145,6 +147,8 @@
     if (activePage === "themes") {
       if (activeThemeView === "theme-settings") return "Downloaded themes";
       if (activeThemeView === "create-theme") return "Custom themes";
+      if (activeThemeView === "community-themes") return "Community themes";
+      if (activeThemeView === "theme-store") return "Theme store";
       return "Themes";
     }
     if (activePage === "backgrounds") return "Backgrounds";
@@ -158,8 +162,13 @@
   });
 
   const isStoreView = $derived(
-    (activePage === "themes" && activeThemeView === "theme-store") ||
+    (activePage === "themes" &&
+      (activeThemeView === "theme-store" || activeThemeView === "community-themes")) ||
       (activePage === "backgrounds" && activeBackgroundView === "background-store"),
+  );
+
+  const isOfficialStoreView = $derived(
+    activePage === "themes" && activeThemeView === "theme-store",
   );
 
   const openGhRelease = () => {
@@ -286,9 +295,11 @@
       activeThemeView =
         destination.view === "store"
           ? "theme-store"
-          : destination.view === "custom"
-            ? "create-theme"
-            : "theme-settings";
+          : destination.view === "community"
+            ? "community-themes"
+            : destination.view === "custom"
+              ? "create-theme"
+              : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
       activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
     }
@@ -365,7 +376,7 @@
         activePage = page;
         if (page === "themes") activeThemeView = "theme-store";
       }}
-      showStoreTools={isStoreView}
+      showStoreTools={isOfficialStoreView || activeThemeView === "community-themes"}
       onLogoClick={handleDevModeToggle}
       onClose={handleClose}
     />
@@ -438,18 +449,22 @@
 
       {#if isStoreView}
         <div class="min-w-0 min-h-0 flex-1">
-          <Store
-            activeTab={activePage as StoreTab}
-            searchTerm={storeSearchTerm}
-            {selectedBackgroundCategory}
-            setActiveTab={(tab) => {
-              activePage = tab;
-              if (tab === "themes") activeThemeView = "theme-store";
-              else activeBackgroundView = "background-store";
-            }}
-            setSearchTerm={(term) => (storeSearchTerm = term)}
-            setBackgroundCategories={(categories) => (backgroundCategories = categories)}
-          />
+          {#if activePage === "themes" && activeThemeView === "community-themes"}
+            <CommunityThemes searchTerm={storeSearchTerm} setSearchTerm={(term) => (storeSearchTerm = term)} />
+          {:else}
+            <Store
+              activeTab={activePage as StoreTab}
+              searchTerm={storeSearchTerm}
+              {selectedBackgroundCategory}
+              setActiveTab={(tab) => {
+                activePage = tab;
+                if (tab === "themes") activeThemeView = "theme-store";
+                else activeBackgroundView = "background-store";
+              }}
+              setSearchTerm={(term) => (storeSearchTerm = term)}
+              setBackgroundCategories={(categories) => (backgroundCategories = categories)}
+            />
+          {/if}
         </div>
       {:else}
         <div class="flex flex-col flex-1 min-w-0 min-h-0">

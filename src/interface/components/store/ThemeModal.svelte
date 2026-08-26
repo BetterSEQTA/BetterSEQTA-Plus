@@ -28,6 +28,7 @@ isLoggedIn,
 onRequestSignIn,
 selectedThemeId = '',
 installedThemeColors = {},
+variant = 'official',
 } = $props<{
 theme: Theme | null
 currentThemes: string[]
@@ -44,7 +45,10 @@ isLoggedIn?: boolean
 onRequestSignIn?: () => void
 selectedThemeId?: string
 installedThemeColors?: Record<string, string>
+variant?: 'official' | 'community'
 }>()
+const isCommunity = $derived(variant === 'community')
+const showFavorites = $derived(!isCommunity)
 function variantApplyStyles(variantId: string) {
 if (!theme) {
 return getThemeApplyButtonStyles(undefined)
@@ -220,6 +224,14 @@ aria-label="Close"
 <h2 class="text-2xl font-bold text-zinc-900 dark:text-white">
 {theme.name}
 </h2>
+{#if isCommunity}
+<span
+class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100"
+aria-label="Community theme"
+>
+Community
+</span>
+{/if}
 {#if theme.featured === true}
 <span
 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100"
@@ -248,12 +260,14 @@ By {theme.author}
 </svg>
 {modalDisplayDownloadCount.toLocaleString()} downloads
 </span>
+{#if showFavorites}
 <span class="flex items-center gap-1.5">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
 </svg>
 {(theme.favorite_count ?? 0).toLocaleString()} favorites
 </span>
+{/if}
 </div>
 {#if heroSlides.length > 0}
 {#key theme?.id}
@@ -446,7 +460,7 @@ title="Install {f.name}"
 {theme.description}
 </p>
 <div class="flex flex-wrap gap-2 mt-4 justify-start sm:justify-end items-center">
-{#if toggleFavorite && theme}
+{#if showFavorites && toggleFavorite && theme}
 <button
 type="button"
 class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 {theme.is_favorited ? 'text-red-500 bg-red-500/10 dark:bg-red-500/20' : 'bg-zinc-200 dark:bg-zinc-700 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600'}"

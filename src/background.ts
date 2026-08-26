@@ -19,6 +19,7 @@ import {
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
 } from "./background/calendarBackground";
+import { createCustomThemesHandlers } from "./background/customThemesHandlers";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -478,7 +479,14 @@ function handleSetDevApiBase(
   return false;
 }
 
+const customThemesHandlers = createCustomThemesHandlers({
+  apiBase,
+  getAccessTokenFromStorage,
+  parseJsonResponse,
+});
+
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
+  ...customThemesHandlers,
   reloadTabs: () => reloadSeqtaPages(),
   setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {

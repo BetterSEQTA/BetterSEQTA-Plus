@@ -57,6 +57,8 @@ type ThemeContent = {
 
 export type InstallThemeMeta = {
   fromStore: boolean;
+  /** Community custom-themes API install (distinct from official store). */
+  fromCommunity?: boolean;
   /** Server list `updated_at` (Unix seconds); set when installing from store. */
   serverUpdatedAtSec?: number;
   forceTheme?: boolean;
@@ -583,6 +585,56 @@ export class ThemeManager {
   }
 
   /**
+   * Download and install an approved community theme from `/api/custom-themes`.
+   */
+  public async downloadCommunityTheme(themeContent: {
+    id: string;
+    name?: string;
+    theme_json_url?: string;
+    updated_at?: number;
+  }): Promise<void> {
+    try {
+      await this.downloadAndInstallCommunityTheme(themeContent);
+    } catch (error) {
+      console.error("[ThemeManager] Error downloading community theme:", error);
+      throw error;
+    }
+  }
+
+  private async downloadAndInstallCommunityTheme(themeContent: {
+    id: string;
+    theme_json_url?: string;
+    updated_at?: number;
+  }): Promise<void> {
+    verboseDebug("[ThemeManager] Downloading community theme:", themeContent.id);
+    if (!themeContent.id) {
+      throw new Error("Missing theme id");
+    }
+
+    let themeJsonUrl = themeContent.theme_json_url;
+    if (!themeJsonUrl) {
+      const downloadData = (await this.fetchFromUrl(
+        `${this.THEME_API_BASE}/custom-themes/${themeContent.id}/download`,
+      )) as { success?: boolean; data?: { theme_json_url: string } };
+      if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+        throw new Error("Failed to get community theme download URL");
+      }
+      themeJsonUrl = downloadData.data.theme_json_url;
+    }
+
+    if (!isAllowedFetchUrl(themeJsonUrl)) {
+      throw new Error("Community theme download URL not allowed");
+    }
+
+    const themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
+    await this.installTheme(themeData, {
+      fromStore: true,
+      fromCommunity: true,
+      serverUpdatedAtSec: themeContent.updated_at,
+    });
+  }
+
+  /**
    * Fetch theme.json from the store and install (throws on failure).
    */
   private async downloadAndInstallStoreTheme(themeContent: {
@@ -650,6 +702,7 @@ export class ThemeManager {
       }
 
       const fromStore = meta?.fromStore ?? false;
+      const fromCommunity = meta?.fromCommunity ?? false;
       const serverUpdatedAtSec = meta?.serverUpdatedAtSec;
 
       // Handle cover image (optional)
@@ -701,6 +754,7 @@ export class ThemeManager {
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
         installedFromStore: fromStore,
+        installedFromCommunity: fromCommunity || undefined,
         userEdited: fromStore ? false : undefined,
         storeSyncedAtSec:
           fromStore && serverUpdatedAtSec != null
