@@ -2,30 +2,48 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { animate } from "motion";
 
 import { settingsPopup } from "@/seqta/utils/settingsPopup";
+import {
+  beginSettingsPopupTransition,
+  isCurrentSettingsPopupTransition,
+  resetSettingsPopupVisualState,
+  trackSettingsPopupAnimation,
+} from "@/seqta/utils/settingsPopupTransition";
 
 export let SettingsClicked = false;
 
 export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
-  if (!extensionPopup)
-    extensionPopup = document.getElementById("ExtensionPopup")!;
+  const generation = beginSettingsPopupTransition();
+  changeSettingsClicked(false);
+
+  if (!extensionPopup) {
+    extensionPopup = document.getElementById("ExtensionPopup") ?? undefined;
+  }
+  if (!extensionPopup) return false;
 
   extensionPopup.classList.add("hide");
+  resetSettingsPopupVisualState(extensionPopup);
+
   if (settingsState.animations) {
     const panel = extensionPopup.shadowRoot?.querySelector<HTMLElement>(
       "[data-settings-panel]",
     );
-    animate(1, 0, {
-      onUpdate: (progress) => {
-        extensionPopup.style.opacity = Math.max(0, progress).toString();
-      },
-      duration: 0.18,
-      ease: "easeIn",
-    });
+    trackSettingsPopupAnimation(
+      animate(1, 0, {
+        onUpdate: (progress) => {
+          if (!isCurrentSettingsPopupTransition(generation)) return;
+          extensionPopup.style.opacity = Math.max(0, progress).toString();
+        },
+        duration: 0.18,
+        ease: "easeIn",
+      }),
+    );
     if (panel) {
-      animate(
-        panel,
-        { scale: [1, 0], opacity: [1, 0] },
-        { duration: 0.18, ease: "easeIn" },
+      trackSettingsPopupAnimation(
+        animate(
+          panel,
+          { scale: [1, 0], opacity: [1, 0] },
+          { duration: 0.18, ease: "easeIn" },
+        ),
       );
     }
   } else {
@@ -33,7 +51,7 @@ export const closeExtensionPopup = (extensionPopup?: HTMLElement) => {
   }
 
   settingsPopup.triggerClose();
-  return (SettingsClicked = false);
+  return false;
 };
 
 export function changeSettingsClicked(newVal: boolean) {

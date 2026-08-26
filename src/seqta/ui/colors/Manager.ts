@@ -6,6 +6,7 @@ import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
+import { syncTransparencyEffectsClass } from "@/seqta/ui/colors/syncTransparencyEffectsClass";
 
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
@@ -126,9 +127,7 @@ function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: num
 }
 
 function applyColorsWith(selectedColor: string) {
-  if (settingsState.transparencyEffects) {
-    document.documentElement.classList.add("transparencyEffects");
-  }
+  syncTransparencyEffectsClass(settingsState.transparencyEffects === true);
 
   // Common properties, always applied
   const commonProps = {

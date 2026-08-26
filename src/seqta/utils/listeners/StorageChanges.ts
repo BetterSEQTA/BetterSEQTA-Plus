@@ -1,6 +1,6 @@
 import { settingsState } from "./SettingsState";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
-import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import { syncTransparencyEffectsClass } from "@/seqta/ui/colors/syncTransparencyEffectsClass";
 
 // Shortcuts rendering
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
@@ -85,10 +85,6 @@ export class StorageChangeHandler {
   }
 
   private handleTransparencyEffectsChange(newValue: boolean) {
-    if (newValue) {
-      document.documentElement.classList.add("transparencyEffects");
-    } else {
-      document.documentElement.classList.remove("transparencyEffects");
-    }
+    syncTransparencyEffectsClass(newValue === true);
   }
 }

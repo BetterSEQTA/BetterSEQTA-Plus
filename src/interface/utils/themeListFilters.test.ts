@@ -3,7 +3,10 @@ import type { Theme } from '@/interface/types/Theme';
 import {
   filterThemesByMode,
   getThemeApplyButtonStyles,
+  isDownloadedTheme,
+  isLocalCustomTheme,
   isStoreThemeInstalled,
+  resolveLocalThemeInstallId,
   resolveStoreVariantAccentColor,
 } from './themeListFilters';
 
@@ -30,20 +33,97 @@ function makeStoreTheme(overrides: Partial<Theme> & Pick<Theme, 'id' | 'name'>):
   };
 }
 
+describe('isLocalCustomTheme', () => {
+  it('returns true for file imports and theme creator saves', () => {
+    expect(isLocalCustomTheme(makeCustomTheme({ id: 'a', name: 'A' }))).toBe(true);
+    expect(
+      isLocalCustomTheme(
+        makeCustomTheme({ id: 'b', name: 'B', installedFromStore: false }),
+      ),
+    ).toBe(true);
+  });
+
+  it('returns false for store and community installs', () => {
+    expect(
+      isLocalCustomTheme(
+        makeCustomTheme({ id: 's', name: 'S', installedFromStore: true }),
+      ),
+    ).toBe(false);
+    expect(
+      isLocalCustomTheme(
+        makeCustomTheme({ id: 'c', name: 'C', installedFromCommunity: true }),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe('resolveLocalThemeInstallId', () => {
+  it('keeps the id for store installs', () => {
+    expect(resolveLocalThemeInstallId('theme-1', null, true, false)).toBe('theme-1');
+  });
+
+  it('generates a new id when a local import collides with a store copy', () => {
+    const nextId = resolveLocalThemeInstallId(
+      'theme-1',
+      makeCustomTheme({ id: 'theme-1', name: 'Store', installedFromStore: true }),
+      false,
+      false,
+    );
+    expect(nextId).not.toBe('theme-1');
+  });
+
+  it('keeps the id when replacing an existing local copy', () => {
+    expect(
+      resolveLocalThemeInstallId(
+        'theme-1',
+        makeCustomTheme({ id: 'theme-1', name: 'Local' }),
+        false,
+        false,
+      ),
+    ).toBe('theme-1');
+  });
+});
+
 describe('filterThemesByMode', () => {
-  const downloaded = makeCustomTheme({ id: 'store-1', name: 'Store Theme', isEditable: false });
-  const custom = makeCustomTheme({ id: 'custom-1', name: 'Custom Theme', isEditable: true });
+  const storeTheme = makeCustomTheme({
+    id: 'store-1',
+    name: 'Store Theme',
+    installedFromStore: true,
+  });
+  const communityTheme = makeCustomTheme({
+    id: 'community-1',
+    name: 'Community Theme',
+    installedFromCommunity: true,
+  });
+  const localTheme = makeCustomTheme({ id: 'local-1', name: 'Local Theme' });
+  const fileImport = makeCustomTheme({
+    id: 'file-1',
+    name: 'Imported Theme',
+    installedFromStore: false,
+    isEditable: false,
+  });
 
   it('returns all themes in all mode', () => {
-    expect(filterThemesByMode([downloaded, custom], 'all')).toEqual([downloaded, custom]);
+    expect(filterThemesByMode([storeTheme, localTheme], 'all')).toEqual([storeTheme, localTheme]);
   });
 
-  it('returns only non-editable themes in downloaded mode', () => {
-    expect(filterThemesByMode([downloaded, custom], 'downloaded')).toEqual([downloaded]);
+  it('returns store and community themes in downloaded mode', () => {
+    expect(
+      filterThemesByMode([storeTheme, communityTheme, localTheme, fileImport], 'downloaded'),
+    ).toEqual([storeTheme, communityTheme]);
   });
 
-  it('returns only editable themes in custom mode', () => {
-    expect(filterThemesByMode([downloaded, custom], 'custom')).toEqual([custom]);
+  it('returns local/file themes in custom mode', () => {
+    expect(
+      filterThemesByMode([storeTheme, communityTheme, localTheme, fileImport], 'custom'),
+    ).toEqual([localTheme, fileImport]);
+  });
+
+  it('isDownloadedTheme is the inverse of isLocalCustomTheme for known sources', () => {
+    expect(isDownloadedTheme(storeTheme)).toBe(true);
+    expect(isLocalCustomTheme(storeTheme)).toBe(false);
+    expect(isDownloadedTheme(localTheme)).toBe(false);
+    expect(isLocalCustomTheme(localTheme)).toBe(true);
   });
 });
 

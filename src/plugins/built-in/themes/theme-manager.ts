@@ -23,6 +23,7 @@ import {
   type ThemePageSyncInput,
 } from "@/seqta/utils/patchThemeImagesPageContext";
 import { verboseDebug, verboseInfo } from "@/utils/verboseLog";
+import { resolveLocalThemeInstallId } from "@/interface/utils/themeListFilters";
 import {
   clearThemeRuntime,
   injectThemeDom,
@@ -704,6 +705,15 @@ export class ThemeManager {
       const fromStore = meta?.fromStore ?? false;
       const fromCommunity = meta?.fromCommunity ?? false;
       const serverUpdatedAtSec = meta?.serverUpdatedAtSec;
+      const isLocalInstall = !fromStore && !fromCommunity;
+
+      const existingTheme = (await localforage.getItem(themeData.id)) as CustomTheme | null;
+      const themeId = resolveLocalThemeInstallId(
+        themeData.id,
+        existingTheme,
+        fromStore,
+        fromCommunity,
+      );
 
       // Handle cover image (optional)
       let coverImageBlob = null;
@@ -740,17 +750,17 @@ export class ThemeManager {
           .filter((img) => img !== null) ?? [];
 
       const theme: LoadedCustomTheme = {
-        id: themeData.id,
+        id: themeId,
         name: themeData.name,
         description: themeData.description || "",
-        webURL: themeData.id,
+        webURL: themeId,
         coverImage: coverImageBlob,
         CustomImages: images,
         CustomCSS: themeData.CustomCSS || "",
         defaultColour: themeData.defaultColour || "rgba(0, 123, 255, 1)",
         CanChangeColour: themeData.CanChangeColour ?? true,
         allowBackgrounds: true,
-        isEditable: false,
+        isEditable: isLocalInstall,
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
         installedFromStore: fromStore,

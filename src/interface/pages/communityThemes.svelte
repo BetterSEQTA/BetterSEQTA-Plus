@@ -34,7 +34,7 @@
   } from "@/seqta/utils/customThemes/buildThemeUploadFormData";
   import type { CustomThemeOwner, CustomThemeFile } from "@/seqta/utils/customThemes/types";
   import type { LoadedCustomTheme } from "@/types/CustomThemes";
-  import { consumeOpenCommunityThemeSubmit, OPEN_COMMUNITY_SUBMIT_EVENT } from "@/seqta/utils/openCommunityThemeSubmit";
+  import { isLocalCustomTheme } from "@/interface/utils/themeListFilters";
 
   let {
     searchTerm,
@@ -138,7 +138,7 @@
 
   async function loadEditableThemes() {
     const all = await themeManager.getAvailableThemes();
-    editableThemes = all.filter((t) => t.isEditable === true) as LoadedCustomTheme[];
+    editableThemes = all.filter(isLocalCustomTheme) as LoadedCustomTheme[];
   }
 
   async function openDetail(theme: CustomThemeOwner) {
@@ -219,7 +219,7 @@
         payload = mergeUploadPayload(await buildUploadPartsFromZipFile(selectedZipFile), submitNotes);
       } else if (selectedLocalThemeId) {
         const local = (await themeManager.getTheme(selectedLocalThemeId)) as LoadedCustomTheme | null;
-        if (!local || !local.isEditable) throw new Error("Select a custom theme to submit");
+        if (!local || !isLocalCustomTheme(local)) throw new Error("Select a custom theme to submit");
         payload = mergeUploadPayload(await buildUploadPartsFromLocalTheme(local), submitNotes);
       } else {
         throw new Error("Choose a ZIP file or a custom theme");

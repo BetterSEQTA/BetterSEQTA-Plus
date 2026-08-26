@@ -293,6 +293,12 @@
       </span>
     </a>
 
+    <button
+      onclick={submitTheme}
+      class="mt-3 w-full rounded-xl bg-zinc-900 px-4 py-3 text-[13px] font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+      Save Theme
+    </button>
+
     <Divider />
 
     <div>
@@ -424,11 +430,5 @@
     ] as SettingItem[] as setting}
       {@render settingItem(setting)}
     {/each}
-    
-    <button
-      onclick={submitTheme}
-      class="w-full px-4 py-2 mt-3 text-[13px] dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50">
-      Save Theme
-    </button>
   </div>
 </div>
