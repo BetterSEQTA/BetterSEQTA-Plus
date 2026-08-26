@@ -3,6 +3,7 @@
   import type { Component } from 'svelte'
   import { animate } from 'motion';
   import { delay } from '@/seqta/utils/delay.ts'
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState.ts'
 
   const { hidePicker, standalone = false, savePresets = true, customOnChange = null, customState = null } = $props<{
     hidePicker?: () => void,
@@ -95,7 +96,7 @@
 </script>
 
 {#if standalone}
-  <div class="h-auto overflow-clip rounded-xl">
+  <div class="h-auto overflow-clip rounded-xl {$settingsState.DarkMode ? 'dark' : ''}">
     {#if pickerReady && ReactAdapter && ColourPickerEl}
       <ReactAdapter customOnChange={customOnChange} customState={customState} savePresets={savePresets} el={ColourPickerEl} />
     {/if}
@@ -104,7 +105,7 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={background}
-    class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full shadow-2xl cursor-pointer bg-black/20 border border-[#DDDDDD]/30 dark:border-[#38373D]/30"
+    class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full shadow-2xl cursor-pointer bg-black/20 border border-[#DDDDDD]/30 dark:border-[#38373D]/30 {$settingsState.DarkMode ? 'dark' : ''}"
     onclick={handleBackgroundClick}
     onkeydown={(e) => { if (e.key === 'Enter') handleBackgroundClick(e as unknown as MouseEvent) }}
   >
