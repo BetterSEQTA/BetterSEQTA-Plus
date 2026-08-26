@@ -18,13 +18,28 @@ function toHexByte(value: number): string {
 }
 
 function createColor(channels: ColorChannels) {
+  const hex = () =>
+    `#${toHexByte(channels.r)}${toHexByte(channels.g)}${toHexByte(channels.b)}`.toUpperCase();
+
   const color = {
     red: () => clampByte(channels.r),
     green: () => clampByte(channels.g),
     blue: () => clampByte(channels.b),
-    alpha: () => clampAlpha(channels.a),
-    hex: () =>
-      `#${toHexByte(channels.r)}${toHexByte(channels.g)}${toHexByte(channels.b)}`,
+    hex,
+    lightness: () => {
+      const r = channels.r / 255;
+      const g = channels.g / 255;
+      const b = channels.b / 255;
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      return ((max + min) / 2) * 100;
+    },
+    string: () => {
+      if (channels.a < 1) {
+        return `rgba(${clampByte(channels.r)}, ${clampByte(channels.g)}, ${clampByte(channels.b)}, ${clampAlpha(channels.a)})`;
+      }
+      return hex();
+    },
   };
 
   return {

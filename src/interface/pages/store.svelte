@@ -54,6 +54,7 @@
   let displayTheme = $state<Theme | null>(null);
   let currentThemes = $state<string[]>([]);
   let selectedThemeId = $state('');
+  let installedThemeColors = $state<Record<string, string>>({});
   
   let error = $state<string | null>(null);
   let fetchAttempt = $state(0);
@@ -76,6 +77,9 @@
     const themes = await themeManager.getAvailableThemes();
     currentThemes = themes.filter(theme => theme !== null).map(theme => theme.id);
     selectedThemeId = themeManager.getSelectedThemeId() || '';
+    installedThemeColors = Object.fromEntries(
+      themes.filter((theme) => theme != null).map((theme) => [theme.id, theme.defaultColour]),
+    );
   };
 
   const setDisplayTheme = (theme: Theme | null) => {
@@ -313,6 +317,7 @@
               isLoggedIn={cloudLoggedIn}
               onRequestSignIn={() => (showSignInOverlay = true)}
               {selectedThemeId}
+              {installedThemeColors}
               onInstall={async (themeId: string) => {
                 if (displayTheme) await installThemeFromStore(themeId, displayTheme);
               }}

@@ -31,13 +31,17 @@
           : clearTheme ? 'Clear Background' : 'No Background Selected'}
       </button>
     {/if}
-    <div class="relative w-full">
-      <button
-        onclick={() => editMode = !editMode}
-        class="absolute top-0 right-0 z-10 px-2 h-8 text-lg rounded-xl bg-zinc-100 dark:bg-zinc-700">
-        <span class="mr-2">{editMode ? 'Done' : 'Edit'}</span>
-        <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
-      </button>
+    <div class="w-full">
+      {#if showThemes || showBackgrounds}
+        <div class="mb-3 flex justify-end">
+          <button
+            onclick={() => editMode = !editMode}
+            class="inline-flex h-8 items-center rounded-xl bg-zinc-100 px-3 text-lg dark:bg-zinc-700">
+            <span class="mr-2">{editMode ? 'Done' : 'Remove'}</span>
+            <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
+          </button>
+        </div>
+      {/if}
 
       {#if showBackgrounds}
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />

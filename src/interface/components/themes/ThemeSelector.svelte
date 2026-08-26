@@ -171,10 +171,12 @@
   const visibleThemes = $derived(
     themes ? filterThemesByMode(themes.themes, listMode) : [],
   );
+
+  const useTwoColumnLayout = $derived(listMode === 'downloaded' || listMode === 'custom');
 </script>
 
 <div
-  class="pt-5 mb-1 w-full max-w-lg mx-auto"
+  class="mb-1 w-full {useTwoColumnLayout ? '' : 'max-w-lg mx-auto'}"
   role="list"
   tabindex="-1"
   ondragover={handleDragOver}
@@ -196,7 +198,7 @@
       </div>
     </div>
   </div>
-  <div class="flex flex-col gap-2 px-2">
+  <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
     {#if themes}
       {#each visibleThemes as theme (theme.id)}
         <button
@@ -268,7 +270,7 @@
     {/if}
 
     {#if tempTheme}
-      <div class="flex justify-center place-items-center w-full bg-gray-200 rounded-xl animate-pulse dark:bg-zinc-700/50 aspect-theme">
+      <div class="flex justify-center place-items-center w-full bg-gray-200 rounded-xl animate-pulse dark:bg-zinc-700/50 aspect-theme {useTwoColumnLayout ? 'col-span-2' : ''}">
         <svg class="w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -277,7 +279,7 @@
     {/if}
 
     {#if themes && visibleThemes.length === 0 && !tempTheme}
-      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center">
+      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center {useTwoColumnLayout ? 'col-span-2' : ''}">
         {#if listMode === 'custom'}
           <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
             No custom themes yet
@@ -342,30 +344,30 @@
     {/if}
 
     {#if themes && ((showNavigation && visibleThemes.length > 0) || (listMode === 'custom' && visibleThemes.length > 0) || (listMode === 'downloaded' && visibleThemes.length > 0))}
-      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
+      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600 {useTwoColumnLayout ? 'col-span-2' : ''}"></div>
 
       {#if listMode === 'custom'}
         <button
           onclick={() => void openThemeCreator()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white {useTwoColumnLayout ? 'col-span-2' : ''}"
         >
           <span class="text-xl font-IconFamily">&#xec60;</span>
           <span class="ml-2">Create theme</span>
         </button>
 
-        <a href="https://docs.betterseqta.org/theme-creation/" class="block w-full cursor-pointer">
-          <div class="flex flex-col justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800">
-            <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
-            <div class="text-lg font-bold text-center">
-              Got a Theme Idea?
-              <p class="text-base font-light text-zinc-600 dark:text-zinc-400">Transform it into a stunning theme!</p>
-            </div>
-          </div>
+        <a
+          href="https://docs.betterseqta.org/theme-creation/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 {useTwoColumnLayout ? 'col-span-2' : ''}"
+        >
+          <span class="text-xl font-IconFamily">{'\uecb3'}</span>
+          <span class="ml-2">View theme creation docs</span>
         </a>
       {:else if listMode === 'downloaded'}
         <button
           onclick={() => void openStorePage()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white {useTwoColumnLayout ? 'col-span-2' : ''}"
         >
           <span class="text-xl font-IconFamily">&#xecc5;</span>
           <span class="ml-2">Theme Store</span>

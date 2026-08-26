@@ -1,6 +1,11 @@
 import type { CustomTheme } from '@/types/CustomThemes';
 import type { Theme } from '@/interface/types/Theme';
-import { filterThemesByMode, isStoreThemeInstalled } from './themeListFilters';
+import {
+  filterThemesByMode,
+  getThemeApplyButtonStyles,
+  isStoreThemeInstalled,
+  resolveStoreVariantAccentColor,
+} from './themeListFilters';
 
 function makeCustomTheme(overrides: Partial<CustomTheme> & Pick<CustomTheme, 'id' | 'name'>): CustomTheme {
   return {
@@ -64,5 +69,38 @@ describe('isStoreThemeInstalled', () => {
       flavours: [{ id: 'flavour-1', name: 'Dark', accent_color: '#000', cover_image: '' }],
     });
     expect(isStoreThemeInstalled(theme, ['other-theme'])).toBe(false);
+  });
+});
+
+describe('resolveStoreVariantAccentColor', () => {
+  it('prefers installed theme colour for the variant id', () => {
+    const theme = makeStoreTheme({
+      id: 'master-1',
+      name: 'Master',
+      flavours: [{ id: 'flavour-1', name: 'Dark', accent_color: '#111111', cover_image: '' }],
+    });
+    expect(resolveStoreVariantAccentColor(theme, 'flavour-1', { 'flavour-1': '#ff0000' })).toBe('#ff0000');
+  });
+
+  it('falls back to flavour accent when not installed locally', () => {
+    const theme = makeStoreTheme({
+      id: 'master-1',
+      name: 'Master',
+      flavours: [{ id: 'flavour-1', name: 'Dark', accent_color: '#112233', cover_image: '' }],
+    });
+    expect(resolveStoreVariantAccentColor(theme, 'flavour-1')).toBe('#112233');
+  });
+});
+
+describe('getThemeApplyButtonStyles', () => {
+  it('uses the theme accent as the apply button background', () => {
+    const styles = getThemeApplyButtonStyles('#ff0000');
+    expect(styles.apply).toContain('background-color: #FF0000');
+  });
+
+  it('uses a muted version of the accent for the applied state', () => {
+    const styles = getThemeApplyButtonStyles('#ff0000');
+    expect(styles.applied).toContain('background-color:');
+    expect(styles.applied).toContain('color: #FF0000');
   });
 });

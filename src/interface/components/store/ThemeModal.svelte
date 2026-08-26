@@ -9,6 +9,10 @@ flavourCarouselImageUrl,
 masterCarouselImageUrl,
 masterGridDisplayDownloadCount,
 } from '@/interface/utils/themeStoreFlavours'
+import {
+getThemeApplyButtonStyles,
+resolveStoreVariantAccentColor,
+} from '@/interface/utils/themeListFilters'
 let {
 theme,
 currentThemes,
@@ -23,6 +27,7 @@ toggleFavorite,
 isLoggedIn,
 onRequestSignIn,
 selectedThemeId = '',
+installedThemeColors = {},
 } = $props<{
 theme: Theme | null
 currentThemes: string[]
@@ -38,7 +43,16 @@ toggleFavorite?: (theme: Theme) => void
 isLoggedIn?: boolean
 onRequestSignIn?: () => void
 selectedThemeId?: string
+installedThemeColors?: Record<string, string>
 }>()
+function variantApplyStyles(variantId: string) {
+if (!theme) {
+return getThemeApplyButtonStyles(undefined)
+}
+return getThemeApplyButtonStyles(
+resolveStoreVariantAccentColor(theme, variantId, installedThemeColors),
+)
+}
 const modalDisplayDownloadCount = $derived.by(() => {
 const t = theme
 if (!t) return 0
@@ -110,7 +124,7 @@ $effect(() => {
 if (displayTheme && modalElement) {
 animate(
 modalElement,
-{ y: [500, 0], opacity: [0, 1] },
+{ y: [16, 0], opacity: [0, 1], scale: [0.98, 1] },
 {
 type: 'spring',
 stiffness: 150,
@@ -122,7 +136,7 @@ damping: 20,
 const hideModal = (relatedTheme = null) => {
 animate(
 modalElement,
-{ y: [10, 500], opacity: [1, 0] },
+{ y: [0, 16], opacity: [1, 0], scale: [1, 0.98] },
 {
 type: 'spring',
 stiffness: 150,
@@ -170,7 +184,7 @@ else await runRemove(theme.id)
 }
 </script>
 <div
-class="flex fixed inset-0 z-50 justify-center items-end bg-black/70 backdrop-blur-sm"
+class="flex fixed inset-0 z-50 items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6"
 onclick={(e) => {
 if (e.target === e.currentTarget) hideModal()
 }}
@@ -183,7 +197,7 @@ transition:fade
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 bind:this={modalElement}
-class="w-full max-w-[600px] h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-y-auto overflow-x-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-auto transition-colors duration-200"
+class="flex w-full max-w-[600px] h-fit max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-black/30 dark:border-zinc-700 dark:bg-zinc-800 cursor-auto transition-colors duration-200"
 onclick={(e) => e.stopPropagation()}
 onkeydown={(e) => e.stopPropagation()}
 role="dialog"
@@ -191,7 +205,7 @@ aria-modal="true"
 tabindex="-1"
 >
 {#if theme}
-<div class="relative h-auto">
+<div class="relative flex max-h-[calc(100dvh-3rem)] flex-col overflow-y-auto overflow-x-hidden p-5 pb-8">
 <div class="absolute top-0 right-0 flex gap-1 items-center">
 <button
 type="button"
@@ -314,7 +328,8 @@ class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11re
 type="button"
 onclick={(e) => { e.stopPropagation(); void runApply(theme.id) }}
 disabled={installingId !== null}
-class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-70"
+style={variantApplyStyles(theme.id).apply}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg hover:brightness-90 disabled:opacity-70"
 >
 Apply
 </button>
@@ -383,7 +398,8 @@ class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11re
 type="button"
 onclick={(e) => { e.stopPropagation(); scrollHeroToFlavourIndex(flavourIdx); void runApply(f.id) }}
 disabled={installingId !== null}
-class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-70"
+style={variantApplyStyles(f.id).apply}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg hover:brightness-90 disabled:opacity-70"
 >
 Apply
 </button>
@@ -450,7 +466,8 @@ aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
 <button
 type="button"
 disabled
-class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-emerald-700 rounded-lg dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/50 opacity-90"
+style={variantApplyStyles(theme.id).applied}
+class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] rounded-lg opacity-90"
 >
 Applied
 </button>
@@ -459,7 +476,8 @@ Applied
 type="button"
 onclick={() => runApply(theme.id)}
 disabled={installingId !== null}
-class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+style={variantApplyStyles(theme.id).apply}
+class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] rounded-lg transition-all duration-200 hover:brightness-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-70"
 >
 {#if installingId === theme.id}
 <svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -500,11 +518,11 @@ class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-bla
 {/if}
 </div>
 {#if relatedThemes.length > 0}
-<div class="my-8 border-b border-zinc-200 dark:border-zinc-700"></div>
+<div class="pt-6 mt-6 border-t border-zinc-200 dark:border-zinc-700"></div>
 <h3 class="mb-4 text-lg font-bold text-zinc-900 dark:text-white">
 Related themes
 </h3>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<div class="grid grid-cols-1 gap-4 pb-2 sm:grid-cols-2">
 {#each relatedThemes as relatedTheme (relatedTheme.id)}
 <button
 type="button"
@@ -526,7 +544,7 @@ class="relative z-0 hover:z-20 w-full cursor-pointer rounded-xl overflow-hidden 
 {/if}
 </div>
 {:else}
-<div class="flex justify-center items-center h-full text-zinc-600 dark:text-zinc-300">
+<div class="flex justify-center items-center p-8 text-zinc-600 dark:text-zinc-300">
 <button
 type="button"
 class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
