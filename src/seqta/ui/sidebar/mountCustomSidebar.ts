@@ -120,10 +120,11 @@ function onCustomSidebarCaptureClick(event: MouseEvent) {
   const li = target.closest("li.item[data-key]");
   if (!(li instanceof HTMLElement) || !root.contains(li)) return;
 
-  // Already-open folder chrome (renders its own `.sub`) — ignore; use Back.
+  // Open folder header row only — leaf clicks inside `.sub` must still navigate.
   if (
     li.classList.contains("hasChildren") &&
-    li.querySelector(":scope > .sub")
+    li.querySelector(":scope > .sub") &&
+    !target.closest(".sub")
   ) {
     return;
   }

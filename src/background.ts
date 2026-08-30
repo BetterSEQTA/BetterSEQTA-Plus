@@ -19,6 +19,10 @@ import {
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
 } from "./background/calendarBackground";
+import {
+  handleAiModCreatorMessage,
+  registerAiModCreatorStreaming,
+} from "./background/aiModCreator";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -525,6 +529,13 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   cloudFavorite: handleCloudFavorite,
   cloudSettingsUpload: handleCloudSettingsUpload,
   cloudSettingsDownload: handleCloudSettingsDownload,
+  aiModCreator: (request, sendResponse, sender) =>
+    handleAiModCreatorMessage(
+      request,
+      sender ?? {},
+      sendResponse,
+      isTrustedSender,
+    ),
   cloudSettingsPoll: () => {
     void runCloudSettingsPoll();
     return false;
@@ -573,6 +584,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
 
 registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
 registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
+registerAiModCreatorStreaming(isTrustedSender);
 initCalendarBackground();
 
 browser.runtime.onMessage.addListener(

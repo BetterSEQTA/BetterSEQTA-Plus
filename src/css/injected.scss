@@ -772,6 +772,11 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     background-image: none !important;
   }
 
+  > #bsplus-sidebar-root.drilling .sub ul .bsplus-sidebar-item,
+  > #bsplus-sidebar-root.drilling .sub ul .bsplus-sidebar-item * {
+    pointer-events: auto !important;
+  }
+
   > #bsplus-sidebar-root > li.hasChildren.bsplus-active > label,
   > #bsplus-sidebar-root.drilling > li.hasChildren > label {
     pointer-events: none !important;

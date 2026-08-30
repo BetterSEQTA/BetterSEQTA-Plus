@@ -326,12 +326,22 @@ class SidebarState {
     // SEQTA rewrites `.active` on the route change.
     if (this.isDrilling) {
       this.enterFrameKey = null;
-      restoreCustomMenuActive();
+      clearNativeDrillActive(menu);
     }
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {
       native.click();
+      // Inside a drill panel, SEQTA native rows may no-op if their folder is not
+      // `.active` — fall back to hash routing for standard (non-BS+) pages only.
+      if (
+        this.isDrilling &&
+        item.path &&
+        !item.betterseqta &&
+        getPagePathFromHash() !== item.path
+      ) {
+        location.hash = `?page=${item.path}`;
+      }
       return;
     }
 
