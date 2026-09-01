@@ -12,6 +12,12 @@ const STORAGE_KEYS = {
   user: "bsplus_user",
 } as const;
 
+export type CloudBadge = {
+  key: string;
+  label: string;
+  awarded_at?: number;
+};
+
 export type CloudUser = {
   id: string;
   email?: string;
@@ -20,6 +26,9 @@ export type CloudUser = {
   pfpUrl?: string;
   pfpHash?: string | null;
   admin_level?: number;
+  signup_number?: number | null;
+  badges?: CloudBadge[];
+  is_founding_2500?: boolean;
 };
 
 export type CloudAuthState = {

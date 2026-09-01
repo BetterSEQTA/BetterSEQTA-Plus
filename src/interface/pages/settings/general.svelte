@@ -173,6 +173,28 @@
     return !q || parts.some((part) => part?.toLowerCase().includes(q));
   };
 
+  const founderBadgeSetting = {
+    title: "Titlebar Founder Badge",
+    description:
+      "Show your BetterSEQTA Cloud founder badge next to your name in the SEQTA titlebar",
+  } as const;
+
+  const showCloudCardHeader = $derived(
+    matchesSearch("BetterSEQTA Cloud", "Account & sync"),
+  );
+
+  const showFounderBadgeSetting = $derived(
+    matchesSearch(
+      founderBadgeSetting.title,
+      founderBadgeSetting.description,
+      "founder badge",
+      "titlebar",
+      "founder",
+    ),
+  );
+
+  const showCloudAccountCard = $derived(showCloudCardHeader || showFounderBadgeSetting);
+
   const pluginHit = (plugin: Plugin) =>
     matchesSearch(plugin.name, plugin.description, ...Object.values(plugin.settings).flatMap((s) => [s.title, s.description]));
 
@@ -214,9 +236,10 @@
       props: {}
     })}
 
-    {#if matchesSearch("BetterSEQTA Cloud", "Account & sync")}
+    {#if showCloudAccountCard}
     <div class="border-none">
       <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+        {#if showCloudCardHeader}
         <div class="flex justify-between items-center px-5 py-4">
           <div class="pr-4">
             <h2 class="text-xl font-bold">BetterSEQTA Cloud</h2>
@@ -226,9 +249,28 @@
             <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
           </div>
         </div>
+        {/if}
         {#if cloudState.isLoggedIn}
-          <div class="px-3 pb-3">
+          <div class="px-3 pb-3" class:pt-3={!showCloudCardHeader}>
+            {#if showCloudCardHeader}
             <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
+            {/if}
+            {#if showFounderBadgeSetting}
+            {@render Setting({
+              title: founderBadgeSetting.title,
+              description: founderBadgeSetting.description,
+              id: 17,
+              Component: Switch,
+              props: {
+                state: $settingsState.showTitlebarFounderBadge !== false,
+                onChange: (isOn: boolean) => (settingsState.showTitlebarFounderBadge = isOn),
+              },
+            })}
+            {/if}
+          </div>
+        {:else if showFounderBadgeSetting}
+          <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
+            Sign in to BetterSEQTA Cloud to manage your titlebar founder badge.
           </div>
         {/if}
       </div>

@@ -3844,18 +3844,320 @@ div.day-empty {
 .userInfo {
   display: flex;
   align-items: center;
-  padding-top: 4px;
+  padding: 4px 0;
 }
 .userInfoText {
   text-align: end;
+  padding: 2px 0;
 }
 .userInfoName {
   margin: 0 !important;
   font-size: 20px;
   font-weight: 700;
+  line-height: 1.2;
 }
 .userInfoCode {
   margin: 0 !important;
+  line-height: 1.2;
+}
+.userInfoNameRow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.userInfoDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.userInfoHouseWrap {
+  display: inline-block;
+  margin: 0 8px;
+  text-align: center;
+}
+.userInfoHouseWrap .userInfohouse {
+  display: block;
+  margin: 0 !important;
+  padding: 0 6px !important;
+  box-sizing: border-box;
+}
+.userInfoHouseWrap .bsplus-founder-badge-slot {
+  width: 100%;
+  margin-top: 4px;
+}
+.userInfoHouseWrap .bsplus-founder-badge-slot[hidden],
+.bsplus-founder-badge-slot[hidden] {
+  display: none;
+}
+.bsplus-founder-badge--titlebar {
+  display: block;
+  width: 100%;
+  border-radius: 5px;
+}
+.bsplus-founder-badge--titlebar .bsplus-founder-badge__glass,
+.bsplus-founder-badge--titlebar .bsplus-founder-badge__content {
+  width: 100%;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+.bsplus-founder-badge--titlebar .bsplus-founder-badge__content {
+  justify-content: center;
+  padding: 0 6px;
+  gap: 0;
+  min-height: 0;
+  height: auto;
+  font-size: 15px;
+  line-height: normal;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+.bsplus-founder-badge--titlebar .bsplus-founder-badge__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+.bsplus-founder-badge--titlebar:focus-visible .bsplus-founder-badge__content {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 0 0 2px var(--theme-primary, #f97316),
+    0 0 0 4px rgba(249, 115, 22, 0.35);
+}
+.legacy-root .bsplus-founder-badge,
+.legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn {
+  background: transparent !important;
+}
+.legacy-root .bsplus-founder-badge::after,
+.legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn::after {
+  display: none !important;
+  content: none !important;
+}
+.legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn--ghost {
+  background: color-mix(in srgb, var(--text-primary, #111) 8%, transparent) !important;
+}
+.legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn--ghost:hover {
+  background: color-mix(in srgb, var(--text-primary, #111) 14%, transparent) !important;
+}
+.legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn--primary {
+  background: var(--better-main, #3b82f6) !important;
+}
+.bsplus-founder-badge {
+  position: relative;
+  display: inline-flex;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  vertical-align: middle;
+  cursor: pointer;
+  font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
+  transition: transform 0.2s ease;
+  white-space: nowrap;
+}
+.bsplus-founder-badge--hero {
+  border-radius: 12px;
+}
+.bsplus-founder-badge:hover {
+  transform: scale(1.02);
+}
+.bsplus-founder-badge:focus {
+  outline: none;
+}
+.bsplus-founder-badge:focus-visible .bsplus-founder-badge__glass {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 2px 8px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 0 0 2px var(--theme-primary, #f97316),
+    0 0 0 4px rgba(249, 115, 22, 0.35);
+}
+.bsplus-founder-badge__glass {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--badge-base, #1e293b);
+}
+.bsplus-founder-badge__blobs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 68% at 18% 42%, var(--badge-blob-a), transparent 72%),
+    radial-gradient(ellipse 68% 62% at 82% 58%, var(--badge-blob-b), transparent 70%),
+    radial-gradient(ellipse 64% 56% at 50% 88%, var(--badge-blob-c), transparent 68%);
+  filter: blur(1px);
+}
+.bsplus-founder-badge__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  min-height: 22px;
+  border-radius: inherit;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: 0.01em;
+  font-family: inherit;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 2px 8px rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+.bsplus-founder-badge--hero .bsplus-founder-badge__content {
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: auto;
+  font-size: 14px;
+  line-height: 1.2;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.2);
+}
+.bsplus-founder-badge--hero .bsplus-founder-badge__glass {
+  background: transparent;
+}
+.bsplus-founder-badge__icon {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  opacity: 0.95;
+}
+.bsplus-founder-badge--hero .bsplus-founder-badge__icon {
+  width: 20px;
+  height: 20px;
+}
+.bsplus-founder-badge-hero {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin: 0 auto;
+  width: 90%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  background: var(--badge-base, #0f172a);
+}
+.bsplus-founder-badge-hero__blobs {
+  position: absolute;
+  inset: -22%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 62% at 18% 34%, var(--badge-blob-a), transparent 76%),
+    radial-gradient(ellipse 68% 58% at 82% 42%, var(--badge-blob-b), transparent 74%),
+    radial-gradient(ellipse 74% 64% at 52% 88%, var(--badge-blob-c), transparent 76%),
+    radial-gradient(ellipse 78% 68% at 48% 52%, var(--badge-blob-b), transparent 78%);
+  filter: blur(10px);
+}
+.bsplus-founder-badge-hero__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 34%, rgba(0, 0, 0, 0.62) 100%);
+  opacity: 0.84;
+}
+.bsplus-founder-badge-hero__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.bsplus-founder-badge-hero__stage .bsplus-founder-badge {
+  pointer-events: auto;
+}
+.whatsnewTextContainer.bsplus-founder-badge-body p {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+.whatsnewTextContainer.bsplus-founder-badge-body a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.bsplus-founder-badge-signup {
+  margin: 0 0 1rem !important;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  font-size: 1rem !important;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.bsplus-founder-badge-header {
+  align-items: center;
+  text-align: center;
+
+  h1,
+  p {
+    width: 100%;
+  }
+}
+.bsplus-founder-badge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--background-primary, #fff),
+    0 0 0 4px var(--better-main, #3b82f6);
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn--ghost {
+  background: color-mix(in srgb, var(--text-primary, #111) 8%, transparent);
+  color: var(--text-primary, #111);
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn--ghost:hover {
+  background: color-mix(in srgb, var(--text-primary, #111) 14%, transparent);
+  transform: scale(1.02);
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn--primary {
+  background: var(--better-main, #3b82f6);
+  color: #fff;
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn--primary:hover {
+  filter: brightness(1.06);
+  transform: scale(1.02);
+}
+.bsplus-founder-badge-actions .bsplus-cal-btn:active {
+  transform: scale(0.98);
 }
 .userInfosvg {
   width: 50px;
@@ -3898,6 +4200,7 @@ div.day-empty {
   color: var(--text-primary);
   background: var(--auto-background);
   outline: solid 1px black;
+  text-align: center;
 }
 .DarkLightButton {
   right: 145px !important;

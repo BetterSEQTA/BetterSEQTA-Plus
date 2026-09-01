@@ -283,9 +283,14 @@
 
   const applyDestination = (destination: SettingsDestination) => {
     activePage = destination.page;
-    if (destination.page === "settings" && destination.section) {
-      settingsSearch = "";
-      activeSection = destination.section;
+    if (destination.page === "settings") {
+      if (destination.section) {
+        settingsSearch = "";
+        activeSection = destination.section;
+      }
+      if (destination.search) {
+        settingsSearch = destination.search;
+      }
     } else if (destination.page === "themes" && destination.view) {
       activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
