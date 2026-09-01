@@ -17,6 +17,16 @@
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
 
+.bsplus-login-active .login {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.bsplus-login-active,
+body.bsplus-login-active {
+  overflow: hidden !important;
+}
+
 :root {
   background: var(--better-main) !important;
   --navy: #1a1a1a !important;

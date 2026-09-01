@@ -653,6 +653,18 @@
     }
   })}
 
+  {#if $settingsState.onoff}
+  {@render Setting({
+    title: "Custom login screen",
+    description: "Use BetterSEQTA's themed login portal. Turn off to keep your school's default SEQTA login page.",
+    id: 16,
+    Component: Switch,
+    props: {
+      state: $settingsState.customLoginPortal !== false,
+      onChange: (isOn: boolean) => settingsState.customLoginPortal = isOn
+    }
+  })}
+  {/if}
   {#if $settingsState.devMode && matchesSearch(
     "Developer Mode",
     "Verbose logging",

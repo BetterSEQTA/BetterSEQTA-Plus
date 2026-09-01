@@ -96,6 +96,8 @@ export interface SettingsState {
   // BetterSEQTA Cloud (accounts.betterseqta.org) — stored via CloudAuth, not settingsState
   /** When not `false`, automatic cloud settings sync is enabled (default-on). */
   autoCloudSettingsSync?: boolean;
+  /** When `false`, use SEQTA's default login screen instead of the BetterSEQTA portal. */
+  customLoginPortal?: boolean;
   /** When not `false`, show the Cloud founder badge in the SEQTA titlebar (default-on). */
   showTitlebarFounderBadge?: boolean;
 }
