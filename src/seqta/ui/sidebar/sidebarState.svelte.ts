@@ -37,6 +37,12 @@ function filterVisible(items: SidebarItem[]): SidebarItem[] {
   return items.filter((item) => menuItems[item.key]?.toggle !== false);
 }
 
+function ensureActive(el: Element | null | undefined) {
+  if (el instanceof HTMLElement && !el.classList.contains("active")) {
+    el.classList.add("active");
+  }
+}
+
 function resetSidebarScroll() {
   const root = document.getElementById("bsplus-sidebar-root");
   if (!(root instanceof HTMLElement)) return;
@@ -44,6 +50,48 @@ function resetSidebarScroll() {
   requestAnimationFrame(() => {
     root.scrollTop = 0;
   });
+}
+
+/**
+ * SEQTA strips `.active` from menu items after navigation. Restore the custom list
+ * state so the active subject/folder still matches the route and theme chrome.
+ */
+export function restoreCustomMenuActive() {
+  const root = document.getElementById("bsplus-sidebar-root");
+  if (!root) return;
+
+  for (const li of root.querySelectorAll("li.hasChildren")) {
+    if (!(li instanceof HTMLElement)) continue;
+    if (!li.querySelector(":scope > .sub")) continue;
+    ensureActive(li);
+  }
+
+  const activeKey = sidebarState.activeKey;
+  const drilling = sidebarState.isDrilling;
+
+  if (drilling) {
+    if (activeKey) {
+      ensureActive(
+        root.querySelector(`.sub li.item[data-key="${CSS.escape(activeKey)}"]`),
+      );
+    }
+    for (const li of root.querySelectorAll(
+      '.sub li.item[aria-current="page"]',
+    )) {
+      ensureActive(li);
+    }
+    return;
+  }
+
+  if (activeKey) {
+    ensureActive(
+      root.querySelector(`li.item[data-key="${CSS.escape(activeKey)}"]`),
+    );
+  }
+
+  for (const li of root.querySelectorAll('li.item[aria-current="page"]')) {
+    ensureActive(li);
+  }
 }
 
 /** Clear native drill state so it cannot steal pointer-events from the custom list. */
@@ -224,7 +272,9 @@ class SidebarState {
       label: item.label,
       items: filterVisible(item.children),
     };
-    const isRoot = this.visibleRootItems.some((entry) => entry.key === item.key);
+    const isRoot = this.visibleRootItems.some(
+      (entry) => entry.key === item.key,
+    );
 
     this.enterFrameKey = item.key;
     // Root folders replace the stack; nested folders append.
