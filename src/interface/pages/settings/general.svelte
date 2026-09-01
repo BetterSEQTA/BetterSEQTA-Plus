@@ -174,9 +174,8 @@
   };
 
   const founderBadgeSetting = {
-    title: "Titlebar Founder Badge",
-    description:
-      "Show your BetterSEQTA Cloud founder badge next to your name in the SEQTA titlebar",
+    title: "Titlebar founder badge",
+    description: "Show your Cloud founder badge in the SEQTA titlebar",
   } as const;
 
   const showCloudCardHeader = $derived(
@@ -270,7 +269,7 @@
           </div>
         {:else if showFounderBadgeSetting}
           <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
-            Sign in to BetterSEQTA Cloud to manage your titlebar founder badge.
+            Sign in to Cloud first.
           </div>
         {/if}
       </div>

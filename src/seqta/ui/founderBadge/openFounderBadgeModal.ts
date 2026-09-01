@@ -53,14 +53,13 @@ export function openFounderBadgeModal(
     <div class="whatsnewTextContainer bsplus-founder-badge-body" style="overflow-y: auto;">
       <p>${esc(tier.description)}</p>
       <p>
-        This badge is linked to your BetterSEQTA Cloud account at
+        Linked to your BetterSEQTA Cloud account at
         <a href="${ACCOUNTS_URL}" target="_blank" rel="noopener noreferrer">accounts.betterseqta.org</a>.
-        Your signup order is based on when you created your Cloud account and stays with you wherever you're signed in — including BetterSEQTA+.
       </p>
       ${signupLine}
       <div class="bsplus-founder-badge-actions">
         <button type="button" id="bsplus-founder-badge-settings-link" class="bsplus-cal-btn bsplus-cal-btn--ghost">
-          Open in BetterSEQTA+ settings to hide this badge
+          Hide in settings
         </button>
         <button type="button" id="bsplus-founder-badge-dismiss" class="bsplus-cal-btn bsplus-cal-btn--primary">
           Got it

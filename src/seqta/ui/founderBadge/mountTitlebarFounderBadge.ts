@@ -31,7 +31,7 @@ function renderBadgeChip(
   const chip = slot.querySelector<HTMLButtonElement>(".bsplus-founder-badge");
   if (!chip) return;
 
-  chip.setAttribute("aria-label", `${badge.label} — linked to your BetterSEQTA Cloud account`);
+  chip.setAttribute("aria-label", `${badge.label}, click for details`);
   chip.addEventListener("click", () => openFounderBadgeModal(badge, signupNumber));
 }
 
