@@ -57,6 +57,8 @@ export interface SettingsState {
   devMode?: boolean;
   /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
   verboseLogging?: boolean;
+  /** Dev-only: keep the loading overlay visible for 5 extra seconds. */
+  devDelayLoadingScreen?: boolean;
   /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
   devGhReleaseVersionOverride?: string;
   /** ISO timestamp of the last acknowledged nightly release publish time. */
@@ -96,6 +98,8 @@ export interface SettingsState {
   autoCloudSettingsSync?: boolean;
   /** When `false`, use SEQTA's default login screen instead of the BetterSEQTA portal. */
   customLoginPortal?: boolean;
+  /** When not `false`, show the Cloud founder badge in the SEQTA titlebar (default-on). */
+  showTitlebarFounderBadge?: boolean;
 }
 
 interface ToggleItem {

@@ -29,17 +29,18 @@
   const GRIP_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="5" cy="3" r="1.35" fill="currentColor"/><circle cx="11" cy="3" r="1.35" fill="currentColor"/><circle cx="5" cy="8" r="1.35" fill="currentColor"/><circle cx="11" cy="8" r="1.35" fill="currentColor"/><circle cx="5" cy="13" r="1.35" fill="currentColor"/><circle cx="11" cy="13" r="1.35" fill="currentColor"/></svg>`;
 </script>
 
-<!-- SEQTA class names (item / hasChildren / active) so theme CSS keeps matching. -->
+<!-- Keep SEQTA's structural attributes so existing themes recognize each row. -->
 <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 <li
   class="item bsplus-sidebar-item"
-  class:active={active}
+  class:bsplus-active={active}
   class:hasChildren={item.hasChildren}
   class:edit-mode={editMode}
   class:hidden-item={editMode && !visible}
   class:compact={compact}
   class:draggable={editMode}
   style:--item-colour={item.itemColour || undefined}
+  data-colour={item.itemColour || undefined}
   data-key={item.key}
   data-path={item.path ?? undefined}
   data-betterseqta={item.betterseqta ? "true" : undefined}
@@ -131,7 +132,7 @@
     color: inherit;
   }
 
-  .bsplus-sidebar-item:hover:not(.active) {
+  .bsplus-sidebar-item:hover:not(.bsplus-active) {
     background: rgba(0, 0, 0, 0.15);
   }
 
@@ -140,8 +141,8 @@
     box-shadow: 0 0 0 2px var(--theme-primary, #fff);
   }
 
-  .bsplus-sidebar-item.active:not(.hasChildren),
-  .bsplus-sidebar-item.active:not(.hasChildren):hover {
+  .bsplus-sidebar-item.bsplus-active:not(.hasChildren),
+  .bsplus-sidebar-item.bsplus-active:not(.hasChildren):hover {
     background: rgba(0, 0, 0, 0.35);
     color: #fff;
   }
@@ -250,18 +251,15 @@
 
   .colour-bar {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 3px;
-    border-radius: 8px 0 0 8px;
-    background: var(--item-colour, transparent);
-    transition: width 100ms ease;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 3px 0 var(--item-colour, transparent);
+    transition: box-shadow 100ms ease;
     pointer-events: none;
   }
 
   .bsplus-sidebar-item:hover .colour-bar,
-  .bsplus-sidebar-item.active .colour-bar {
-    width: 6px;
+  .bsplus-sidebar-item.bsplus-active .colour-bar {
+    box-shadow: inset 6px 0 var(--item-colour, transparent);
   }
 </style>

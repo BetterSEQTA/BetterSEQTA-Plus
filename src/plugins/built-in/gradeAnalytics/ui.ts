@@ -11,7 +11,8 @@ type ThemeSettingKey =
   | "DarkMode"
   | "adaptiveThemeColour"
   | "adaptiveThemeGradient"
-  | "selectedTheme";
+  | "selectedTheme"
+  | "animations";
 
 type ThemeListenerRegistration = {
   key: ThemeSettingKey;
@@ -117,7 +118,10 @@ function syncThemeFromPage(target: HTMLElement) {
 
 function syncThemeToAnalyticsUi() {
   if (shadowHost) syncThemeFromPage(shadowHost);
-  if (analyticsRoot) syncThemeFromPage(analyticsRoot);
+  if (analyticsRoot) {
+    syncThemeFromPage(analyticsRoot);
+    analyticsRoot.classList.toggle("bsplus-analytics-motion", !!settingsState.animations);
+  }
 }
 
 function clearThemeListeners() {
@@ -136,6 +140,7 @@ function watchThemeChanges() {
     "adaptiveThemeColour",
     "adaptiveThemeGradient",
     "selectedTheme",
+    "animations",
   ];
 
   const listener = () => syncThemeToAnalyticsUi();

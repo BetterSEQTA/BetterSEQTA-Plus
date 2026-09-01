@@ -136,12 +136,13 @@
     void loadPluginSettings();
   });
 
-  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel, activeSection = "general" } = $props<{
+  const { showColourPicker, showFontPicker, showDisclaimer, showCloudPanel, activeSection = "general", searchQuery = "" } = $props<{
     showColourPicker: () => void;
     showFontPicker: () => void;
     showDisclaimer: (onConfirm: () => void, onCancel: () => void, title?: string, message?: string) => void;
     showCloudPanel: () => void;
     activeSection?: string;
+    searchQuery?: string;
   }>();
 
   /** Map each plugin into the settings sidebar category that fits its purpose. */
@@ -167,6 +168,34 @@
     activeSection === "all" ||
     (pluginSectionById[pluginId] ?? "features") === activeSection;
 
+  const matchesSearch = (...parts: Array<string | undefined>) => {
+    const q = searchQuery.trim().toLowerCase();
+    return !q || parts.some((part) => part?.toLowerCase().includes(q));
+  };
+
+  const founderBadgeSetting = {
+    title: "Titlebar founder badge",
+    description: "Show your Cloud founder badge in the SEQTA titlebar",
+  } as const;
+
+  const showCloudCardHeader = $derived(
+    matchesSearch("BetterSEQTA Cloud", "Account & sync"),
+  );
+
+  const showFounderBadgeSetting = $derived(
+    matchesSearch(
+      founderBadgeSetting.title,
+      founderBadgeSetting.description,
+      "founder badge",
+      "titlebar",
+      "founder",
+    ),
+  );
+
+  const showCloudAccountCard = $derived(showCloudCardHeader || showFounderBadgeSetting);
+
+  const pluginHit = (plugin: Plugin) =>
+    matchesSearch(plugin.name, plugin.description, ...Object.values(plugin.settings).flatMap((s) => [s.title, s.description]));
 
   async function exportCloudSettingsJsonToFile() {
     const payload = await getSnapshotForUpload();
@@ -183,6 +212,7 @@
 </script>
 
 {#snippet Setting({ title, description, Component, props }: SettingsList) }
+{#if matchesSearch(title, description)}
 <div class="flex justify-between items-center px-5 py-5">
   <div class="pr-5">
     <h2 class="text-xl font-bold">{title}</h2>
@@ -192,6 +222,7 @@
      <Component {...props} />
   </div>
 </div>
+{/if}
 {/snippet}
 
 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-700">
@@ -204,8 +235,10 @@
       props: {}
     })}
 
+    {#if showCloudAccountCard}
     <div class="border-none">
       <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
+        {#if showCloudCardHeader}
         <div class="flex justify-between items-center px-5 py-4">
           <div class="pr-4">
             <h2 class="text-xl font-bold">BetterSEQTA Cloud</h2>
@@ -215,13 +248,33 @@
             <CloudHeader alwaysShowUserName onClick={showCloudPanel} />
           </div>
         </div>
+        {/if}
         {#if cloudState.isLoggedIn}
-          <div class="px-3 pb-3">
+          <div class="px-3 pb-3" class:pt-3={!showCloudCardHeader}>
+            {#if showCloudCardHeader}
             <CloudSettingsSync showDisclaimer={(onConfirm, onCancel) => showDisclaimer(onConfirm, onCancel, "Restore from cloud?", "This will replace your local settings with the cloud backup. Continue?")} />
+            {/if}
+            {#if showFounderBadgeSetting}
+            {@render Setting({
+              title: founderBadgeSetting.title,
+              description: founderBadgeSetting.description,
+              id: 17,
+              Component: Switch,
+              props: {
+                state: $settingsState.showTitlebarFounderBadge !== false,
+                onChange: (isOn: boolean) => (settingsState.showTitlebarFounderBadge = isOn),
+              },
+            })}
+            {/if}
+          </div>
+        {:else if showFounderBadgeSetting}
+          <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
+            Sign in to Cloud first.
           </div>
         {/if}
       </div>
     </div>
+    {/if}
   {/if}
 
   {#if showsSection("general")}
@@ -354,12 +407,13 @@
       {@render Setting(option)}
     {/each}
 
-    {#if !isEngage}
+    {#if !isEngage && matchesSearch("Sidebar Style", "Item Size", "Corner Radius", "Active Indicator", "Sidebar Width", "Transparency Effects", "Blur Strength")}
       <div class="border-none">
         <SidebarAppearance />
       </div>
     {/if}
 
+    {#if matchesSearch("Adaptive Theme Colour", "Soft Gradient", "Smooth colour transition")}
     <div class="border-none">
       <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
         <div class="flex justify-between items-center px-5 py-4">
@@ -402,9 +456,11 @@
         {/if}
       </div>
     </div>
+    {/if}
   {/if}
 
   {#if showsSection("general")}
+  {#if matchesSearch("Home Page Assessments", "Include Past Assessments", "Maximum Subjects", "Maximum Assessments per Subject")}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">
@@ -464,9 +520,10 @@
     </div>
   </div>
   {/if}
+  {/if}
 
   {#each pluginSettings as plugin (plugin.pluginId)}
-  {#if pluginBelongsInSection(plugin.pluginId)}
+  {#if pluginBelongsInSection(plugin.pluginId) && pluginHit(plugin)}
   <div class="border-none">
     <div class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40 {!(plugin as any).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''}">
       <!-- Always show enable toggle if disableToggle is true -->
@@ -608,8 +665,18 @@
     }
   })}
   {/if}
-
-  {#if $settingsState.devMode}
+  {#if $settingsState.devMode && matchesSearch(
+    "Developer Mode",
+    "Verbose logging",
+    "Delay loading screen",
+    "Sensitive Hider",
+    "Mock Notices",
+    "Show Privacy Notification",
+    "Show Theme of the Month",
+    "Export cloud settings JSON",
+    "API Base URL",
+    "GitHub latest version override",
+  )}
     <div class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40">
       <div class="flex justify-between items-center px-5 py-4">
         <div class="pr-4">
@@ -629,6 +696,18 @@
           <Switch
             state={$settingsState.verboseLogging ?? false}
             onChange={(isOn: boolean) => settingsState.verboseLogging = isOn}
+          />
+        </div>
+      </div>
+      <div class="flex justify-between items-center px-5 py-4">
+        <div class="pr-4">
+          <h2 class="text-xl font-bold">Delay loading screen</h2>
+          <p class="text-base text-zinc-600 dark:text-zinc-300">Keep the loading overlay visible for 5 extra seconds so you can preview canvas variants.</p>
+        </div>
+        <div>
+          <Switch
+            state={$settingsState.devDelayLoadingScreen ?? false}
+            onChange={(isOn: boolean) => settingsState.devDelayLoadingScreen = isOn}
           />
         </div>
       </div>

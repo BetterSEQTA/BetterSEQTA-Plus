@@ -16,6 +16,7 @@ import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
+import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -181,6 +182,7 @@ async function handleUserInfoAndStudentData() {
     ]);
 
     updateUserInfo(userInfo);
+    ensureTitlebarFounderBadgeMounted();
     await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
     console.error(
@@ -227,11 +229,16 @@ function updateUserInfo(info: {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          <div style="display: flex; align-items: center;">
-            <p class="userInfohouse userInfoCode" style="display: none;"></p>
-            ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+          <div class="userInfoNameRow">
+            <div class="userInfoHouseWrap">
+              <p class="userInfohouse userInfoCode" style="display: none;"></p>
+              <span class="bsplus-founder-badge-slot" hidden></span>
+            </div>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
+            </div>
           </div>
-          ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
         </div>
       </div>
     `).firstChild!,
@@ -277,6 +284,7 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
 
   houseelement.innerText = text;
   houseelement.style.display = text ? "block" : "none";
+  refreshTitlebarFounderBadge();
 }
 
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
@@ -413,12 +421,19 @@ async function addEngageUserInfo() {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
-          ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+          <div class="userInfoNameRow">
+            <span class="bsplus-founder-badge-slot" hidden></span>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+            </div>
+          </div>
         </div>
       </div>
     `).firstChild!,
   );
+
+  ensureTitlebarFounderBadgeMounted();
 
   const iconNode = stringToHTML(/* html */ `
     <div class="userInfosvgdiv tooltip" id="engage-logouttooltip-wrap">

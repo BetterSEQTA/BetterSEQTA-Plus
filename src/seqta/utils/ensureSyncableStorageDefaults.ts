@@ -30,6 +30,7 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "justupdated",
   "devMode",
   "verboseLogging",
+  "devDelayLoadingScreen",
   "hideSensitiveContent",
   "mockNotices",
   "homeUpcomingAssessmentsPerSubjectMax",

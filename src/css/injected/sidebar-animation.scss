@@ -1,20 +1,22 @@
-#menu ul:has(li.hasChildren.active) li.hasChildren.active {
+#menu ul:has(li.hasChildren:is(.active, .bsplus-active))
+  li.hasChildren:is(.active, .bsplus-active) {
   box-shadow: inset 0px 0 var(--item-colour, transparent) !important;
   background: transparent !important;
 }
 
-#menu ul:not(:has(li.hasChildren.active)) {
+#menu ul:not(:has(li.hasChildren:is(.active, .bsplus-active))) {
   overflow-y: scroll !important;
 }
 
-#menu > ul:has(li.hasChildren.active) > li::before,
-#menu > ul:has(li.hasChildren.active) > li::after,
-#menu > ul ul:has(li.hasChildren.active) > li::before,
-#menu > ul ul:has(li.hasChildren.active) > li::after,
-#menu > ul:has(li.hasChildren.active) > li > label,
-#menu > ul:has(li.hasChildren.active) > li > svg,
-#menu > ul ul:has(li.hasChildren.active) > li > label,
-#menu > ul ul:has(li.hasChildren.active) > li > svg {
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
+  /* !important beats theme animations (e.g. Beach palm-slide forwards). */
   transform: translateX(-320px) !important;
   animation: none !important;
 }
@@ -28,12 +30,13 @@
   transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#menu > ul:has(li.hasChildren.active) > li.active {
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li:is(.active, .bsplus-active) {
   background: transparent !important;
 }
 
-#menu li.hasChildren:not(.active) li .sub {
-  display: none;
+#menu li.hasChildren:not(:is(.active, .bsplus-active)) li .sub {
+  display: none; // improves performance
 }
 
 .sub .sub {
@@ -41,16 +44,42 @@
   padding-top: 2px;
 }
 
-.sub:has(ul > li.hasChildren.active) > .nav > .back {
+.sub:has(ul > li.hasChildren:is(.active, .bsplus-active)) > .nav > .back {
   display: none !important;
 }
 
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul:has(li.hasChildren.active) > li > svg,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul ul:has(li.hasChildren.active) > li > svg {
+/* Icon-only collapsed: submenu slides over narrow icons */
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > svg,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > svg {
   transform: translateX(-70px);
 }
 

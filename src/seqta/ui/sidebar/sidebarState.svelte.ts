@@ -53,12 +53,8 @@ function resetSidebarScroll() {
 }
 
 /**
- * SEQTA (and some themes) strip `.active` from `#menu li` after navigation.
- * Theme decorations and drill `.sub` chrome depend on that class on our list.
- *
- * While drilling, never re-apply route-active on root leaves — themes like Beach
- * paint palm/sand on `#menu > ul > li:not(.hasChildren).active`, and our `.sub`
- * is transparent so those decorations show through over folder contents.
+ * SEQTA strips `.active` from menu items after navigation. Restore the custom list
+ * state so the active subject/folder still matches the route and theme chrome.
  */
 export function restoreCustomMenuActive() {
   const root = document.getElementById("bsplus-sidebar-root");
@@ -251,7 +247,10 @@ class SidebarState {
 
     for (const frame of this.drillStack) {
       const folder = cursor.find((item) => item.key === frame.key);
-      if (!folder?.hasChildren) break;
+      if (!folder?.hasChildren) {
+        next.push(...this.drillStack.slice(next.length));
+        break;
+      }
       const children = filterVisible(folder.children);
       next.push({ key: folder.key, label: folder.label, items: children });
       cursor = children;
@@ -273,7 +272,9 @@ class SidebarState {
       label: item.label,
       items: filterVisible(item.children),
     };
-    const isRoot = this.visibleRootItems.some((entry) => entry.key === item.key);
+    const isRoot = this.visibleRootItems.some(
+      (entry) => entry.key === item.key,
+    );
 
     this.enterFrameKey = item.key;
     // Root folders replace the stack; nested folders append.
@@ -380,18 +381,7 @@ class SidebarState {
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {
-      // Clear native drill once only — repeating clearNativeDrillActive fights
-      // SEQTA (it re-adds .active) and used to freeze the tab via menu sync.
-      clearNativeDrillActive(menu);
       native.click();
-      clearNativeDrillActive(menu);
-      restoreCustomMenuActive();
-      requestAnimationFrame(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      });
-      // Later pass restores custom `.active` only (no native clear loop).
-      setTimeout(() => restoreCustomMenuActive(), 50);
       return;
     }
 

@@ -5,6 +5,9 @@
   import { onMount } from 'svelte';
   import Shortcuts from "@/seqta/content/links.json"
 
+  let { searchQuery = "" } = $props<{ searchQuery?: string }>();
+  const q = $derived(searchQuery.trim().toLowerCase());
+
   let isLoaded = $state(false);
   let fileInput = $state<HTMLInputElement | null>(null);
 
@@ -106,6 +109,7 @@
 
 <div class="flex flex-col pt-4 divide-y divide-zinc-100 dark:divide-zinc-700">
   {#if isLoaded}
+    {#if !q}
     <div>
       <MotionDiv
         initial={{ opacity: 0, height: 0 }}
@@ -207,9 +211,11 @@
         </button>
       </MotionDiv>
     </div>
+    {/if}
 
     <!-- Custom Shortcuts Section -->
     {#each ($settingsState.customshortcuts ?? []) as shortcut, index}
+      {#if !q || shortcut.name.toLowerCase().includes(q)}
       <div class="flex justify-between items-center px-4 py-3">
         {shortcut.name}
         <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>
@@ -218,9 +224,11 @@
           </svg>
         </button>
       </div>
+      {/if}
     {/each}
 
     {#each Object.entries(Shortcuts) as shortcut}
+      {#if !q || shortcut[1].DisplayName?.toLowerCase().includes(q) || shortcut[0].toLowerCase().includes(q)}
       <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
           <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
@@ -228,6 +236,7 @@
         </div>
         <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
       </div>
+      {/if}
     {/each}
   {:else}
     <div class="p-4 text-center">

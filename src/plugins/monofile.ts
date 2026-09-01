@@ -92,6 +92,10 @@ export async function finishLoad() {
 
     document.querySelector(".legacy-root")?.classList.remove("hidden");
 
+    if (settingsState.devMode && settingsState.devDelayLoadingScreen) {
+      await delay(5000);
+    }
+
     const loadingbk = document.getElementById("loading");
     loadingbk?.classList.add("closeLoading");
     stopLoadingAnimation();

@@ -75,6 +75,7 @@ export function getDefaultSettingsState(): SettingsState {
     themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
     customLoginPortal: true,
+    showTitlebarFounderBadge: true,
     selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,

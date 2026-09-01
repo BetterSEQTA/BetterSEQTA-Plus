@@ -61,6 +61,7 @@
   let selectedBackgroundCategory = $state("All");
   let backgroundCategories = $state<string[]>([]);
   let storeSearchTerm = $state("");
+  let settingsSearch = $state("");
 
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void; onCancel: () => void } | null>(null);
@@ -142,6 +143,7 @@
   );
 
   const sectionTitle = $derived.by(() => {
+    if (activePage === "settings" && settingsSearch.trim()) return "Search results";
     if (activePage === "themes") return "Themes";
     if (activePage === "backgrounds") return "Backgrounds";
     return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
@@ -251,6 +253,7 @@
 
   const selectNavItem = (id: string) => {
     if (activePage === "settings") {
+      settingsSearch = "";
       activeSection = id;
       return;
     }
@@ -280,8 +283,14 @@
 
   const applyDestination = (destination: SettingsDestination) => {
     activePage = destination.page;
-    if (destination.page === "settings" && destination.section) {
-      activeSection = destination.section;
+    if (destination.page === "settings") {
+      if (destination.section) {
+        settingsSearch = "";
+        activeSection = destination.section;
+      }
+      if (destination.search) {
+        settingsSearch = destination.search;
+      }
     } else if (destination.page === "themes" && destination.view) {
       activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
@@ -373,6 +382,32 @@
           : 'w-[260px] px-4 py-5'}"
         aria-label="Settings categories"
       >
+        {#if activePage === "settings"}
+          <label class="relative mb-4 block shrink-0">
+            <span class="sr-only">Search settings</span>
+            <svg
+              class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+              />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search settings"
+              bind:value={settingsSearch}
+              class="h-10 w-full rounded-lg bg-zinc-200/70 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-white dark:placeholder:text-zinc-500 dark:focus:bg-zinc-800 dark:focus:ring-offset-zinc-900"
+            />
+          </label>
+        {/if}
+
         <SidebarNav
           groups={navGroups}
           selectedId={selectedNavId}
@@ -455,7 +490,7 @@
           </div>
           <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
             {#if activePage === "settings"}
-              {#if activeSection === "shortcuts"}
+              {#if activeSection === "shortcuts" && !settingsSearch.trim()}
                 <Shortcuts />
               {:else}
                 <Settings
@@ -463,8 +498,12 @@
                   showFontPicker={openFontPicker}
                   {showDisclaimer}
                   showCloudPanel={openCloudPanel}
-                  {activeSection}
+                  activeSection={settingsSearch.trim() ? "all" : activeSection}
+                  searchQuery={settingsSearch}
                 />
+                {#if settingsSearch.trim()}
+                  <Shortcuts searchQuery={settingsSearch} />
+                {/if}
               {/if}
             {:else if activePage === "themes"}
               <Theme section="themes" />

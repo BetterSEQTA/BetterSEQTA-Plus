@@ -6,6 +6,7 @@ import loadingOverlay from "./loading-overlay.html?raw";
 import { startLoadingCanvas } from "./loadingCanvas";
 import {
   pickLoadingVariant,
+  resolveLoadingTheme,
   type LoadingVariant,
 } from "./loadingVariants";
 
@@ -44,9 +45,21 @@ const loadingStyles = /* css */ `
     --bk-spin-small: 3s;
     --bk-stage-name: bkloading-stage-in;
     --bk-stage-duration: 0.85s;
+    --bk-version-color: rgba(255, 255, 255, 0.35);
+    --bk-vignette-fill: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
     color: ${LOADING_PALETTE.text};
     opacity: 1;
     transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :host([data-scheme="light"]) {
+    --bk-line-color: rgba(24, 24, 27, 0.1);
+    --bk-line-accent: rgba(24, 24, 27, 0.18);
+    --bk-line-blue: rgba(37, 99, 235, 0.5);
+    --bk-grid-color: rgba(24, 24, 27, 0.055);
+    --bk-version-color: rgba(24, 24, 27, 0.42);
+    --bk-vignette-fill: radial-gradient(ellipse at center, transparent 32%, rgba(250, 250, 250, 0.88) 100%);
+    color: #18181b;
   }
 
   :host(.closeLoading) {
@@ -66,7 +79,7 @@ const loadingStyles = /* css */ `
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
+    background: var(--bk-vignette-fill);
     opacity: 0.88;
   }
 
@@ -153,7 +166,7 @@ const loadingStyles = /* css */ `
     bottom: 10px;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--bk-version-color);
     pointer-events: none;
   }
 
@@ -209,11 +222,6 @@ function applyHostShell(host: HTMLElement) {
     ["contain", "strict"],
     ["visibility", "visible"],
     ["pointer-events", "auto"],
-    ["color", LOADING_PALETTE.text],
-    ["--bk-line-color", LOADING_PALETTE.line],
-    ["--bk-line-accent", LOADING_PALETTE.lineAccent],
-    ["--bk-line-blue", LOADING_PALETTE.lineBlue],
-    ["--bk-grid-color", LOADING_PALETTE.grid],
   ] as const;
 
   for (const [prop, value] of shell) {
@@ -226,8 +234,10 @@ function applyVariantTheme(
   shadow: ShadowRoot,
   variant: LoadingVariant,
 ) {
-  const { theme } = variant;
+  const darkMode = !!settingsState.DarkMode;
+  const theme = resolveLoadingTheme(variant, darkMode);
   host.dataset.variant = variant.id;
+  host.dataset.scheme = darkMode ? "dark" : "light";
   applyHostShell(host);
   host.style.setProperty("background", theme.background, "important");
   host.style.setProperty("--bk-spin-outer", theme.spinOuter, "important");

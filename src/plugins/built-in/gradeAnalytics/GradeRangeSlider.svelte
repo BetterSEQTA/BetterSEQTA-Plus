@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   let {
     value = $bindable<[number, number]>([0, 100]),
@@ -88,7 +89,7 @@
 
     value = next;
 
-    if (animate) {
+    if (animate && $settingsState.animations) {
       animateVisualTo(next);
     } else {
       visual = next;
