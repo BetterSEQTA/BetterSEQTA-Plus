@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import stringToHTML from "./stringToHTML";
 
 describe("stringToHTML", () => {
