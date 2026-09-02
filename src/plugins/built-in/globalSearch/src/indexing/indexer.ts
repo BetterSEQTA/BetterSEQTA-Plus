@@ -1,4 +1,4 @@
-import { applyStoreDiff, get, getAll, put, remove } from "./db";
+import { applyStoreDiff, ensureStoresExist, get, getAll, put, remove } from "./db";
 import { jobs } from "./jobs";
 import { decorateIndexItems } from "./renderComponents";
 import type { IndexItem, Job, JobContext } from "./types";
@@ -8,6 +8,7 @@ import { getVectorizedItemIds, pruneOrphanVectorEmbeddings } from "./utils";
 import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 import { resetSearchIndexes } from "./resetIndexes";
 import { isIndexingPaused } from "./indexingPause";
+import { setIndexingActive } from "./indexingState";
 
 import { verboseDebug } from '@/utils/verboseLog';
 const META_STORE = "meta";
@@ -304,10 +305,13 @@ export async function runIndexing(): Promise<void> {
   }
 
   startHeartbeat();
+  setIndexingActive(true);
   verboseDebug("%c[Indexer] Starting indexing...", "color: green");
 
   try {
   const jobIds = Object.keys(jobs);
+  await ensureStoresExist([META_STORE, ...jobIds]);
+
   let completedJobs = 0;
   const totalSteps = jobIds.length + 1;
   dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
@@ -379,6 +383,15 @@ export async function runIndexing(): Promise<void> {
       removeItem,
       getProgress: () => loadProgress(jobId),
       setProgress: (p) => saveProgress(jobId, p),
+      reportJobProgress: ({ processed, total, status }) => {
+        const stepProgress = total > 0 ? processed / total : 0;
+        dispatchProgress(
+          completedJobs + stepProgress,
+          totalSteps,
+          true,
+          status ?? `Running job: ${job.label}`,
+        );
+      },
     };
 
     verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
@@ -500,6 +513,7 @@ export async function runIndexing(): Promise<void> {
     }),
   );
   } finally {
+    setIndexingActive(false);
     stopHeartbeat();
   }
 }

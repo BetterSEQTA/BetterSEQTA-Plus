@@ -11,6 +11,7 @@ import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
 import { decorateIndexItems } from "./renderComponents";
 import { isIndexingPaused } from "./indexingPause";
+import { isIndexingActive } from "./indexingState";
 import { isAssessmentListRoute } from "./routeFilters";
 
 /**
@@ -384,7 +385,7 @@ function synthesizeItems(
 /* ------------------------------------------------------------------ */
 
 async function persistItems(items: IndexItem[]): Promise<void> {
-  if (items.length === 0 || isIndexingPaused()) return;
+  if (items.length === 0 || isIndexingPaused() || isIndexingActive()) return;
 
   // Dedupe against existing entries. We replace on collision so the latest
   // observation wins (e.g. if a message changes title).
@@ -405,10 +406,10 @@ async function persistItems(items: IndexItem[]): Promise<void> {
 }
 
 function scheduleFlush() {
-  if (pendingFlush || isIndexingPaused()) return;
+  if (pendingFlush || isIndexingPaused() || isIndexingActive()) return;
   pendingFlush = setTimeout(() => {
     pendingFlush = null;
-    if (!pendingDirty || isIndexingPaused()) return;
+    if (!pendingDirty || isIndexingPaused() || isIndexingActive()) return;
     pendingDirty = false;
     void flushDynamicItems();
   }, FLUSH_DEBOUNCE_MS);
@@ -425,7 +426,7 @@ export function pausePassiveObserver(): void {
 }
 
 async function flushDynamicItems(): Promise<void> {
-  if (isIndexingPaused()) return;
+  if (isIndexingPaused() || isIndexingActive()) return;
   if (pendingChangedItems.size === 0) return;
 
   const rawChanged = Array.from(pendingChangedItems.values());
