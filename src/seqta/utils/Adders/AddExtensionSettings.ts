@@ -12,10 +12,15 @@ function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
   return (event: MouseEvent) => {
     if (!SettingsClicked) return;
 
-    if (!(event.target as HTMLElement).closest("#AddedSettings")) {
-      if (event.target == extensionPopup) return;
-      changeSettingsClicked(closeExtensionPopup());
-    }
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+
+    if (extensionPopup.shadowRoot?.contains(target)) return;
+    if (target instanceof HTMLElement && target.closest(".feedback-overlay")) return;
+    if (target instanceof HTMLElement && target.closest("#AddedSettings")) return;
+    if (target === extensionPopup) return;
+
+    changeSettingsClicked(closeExtensionPopup());
   };
 }
 

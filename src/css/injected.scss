@@ -739,9 +739,12 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
 
   > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub {
     pointer-events: auto;
-    transform: none;
     background: transparent !important;
     background-image: none !important;
+  }
+
+  > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub:not(.bsplus-sub-enter) {
+    transform: none;
   }
 
   > #bsplus-sidebar-root li.hasChildren.bsplus-active
@@ -790,8 +793,8 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     opacity: 0 !important;
   }
 
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::before,
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::after {
+  > #bsplus-sidebar-root.drilling:not(.drill-entering) > li:not(.hasChildren)::before,
+  > #bsplus-sidebar-root.drilling:not(.drill-entering) > li:not(.hasChildren)::after {
     content: none !important;
     display: none !important;
     animation: none !important;
@@ -833,7 +836,7 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
 }
 
 /* Icon Only Sidebar - compact mode. When submenu is open, all styles are disabled so it behaves as normal sidebar. */
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
   #menu {
     width: 70px !important;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -968,7 +971,7 @@ body > .sortable-fallback.bsplus-sortable-drag,
 }
 
 #menu {
-  li.active > .sub > ul > .item:not(.hasChildren) {
+  li:is(.active, .hasChildren.bsplus-active) > .sub > ul > .item:not(.hasChildren) {
     position: relative;
 
     &::before {
@@ -983,16 +986,21 @@ body > .sortable-fallback.bsplus-sortable-drag,
         width 100ms,
         transform 0.3s ease;
       border-radius: 8px 0 0 8px;
+      pointer-events: none;
     }
 
     &:hover::before,
-    &.active::before {
+    &:is(.active, .bsplus-active)::before {
       width: 6px;
       background: var(--item-colour, transparent);
     }
   }
 
   li.active > .sub > ul > .active {
+    background: rgba(0, 0, 0, 0.3) !important;
+  }
+
+  li.hasChildren.bsplus-active > .sub > ul > .bsplus-sidebar-item.bsplus-active:not(.hasChildren) {
     background: rgba(0, 0, 0, 0.3) !important;
   }
 }
@@ -1429,7 +1437,7 @@ html.transparencyEffects
     transform: translatex(var(--bsplus-sidebar-width, 270px));
   }
 
-  body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+  body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
     #menu {
       -webkit-transform: translatex(-70px);
       transform: translatex(-70px);

@@ -6,6 +6,8 @@
     loadGradeAnalytics,
     syncGradeAnalytics,
     getCacheTtlMs,
+    loadAnalyticsClassCatalog,
+    getStudentId,
   } from "./api";
   import AnalyticsAreaChart from "./AnalyticsAreaChart.svelte";
   import AnalyticsBarChart from "./AnalyticsBarChart.svelte";
@@ -22,6 +24,9 @@
   import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { animationsEnabled } from "@/seqta/utils/performanceMode";
+  import ClassGroupsPanel from "./ClassGroupsPanel.svelte";
+  import type { AnalyticsClassGroup, AnalyticsClassOption } from "./types";
+  import { loadClassGroups, saveClassGroups } from "./storage";
 
   let { simpleMode = false } = $props<{ simpleMode?: boolean }>();
 
@@ -40,6 +45,10 @@
   let timeRange: TimeRange = $state("all");
   let customTimeRange: CustomTimeRange = $state(defaultCustomTimeRange());
   let showSubjectTrends = $state(false);
+  let classGroups: AnalyticsClassGroup[] = $state([]);
+  let classCatalog: AnalyticsClassOption[] = $state([]);
+  let activeClassGroupId: string | null = $state(null);
+  let studentId: number | null = $state(null);
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
@@ -51,6 +60,16 @@
     return formatLastUpdated(lastUpdated);
   });
 
+  const activeClassGroup = $derived(
+    classGroups.find((g) => g.id === activeClassGroupId) ?? null,
+  );
+
+  const activeClassKeys = $derived(activeClassGroup?.classKeys ?? []);
+
+  const combinedChartLabel = $derived(
+    activeClassGroup && !showSubjectTrends ? activeClassGroup.name : undefined,
+  );
+
   const uniqueSubjects = $derived(() => {
     if (!analyticsData) return [];
     return [...new Set(analyticsData.map((a) => a.subject))].sort();
@@ -60,7 +79,12 @@
     if (!analyticsData) return [];
     const [minG, maxG] = gradeRange;
     return analyticsData.filter((a) => {
-      if (filterSubjects.length && !filterSubjects.includes(a.subject)) return false;
+      if (activeClassKeys.length) {
+        const key = `${a.programmeID}-${a.metaclassID}`;
+        if (!activeClassKeys.includes(key)) return false;
+      } else if (filterSubjects.length && !filterSubjects.includes(a.subject)) {
+        return false;
+      }
       if (a.finalGrade !== undefined) {
         if (a.finalGrade < minG || a.finalGrade > maxG) return false;
       }
@@ -114,6 +138,7 @@
       const result = await syncGradeAnalytics();
       analyticsData = result.assessments;
       lastUpdated = new Date(result.updatedAt);
+      await loadClassCatalog(result.assessments);
     } catch (e) {
       console.error("[BetterSEQTA+] Analytics sync failed:", e);
       error =
@@ -127,11 +152,13 @@
     filterSubjects = [];
     filterSearch = "";
     gradeRange = [0, 100];
+    activeClassGroupId = null;
   }
 
   function hasActiveFilters() {
     return !!(
       filterSubjects.length ||
+      activeClassGroupId ||
       filterSearch ||
       gradeRange[0] !== 0 ||
       gradeRange[1] !== 100
@@ -139,11 +166,33 @@
   }
 
   function toggleSubject(subject: string) {
+    activeClassGroupId = null;
     if (filterSubjects.includes(subject)) {
       filterSubjects = filterSubjects.filter((s) => s !== subject);
     } else {
       filterSubjects = [...filterSubjects, subject];
     }
+  }
+
+  function selectClassGroup(group: AnalyticsClassGroup | null) {
+    activeClassGroupId = group?.id ?? null;
+    if (group) {
+      filterSubjects = [];
+      showSubjectTrends = false;
+    }
+  }
+
+  async function persistClassGroups(groups: AnalyticsClassGroup[]) {
+    classGroups = groups;
+    if (activeClassGroupId && !groups.some((g) => g.id === activeClassGroupId)) {
+      activeClassGroupId = null;
+    }
+    if (studentId == null) return;
+    await saveClassGroups(location.origin, studentId, groups);
+  }
+
+  async function loadClassCatalog(assessments: Assessment[]) {
+    classCatalog = await loadAnalyticsClassCatalog(assessments);
   }
 
   const timeRangeLabel = $derived(() => getTimeRangeLabel(timeRange, customTimeRange));
@@ -176,6 +225,16 @@
       const result = await loadGradeAnalytics();
       analyticsData = result.assessments;
       lastUpdated = result.updatedAt ? new Date(result.updatedAt) : null;
+
+      try {
+        const id = await getStudentId();
+        studentId = id;
+        classGroups = await loadClassGroups(location.origin, id);
+        await loadClassCatalog(result.assessments);
+      } catch {
+        classGroups = [];
+        classCatalog = await loadAnalyticsClassCatalog(result.assessments);
+      }
     } catch (e) {
       console.error("[BetterSEQTA+] Failed to load analytics:", e);
       analyticsData = [];
@@ -351,8 +410,10 @@
               aria-expanded={showSubjectsDropdown}
               aria-haspopup="listbox"
             >
-              {#if filterSubjects.length === 0}
+              {#if !activeClassGroup && filterSubjects.length === 0}
                 All subjects
+              {:else if activeClassGroup}
+                {activeClassGroup.name}
               {:else if filterSubjects.length === 1}
                 {filterSubjects[0]}
               {:else}
@@ -364,14 +425,15 @@
                 <button
                   type="button"
                   class="bsplus-analytics-dropdown-item"
-                  class:is-selected={filterSubjects.length === 0}
+                  class:is-selected={!activeClassGroup && filterSubjects.length === 0}
                   onclick={() => {
                     filterSubjects = [];
+                    activeClassGroupId = null;
                     showSubjectsDropdown = false;
                   }}
                 >
                   <span class="bsplus-analytics-dropdown-check"
-                    >{filterSubjects.length === 0 ? "✓" : ""}</span
+                    >{!activeClassGroup && filterSubjects.length === 0 ? "✓" : ""}</span
                   >
                   All subjects
                 </button>
@@ -393,6 +455,16 @@
             {/if}
           </div>
         </div>
+
+        {#if !simpleMode}
+        <ClassGroupsPanel
+          classOptions={classCatalog}
+          groups={classGroups}
+          activeGroupId={activeClassGroupId}
+          onSelectGroup={selectClassGroup}
+          onSaveGroups={persistClassGroups}
+        />
+        {/if}
 
         <div class="bsplus-analytics-filter-group">
           <span class="bsplus-analytics-field-label">Search</span>
@@ -449,6 +521,7 @@
                 {timeRange}
                 {customTimeRange}
                 showSubjectTrends={showSubjectTrends}
+                combinedLabel={combinedChartLabel}
               />
             </div>
             <div class="bsplus-analytics-chart-cell">

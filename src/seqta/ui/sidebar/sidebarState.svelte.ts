@@ -8,6 +8,8 @@ import {
 } from "./parseNativeMenu";
 import type { SidebarDrillFrame, SidebarItem } from "./types";
 
+export const BSPLUS_DRILL_MS = 350;
+
 function orderItems(items: SidebarItem[], order: string[]): SidebarItem[] {
   if (!order.length) return items;
 
@@ -273,9 +275,12 @@ class SidebarState {
       (entry) => entry.key === item.key,
     );
 
-    this.enterFrameKey = item.key;
-    // Root folders replace the stack; nested folders append.
     this.drillStack = isRoot ? [frame] : [...this.drillStack, frame];
+    this.enterFrameKey = item.key;
+
+    if (!animationsEnabled()) {
+      queueMicrotask(() => this.clearEnterFrame(item.key));
+    }
 
     // Keep native drill closed so SEQTA CSS :has(> ul > li.hasChildren.active)
     // does not lock pointer-events on the custom list.
@@ -304,7 +309,7 @@ class SidebarState {
     this.drillReturning = true;
     window.setTimeout(() => {
       this.drillReturning = false;
-    }, 360);
+    }, BSPLUS_DRILL_MS + 20);
   }
 
   resetDrill() {

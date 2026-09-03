@@ -47,3 +47,8 @@
   opacity: 0;
   pointer-events: none;
 }
+
+/* Feedback modal scrollport — host overflow:hidden otherwise clips fixed overlays. */
+#ExtensionPopup.bsplus-feedback-open {
+  overflow: auto !important;
+}

@@ -105,7 +105,7 @@ function applyBetterseqtaLogoBackground(isDark: boolean) {
       background-image: url("${fullUrl}") !important;
     }
     /* Icon-only sidebar: wordmark → compact mark (theme-aware). */
-    body.student.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul::before {
+    body.student.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) #menu > ul::before {
       background-image: url("${iconUrl}") !important;
     }
   `;

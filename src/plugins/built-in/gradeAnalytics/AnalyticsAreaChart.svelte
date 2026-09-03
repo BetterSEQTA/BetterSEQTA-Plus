@@ -21,9 +21,16 @@
     timeRange: TimeRange;
     customTimeRange?: CustomTimeRange;
     showSubjectTrends?: boolean;
+    combinedLabel?: string;
   }
 
-  let { data, timeRange, customTimeRange, showSubjectTrends = false }: Props = $props();
+  let {
+    data,
+    timeRange,
+    customTimeRange,
+    showSubjectTrends = false,
+    combinedLabel,
+  }: Props = $props();
 
   let showPrediction = $state(false);
   let predictionMonths = $state(3);
@@ -34,6 +41,7 @@
     buildGradeTrendChart(data, timeRange, {
       showPerSubject: showSubjectTrends,
       custom: customTimeRange,
+      combinedLabel,
     }),
   );
 
@@ -214,6 +222,8 @@
       <p class="bsplus-analytics-card-desc">
         {#if showSubjectTrends}
           Overall and per-subject averages · {timeRangeText()}
+        {:else if combinedLabel}
+          {combinedLabel} · {timeRangeText()}
         {:else}
           Average grades over time · {timeRangeText()}
         {/if}

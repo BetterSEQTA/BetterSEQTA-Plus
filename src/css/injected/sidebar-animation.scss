@@ -8,14 +8,14 @@
   overflow-y: scroll !important;
 }
 
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
+#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
+#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
   /* !important beats theme animations (e.g. Beach palm-slide forwards). */
   transform: translateX(-320px) !important;
   animation: none !important;
@@ -28,6 +28,17 @@
 
 #menu .sub {
   transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom sidebar — single timing source. */
+#menu.bsplus-custom-sidebar {
+  --bsplus-drill-duration: 350ms;
+  --bsplus-drill-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --bsplus-slide-off: -320px;
+
+  .sub {
+    transition: none !important;
+  }
 }
 
 #menu > ul:has(li.hasChildren:is(.active, .bsplus-active))
@@ -48,34 +59,34 @@
   display: none !important;
 }
 
-/* Icon-only collapsed: submenu slides over narrow icons */
+/* Icon-only collapsed: submenu slides over narrow icons (native sidebar only). */
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li::before,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul
   ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li::before,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li
   > label,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li
   > svg,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul
   ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li
   > label,
 body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
+  #menu:not(.bsplus-custom-sidebar)
   > ul
   ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li
@@ -88,28 +99,11 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
  * not `:has(.active)` (SEQTA strips `.active` on nested clicks).
  */
 #menu.bsplus-custom-sidebar #bsplus-sidebar-root {
-  --bsplus-slide-off: -320px;
-
-  .sub {
-    transition: none !important;
-  }
-
   &.drilling {
     overflow: hidden !important;
 
-    &:not(.drill-returning) > li::before,
-    &:not(.drill-returning) > li::after,
-    &:not(.drill-returning) > li > label,
-    &:not(.drill-returning) > li > svg,
-    &:not(.drill-returning) .sub:has(.sub) > ul > li::before,
-    &:not(.drill-returning) .sub:has(.sub) > ul > li::after,
-    &:not(.drill-returning) .sub:has(.sub) > ul > li > label,
-    &:not(.drill-returning) .sub:has(.sub) > ul > li > svg {
-      transform: translateX(var(--bsplus-slide-off)) !important;
-      animation: none !important;
-    }
-
-    &:not(.drill-entering):not(.drill-returning) {
+    /* Hold siblings off-screen after the enter animation completes. */
+    &:not(.drill-returning):not(.drill-entering) {
       > li::before,
       > li::after,
       > li > label,
@@ -118,12 +112,29 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
       .sub:has(.sub) > ul > li::after,
       .sub:has(.sub) > ul > li > label,
       .sub:has(.sub) > ul > li > svg {
+        transform: translateX(var(--bsplus-slide-off)) !important;
         transition: none !important;
+        animation: none !important;
       }
 
-      .sub {
+      > li.hasChildren.bsplus-active > .sub:not(.bsplus-sub-enter) {
         transform: translateX(0) !important;
-        opacity: 1 !important;
+      }
+    }
+
+    /* Slide siblings out in sync with the incoming .sub panel. */
+    &.drill-entering:not(.drill-returning) {
+      > li::before,
+      > li::after,
+      > li > label,
+      > li > svg,
+      .sub:has(.sub) > ul > li::before,
+      .sub:has(.sub) > ul > li::after,
+      .sub:has(.sub) > ul > li > label,
+      .sub:has(.sub) > ul > li > svg {
+        transform: translateX(var(--bsplus-slide-off)) !important;
+        transition: transform var(--bsplus-drill-duration) var(--bsplus-drill-ease) !important;
+        animation: none !important;
       }
     }
 
@@ -133,7 +144,7 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
   }
 
   &.drill-entering .sub.bsplus-sub-enter {
-    animation: bsplus-submenu-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: bsplus-submenu-enter var(--bsplus-drill-duration) var(--bsplus-drill-ease) both !important;
   }
 
   &.drill-returning:not(.drilling) > li::before,
@@ -145,12 +156,34 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
   &.drilling.drill-returning > li.hasChildren > .sub > ul > li > label,
   &.drilling.drill-returning > li.hasChildren > .sub > ul > li > svg {
     transition: none !important;
-    animation: bsplus-sidebar-return 0.32s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+    animation: bsplus-sidebar-return var(--bsplus-drill-duration) var(--bsplus-drill-ease)
+      both !important;
   }
 }
 
+@keyframes bsplus-submenu-enter {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Icon-only rail uses a shorter slide distance. */
 body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root {
   --bsplus-slide-off: -70px;
+}
+
+/* Hide off-screen siblings only after the slide finishes (not during enter). */
+body.icon-only-sidebar
+  #menu.bsplus-custom-sidebar
+  #bsplus-sidebar-root.drilling:not(.drill-returning):not(.drill-entering) {
+  > li:not(.bsplus-active) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 @keyframes bsplus-sidebar-return {
@@ -158,17 +191,6 @@ body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root {
     transform: translateX(var(--bsplus-slide-off, -320px));
   }
   to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes bsplus-submenu-enter {
-  from {
-    opacity: 0.35;
-    transform: translateX(28px);
-  }
-  to {
-    opacity: 1;
     transform: translateX(0);
   }
 }

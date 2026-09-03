@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
   import type { SidebarItem } from "./types";
 
   type Props = {
@@ -8,7 +7,7 @@
     compact: boolean;
     editMode: boolean;
     visible: boolean;
-    /** Play intro fly only when the parent folder first opens. */
+    /** Reserved — panel slide handles enter motion; no per-item fly. */
     drillEnter?: boolean;
     onActivate: (item: SidebarItem) => void;
     onToggleVisible?: (key: string, visible: boolean) => void;
@@ -20,7 +19,7 @@
     compact,
     editMode,
     visible,
-    drillEnter = false,
+    drillEnter: _drillEnter = false,
     onActivate,
     onToggleVisible,
   }: Props = $props();
@@ -49,7 +48,6 @@
   tabindex={editMode ? -1 : 0}
   aria-label={item.label}
   aria-current={active ? "page" : undefined}
-  in:fly={drillEnter ? { x: 24, duration: 180 } : undefined}
   onclick={(e) => {
     // Keep SEQTA's #menu handlers from seeing custom-list clicks — that fights
     // our drill UI and can freeze the tab (Goals / Folios / etc.).
@@ -93,9 +91,6 @@
           )}
       />
     </label>
-  {/if}
-  {#if item.itemColour && !item.hasChildren}
-    <span class="colour-bar" aria-hidden="true"></span>
   {/if}
 </li>
 
@@ -247,19 +242,5 @@
     margin: 0;
     flex-shrink: 0;
     accent-color: var(--theme-primary, #fff);
-  }
-
-  .colour-bar {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 3px 0 var(--item-colour, transparent);
-    transition: box-shadow 100ms ease;
-    pointer-events: none;
-  }
-
-  .bsplus-sidebar-item:hover .colour-bar,
-  .bsplus-sidebar-item.bsplus-active .colour-bar {
-    box-shadow: inset 6px 0 var(--item-colour, transparent);
   }
 </style>

@@ -5,6 +5,18 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
+    "title": "3.7.4 – Performance Mode & various fixes",
+    "items": [
+      "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
+      "Fixed custom background images and videos not uploading.",
+      "Added combined class groups in Grade Analytics to merge multiple subjects into one trend.",
+      "Fixed icon-only sidebar not expanding when opening a folder.",
+      "Fixed icon-only sidebar root labels overlapping folder view when drilling in.",
+      "Fixed feedback modal not scrolling on long bug reports and replies.",
+      "Fixed the look and feel of the sidebar to be more like how it used to be.",
+    ]
+  },
+  {
     "title": "3.7.3 – Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added a few new loading screens you will see when opening SEQTA with BetterSEQTA",
