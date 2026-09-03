@@ -99,15 +99,16 @@ function extractFinalGrade(assessment: Record<string, unknown>): number | undefi
   if (assessment.status !== "MARKS_RELEASED") return undefined;
 
   const criteria = assessment.criteria as
-    | { results?: { percentage?: unknown } }[]
+    | { results?: { percentage?: unknown; score?: unknown } }[]
     | undefined;
-  if (criteria?.[0]?.results?.percentage !== undefined) {
-    const n = Number(criteria[0].results!.percentage);
-    if (!isNaN(n)) return n;
+  const cInitialResults = criteria?.[0]?.results;
+  if (cInitialResults?.percentage !== undefined && cInitialResults?.score !== undefined) {
+    const n = Number(cInitialResults.percentage);
+    if (!isNaN(n)) return n; 
   }
 
-  const results = assessment.results as { percentage?: unknown } | undefined;
-  if (results?.percentage !== undefined) {
+  const results = assessment.results as { percentage?: unknown; score?: unknown } | undefined;
+  if (results?.percentage !== undefined && results.score !== undefined) {
     const n = Number(results.percentage);
     if (!isNaN(n)) return n;
   }
@@ -116,6 +117,8 @@ function extractFinalGrade(assessment: Record<string, unknown>): number | undefi
     const n = Number(assessment.finalGrade);
     if (!isNaN(n)) return n;
   }
+
+  if (cInitialResults != null || results != null) return undefined;
 
   const letter = extractLetterGradeStringFromPayload(
     assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
@@ -347,7 +350,8 @@ function mergeRawAssessments(
     if (letterGrade !== undefined) raw.letterGrade = letterGrade;
 
     const existingItem = existingMap.get(id);
-    if (existingItem?.finalGrade !== undefined && finalGrade === undefined) {
+    const isAuthoritative = raw.status === "MARKS_RELEASED";
+    if (existingItem?.finalGrade !== undefined && finalGrade === undefined && !isAuthoritative) {
       continue;
     }
 

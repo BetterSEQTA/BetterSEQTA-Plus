@@ -107,7 +107,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
       return;
     }
     e.preventDefault();
-    window.history.pushState({}, "", "/#?page=/analytics");
+    window.location.hash = "?page=/analytics";
     loadAnalyticsPageLazy();
   };
   analyticsItem.addEventListener("click", onClick);
