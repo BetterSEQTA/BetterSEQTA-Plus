@@ -19,9 +19,9 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #menu.bsplus-custom-sidebar {
-  $item: "> #bsplus-sidebar-root > li.item:not(.bsplus-sidebar-edit-header):not(.bsplus-sidebar-edit-actions)";
-  $label: "> #bsplus-sidebar-root > li.item > label:not(.toggle)";
-  $active: "> #bsplus-sidebar-root > li.item.active:not(.hasChildren)";
+  $item: "> #bsplus-sidebar-root .bsplus-sidebar-item";
+  $label: "> #bsplus-sidebar-root .bsplus-sidebar-item > label:not(.toggle)";
+  $active: "> #bsplus-sidebar-root .bsplus-sidebar-item.bsplus-active:not(.hasChildren)";
 
   /* Look: base radius (pill / sharp / strip override).
      Density/radius animate with the same easing as sidebar width. */
@@ -37,6 +37,7 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   #{$label} {
+    min-height: 28px !important;
     transition:
       font-size $sidebar-motion,
       line-height $sidebar-motion,
@@ -74,12 +75,21 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &.bsplus-sidebar-style-glass {
-    #{$item} {
+    /* Never put backdrop-filter on an open folder — it becomes a clip
+       containing-block and hides `.sub` labels on Chromium/Edge. */
+    #{$item}:not(:has(> .sub)) {
       margin: 0 8px 8px !important;
       background: rgba(255, 255, 255, 0.1) !important;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+    #{$item}:has(> .sub) {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+      overflow: visible !important;
     }
     #{$active} {
       background: rgba(255, 255, 255, 0.2) !important;
@@ -147,7 +157,7 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       margin: 0 !important;
       font-size: 13px !important;
       line-height: 1.2 !important;
-      min-height: 0 !important;
+      min-height: 20px !important;
       height: auto !important;
       white-space: nowrap !important;
 
@@ -169,6 +179,7 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       padding: 0 !important;
       font-size: 17px !important;
       line-height: 1.25 !important;
+      min-height: 30px !important;
 
       > svg {
         width: 30px !important;

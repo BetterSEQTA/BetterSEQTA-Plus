@@ -36,6 +36,8 @@ export interface SettingsState {
   privacyStatementLastUpdated?: string;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
+  /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
+  coursesAssessmentsFixPopupShown?: boolean;
   /**
    * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
    * Cleared automatically when a new month's entry is fetched (different `month`).
@@ -47,6 +49,10 @@ export interface SettingsState {
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
   animations: boolean;
+  /** Reduces animations, blur, background work, and indexing for smoother SEQTA. */
+  performanceMode?: boolean;
+  /** Per-plugin force-enable while Performance Mode is active (`pluginId` → true). */
+  performanceModePluginOverrides?: Record<string, boolean>;
   defaultPage: string;
   /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
   homeUpcomingSubjectsMax?: number;
@@ -57,6 +63,8 @@ export interface SettingsState {
   devMode?: boolean;
   /** Dev-only: emit verboseDebug / verboseInfo / verboseLog output. */
   verboseLogging?: boolean;
+  /** Dev-only: keep the loading overlay visible for 5 extra seconds. */
+  devDelayLoadingScreen?: boolean;
   /** Dev-only: pretend this is the latest GitHub release version for update badge testing. */
   devGhReleaseVersionOverride?: string;
   /** ISO timestamp of the last acknowledged nightly release publish time. */
@@ -94,6 +102,8 @@ export interface SettingsState {
   // BetterSEQTA Cloud (accounts.betterseqta.org) — stored via CloudAuth, not settingsState
   /** When not `false`, automatic cloud settings sync is enabled (default-on). */
   autoCloudSettingsSync?: boolean;
+  /** When not `false`, show the Cloud founder badge in the SEQTA titlebar (default-on). */
+  showTitlebarFounderBadge?: boolean;
 }
 
 interface ToggleItem {

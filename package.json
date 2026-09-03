@@ -1,12 +1,12 @@
 {
   "name": "betterseqtaplus",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development and add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "compile:layerchart": "node scripts/compile-layerchart-vendor.mjs",
-    "postinstall": "node scripts/copy-pdfjs-assets.mjs && node scripts/copy-ort-wasm-assets.mjs && npm run compile:layerchart",
+    "postinstall": "node scripts/copy-runtime-assets.mjs && npm run compile:layerchart",
     "autoaudit": "npm audit && npm audit fix && npm run build",
     "dev": "cross-env MODE=chrome vite dev",
     "dev:firefox": "cross-env MODE=firefox vite build --watch",
@@ -25,7 +25,7 @@
     "test:ci": "npm run test:unit && npm run build && npm run test:smoke",
     "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus ./dist/*.zip --generate-notes",
     "publish": "bun lib/publish.js --b",
-    "zip": "bedframe zip"
+    "zip": "node scripts/package-extension-zips.mjs"
   },
   "keywords": [],
   "author": {

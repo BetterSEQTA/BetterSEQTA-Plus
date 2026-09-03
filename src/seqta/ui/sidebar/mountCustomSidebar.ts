@@ -1,11 +1,12 @@
 import { mount, unmount } from "svelte";
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 import Sidebar from "./Sidebar.svelte";
 import { getNativeMenuList } from "./parseNativeMenu";
+import { scheduleRestoreCustomMenuActive } from "./customMenuActive";
 import {
   clearNativeDrillActive,
   sidebarState,
@@ -15,6 +16,8 @@ import {
   applySidebarStyleClass,
   clearSidebarAppearance,
 } from "./sidebarStyles";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 
 const ROOT_ID = "bsplus-sidebar-root";
 const MENU_CLASS = "bsplus-custom-sidebar";
@@ -32,6 +35,8 @@ let earlyPrepareStarted = false;
 let catchupTimers: ReturnType<typeof setTimeout>[] = [];
 let nativeMenuListenerAttached = false;
 let lastMenuFingerprint = "";
+let catchupSessionStarted = false;
+let sidebarLookScheduled = false;
 
 const settingsListeners: Array<{
   key: keyof SettingsState;
@@ -68,10 +73,16 @@ function syncFromMenu(force = false) {
  * MutationObserver + scheduleSync cover ongoing changes; this only covers a short window.
  */
 function startCatchupSync() {
+  if (catchupSessionStarted) {
+    syncFromMenu();
+    return;
+  }
+  catchupSessionStarted = true;
+
   for (const t of catchupTimers) clearTimeout(t);
   catchupTimers = [];
   // Immediate, then a few delayed passes (~1s total) instead of 50ms×60.
-  const delays = [0, 200, 500, 1000];
+  const delays = isPerformanceMode() ? [0, 400, 1000] : [0, 200, 500, 1000];
   for (const ms of delays) {
     catchupTimers.push(
       setTimeout(() => {
@@ -84,16 +95,26 @@ function startCatchupSync() {
   }
 }
 
+function scheduleSidebarLook() {
+  if (!menuEl || sidebarLookScheduled) return;
+  sidebarLookScheduled = true;
+  requestAnimationFrame(() => {
+    sidebarLookScheduled = false;
+    if (menuEl) applySidebarLook(menuEl);
+  });
+}
+
 function onNativeMenuUpdated() {
   syncFromMenu(true);
 }
 
 function scheduleSync() {
   if (syncTimer) clearTimeout(syncTimer);
+  const delay = isPerformanceMode() ? 120 : 50;
   syncTimer = setTimeout(() => {
     syncTimer = null;
     syncFromMenu();
-  }, 50);
+  }, delay);
 }
 
 /**
@@ -101,7 +122,7 @@ function scheduleSync() {
  * never see them. Opening Goals/Folios via SEQTA + our drill UI freezes the tab.
  */
 function onCustomSidebarCaptureClick(event: MouseEvent) {
-  if (!menuEl || sidebarState.editMode) return;
+  if (!menuEl || sidebarState.editMode || sidebarState.drillReturning) return;
 
   const root = document.getElementById(ROOT_ID);
   const target = event.target;
@@ -137,6 +158,12 @@ function onCustomSidebarCaptureClick(event: MouseEvent) {
 function onHashChange() {
   sidebarState.syncActiveFromLocation();
   if (menuEl) clearNativeDrillActive(menuEl);
+  if (sidebarState.isDrilling) {
+    scheduleRestoreCustomMenuActive({
+      activeKey: sidebarState.activeKey,
+      drilling: true,
+    });
+  }
 
   if (!sidebarState.isDrilling) return;
 
@@ -199,7 +226,7 @@ function clearPendingClass() {
  * and begin mounting the Svelte sidebar as soon as `#menu` exists.
  */
 export function prepareCustomSidebarEarly() {
-  if (isSeqtaEngageExperience()) return;
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage()) return;
   if (!settingsState.onoff) return;
   if (earlyPrepareStarted) return;
 
@@ -325,11 +352,11 @@ export async function mountCustomSidebar(): Promise<boolean> {
     "sidebarWidth",
     "sidebarBlur",
   ] as const) {
-    registerSetting(key, () => applySidebarLook(menuEl));
+    registerSetting(key, () => scheduleSidebarLook());
   }
   const resync = () => syncFromMenu(true);
   registerSetting("menuorder", resync);
-  registerSetting("menuitems", resync);
+  registerSetting("menuitems", () => applyMenuItemVisibility());
 
   startCatchupSync();
   clearPendingClass();
@@ -344,6 +371,7 @@ export function unmountCustomSidebar() {
   for (const t of catchupTimers) clearTimeout(t);
   catchupTimers = [];
   lastMenuFingerprint = "";
+  catchupSessionStarted = false;
 
   clearSettingListeners();
 

@@ -1,9 +1,12 @@
 import { mount, unmount } from "svelte";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
+import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import TitleBar from "./TitleBar.svelte";
 import { titleBarState } from "./titleBarState.svelte";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 const ROOT_ID = "bsplus-title-root";
 const TITLE_CLASS = "bsplus-custom-title";
@@ -30,6 +33,7 @@ function syncPageTitle() {
 }
 
 function needsSearchChip() {
+  if (!isPluginAllowedInPerformanceMode("global-search")) return false;
   const all = settingsState.getAll() as unknown as Record<string, unknown>;
   const plugin = all["plugin.global-search.settings"] as
     | { enabled?: boolean }
@@ -46,7 +50,7 @@ function isReady() {
 
 /** finishLoad waits here so the overlay stays until the title bar is ready. */
 export async function waitForCustomTitleBarReady(timeoutMs = 10000) {
-  if (isSeqtaEngageExperience() || !settingsState.onoff) {
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff) {
     document.documentElement.classList.remove(PENDING_CLASS);
     return;
   }
@@ -54,9 +58,10 @@ export async function waitForCustomTitleBarReady(timeoutMs = 10000) {
   await mountCustomTitleBar();
 
   const start = Date.now();
+  const pollMs = isPerformanceMode() ? 100 : 50;
   while (Date.now() - start < timeoutMs) {
     if (isReady()) break;
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, pollMs));
   }
   document.documentElement.classList.remove(PENDING_CLASS);
 }
@@ -64,7 +69,10 @@ export async function waitForCustomTitleBarReady(timeoutMs = 10000) {
 function observeHost(host: HTMLElement) {
   hostObserver?.disconnect();
   syncPageTitle();
-  hostObserver = new MutationObserver(() => {
+  const debouncedSync = rafThrottle(() => {
+    syncPageTitle();
+  });
+  hostObserver = new MutationObserver((mutations) => {
     if (!document.getElementById(ROOT_ID)) {
       if (remountTimer) clearTimeout(remountTimer);
       remountTimer = setTimeout(() => {
@@ -72,10 +80,21 @@ function observeHost(host: HTMLElement) {
         if (!settingsState.onoff || isSeqtaEngageExperience()) return;
         app = null;
         void mountCustomTitleBar();
-      }, 50);
+      }, isPerformanceMode() ? 120 : 50);
       return;
     }
-    syncPageTitle();
+    const titleChanged = mutations.some(
+      (m) =>
+        m.type === "characterData" ||
+        (m.type === "childList" &&
+          [...m.addedNodes, ...m.removedNodes].some(
+            (n) =>
+              n instanceof HTMLElement &&
+              (n.matches?.('[data-testid="page-title"]') ||
+                n.querySelector?.('[data-testid="page-title"]')),
+          )),
+    );
+    if (titleChanged) debouncedSync();
   });
   hostObserver.observe(host, {
     childList: true,
@@ -85,7 +104,7 @@ function observeHost(host: HTMLElement) {
 }
 
 export function prepareCustomTitleBarEarly() {
-  if (isSeqtaEngageExperience() || !settingsState.onoff || earlyPrepareStarted) {
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff || earlyPrepareStarted) {
     return;
   }
   earlyPrepareStarted = true;
@@ -94,7 +113,7 @@ export function prepareCustomTitleBarEarly() {
 }
 
 export async function mountCustomTitleBar(): Promise<boolean> {
-  if (isSeqtaEngageExperience() || !settingsState.onoff) return false;
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff) return false;
 
   if (app && titleEl && document.getElementById(ROOT_ID)) {
     observeHost(titleEl);

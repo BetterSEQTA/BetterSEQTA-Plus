@@ -1,11 +1,19 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { animationsEnabled } from "@/seqta/utils/performanceMode";
+import {
+  applyCustomMenuActive,
+  scheduleRestoreCustomMenuActive,
+} from "./customMenuActive";
 import {
   findNativeMenuEntry,
+  folderNeedsNativePopulate,
   getNativeMenuList,
   getPagePathFromHash,
   parseNativeMenu,
 } from "./parseNativeMenu";
 import type { SidebarDrillFrame, SidebarItem } from "./types";
+
+export const BSPLUS_DRILL_MS = 350;
 
 function orderItems(items: SidebarItem[], order: string[]): SidebarItem[] {
   if (!order.length) return items;
@@ -37,65 +45,28 @@ function filterVisible(items: SidebarItem[]): SidebarItem[] {
   return items.filter((item) => menuItems[item.key]?.toggle !== false);
 }
 
-function ensureActive(el: Element | null | undefined) {
-  if (el instanceof HTMLElement && !el.classList.contains("active")) {
-    el.classList.add("active");
-  }
-}
-
 function resetSidebarScroll() {
   const root = document.getElementById("bsplus-sidebar-root");
-  if (!(root instanceof HTMLElement)) return;
-  root.scrollTop = 0;
-  requestAnimationFrame(() => {
-    root.scrollTop = 0;
-  });
+  if (root instanceof HTMLElement) root.scrollTop = 0;
+}
+
+function customMenuActiveState() {
+  return {
+    activeKey: sidebarState.activeKey,
+    drilling: sidebarState.isDrilling,
+  };
 }
 
 /**
- * SEQTA (and some themes) strip `.active` from `#menu li` after navigation.
- * Theme decorations and drill `.sub` chrome depend on that class on our list.
- *
- * While drilling, never re-apply route-active on root leaves — themes like Beach
- * paint palm/sand on `#menu > ul > li:not(.hasChildren).active`, and our `.sub`
- * is transparent so those decorations show through over folder contents.
+ * SEQTA strips `.active` from menu items after navigation. Restore the custom list
+ * state so the active subject/folder still matches the route and theme chrome.
  */
 export function restoreCustomMenuActive() {
-  const root = document.getElementById("bsplus-sidebar-root");
-  if (!root) return;
+  applyCustomMenuActive(customMenuActiveState());
+}
 
-  for (const li of root.querySelectorAll("li.hasChildren")) {
-    if (!(li instanceof HTMLElement)) continue;
-    if (!li.querySelector(":scope > .sub")) continue;
-    ensureActive(li);
-  }
-
-  const activeKey = sidebarState.activeKey;
-  const drilling = sidebarState.isDrilling;
-
-  if (drilling) {
-    if (activeKey) {
-      ensureActive(
-        root.querySelector(`.sub li.item[data-key="${CSS.escape(activeKey)}"]`),
-      );
-    }
-    for (const li of root.querySelectorAll(
-      '.sub li.item[aria-current="page"]',
-    )) {
-      ensureActive(li);
-    }
-    return;
-  }
-
-  if (activeKey) {
-    ensureActive(
-      root.querySelector(`li.item[data-key="${CSS.escape(activeKey)}"]`),
-    );
-  }
-
-  for (const li of root.querySelectorAll('li.item[aria-current="page"]')) {
-    ensureActive(li);
-  }
+function scheduleRestoreAfterSeqta() {
+  scheduleRestoreCustomMenuActive(customMenuActiveState());
 }
 
 /** Clear native drill state so it cannot steal pointer-events from the custom list. */
@@ -184,8 +155,9 @@ class SidebarState {
   activePath = $state("");
   editMode = $state(false);
   iconOnly = $state(false);
-  /** Frame key whose `.sub` should play the one-shot enter animation. */
+  /** Folder key playing the one-shot panel enter animation. */
   enterFrameKey = $state<string | null>(null);
+  drillReturning = $state(false);
 
   visibleRootItems = $derived(
     filterVisible(orderItems(this.items, settingsState.menuorder ?? [])),
@@ -250,7 +222,10 @@ class SidebarState {
 
     for (const frame of this.drillStack) {
       const folder = cursor.find((item) => item.key === frame.key);
-      if (!folder?.hasChildren) break;
+      if (!folder?.hasChildren) {
+        next.push(...this.drillStack.slice(next.length));
+        break;
+      }
       const children = filterVisible(folder.children);
       next.push({ key: folder.key, label: folder.label, items: children });
       cursor = children;
@@ -262,28 +237,41 @@ class SidebarState {
   }
 
   openFolder(item: SidebarItem, menu?: HTMLElement) {
-    if (!item.hasChildren) return;
-    // Ignore duplicate opens (double-firing click / label + li).
+    if (!item.hasChildren || this.drillReturning) return;
     if (this.drillStack.at(-1)?.key === item.key) return;
+
+    this.drillReturning = false;
 
     const frame: SidebarDrillFrame = {
       key: item.key,
       label: item.label,
       items: filterVisible(item.children),
     };
-    const isRoot = this.visibleRootItems.some((entry) => entry.key === item.key);
+    const isRoot = this.visibleRootItems.some(
+      (entry) => entry.key === item.key,
+    );
 
-    this.enterFrameKey = item.key;
-    // Root folders replace the stack; nested folders append.
     this.drillStack = isRoot ? [frame] : [...this.drillStack, frame];
+    this.enterFrameKey = item.key;
+
+    if (!animationsEnabled()) {
+      queueMicrotask(() => this.clearEnterFrame(item.key));
+    }
 
     // Keep native drill closed so SEQTA CSS :has(> ul > li.hasChildren.active)
     // does not lock pointer-events on the custom list.
-    if (menu) clearNativeDrillActive(menu);
+    if (menu) {
+      if (folderNeedsNativePopulate(item)) {
+        const native = findNativeMenuEntry(menu, item);
+        native?.click();
+      }
+      clearNativeDrillActive(menu);
+    }
 
     // Absolute `.sub` panels live inside the scrollport — jump to top so the
     // drilled page isn't left under the logo when the list was scrolled down.
     resetSidebarScroll();
+    scheduleRestoreAfterSeqta();
   }
 
   clearEnterFrame(key?: string) {
@@ -293,14 +281,23 @@ class SidebarState {
   }
 
   goBack() {
-    if (!this.drillStack.length) return;
+    if (!this.drillStack.length || this.drillReturning) return;
+
     this.enterFrameKey = null;
     this.drillStack = this.drillStack.slice(0, -1);
     resetSidebarScroll();
+
+    if (!animationsEnabled()) return;
+
+    this.drillReturning = true;
+    window.setTimeout(() => {
+      this.drillReturning = false;
+    }, BSPLUS_DRILL_MS + 20);
   }
 
   resetDrill() {
     this.enterFrameKey = null;
+    this.drillReturning = false;
     this.drillStack = [];
     resetSidebarScroll();
   }
@@ -350,7 +347,7 @@ class SidebarState {
   }
 
   activateItem(item: SidebarItem, menu: HTMLElement) {
-    if (this.editMode) return;
+    if (this.editMode || this.drillReturning) return;
 
     if (item.hasChildren) {
       this.openFolder(item, menu);
@@ -360,25 +357,22 @@ class SidebarState {
     this.activeKey = item.key;
     if (item.path) this.activePath = item.path;
 
+    // Already inside this folder — never replay the one-shot enter animation when
+    // SEQTA rewrites `.active` on the route change.
+    if (this.isDrilling) {
+      this.enterFrameKey = null;
+    }
+
     const native = findNativeMenuEntry(menu, item);
     if (native) {
-      // Clear native drill once only — repeating clearNativeDrillActive fights
-      // SEQTA (it re-adds .active) and used to freeze the tab via menu sync.
-      clearNativeDrillActive(menu);
       native.click();
-      clearNativeDrillActive(menu);
-      restoreCustomMenuActive();
-      requestAnimationFrame(() => {
-        clearNativeDrillActive(menu);
-        restoreCustomMenuActive();
-      });
-      // Later pass restores custom `.active` only (no native clear loop).
-      setTimeout(() => restoreCustomMenuActive(), 50);
+      scheduleRestoreAfterSeqta();
       return;
     }
 
     if (item.path) {
       location.hash = `?page=${item.path}`;
+      scheduleRestoreAfterSeqta();
     }
   }
 

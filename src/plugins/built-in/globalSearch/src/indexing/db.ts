@@ -4,6 +4,7 @@ const VERSION_KEY = "betterseqta-index-version";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 let cachedDb: IDBDatabase | null = null;
+let upgradeChain: Promise<void> = Promise.resolve();
 
 function getCurrentVersion(): number {
   const storedVersion = localStorage.getItem(VERSION_KEY);
@@ -180,48 +181,161 @@ function idbRequest<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
-async function objectStore(
+function runStoreTransaction(
+  db: IDBDatabase,
   store: string,
-  mode: IDBTransactionMode = "readonly",
-): Promise<IDBObjectStore> {
-  const db = await openDB();
+  mode: IDBTransactionMode,
+  run: (objectStore: IDBObjectStore) => void | Promise<void>,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, mode);
+    const objectStoreRef = tx.objectStore(store);
 
-  if (!db.objectStoreNames.contains(store)) {
-    await upgradeDB(store);
-    const upgradedDb = await openDB();
-    return upgradedDb.transaction(store, mode).objectStore(store);
+    Promise.resolve(run(objectStoreRef)).catch(reject);
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error(`IndexedDB transaction failed for ${store}`));
+    tx.onabort = () => reject(tx.error ?? new Error(`IndexedDB transaction aborted for ${store}`));
+  });
+}
+
+async function withUpgradeLock<T>(fn: () => Promise<T>): Promise<T> {
+  const previous = upgradeChain;
+  let release!: () => void;
+  upgradeChain = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  try {
+    return await fn();
+  } finally {
+    release();
   }
+}
 
-  return db.transaction(store, mode).objectStore(store);
+async function openDatabaseWithStores(
+  version: number,
+  storesToCreate: string[],
+): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    let request: IDBOpenDBRequest;
+    try {
+      request = indexedDB.open(DB_NAME, version);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(META_STORE)) {
+        db.createObjectStore(META_STORE);
+      }
+      for (const store of storesToCreate) {
+        if (!db.objectStoreNames.contains(store)) {
+          db.createObjectStore(store);
+        }
+      }
+    };
+
+    request.onsuccess = () => {
+      attachConnection(request.result);
+      resolve(request.result);
+    };
+    request.onerror = () => reject(request.error);
+  });
 }
 
 async function upgradeDB(newStore: string): Promise<void> {
-  invalidateConnection();
+  await withUpgradeLock(async () => {
+    invalidateConnection();
 
-  let baseVersion = 0;
+    let baseVersion = 0;
 
-  try {
-    const db = await openDatabase();
-    baseVersion = db.version;
+    try {
+      const db = await openDatabase();
+      if (db.objectStoreNames.contains(newStore)) {
+        attachConnection(db);
+        return;
+      }
+      baseVersion = db.version;
+      db.close();
+      cachedDb = null;
+      dbPromise = null;
+    } catch (error) {
+      console.warn("[DB] Could not probe database version before upgrade:", error);
+    }
+
+    try {
+      await openDatabaseWithStores(baseVersion + 1, [newStore]);
+    } catch (error) {
+      console.error("Error upgrading database:", error);
+      throw error;
+    }
+  });
+}
+
+/**
+ * Creates any missing object stores in a single version bump so later job
+ * writes do not race passive observer traffic on a mid-run upgrade.
+ */
+export async function ensureStoresExist(stores: string[]): Promise<void> {
+  const uniqueStores = [...new Set(stores.filter(Boolean))];
+  if (uniqueStores.length === 0) return;
+
+  await withUpgradeLock(async () => {
+    let db: IDBDatabase;
+    try {
+      db = await openDB();
+    } catch (error) {
+      console.warn("[DB] ensureStoresExist: could not open database:", error);
+      return;
+    }
+
+    const missing = uniqueStores.filter(
+      (store) => !db.objectStoreNames.contains(store),
+    );
+    if (missing.length === 0) return;
+
+    invalidateConnection();
+    const baseVersion = db.version;
     db.close();
     cachedDb = null;
     dbPromise = null;
-  } catch (error) {
-    console.warn("[DB] Could not probe database version before upgrade:", error);
+
+    try {
+      await openDatabaseWithStores(baseVersion + 1, missing);
+    } catch (error) {
+      console.error("[DB] ensureStoresExist failed:", error);
+      throw error;
+    }
+  });
+}
+
+async function withObjectStore<T>(
+  store: string,
+  mode: IDBTransactionMode,
+  run: (objectStore: IDBObjectStore) => Promise<T>,
+): Promise<T> {
+  let db = await openDB();
+
+  if (!db.objectStoreNames.contains(store)) {
+    await upgradeDB(store);
+    db = await openDB();
   }
 
-  try {
-    await openDatabase(baseVersion + 1, newStore);
-  } catch (error) {
-    console.error("Error upgrading database:", error);
-    throw error;
-  }
+  let result!: T;
+  await runStoreTransaction(db, store, mode, async (objectStoreRef) => {
+    result = await run(objectStoreRef);
+  });
+  return result;
 }
 
 export async function getAll(store: string): Promise<any[]> {
   try {
-    const s = await objectStore(store);
-    return await idbRequest(s.getAll());
+    return await withObjectStore(store, "readonly", async (s) =>
+      idbRequest(s.getAll()),
+    );
   } catch (error) {
     console.error(`Error in getAll for store ${store}:`, error);
     return [];
@@ -230,8 +344,9 @@ export async function getAll(store: string): Promise<any[]> {
 
 export async function get(store: string, key: string): Promise<any> {
   try {
-    const s = await objectStore(store);
-    return await idbRequest(s.get(key));
+    return await withObjectStore(store, "readonly", async (s) =>
+      idbRequest(s.get(key)),
+    );
   } catch (error) {
     console.error(`Error in get for store ${store}, key ${key}:`, error);
     return null;
@@ -244,8 +359,9 @@ export async function put(
   key?: string,
 ): Promise<void> {
   try {
-    const s = await objectStore(store, "readwrite");
-    await idbRequest(key ? s.put(value, key) : s.put(value));
+    await withObjectStore(store, "readwrite", async (s) => {
+      await idbRequest(key ? s.put(value, key) : s.put(value));
+    });
   } catch (error) {
     console.error(`Error in put for store ${store}:`, error);
     throw error;
@@ -297,8 +413,9 @@ function runStoreDiffTransaction(
 
 export async function remove(store: string, key: string): Promise<void> {
   try {
-    const s = await objectStore(store, "readwrite");
-    await idbRequest(s.delete(key));
+    await withObjectStore(store, "readwrite", async (s) => {
+      await idbRequest(s.delete(key));
+    });
   } catch (error) {
     console.error(`Error in remove for store ${store}, key ${key}:`, error);
     throw error;
@@ -307,8 +424,9 @@ export async function remove(store: string, key: string): Promise<void> {
 
 export async function clear(store: string): Promise<void> {
   try {
-    const s = await objectStore(store, "readwrite");
-    await idbRequest(s.clear());
+    await withObjectStore(store, "readwrite", async (s) => {
+      await idbRequest(s.clear());
+    });
   } catch (error) {
     console.error(`Error in clear for store ${store}:`, error);
     throw error;

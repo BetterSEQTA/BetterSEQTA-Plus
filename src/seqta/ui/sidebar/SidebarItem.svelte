@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { fly } from "svelte/transition";
   import type { SidebarItem } from "./types";
 
   type Props = {
@@ -8,7 +7,7 @@
     compact: boolean;
     editMode: boolean;
     visible: boolean;
-    /** Play intro fly only when the parent folder first opens. */
+    /** Reserved — panel slide handles enter motion; no per-item fly. */
     drillEnter?: boolean;
     onActivate: (item: SidebarItem) => void;
     onToggleVisible?: (key: string, visible: boolean) => void;
@@ -20,7 +19,7 @@
     compact,
     editMode,
     visible,
-    drillEnter = false,
+    drillEnter: _drillEnter = false,
     onActivate,
     onToggleVisible,
   }: Props = $props();
@@ -29,17 +28,18 @@
   const GRIP_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="5" cy="3" r="1.35" fill="currentColor"/><circle cx="11" cy="3" r="1.35" fill="currentColor"/><circle cx="5" cy="8" r="1.35" fill="currentColor"/><circle cx="11" cy="8" r="1.35" fill="currentColor"/><circle cx="5" cy="13" r="1.35" fill="currentColor"/><circle cx="11" cy="13" r="1.35" fill="currentColor"/></svg>`;
 </script>
 
-<!-- SEQTA class names (item / hasChildren / active) so theme CSS keeps matching. -->
+<!-- Keep SEQTA's structural attributes so existing themes recognize each row. -->
 <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 <li
   class="item bsplus-sidebar-item"
-  class:active={active}
+  class:bsplus-active={active}
   class:hasChildren={item.hasChildren}
   class:edit-mode={editMode}
   class:hidden-item={editMode && !visible}
   class:compact={compact}
   class:draggable={editMode}
   style:--item-colour={item.itemColour || undefined}
+  data-colour={item.itemColour || undefined}
   data-key={item.key}
   data-path={item.path ?? undefined}
   data-betterseqta={item.betterseqta ? "true" : undefined}
@@ -48,7 +48,6 @@
   tabindex={editMode ? -1 : 0}
   aria-label={item.label}
   aria-current={active ? "page" : undefined}
-  in:fly={drillEnter ? { x: 24, duration: 180 } : undefined}
   onclick={(e) => {
     // Keep SEQTA's #menu handlers from seeing custom-list clicks — that fights
     // our drill UI and can freeze the tab (Goals / Folios / etc.).
@@ -93,9 +92,6 @@
       />
     </label>
   {/if}
-  {#if item.itemColour && !item.hasChildren}
-    <span class="colour-bar" aria-hidden="true"></span>
-  {/if}
 </li>
 
 <style>
@@ -131,7 +127,7 @@
     color: inherit;
   }
 
-  .bsplus-sidebar-item:hover:not(.active) {
+  .bsplus-sidebar-item:hover:not(.bsplus-active) {
     background: rgba(0, 0, 0, 0.15);
   }
 
@@ -140,8 +136,8 @@
     box-shadow: 0 0 0 2px var(--theme-primary, #fff);
   }
 
-  .bsplus-sidebar-item.active:not(.hasChildren),
-  .bsplus-sidebar-item.active:not(.hasChildren):hover {
+  .bsplus-sidebar-item.bsplus-active:not(.hasChildren),
+  .bsplus-sidebar-item.bsplus-active:not(.hasChildren):hover {
     background: rgba(0, 0, 0, 0.35);
     color: #fff;
   }
@@ -246,22 +242,5 @@
     margin: 0;
     flex-shrink: 0;
     accent-color: var(--theme-primary, #fff);
-  }
-
-  .colour-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 3px;
-    border-radius: 8px 0 0 8px;
-    background: var(--item-colour, transparent);
-    transition: width 100ms ease;
-    pointer-events: none;
-  }
-
-  .bsplus-sidebar-item:hover .colour-bar,
-  .bsplus-sidebar-item.active .colour-bar {
-    width: 6px;
   }
 </style>

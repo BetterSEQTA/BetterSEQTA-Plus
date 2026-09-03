@@ -11,6 +11,7 @@ import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
 const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
@@ -88,10 +89,11 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
 
   syncAnalyticsMenu();
 
+  const scheduleAnalyticsSync = rafThrottle(syncAnalyticsMenu);
   const menuObserver = new MutationObserver(() => {
     const list = getNativeMenuList() ?? menuList;
     if (!list || isMenuOptionsOpen() || list.contains(analyticsItem)) return;
-    syncAnalyticsMenu();
+    scheduleAnalyticsSync();
   });
   menuObserver.observe(menuList, { childList: true });
 

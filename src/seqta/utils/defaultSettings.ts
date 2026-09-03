@@ -48,6 +48,8 @@ export function getDefaultSettingsState(): SettingsState {
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
+    performanceMode: isLowEndDevice,
+    performanceModePluginOverrides: {},
     assessmentsAverage: false,
     defaultPage: "home",
     homeUpcomingSubjectsMax: 5,
@@ -74,9 +76,11 @@ export function getDefaultSettingsState(): SettingsState {
     adaptiveThemeColourTransition: true,
     themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
+    showTitlebarFounderBadge: true,
     selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
+    coursesAssessmentsFixPopupShown: false,
   };
 }

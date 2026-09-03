@@ -8,6 +8,7 @@ import {
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 const settings = defineSettings({
   uploader: componentSetting({
@@ -187,6 +188,10 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
   defaultEnabled: false,
 
   run: async (api) => {
+    if (isPerformanceMode()) {
+      return () => stopAudio();
+    }
+
     await api.storage.loaded;
 
     type BgSettings = { volume?: number; pauseOnHidden?: boolean };

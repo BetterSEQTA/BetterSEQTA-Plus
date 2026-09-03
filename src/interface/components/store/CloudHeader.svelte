@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   let { alwaysShowUserName = false, onClick = undefined } = $props<{
     alwaysShowUserName?: boolean;
@@ -19,7 +20,7 @@
     return unsubscribe;
   });
 
-  function handleClickOutside(e: MouseEvent) {
+  function handleClickOutside(e: PointerEvent) {
     if (dropdownEl && !dropdownEl.contains(e.target as Node)) {
       open = false;
     }
@@ -28,11 +29,11 @@
   $effect(() => {
     if (open) {
       const timer = setTimeout(() => {
-        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("pointerdown", handleClickOutside);
       }, 0);
       return () => {
         clearTimeout(timer);
-        document.removeEventListener("click", handleClickOutside);
+        document.removeEventListener("pointerdown", handleClickOutside);
       };
     }
   });
@@ -47,7 +48,8 @@
     open = false;
   }
 
-  function handleButtonClick() {
+  function handleButtonClick(event: MouseEvent) {
+    event.stopPropagation();
     if (onClick) {
       onClick();
     } else {
@@ -65,7 +67,7 @@
   }
 </script>
 
-<div class="relative flex items-center" bind:this={dropdownEl}>
+<div class="relative z-20 flex shrink-0 items-center" bind:this={dropdownEl}>
   <button
     type="button"
     onclick={handleButtonClick}
@@ -100,7 +102,8 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 shadow-xl z-[100] overflow-hidden"
+      class="cloud-dropdown absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 shadow-xl z-[100] overflow-hidden"
+      class:cloud-dropdown--motion={$settingsState.animations}
       onclick={(e) => e.stopPropagation()}
     >
       <div class="p-4 border-b border-zinc-200 dark:border-zinc-600">
@@ -160,3 +163,21 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .cloud-dropdown--motion {
+    transform-origin: top right;
+    animation: cloud-dropdown-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes cloud-dropdown-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+</style>

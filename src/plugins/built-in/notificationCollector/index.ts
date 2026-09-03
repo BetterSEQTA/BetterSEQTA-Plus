@@ -1,4 +1,4 @@
-import type { Plugin } from "../../core/types";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { booleanSetting } from "@/plugins/core/settingsHelpers";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { verboseInfo } from "@/utils/verboseLog";
@@ -60,7 +60,7 @@ const notificationCollectorPlugin: Plugin<
     let pollInterval: number | null = null;
     let isVisible = !document.hidden;
     let archiveSyncInFlight = false;
-    const baseInterval = 30000;
+    const baseInterval = isPerformanceMode() ? 60000 : 30000;
     const maxInterval = 300000;
 
     api.storage.lastNotificationCount ||= 0;

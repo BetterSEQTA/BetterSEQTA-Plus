@@ -12,9 +12,20 @@ export function getNativeMenuList(
 
 function readLabelText(label: HTMLElement | null): string {
   if (!label) return "";
-  const clone = label.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll("svg").forEach((svg) => svg.remove());
-  return (clone.textContent ?? "").replace(/\s+/g, " ").trim();
+  const cached = label.dataset.bsplusLabel;
+  if (cached) return cached;
+
+  let text = "";
+  for (const node of label.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent ?? "";
+    } else if (node instanceof HTMLElement && node.tagName !== "SVG") {
+      text += node.textContent ?? "";
+    }
+  }
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized) label.dataset.bsplusLabel = normalized;
+  return normalized;
 }
 
 function readIconHtml(label: HTMLElement | null): string {
@@ -23,7 +34,22 @@ function readIconHtml(label: HTMLElement | null): string {
   return svg instanceof SVGElement ? svg.outerHTML : "";
 }
 
-function parseEntry(entry: HTMLElement): SidebarItem | null {
+const SUBJECT_KEY = /^\d+:\d+$/;
+
+function inferPath(
+  rawPath: string | null | undefined,
+  key: string,
+  parentPath: string | null,
+): string | null {
+  if (rawPath) return rawPath;
+  if (parentPath && SUBJECT_KEY.test(key)) return `${parentPath}/${key}`;
+  return null;
+}
+
+function parseEntry(
+  entry: HTMLElement,
+  parentPath: string | null = null,
+): SidebarItem | null {
   if (!entry.matches("li.item, section.item, li, section")) return null;
 
   const label = entry.querySelector(":scope > label") as HTMLElement | null;
@@ -44,19 +70,21 @@ function parseEntry(entry: HTMLElement): SidebarItem | null {
 
   if (!key && !labelText) return null;
 
+  const path = inferPath(entry.dataset.path, key || labelText, parentPath);
+
   const childList = entry.querySelector(
     ":scope > .sub > ul",
   ) as HTMLElement | null;
   const children = childList
     ? [...childList.children]
         .filter((node): node is HTMLElement => node instanceof HTMLElement)
-        .map(parseEntry)
+        .map((node) => parseEntry(node, path ?? parentPath))
         .filter((item): item is SidebarItem => item != null)
     : [];
 
   return {
     key: key || labelText,
-    path: entry.dataset.path ?? null,
+    path,
     id: entry.id || null,
     label: labelText,
     iconHtml: readIconHtml(label),
@@ -65,6 +93,17 @@ function parseEntry(entry: HTMLElement): SidebarItem | null {
     betterseqta: entry.dataset.betterseqta === "true",
     children,
   };
+}
+
+/** True when SEQTA has not filled the Assessments/Courses submenu yet. */
+export function folderNeedsNativePopulate(item: SidebarItem): boolean {
+  if (item.key !== "assessments" && item.key !== "courses") return false;
+  return !item.children.some(
+    (child) =>
+      !child.betterseqta &&
+      child.key !== "upcoming" &&
+      child.key !== "assessments-overview",
+  );
 }
 
 /** Parse the native SEQTA `#menu` list into a plain tree for the Svelte sidebar. */
@@ -105,10 +144,32 @@ export function findNativeMenuEntry(
   }
 
   if (item.key) {
-    const byKey = list.querySelector(
-      `li[data-key="${CSS.escape(item.key)}"], section[data-key="${CSS.escape(item.key)}"]`,
-    );
-    if (byKey instanceof HTMLElement) return byKey;
+    const matches = [
+      ...list.querySelectorAll<HTMLElement>(
+        `li[data-key="${CSS.escape(item.key)}"], section[data-key="${CSS.escape(item.key)}"]`,
+      ),
+    ];
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1) {
+      if (item.path) {
+        const exact = matches.find((node) => node.dataset.path === item.path);
+        if (exact) return exact;
+
+        const rootKey = item.path.split("/").filter(Boolean)[0];
+        if (rootKey) {
+          const underRoot = matches.find((node) =>
+            node.closest(`[data-key="${CSS.escape(rootKey)}"]`),
+          );
+          if (underRoot) return underRoot;
+        }
+      }
+
+      const leaf = matches.find(
+        (node) => !node.classList.contains("hasChildren"),
+      );
+      if (leaf) return leaf;
+      return matches[0];
+    }
   }
 
   if (item.label) {

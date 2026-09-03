@@ -3,6 +3,7 @@
  */
 import {
   findNativeMenuEntry,
+  folderNeedsNativePopulate,
   getPagePathFromHash,
   parseNativeMenu,
 } from "./parseNativeMenu";
@@ -112,5 +113,112 @@ describe("parseNativeMenu", () => {
 
     expect(course?.dataset.path).toBe("/courses/4804:11066");
     expect(assessments?.dataset.path).toBe("/assessments/4804:11066");
+  });
+
+  it("synthesizes assessment subject paths when SEQTA omits data-path", () => {
+    document.body.innerHTML = `
+      <div id="menu">
+        <ul>
+          <li class="item hasChildren" data-key="assessments" data-path="/assessments">
+            <label>Assessments</label>
+            <div class="sub"><ul>
+              <li class="item hasChildren">
+                <label>Year 12</label>
+                <div class="sub"><ul>
+                  <li class="item" data-key="4804:11066" data-colour="#f00">
+                    <label>English</label>
+                  </li>
+                </ul></div>
+              </li>
+            </ul></div>
+          </li>
+          <li class="item hasChildren" data-key="courses" data-path="/courses">
+            <label>Courses</label>
+            <div class="sub"><ul>
+              <li class="item hasChildren" data-key="4804:11066">
+                <label>English</label>
+                <div class="sub"><ul>
+                  <li class="item" data-key="4804:11066" data-path="/courses/4804:11066">
+                    <label>Course</label>
+                  </li>
+                </ul></div>
+              </li>
+            </ul></div>
+          </li>
+        </ul>
+      </div>
+    `;
+
+    const menu = document.getElementById("menu")!;
+    const items = parseNativeMenu(menu);
+    const english = items
+      .find((item) => item.key === "assessments")
+      ?.children[0]?.children[0];
+
+    expect(english?.path).toBe("/assessments/4804:11066");
+
+    const native = findNativeMenuEntry(menu, {
+      key: "4804:11066",
+      id: null,
+      path: english?.path ?? null,
+      label: "English",
+    });
+
+    expect(native?.closest("[data-key='assessments']")).not.toBeNull();
+    expect(native?.closest("[data-key='courses']")).toBeNull();
+  });
+
+  it("detects assessments/courses folders that still need SEQTA to populate subjects", () => {
+    expect(
+      folderNeedsNativePopulate({
+        key: "assessments",
+        path: "/assessments",
+        id: null,
+        label: "Assessments",
+        iconHtml: "",
+        hasChildren: true,
+        itemColour: null,
+        betterseqta: false,
+        children: [
+          {
+            key: "assessments-overview",
+            path: null,
+            id: null,
+            label: "Overview",
+            iconHtml: "",
+            hasChildren: false,
+            itemColour: null,
+            betterseqta: true,
+            children: [],
+          },
+        ],
+      }),
+    ).toBe(true);
+
+    expect(
+      folderNeedsNativePopulate({
+        key: "courses",
+        path: "/courses",
+        id: null,
+        label: "Courses",
+        iconHtml: "",
+        hasChildren: true,
+        itemColour: null,
+        betterseqta: false,
+        children: [
+          {
+            key: "4804:11066",
+            path: "/courses/4804:11066",
+            id: null,
+            label: "English",
+            iconHtml: "",
+            hasChildren: true,
+            itemColour: null,
+            betterseqta: false,
+            children: [],
+          },
+        ],
+      }),
+    ).toBe(false);
   });
 });

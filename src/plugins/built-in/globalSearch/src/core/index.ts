@@ -12,6 +12,7 @@ import {
   getStoredPassiveItems,
   installPassiveObserver,
 } from "../indexing/passiveObserver";
+import { globalSearchIndexingEnabled } from "@/seqta/utils/performanceMode";
 
 function scheduleIdleIndexing(run: () => void): void {
   if (typeof requestIdleCallback === "function") {
@@ -83,7 +84,7 @@ const globalSearchPlugin: Plugin<{}> = {
         (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),
     };
 
-    if (api.settings.passiveIndexing) {
+    if (globalSearchIndexingEnabled(!!api.settings.passiveIndexing)) {
       try {
         installPassiveObserver();
       } catch (error) {
@@ -91,7 +92,10 @@ const globalSearchPlugin: Plugin<{}> = {
       }
     }
 
-    if (api.settings.runIndexingOnLoad && !isIndexingPaused()) {
+    if (
+      globalSearchIndexingEnabled(!!api.settings.runIndexingOnLoad) &&
+      !isIndexingPaused()
+    ) {
       scheduleIdleIndexing(() => {
         if (!isIndexingPaused()) void runIndexing();
       });

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { animate } from 'motion';
-  import { standalone } from '../utils/standalone.svelte'
+  import { standalone } from '../utils/standalone.svelte';
+  import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
 
   let { state, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
   let handle: HTMLElement | null = null;
@@ -10,13 +11,18 @@
     damping: 30,
   };
 
+  const knobX = $derived(state ? (standalone.standalone ? 24 : 20) : 0);
+
   const animateSwitch = (enabled: boolean) => {
     if (!handle) return;
+    const x = enabled ? (standalone.standalone ? 24 : 20) : 0;
+    if (!fullMotionEffectsEnabled()) {
+      handle.style.transform = `translateX(${x}px)`;
+      return;
+    }
     animate(
       handle,
-      {
-        x: enabled ? (standalone.standalone ? 24 : 20) : 0,
-      },
+      { x },
       {
         type: 'spring',
         stiffness: springParams.stiffness,
@@ -25,7 +31,6 @@
     );
   };
 
-  // Trigger animation whenever state changes
   $effect(() => animateSwitch(state));
 </script>
 
@@ -39,6 +44,7 @@
 >
   <div
     bind:this={handle}
-    class="w-6 h-6 bg-white dark:bg-[#FEFEFE] rounded-full drop-shadow-md"
+    class="w-6 h-6 bg-white dark:bg-[#FEFEFE] rounded-full drop-shadow-md transition-transform duration-200"
+    style={fullMotionEffectsEnabled() ? undefined : `transform: translateX(${knobX}px)`}
   ></div>
 </div>

@@ -6,8 +6,9 @@ import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/Loaders/LoadHomePage";
-import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
+import { applyMenuItemVisibility, scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
+import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
 
 import browser from "webextension-polyfill";
 import type { CustomShortcut } from "@/types/storage";
@@ -36,6 +37,10 @@ export class StorageChangeHandler {
       "transparencyEffects",
       this.handleTransparencyEffectsChange.bind(this),
     );
+    settingsState.register("performanceMode", () => syncPerformanceModeEffects());
+    settingsState.register("performanceModePluginOverrides", () =>
+      syncPerformanceModeEffects(),
+    );
     settingsState.register(
       "subjectfilters",
       FilterUpcomingAssessments.bind(this),
@@ -46,7 +51,7 @@ export class StorageChangeHandler {
       this.handleIconOnlySidebarChange.bind(this),
     );
     settingsState.register("selectedFont", () => applySelectedFont());
-    settingsState.register("menuitems", () => applyMenuItemVisibility());
+    settingsState.register("menuitems", () => scheduleMenuItemVisibility());
     settingsState.register("menuorder", (order) => {
       if (Array.isArray(order) && order.length > 0) {
         ChangeMenuItemPositions(order);
@@ -85,7 +90,7 @@ export class StorageChangeHandler {
   }
 
   private handleTransparencyEffectsChange(newValue: boolean) {
-    if (newValue) {
+    if (newValue && !settingsState.performanceMode) {
       document.documentElement.classList.add("transparencyEffects");
     } else {
       document.documentElement.classList.remove("transparencyEffects");

@@ -5,13 +5,35 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
+    "title": "3.7.4 – Performance Mode & various fixes",
+    "items": [
+      "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
+      "Fixed custom background images and videos not uploading.",
+      "Added combined class groups in Grade Analytics to merge multiple subjects into one trend.",
+      "Fixed icon-only sidebar not expanding when opening a folder.",
+      "Fixed icon-only sidebar root labels overlapping folder view when drilling in.",
+      "Fixed Assessments and Courses folders going blank after SEQTA stripped sidebar active state.",
+      "Fixed Glass sidebar and transparency blur hiding Courses/Assessments labels on Edge.",
+      "Added a one-time prompt to re-enable BetterSEQTA features after the Courses and Assessments fix.",
+      "Fixed feedback modal not scrolling on long bug reports and replies.",
+      "Fixed the look and feel of the sidebar to be more like how it used to be.",
+    ]
+  },
+  {
     "title": "3.7.3 – Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added a few new loading screens you will see when opening SEQTA with BetterSEQTA",
       "Added an option in the Timetable to sync to Google Calendar and Outlook Calendar",
       "Added a new sidebar customisation page in the settings menu to change the sidebar layout, icons, and more.",
       "Added extension feedback in settings.",
+      "Added a new toggleable titlebar founder badge to the topbar for BetterSEQTA Cloud celebrations.",
+      "Addded Editing a teacher's name in the timetable editor now affect Assements.",
+      "Added a 'this year' & custom date range option to grade analyitics.",
+      "Removed white background around SEQTA Learn mobile App icons in settings.",
+      "Re-added the kitten back to the 404 Error pages.",
       "Improved the sidebar to be more stable and performant.",
+      "Fixed some issues related to HTML Sanitisation.",
+      "Fixed Analytics page not respecting no animations setting. (#474)",
       "Fixed dropdown contrast and readability in settings and across SEQTA pages.",
       "Fixed Analytics sidebar item not hiding when toggled off in Edit Sidebar.",
       "Fixed timetable subject colour picker not reopening after closing (#221).",

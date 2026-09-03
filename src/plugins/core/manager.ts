@@ -13,6 +13,7 @@ import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
+import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
   enabled?: boolean;
@@ -42,6 +43,9 @@ const PLUGIN_START_PHASES: readonly string[][] = [
   ],
   ["global-search"],
 ];
+
+/** Booted only from SEQTA.ts on standalone 404 documents — never auto-start in the SPA. */
+const PLUGIN_BOOT_ONLY_IDS = new Set(["error-page-kitten"]);
 
 /**
  * Singleton class responsible for the entire lifecycle of plugins.
@@ -188,6 +192,14 @@ export class PluginManager {
         }
       }
 
+      if (!isPluginAllowedInPerformanceMode(pluginId)) {
+        this.disposePluginAPI(pluginId);
+        verboseInfo(
+          `Plugin "${pluginId}" paused by performance mode`,
+        );
+        return;
+      }
+
       // Inject plugin styles if provided
       if (plugin.styles) {
         const styleElement = document.createElement("style");
@@ -263,7 +275,7 @@ export class PluginManager {
 
     const phasedIds = new Set(PLUGIN_START_PHASES.flat());
     const remainingIds = Array.from(this.plugins.keys()).filter(
-      (id) => !phasedIds.has(id),
+      (id) => !phasedIds.has(id) && !PLUGIN_BOOT_ONLY_IDS.has(id),
     );
     if (remainingIds.length > 0) {
       await this.startPluginPhase(remainingIds);

@@ -16,6 +16,9 @@ import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
+import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -144,8 +147,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
-    // Kept as fallback if the custom Svelte sidebar fails to mount.
-    setupSidebarAccessibility();
+    maybeSetupSidebarAccessibility();
   }
 
   addExtensionSettings();
@@ -181,6 +183,7 @@ async function handleUserInfoAndStudentData() {
     ]);
 
     updateUserInfo(userInfo);
+    ensureTitlebarFounderBadgeMounted();
     await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
     console.error(
@@ -227,11 +230,16 @@ function updateUserInfo(info: {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          <div style="display: flex; align-items: center;">
-            <p class="userInfohouse userInfoCode" style="display: none;"></p>
-            ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+          <div class="userInfoNameRow">
+            <div class="userInfoHouseWrap">
+              <p class="userInfohouse userInfoCode" style="display: none;"></p>
+              <span class="bsplus-founder-badge-slot" hidden></span>
+            </div>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
+            </div>
           </div>
-          ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
         </div>
       </div>
     `).firstChild!,
@@ -277,6 +285,7 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
 
   houseelement.innerText = text;
   houseelement.style.display = text ? "block" : "none";
+  refreshTitlebarFounderBadge();
 }
 
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
@@ -413,12 +422,19 @@ async function addEngageUserInfo() {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
-          ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+          <div class="userInfoNameRow">
+            <span class="bsplus-founder-badge-slot" hidden></span>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+            </div>
+          </div>
         </div>
       </div>
     `).firstChild!,
   );
+
+  ensureTitlebarFounderBadgeMounted();
 
   const iconNode = stringToHTML(/* html */ `
     <div class="userInfosvgdiv tooltip" id="engage-logouttooltip-wrap">
@@ -485,11 +501,18 @@ async function setupEngageSettingsButton() {
   }
   (content as HTMLElement).dataset.bsplusEngageSettingsWatch = "1";
 
-  const observer = new MutationObserver(() => {
-    if (document.getElementById("AddedSettings")) return;
-    void tryMount();
-  });
-  observer.observe(content, { childList: true, subtree: true });
+  let engageRemountTimer: ReturnType<typeof setTimeout> | null = null;
+  const debouncedTryMount = () => {
+    if (engageRemountTimer) clearTimeout(engageRemountTimer);
+    engageRemountTimer = setTimeout(() => {
+      engageRemountTimer = null;
+      if (document.getElementById("AddedSettings")) return;
+      void tryMount();
+    }, isPerformanceMode() ? 300 : 80);
+  };
+
+  const observer = new MutationObserver(debouncedTryMount);
+  observer.observe(content, { childList: true, subtree: !isPerformanceMode() });
 }
 
 function GetLightDarkModeString() {
@@ -557,6 +580,12 @@ function customizeMenuToggle() {
   }
 }
 
+function maybeSetupSidebarAccessibility() {
+  const menu = document.getElementById("menu");
+  if (menu?.classList.contains("bsplus-custom-sidebar")) return;
+  setupSidebarAccessibility();
+}
+
 function setupSidebarAccessibility() {
   updateSidebarAccessibility();
 
@@ -564,6 +593,7 @@ function setupSidebarAccessibility() {
   if (!menu) return;
 
   sidebarAccessibilityObserver?.disconnect();
+  const throttledA11yUpdate = rafThrottle(scheduleSidebarAccessibilityUpdate);
   sidebarAccessibilityObserver = new MutationObserver((mutations) => {
     // Custom Svelte sidebar owns drill a11y — ignore its DOM (opening Goals/Folios
     // mutates a lot; re-running here used to help freeze the tab).
@@ -588,7 +618,7 @@ function setupSidebarAccessibility() {
         return;
       }
     }
-    scheduleSidebarAccessibilityUpdate();
+    throttledA11yUpdate();
   });
   sidebarAccessibilityObserver.observe(menu, {
     subtree: true,

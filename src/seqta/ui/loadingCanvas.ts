@@ -82,6 +82,10 @@ function cssVar(root: HTMLElement, name: string, fallback: string): string {
   return getComputedStyle(root).getPropertyValue(name).trim() || fallback;
 }
 
+function isLightScheme(root: HTMLElement): boolean {
+  return root.dataset.scheme === "light";
+}
+
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   color: string,
@@ -187,6 +191,7 @@ function drawDotGlobe(
   phaseElapsed: number,
   fade: boolean,
   ambient: number,
+  light: boolean,
 ) {
   const time = reduced ? 0 : elapsed * 0.001;
   const cx = w * 0.5;
@@ -206,8 +211,8 @@ function drawDotGlobe(
   ctx.save();
   ctx.globalAlpha = ambient;
   const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.15);
-  glow.addColorStop(0, "rgba(37, 99, 235, 0.1)");
-  glow.addColorStop(0.55, "rgba(37, 99, 235, 0.03)");
+  glow.addColorStop(0, light ? "rgba(37, 99, 235, 0.16)" : "rgba(37, 99, 235, 0.1)");
+  glow.addColorStop(0.55, light ? "rgba(37, 99, 235, 0.05)" : "rgba(37, 99, 235, 0.03)");
   glow.addColorStop(1, "rgba(37, 99, 235, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(cx - radius * 1.2, cy - radius * 1.2, radius * 2.4, radius * 2.4);
@@ -258,8 +263,8 @@ function drawDotGlobe(
 
     ctx.fillStyle =
       brightness > 0.52
-        ? `rgba(96, 165, 250, ${alpha})`
-        : `rgba(255, 255, 255, ${0.08 + brightness * 0.22 * dot.p})`;
+        ? `rgba(${light ? "29, 78, 216" : "96, 165, 250"}, ${alpha})`
+        : `rgba(${light ? "24, 24, 27" : "255, 255, 255"}, ${0.08 + brightness * 0.22 * dot.p})`;
     ctx.beginPath();
     ctx.arc(dot.px, dot.py, size, 0, Math.PI * 2);
     ctx.fill();
@@ -306,7 +311,17 @@ export function startLoadingCanvas(
 
     if (visual === "globe") {
       const { t, fade, ambient } = cycle(elapsed, revealMs, holdMs);
-      drawDotGlobe(ctx, w, h, elapsed, reduced, t, fade, reduced ? 1 : ambient);
+      drawDotGlobe(
+        ctx,
+        w,
+        h,
+        elapsed,
+        reduced,
+        t,
+        fade,
+        reduced ? 1 : ambient,
+        isLightScheme(root),
+      );
     } else if (visual === "blobs") {
       const tide = variant.blobStyle === "tide";
       drawSoftBlobs(

@@ -84,6 +84,7 @@ const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   ...CLIENT_ONLY_CLOUD_KEYS_EXACT,
   "devMode",
   "devGhReleaseVersionOverride",
+  "devDelayLoadingScreen",
 ]);
 
 const UNSAFE_STORAGE_KEYS = new Set(["__proto__", "constructor", "prototype"]);

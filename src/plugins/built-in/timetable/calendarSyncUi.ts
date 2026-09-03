@@ -63,7 +63,12 @@ export function portalToBody(node: HTMLElement) {
 }
 
 export function isCalendarSyncModalTarget(target: EventTarget | null): boolean {
-  return target instanceof Element && Boolean(target.closest(".bsplus-cal-modal-backdrop"));
+  return (
+    target instanceof Element &&
+    Boolean(
+      target.closest(".bsplus-cal-modal-backdrop, .bsplus-cal-disconnect-overlay"),
+    )
+  );
 }
 
 /** Sync extension theme (including dark mode) onto a calendar UI host or portaled menu. */

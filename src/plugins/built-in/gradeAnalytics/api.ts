@@ -6,7 +6,7 @@ import {
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
 import { loadAnalyticsCache, saveAnalyticsCache } from "./storage";
-import type { Assessment, AssessmentStatus } from "./types";
+import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
 const PAST_FETCH_CONCURRENCY = 8;
 const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -155,65 +155,119 @@ function extractLetterGrade(
   );
 }
 
-/** All programme years / folders from SEQTA (active and inactive), matching DesQTA analytics. */
-function flattenSubjectFolders(payload: unknown): Subject[] {
-  if (!Array.isArray(payload)) return [];
+function classKey(programme: number, metaclass: number): string {
+  return `${programme}-${metaclass}`;
+}
 
-  const subjects: Subject[] = [];
+function folderYearLabel(description: unknown): string {
+  const text = String(description ?? "").trim();
+  const match = text.match(/\b(20\d{2})\b/);
+  return match?.[1] ?? (text || "?");
+}
+
+function parseClassOption(raw: unknown, yearLabel: string): AnalyticsClassOption | null {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const programme = Number(row.programme ?? row.programmeID);
+  const metaclass = Number(row.metaclass ?? row.metaclassID);
+  if (!programme || !metaclass || Number.isNaN(programme) || Number.isNaN(metaclass)) {
+    return null;
+  }
+  const title = String(row.title ?? row.description ?? row.code ?? row.subject ?? "").trim();
+  if (!title) return null;
+  return {
+    key: classKey(programme, metaclass),
+    title,
+    yearLabel,
+    programme,
+    metaclass,
+  };
+}
+
+function parseClassOptionsFromPayload(payload: unknown): AnalyticsClassOption[] {
+  if (!Array.isArray(payload)) return [];
+  const map = new Map<string, AnalyticsClassOption>();
   for (const folder of payload) {
     if (!folder || typeof folder !== "object") continue;
-    const list = (folder as { subjects?: Subject[] }).subjects;
-    if (!Array.isArray(list)) continue;
-
-    for (const raw of list) {
-      if (!raw || typeof raw !== "object") continue;
-      const programme = Number(
-        (raw as Subject).programme ?? (raw as { programmeID?: number }).programmeID,
-      );
-      const metaclass = Number(
-        (raw as Subject).metaclass ?? (raw as { metaclassID?: number }).metaclassID,
-      );
-      if (!programme || !metaclass || isNaN(programme) || isNaN(metaclass)) continue;
-
-      subjects.push({
-        code: String((raw as Subject).code ?? (raw as { subject?: string }).subject ?? ""),
-        programme,
-        metaclass,
-      });
+    const term = folder as { description?: unknown; code?: unknown; subjects?: unknown[] };
+    const yearLabel = folderYearLabel(term.description ?? term.code);
+    for (const raw of term.subjects ?? []) {
+      const option = parseClassOption(raw, yearLabel);
+      if (option) map.set(option.key, option);
     }
   }
-  return subjects;
+  return sortClassOptions([...map.values()]);
 }
 
-/** Subjects implied by cached assessments (covers metaclasses no longer listed). */
-function subjectsFromAssessments(assessments: Assessment[]): Subject[] {
-  const map = new Map<string, Subject>();
+function classOptionsFromAssessments(assessments: Assessment[]): AnalyticsClassOption[] {
+  const map = new Map<string, AnalyticsClassOption>();
   for (const a of assessments) {
     if (!a.programmeID || !a.metaclassID) continue;
-    const key = `${a.programmeID}-${a.metaclassID}`;
-    if (!map.has(key)) {
-      map.set(key, {
-        code: a.code || a.subject,
-        programme: a.programmeID,
-        metaclass: a.metaclassID,
-      });
-    }
+    const key = classKey(a.programmeID, a.metaclassID);
+    if (map.has(key)) continue;
+    map.set(key, {
+      key,
+      title: a.subject || a.code,
+      yearLabel: a.due ? String(new Date(a.due).getFullYear()) : "?",
+      programme: a.programmeID,
+      metaclass: a.metaclassID,
+    });
   }
-  return Array.from(map.values());
+  return [...map.values()];
 }
 
-function dedupeSubjects(subjects: Subject[]): Subject[] {
-  const map = new Map<string, Subject>();
-  for (const s of subjects) {
-    map.set(`${s.programme}-${s.metaclass}`, s);
+function sortClassOptions(options: AnalyticsClassOption[]): AnalyticsClassOption[] {
+  return [...options].sort((a, b) => {
+    const yearA = Number.parseInt(a.yearLabel, 10);
+    const yearB = Number.parseInt(b.yearLabel, 10);
+    if (!Number.isNaN(yearA) && !Number.isNaN(yearB) && yearA !== yearB) {
+      return yearB - yearA;
+    }
+    if (a.yearLabel !== b.yearLabel) {
+      return a.yearLabel.localeCompare(b.yearLabel, undefined, { sensitivity: "base" });
+    }
+    return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+  });
+}
+
+function mergeClassCatalog(
+  folderPayload: unknown,
+  assessments: Assessment[],
+): AnalyticsClassOption[] {
+  const map = new Map<string, AnalyticsClassOption>();
+  for (const option of parseClassOptionsFromPayload(folderPayload)) {
+    map.set(option.key, option);
   }
-  return Array.from(map.values());
+  for (const option of classOptionsFromAssessments(assessments)) {
+    map.set(option.key, option);
+  }
+  return sortClassOptions([...map.values()]);
+}
+
+function catalogToSubjects(catalog: AnalyticsClassOption[]): Subject[] {
+  return catalog.map((c) => ({
+    code: c.title,
+    programme: c.programme,
+    metaclass: c.metaclass,
+  }));
 }
 
 async function loadAllSubjects(existingAssessments: Assessment[] = []): Promise<Subject[]> {
-  const res = await fetchJSON("/seqta/student/load/subjects?", {});
-  const fromFolders = flattenSubjectFolders(res.payload);
-  return dedupeSubjects([...fromFolders, ...subjectsFromAssessments(existingAssessments)]);
+  const catalog = await loadAnalyticsClassCatalog(existingAssessments);
+  return catalogToSubjects(catalog);
+}
+
+/** All programme-year classes for combine-groups UI (active + inactive folders). */
+export async function loadAnalyticsClassCatalog(
+  existingAssessments: Assessment[] = [],
+): Promise<AnalyticsClassOption[]> {
+  try {
+    const res = await fetchJSON("/seqta/student/load/subjects?", {});
+    return mergeClassCatalog(res.payload, existingAssessments);
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to load analytics class catalog:", error);
+    return sortClassOptions(classOptionsFromAssessments(existingAssessments));
+  }
 }
 
 async function loadUpcoming(studentId: number): Promise<Record<string, unknown>[]> {

@@ -34,9 +34,21 @@
 #ExtensionPopup {
   border-radius: 0;
   filter: none;
-  /* Avoid transform on the host — it makes shadow `position: fixed` children
-     size to the host instead of the viewport on Engage stacking contexts. */
   transform-origin: center center;
-  will-change: opacity;
-  transition: opacity 0.05s;
+  opacity: 0;
+  transition: opacity var(--bs-motion-duration, 0.2s) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#ExtensionPopup.bsplus-settings-host--open {
+  opacity: 1;
+}
+
+#ExtensionPopup.bsplus-settings-host--closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Feedback modal scrollport — host overflow:hidden otherwise clips fixed overlays. */
+#ExtensionPopup.bsplus-feedback-open {
+  overflow: auto !important;
 }

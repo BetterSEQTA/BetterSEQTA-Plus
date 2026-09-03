@@ -53,6 +53,9 @@ if (document.childNodes[1]) {
   init();
 }
 
+// Standalone 404 documents never pass the SEQTA SPA gate above.
+void bootErrorPage();
+
 if (import.meta.env.DEV) {
   window.addEventListener("unhandledrejection", (event) => {
     recoverFromStaleDevModuleGraph(event.reason);
@@ -135,6 +138,64 @@ async function init() {
       console.error(error);
       recoverFromStaleDevModuleGraph(error);
     }
+  }
+}
+
+/** Hide the rebranded 404 before the kitten card mounts (removed after boot). */
+function inject404FlashHide(): void {
+  if (document.getElementById("bsplus-404-flash-hide")) return;
+  const style = document.createElement("style");
+  style.id = "bsplus-404-flash-hide";
+  style.textContent =
+    "html,body{background:#333!important}.message{display:none!important}";
+  (document.head ?? document.documentElement).appendChild(style);
+}
+
+async function bootErrorPage() {
+  if (IsSEQTAPage) return;
+
+  const { isSeqta404Page, mountErrorPageKitten } = await import(
+    "@/plugins/built-in/errorPageKitten"
+  );
+
+  const storagePromise = browser.storage.local.get([
+    "onoff",
+    "plugin.error-page-kitten.settings",
+  ]);
+
+  const watchTitle = () => {
+    if (isSeqta404Page()) inject404FlashHide();
+  };
+  watchTitle();
+  if (document.readyState === "loading") {
+    document.addEventListener("readystatechange", watchTitle);
+  }
+
+  if (document.readyState === "loading") {
+    await new Promise<void>((resolve) => {
+      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    });
+  }
+  document.removeEventListener("readystatechange", watchTitle);
+
+  if (!isSeqta404Page()) return;
+
+  const stored = await storagePromise;
+  if ((stored.onoff ?? true) === false) return;
+  const kittenSettings = stored["plugin.error-page-kitten.settings"] as
+    | { enabled?: boolean }
+    | undefined;
+  if (kittenSettings?.enabled === false) return;
+
+  try {
+    mountErrorPageKitten();
+    document.getElementById("bsplus-404-flash-hide")?.remove();
+  } catch (error) {
+    document.getElementById("bsplus-404-flash-hide")?.remove();
+    document
+      .querySelectorAll(".bsplus-kitten-404-hidden")
+      .forEach((el) => el.classList.remove("bsplus-kitten-404-hidden"));
+    console.error("[BetterSEQTA+] Failed to boot 404 page:", error);
   }
 }
 

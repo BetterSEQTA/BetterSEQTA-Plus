@@ -2,10 +2,7 @@
   import { onDestroy } from "svelte";
   import Sortable from "sortablejs";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import {
-    restoreCustomMenuActive,
-    sidebarState,
-  } from "./sidebarState.svelte";
+  import { sidebarState } from "./sidebarState.svelte";
   import SidebarItem from "./SidebarItem.svelte";
   import type {
     SidebarDrillFrame,
@@ -102,7 +99,7 @@
           `${Math.round(width)}px`,
         );
         // Fallback clone is created just after onStart; pin size + drop
-        // `.active` so theme/active rules don't expand it to full width.
+        // Active styling makes fallback clones wider; keep the source width.
         requestAnimationFrame(() => {
           const dragEl = document.querySelector(
             ".bsplus-sortable-drag",
@@ -110,7 +107,7 @@
           if (!dragEl) return;
           dragEl.style.width = `${Math.round(width)}px`;
           dragEl.style.maxWidth = `${Math.round(width)}px`;
-          dragEl.classList.remove("active");
+          dragEl.classList.remove("bsplus-active");
         });
       },
       onEnd: (evt) => {
@@ -156,15 +153,6 @@
     };
   });
 
-  // SEQTA strips `.active` from `#menu li` after clicks — re-apply from state.
-  // Do NOT MutationObserver class changes here: restore writes `.active`, SEQTA
-  // strips it again, and the feedback loop freezes the tab.
-  $effect(() => {
-    void sidebarState.activeKey;
-    void sidebarState.isDrilling;
-    restoreCustomMenuActive();
-  });
-
   // Drill `.sub` is position:absolute inside this scrollport — if the list was
   // scrolled down (e.g. Folios/Goals near the bottom), the panel sits under the
   // logo until we reset. Also reset when going back up the stack.
@@ -195,6 +183,8 @@
   class="logo-link bsplus-sidebar-list"
   class:noscroll={sidebarState.isDrilling}
   class:drilling={sidebarState.isDrilling}
+  class:drill-entering={sidebarState.enterFrameKey != null}
+  class:drill-returning={sidebarState.drillReturning}
   class:compact={sidebarState.compact}
   class:edit-mode={sidebarState.editMode}
   class:is-sorting={dragging}
@@ -267,7 +257,7 @@
   {@const folder = current.folder}
   <li
     class="item hasChildren bsplus-sidebar-item"
-    class:active={true}
+    class:bsplus-active={true}
     data-key={current.frame.key}
     data-path={folder?.path ?? undefined}
     style:--item-colour={folder?.itemColour || undefined}
@@ -283,7 +273,8 @@
       class="sub"
       class:bsplus-sub-enter={sidebarState.enterFrameKey === current.frame.key}
       onanimationend={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target !== e.currentTarget) return;
+        if (sidebarState.enterFrameKey === current.frame.key) {
           sidebarState.clearEnterFrame(current.frame.key);
         }
       }}

@@ -36,14 +36,15 @@ jobs:
             echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          TZ=Australia/Adelaide
+          export TZ=Australia/Adelaide
+          NOW="$(date +'%Y-%m-%d %H:%M %Z')"
           if [ "$(date +%H%M)" = "0000" ]; then
             echo "proceed=true" >> "$GITHUB_OUTPUT"
           else
             echo "proceed=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping: not midnight Australia/Adelaide ($(date +%Y-%m-%d %H:%M %Z))"
+            echo "Skipping: not midnight Australia/Adelaide ($NOW)"
           fi
-
+          
       - uses: actions/checkout@v4
         if: steps.time_check.outputs.proceed == 'true'
 

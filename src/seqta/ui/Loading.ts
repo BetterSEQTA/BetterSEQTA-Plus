@@ -1,40 +1,69 @@
 import browser from "webextension-polyfill";
 import stringToHTML from "@/seqta/utils/stringToHTML";
+import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import loadingSpinner from "./loading-spinner.html?raw";
 import loadingOverlay from "./loading-overlay.html?raw";
 import { startLoadingCanvas } from "./loadingCanvas";
 import {
   pickLoadingVariant,
+  resolveLoadingTheme,
   type LoadingVariant,
 } from "./loadingVariants";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 let stopCanvas: (() => void) | null = null;
+let unbindThemeGuard: (() => void) | null = null;
+let activeLoading: {
+  host: HTMLElement;
+  shadow: ShadowRoot;
+  variant: LoadingVariant;
+} | null = null;
+
+const THEME_GUARD_KEYS = [
+  "selectedTheme",
+  "selectedColor",
+  "DarkMode",
+  "adaptiveThemeColour",
+  "selectedFont",
+] as const;
+
+const LOADING_PALETTE = {
+  line: "rgba(255, 255, 255, 0.08)",
+  lineAccent: "rgba(255, 255, 255, 0.15)",
+  lineBlue: "rgba(96, 165, 250, 0.42)",
+  grid: "rgba(255, 255, 255, 0.028)",
+  text: "#f4f4f5",
+} as const;
 
 const loadingStyles = /* css */ `
-  .bkloading {
-    --bk-line-color: rgba(255, 255, 255, 0.08);
-    --bk-line-accent: rgba(255, 255, 255, 0.15);
-    --bk-line-blue: rgba(96, 165, 250, 0.42);
-    --bk-grid-color: rgba(255, 255, 255, 0.028);
+  :host {
+    --bk-line-color: ${LOADING_PALETTE.line};
+    --bk-line-accent: ${LOADING_PALETTE.lineAccent};
+    --bk-line-blue: ${LOADING_PALETTE.lineBlue};
+    --bk-grid-color: ${LOADING_PALETTE.grid};
     --bk-spin-outer: 1s;
     --bk-spin-inner: 3s;
     --bk-spin-small: 3s;
     --bk-stage-name: bkloading-stage-in;
     --bk-stage-duration: 0.85s;
-    position: absolute;
-    inset: 0;
-    z-index: 1000000;
-    overflow: hidden;
-    contain: strict;
-    color: #f4f4f5;
-    background:
-      radial-gradient(ellipse 70% 45% at 50% 95%, rgba(37, 99, 235, 0.12), transparent 62%),
-      linear-gradient(180deg, #010101 0%, #040404 50%, #080808 100%);
+    --bk-version-color: rgba(255, 255, 255, 0.35);
+    --bk-vignette-fill: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
+    color: ${LOADING_PALETTE.text};
     opacity: 1;
     transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .bkloading.closeLoading {
+  :host([data-scheme="light"]) {
+    --bk-line-color: rgba(24, 24, 27, 0.1);
+    --bk-line-accent: rgba(24, 24, 27, 0.18);
+    --bk-line-blue: rgba(37, 99, 235, 0.5);
+    --bk-grid-color: rgba(24, 24, 27, 0.055);
+    --bk-version-color: rgba(24, 24, 27, 0.42);
+    --bk-vignette-fill: radial-gradient(ellipse at center, transparent 32%, rgba(250, 250, 250, 0.88) 100%);
+    color: #18181b;
+  }
+
+  :host(.closeLoading) {
     opacity: 0;
     pointer-events: none;
   }
@@ -51,7 +80,7 @@ const loadingStyles = /* css */ `
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 32%, rgba(0, 0, 0, 0.75) 100%);
+    background: var(--bk-vignette-fill);
     opacity: 0.88;
   }
 
@@ -138,7 +167,7 @@ const loadingStyles = /* css */ `
     bottom: 10px;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--bk-version-color);
     pointer-events: none;
   }
 
@@ -184,24 +213,77 @@ function overlayWithSpinner(): string {
   );
 }
 
-function applyVariantTheme(root: HTMLElement, variant: LoadingVariant) {
-  const { theme } = variant;
-  root.dataset.variant = variant.id;
-  root.style.background = theme.background;
-  root.style.setProperty("--bk-spin-outer", theme.spinOuter);
-  root.style.setProperty("--bk-spin-inner", theme.spinInner);
-  root.style.setProperty("--bk-spin-small", theme.spinSmall);
-  root.style.setProperty("--bk-stage-name", theme.stageName);
-  root.style.setProperty("--bk-stage-duration", theme.stageDuration);
+function applyHostShell(host: HTMLElement) {
+  const shell = [
+    ["position", "fixed"],
+    ["inset", "0"],
+    ["z-index", "1000000"],
+    ["display", "block"],
+    ["overflow", "hidden"],
+    ["contain", "strict"],
+    ["visibility", "visible"],
+    ["pointer-events", "auto"],
+  ] as const;
 
-  const vignette = root.querySelector(".bkloading__vignette") as HTMLElement | null;
+  for (const [prop, value] of shell) {
+    host.style.setProperty(prop, value, "important");
+  }
+}
+
+function applyVariantTheme(
+  host: HTMLElement,
+  shadow: ShadowRoot,
+  variant: LoadingVariant,
+) {
+  const darkMode = !!settingsState.DarkMode;
+  const theme = resolveLoadingTheme(variant, darkMode);
+  host.dataset.variant = variant.id;
+  host.dataset.scheme = darkMode ? "dark" : "light";
+  applyHostShell(host);
+  host.style.setProperty("background", theme.background, "important");
+  host.style.setProperty("--bk-spin-outer", theme.spinOuter, "important");
+  host.style.setProperty("--bk-spin-inner", theme.spinInner, "important");
+  host.style.setProperty("--bk-spin-small", theme.spinSmall, "important");
+  host.style.setProperty("--bk-stage-name", theme.stageName, "important");
+  host.style.setProperty("--bk-stage-duration", theme.stageDuration, "important");
+
+  const vignette = shadow.querySelector(".bkloading__vignette") as HTMLElement | null;
   if (vignette) vignette.style.opacity = String(theme.vignetteOpacity);
 }
 
-function startCanvasForRoot(root: HTMLElement, variant: LoadingVariant) {
+function refreshActiveLoadingTheme() {
+  if (!activeLoading || activeLoading.host.classList.contains("closeLoading")) return;
+  applyVariantTheme(activeLoading.host, activeLoading.shadow, activeLoading.variant);
+}
+
+function bindLoadingThemeGuard() {
+  const onThemeChange = () => refreshActiveLoadingTheme();
+  for (const key of THEME_GUARD_KEYS) {
+    settingsState.register(key, onThemeChange);
+  }
+
+  const observer = new MutationObserver(onThemeChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["style", "class", "data-city-state"],
+  });
+
+  return () => {
+    for (const key of THEME_GUARD_KEYS) {
+      settingsState.unregister(key, onThemeChange);
+    }
+    observer.disconnect();
+  };
+}
+
+function startCanvasForRoot(
+  host: HTMLElement,
+  shadow: ShadowRoot,
+  variant: LoadingVariant,
+) {
   stopCanvas?.();
-  const canvas = root.querySelector(".bkloading__canvas") as HTMLCanvasElement | null;
-  stopCanvas = canvas ? startLoadingCanvas(canvas, root, variant) : null;
+  const canvas = shadow.querySelector(".bkloading__canvas") as HTMLCanvasElement | null;
+  stopCanvas = canvas ? startLoadingCanvas(canvas, host, variant) : null;
 }
 
 export function AppendLoadingSymbol(givenID: string, position: string) {
@@ -216,23 +298,33 @@ export function AppendLoadingSymbol(givenID: string, position: string) {
 export function stopLoadingAnimation() {
   stopCanvas?.();
   stopCanvas = null;
+  unbindThemeGuard?.();
+  unbindThemeGuard = null;
+  activeLoading = null;
 }
 
 export default function loading() {
   stopLoadingAnimation();
 
   const variant = pickLoadingVariant();
+  const host = document.createElement("div");
+  host.id = "loading";
+  host.className = "bkloading";
 
-  const loadinghtml = stringToHTML(/* html */ `
-    <div class="bkloading" id="loading" data-variant="${variant.id}">
-      <style>${loadingStyles}</style>
-      ${overlayWithSpinner()}
-      <div class="bkloading__version">v${browser.runtime.getManifest().version}</div>
-    </div>`);
+  const shadow = host.attachShadow({ mode: "open" });
+  shadow.innerHTML = `
+    <style>${loadingStyles}</style>
+    ${overlayWithSpinner()}
+    <div class="bkloading__version">v${browser.runtime.getManifest().version}</div>
+  `;
 
-  const root = loadinghtml.firstChild as HTMLElement;
-  document.documentElement.append(root);
+  document.documentElement.append(host);
 
-  applyVariantTheme(root, variant);
-  startCanvasForRoot(root, variant);
+  applyVariantTheme(host, shadow, variant);
+  if (!isPerformanceMode()) {
+    startCanvasForRoot(host, shadow, variant);
+  }
+
+  activeLoading = { host, shadow, variant };
+  unbindThemeGuard = bindLoadingThemeGuard();
 }

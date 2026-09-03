@@ -1,0 +1,86 @@
+html.performanceMode {
+  --bs-settings-ease: 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  --bs-motion-duration: 0.2s;
+  --bs-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+
+  /* Inline page loaders only — boot overlay lives in #loading shadow DOM. */
+  .bkloading-inline .big-circle,
+  .bkloading-inline .small-circle,
+  .bkloading-inline .outer-circle {
+    animation: none !important;
+  }
+
+  /* Custom title: cheaper hit-testing during mouse moves (trace showed many HitTests). */
+  .bsplus-custom-title,
+  #title.bsplus-custom-title {
+    contain: layout style paint;
+  }
+
+  /* Settings backdrop — skip expensive blur in performance mode. */
+  #ExtensionPopup ~ *,
+  .outside-container.hide {
+    backdrop-filter: none !important;
+  }
+}
+
+html.performanceModeSimpleUi {
+  .bsplus-analytics-charts,
+  .bsplus-analytics-chart-cell {
+    display: none !important;
+  }
+}
+
+/* Boot loading spinner uses shadow DOM; custom properties inherit from the host. */
+#loading.bkloading {
+  --bk-stage-duration: 0.85s !important;
+  --bk-spin-outer: 1s !important;
+  --bk-spin-inner: 3s !important;
+  --bk-spin-small: 3s !important;
+}
+
+html.performanceMode.transparencyEffects,
+html.performanceMode .backdrop-blur-xl,
+html.performanceMode .backdrop-blur-sm,
+html.performanceMode [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Sidebar drill locks: `.drilling` on the list handles pointer-events in perf mode —
+   skip expensive `:has()` selectors that drive hit-test cost during mouse moves. */
+html.performanceMode #menu.bsplus-custom-sidebar {
+  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
+    > #bsplus-sidebar-root
+    > li:not(.hasChildren.bsplus-active),
+  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
+    > #bsplus-sidebar-root
+    > li:not(.hasChildren.bsplus-active)
+    * {
+    pointer-events: unset !important;
+  }
+
+  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
+    > li:not(.hasChildren.bsplus-active)::before,
+  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
+    > li:not(.hasChildren.bsplus-active)::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  > #bsplus-sidebar-root li.hasChildren.bsplus-active
+    > .sub:has(.hasChildren.bsplus-active) {
+    pointer-events: unset !important;
+  }
+
+  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:not(:has(.sub)) {
+    pointer-events: auto !important;
+  }
+
+  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:has(.sub) {
+    pointer-events: unset !important;
+  }
+}

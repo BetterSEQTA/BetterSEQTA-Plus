@@ -5,7 +5,7 @@ import {
   defineSettings,
   hotkeySetting,
 } from "../../core/settingsHelpers";
-import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
+import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
 import {
   resetSearchIndexes,
@@ -17,6 +17,7 @@ import {
   isValidHotkey,
 } from "./src/utils/hotkeyUtils";
 import { titleBarState } from "@/seqta/ui/titlebar/titleBarState.svelte";
+import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 const settings = defineSettings({
   searchHotkey: hotkeySetting({
@@ -90,7 +91,8 @@ const globalSearchPlugin = defineLazyPlugin({
 const runGlobalSearch = globalSearchPlugin.run!;
 
 globalSearchPlugin.run = async (api) => {
-  if (isSeqtaEngageExperience()) return () => {};
+  if (isSeqtaEngageExperience() || isSeqtaLoginPage()) return () => {};
+  if (!isPluginAllowedInPerformanceMode("global-search")) return () => {};
 
   // Eager chrome (like Analytics menu injection) — heavy chunk loads behind it.
   const hotkey = isValidHotkey(api.settings.searchHotkey ?? "")
