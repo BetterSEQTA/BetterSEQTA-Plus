@@ -1,4 +1,9 @@
 import { settingsState } from "../listeners/SettingsState";
+import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
+import {
+  animatePopupClose,
+  animatePopupOpen,
+} from "@/seqta/utils/popupAnimation";
 import { animate as motionAnimate, stagger } from "motion";
 
 type AnimationTarget = string | Element | Element[] | NodeList | null;
@@ -61,11 +66,15 @@ export async function closePopup() {
     return;
   }
 
-  await (motionAnimate as any)(
-    [popup, background],
-    { opacity: [1, 0], scale: [1, 0.95] },
-    { duration: 0.25, easing: [0.22, 0.03, 0.26, 1] },
-  );
+  if (fullMotionEffectsEnabled()) {
+    await (motionAnimate as any)(
+      [popup, background],
+      { opacity: [1, 0], scale: [1, 0.95] },
+      { duration: 0.25, easing: [0.22, 0.03, 0.26, 1] },
+    );
+  } else {
+    await animatePopupClose(background);
+  }
 
   background.remove();
   isClosing = false;
@@ -160,27 +169,31 @@ export function openPopup({
   appContainer.append(background);
 
   if (settingsState.animations) {
-    (motionAnimate as any)(
-      [container, background],
-      { scale: [0, 1] },
-      { type: "spring", stiffness: 220, damping: 18 },
-    );
-
-    if (animateSelector) {
-      const targets =
-        typeof animateSelector === "string"
-          ? document.querySelectorAll(animateSelector)
-          : animateSelector;
-
+    if (fullMotionEffectsEnabled()) {
       (motionAnimate as any)(
-        targets!,
-        { opacity: [0, 1], y: [10, 0] },
-        {
-          delay: stagger(0.05, { startDelay: 0.1 }),
-          duration: 0.5,
-          easing: [0.22, 0.03, 0.26, 1],
-        },
+        [container, background],
+        { scale: [0, 1] },
+        { type: "spring", stiffness: 220, damping: 18 },
       );
+
+      if (animateSelector) {
+        const targets =
+          typeof animateSelector === "string"
+            ? document.querySelectorAll(animateSelector)
+            : animateSelector;
+
+        (motionAnimate as any)(
+          targets!,
+          { opacity: [0, 1], y: [10, 0] },
+          {
+            delay: stagger(0.05, { startDelay: 0.1 }),
+            duration: 0.5,
+            easing: [0.22, 0.03, 0.26, 1],
+          },
+        );
+      }
+    } else {
+      animatePopupOpen(background);
     }
   }
 

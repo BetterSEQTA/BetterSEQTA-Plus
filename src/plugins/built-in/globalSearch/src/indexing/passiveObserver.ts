@@ -13,6 +13,7 @@ import { decorateIndexItems } from "./renderComponents";
 import { isIndexingPaused } from "./indexingPause";
 import { isIndexingActive } from "./indexingState";
 import { isAssessmentListRoute } from "./routeFilters";
+import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 
 /**
  * Passive network observer.
@@ -481,6 +482,7 @@ async function consumeResponse(
   url: string,
   requestBody: unknown,
 ): Promise<void> {
+  if (isPluginBlockedByPerformanceMode("global-search")) return;
   if (!response.ok) return;
 
   const route = normalizeSeqtaPath(url);

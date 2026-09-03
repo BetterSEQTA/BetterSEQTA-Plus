@@ -12,9 +12,20 @@ export function getNativeMenuList(
 
 function readLabelText(label: HTMLElement | null): string {
   if (!label) return "";
-  const clone = label.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll("svg").forEach((svg) => svg.remove());
-  return (clone.textContent ?? "").replace(/\s+/g, " ").trim();
+  const cached = label.dataset.bsplusLabel;
+  if (cached) return cached;
+
+  let text = "";
+  for (const node of label.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent ?? "";
+    } else if (node instanceof HTMLElement && node.tagName !== "SVG") {
+      text += node.textContent ?? "";
+    }
+  }
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized) label.dataset.bsplusLabel = normalized;
+  return normalized;
 }
 
 function readIconHtml(label: HTMLElement | null): string {

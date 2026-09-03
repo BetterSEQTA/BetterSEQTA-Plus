@@ -48,6 +48,8 @@ export function getDefaultSettingsState(): SettingsState {
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
+    performanceMode: isLowEndDevice,
+    performanceModePluginOverrides: {},
     assessmentsAverage: false,
     defaultPage: "home",
     homeUpcomingSubjectsMax: 5,

@@ -15,6 +15,8 @@ import {
   applySidebarStyleClass,
   clearSidebarAppearance,
 } from "./sidebarStyles";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 
 const ROOT_ID = "bsplus-sidebar-root";
 const MENU_CLASS = "bsplus-custom-sidebar";
@@ -32,6 +34,8 @@ let earlyPrepareStarted = false;
 let catchupTimers: ReturnType<typeof setTimeout>[] = [];
 let nativeMenuListenerAttached = false;
 let lastMenuFingerprint = "";
+let catchupSessionStarted = false;
+let sidebarLookScheduled = false;
 
 const settingsListeners: Array<{
   key: keyof SettingsState;
@@ -68,10 +72,16 @@ function syncFromMenu(force = false) {
  * MutationObserver + scheduleSync cover ongoing changes; this only covers a short window.
  */
 function startCatchupSync() {
+  if (catchupSessionStarted) {
+    syncFromMenu();
+    return;
+  }
+  catchupSessionStarted = true;
+
   for (const t of catchupTimers) clearTimeout(t);
   catchupTimers = [];
   // Immediate, then a few delayed passes (~1s total) instead of 50ms×60.
-  const delays = [0, 200, 500, 1000];
+  const delays = isPerformanceMode() ? [0, 400, 1000] : [0, 200, 500, 1000];
   for (const ms of delays) {
     catchupTimers.push(
       setTimeout(() => {
@@ -84,16 +94,26 @@ function startCatchupSync() {
   }
 }
 
+function scheduleSidebarLook() {
+  if (!menuEl || sidebarLookScheduled) return;
+  sidebarLookScheduled = true;
+  requestAnimationFrame(() => {
+    sidebarLookScheduled = false;
+    if (menuEl) applySidebarLook(menuEl);
+  });
+}
+
 function onNativeMenuUpdated() {
   syncFromMenu(true);
 }
 
 function scheduleSync() {
   if (syncTimer) clearTimeout(syncTimer);
+  const delay = isPerformanceMode() ? 120 : 50;
   syncTimer = setTimeout(() => {
     syncTimer = null;
     syncFromMenu();
-  }, 50);
+  }, delay);
 }
 
 /**
@@ -325,11 +345,11 @@ export async function mountCustomSidebar(): Promise<boolean> {
     "sidebarWidth",
     "sidebarBlur",
   ] as const) {
-    registerSetting(key, () => applySidebarLook(menuEl));
+    registerSetting(key, () => scheduleSidebarLook());
   }
   const resync = () => syncFromMenu(true);
   registerSetting("menuorder", resync);
-  registerSetting("menuitems", resync);
+  registerSetting("menuitems", () => applyMenuItemVisibility());
 
   startCatchupSync();
   clearPendingClass();
@@ -344,6 +364,7 @@ export function unmountCustomSidebar() {
   for (const t of catchupTimers) clearTimeout(t);
   catchupTimers = [];
   lastMenuFingerprint = "";
+  catchupSessionStarted = false;
 
   clearSettingListeners();
 

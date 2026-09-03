@@ -3,21 +3,28 @@ import {
   closeExtensionPopup,
   SettingsClicked,
 } from "../Closers/closeExtensionPopup";
-import { SettingsResizer } from "@/seqta/ui/SettingsResizer";
 
 let isSettingsRendered = false;
 let settingsLoadPromise: Promise<void> | null = null;
+let resizerAttached = false;
 
 function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
   return (event: MouseEvent) => {
     if (!SettingsClicked) return;
 
     if (!(event.target as HTMLElement).closest("#AddedSettings")) {
-      // Clicks inside the shadow tree retarget to the host — keep open.
       if (event.target == extensionPopup) return;
       changeSettingsClicked(closeExtensionPopup());
     }
   };
+}
+
+function ensureSettingsResizer() {
+  if (resizerAttached) return;
+  resizerAttached = true;
+  void import("@/seqta/ui/SettingsResizer").then(({ SettingsResizer }) => {
+    new SettingsResizer();
+  });
 }
 
 /**
@@ -34,8 +41,6 @@ export function addExtensionSettings() {
 
   document.body.appendChild(extensionPopup);
 
-  new SettingsResizer();
-
   const handler = extensionOutsideClickHandler(extensionPopup);
   document.body.addEventListener("click", handler, false);
 }
@@ -43,25 +48,15 @@ export function addExtensionSettings() {
 async function loadSettingsUi(extensionPopup: HTMLElement): Promise<void> {
   if (isSettingsRendered) return;
 
+  ensureSettingsResizer();
+
   const [{ default: renderSvelte }, { default: Settings }] = await Promise.all([
     import("@/interface/main"),
     import("@/interface/pages/settings.svelte"),
   ]);
 
   const shadow = extensionPopup.attachShadow({ mode: "open" });
-  const mount = () => renderSvelte(Settings, shadow);
-
-  if ("requestIdleCallback" in window) {
-    await new Promise<void>((resolve) => {
-      requestIdleCallback(() => {
-        mount();
-        resolve();
-      });
-    });
-  } else {
-    mount();
-  }
-
+  renderSvelte(Settings, shadow);
   isSettingsRendered = true;
 }
 

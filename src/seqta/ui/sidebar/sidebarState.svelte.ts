@@ -1,4 +1,5 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { animationsEnabled } from "@/seqta/utils/performanceMode";
 import {
   findNativeMenuEntry,
   getNativeMenuList,
@@ -45,11 +46,7 @@ function ensureActive(el: Element | null | undefined) {
 
 function resetSidebarScroll() {
   const root = document.getElementById("bsplus-sidebar-root");
-  if (!(root instanceof HTMLElement)) return;
-  root.scrollTop = 0;
-  requestAnimationFrame(() => {
-    root.scrollTop = 0;
-  });
+  if (root instanceof HTMLElement) root.scrollTop = 0;
 }
 
 /**
@@ -302,7 +299,7 @@ class SidebarState {
     this.drillStack = this.drillStack.slice(0, -1);
     resetSidebarScroll();
 
-    if (settingsState.animations !== true) return;
+    if (!animationsEnabled()) return;
 
     this.drillReturning = true;
     window.setTimeout(() => {
@@ -376,7 +373,7 @@ class SidebarState {
     // SEQTA rewrites `.active` on the route change.
     if (this.isDrilling) {
       this.enterFrameKey = null;
-      restoreCustomMenuActive();
+      requestAnimationFrame(() => restoreCustomMenuActive());
     }
 
     const native = findNativeMenuEntry(menu, item);

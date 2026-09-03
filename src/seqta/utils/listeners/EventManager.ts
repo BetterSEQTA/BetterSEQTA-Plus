@@ -16,14 +16,14 @@ interface EventListener {
   unregister: () => void;
 }
 
+
 class EventManager {
   private static instance: EventManager;
   private listeners: Map<string, EventListener[]> = new Map();
   private mutationObservers: Map<Element, MutationObserver> = new Map();
   private pendingElements: Set<Element> = new Set();
   private firedOnceIds: Set<string> = new Set();
-  private throttleTimeout: number = 5; // 5ms throttle
-  private throttleTimer: number | undefined;
+  private rafId = 0;
   private chunkSize: number = 50; // Process 50 elements per chunk
 
   private constructor() {}
@@ -146,26 +146,27 @@ class EventManager {
   }
 
   private handleMutations(mutations: MutationRecord[]): void {
-    mutations.forEach((mutation) => {
-      if (mutation.type === "childList") {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            this.pendingElements.add(node as Element);
-          }
-        });
+    for (const mutation of mutations) {
+      if (mutation.type !== "childList") continue;
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          this.pendingElements.add(node as Element);
+        }
       }
-    });
+    }
 
-    this.throttleCheckElements();
+    if (this.pendingElements.size > 0) {
+      this.schedulePendingCheck();
+    }
   }
 
-  private throttleCheckElements(): void {
-    if (this.throttleTimer) return;
+  private schedulePendingCheck(): void {
+    if (this.rafId) return;
 
-    this.throttleTimer = window.setTimeout(() => {
-      this.processPendingElements();
-      this.throttleTimer = undefined;
-    }, this.throttleTimeout);
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = 0;
+      void this.processPendingElements();
+    });
   }
 
   private async processPendingElements(): Promise<void> {
@@ -189,7 +190,11 @@ class EventManager {
   }
 
   private async checkElement(element: Element): Promise<void> {
+    if (this.listeners.size === 0) return;
+
     for (const [event, listeners] of this.listeners.entries()) {
+      if (!listeners.length) continue;
+
       for (const { id, options, callback } of listeners) {
         if (options.once && this.firedOnceIds.has(id)) continue;
 

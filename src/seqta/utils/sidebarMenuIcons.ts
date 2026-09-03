@@ -114,9 +114,8 @@ async function observeEngageMenuIcons() {
   engageMenuIconObserver = new MutationObserver(() => {
     scheduleEngageMenuIconPass();
   });
-  engageMenuIconObserver.observe(menu, {
+  engageMenuIconObserver.observe(menuList, {
     childList: true,
-    subtree: true,
   });
 }
 

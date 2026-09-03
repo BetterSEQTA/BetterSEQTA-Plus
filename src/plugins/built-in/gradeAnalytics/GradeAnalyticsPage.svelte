@@ -21,6 +21,9 @@
   } from "./timeRange";
   import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { animationsEnabled } from "@/seqta/utils/performanceMode";
+
+  let { simpleMode = false } = $props<{ simpleMode?: boolean }>();
 
   let analyticsData: Assessment[] | null = $state(null);
   let loading = $state(true);
@@ -40,7 +43,7 @@
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
-  const fadeDuration = $derived($settingsState.animations ? 200 : 0);
+  const fadeDuration = $derived(animationsEnabled() ? 200 : 0);
 
   const formattedTimestamp = $derived(() => {
     if (!lastUpdated) return "";
@@ -401,6 +404,7 @@
           />
         </div>
 
+        {#if !simpleMode}
         <div class="bsplus-analytics-filter-group">
           <span class="bsplus-analytics-field-label">Grade range</span>
           <GradeRangeSlider bind:value={gradeRange} />
@@ -413,6 +417,7 @@
             <span>Per-subject trends</span>
           </label>
         </div>
+        {/if}
 
         {@render sidebarActions()}
       </aside>
@@ -436,6 +441,7 @@
         </div>
 
         <div class="bsplus-analytics-results">
+          {#if !simpleMode}
           <div class="bsplus-analytics-charts">
             <div class="bsplus-analytics-chart-cell">
               <AnalyticsAreaChart
@@ -449,6 +455,7 @@
               <AnalyticsBarChart data={gradedFiltered()} {timeRange} {customTimeRange} />
             </div>
           </div>
+          {/if}
 
           <AssessmentTable data={timeScopedData()} />
         </div>

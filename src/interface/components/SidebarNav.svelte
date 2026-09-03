@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { animationsEnabled } from "@/seqta/utils/performanceMode";
+  import { rafThrottle } from "@/seqta/utils/rafThrottle";
   import SidebarNavItem from "./SidebarNavItem.svelte";
 
   type NavGroup = {
@@ -39,11 +40,13 @@
     indicatorReady = true;
   };
 
+  const scheduleIndicator = rafThrottle(updateIndicator);
+
   $effect(() => {
     selectedId;
     groups;
     trackEl;
-    queueMicrotask(updateIndicator);
+    scheduleIndicator();
   });
 </script>
 
@@ -54,8 +57,8 @@
   {#if indicatorReady}
     <div
       class="pointer-events-none absolute left-0 top-0 z-0 rounded-lg bg-zinc-200/90 dark:bg-zinc-700/90"
-      style="transform: translate({indicatorX}px, {indicatorY}px); width: {indicatorW}px; height: {indicatorH}px; transition: {$settingsState.animations
-        ? 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), width 0.28s cubic-bezier(0.22, 1, 0.36, 1), height 0.28s cubic-bezier(0.22, 1, 0.36, 1)'
+      style="transform: translate({indicatorX}px, {indicatorY}px); width: {indicatorW}px; height: {indicatorH}px; transition: {animationsEnabled()
+        ? 'transform var(--bs-motion-duration, 0.28s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1)), width var(--bs-motion-duration, 0.28s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1)), height var(--bs-motion-duration, 0.28s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1))'
         : 'none'};"
     ></div>
   {/if}

@@ -9,24 +9,50 @@
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
   let error = $state<string | null>(null);
+  let notice = $state<string | null>(null);
+  let uploading = $state(false);
 
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
 
+  function inferBackgroundType(file: File): 'image' | 'video' {
+    const mime = file.type.toLowerCase();
+    if (mime.startsWith('video/')) return 'video';
+    if (mime.startsWith('image/')) return 'image';
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (['mp4', 'mov', 'webm', 'm4v', 'mkv'].includes(ext)) return 'video';
+    return 'image';
+  }
+
   function setError(e: unknown) {
-    error = e instanceof Error ? e.message : 'An unknown error occurred';
+    if (e instanceof Error) {
+      error = e.message;
+      return;
+    }
+    if (typeof e === 'string' && e) {
+      error = e;
+      return;
+    }
+    error = 'An unknown error occurred';
   }
 
-  async function getTheme() {
-    return localStorage.getItem('selectedBackground');
-  }
-
-  async function setTheme(theme: string) {
-    localStorage.setItem('selectedBackground', theme);
+  function isHeicFile(file: File): boolean {
+    const mime = file.type.toLowerCase();
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    return (
+      mime.includes('heic') ||
+      mime.includes('heif') ||
+      ext === 'heic' ||
+      ext === 'heif'
+    );
   }
 
   async function handleFileChange(file: File): Promise<void> {
     if (!file) return;
+
+    uploading = true;
+    error = null;
+    notice = null;
 
     try {
       if (!isIndexedDBSupported()) {
@@ -38,15 +64,34 @@
         throw new Error("Not enough storage space to save this background.");
       }
 
-      const fileId = `${Date.now()}-${file.name}`;
-      const fileType = file.type.split('/')[0];
-      const blob = new Blob([file], { type: file.type });
+      const fileId = `${Date.now()}-${file.name.replace(/[^\w.-]+/g, '_')}`;
+      const fileType = inferBackgroundType(file);
+      const blob = file.slice(0, file.size, file.type || (fileType === 'video' ? 'video/mp4' : 'image/jpeg'));
 
       await writeData(fileId, fileType, blob);
-      backgrounds = [...backgrounds, { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) }];
+      backgrounds = [
+        ...backgrounds,
+        { id: fileId, type: fileType, blob, url: URL.createObjectURL(blob) },
+      ];
+      backgroundUpdates.triggerUpdate();
+
+      if (isHeicFile(file)) {
+        notice =
+          'HEIC saved, but Chrome and Edge often cannot preview it. Export as JPEG or PNG if the thumbnail stays blank.';
+      }
     } catch (e) {
       setError(e);
+    } finally {
+      uploading = false;
     }
+  }
+
+  async function getTheme() {
+    return localStorage.getItem('selectedBackground');
+  }
+
+  async function setTheme(theme: string) {
+    localStorage.setItem('selectedBackground', theme);
   }
 
   async function syncBackgrounds(): Promise<void> {
@@ -100,8 +145,9 @@
       if (selectedBackground === fileId) {
         selectNoBackground();
       }
+      backgroundUpdates.triggerUpdate();
     } catch (e) {
-      error = e instanceof Error ? `Failed to delete background: ${e.message}` : 'An unknown error occurred';
+      setError(e);
     }
   }
 
@@ -138,11 +184,34 @@
 </script>
 
 <div class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
+  {#if notice}
+    <div
+      class="mx-1 mb-3 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100"
+      role="status"
+    >
+      {notice}
+    </div>
+  {/if}
+
+  {#if error}
+    <div
+      class="mx-1 mb-3 rounded-lg border border-red-300/60 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
+      role="alert"
+    >
+      {error}
+    </div>
+  {/if}
+
   {#if !(imageBackgrounds.length === 0 && isEditMode)}
     <h2 class="pb-2 text-lg font-bold">Background Images</h2>
     <div class="flex flex-wrap gap-4 mb-4">
       {#if !isEditMode}
-        <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
+        <BackgroundUploader onFileChange={handleFileChange} />
+        {#if uploading}
+          <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900">
+            <div class="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent"></div>
+          </div>
+        {/if}
       {/if}
       {#each imageBackgrounds as bg (bg.id)}
         {#if bg.url}
@@ -163,7 +232,7 @@
     <h2 class="py-2 text-lg font-bold">Background Videos</h2>
     <div class="flex flex-wrap gap-4">
       {#if !isEditMode}
-        <BackgroundUploader on:fileChange={e => handleFileChange(e.detail)} />
+        <BackgroundUploader onFileChange={handleFileChange} />
       {/if}
       {#each videoBackgrounds as bg (bg.id)}
         {#if bg.url}

@@ -8,6 +8,7 @@ import {
 } from "@/types/CustomThemes";
 import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloudSettingsSync";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
@@ -125,7 +126,7 @@ export class ThemeManager {
   private async applyViewTransition(callback: () => void): Promise<void> {
     if (
       !document.startViewTransition || 
-      !settingsState.animations || 
+      !fullMotionEffectsEnabled() || 
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       // Just run the callback without animation if transitions not supported

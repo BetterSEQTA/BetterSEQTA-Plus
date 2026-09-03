@@ -9,6 +9,7 @@ import { INDEX_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from "./schemaVersion";
 import { resetSearchIndexes } from "./resetIndexes";
 import { isIndexingPaused } from "./indexingPause";
 import { setIndexingActive } from "./indexingState";
+import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 
 import { verboseDebug } from '@/utils/verboseLog';
 const META_STORE = "meta";
@@ -286,6 +287,11 @@ function dispatchVectorProgress(
 }
 
 export async function runIndexing(): Promise<void> {
+  if (isPluginBlockedByPerformanceMode("global-search")) {
+    verboseDebug("[Indexer] Skipping indexing — performance mode blocks Global Search.");
+    return;
+  }
+
   if (isIndexingPaused()) {
     verboseDebug(
       "[Indexer] Skipping indexing — index was reset; reload the page to rebuild.",

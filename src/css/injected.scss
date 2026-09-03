@@ -16,6 +16,7 @@
 @include meta.load-css("injected/sidebar-styles.scss");
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
+@include meta.load-css("injected/performance-mode.scss");
 
 :root {
   background: var(--better-main) !important;
@@ -2071,11 +2072,21 @@ html.transparencyEffects
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
 
-/* Smoothed by attachNotificationsPanelAnimation (matches #ExtensionPopup spring) */
+/* Smoothed by attachNotificationsPanelAnimation (CSS transition, no JS spring ticks) */
 .bsplus-notifications-panel {
   transform-origin: top right;
-  will-change: opacity, transform;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.35));
+  backface-visibility: hidden;
+}
+
+.bsplus-notifications-panel--open {
+  opacity: 1;
+  transform: scale(1);
 }
 
 #menu li.active {
@@ -4288,6 +4299,40 @@ div.day-empty {
   background: rgba(0, 0, 0, 0.5);
   z-index: 49;
   transform: scale(1) !important;
+}
+
+/* Lightweight popup motion (performance mode) — fade + scale, no blur springs. */
+.whatsnewBackground.bsplus-popup-css-animate {
+  opacity: 0;
+  transition: opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  .whatsnewContainer {
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+      transform var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  &.bsplus-popup-css-animate--open {
+    opacity: 1;
+
+    .whatsnewContainer {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+.whatsnewBackground.bsplus-popup-backdrop--lite {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+
+  .whatsnewContainer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 .whatsnewImgContainer {
   width: 96%;

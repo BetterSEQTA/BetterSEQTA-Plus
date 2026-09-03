@@ -8,6 +8,8 @@ import { delay } from "@/seqta/utils/delay";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { MessageHandler } from "@/seqta/utils/listeners/MessageListener";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { animationsEnabled, fullMotionEffectsEnabled, isPerformanceMode, syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
+import { animatePopupOpen } from "@/seqta/utils/popupAnimation";
 import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import debounce from "@/seqta/utils/debounce";
@@ -253,11 +255,21 @@ async function LoadPageElements(): Promise<void> {
 
 async function handleNotices(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
-  if (!settingsState.animations) return;
+  if (!animationsEnabled()) return;
+
+  if (!fullMotionEffectsEnabled()) {
+    node.style.opacity = "0";
+    node.style.transform = "translateY(8px)";
+    node.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+    requestAnimationFrame(() => {
+      node.style.opacity = "1";
+      node.style.transform = "none";
+    });
+    return;
+  }
 
   node.style.opacity = "0";
 
-  // get index of node in relation to parent
   const index = Array.from(node.parentElement!.children).indexOf(node);
 
   const { animate } = await loadMotion();
@@ -370,7 +382,7 @@ async function handleMessages(node: Element): Promise<void> {
   document.title = "Direct Messages ― SEQTA Learn";
   SortMessagePageItems(node);
 
-  if (!settingsState.animations) return;
+  if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   // Hides messages on page load
   const style = document.createElement("style");
@@ -398,7 +410,7 @@ async function handleMessages(node: Element): Promise<void> {
 
 async function handleDashboard(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
-  if (!settingsState.animations) return;
+  if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   const style = document.createElement("style");
   style.classList.add("dashboardHider");
@@ -429,7 +441,7 @@ async function handleDashboard(node: Element): Promise<void> {
 
 async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
-  if (!settingsState.animations) return;
+  if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   await waitForElm(".document", true, 10);
   try {
@@ -453,7 +465,7 @@ async function handleDocuments(node: Element): Promise<void> {
 
 async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
-  if (!settingsState.animations) return;
+  if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   await waitForElm(".report", true, 10);
   try {
@@ -668,13 +680,17 @@ export function showConflictPopup() {
   document.getElementById("container")?.append(background);
 
   // CSS fade — avoid Motion on conflict overlay (not critical-path shell, but keeps Motion off this import path).
-  if (settingsState.animations) {
-    const el = background as HTMLElement;
-    el.style.opacity = "0";
-    el.style.transition = "opacity 200ms ease-in-out";
-    requestAnimationFrame(() => {
-      el.style.opacity = "1";
-    });
+  if (animationsEnabled()) {
+    if (fullMotionEffectsEnabled()) {
+      const el = background as HTMLElement;
+      el.style.opacity = "0";
+      el.style.transition = "opacity 200ms ease-in-out";
+      requestAnimationFrame(() => {
+        el.style.opacity = "1";
+      });
+    } else {
+      animatePopupOpen(background);
+    }
   }
 
   background.addEventListener("click", (event) => {
@@ -748,11 +764,28 @@ export function init() {
     new StorageChangeHandler();
     new MessageHandler();
 
-    void updateAllColors();
-    applySelectedFont();
+    syncPerformanceModeEffects();
 
+    const deferBootWork = (fn: () => void) => {
+      if (typeof requestIdleCallback === "function") {
+        requestIdleCallback(fn, { timeout: 3000 });
+      } else {
+        setTimeout(fn, 100);
+      }
+    };
+    deferBootWork(() => {
+      void updateAllColors();
+      applySelectedFont();
+    });
+
+    let hashColorTimer: ReturnType<typeof setTimeout> | null = null;
     window.addEventListener("hashchange", () => {
-      if (settingsState.adaptiveThemeColour) void updateAllColors();
+      if (!settingsState.adaptiveThemeColour) return;
+      if (hashColorTimer) clearTimeout(hashColorTimer);
+      hashColorTimer = setTimeout(() => {
+        hashColorTimer = null;
+        void updateAllColors();
+      }, isPerformanceMode() ? 200 : 80);
     });
     if (!onLogin) {
       loading();
@@ -824,9 +857,14 @@ export function init() {
           );
         }
 
-        [1000, 1200, 1500].forEach((delay) =>
-          setTimeout(focusEditor, delay),
-        );
+        let attempts = 0;
+        const tryFocus = () => {
+          focusEditor();
+          if (attempts++ < 5) {
+            requestAnimationFrame(tryFocus);
+          }
+        };
+        requestAnimationFrame(tryFocus);
       },
     );
 

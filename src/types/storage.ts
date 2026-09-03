@@ -47,6 +47,10 @@ export interface SettingsState {
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
   animations: boolean;
+  /** Reduces animations, blur, background work, and indexing for smoother SEQTA. */
+  performanceMode?: boolean;
+  /** Per-plugin force-enable while Performance Mode is active (`pluginId` → true). */
+  performanceModePluginOverrides?: Record<string, boolean>;
   defaultPage: string;
   /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
   homeUpcomingSubjectsMax?: number;

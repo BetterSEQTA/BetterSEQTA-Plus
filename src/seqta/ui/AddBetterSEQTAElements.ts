@@ -17,6 +17,8 @@ import { delay } from "@/seqta/utils/delay";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -145,8 +147,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
-    // Kept as fallback if the custom Svelte sidebar fails to mount.
-    setupSidebarAccessibility();
+    maybeSetupSidebarAccessibility();
   }
 
   addExtensionSettings();
@@ -500,11 +501,18 @@ async function setupEngageSettingsButton() {
   }
   (content as HTMLElement).dataset.bsplusEngageSettingsWatch = "1";
 
-  const observer = new MutationObserver(() => {
-    if (document.getElementById("AddedSettings")) return;
-    void tryMount();
-  });
-  observer.observe(content, { childList: true, subtree: true });
+  let engageRemountTimer: ReturnType<typeof setTimeout> | null = null;
+  const debouncedTryMount = () => {
+    if (engageRemountTimer) clearTimeout(engageRemountTimer);
+    engageRemountTimer = setTimeout(() => {
+      engageRemountTimer = null;
+      if (document.getElementById("AddedSettings")) return;
+      void tryMount();
+    }, isPerformanceMode() ? 300 : 80);
+  };
+
+  const observer = new MutationObserver(debouncedTryMount);
+  observer.observe(content, { childList: true, subtree: !isPerformanceMode() });
 }
 
 function GetLightDarkModeString() {
@@ -572,6 +580,12 @@ function customizeMenuToggle() {
   }
 }
 
+function maybeSetupSidebarAccessibility() {
+  const menu = document.getElementById("menu");
+  if (menu?.classList.contains("bsplus-custom-sidebar")) return;
+  setupSidebarAccessibility();
+}
+
 function setupSidebarAccessibility() {
   updateSidebarAccessibility();
 
@@ -579,6 +593,7 @@ function setupSidebarAccessibility() {
   if (!menu) return;
 
   sidebarAccessibilityObserver?.disconnect();
+  const throttledA11yUpdate = rafThrottle(scheduleSidebarAccessibilityUpdate);
   sidebarAccessibilityObserver = new MutationObserver((mutations) => {
     // Custom Svelte sidebar owns drill a11y — ignore its DOM (opening Goals/Folios
     // mutates a lot; re-running here used to help freeze the tab).
@@ -603,7 +618,7 @@ function setupSidebarAccessibility() {
         return;
       }
     }
-    scheduleSidebarAccessibilityUpdate();
+    throttledA11yUpdate();
   });
   sidebarAccessibilityObserver.observe(menu, {
     subtree: true,

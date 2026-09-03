@@ -5,6 +5,7 @@ import { lightenAndPaleColor } from "./lightenAndPaleColor";
 import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
+import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
@@ -126,7 +127,7 @@ function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: num
 }
 
 function applyColorsWith(selectedColor: string) {
-  if (settingsState.transparencyEffects) {
+  if (transparencyEnabled()) {
     document.documentElement.classList.add("transparencyEffects");
   }
 
@@ -253,7 +254,7 @@ export async function updateAllColors() {
 
   const shouldAnimate =
     settingsState.adaptiveThemeColour &&
-    (settingsState.adaptiveThemeColourTransition ?? true) &&
+    adaptiveThemeTransitionEnabled() &&
     !!toHex;
 
   const applyImmediate = () => {

@@ -1,10 +1,6 @@
-import { animate } from "motion";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
-/**
- * Finds the SEQTA notifications dropdown panel (the list container next to the bell).
- */
 function findNotificationPanel(): HTMLElement | null {
   const wrapper = document.querySelector(".connectedNotificationsWrapper");
   if (!wrapper) return null;
@@ -24,56 +20,82 @@ function findNotificationPanel(): HTMLElement | null {
 }
 
 function isPanelVisible(el: HTMLElement): boolean {
-  return (
-    el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden"
-  );
+  if (el.hidden || el.getAttribute("aria-hidden") === "true") return false;
+  return el.offsetWidth > 0 || el.offsetHeight > 0;
 }
 
 let lastVisible = false;
-/** Invalidates in-flight open animations when the panel closes or reopens. */
-let motionGeneration = 0;
+let observerStarted = false;
+let trackedPanel: HTMLElement | null = null;
+/** Ignore observer callbacks while we toggle animation classes. */
+let suppressSync = false;
 
-function runOpenAnimation(panel: HTMLElement) {
-  const myGen = ++motionGeneration;
+function setPanelOpen(panel: HTMLElement, open: boolean) {
   panel.classList.add("bsplus-notifications-panel");
+  panel.style.removeProperty("opacity");
+  panel.style.removeProperty("transform");
 
   if (!settingsState.animations) {
-    panel.style.opacity = "1";
-    panel.style.transform = "scale(1)";
+    panel.classList.toggle("bsplus-notifications-panel--open", open);
     return;
   }
 
-  panel.style.opacity = "0";
-  panel.style.transform = "scale(0)";
+  const isOpen = panel.classList.contains("bsplus-notifications-panel--open");
+  if (open === isOpen) return;
 
-  requestAnimationFrame(() => {
-    if (myGen !== motionGeneration) return;
-    animate(0, 1, {
-      onUpdate: (progress) => {
-        panel.style.opacity = String(progress);
-        panel.style.transform = `scale(${progress})`;
-      },
-      type: "spring",
-      stiffness: 280,
-      damping: 20,
-    });
-  });
+  suppressSync = true;
+
+  if (open) {
+    panel.classList.remove("bsplus-notifications-panel--open");
+    void panel.offsetWidth;
+    panel.classList.add("bsplus-notifications-panel--open");
+  } else {
+    panel.classList.remove("bsplus-notifications-panel--open");
+  }
+
+  const release = () => {
+    suppressSync = false;
+  };
+  panel.addEventListener("transitionend", release, { once: true });
+  window.setTimeout(release, 280);
 }
 
-function clearPanelMotionStyles(panel: HTMLElement) {
-  motionGeneration++;
-  panel.style.opacity = "";
-  panel.style.transform = "";
+function syncPanelState() {
+  if (suppressSync) return;
+
+  const panel = findNotificationPanel();
+
+  if (!panel) {
+    if (lastVisible && trackedPanel?.isConnected) {
+      setPanelOpen(trackedPanel, false);
+    }
+    lastVisible = false;
+    trackedPanel = null;
+    return;
+  }
+
+  if (trackedPanel && trackedPanel !== panel) {
+    setPanelOpen(trackedPanel, false);
+  }
+  trackedPanel = panel;
+
+  const visible = isPanelVisible(panel);
+  if (visible === lastVisible) return;
+
+  setPanelOpen(panel, visible);
+  lastVisible = visible;
 }
 
 /**
- * Spring open / fade close for the native SEQTA notifications dropdown, matching ExtensionPopup.
+ * CSS open/close for the native SEQTA notifications dropdown.
  */
 export function attachNotificationsPanelAnimation() {
   void setupNotificationsPanelAnimation();
 }
 
 async function setupNotificationsPanelAnimation() {
+  if (observerStarted) return;
+
   try {
     await waitForElm(".connectedNotificationsWrapper", true, 100, 60);
   } catch {
@@ -83,46 +105,45 @@ async function setupNotificationsPanelAnimation() {
   const wrapper = document.querySelector(".connectedNotificationsWrapper");
   if (!wrapper) return;
 
-  const sync = () => {
-    const panel = findNotificationPanel();
-    // When SEQTA removes the dropdown from the DOM on close, we must reset
-    // lastVisible — otherwise the next open still looks "already visible" and skips animation.
-    if (!panel) {
-      if (lastVisible) {
-        lastVisible = false;
-        motionGeneration++;
-      }
-      return;
-    }
+  observerStarted = true;
 
-    const visible = isPanelVisible(panel);
-    if (visible === lastVisible) return;
-
-    if (visible) {
-      runOpenAnimation(panel);
-    } else {
-      clearPanelMotionStyles(panel);
-    }
-    lastVisible = visible;
+  let syncFrame = 0;
+  const scheduleSync = () => {
+    cancelAnimationFrame(syncFrame);
+    syncFrame = requestAnimationFrame(() => {
+      syncFrame = 0;
+      syncPanelState();
+    });
   };
 
-  const observer = new MutationObserver(() => {
-    sync();
+  const observer = new MutationObserver((mutations) => {
+    if (
+      suppressSync ||
+      !mutations.some(
+        (m) =>
+          m.type === "childList" ||
+          (m.type === "attributes" &&
+            (m.attributeName === "hidden" || m.attributeName === "aria-hidden")),
+      )
+    ) {
+      return;
+    }
+    scheduleSync();
   });
   observer.observe(wrapper, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["style", "class"],
+    attributeFilter: ["style", "class", "hidden", "aria-hidden"],
   });
 
-  document.addEventListener(
+  wrapper.addEventListener(
     "click",
     () => {
-      requestAnimationFrame(() => requestAnimationFrame(sync));
+      requestAnimationFrame(() => requestAnimationFrame(scheduleSync));
     },
     true,
   );
 
-  sync();
+  scheduleSync();
 }

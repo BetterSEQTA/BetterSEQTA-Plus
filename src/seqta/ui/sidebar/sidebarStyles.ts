@@ -1,4 +1,5 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 export type SidebarStyleId =
   | "classic"
@@ -118,10 +119,9 @@ export function applySidebarStyleClass(
   );
 }
 
-/**
- * Apply Look CSS variables + non-default density/indicator classes.
- * Safe to call with no menu (still sets width/blur/radius on `:root`).
- */
+/** Safe to call with no menu (still sets width/blur/radius on `:root`). */
+let lastSidebarLookKey = "";
+
 export function applySidebarLook(
   menu: HTMLElement | null | undefined = document.getElementById("menu"),
 ) {
@@ -129,7 +129,13 @@ export function applySidebarLook(
   const indicator = normalizeSidebarIndicator(settingsState.sidebarActiveIndicator);
   const width = normalizeSidebarWidth(settingsState.sidebarWidth);
   const radius = normalizeSidebarRadius(settingsState.sidebarCornerRadius);
-  const blur = normalizeSidebarBlur(settingsState.sidebarBlur);
+  const blur = isPerformanceMode()
+    ? 0
+    : normalizeSidebarBlur(settingsState.sidebarBlur);
+
+  const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}`;
+  if (lookKey === lastSidebarLookKey) return;
+  lastSidebarLookKey = lookKey;
 
   const root = document.documentElement;
   root.style.setProperty("--bsplus-sidebar-width", `${SIDEBAR_WIDTH_PX[width]}px`);
