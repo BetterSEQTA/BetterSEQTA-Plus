@@ -138,11 +138,6 @@ export function syncPerformanceModeEffects(): void {
   applyPerformanceModeClass();
   applyPerformanceModeTransparency();
   applyPerformanceModeSidebarLook();
-
-  if (isPerformanceMode()) {
-    removeAnimatedBackgroundLayers();
-  }
-
   void syncPerformanceModePlugins();
 }
 

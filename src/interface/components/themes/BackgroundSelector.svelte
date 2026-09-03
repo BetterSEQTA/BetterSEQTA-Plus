@@ -8,9 +8,7 @@
 
   let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
-  let error = $state<string | null>(null);
-  let notice = $state<string | null>(null);
-  let uploading = $state(false);
+  let feedback = $state<{ kind: 'error' | 'warn'; text: string } | null>(null);
 
   let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
   let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
@@ -20,39 +18,12 @@
     if (mime.startsWith('video/')) return 'video';
     if (mime.startsWith('image/')) return 'image';
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (['mp4', 'mov', 'webm', 'm4v', 'mkv'].includes(ext)) return 'video';
-    return 'image';
-  }
-
-  function setError(e: unknown) {
-    if (e instanceof Error) {
-      error = e.message;
-      return;
-    }
-    if (typeof e === 'string' && e) {
-      error = e;
-      return;
-    }
-    error = 'An unknown error occurred';
-  }
-
-  function isHeicFile(file: File): boolean {
-    const mime = file.type.toLowerCase();
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    return (
-      mime.includes('heic') ||
-      mime.includes('heif') ||
-      ext === 'heic' ||
-      ext === 'heif'
-    );
+    return ['mp4', 'mov', 'webm', 'm4v', 'mkv'].includes(ext) ? 'video' : 'image';
   }
 
   async function handleFileChange(file: File): Promise<void> {
     if (!file) return;
-
-    uploading = true;
-    error = null;
-    notice = null;
+    feedback = null;
 
     try {
       if (!isIndexedDBSupported()) {
@@ -75,42 +46,36 @@
       ];
       backgroundUpdates.triggerUpdate();
 
-      if (isHeicFile(file)) {
-        notice =
-          'HEIC saved, but Chrome and Edge often cannot preview it. Export as JPEG or PNG if the thumbnail stays blank.';
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (['heic', 'heif'].includes(ext) || file.type.toLowerCase().includes('hei')) {
+        feedback = {
+          kind: 'warn',
+          text: 'HEIC saved, but Chrome and Edge often cannot preview it. Export as JPEG or PNG if the thumbnail stays blank.',
+        };
       }
     } catch (e) {
-      setError(e);
-    } finally {
-      uploading = false;
+      feedback = {
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'An unknown error occurred',
+      };
     }
-  }
-
-  async function getTheme() {
-    return localStorage.getItem('selectedBackground');
-  }
-
-  async function setTheme(theme: string) {
-    localStorage.setItem('selectedBackground', theme);
   }
 
   async function syncBackgrounds(): Promise<void> {
     try {
-      error = null;
+      feedback = null;
 
       if (!isIndexedDBSupported()) {
         throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
       }
 
-      selectedBackground = await getTheme();
+      selectedBackground = localStorage.getItem('selectedBackground');
       const dbData = await readAllData();
 
-      // Release existing object URLs to prevent memory leaks
       backgrounds.forEach(bg => {
         if (bg.url) URL.revokeObjectURL(bg.url);
       });
 
-      // Create fresh background objects with new object URLs
       backgrounds = dbData.map(bg => ({
         id: bg.id,
         type: bg.type,
@@ -118,12 +83,14 @@
         url: URL.createObjectURL(bg.blob)
       }));
 
-      // Check if selected background still exists
       if (selectedBackground && !backgrounds.some(bg => bg.id === selectedBackground)) {
         selectNoBackground();
       }
     } catch (e) {
-      setError(e);
+      feedback = {
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'An unknown error occurred',
+      };
     }
   }
 
@@ -134,7 +101,7 @@
     }
 
     selectedBackground = fileId;
-    setTheme(fileId);
+    localStorage.setItem('selectedBackground', fileId);
   }
 
   async function deleteBackground(fileId: string): Promise<void> {
@@ -147,24 +114,21 @@
       }
       backgroundUpdates.triggerUpdate();
     } catch (e) {
-      setError(e);
+      feedback = {
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'An unknown error occurred',
+      };
     }
   }
 
   selectNoBackground = () => {
     selectedBackground = null;
-    setTheme('');
+    localStorage.setItem('selectedBackground', '');
   }
 
   $effect(() => {
     loadBackground();
     selectedBackground
-  });
-
-  $effect(() => {
-    if (error) {
-      console.error(error);
-    }
   });
 
   onMount(() => {
@@ -184,21 +148,14 @@
 </script>
 
 <div class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
-  {#if notice}
+  {#if feedback}
     <div
-      class="mx-1 mb-3 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100"
-      role="status"
+      class="mx-1 mb-3 rounded-lg border px-3 py-2 text-sm {feedback.kind === 'warn'
+        ? 'border-amber-300/60 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100'
+        : 'border-red-300/60 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'}"
+      role={feedback.kind === 'warn' ? 'status' : 'alert'}
     >
-      {notice}
-    </div>
-  {/if}
-
-  {#if error}
-    <div
-      class="mx-1 mb-3 rounded-lg border border-red-300/60 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
-      role="alert"
-    >
-      {error}
+      {feedback.text}
     </div>
   {/if}
 
@@ -207,11 +164,6 @@
     <div class="flex flex-wrap gap-4 mb-4">
       {#if !isEditMode}
         <BackgroundUploader onFileChange={handleFileChange} />
-        {#if uploading}
-          <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900">
-            <div class="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent"></div>
-          </div>
-        {/if}
       {/if}
       {#each imageBackgrounds as bg (bg.id)}
         {#if bg.url}

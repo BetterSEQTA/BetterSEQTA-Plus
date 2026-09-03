@@ -29,26 +29,7 @@ export function animatePopupOpen(background: HTMLElement): void {
 }
 
 export function animatePopupClose(background: HTMLElement): Promise<void> {
-  if (!useCssPopupAnimation()) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      background.removeEventListener("transitionend", onEnd);
-      resolve();
-    };
-
-    const onEnd = (event: TransitionEvent) => {
-      if (event.target !== background || event.propertyName !== "opacity") return;
-      finish();
-    };
-
-    background.addEventListener("transitionend", onEnd);
-    background.classList.remove(OPEN_CLASS);
-    window.setTimeout(finish, CLOSE_FALLBACK_MS);
-  });
+  if (!useCssPopupAnimation()) return Promise.resolve();
+  background.classList.remove(OPEN_CLASS);
+  return new Promise((resolve) => window.setTimeout(resolve, CLOSE_FALLBACK_MS));
 }
