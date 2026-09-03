@@ -6,6 +6,7 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 import Sidebar from "./Sidebar.svelte";
 import { getNativeMenuList } from "./parseNativeMenu";
+import { scheduleRestoreCustomMenuActive } from "./customMenuActive";
 import {
   clearNativeDrillActive,
   sidebarState,
@@ -157,6 +158,12 @@ function onCustomSidebarCaptureClick(event: MouseEvent) {
 function onHashChange() {
   sidebarState.syncActiveFromLocation();
   if (menuEl) clearNativeDrillActive(menuEl);
+  if (sidebarState.isDrilling) {
+    scheduleRestoreCustomMenuActive({
+      activeKey: sidebarState.activeKey,
+      drilling: true,
+    });
+  }
 
   if (!sidebarState.isDrilling) return;
 

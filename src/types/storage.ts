@@ -36,6 +36,8 @@ export interface SettingsState {
   privacyStatementLastUpdated?: string;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
+  /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
+  coursesAssessmentsFixPopupShown?: boolean;
   /**
    * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
    * Cleared automatically when a new month's entry is fetched (different `month`).

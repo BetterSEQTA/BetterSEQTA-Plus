@@ -1,7 +1,12 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { animationsEnabled } from "@/seqta/utils/performanceMode";
 import {
+  applyCustomMenuActive,
+  scheduleRestoreCustomMenuActive,
+} from "./customMenuActive";
+import {
   findNativeMenuEntry,
+  folderNeedsNativePopulate,
   getNativeMenuList,
   getPagePathFromHash,
   parseNativeMenu,
@@ -40,15 +45,16 @@ function filterVisible(items: SidebarItem[]): SidebarItem[] {
   return items.filter((item) => menuItems[item.key]?.toggle !== false);
 }
 
-function ensureActive(el: Element | null | undefined) {
-  if (el instanceof HTMLElement && !el.classList.contains("active")) {
-    el.classList.add("active");
-  }
-}
-
 function resetSidebarScroll() {
   const root = document.getElementById("bsplus-sidebar-root");
   if (root instanceof HTMLElement) root.scrollTop = 0;
+}
+
+function customMenuActiveState() {
+  return {
+    activeKey: sidebarState.activeKey,
+    drilling: sidebarState.isDrilling,
+  };
 }
 
 /**
@@ -56,41 +62,11 @@ function resetSidebarScroll() {
  * state so the active subject/folder still matches the route and theme chrome.
  */
 export function restoreCustomMenuActive() {
-  const root = document.getElementById("bsplus-sidebar-root");
-  if (!root) return;
+  applyCustomMenuActive(customMenuActiveState());
+}
 
-  for (const li of root.querySelectorAll("li.hasChildren")) {
-    if (!(li instanceof HTMLElement)) continue;
-    if (!li.querySelector(":scope > .sub")) continue;
-    ensureActive(li);
-  }
-
-  const activeKey = sidebarState.activeKey;
-  const drilling = sidebarState.isDrilling;
-
-  if (drilling) {
-    if (activeKey) {
-      ensureActive(
-        root.querySelector(`.sub li.item[data-key="${CSS.escape(activeKey)}"]`),
-      );
-    }
-    for (const li of root.querySelectorAll(
-      '.sub li.item[aria-current="page"]',
-    )) {
-      ensureActive(li);
-    }
-    return;
-  }
-
-  if (activeKey) {
-    ensureActive(
-      root.querySelector(`li.item[data-key="${CSS.escape(activeKey)}"]`),
-    );
-  }
-
-  for (const li of root.querySelectorAll('li.item[aria-current="page"]')) {
-    ensureActive(li);
-  }
+function scheduleRestoreAfterSeqta() {
+  scheduleRestoreCustomMenuActive(customMenuActiveState());
 }
 
 /** Clear native drill state so it cannot steal pointer-events from the custom list. */
@@ -284,11 +260,18 @@ class SidebarState {
 
     // Keep native drill closed so SEQTA CSS :has(> ul > li.hasChildren.active)
     // does not lock pointer-events on the custom list.
-    if (menu) clearNativeDrillActive(menu);
+    if (menu) {
+      if (folderNeedsNativePopulate(item)) {
+        const native = findNativeMenuEntry(menu, item);
+        native?.click();
+      }
+      clearNativeDrillActive(menu);
+    }
 
     // Absolute `.sub` panels live inside the scrollport — jump to top so the
     // drilled page isn't left under the logo when the list was scrolled down.
     resetSidebarScroll();
+    scheduleRestoreAfterSeqta();
   }
 
   clearEnterFrame(key?: string) {
@@ -378,17 +361,18 @@ class SidebarState {
     // SEQTA rewrites `.active` on the route change.
     if (this.isDrilling) {
       this.enterFrameKey = null;
-      requestAnimationFrame(() => restoreCustomMenuActive());
     }
 
     const native = findNativeMenuEntry(menu, item);
     if (native) {
       native.click();
+      scheduleRestoreAfterSeqta();
       return;
     }
 
     if (item.path) {
       location.hash = `?page=${item.path}`;
+      scheduleRestoreAfterSeqta();
     }
   }
 

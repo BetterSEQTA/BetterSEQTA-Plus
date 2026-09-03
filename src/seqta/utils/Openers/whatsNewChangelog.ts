@@ -12,6 +12,9 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Added combined class groups in Grade Analytics to merge multiple subjects into one trend.",
       "Fixed icon-only sidebar not expanding when opening a folder.",
       "Fixed icon-only sidebar root labels overlapping folder view when drilling in.",
+      "Fixed Assessments and Courses folders going blank after SEQTA stripped sidebar active state.",
+      "Fixed Glass sidebar and transparency blur hiding Courses/Assessments labels on Edge.",
+      "Added a one-time prompt to re-enable BetterSEQTA features after the Courses and Assessments fix.",
       "Fixed feedback modal not scrolling on long bug reports and replies.",
       "Fixed the look and feel of the sidebar to be more like how it used to be.",
     ]

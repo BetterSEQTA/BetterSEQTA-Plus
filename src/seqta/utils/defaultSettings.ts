@@ -81,5 +81,6 @@ export function getDefaultSettingsState(): SettingsState {
     timeFormat: "24",
     privacyStatementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
+    coursesAssessmentsFixPopupShown: false,
   };
 }

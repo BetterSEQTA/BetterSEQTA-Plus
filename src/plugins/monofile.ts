@@ -30,6 +30,7 @@ import {
 } from "@/seqta/utils/Loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
+import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/Openers/OpenCoursesAssessmentsFixPopup";
 
 import {
   syncTimetableUrlMonitoring,
@@ -719,6 +720,7 @@ export function init() {
     }
 
     AppendElementsToDisabledPage();
+    OpenCoursesAssessmentsFixPopup();
   };
 
   const handleDisabled = () => {

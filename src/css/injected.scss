@@ -45,12 +45,12 @@ button.bsplus-timetable-control.iconFamily,
 body,
 .legacy-root input,
 .legacy-root textarea,
-.legacy-root button,
+.legacy-root button:not(.iconFamily),
 .legacy-root select,
 .legacy-root option,
 .legacy-root .input,
 html {
-  font-family: Rubik, sans-serif !important;
+  font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
 }
 
 .legacy-root {
@@ -127,9 +127,17 @@ select option {
   background: var(--auto-background) !important;
 }
 .legacy-root,
-.legacy-root * {
-  font-family: Rubik, sans-serif !important;
-  --theme-fg-parts: white;
+.legacy-root *:not(.iconFamily) {
+  font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
+}
+
+/* SEQTA uses `rgb(var(--theme-fg-parts))` — must be an rgb triplet, not `white`. */
+html.dark .legacy-root {
+  --theme-fg-parts: 255, 255, 255;
+}
+
+html:not(.dark) .legacy-root {
+  --theme-fg-parts: 0, 0, 0;
 }
 .extension-editor {
   background: var(--background-primary);
@@ -488,15 +496,15 @@ ul.magicDelete > li.deleting {
   pointer-events: none;
 }
 
-#menu li.hasChildren.active > .sub {
+#menu li.hasChildren:is(.active, .bsplus-active) > .sub {
   pointer-events: auto;
 }
 
-#menu li.hasChildren.active > .sub:has(.hasChildren.active) {
+#menu li.hasChildren:is(.active, .bsplus-active) > .sub:has(.hasChildren:is(.active, .bsplus-active)) {
   pointer-events: none !important;
 }
 
-#menu li.hasChildren.active .hasChildren.active > .sub {
+#menu li.hasChildren:is(.active, .bsplus-active) .hasChildren:is(.active, .bsplus-active) > .sub {
   pointer-events: auto !important;
 }
 
@@ -712,6 +720,17 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
     box-sizing: border-box !important;
   }
 
+  /* Open folder rows wrap the absolute `.sub` panel. Filters/overflow on the
+     row clip every course/assessment label (especially glass + Edge). */
+  > #bsplus-sidebar-root .bsplus-sidebar-item:has(> .sub) {
+    overflow: visible !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    contain: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
   > #bsplus-sidebar-root > li.item {
     pointer-events: auto !important;
   }
@@ -921,6 +940,20 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
     background-position: center center !important;
   }
 
+}
+
+/* Icon-only + drill: keep subject/back labels visible even if `:has()` misses. */
+body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling {
+  li > label,
+  li > label span,
+  .backLabel {
+    display: inline !important;
+    font-size: 16px !important;
+  }
+
+  li > label {
+    display: flex !important;
+  }
 }
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
@@ -2044,11 +2077,11 @@ html.transparencyEffects
   width: 25px;
   height: 25px;
 }
-.dark .legacy-root button::after {
+.dark .legacy-root button.iconFamily::after {
   background: white;
 }
-.legacy-root button::after {
-  background: black !important;
+.legacy-root button.iconFamily::after {
+  background: currentColor;
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);

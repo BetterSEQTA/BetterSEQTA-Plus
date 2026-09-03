@@ -98,6 +98,12 @@ interface OpenPopupOptions {
   actions?: PopupAction[];
   /** Called after the popup DOM is mounted — use for one-off setup when actions are not enough. */
   onReady?: (root: PopupRoot) => void;
+  /** Hide the top-right X so the user must choose an action button. */
+  hideCloseButton?: boolean;
+  /** Close when clicking the dimmed backdrop. Default true. */
+  closeOnBackdrop?: boolean;
+  /** Close when pressing Escape. Default true. */
+  closeOnEscape?: boolean;
 }
 
 function chainAfterClose(next?: () => void) {
@@ -138,6 +144,9 @@ export function openPopup({
   backgroundClass,
   actions,
   onReady,
+  hideCloseButton = false,
+  closeOnBackdrop = true,
+  closeOnEscape = true,
 }: OpenPopupOptions = {}) {
   if (document.getElementById("whatsnewbk")) {
     chainAfterClose(afterClose);
@@ -159,12 +168,15 @@ export function openPopup({
   if (header) container.append(header);
   for (const node of content) if (node) container.append(node);
 
-  const closeButton = document.createElement("div");
-  closeButton.id = "whatsnewclosebutton";
-  container.append(closeButton);
+  if (!hideCloseButton) {
+    const closeButton = document.createElement("div");
+    closeButton.id = "whatsnewclosebutton";
+    closeButton.addEventListener("click", () => void closePopup());
+    container.append(closeButton);
+  }
 
   background.append(container);
-  const appContainer = document.getElementById("container");
+  const appContainer = document.getElementById("container") ?? document.body;
   if (!appContainer) return;
   appContainer.append(background);
 
@@ -201,12 +213,15 @@ export function openPopup({
     delete settingsState.justupdated;
   }
 
-  background.addEventListener("click", (event) => {
-    if (event.target === background) void closePopup();
-  });
+  if (closeOnBackdrop) {
+    background.addEventListener("click", (event) => {
+      if (event.target === background) void closePopup();
+    });
+  }
 
-  closeButton.addEventListener("click", () => void closePopup());
-  attachEscapeListener();
+  if (closeOnEscape) {
+    attachEscapeListener();
+  }
   wirePopupActions(actions);
   onReady?.({ background, container });
 }
