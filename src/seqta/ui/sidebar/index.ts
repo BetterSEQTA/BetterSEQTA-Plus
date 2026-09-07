@@ -1,8 +1,19 @@
 export {
-  prepareCustomSidebarEarly,
-  mountCustomSidebar,
-  unmountCustomSidebar,
-  openCustomSidebarEditor,
-} from "./mountCustomSidebar";
-export { sidebarState } from "./sidebarState.svelte";
-export type { SidebarItem, SidebarDrillFrame } from "./types";
+  prepareNativeSidebarEarly,
+  applyNativeSidebar,
+  clearNativeSidebar,
+} from "./applyNativeSidebar";
+export {
+  installSidebarDrillReturn,
+  runSidebarDrillReturn,
+  getSidebarDrillDepth,
+} from "./sidebarDrillReturn";
+export {
+  applySidebarLook,
+  applySidebarStyleClass,
+  clearSidebarAppearance,
+  getSidebarStyle,
+  normalizeSidebarStyleId,
+  SIDEBAR_STYLES,
+} from "./sidebarStyles";
+export { getNativeMenuList, parseNativeMenu, getPagePathFromHash } from "./parseNativeMenu";

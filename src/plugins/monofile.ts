@@ -209,8 +209,8 @@ function SortMessagePageItems(messagesParentElement: any) {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
-  void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
-    void mod.mountCustomSidebar();
+  void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
+    void mod.applyNativeSidebar();
   });
   void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
     void mod.mountCustomTitleBar();
@@ -745,19 +745,16 @@ export function init() {
       document.querySelector(".legacy-root")?.classList.add("hidden");
     }
 
-    // Learn only: hide native sidebar + mount Svelte replacement during loading.
-    // Engage keeps its native React menu — never apply the pending hide class there.
+    // Learn only: apply sidebar CSS vars early; Engage keeps its native React menu.
     if (!onLogin && !isSeqtaEngageExperience()) {
-      document.documentElement.classList.add("bsplus-custom-sidebar-pending");
       document.documentElement.classList.add("bsplus-custom-title-pending");
-      void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
-        mod.prepareCustomSidebarEarly();
+      void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
+        mod.prepareNativeSidebarEarly();
       });
       void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
         mod.prepareCustomTitleBarEarly();
       });
     } else {
-      document.documentElement.classList.remove("bsplus-custom-sidebar-pending");
       document.documentElement.classList.remove("bsplus-custom-title-pending");
     }
 
