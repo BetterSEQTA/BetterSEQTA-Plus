@@ -1,4 +1,4 @@
-/* Custom sidebar style presets + Look (density / radius / indicator). */
+/* Native sidebar style presets + Look (density / radius / indicator). */
 
 $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -18,25 +18,35 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: block !important;
 }
 
-#menu.bsplus-custom-sidebar {
-  $item: "> #bsplus-sidebar-root .bsplus-sidebar-item";
-  $label: "> #bsplus-sidebar-root .bsplus-sidebar-item > label:not(.toggle)";
-  $active: "> #bsplus-sidebar-root .bsplus-sidebar-item.bsplus-active:not(.hasChildren)";
+#menu.bsplus-styled-sidebar {
+  $rootItem: "> ul > li.item";
+  $subItem: ".sub li.item";
+  $item: "#{$rootItem}, #{$subItem}";
+  $rootLabel: "> ul > li.item > label:not(.toggle)";
+  $subLabel: ".sub li.item > label:not(.toggle)";
+  $label: "#{$rootLabel}, #{$subLabel}";
+  $active: "> ul > li.item.active:not(.hasChildren), .sub li.item.active:not(.hasChildren)";
 
-  /* Look: base radius (pill / sharp / strip override).
-     Density/radius animate with the same easing as sidebar width. */
-  #{$item} {
+  /* Look: base radius — layout transitions only on root rows (settings tweaks).
+     Submenu rows must not animate margin/padding during folder drill slides. */
+  #{$rootItem} {
     border-radius: var(--bsplus-sidebar-radius, 12px) !important;
     transition:
       padding $sidebar-motion,
       margin $sidebar-motion,
       border-radius $sidebar-motion,
       background-color 0.2s ease,
-      box-shadow 0.2s ease,
-      opacity 0.2s ease;
+      box-shadow 0.2s ease;
   }
 
-  #{$label} {
+  #{$subItem} {
+    border-radius: var(--bsplus-sidebar-radius, 12px) !important;
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  #{$rootLabel} {
     min-height: 28px !important;
     transition:
       font-size $sidebar-motion,
@@ -50,6 +60,11 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         height $sidebar-motion,
         margin $sidebar-motion;
     }
+  }
+
+  #{$subLabel} {
+    min-height: 28px !important;
+    transition: none;
   }
 
   /* —— Style presets —— */
@@ -90,6 +105,7 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       -webkit-backdrop-filter: none !important;
       box-shadow: none !important;
       overflow: visible !important;
+      contain: none !important;
     }
     #{$active} {
       background: rgba(255, 255, 255, 0.2) !important;

@@ -541,8 +541,7 @@ ul.magicDelete > li.deleting {
   visibility: visible !important;
 }
 
-/* Edit rows should match normal custom-sidebar item size (not shrunk). */
-#menu.bsplus-sidebar-edit-mode > #bsplus-sidebar-root > li.item.draggable,
+/* Edit rows should match normal sidebar item size (not shrunk). */
 #menu.bsplus-sidebar-edit-mode .item.draggable {
   display: flex !important;
   align-items: center !important;
@@ -628,26 +627,6 @@ ul.magicDelete > li.deleting {
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hide native menu as soon as possible (during loading), before Svelte mounts.
-   Keep `#bsplus-sidebar-root` visible — themes target `#menu > ul > li.item` on it. */
-html.bsplus-custom-sidebar-pending #menu > ul:not(#bsplus-sidebar-root),
-html.bsplus-custom-sidebar-pending #menu > #userInfo,
-html.bsplus-custom-sidebar-pending #menu > .icon-cover,
-#menu.bsplus-custom-sidebar > ul:not(#bsplus-sidebar-root),
-#menu.bsplus-custom-sidebar > #userInfo,
-#menu.bsplus-custom-sidebar > .icon-cover {
-  position: absolute !important;
-  left: -10000px !important;
-  width: 1px !important;
-  height: 1px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  clip: rect(0, 0, 0, 0) !important;
-}
-
 /* Custom title bar: keep native `#title` children for sync, hide them visually.
    Loading overlay stays until waitForCustomTitleBarReady() so this is ready underneath. */
 html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
@@ -672,179 +651,6 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
 #title.bsplus-custom-title .search-trigger > span {
   display: inline-flex !important;
   align-items: center;
-}
-
-/* Custom Svelte sidebar: keep `#menu > ul > li.item` / `.sub` shape for theme CSS. */
-#menu.bsplus-custom-sidebar {
-  position: absolute !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-sizing: border-box !important;
-  height: auto !important;
-  max-height: none !important;
-  overflow: hidden !important;
-
-  > #bsplus-sidebar-root {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    position: relative;
-    padding-top: 0 !important;
-
-    /*
-     * Extend the logo spacer for the same gap as between items.
-     * SEQTA's #menu>ul::before border-bottom is the hairline under the logo.
-     */
-    &::before {
-      box-shadow: none !important;
-      border-bottom: none !important;
-      height: calc(71px + 8px) !important;
-    }
-  }
-
-  li.hasChildren {
-    position: static !important;
-  }
-
-  /* Native list may keep `.active` after click-through; force our rows clickable,
-     then lock siblings only while a custom drill `.sub` is open. */
-  > #bsplus-sidebar-root .bsplus-sidebar-item {
-    width: auto !important;
-    max-width: none !important;
-    margin: 0 6px 8px !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Open folder rows wrap the absolute `.sub` panel. Filters/overflow on the
-     row clip every course/assessment label (especially glass + Edge). */
-  > #bsplus-sidebar-root .bsplus-sidebar-item:has(> .sub) {
-    overflow: visible !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    contain: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  > #bsplus-sidebar-root > li.item {
-    pointer-events: auto !important;
-  }
-
-  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
-    > #bsplus-sidebar-root
-    > li:not(.hasChildren.bsplus-active),
-  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
-    > #bsplus-sidebar-root
-    > li:not(.hasChildren.bsplus-active)
-    * {
-    pointer-events: none !important;
-  }
-
-  /* Same locks keyed off `.drilling` so nested leaf clicks do not flicker when
-     SEQTA briefly strips `.active` from folder rows. */
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren),
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren) * {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root .sub {
-    pointer-events: none;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub {
-    pointer-events: auto;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub:not(.bsplus-sub-enter) {
-    transform: none;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active
-    > .sub:has(.hasChildren.bsplus-active) {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active
-    .hasChildren.bsplus-active
-    > .sub {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:not(:has(.sub)) {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:has(.sub) {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub .sub {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root > li.hasChildren.bsplus-active > label,
-  > #bsplus-sidebar-root.drilling > li.hasChildren > label {
-    pointer-events: none !important;
-  }
-
-  /* Theme decorations on root leaves (Beach palm/sand) must not show through
-     the transparent drill `.sub` panel. */
-  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
-    > li:not(.hasChildren.bsplus-active)::before,
-  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
-    > li:not(.hasChildren.bsplus-active)::after {
-    content: none !important;
-    display: none !important;
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
-  > #bsplus-sidebar-root.drilling:not(.drill-entering) > li:not(.hasChildren)::before,
-  > #bsplus-sidebar-root.drilling:not(.drill-entering) > li:not(.hasChildren)::after {
-    content: none !important;
-    display: none !important;
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
-  #bsplus-sidebar-root .sub .back {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 12px 16px 8px;
-    cursor: pointer;
-    font-weight: 700;
-    color: inherit;
-  }
-
-  #bsplus-sidebar-root .sub .back:hover {
-    opacity: 0.9;
-  }
-
-  #bsplus-sidebar-root .sub .backLabel {
-    font-size: 16px;
-    font-weight: 700;
-  }
-
-  #bsplus-sidebar-root .sub > ul {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0 16px;
-  }
-
 }
 
 #menu li > label > svg,
@@ -942,19 +748,6 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)
 
 }
 
-/* Icon-only + drill: keep subject/back labels visible even if `:has()` misses. */
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root.drilling {
-  li > label,
-  li > label span,
-  .backLabel {
-    display: inline !important;
-    font-size: 16px !important;
-  }
-
-  li > label {
-    display: flex !important;
-  }
-}
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
@@ -1030,10 +823,6 @@ body > .sortable-fallback.bsplus-sortable-drag,
   }
 
   li.active > .sub > ul > .active {
-    background: rgba(0, 0, 0, 0.3) !important;
-  }
-
-  li.hasChildren.bsplus-active > .sub > ul > .bsplus-sidebar-item.bsplus-active:not(.hasChildren) {
     background: rgba(0, 0, 0, 0.3) !important;
   }
 }
@@ -1166,9 +955,9 @@ ol:has([class*="MessageList__avatar___"] svg) {
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
   box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2) !important;
 }
-/* Custom sidebar: keep title depth to the right, not a hairline under the logo into the menu. */
-body:has(#menu.bsplus-custom-sidebar) #container #content #title,
-body:has(#menu.bsplus-custom-sidebar).menuShown #container #content #title {
+/* Styled sidebar: keep title depth to the right, not a hairline under the logo into the menu. */
+body:has(#menu.bsplus-styled-sidebar) #container #content #title,
+body:has(#menu.bsplus-styled-sidebar).menuShown #container #content #title {
   -webkit-box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
   box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
 }

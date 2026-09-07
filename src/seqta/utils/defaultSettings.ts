@@ -70,6 +70,7 @@ export function getDefaultSettingsState(): SettingsState {
     sidebarCornerRadius: 12,
     sidebarActiveIndicator: "fill",
     sidebarWidth: "default",
+    sidebarPosition: "left",
     sidebarBlur: 50,
     adaptiveThemeColour: false,
     adaptiveThemeGradient: false,

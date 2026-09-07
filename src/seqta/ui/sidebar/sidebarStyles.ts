@@ -13,6 +13,7 @@ export type SidebarStyleId =
 export type SidebarDensity = "compact" | "comfortable" | "large";
 export type SidebarActiveIndicator = "fill" | "bar" | "outline" | "underline";
 export type SidebarWidth = "narrow" | "default" | "wide";
+export type SidebarPosition = "left" | "right";
 
 export type SidebarStyleDef = {
   id: SidebarStyleId;
@@ -37,6 +38,7 @@ export const DEFAULT_SIDEBAR_STYLE: SidebarStyleId = "classic";
 export const DEFAULT_SIDEBAR_DENSITY: SidebarDensity = "comfortable";
 export const DEFAULT_SIDEBAR_INDICATOR: SidebarActiveIndicator = "fill";
 export const DEFAULT_SIDEBAR_WIDTH: SidebarWidth = "default";
+export const DEFAULT_SIDEBAR_POSITION: SidebarPosition = "left";
 export const DEFAULT_SIDEBAR_RADIUS = 12;
 export const DEFAULT_SIDEBAR_BLUR = 50;
 
@@ -77,6 +79,9 @@ export const normalizeSidebarIndicator = (v: unknown) =>
 
 export const normalizeSidebarWidth = (v: unknown) =>
   oneOf(v, ["narrow", "default", "wide"] as const, DEFAULT_SIDEBAR_WIDTH);
+
+export const normalizeSidebarPosition = (v: unknown) =>
+  oneOf(v, ["left", "right"] as const, DEFAULT_SIDEBAR_POSITION);
 
 export const normalizeSidebarRadius = (v: unknown) =>
   clampInt(v, 0, 24, DEFAULT_SIDEBAR_RADIUS);
@@ -119,6 +124,15 @@ export function applySidebarStyleClass(
   );
 }
 
+/** Apply left/right placement on `body` and drill slide direction vars. */
+export function applySidebarPosition() {
+  const position = normalizeSidebarPosition(settingsState.sidebarPosition);
+  document.body.classList.toggle("bsplus-sidebar-right", position === "right");
+  const root = document.documentElement;
+  root.style.setProperty("--bsplus-slide-off", position === "right" ? "320px" : "-320px");
+  root.style.setProperty("--bsplus-slide-off-compact", position === "right" ? "70px" : "-70px");
+}
+
 /** Safe to call with no menu (still sets width/blur/radius on `:root`). */
 let lastSidebarLookKey = "";
 
@@ -133,7 +147,9 @@ export function applySidebarLook(
     ? 0
     : normalizeSidebarBlur(settingsState.sidebarBlur);
 
-  const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}`;
+  applySidebarPosition();
+
+  const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}|${normalizeSidebarPosition(settingsState.sidebarPosition)}`;
   if (lookKey === lastSidebarLookKey) return;
   lastSidebarLookKey = lookKey;
 
@@ -157,6 +173,9 @@ export function clearSidebarAppearance(menu: HTMLElement | null | undefined) {
   root.style.removeProperty("--bsplus-sidebar-width");
   root.style.removeProperty("--bsplus-sidebar-radius");
   root.style.removeProperty("--bsplus-sidebar-blur");
+  root.style.removeProperty("--bsplus-slide-off");
+  root.style.removeProperty("--bsplus-slide-off-compact");
+  document.body.classList.remove("bsplus-sidebar-right");
   if (!menu) return;
   clearPrefixed(menu, STYLE_CLASS_PREFIX);
   clearPrefixed(menu, DENSITY_CLASS_PREFIX);

@@ -8,14 +8,14 @@
   overflow-y: scroll !important;
 }
 
-#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu:not(.bsplus-custom-sidebar) > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
-#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu:not(.bsplus-custom-sidebar) > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
+#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
   /* !important beats theme animations (e.g. Beach palm-slide forwards). */
   transform: translateX(-320px) !important;
   animation: none !important;
@@ -26,19 +26,56 @@
   transition: transform 0.3s ease;
 }
 
+/* Frontmost drill panel: rows move with `.sub` only — no separate enter animation. */
+#menu
+  li.hasChildren:is(.active, .bsplus-active):not(
+    :has(.sub li.hasChildren:is(.active, .bsplus-active))
+  )
+  > .sub
+  > ul
+  > li,
+#menu
+  li.hasChildren:is(.active, .bsplus-active):not(
+    :has(.sub li.hasChildren:is(.active, .bsplus-active))
+  )
+  > .sub
+  > ul
+  > li
+  > label,
+#menu
+  li.hasChildren:is(.active, .bsplus-active):not(
+    :has(.sub li.hasChildren:is(.active, .bsplus-active))
+  )
+  > .sub
+  > ul
+  > li
+  > svg,
+#menu
+  li.hasChildren:is(.active, .bsplus-active):not(
+    :has(.sub li.hasChildren:is(.active, .bsplus-active))
+  )
+  > .sub
+  > ul
+  > li::before,
+#menu
+  li.hasChildren:is(.active, .bsplus-active):not(
+    :has(.sub li.hasChildren:is(.active, .bsplus-active))
+  )
+  > .sub
+  > ul
+  > li::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
 #menu .sub {
   transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom sidebar — single timing source. */
-#menu.bsplus-custom-sidebar {
-  --bsplus-drill-duration: 350ms;
-  --bsplus-drill-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --bsplus-slide-off: -320px;
-
-  .sub {
-    transition: none !important;
-  }
+#menu .sub ul:has(> li.hasChildren:is(.active, .bsplus-active))
+  > li:not(:is(.active, .bsplus-active)) {
+  pointer-events: none !important;
 }
 
 #menu > ul:has(li.hasChildren:is(.active, .bsplus-active))
@@ -59,131 +96,16 @@
   display: none !important;
 }
 
-/* Icon-only collapsed: submenu slides over narrow icons (native sidebar only). */
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > svg,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu:not(.bsplus-custom-sidebar)
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > svg {
-  transform: translateX(-70px);
+#menu {
+  --bsplus-slide-off: -320px;
 }
 
-/*
- * Custom sidebar drill slides — use `.drilling` / `.drill-entering` / `.drill-returning`,
- * not `:has(.active)` (SEQTA strips `.active` on nested clicks).
- */
-#menu.bsplus-custom-sidebar #bsplus-sidebar-root {
-  &.drilling {
-    overflow: hidden !important;
-
-    /* Hold siblings off-screen after the enter animation completes. */
-    &:not(.drill-returning):not(.drill-entering) {
-      > li::before,
-      > li::after,
-      > li > label,
-      > li > svg,
-      .sub:has(.sub) > ul > li::before,
-      .sub:has(.sub) > ul > li::after,
-      .sub:has(.sub) > ul > li > label,
-      .sub:has(.sub) > ul > li > svg {
-        transform: translateX(var(--bsplus-slide-off)) !important;
-        transition: none !important;
-        animation: none !important;
-      }
-
-      > li.hasChildren.bsplus-active > .sub:not(.bsplus-sub-enter) {
-        transform: translateX(0) !important;
-      }
-    }
-
-    /* Slide siblings out in sync with the incoming .sub panel. */
-    &.drill-entering:not(.drill-returning) {
-      > li::before,
-      > li::after,
-      > li > label,
-      > li > svg,
-      .sub:has(.sub) > ul > li::before,
-      .sub:has(.sub) > ul > li::after,
-      .sub:has(.sub) > ul > li > label,
-      .sub:has(.sub) > ul > li > svg {
-        transform: translateX(var(--bsplus-slide-off)) !important;
-        transition: transform var(--bsplus-drill-duration) var(--bsplus-drill-ease) !important;
-        animation: none !important;
-      }
-    }
-
-    .sub:has(.sub) > .nav > .back {
-      display: none !important;
-    }
-  }
-
-  &.drill-entering .sub.bsplus-sub-enter {
-    animation: bsplus-submenu-enter var(--bsplus-drill-duration) var(--bsplus-drill-ease) both !important;
-  }
-
-  &.drill-returning:not(.drilling) > li::before,
-  &.drill-returning:not(.drilling) > li::after,
-  &.drill-returning:not(.drilling) > li > label,
-  &.drill-returning:not(.drilling) > li > svg,
-  &.drilling.drill-returning > li.hasChildren > .sub > ul > li::before,
-  &.drilling.drill-returning > li.hasChildren > .sub > ul > li::after,
-  &.drilling.drill-returning > li.hasChildren > .sub > ul > li > label,
-  &.drilling.drill-returning > li.hasChildren > .sub > ul > li > svg {
-    transition: none !important;
-    animation: bsplus-sidebar-return var(--bsplus-drill-duration) var(--bsplus-drill-ease)
-      both !important;
-  }
-}
-
-@keyframes bsplus-submenu-enter {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* Icon-only rail uses a shorter slide distance. */
-body.icon-only-sidebar #menu.bsplus-custom-sidebar #bsplus-sidebar-root {
-  --bsplus-slide-off: -70px;
-}
-
-/* Hide off-screen siblings only after the slide finishes (not during enter). */
-body.icon-only-sidebar
-  #menu.bsplus-custom-sidebar
-  #bsplus-sidebar-root.drilling:not(.drill-returning):not(.drill-entering) {
-  > li:not(.bsplus-active) {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
+/* Reverse slide when drilling back — label/svg motion is driven inline in JS
+   so text stays off-screen until `.active` clears. Pseudo-elements use CSS. */
+#menu.bsplus-sidebar-returning ul.bsplus-drill-return-target > li::before,
+#menu.bsplus-sidebar-returning ul.bsplus-drill-return-target > li::after {
+  animation: bsplus-sidebar-return 0.3s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+  transition: none !important;
 }
 
 @keyframes bsplus-sidebar-return {
@@ -193,4 +115,43 @@ body.icon-only-sidebar
   to {
     transform: translateX(0);
   }
+}
+
+/* Icon-only collapsed: submenu slides over narrow icons. */
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li::before,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > svg,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > label,
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
+  #menu
+  > ul
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
+  > li
+  > svg {
+  transform: translateX(-70px);
+}
+
+body.icon-only-sidebar #menu {
+  --bsplus-slide-off: -70px;
 }

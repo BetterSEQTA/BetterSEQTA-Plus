@@ -35,26 +35,14 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
       `#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`,
     )
     .forEach((node) => {
-      // Only touch the native list copy — custom sidebar mirrors via sync.
-      if (node.closest("#bsplus-sidebar-root")) return;
       node.remove();
     });
 
-  await waitForElm(
-    "#menu > ul:not(#bsplus-sidebar-root), #menu > ul",
-    true,
-    50,
-    120,
-  );
+  await waitForElm("#menu > ul", true, 50, 120);
 
   let menuList = getNativeMenuList();
   if (!menuList) {
-    menuList = (await waitForElm(
-      "#menu > ul:not(#bsplus-sidebar-root), #menu ul",
-      true,
-      50,
-      120,
-    )) as HTMLElement;
+    menuList = (await waitForElm("#menu > ul", true, 50, 120)) as HTMLElement;
   }
 
   const analyticsItem = document.createElement("li");

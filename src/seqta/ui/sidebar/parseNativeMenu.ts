@@ -1,13 +1,11 @@
 import type { SidebarItem } from "./types";
 
-/** Native SEQTA list only — never the custom Svelte `#bsplus-sidebar-root`. */
+/** Native SEQTA root menu list. */
 export function getNativeMenuList(
   menu: HTMLElement | null = document.getElementById("menu"),
 ): HTMLElement | null {
   if (!menu) return null;
-  return menu.querySelector(
-    ":scope > ul:not(#bsplus-sidebar-root)",
-  ) as HTMLElement | null;
+  return menu.querySelector(":scope > ul") as HTMLElement | null;
 }
 
 function readLabelText(label: HTMLElement | null): string {
