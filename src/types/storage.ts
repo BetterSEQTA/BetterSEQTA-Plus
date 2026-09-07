@@ -84,6 +84,8 @@ export interface SettingsState {
   sidebarActiveIndicator?: string;
   /** Sidebar width: `narrow` | `default` (270px) | `wide`. */
   sidebarWidth?: string;
+  /** Sidebar edge: `left` (default) | `right`. */
+  sidebarPosition?: string;
   /** Backdrop blur strength in px when transparency is on (default `50`). */
   sidebarBlur?: number;
   adaptiveThemeColour?: boolean;

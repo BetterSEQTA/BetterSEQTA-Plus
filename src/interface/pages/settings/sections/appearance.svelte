@@ -38,7 +38,7 @@
   <SettingRow {...option} {searchQuery} />
 {/each}
 
-{#if !isEngage && matchesSearch(searchQuery, "Sidebar Style", "Item Size", "Corner Radius", "Active Indicator", "Sidebar Width", "Transparency Effects", "Blur Strength")}
+{#if !isEngage && matchesSearch(searchQuery, "Sidebar Style", "Item Size", "Corner Radius", "Active Indicator", "Sidebar Position", "Sidebar Width", "Transparency Effects", "Blur Strength")}
   <div class="border-none">
     <SidebarAppearance />
   </div>

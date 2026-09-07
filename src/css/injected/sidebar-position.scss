@@ -1,0 +1,133 @@
+/* Sidebar on the right edge — layout, drill direction, and mirrored accents. */
+
+body.bsplus-sidebar-right {
+  #menu {
+    left: auto !important;
+    right: 0 !important;
+    width: var(--bsplus-sidebar-width, 270px) !important;
+    overflow: visible !important;
+  }
+
+  #content {
+    left: 0 !important;
+    right: var(--bsplus-sidebar-width, 270px) !important;
+    transition:
+      right 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.4s ease !important;
+  }
+
+  /* Sub panels open to the left of the menu — anchor to menu edge, not viewport. */
+  #menu .sub {
+    left: auto !important;
+    right: 100% !important;
+    width: var(--bsplus-sidebar-width, 270px) !important;
+  }
+
+  /* Title bar spans the full viewport; only page content respects sidebar inset. */
+  #container #content #title,
+  #title {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  &.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
+    #menu {
+      width: 70px !important;
+    }
+
+    #content {
+      right: 70px !important;
+    }
+
+    #menu .sub {
+      right: 100% !important;
+      width: var(--bsplus-sidebar-width, 270px) !important;
+    }
+  }
+
+  &:has(#menu.bsplus-styled-sidebar) #container #content #title,
+  &.menuShown:has(#menu.bsplus-styled-sidebar) #container #content #title {
+    box-shadow: -6px 0 8px -4px rgb(0 0 0 / 0.25) !important;
+  }
+
+  #menu.bsplus-styled-sidebar {
+    &.bsplus-sidebar-indicator-bar:not(.bsplus-sidebar-style-strip) {
+      > ul > li.item.active:not(.hasChildren)::after,
+      .sub li.item.active:not(.hasChildren)::after {
+        left: auto !important;
+        right: 0 !important;
+      }
+    }
+
+    &.bsplus-sidebar-style-strip {
+      > ul > li.item.active:not(.hasChildren)::after,
+      .sub li.item.active:not(.hasChildren)::after {
+        left: auto !important;
+        right: 0 !important;
+      }
+    }
+  }
+
+  #menu li:is(.active, .hasChildren.bsplus-active) > .sub > ul > .item:not(.hasChildren)::before {
+    left: auto !important;
+    right: 0 !important;
+    border-radius: 0 8px 8px 0 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  body.bsplus-sidebar-right {
+    #menu {
+      left: auto !important;
+      right: 0 !important;
+      transform: translateX(var(--bsplus-sidebar-width, 270px)) !important;
+    }
+
+    &.menuShown #menu {
+      transform: translateX(0) !important;
+    }
+
+    #content {
+      left: 0 !important;
+      right: 0 !important;
+    }
+
+    &.menuShown #content {
+      transform: translateX(calc(-1 * var(--bsplus-sidebar-width, 270px))) !important;
+    }
+
+    &.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
+      #menu {
+        transform: translateX(70px) !important;
+      }
+
+      &.menuShown #content {
+        transform: translateX(-70px) !important;
+      }
+    }
+
+    #menuToggle {
+      left: auto !important;
+      right: 8px !important;
+    }
+
+    #container #content #title,
+    #title {
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Counter `#content` slide so the fixed title stays viewport-wide. */
+    &.menuShown #container #content #title {
+      transform: translateX(var(--bsplus-sidebar-width, 270px)) !important;
+    }
+
+    &.icon-only-sidebar.menuShown #container #content #title {
+      transform: translateX(70px) !important;
+    }
+  }
+}

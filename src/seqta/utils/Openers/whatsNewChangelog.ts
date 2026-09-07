@@ -5,7 +5,7 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.4 – Performance Mode & various fixes",
+    "title": "3.7.3 – Performance Mode, Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
       "Fixed custom background images and videos not uploading.",
@@ -17,11 +17,6 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Added a one-time prompt to re-enable BetterSEQTA features after the Courses and Assessments fix.",
       "Fixed feedback modal not scrolling on long bug reports and replies.",
       "Fixed the look and feel of the sidebar to be more like how it used to be.",
-    ]
-  },
-  {
-    "title": "3.7.3 – Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
-    "items": [
       "Added a few new loading screens you will see when opening SEQTA with BetterSEQTA",
       "Added an option in the Timetable to sync to Google Calendar and Outlook Calendar",
       "Added a new sidebar customisation page in the settings menu to change the sidebar layout, icons, and more.",
