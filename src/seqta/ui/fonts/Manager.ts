@@ -87,11 +87,11 @@ const SEQTA_FONT_SCOPE = `
   .legacy-root,
   .legacy-root input,
   .legacy-root textarea,
-  .legacy-root button,
+  .legacy-root button:not(.iconFamily),
   .legacy-root select,
   .legacy-root option,
   .legacy-root .input,
-  .legacy-root *,
+  .legacy-root *:not(.iconFamily),
   #container,
   #container *
 `;

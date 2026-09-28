@@ -1,3 +1,4 @@
+import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { renderAnalyticsPage } from "./ui";
@@ -23,10 +24,11 @@ export async function loadAnalyticsPage(): Promise<void> {
 async function loadAnalyticsPageInner(): Promise<void> {
   document.title = "Analytics ― SEQTA Learn";
 
-  document.querySelectorAll("#menu .item").forEach((item) => {
+  const menu = getNativeMenuList();
+  menu?.querySelectorAll(".item").forEach((item) => {
     item.classList.remove("active");
   });
-  document.querySelector('[data-key="analytics"]')?.classList.add("active");
+  menu?.querySelector('[data-key="analytics"]')?.classList.add("active");
 
   let main: HTMLElement;
   try {

@@ -12,10 +12,3 @@ export function parseValidationErrors(error: CustomThemeApiError | null | undefi
   if (!error?.details?.errors || !Array.isArray(error.details.errors)) return [];
   return error.details.errors.filter((e): e is string => typeof e === "string");
 }
-
-export function parseValidationWarnings(
-  validation: { warnings?: unknown[] } | undefined,
-): string[] {
-  if (!validation?.warnings || !Array.isArray(validation.warnings)) return [];
-  return validation.warnings.filter((w): w is string => typeof w === "string");
-}

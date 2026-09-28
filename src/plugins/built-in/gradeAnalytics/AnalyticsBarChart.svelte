@@ -27,6 +27,7 @@
   } from "./gradeDistribution";
 
   import { loadDistributionMode, saveDistributionMode } from "./storage";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 
 
@@ -312,7 +313,7 @@
 
               motion: {
 
-                y: { type: "tween", duration: 600, easing: cubicInOut },
+                y: { type: "tween", duration: $settingsState.animations ? 600 : 0, easing: cubicInOut },
 
               },
 

@@ -1,6 +1,7 @@
 import tailwindStyles from "./tailwind.css?inline";
 import pluginStyles from "./styles.css?inline";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { isSimpleAnalyticsUi } from "@/seqta/utils/performanceMode";
 import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
@@ -11,7 +12,8 @@ type ThemeSettingKey =
   | "DarkMode"
   | "adaptiveThemeColour"
   | "adaptiveThemeGradient"
-  | "selectedTheme";
+  | "selectedTheme"
+  | "animations";
 
 type ThemeListenerRegistration = {
   key: ThemeSettingKey;
@@ -117,7 +119,11 @@ function syncThemeFromPage(target: HTMLElement) {
 
 function syncThemeToAnalyticsUi() {
   if (shadowHost) syncThemeFromPage(shadowHost);
-  if (analyticsRoot) syncThemeFromPage(analyticsRoot);
+  if (analyticsRoot) {
+    syncThemeFromPage(analyticsRoot);
+    analyticsRoot.classList.toggle("bsplus-analytics-motion", !!settingsState.animations);
+    analyticsRoot.classList.toggle("bsplus-analytics-simple", isSimpleAnalyticsUi());
+  }
 }
 
 function clearThemeListeners() {
@@ -136,6 +142,7 @@ function watchThemeChanges() {
     "adaptiveThemeColour",
     "adaptiveThemeGradient",
     "selectedTheme",
+    "animations",
   ];
 
   const listener = () => syncThemeToAnalyticsUi();
@@ -199,7 +206,10 @@ export function renderAnalyticsPage(container: HTMLElement) {
     attributeFilter: ["class"],
   });
 
-  currentApp = mount(GradeAnalyticsPage, { target: analyticsRoot });
+  currentApp = mount(GradeAnalyticsPage, {
+    target: analyticsRoot,
+    props: { simpleMode: isSimpleAnalyticsUi() },
+  });
 }
 
 export function unmountAnalyticsPage() {

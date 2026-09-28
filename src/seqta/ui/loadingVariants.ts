@@ -60,6 +60,8 @@ const segment = (x1: number, y1: number, x2: number, y2: number): Line["stroke"]
 };
 
 const BASE = "linear-gradient(180deg, #010101 0%, #040404 50%, #080808 100%)";
+const BASE_LIGHT =
+  "linear-gradient(180deg, #fafafa 0%, #f4f4f5 50%, #ececef 100%)";
 const STAGE = "bkloading-stage-in";
 
 function theme(
@@ -96,6 +98,17 @@ function canvasVariant(
     grid: { cols: 0, rows: 0 },
     lines: [],
     theme: t,
+  };
+}
+
+export function resolveLoadingTheme(
+  variant: LoadingVariant,
+  darkMode: boolean,
+): LoadingVariant["theme"] {
+  if (darkMode) return variant.theme;
+  return {
+    ...variant.theme,
+    background: variant.theme.background.replaceAll(BASE, BASE_LIGHT),
   };
 }
 

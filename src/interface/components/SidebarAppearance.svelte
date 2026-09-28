@@ -13,6 +13,7 @@
     normalizeSidebarRadius,
     normalizeSidebarStyleId,
     normalizeSidebarWidth,
+    normalizeSidebarPosition,
     SIDEBAR_STYLES,
     type SidebarStyleId,
   } from "@/seqta/ui/sidebar/sidebarStyles";
@@ -36,6 +37,9 @@
     normalizeSidebarIndicator($settingsState.sidebarActiveIndicator),
   );
   const width = $derived(normalizeSidebarWidth($settingsState.sidebarWidth));
+  const position = $derived(
+    normalizeSidebarPosition($settingsState.sidebarPosition),
+  );
   const radius = $derived(
     normalizeSidebarRadius(
       $settingsState.sidebarCornerRadius ?? DEFAULT_SIDEBAR_RADIUS,
@@ -165,6 +169,23 @@
             { value: "bar", label: "Left bar" },
             { value: "outline", label: "Outline" },
             { value: "underline", label: "Underline" },
+          ]}
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="copy">
+        <h3 class="row-title">Sidebar Position</h3>
+        <p class="row-desc">Which edge of the screen the navigation sits on</p>
+      </div>
+      <div class="control">
+        <Select
+          value={position}
+          onChange={(value) => (settingsState.sidebarPosition = value)}
+          options={[
+            { value: "left", label: "Left" },
+            { value: "right", label: "Right" },
           ]}
         />
       </div>

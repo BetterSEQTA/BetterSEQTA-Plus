@@ -42,7 +42,7 @@ const buildLabel = process.env.BUILD_LABEL || "";
 const base =
   updateChannel === "nightly" && buildLabel
     ? `betterseqtaplus-nightly-${buildLabel}`
-    : `betterseqtaplus-${version}`;
+    : `${pkg.name}@${version}`;
 
 const chromeZip = `dist/${base}-chrome.zip`;
 const firefoxZip = `dist/${base}-firefox.zip`;

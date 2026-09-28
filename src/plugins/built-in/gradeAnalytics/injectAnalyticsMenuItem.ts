@@ -11,6 +11,7 @@ import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
 const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
@@ -34,26 +35,14 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
       `#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`,
     )
     .forEach((node) => {
-      // Only touch the native list copy — custom sidebar mirrors via sync.
-      if (node.closest("#bsplus-sidebar-root")) return;
       node.remove();
     });
 
-  await waitForElm(
-    "#menu > ul:not(#bsplus-sidebar-root), #menu > ul",
-    true,
-    50,
-    120,
-  );
+  await waitForElm("#menu > ul", true, 50, 120);
 
   let menuList = getNativeMenuList();
   if (!menuList) {
-    menuList = (await waitForElm(
-      "#menu > ul:not(#bsplus-sidebar-root), #menu ul",
-      true,
-      50,
-      120,
-    )) as HTMLElement;
+    menuList = (await waitForElm("#menu > ul", true, 50, 120)) as HTMLElement;
   }
 
   const analyticsItem = document.createElement("li");
@@ -88,10 +77,11 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
 
   syncAnalyticsMenu();
 
+  const scheduleAnalyticsSync = rafThrottle(syncAnalyticsMenu);
   const menuObserver = new MutationObserver(() => {
     const list = getNativeMenuList() ?? menuList;
     if (!list || isMenuOptionsOpen() || list.contains(analyticsItem)) return;
-    syncAnalyticsMenu();
+    scheduleAnalyticsSync();
   });
   menuObserver.observe(menuList, { childList: true });
 

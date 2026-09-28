@@ -16,6 +16,14 @@ import { updateAllColors } from "./colors/Manager";
 import { delay } from "@/seqta/utils/delay";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
+import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { rafThrottle } from "@/seqta/utils/rafThrottle";
+import {
+  installSidebarDrillReturn,
+  runSidebarDrillReturn,
+  getSidebarDrillDepth,
+} from "@/seqta/ui/sidebar/sidebarDrillReturn";
 
 let cachedUserInfo: any = null;
 let userInfoFetchPromise: Promise<any> | null = null;
@@ -144,8 +152,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
-    // Kept as fallback if the custom Svelte sidebar fails to mount.
-    setupSidebarAccessibility();
+    maybeSetupSidebarAccessibility();
   }
 
   addExtensionSettings();
@@ -181,6 +188,7 @@ async function handleUserInfoAndStudentData() {
     ]);
 
     updateUserInfo(userInfo);
+    ensureTitlebarFounderBadgeMounted();
     await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
     console.error(
@@ -227,11 +235,16 @@ function updateUserInfo(info: {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          <div style="display: flex; align-items: center;">
-            <p class="userInfohouse userInfoCode" style="display: none;"></p>
-            ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+          <div class="userInfoNameRow">
+            <div class="userInfoHouseWrap">
+              <p class="userInfohouse userInfoCode" style="display: none;"></p>
+              <span class="bsplus-founder-badge-slot" hidden></span>
+            </div>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
+            </div>
           </div>
-          ${metadata ? `<p class="userInfoCode">${metadata}</p>` : ""}
         </div>
       </div>
     `).firstChild!,
@@ -277,6 +290,7 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
 
   houseelement.innerText = text;
   houseelement.style.display = text ? "block" : "none";
+  refreshTitlebarFounderBadge();
 }
 
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
@@ -413,12 +427,19 @@ async function addEngageUserInfo() {
     stringToHTML(/* html */ `
       <div class="userInfo">
         <div class="userInfoText">
-          ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
-          ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+          <div class="userInfoNameRow">
+            <span class="bsplus-founder-badge-slot" hidden></span>
+            <div class="userInfoDetails">
+              ${displayName ? `<p class="userInfoName">${displayName}</p>` : ""}
+              ${subText ? `<p class="userInfoCode">${subText}</p>` : ""}
+            </div>
+          </div>
         </div>
       </div>
     `).firstChild!,
   );
+
+  ensureTitlebarFounderBadgeMounted();
 
   const iconNode = stringToHTML(/* html */ `
     <div class="userInfosvgdiv tooltip" id="engage-logouttooltip-wrap">
@@ -485,11 +506,18 @@ async function setupEngageSettingsButton() {
   }
   (content as HTMLElement).dataset.bsplusEngageSettingsWatch = "1";
 
-  const observer = new MutationObserver(() => {
-    if (document.getElementById("AddedSettings")) return;
-    void tryMount();
-  });
-  observer.observe(content, { childList: true, subtree: true });
+  let engageRemountTimer: ReturnType<typeof setTimeout> | null = null;
+  const debouncedTryMount = () => {
+    if (engageRemountTimer) clearTimeout(engageRemountTimer);
+    engageRemountTimer = setTimeout(() => {
+      engageRemountTimer = null;
+      if (document.getElementById("AddedSettings")) return;
+      void tryMount();
+    }, isPerformanceMode() ? 300 : 80);
+  };
+
+  const observer = new MutationObserver(debouncedTryMount);
+  observer.observe(content, { childList: true, subtree: !isPerformanceMode() });
 }
 
 function GetLightDarkModeString() {
@@ -557,6 +585,10 @@ function customizeMenuToggle() {
   }
 }
 
+function maybeSetupSidebarAccessibility() {
+  setupSidebarAccessibility();
+}
+
 function setupSidebarAccessibility() {
   updateSidebarAccessibility();
 
@@ -564,31 +596,9 @@ function setupSidebarAccessibility() {
   if (!menu) return;
 
   sidebarAccessibilityObserver?.disconnect();
-  sidebarAccessibilityObserver = new MutationObserver((mutations) => {
-    // Custom Svelte sidebar owns drill a11y — ignore its DOM (opening Goals/Folios
-    // mutates a lot; re-running here used to help freeze the tab).
-    if (menu.classList.contains("bsplus-custom-sidebar")) {
-      const root = document.getElementById("bsplus-sidebar-root");
-      if (
-        root &&
-        mutations.every(
-          (m) => root === m.target || root.contains(m.target as Node),
-        )
-      ) {
-        return;
-      }
-      // Still ignore class/style-only native noise while custom sidebar is on.
-      if (
-        mutations.every(
-          (m) =>
-            m.type === "attributes" &&
-            (m.attributeName === "class" || m.attributeName === "style"),
-        )
-      ) {
-        return;
-      }
-    }
-    scheduleSidebarAccessibilityUpdate();
+  const throttledA11yUpdate = rafThrottle(scheduleSidebarAccessibilityUpdate);
+  sidebarAccessibilityObserver = new MutationObserver(() => {
+    throttledA11yUpdate();
   });
   sidebarAccessibilityObserver.observe(menu, {
     subtree: true,
@@ -601,6 +611,8 @@ function setupSidebarAccessibility() {
     document.addEventListener("keydown", handleSidebarKeyboardActivation);
     sidebarAccessibilityListenersAttached = true;
   }
+
+  installSidebarDrillReturn(menu);
 }
 
 function scheduleSidebarAccessibilityUpdate() {
@@ -647,6 +659,10 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
     if (!parentEntry) return;
 
     event.preventDefault();
+    const depthBefore = getSidebarDrillDepth(menu);
+    if (depthBefore > 0) {
+      runSidebarDrillReturn(menu, depthBefore - 1);
+    }
     parentEntry.classList.remove("active");
     scheduleSidebarAccessibilityUpdate();
     requestAnimationFrame(() => {
@@ -730,20 +746,6 @@ function updateSidebarAccessibility() {
   const menu = document.getElementById("menu");
   if (!menu) return;
 
-  // Custom Svelte sidebar owns its own a11y / drill UI — do not mark its
-  // `#bsplus-sidebar-root` items offscreen based on the hidden native list.
-  if (menu.classList.contains("bsplus-custom-sidebar")) {
-    const root = document.getElementById("bsplus-sidebar-root");
-    if (root) {
-      for (const entry of root.querySelectorAll(`.${BSPLUS_SIDEBAR_OFFSCREEN}`)) {
-        if (entry instanceof HTMLElement) {
-          entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
-        }
-      }
-    }
-    return;
-  }
-
   const visibleList = getVisibleSidebarList(menu);
   const visibleEntries = new Set(
     visibleList ? getDirectSidebarEntries(visibleList) : [],
@@ -761,7 +763,10 @@ function updateSidebarAccessibility() {
       visibleEntries.has(entry) || drillFolders.has(entry);
 
     if (!interactive) {
-      entry.classList.add(BSPLUS_SIDEBAR_OFFSCREEN);
+      // Keep rows in normal layout — offscreen position/opacity snaps cause a
+      // pop-in when drilling back to the root list. Visual hide uses translateX
+      // in sidebar-animation.scss; keyboard uses tabindex only.
+      entry.classList.remove(BSPLUS_SIDEBAR_OFFSCREEN);
       entry.tabIndex = -1;
       label.tabIndex = -1;
       continue;
@@ -789,9 +794,7 @@ function getDirectSidebarEntries(list: HTMLElement) {
 }
 
 function getVisibleSidebarList(menu: HTMLElement) {
-  let currentList = menu.querySelector(
-    ":scope > ul:not(#bsplus-sidebar-root)",
-  ) as HTMLElement | null;
+  let currentList = menu.querySelector(":scope > ul") as HTMLElement | null;
 
   while (currentList) {
     const activeSubmenuParent = currentList.querySelector(

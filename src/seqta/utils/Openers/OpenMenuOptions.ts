@@ -198,14 +198,6 @@ function restoreMenuItemsFromEditMode(
 export function OpenMenuOptions() {
   if (isMenuOptionsOpen()) return;
 
-  // Custom Svelte sidebar owns edit mode when mounted.
-  if (document.getElementById("bsplus-sidebar-root")) {
-    void import("@/seqta/ui/sidebar/mountCustomSidebar").then((mod) => {
-      if (mod.openCustomSidebarEditor()) setMenuOptionsOpen(true);
-    });
-    return;
-  }
-
   const container = document.getElementById("container");
   const menu = document.getElementById("menu");
   if (!container || !menu) return;

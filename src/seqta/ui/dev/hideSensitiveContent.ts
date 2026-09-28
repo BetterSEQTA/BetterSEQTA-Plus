@@ -76,7 +76,7 @@ const contentConfig: ContentConfig = {
     },
   },
   userCode: {
-    selector: ".userInfoText > .userInfoCode",
+    selector: ".userInfoText .userInfoCode",
     action: (element) => {
       element.textContent = generateMockUserCode();
     },

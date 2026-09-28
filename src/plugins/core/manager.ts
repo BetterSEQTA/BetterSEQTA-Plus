@@ -13,6 +13,7 @@ import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
+import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
   enabled?: boolean;
@@ -189,6 +190,14 @@ export class PluginManager {
           );
           return;
         }
+      }
+
+      if (!isPluginAllowedInPerformanceMode(pluginId)) {
+        this.disposePluginAPI(pluginId);
+        verboseInfo(
+          `Plugin "${pluginId}" paused by performance mode`,
+        );
+        return;
       }
 
       // Inject plugin styles if provided

@@ -184,11 +184,18 @@
     window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
     themeUpdates.addListener(fetchCurrentThemes);
 
-    await fetchThemes();
-    await fetchCurrentThemes();
-    
-    const pending = consumePendingHighlightThemeId();
-    if (pending) focusThemeById(pending);
+    const load = async () => {
+      await fetchThemes();
+      await fetchCurrentThemes();
+      const pending = consumePendingHighlightThemeId();
+      if (pending) focusThemeById(pending);
+    };
+
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(() => void load(), { timeout: 2500 });
+    } else {
+      void load();
+    }
 
     return () => {
       window.removeEventListener('bsplus:highlight-theme', onHighlightThemeEvent);

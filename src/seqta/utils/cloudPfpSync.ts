@@ -72,6 +72,9 @@ function mergeMeIntoUser(current: CloudUser, data: Record<string, unknown>): Clo
     username: (raw.username as string | undefined) ?? current.username,
     displayName: (raw.displayName as string | undefined) ?? current.displayName,
     admin_level: (raw.admin_level as number | undefined) ?? current.admin_level,
+    signup_number: (raw.signup_number as number | null | undefined) ?? current.signup_number,
+    badges: (raw.badges as CloudUser["badges"]) ?? current.badges,
+    is_founding_2500: (raw.is_founding_2500 as boolean | undefined) ?? current.is_founding_2500,
     pfpUrl,
     pfpHash,
   };

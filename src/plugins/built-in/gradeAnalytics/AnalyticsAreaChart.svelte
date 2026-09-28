@@ -14,15 +14,23 @@
   } from "./timeRange";
   import { computeGradeForecast, aggregateToMonthlyPoints } from "./utils/gradePrediction";
   import PredictionMonthsSlider from "./PredictionMonthsSlider.svelte";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   interface Props {
     data: Assessment[];
     timeRange: TimeRange;
     customTimeRange?: CustomTimeRange;
     showSubjectTrends?: boolean;
+    combinedLabel?: string;
   }
 
-  let { data, timeRange, customTimeRange, showSubjectTrends = false }: Props = $props();
+  let {
+    data,
+    timeRange,
+    customTimeRange,
+    showSubjectTrends = false,
+    combinedLabel,
+  }: Props = $props();
 
   let showPrediction = $state(false);
   let predictionMonths = $state(3);
@@ -33,6 +41,7 @@
     buildGradeTrendChart(data, timeRange, {
       showPerSubject: showSubjectTrends,
       custom: customTimeRange,
+      combinedLabel,
     }),
   );
 
@@ -166,6 +175,8 @@
     return monthly.length >= 3;
   });
 
+  const animationsOn = $derived($settingsState.animations);
+
   /** Historical + future forecast points so tooltips work across the dashed line. */
   const chartData = $derived.by((): TrendPoint[] => {
     if (!showPrediction || !forecast?.points.length) {
@@ -211,6 +222,8 @@
       <p class="bsplus-analytics-card-desc">
         {#if showSubjectTrends}
           Overall and per-subject averages · {timeRangeText()}
+        {:else if combinedLabel}
+          {combinedLabel} · {timeRangeText()}
         {:else}
           Average grades over time · {timeRangeText()}
         {/if}
@@ -243,7 +256,7 @@
               curve: curveMonotoneX,
               "fill-opacity": showSubjectTrends ? 0.12 : 0.35,
               line: { class: "stroke-2" },
-              motion: "tween",
+              motion: animationsOn ? "tween" : false,
             },
             xAxis: {
               ticks: timeRange === "7d" ? 7 : undefined,
@@ -267,12 +280,12 @@
             </defs>
 
             <ChartClipPath
-              initialWidth={showPrediction ? undefined : 0}
-              motion={showPrediction
-                ? undefined
-                : {
+              initialWidth={animationsOn && !showPrediction ? 0 : undefined}
+              motion={animationsOn && !showPrediction
+                ? {
                     width: { type: "tween", duration: 900, easing: cubicInOut },
-                  }}
+                  }
+                : undefined}
             >
               {#each series as s, i (s.key)}
                 {@const meta = chartSeries.find((c) => c.key === s.key)}

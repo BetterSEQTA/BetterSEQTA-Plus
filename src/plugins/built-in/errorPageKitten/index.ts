@@ -16,12 +16,36 @@ const CARD_HTML = `<h1>404 Not Found</h1>
 </div>
 <a href="http://www.seqta.com.au">SEQTA</a>`;
 
+function normalizePageText(text: string): string {
+  return text
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Fingerprints SEQTA's rebranded standalone 404 — not generic site 404s. */
+function isSeqtaRebranded404Message(message: Element): boolean {
+  const heading = message.querySelector("h1");
+  if (normalizePageText(heading?.textContent ?? "").toLowerCase() !== "page not found") {
+    return false;
+  }
+
+  const body = normalizePageText(message.textContent ?? "");
+  return (
+    body.includes("We can't find the page you're looking for") &&
+    body.includes(
+      "It may have been moved, deleted or the link might be out of date.",
+    ) &&
+    body.includes("Ref: 404")
+  );
+}
+
 /** Standalone SEQTA 404 document — not the SPA (#container). */
 export function isSeqta404Page(): boolean {
   if (document.getElementById("container")) return false;
-  const heading = document.querySelector(".message > h1");
-  const text = heading?.textContent ?? document.title;
-  return /not found/i.test(text) || /404/.test(document.title);
+  const message = document.querySelector(".message");
+  if (!message) return false;
+  return isSeqtaRebranded404Message(message);
 }
 
 export function mountErrorPageKitten(): () => void {

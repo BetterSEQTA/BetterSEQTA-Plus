@@ -55,6 +55,10 @@ function sendPayload(payload: Record<string, unknown>): void {
   bridge.setAttribute("data-rev", String(Number(bridge.getAttribute("data-rev") || "0") + 1));
 }
 
+function preserveCustomSidebarActive(css: string): string {
+  return css.replace(/\.active(?![\w-])/g, ":is(.active, .bsplus-active)");
+}
+
 export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> {
   if (input.clear) {
     sendPayload({ clear: true });
@@ -63,8 +67,12 @@ export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> 
 
   const payload: Record<string, unknown> = {};
   if (input.clearPreview) payload.clearPreview = true;
-  if (input.customCss !== undefined) payload.customCss = input.customCss;
-  if (input.previewCss !== undefined) payload.previewCss = input.previewCss;
+  if (input.customCss !== undefined) {
+    payload.customCss = preserveCustomSidebarActive(input.customCss);
+  }
+  if (input.previewCss !== undefined) {
+    payload.previewCss = preserveCustomSidebarActive(input.previewCss);
+  }
   if (input.images !== undefined) {
     payload.images = await Promise.all(
       input.images.map(async (image) => ({

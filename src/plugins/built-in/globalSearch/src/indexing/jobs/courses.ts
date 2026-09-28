@@ -104,7 +104,7 @@ export const coursesJob: Job = {
     return score;
   },
 
-  run: async (_ctx) => {
+  run: async (ctx) => {
     const subjects = await fetchActiveSubjects();
     if (subjects.length === 0) {
       verboseDebug("[Courses job] No active subjects discovered.");
@@ -113,6 +113,8 @@ export const coursesJob: Job = {
 
     const items: IndexItem[] = [];
     const seenIds = new Set<string>();
+    const totalSubjects = subjects.length;
+    let processedSubjects = 0;
 
     // Sequential per-subject fetch keeps load on SEQTA bounded; the shared
     // API layer also limits concurrency per route as a defense in depth.
@@ -120,6 +122,12 @@ export const coursesJob: Job = {
       const id = `course-${subject.programme}-${subject.metaclass}`;
       if (seenIds.has(id)) continue;
       seenIds.add(id);
+
+      ctx.reportJobProgress?.({
+        processed: processedSubjects,
+        total: totalSubjects,
+        status: `Running job: Courses (${processedSubjects + 1}/${totalSubjects})`,
+      });
 
       const payload = await seqtaFetchPayload<CoursePayload>(
         "/seqta/student/load/courses",
@@ -129,7 +137,10 @@ export const coursesJob: Job = {
         },
       );
 
-      if (!payload) continue;
+      if (!payload) {
+        processedSubjects++;
+        continue;
+      }
 
       const title =
         (typeof payload.t === "string" && payload.t.trim()) ||
@@ -168,7 +179,14 @@ export const coursesJob: Job = {
           renderComponentId: "course",
         }),
       );
+      processedSubjects++;
     }
+
+    ctx.reportJobProgress?.({
+      processed: totalSubjects,
+      total: totalSubjects,
+      status: "Running job: Courses (saving)",
+    });
 
     verboseDebug(
       `[Courses job] Indexed ${items.length} courses across ${subjects.length} subjects.`,
