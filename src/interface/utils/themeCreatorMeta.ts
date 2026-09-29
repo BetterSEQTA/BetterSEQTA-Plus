@@ -97,8 +97,13 @@ export function mergeThemeWithCreatorMeta(
   theme: LoadedCustomTheme,
   meta: ThemeCreatorMeta,
 ): LoadedCustomTheme {
-  const sidebar = snapshotSidebarSettings();
-  const mergedMeta: ThemeCreatorMeta = { ...meta, sidebar };
+  const sidebar = meta.sidebar ?? theme.creatorMeta?.sidebar;
+  const mergedMeta: ThemeCreatorMeta = { ...meta };
+  if (sidebar) {
+    mergedMeta.sidebar = sidebar;
+  } else {
+    delete mergedMeta.sidebar;
+  }
   const CustomCSS = composeThemeCustomCss(theme, mergedMeta);
   return { ...theme, creatorMeta: mergedMeta, CustomCSS };
 }

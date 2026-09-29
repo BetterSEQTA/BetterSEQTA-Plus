@@ -168,7 +168,10 @@
       themeClone.forceDark = undefined;
     }
 
-    const merged = mergeThemeWithCreatorMeta(themeClone, creatorMeta);
+    const merged = mergeThemeWithCreatorMeta(themeClone, {
+      ...creatorMeta,
+      sidebar: snapshotSidebarSettings(),
+    });
     return await ensureThemeCoverImage(merged);
   }
 
@@ -630,7 +633,7 @@
     <Divider />
 
     <div class="theme-creator-sidebar -mx-2">
-      <SidebarAppearance />
+      <SidebarAppearance showStylePreview={false} />
     </div>
 
     <Divider />
