@@ -1,4 +1,4 @@
-import type { CalendarSyncAssessment } from "./assessmentEventMapper";
+import type { CalendarSyncAssessment } from "./eventMapper";
 
 export interface SeqtaTimetableLesson {
   date: string;

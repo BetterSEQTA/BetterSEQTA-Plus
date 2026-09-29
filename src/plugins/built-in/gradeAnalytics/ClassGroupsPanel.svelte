@@ -152,7 +152,7 @@
     </ul>
   {:else}
     <p class="bsplus-analytics-class-groups-empty">
-      Combine the same subject across years (e.g. English 2024 + English 2025) into one grade trend.
+      Combine the same subject across years into one grade trend.
     </p>
   {/if}
 </div>
@@ -181,8 +181,7 @@
             {editingId ? "Edit combined classes" : "Combine classes"}
           </h2>
           <p class="bsplus-analytics-class-groups-dialog-desc">
-            Pick two or more classes from any year — useful when your school splits a subject by
-            year. Same class list as Courses.
+            Pick classes from any year (same list as Courses).
           </p>
         </div>
         <button

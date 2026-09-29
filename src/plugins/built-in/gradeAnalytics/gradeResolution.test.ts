@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "@jest/globals";
 import { DEFAULT_ANALYTICS_GRADE_INFERENCE } from "./gradeInferenceSettings";
 import {
   resolveGradeFromAssessmentPayload,

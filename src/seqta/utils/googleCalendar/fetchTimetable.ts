@@ -1,5 +1,7 @@
+import { toISODate } from "@/seqta/utils/Loaders/engageParentTimetable";
+import type { CalendarSyncAssessment } from "./eventMapper";
 import type { SyncDateRange } from "./syncDateRange";
-import { syncWindowRange } from "./syncDateRange";
+import { isDateInRange, syncWindowRange } from "./syncDateRange";
 import type { SeqtaTimetableLesson } from "./types";
 
 type PrefItem = { name?: string; value?: string };
@@ -227,4 +229,59 @@ export async function fetchTimetableLessons(
 
 export async function fetchTimetableForSync(weeksAhead?: number): Promise<SeqtaTimetableLesson[]> {
   return fetchTimetableLessons(syncWindowRange(weeksAhead));
+}
+
+function parseAssessmentDue(raw: Record<string, unknown>): string {
+  const due = raw.due ?? raw.date ?? raw.dueDate;
+  return typeof due === "string" ? due : String(due ?? "");
+}
+
+function assessmentDueInRange(due: string, range: SyncDateRange): boolean {
+  const trimmed = due.trim();
+  let datePart = trimmed;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) return false;
+    datePart = toISODate(parsed);
+  }
+  return isDateInRange(datePart, range);
+}
+
+/** Upcoming assessments with due dates inside the sync window. */
+export async function fetchAssessmentsForCalendarSync(
+  range: SyncDateRange,
+): Promise<CalendarSyncAssessment[]> {
+  try {
+    const studentId = await resolveStudentId();
+    if (studentId == null) return [];
+
+    const path = isEngageParentContext()
+      ? "/seqta/parent/assessment/list/upcoming?"
+      : "/seqta/student/assessment/list/upcoming?";
+    const data = await postSeqtaJson<{ payload?: unknown[] }>(path, { student: studentId });
+    const payload = Array.isArray(data.payload) ? data.payload : [];
+
+    const out: CalendarSyncAssessment[] = [];
+    for (const raw of payload) {
+      if (!raw || typeof raw !== "object") continue;
+      const row = raw as Record<string, unknown>;
+      const id = Number(row.id);
+      const title = String(row.title ?? "").trim();
+      const due = parseAssessmentDue(row);
+      if (!id || !title || !due || !assessmentDueInRange(due, range)) continue;
+      if (row.status === "MARKS_RELEASED" || row.status === "CANCELLED") continue;
+      out.push({
+        id,
+        title,
+        subject: String(row.subject ?? row.code ?? "").trim(),
+        code: String(row.code ?? row.subject ?? "").trim(),
+        due,
+        status: row.status != null ? String(row.status) : undefined,
+      });
+    }
+    return out;
+  } catch (err) {
+    console.warn("[BetterSEQTA+] Assessment calendar fetch failed:", err);
+    return [];
+  }
 }

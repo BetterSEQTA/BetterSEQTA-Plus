@@ -1,5 +1,9 @@
 import browser from "webextension-polyfill";
-import { fetchTimetableForSync, fetchTimetableLessons } from "@/seqta/utils/googleCalendar/fetchTimetable";
+import {
+  fetchAssessmentsForCalendarSync,
+  fetchTimetableForSync,
+  fetchTimetableLessons,
+} from "@/seqta/utils/googleCalendar/fetchTimetable";
 import { syncWindowRange, trailingWeekRange } from "@/seqta/utils/googleCalendar/syncDateRange";
 import {
   googleLessonSyncProvider,
@@ -19,7 +23,6 @@ import {
   getSyncWeeksAhead,
   readResumableCalendarSync,
 } from "@/seqta/utils/calendarSync/settings";
-import { fetchAssessmentsForCalendarSync } from "@/seqta/utils/googleCalendar/fetchAssessmentsForCalendarSync";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncProgress,

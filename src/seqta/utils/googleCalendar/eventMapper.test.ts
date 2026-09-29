@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   googleApiEventBody,
   lessonToGoogleEvent,
+  mapAssessmentsToGoogleEvents,
   mapLessonsToGoogleEvents,
   outlookGraphEventBody,
   seqtaLessonKey,
@@ -108,6 +109,21 @@ describe("mapLessonsToGoogleEvents", () => {
       "Australia/Perth",
     );
     expect(events).toHaveLength(1);
+  });
+});
+
+describe("mapAssessmentsToGoogleEvents", () => {
+  it("maps due dates to all-day events", () => {
+    const [event] = mapAssessmentsToGoogleEvents(
+      ORIGIN,
+      [{ id: 42, title: "Essay", subject: "English", code: "10ENG", due: "2026-06-27" }],
+      "Australia/Perth",
+    );
+    expect(event).toMatchObject({
+      seqtaKey: `${ORIGIN}:assessment:42`,
+      allDay: true,
+      startDate: "2026-06-27",
+    });
   });
 });
 

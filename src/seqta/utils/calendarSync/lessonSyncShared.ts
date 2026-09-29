@@ -8,7 +8,6 @@ import {
 } from "@/seqta/utils/calendarSync/eventMap";
 import { eventFingerprint } from "@/seqta/utils/calendarSync/eventFingerprint";
 import type { RemoteSyncedEvent } from "@/seqta/utils/calendarSync/remoteEvents";
-import { isAssessmentSeqtaKey } from "@/seqta/utils/googleCalendar/assessmentEventMapper";
 import {
   isDateInRange,
   syncWindowRange,
@@ -86,31 +85,24 @@ export function originEventMapEntries(
   return entries;
 }
 
-export type EntriesToPruneOptions = {
-  /** When false, assessment events are not pruned here (use assessmentEntriesToRemove). */
-  syncAssessmentDueDates?: boolean;
-};
-
 export function entriesToPrune(
   eventMap: EventMapRecord,
   origin: string,
   mode: "full" | "incremental",
   weeksAhead: number,
   currentMapKeys: Set<string>,
-  options: EntriesToPruneOptions = {},
+  syncAssessmentDueDates = false,
 ): Array<[string, string]> {
   if (mode === "incremental") return [];
 
-  const syncAssessments = options.syncAssessmentDueDates === true;
+  const syncAssessments = syncAssessmentDueDates;
   const window = syncWindowRange(weeksAhead);
   const prefix = `${origin}::`;
   const entries: Array<[string, string]> = [];
 
   for (const [mapKey, raw] of Object.entries(eventMap)) {
     if (!mapKey.startsWith(prefix)) continue;
-    const seqtaKey = mapKey.slice(prefix.length);
-    const isAssessment = isAssessmentSeqtaKey(seqtaKey);
-    if (isAssessment && !syncAssessments) continue;
+    if (!syncAssessments && mapKey.includes(":assessment:")) continue;
 
     const entry = normalizeEventMapEntry(raw);
     if (!entry) continue;
@@ -119,26 +111,6 @@ export function entriesToPrune(
     if (missingFromTimetable || outsideWindow) {
       entries.push([mapKey, entry.id]);
     }
-  }
-
-  return entries;
-}
-
-/** Remove all tracked assessment events when due-date sync is turned off. */
-export function assessmentEntriesToRemove(
-  eventMap: EventMapRecord,
-  origin: string,
-): Array<[string, string]> {
-  const prefix = `${origin}::`;
-  const entries: Array<[string, string]> = [];
-
-  for (const [mapKey, raw] of Object.entries(eventMap)) {
-    if (!mapKey.startsWith(prefix)) continue;
-    const seqtaKey = mapKey.slice(prefix.length);
-    if (!isAssessmentSeqtaKey(seqtaKey)) continue;
-    const entry = normalizeEventMapEntry(raw);
-    if (!entry) continue;
-    entries.push([mapKey, entry.id]);
   }
 
   return entries;

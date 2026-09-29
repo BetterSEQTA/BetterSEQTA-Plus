@@ -1,10 +1,9 @@
 import { isGoogleCalendarConfigured } from "@/config/googleCalendar";
 import { isOutlookCalendarConfigured } from "@/config/outlookCalendar";
 import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
-import { eventMapKey } from "@/seqta/utils/calendarSync/eventMap";
+import { eventMapKey, normalizeEventMapEntry } from "@/seqta/utils/calendarSync/eventMap";
 import type { EventMapRecord } from "@/seqta/utils/calendarSync/eventMap";
 import {
-  assessmentEntriesToRemove,
   buildDeleteSyncResult,
   buildLessonSyncResult,
   clearOriginEventMapEntries,
@@ -19,7 +18,7 @@ import {
   reportSyncProgress,
   upsertLessonEvents,
 } from "@/seqta/utils/calendarSync/lessonSyncShared";
-import { mapAssessmentsToGoogleEvents } from "@/seqta/utils/googleCalendar/assessmentEventMapper";
+import { mapAssessmentsToGoogleEvents } from "@/seqta/utils/googleCalendar/eventMapper";
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
@@ -219,10 +218,15 @@ export async function syncLessonsToCalendar(
     mode,
     weeksAhead,
     currentMapKeys,
-    { syncAssessmentDueDates },
+    syncAssessmentDueDates,
   );
   if (!syncAssessmentDueDates && mode === "full") {
-    staleEntries = [...staleEntries, ...assessmentEntriesToRemove(eventMap, request.origin)];
+    const prefix = `${request.origin}::`;
+    for (const [mapKey, raw] of Object.entries(eventMap)) {
+      if (!mapKey.startsWith(prefix) || !mapKey.includes(":assessment:")) continue;
+      const entry = normalizeEventMapEntry(raw);
+      if (entry) staleEntries.push([mapKey, entry.id]);
+    }
   }
   const totalSteps = Math.max(staleEntries.length + events.length, 1);
   const lastSyncAt = Date.now();

@@ -18,8 +18,6 @@
     type SidebarStyleId,
   } from "@/seqta/ui/sidebar/sidebarStyles";
 
-  let { showStylePreview = true }: { showStylePreview?: boolean } = $props();
-
   const PREVIEW_ITEMS = [
     { label: "Home", active: true },
     { label: "Timetable", active: false },
@@ -69,22 +67,20 @@
     </div>
   </header>
 
-  <div class="picker-body" class:picker-body-no-preview={!showStylePreview}>
-    {#if showStylePreview}
-      <div class="preview-pane" aria-hidden="true">
-        <div class={`preview style-${selectedId}`}>
-          <div class="preview-chrome">
-            <div class="preview-logo"></div>
-            {#each PREVIEW_ITEMS as item (item.label)}
-              <div class="preview-item" class:active={item.active}>
-                <span class="preview-dot"></span>
-                <span class="preview-label">{item.label}</span>
-              </div>
-            {/each}
-          </div>
+  <div class="picker-body">
+    <div class="preview-pane" aria-hidden="true">
+      <div class={`preview style-${selectedId}`}>
+        <div class="preview-chrome">
+          <div class="preview-logo"></div>
+          {#each PREVIEW_ITEMS as item (item.label)}
+            <div class="preview-item" class:active={item.active}>
+              <span class="preview-dot"></span>
+              <span class="preview-label">{item.label}</span>
+            </div>
+          {/each}
         </div>
       </div>
-    {/if}
+    </div>
 
     <div
       class="options"
@@ -321,10 +317,6 @@
     grid-template-columns: minmax(160px, 210px) 1fr;
     gap: 1rem;
     padding: 0.5rem 1rem 1rem;
-  }
-
-  .picker-body-no-preview {
-    grid-template-columns: 1fr;
   }
 
   @media (max-width: 720px) {

@@ -600,10 +600,7 @@
     >
       <div class="bsplus-cal-menu-header">
         <span class="bsplus-cal-menu-title">Calendar sync</span>
-        <span class="bsplus-cal-menu-sub"
-          >Copy your SEQTA classes, appointments, and optional assessment due dates to Google or
-          Outlook</span
-        >
+        <span class="bsplus-cal-menu-sub">Sync classes and optional assessment due dates to Google or Outlook</span>
       </div>
 
       {@render providerPanel(
@@ -658,10 +655,7 @@
           <label class="bsplus-cal-setting bsplus-cal-setting--toggle">
             <div class="bsplus-cal-setting-copy">
               <span class="bsplus-cal-setting-label">Sync assessment due dates</span>
-              <span class="bsplus-cal-setting-desc">
-                Add upcoming assessment due dates from SEQTA using the same weeks window. Run Update
-                calendar after enabling to backfill.
-              </span>
+              <span class="bsplus-cal-setting-desc">Uses the same weeks window. Update calendar once after enabling.</span>
             </div>
             <input
               type="checkbox"

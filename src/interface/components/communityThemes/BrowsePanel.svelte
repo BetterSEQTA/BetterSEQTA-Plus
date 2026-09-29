@@ -7,16 +7,6 @@
   let { communityState, searchTerm }: { communityState: CommunityThemesState; searchTerm: string } =
     $props();
 
-  const themes = $derived(
-    communityState.browseThemes.filter((theme) => {
-      const q = searchTerm.toLowerCase();
-      if (!q) return true;
-      return (
-        (theme.name ?? "").toLowerCase().includes(q) ||
-        (theme.description ?? "").toLowerCase().includes(q)
-      );
-    }),
-  );
 </script>
 
 {#if communityState.browseLoading}
@@ -39,7 +29,7 @@
   </div>
 {:else}
   <ThemeGrid
-    {themes}
+    themes={communityState.browseThemes}
     {searchTerm}
     setDisplayTheme={(theme) => (communityState.displayTheme = theme)}
     toggleFavorite={() => {}}
@@ -50,7 +40,7 @@
   {#if communityState.displayTheme}
     <ThemeModal
       currentThemes={communityState.currentThemes}
-      allThemes={themes}
+      allThemes={communityState.browseThemes}
       theme={communityState.displayTheme}
       displayTheme={communityState.displayTheme}
       setDisplayTheme={(t) => (communityState.displayTheme = t)}

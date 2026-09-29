@@ -33,13 +33,6 @@
   }));
 
   const isCommunity = $derived(variant === 'community');
-  const hasSearchQuery = $derived(searchTerm.trim().length > 0);
-
-  function openCommunityThemeBuilder() {
-    void import('@/seqta/utils/launchPageThemeBuilder').then(({ launchPageThemeBuilder }) =>
-      launchPageThemeBuilder(),
-    );
-  }
 </script>
 
 <div class="relative">
@@ -59,30 +52,15 @@
       {/each}
     </div>
   {:else if isCommunity}
-    <div class="mx-auto flex max-w-lg flex-col items-center justify-center py-24 text-center">
-      {#if hasSearchQuery}
-        <h2 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-          No themes match your search
-        </h2>
-        <p class="mt-2 text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-          Try another name or keyword, or clear the search box to browse all approved community themes.
-        </p>
-      {:else}
-        <h2 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-          No community themes yet
-        </h2>
-        <p class="mt-2 text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-          Approved themes from other users will appear here. Create your own and submit it for review to
-          share it with the community.
-        </p>
-        <button
-          type="button"
-          class="mt-6 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-          onclick={openCommunityThemeBuilder}
-        >
-          Create &amp; submit a theme
-        </button>
-      {/if}
+    <div class="mx-auto max-w-md py-24 text-center text-zinc-500 dark:text-zinc-400">
+      <p class="text-lg font-medium text-zinc-900 dark:text-white">
+        {searchTerm.trim() ? "No themes match your search" : "No community themes yet"}
+      </p>
+      <p class="mt-2 text-sm">
+        {searchTerm.trim()
+          ? "Try a different search or clear the box."
+          : "Approved submissions show up here. Use Create & submit above to share yours."}
+      </p>
     </div>
   {:else}
     <div class="absolute top-0 flex h-96 w-full flex-col items-center justify-center text-center">
