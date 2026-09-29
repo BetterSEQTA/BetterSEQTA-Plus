@@ -17,6 +17,7 @@
     step={step}
     bind:value={state}
     style={`background: linear-gradient(to right, #30d259ad 0%, #30D259 ${percentage}%, #dddddd ${percentage}%)`}
+    oninput={(e) => onChange(Number(e.currentTarget.value))}
     onchange={(e) => onChange(Number(e.currentTarget.value))}
     class="w-full h-1 rounded-full appearance-none cursor-pointer slider"
   />

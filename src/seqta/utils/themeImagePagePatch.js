@@ -131,6 +131,10 @@
 
       if (payload.previewCss !== undefined) {
         setStyleText(PREVIEW_STYLE_ID, payload.previewCss || "");
+        var previewStyle = document.getElementById(PREVIEW_STYLE_ID);
+        if (previewStyle) {
+          document.head.appendChild(previewStyle);
+        }
       }
 
       if (payload.clearPreview) {

@@ -41,6 +41,30 @@ export type CustomTheme = {
     flickers?: number;
     cityLayers?: boolean;
   };
+  /** Theme Creator quick settings (font, page background, sidebar snapshot). */
+  creatorMeta?: ThemeCreatorMeta;
+};
+
+export type ThemeCreatorMeta = {
+  fontId: string;
+  /** CustomImages entry used as the SEQTA page background layer. */
+  pageBackgroundImageId: string | null;
+  backgroundBlurPx: number;
+  overlayOpacity: number;
+  gradientAngle: number;
+  gradientEnd: string;
+  /** Advanced CSS appended after generated builder rules. */
+  userCustomCss: string;
+  sidebar?: {
+    sidebarStyle?: string;
+    sidebarDensity?: string;
+    sidebarCornerRadius?: number;
+    sidebarActiveIndicator?: string;
+    sidebarWidth?: string;
+    sidebarPosition?: string;
+    sidebarBlur?: number;
+    transparencyEffects?: boolean;
+  };
 };
 
 export type LoadedCustomTheme = CustomTheme & {

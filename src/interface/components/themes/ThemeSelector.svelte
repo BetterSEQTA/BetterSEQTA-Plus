@@ -7,8 +7,10 @@
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
   import { filterThemesByMode, isLocalCustomTheme, type ThemeListMode } from '@/interface/utils/themeListFilters'
   import { closeExtensionPopup, SettingsClicked } from '@/seqta/utils/Closers/closeExtensionPopup'
+  import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
 
   const themeManager = ThemeManager.getInstance();
 
@@ -26,6 +28,8 @@
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
   let prevLoggedIn = $state(false);
   let showSignInModal = $state(false);
+  let submittingThemeId = $state<string | null>(null);
+  let submitError = $state<string | null>(null);
 
   $effect(() => {
     const unsub = cloudAuth.subscribe((s) => {
@@ -172,26 +176,31 @@
   }
 
   const openThemeCreator = async (themeId?: string) => {
-    const { OpenThemeCreator } = await import('@/plugins/built-in/themes/ThemeCreator')
-    OpenThemeCreator(themeId)
-    if (!SettingsClicked) closeExtensionPopup()
+    const { launchPageThemeBuilder } = await import('@/seqta/utils/launchPageThemeBuilder')
+    await launchPageThemeBuilder(themeId)
   }
 
   const openCommunitySubmit = async () => {
-    if (SettingsClicked) {
-      const [{ requestSettingsDestination }, { requestOpenCommunityThemeSubmit }] =
-        await Promise.all([
-          import('@/seqta/utils/settingsNavigation'),
-          import('@/seqta/utils/openCommunityThemeSubmit'),
-        ])
-      requestOpenCommunityThemeSubmit()
-      requestSettingsDestination({ page: 'themes', view: 'community' })
-      return
-    }
-
     const { openCommunityThemeSubmit } = await import('@/seqta/utils/openCommunityThemeSubmit')
     await openCommunityThemeSubmit()
-    closeExtensionPopup()
+  }
+
+  const submitCustomTheme = async (theme: CustomTheme, e: MouseEvent) => {
+    e.stopPropagation();
+    submitError = null;
+    if (!cloudLoggedIn) {
+      showSignInModal = true;
+      return;
+    }
+    submittingThemeId = theme.id;
+    try {
+      const { submitThemeById } = await import('@/seqta/utils/customThemes/submitLocalTheme');
+      await submitThemeById(theme.id, theme.description?.trim() || undefined);
+    } catch (err) {
+      submitError = formatCustomThemeApiError(err);
+    } finally {
+      submittingThemeId = null;
+    }
   }
 
   const customThemeActionClass =
@@ -336,6 +345,18 @@
                 >
                   <span class="text-lg font-IconFamily">&#xeaa5;</span>
                 </div>
+                {#if listMode === 'custom'}
+                  <div
+                    class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
+                    onclick={(event) => void submitCustomTheme(theme, event)}
+                    onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void submitCustomTheme(theme, event as unknown as MouseEvent) }}
+                    role="button"
+                    tabindex="-1"
+                    title="Submit to community"
+                  >
+                    <span class="text-lg font-IconFamily">&#xe9fc;</span>
+                  </div>
+                {/if}
               {/if}
             </div>
           {/if}
@@ -346,6 +367,11 @@
                 source={theme.coverImage}
                 alt={theme.name}
                 class="object-cover absolute inset-0 z-0 w-full h-full pointer-events-none"
+              />
+            {:else}
+              <ThemePlaceholderCover
+                accentHint={theme.defaultColour}
+                class="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
               />
             {/if}
             {#if !theme.hideThemeName}
@@ -423,6 +449,10 @@
     {#if themes && (listMode === 'custom' || (showNavigation && visibleThemes.length > 0) || (listMode === 'downloaded' && visibleThemes.length > 0))}
       <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600 {useTwoColumnLayout ? 'col-span-2' : ''}"></div>
 
+      {#if listMode === 'custom' && submitError}
+        <p class="col-span-2 whitespace-pre-line text-sm text-red-600 dark:text-red-400">{submitError}</p>
+      {/if}
+
       {#if listMode === 'custom'}
         <div class="grid grid-cols-2 gap-2 {useTwoColumnLayout ? 'col-span-2' : ''}">
           <button
@@ -450,7 +480,7 @@
             class="{customThemeActionClass} col-span-2"
           >
             <span class="text-2xl font-IconFamily" aria-hidden="true">&#xe9fc;</span>
-            <span>Submit theme</span>
+            <span>Create & submit</span>
           </button>
         </div>
       {:else if listMode === 'downloaded'}

@@ -47,6 +47,19 @@
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       {/if}
       {#if showThemes}
+        {#if listMode === "custom"}
+          <button
+            type="button"
+            class="mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            onclick={() =>
+              void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>
+                launchPageThemeBuilder(),
+              )}
+          >
+            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
+            Open theme builder
+          </button>
+        {/if}
         <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} {listMode} />
       {/if}
     </div>

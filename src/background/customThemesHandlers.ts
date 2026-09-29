@@ -1,3 +1,5 @@
+import { normalizeCustomThemeApiResponse } from "@/seqta/utils/customThemes/parseApiEnvelope";
+
 type MessageSender = { (response?: unknown): void };
 
 type UploadFilePart = {
@@ -46,8 +48,22 @@ function buildFormDataFromPayload(payload: UploadPayload): FormData {
 export function createCustomThemesHandlers(deps: {
   apiBase: () => string;
   getAccessTokenFromStorage: () => Promise<string | null>;
-  parseJsonResponse: (r: Response) => Promise<any>;
 }): Record<string, (request: any, sendResponse: MessageSender) => boolean> {
+  async function readCustomThemesResponse(r: Response): Promise<Record<string, unknown>> {
+    const text = await r.text();
+    let body: unknown = {};
+    try {
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      body = null;
+    }
+    const normalized = normalizeCustomThemeApiResponse(body, r.status, text);
+    if (!r.ok || normalized.success === false) {
+      console.error("[BetterSEQTA+ CustomThemes]", r.status, r.url, normalized);
+    }
+    return normalized;
+  }
+
   async function customThemesJsonFetch(
     path: string,
     init: RequestInit = {},
@@ -64,16 +80,13 @@ export function createCustomThemesHandlers(deps: {
       }
       headers.Authorization = `Bearer ${token}`;
     }
-    const r = await fetch(`${deps.apiBase()}${path}`, {
+    const url = `${deps.apiBase()}${path}`;
+    const r = await fetch(url, {
       ...init,
       headers,
       cache: "no-store",
     });
-    const json = await deps.parseJsonResponse(r);
-    if (json && typeof json === "object") {
-      return { ...json, httpStatus: r.status };
-    }
-    return { success: false, error: `HTTP ${r.status}`, httpStatus: r.status };
+    return await readCustomThemesResponse(r);
   }
 
   async function customThemesMultipartPost(
@@ -85,17 +98,14 @@ export function createCustomThemesHandlers(deps: {
       return { success: false, error: "Not authenticated", httpStatus: 401 };
     }
     const form = buildFormDataFromPayload(payload);
-    const r = await fetch(`${deps.apiBase()}${path}`, {
+    const url = `${deps.apiBase()}${path}`;
+    const r = await fetch(url, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: form,
       cache: "no-store",
     });
-    const json = await deps.parseJsonResponse(r);
-    if (json && typeof json === "object") {
-      return { ...json, httpStatus: r.status };
-    }
-    return { success: false, error: `HTTP ${r.status}`, httpStatus: r.status };
+    return await readCustomThemesResponse(r);
   }
 
   function handleFetchCustomThemes(request: any, sendResponse: MessageSender): boolean {
@@ -183,7 +193,8 @@ export function createCustomThemesHandlers(deps: {
         console.error("[Background] submitCustomTheme error:", err);
         sendResponse({
           success: false,
-          error: err instanceof Error ? err.message : "Upload failed",
+          error: { message: err instanceof Error ? err.message : "Upload failed" },
+          httpStatus: 0,
         });
       }
     })();

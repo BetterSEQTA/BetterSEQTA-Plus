@@ -2,6 +2,7 @@
 
 import {
   consumeOpenCommunityThemeSubmit,
+  consumePendingCommunitySubmitThemeId,
   requestOpenCommunityThemeSubmit,
 } from "./openCommunityThemeSubmit";
 
@@ -23,5 +24,11 @@ describe("openCommunityThemeSubmit", () => {
     sessionStorage.setItem("bsplus:open-community-theme-submit", "1");
     expect(consumeOpenCommunityThemeSubmit()).toBe(true);
     expect(consumeOpenCommunityThemeSubmit()).toBe(false);
+  });
+
+  it("hands off a theme id for the submit modal", () => {
+    requestOpenCommunityThemeSubmit("theme-abc");
+    expect(consumePendingCommunitySubmitThemeId()).toBe("theme-abc");
+    expect(consumePendingCommunitySubmitThemeId()).toBeNull();
   });
 });

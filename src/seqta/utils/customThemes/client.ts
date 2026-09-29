@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import type { CustomThemeStatus } from "./constants";
 import { formatThemeDate } from "./formatThemeDate";
 import { normalizeCustomTheme } from "./normalizeCustomTheme";
-import { parseApiError, parseValidationErrors } from "./parseApiEnvelope";
+import { formatEnvelopeErrorMessage, parseValidationErrors } from "./parseApiEnvelope";
 import type {
   CustomThemeApiEnvelope,
   CustomThemeDetailResponse,
@@ -25,10 +25,25 @@ export class CustomThemeApiError extends Error {
 }
 
 const FETCH_TIMEOUT_MS = 25_000;
+const EXTENSION_RELOAD_HINT =
+  "Extension reloaded — refresh the SEQTA tab and reopen settings after `pnpm dev` updates, then try again.";
+
+async function sendRuntimeMessage<T>(message: object): Promise<T> {
+  try {
+    if (!browser.runtime?.id) throw new Error(EXTENSION_RELOAD_HINT);
+    return (await browser.runtime.sendMessage(message)) as T;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/disconnected port|context invalidated|receiving end does not exist|message port closed/i.test(msg)) {
+      throw new Error(EXTENSION_RELOAD_HINT);
+    }
+    throw err;
+  }
+}
 
 function sendMessageWithTimeout<T>(message: object): Promise<T> {
   return Promise.race([
-    browser.runtime.sendMessage(message) as Promise<T>,
+    sendRuntimeMessage<T>(message),
     new Promise<T>((_, reject) => {
       setTimeout(
         () =>
@@ -46,13 +61,14 @@ function sendMessageWithTimeout<T>(message: object): Promise<T> {
 function throwFromEnvelope<T>(
   envelope: CustomThemeApiEnvelope<T> & { httpStatus?: number },
 ): never {
-  const status = envelope.httpStatus ?? 0;
   const errObj =
     envelope.error && typeof envelope.error === "object" ? envelope.error : undefined;
-  const message = parseApiError(envelope.error);
-  const code = errObj?.code;
-  const validationErrors = parseValidationErrors(errObj);
-  throw new CustomThemeApiError(message, status, code, validationErrors);
+  throw new CustomThemeApiError(
+    formatEnvelopeErrorMessage(envelope),
+    envelope.httpStatus ?? 0,
+    errObj?.code,
+    parseValidationErrors(errObj),
+  );
 }
 
 export function formatCustomThemeStatus(status: CustomThemeStatus | string | undefined): string {
@@ -140,11 +156,24 @@ export async function fetchMyCustomThemeDetail(id: string): Promise<CustomThemeD
 export async function submitCustomTheme(
   payload: CustomThemeUploadPayload,
 ): Promise<CustomThemeSubmitResponse> {
-  const res = await sendMessageWithTimeout<CustomThemeApiEnvelope<CustomThemeSubmitResponse>>({
+  const res = await sendMessageWithTimeout<
+    CustomThemeApiEnvelope<CustomThemeSubmitResponse> & { httpStatus?: number }
+  >({
     type: "submitCustomTheme",
     payload,
   });
-  if (!res.success || !res.data?.theme) throwFromEnvelope(res);
+  if (!res || typeof res !== "object" || !res.success || !res.data?.theme) {
+    throwFromEnvelope(
+      res && typeof res === "object"
+        ? res
+        : {
+            success: false,
+            data: null,
+            error: "Empty response from extension background",
+            httpStatus: 0,
+          },
+    );
+  }
   return {
     theme: normalizeCustomTheme(res.data.theme as unknown as Record<string, unknown>),
     validation: res.data.validation,

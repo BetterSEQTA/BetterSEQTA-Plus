@@ -3,7 +3,12 @@ import {
   statusBadgeClass,
   canEditCustomTheme,
 } from "./client";
-import { parseApiError, parseValidationErrors } from "./parseApiEnvelope";
+import {
+  formatEnvelopeErrorMessage,
+  normalizeCustomThemeApiResponse,
+  parseApiError,
+  parseValidationErrors,
+} from "./parseApiEnvelope";
 
 describe("customThemes client helpers", () => {
   it("formats status labels", () => {
@@ -26,6 +31,7 @@ describe("customThemes client helpers", () => {
 
   it("parses API envelope errors and validation details", () => {
     expect(parseApiError({ code: "INVALID_THEME_STRUCTURE", message: "Bad theme" })).toBe("Bad theme");
+    expect(parseApiError(null, 500)).toBe("Request failed (HTTP 500)");
     expect(
       parseValidationErrors({
         code: "INVALID_THEME_STRUCTURE",
@@ -33,5 +39,25 @@ describe("customThemes client helpers", () => {
         details: { errors: ["Missing CustomCSS", "Missing name"] },
       }),
     ).toEqual(["Missing CustomCSS", "Missing name"]);
+    expect(
+      formatEnvelopeErrorMessage({
+        success: false,
+        data: null,
+        error: { code: "INVALID_THEME_STRUCTURE", message: "Bad theme" },
+        httpStatus: 422,
+      }),
+    ).toContain("Bad theme");
+  });
+
+  it("normalizes Laravel validation bodies", () => {
+    const out = normalizeCustomThemeApiResponse(
+      {
+        message: "The given data was invalid.",
+        errors: { theme_zip: ["The theme zip field is required."] },
+      },
+      422,
+    );
+    expect(out.success).toBe(false);
+    expect((out.error as { message: string }).message).toContain("theme_zip");
   });
 });

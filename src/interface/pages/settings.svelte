@@ -523,82 +523,85 @@
         </div>
       </nav>
 
-      {#if isStoreView}
-        <div class="min-w-0 min-h-0 flex-1">
-          {#if activePage === "themes" && activeThemeView === "community-themes"}
-            <LazyPanel
-              loader={loadCommunityThemes}
-              remountKey="community-themes"
-              props={{
-                searchTerm: storeSearchTerm,
-                setSearchTerm: (term: string) => (storeSearchTerm = term),
-              }}
-            />
-          {:else}
-            <LazyPanel
-              loader={loadStore}
-              remountKey="store"
-              props={{
-                activeTab: activePage as StoreTab,
-                searchTerm: storeSearchTerm,
-                selectedBackgroundCategory,
-                setActiveTab: (tab: StoreTab) => {
-                  activePage = tab;
-                  if (tab === "themes") activeThemeView = "theme-store";
-                  else activeBackgroundView = "background-store";
-                },
-                setSearchTerm: (term: string) => (storeSearchTerm = term),
-                setBackgroundCategories: (categories: string[]) =>
-                  (backgroundCategories = categories),
-              }}
-            />
-          {/if}
-        </div>
-      {:else}
-        <div class="flex flex-col flex-1 min-w-0 min-h-0">
-          <div class="shrink-0 px-6 pt-5 pb-3">
-            <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              {sectionTitle}
-            </h1>
-          </div>
-          <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
-            {#if activePage === "settings"}
-              {#if activeSection === "shortcuts" && !debouncedSettingsSearch.trim()}
-                <LazyPanel loader={loadShortcuts} remountKey="shortcuts-page" />
-              {:else}
-                <LazyPanel
-                  loader={loadSettingsBody}
-                  remountKey="settings-body"
-                  props={{
-                    ...settingsSharedProps,
-                    activeSection: debouncedSettingsSearch.trim() ? "all" : activeSection,
-                    searchQuery: debouncedSettingsSearch,
-                  }}
-                />
-                {#if debouncedSettingsSearch.trim()}
-                  <LazyPanel
-                    loader={loadShortcuts}
-                    remountKey="shortcuts-search"
-                    props={{ searchQuery: debouncedSettingsSearch }}
-                  />
-                {/if}
-              {/if}
-            {:else if activePage === "themes"}
+      <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        {#if isStoreView}
+          <div class="min-h-0 min-w-0 flex-1 overflow-hidden">
+            {#if activePage === "themes" && activeThemeView === "community-themes"}
               <LazyPanel
-                loader={loadThemeSettings}
-                remountKey={`theme-settings-${activeThemeListMode}`}
-                props={{ section: "themes", listMode: activeThemeListMode }}
+                loader={loadCommunityThemes}
+                remountKey="community-themes"
+                props={{
+                  searchTerm: storeSearchTerm,
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                }}
               />
             {:else}
               <LazyPanel
-                loader={loadThemeSettings}
-                remountKey="background-settings"
-                props={{ section: "backgrounds" }}
+                loader={loadStore}
+                remountKey="store"
+                props={{
+                  activeTab: activePage as StoreTab,
+                  searchTerm: storeSearchTerm,
+                  selectedBackgroundCategory,
+                  setActiveTab: (tab: StoreTab) => {
+                    activePage = tab;
+                    if (tab === "themes") activeThemeView = "theme-store";
+                    else activeBackgroundView = "background-store";
+                  },
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                  setBackgroundCategories: (categories: string[]) =>
+                    (backgroundCategories = categories),
+                }}
               />
             {/if}
           </div>
-        </div>
-      {/if}
+        {:else}
+          <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <div class="shrink-0 px-6 pt-5 pb-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                {sectionTitle}
+              </h1>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
+              {#if activePage === "settings"}
+                {#if activeSection === "shortcuts" && !debouncedSettingsSearch.trim()}
+                  <LazyPanel loader={loadShortcuts} remountKey="shortcuts-page" />
+                {:else}
+                  <LazyPanel
+                    loader={loadSettingsBody}
+                    remountKey="settings-body"
+                    props={{
+                      ...settingsSharedProps,
+                      activeSection: debouncedSettingsSearch.trim() ? "all" : activeSection,
+                      searchQuery: debouncedSettingsSearch,
+                    }}
+                  />
+                  {#if debouncedSettingsSearch.trim()}
+                    <LazyPanel
+                      loader={loadShortcuts}
+                      remountKey="shortcuts-search"
+                      props={{ searchQuery: debouncedSettingsSearch }}
+                    />
+                  {/if}
+                {/if}
+              {:else if activePage === "themes"}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey={`theme-settings-${activeThemeListMode}`}
+                  props={{ section: "themes", listMode: activeThemeListMode }}
+                />
+              {:else}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey="background-settings"
+                  props={{ section: "backgrounds" }}
+                />
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+      </div>
     </div>
   </div>
 {/snippet}
@@ -682,7 +685,7 @@
     ></button>
 
     <div
-      class="relative z-10 w-[min(1180px,96vw)] h-[min(860px,92vh)] no-scrollbar overflow-clip"
+      class="relative z-10 h-[min(860px,92vh)] w-[min(1180px,96vw)] no-scrollbar overflow-clip"
       data-settings-panel
     >
       {@render settingsShell()}
