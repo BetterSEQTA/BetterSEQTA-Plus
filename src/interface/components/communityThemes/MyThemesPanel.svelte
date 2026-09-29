@@ -16,7 +16,7 @@
   import { filterThemesByMode } from "@/interface/utils/themeListFilters";
   import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
 
-  let { state }: { state: CommunityThemesState } = $props();
+  let { communityState }: { communityState: CommunityThemesState } = $props();
 
   const statusFilters = ["", "pending", "approved", "rejected"] as const;
   const themeManager = ThemeManager.getInstance();
@@ -38,15 +38,15 @@
 
   async function submitLocalTheme(theme: CustomTheme) {
     localSubmitError = null;
-    if (!state.cloudLoggedIn) {
-      state.showSignInOverlay = true;
+    if (!communityState.cloudLoggedIn) {
+      communityState.showSignInOverlay = true;
       return;
     }
     submittingLocalId = theme.id;
     try {
       const { submitThemeById } = await import("@/seqta/utils/customThemes/submitLocalTheme");
       await submitThemeById(theme.id, theme.description?.trim() || undefined);
-      await state.loadMyThemes();
+      await communityState.loadMyThemes();
     } catch (err) {
       localSubmitError = formatCustomThemeApiError(err);
     } finally {
@@ -70,7 +70,7 @@
   });
 </script>
 
-{#if !state.cloudLoggedIn}
+{#if !communityState.cloudLoggedIn}
   <div class="mx-auto flex max-w-md flex-col items-center py-20 text-center">
     <h2 class="text-2xl font-bold">Sign in to manage your themes</h2>
     <p class="mt-3 text-zinc-600 dark:text-zinc-300">
@@ -79,7 +79,7 @@
     <button
       type="button"
       class="mt-6 rounded-lg bg-zinc-900 px-5 py-2.5 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-      onclick={() => (state.showSignInOverlay = true)}
+      onclick={() => (communityState.showSignInOverlay = true)}
     >
       Sign in with BetterSEQTA Cloud
     </button>
@@ -155,25 +155,25 @@
     {#each statusFilters as status (status)}
       <button
         type="button"
-        class="rounded-full px-3 py-1 text-sm font-medium transition {state.statusFilter === status
+        class="rounded-full px-3 py-1 text-sm font-medium transition {communityState.statusFilter === status
           ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
           : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300'}"
-        onclick={() => (state.statusFilter = status)}
+        onclick={() => (communityState.statusFilter = status)}
       >
         {status === "" ? "All" : formatCustomThemeStatus(status)}
       </button>
     {/each}
   </div>
 
-  {#if state.myLoading}
+  {#if communityState.myLoading}
     <div class="grid grid-cols-1 gap-3">
       {#each Array(4) as _, i (i)}
         <SkeletonLoader width="100%" height="72px" />
       {/each}
     </div>
-  {:else if state.myError}
-    <p class="text-red-600 dark:text-red-400">{state.myError}</p>
-  {:else if state.myThemes.length === 0}
+  {:else if communityState.myError}
+    <p class="text-red-600 dark:text-red-400">{communityState.myError}</p>
+  {:else if communityState.myThemes.length === 0}
     <div class="py-10 text-center">
       <p class="text-lg text-zinc-600 dark:text-zinc-300">No community submissions yet.</p>
       <button
@@ -189,12 +189,12 @@
     </div>
   {:else}
     <ul class="space-y-3">
-      {#each state.myThemes as theme (theme.id)}
+      {#each communityState.myThemes as theme (theme.id)}
         <li>
           <button
             type="button"
             class="flex w-full items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
-            onclick={() => void state.openDetail(theme)}
+            onclick={() => void communityState.openDetail(theme)}
           >
             {#if theme.coverImage}
               <img src={theme.coverImage} alt="" class="h-14 w-20 shrink-0 rounded-lg object-cover" />
@@ -221,6 +221,6 @@
   {/if}
 {/if}
 
-{#if state.showSignInOverlay}
-  <SignInToFavoriteModal onClose={() => (state.showSignInOverlay = false)} />
+{#if communityState.showSignInOverlay}
+  <SignInToFavoriteModal onClose={() => (communityState.showSignInOverlay = false)} />
 {/if}

@@ -9,16 +9,16 @@
     statusBadgeClass,
   } from "@/seqta/utils/customThemes/client";
 
-  let { state }: { state: CommunityThemesState } = $props();
+  let { communityState }: { communityState: CommunityThemesState } = $props();
 
-  const theme = $derived(state.detailTheme);
+  const theme = $derived(communityState.detailTheme);
 </script>
 
 <ModalFrame
   open={theme != null}
-  busy={state.detailBusy}
+  busy={communityState.detailBusy}
   maxWidthClass="max-w-2xl"
-  onClose={() => state.closeDetail()}
+  onClose={() => communityState.closeDetail()}
 >
   {#if theme}
     <div class="flex items-start justify-between gap-4">
@@ -34,7 +34,7 @@
         type="button"
         class="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700"
         aria-label="Close"
-        onclick={() => state.closeDetail()}
+        onclick={() => communityState.closeDetail()}
       >
         ✕
       </button>
@@ -49,7 +49,7 @@
       </div>
     {/if}
 
-    {#if state.detailLoading}
+    {#if communityState.detailLoading}
       <div class="py-8"><SkeletonLoader width="100%" height="120px" /></div>
     {:else}
       <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -75,11 +75,11 @@
         {/if}
       </dl>
 
-      {#if state.detailFiles.length > 0}
+      {#if communityState.detailFiles.length > 0}
         <div class="mt-4">
           <h3 class="text-sm font-semibold">Files</h3>
           <ul class="mt-2 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {#each state.detailFiles as file (file.id)}
+            {#each communityState.detailFiles as file (file.id)}
               <li>{file.file_path} ({file.file_size.toLocaleString()} bytes)</li>
             {/each}
           </ul>
@@ -91,26 +91,26 @@
           <h3 class="font-semibold">Edit metadata</h3>
           <input
             class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
-            bind:value={state.editName}
+            bind:value={communityState.editName}
             placeholder="Name"
           />
           <textarea
             class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
             rows="2"
-            bind:value={state.editDescription}
+            bind:value={communityState.editDescription}
             placeholder="Description"
           ></textarea>
           <textarea
             class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
             rows="2"
-            bind:value={state.editNotes}
+            bind:value={communityState.editNotes}
             placeholder="Submission notes"
           ></textarea>
           <button
             type="button"
             class="rounded-lg bg-zinc-200 px-4 py-2 text-sm font-medium dark:bg-zinc-700"
-            disabled={state.detailBusy}
-            onclick={() => void state.saveMetadata()}
+            disabled={communityState.detailBusy}
+            onclick={() => void communityState.saveMetadata()}
           >
             Save metadata
           </button>
@@ -122,14 +122,14 @@
             accept=".zip,application/zip"
             class="block w-full text-sm"
             onchange={(e) => {
-              state.replaceZipFile = (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
+              communityState.replaceZipFile = (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
             }}
           />
           <button
             type="button"
             class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            disabled={state.detailBusy || !state.replaceZipFile}
-            onclick={() => void state.runReplaceFiles()}
+            disabled={communityState.detailBusy || !communityState.replaceZipFile}
+            onclick={() => void communityState.runReplaceFiles()}
           >
             Upload revised files
           </button>
@@ -140,30 +140,30 @@
         </p>
       {/if}
 
-      {#if state.detailError}
+      {#if communityState.detailError}
         <p class="mt-4 whitespace-pre-line text-sm text-red-600 dark:text-red-400">
-          {state.detailError}
+          {communityState.detailError}
         </p>
       {/if}
 
       <div
         class="mt-6 flex flex-wrap justify-between gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700"
       >
-        {#if state.showDeleteConfirm}
+        {#if communityState.showDeleteConfirm}
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-sm text-red-600 dark:text-red-400">Delete permanently?</span>
             <button
               type="button"
               class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
-              disabled={state.detailBusy}
-              onclick={() => void state.runDelete()}
+              disabled={communityState.detailBusy}
+              onclick={() => void communityState.runDelete()}
             >
               Confirm delete
             </button>
             <button
               type="button"
               class="rounded-lg px-3 py-1.5 text-sm"
-              onclick={() => (state.showDeleteConfirm = false)}
+              onclick={() => (communityState.showDeleteConfirm = false)}
             >
               Cancel
             </button>
@@ -172,7 +172,7 @@
           <button
             type="button"
             class="rounded-lg px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-            onclick={() => (state.showDeleteConfirm = true)}
+            onclick={() => (communityState.showDeleteConfirm = true)}
           >
             Delete theme
           </button>
@@ -180,7 +180,7 @@
         <button
           type="button"
           class="rounded-lg bg-zinc-200 px-4 py-2 text-sm font-medium dark:bg-zinc-700"
-          onclick={() => state.closeDetail()}
+          onclick={() => communityState.closeDetail()}
         >
           Close
         </button>

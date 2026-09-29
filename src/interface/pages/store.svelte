@@ -17,6 +17,7 @@
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '../components/SignInToFavoriteModal.svelte'
   import { getStoreInstalledThemeIds } from '@/interface/utils/themeListFilters'
+  import { consumePendingHighlightThemeId } from '@/seqta/utils/openThemeStoreWithHighlight'
 
   const themeManager = ThemeManager.getInstance();
   type StoreTab = 'themes' | 'backgrounds';

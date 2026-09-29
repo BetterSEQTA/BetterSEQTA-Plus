@@ -7,10 +7,10 @@
 
   let { searchTerm }: { searchTerm: string; setSearchTerm?: (term: string) => void } = $props();
 
-  const state = createCommunityThemesState(() => searchTerm);
-  state.bindReactiveLoads();
+  const communityState = createCommunityThemesState(() => searchTerm);
+  communityState.bindReactiveLoads();
 
-  onMount(() => state.mount());
+  onMount(() => communityState.mount());
 </script>
 
 <div class="relative flex h-full min-h-0 flex-col overflow-hidden text-zinc-900 dark:text-white">
@@ -19,19 +19,19 @@
       <div class="inline-flex rounded-xl bg-zinc-200/80 p-1 dark:bg-zinc-800/80">
         <button
           type="button"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {state.innerTab === 'browse'
+          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'browse'
             ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-          onclick={() => (state.innerTab = "browse")}
+          onclick={() => (communityState.innerTab = "browse")}
         >
           Browse
         </button>
         <button
           type="button"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {state.innerTab === 'mine'
+          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'mine'
             ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-          onclick={() => (state.innerTab = "mine")}
+          onclick={() => (communityState.innerTab = "mine")}
         >
           My themes
         </button>
@@ -53,12 +53,12 @@
   </div>
 
   <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 px-6 py-6 dark:bg-zinc-900/40 md:px-8 lg:px-10">
-    {#if state.innerTab === "browse"}
-      <BrowsePanel {state} {searchTerm} />
+    {#if communityState.innerTab === "browse"}
+      <BrowsePanel {communityState} {searchTerm} />
     {:else}
-      <MyThemesPanel {state} />
+      <MyThemesPanel {communityState} />
     {/if}
   </main>
 
-  <OwnerThemeDetailModal {state} />
+  <OwnerThemeDetailModal {communityState} />
 </div>
