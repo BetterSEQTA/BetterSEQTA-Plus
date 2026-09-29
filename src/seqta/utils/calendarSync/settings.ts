@@ -18,6 +18,8 @@ export const WEEKLY_SYNC_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 export interface SharedCalendarSyncSettings {
   syncWeeksAhead?: number;
   autoSyncWeekly?: boolean;
+  /** When true, sync assessment due dates alongside timetable events. */
+  syncAssessmentDueDates?: boolean;
   lastWeeklySyncAt?: number;
   pendingWeeklySync?: boolean;
 }
@@ -66,6 +68,11 @@ export async function getSyncWeeksAhead(): Promise<number> {
 export async function getAutoSyncWeekly(): Promise<boolean> {
   const settings = await readSharedCalendarSyncSettings();
   return settings.autoSyncWeekly !== false;
+}
+
+export async function getSyncAssessmentDueDates(): Promise<boolean> {
+  const settings = await readSharedCalendarSyncSettings();
+  return settings.syncAssessmentDueDates === true;
 }
 
 export async function isAnyCalendarConnected(): Promise<boolean> {

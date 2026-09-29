@@ -94,12 +94,21 @@ export function mapLessonsToGoogleEvents(
 }
 
 export function googleApiEventBody(event: GoogleCalendarEventInput): Record<string, unknown> {
+  const start =
+    event.allDay && event.startDate
+      ? { date: event.startDate }
+      : { dateTime: event.startDateTime, timeZone: event.timeZone };
+  const end =
+    event.allDay && event.endDate
+      ? { date: event.endDate }
+      : { dateTime: event.endDateTime, timeZone: event.timeZone };
+
   const body: Record<string, unknown> = {
     summary: event.summary,
     location: event.location,
     description: event.description,
-    start: { dateTime: event.startDateTime, timeZone: event.timeZone },
-    end: { dateTime: event.endDateTime, timeZone: event.timeZone },
+    start,
+    end,
     extendedProperties: {
       private: {
         [BSPLUS_GOOGLE_CALENDAR_EVENT_PROP]: event.seqtaKey,
@@ -119,8 +128,13 @@ export function outlookGraphEventBody(event: GoogleCalendarEventInput): Record<s
       contentType: "text",
       content: outlookDescriptionWithKey(event.description, event.seqtaKey),
     },
-    start: { dateTime: event.startDateTime, timeZone: event.timeZone },
-    end: { dateTime: event.endDateTime, timeZone: event.timeZone },
+    start: event.allDay
+      ? { dateTime: `${event.startDate}T00:00:00`, timeZone: event.timeZone }
+      : { dateTime: event.startDateTime, timeZone: event.timeZone },
+    end: event.allDay
+      ? { dateTime: `${event.endDate}T00:00:00`, timeZone: event.timeZone }
+      : { dateTime: event.endDateTime, timeZone: event.timeZone },
+    isAllDay: Boolean(event.allDay),
     categories: [BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY],
   };
   if (event.location) {

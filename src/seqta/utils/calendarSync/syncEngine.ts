@@ -4,6 +4,7 @@ import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
 import { eventMapKey } from "@/seqta/utils/calendarSync/eventMap";
 import type { EventMapRecord } from "@/seqta/utils/calendarSync/eventMap";
 import {
+  assessmentEntriesToRemove,
   buildDeleteSyncResult,
   buildLessonSyncResult,
   clearOriginEventMapEntries,
@@ -18,6 +19,7 @@ import {
   reportSyncProgress,
   upsertLessonEvents,
 } from "@/seqta/utils/calendarSync/lessonSyncShared";
+import { mapAssessmentsToGoogleEvents } from "@/seqta/utils/googleCalendar/assessmentEventMapper";
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
@@ -171,7 +173,14 @@ export async function syncLessonsToCalendar(
   const mode = request.mode ?? "full";
   const weeksAhead = request.weeksAhead ?? (await getSyncWeeksAhead());
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
+  const syncAssessmentDueDates = request.syncAssessmentDueDates === true;
+  let events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
+  if (syncAssessmentDueDates && request.assessments?.length) {
+    events = [
+      ...events,
+      ...mapAssessmentsToGoogleEvents(request.origin, request.assessments, timeZone),
+    ];
+  }
 
   reportSyncProgress(options.onProgress, {
     phase: "preparing",
@@ -204,7 +213,17 @@ export async function syncLessonsToCalendar(
   }
 
   const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
-  const staleEntries = entriesToPrune(eventMap, request.origin, mode, weeksAhead, currentMapKeys);
+  let staleEntries = entriesToPrune(
+    eventMap,
+    request.origin,
+    mode,
+    weeksAhead,
+    currentMapKeys,
+    { syncAssessmentDueDates },
+  );
+  if (!syncAssessmentDueDates && mode === "full") {
+    staleEntries = [...staleEntries, ...assessmentEntriesToRemove(eventMap, request.origin)];
+  }
   const totalSteps = Math.max(staleEntries.length + events.length, 1);
   const lastSyncAt = Date.now();
 

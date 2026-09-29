@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { fetchTimetableForSync, fetchTimetableLessons } from "@/seqta/utils/googleCalendar/fetchTimetable";
-import { trailingWeekRange } from "@/seqta/utils/googleCalendar/syncDateRange";
+import { syncWindowRange, trailingWeekRange } from "@/seqta/utils/googleCalendar/syncDateRange";
 import {
   googleLessonSyncProvider,
   outlookLessonSyncProvider,
@@ -15,9 +15,11 @@ import {
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
+  getSyncAssessmentDueDates,
   getSyncWeeksAhead,
   readResumableCalendarSync,
 } from "@/seqta/utils/calendarSync/settings";
+import { fetchAssessmentsForCalendarSync } from "@/seqta/utils/googleCalendar/fetchAssessmentsForCalendarSync";
 import type {
   GoogleCalendarStatus,
   GoogleCalendarSyncProgress,
@@ -63,6 +65,7 @@ export async function fetchCalendarStatuses(): Promise<{
 export async function updateGoogleSyncSettings(patch: {
   syncWeeksAhead?: number;
   autoSyncWeekly?: boolean;
+  syncAssessmentDueDates?: boolean;
 }): Promise<GoogleCalendarStatus & { success?: boolean }> {
   return sendMessage("googleCalendarUpdateSyncSettings", patch);
 }
@@ -123,14 +126,30 @@ export async function runCalendarSync(
       message: mode === "incremental" ? "Fetching new week…" : "Fetching timetable…",
     });
 
-    const lessons =
+    const assessmentRange =
+      mode === "incremental" ? trailingWeekRange(weeksAhead) : syncWindowRange(weeksAhead);
+
+    const [lessons, syncAssessmentDueDates] = await Promise.all([
       mode === "incremental"
-        ? await fetchTimetableLessons(trailingWeekRange(weeksAhead))
-        : await fetchTimetableForSync(weeksAhead);
+        ? fetchTimetableLessons(assessmentRange)
+        : fetchTimetableForSync(weeksAhead),
+      getSyncAssessmentDueDates(),
+    ]);
+
+    const assessments = syncAssessmentDueDates
+      ? await fetchAssessmentsForCalendarSync(assessmentRange)
+      : [];
 
     return await syncLessonsToCalendar(
       config.lessonSyncProvider,
-      { origin: location.origin, lessons, mode, weeksAhead },
+      {
+        origin: location.origin,
+        lessons,
+        assessments,
+        syncAssessmentDueDates,
+        mode,
+        weeksAhead,
+      },
       () => getCalendarAccessToken(config.provider),
       { onProgress: params.onProgress },
     );

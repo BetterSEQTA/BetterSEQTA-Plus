@@ -1,3 +1,5 @@
+import type { CalendarSyncAssessment } from "./assessmentEventMapper";
+
 export interface SeqtaTimetableLesson {
   date: string;
   from: string;
@@ -25,11 +27,18 @@ export interface GoogleCalendarEventInput {
   timeZone: string;
   /** Google Calendar event colorId ("1"–"11"). */
   colorId?: string;
+  /** All-day events (assessment due dates without a time). */
+  allDay?: boolean;
+  startDate?: string;
+  /** Exclusive end date for all-day events (Google Calendar convention). */
+  endDate?: string;
 }
 
 export interface GoogleCalendarSyncRequest {
   origin: string;
   lessons: SeqtaTimetableLesson[];
+  assessments?: CalendarSyncAssessment[];
+  syncAssessmentDueDates?: boolean;
   mode?: "full" | "incremental";
   weeksAhead?: number;
 }
@@ -68,6 +77,7 @@ export interface GoogleCalendarStatus {
   lastSyncOrigin?: string;
   syncWeeksAhead?: number;
   autoSyncWeekly?: boolean;
+  syncAssessmentDueDates?: boolean;
 }
 
 export interface GoogleCalendarDeleteResult {

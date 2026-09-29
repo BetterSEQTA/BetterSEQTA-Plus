@@ -12,6 +12,7 @@ import {
 import {
   buildLessonSyncResult,
   collectOriginDeleteEntries,
+  assessmentEntriesToRemove,
   entriesToPrune,
   formatLessonSyncResultMessage,
   mapPool,
@@ -110,6 +111,37 @@ describe("entriesToPrune", () => {
       new Set(),
     );
     expect(pruned).toEqual([[staleKey, "evt-old"]]);
+  });
+
+  it("skips assessment keys when assessment sync is disabled", () => {
+    const assessmentKey = `${origin}::${origin}:assessment:99`;
+    const pruned = entriesToPrune(
+      { [assessmentKey]: { id: "evt-a", date: syncDate } },
+      origin,
+      "full",
+      weeksAhead,
+      new Set(),
+      { syncAssessmentDueDates: false },
+    );
+    expect(pruned).toEqual([]);
+  });
+});
+
+describe("assessmentEntriesToRemove", () => {
+  const origin = "https://school.seqta.com.au";
+
+  it("lists all assessment map entries for the origin", () => {
+    const lessonKey = `${origin}::${origin}:cal:1`;
+    const assessmentKey = `${origin}::${origin}:assessment:3`;
+    expect(
+      assessmentEntriesToRemove(
+        {
+          [lessonKey]: { id: "evt-1", date: "2026-01-01" },
+          [assessmentKey]: { id: "evt-a", date: "2026-02-01" },
+        },
+        origin,
+      ),
+    ).toEqual([[assessmentKey, "evt-a"]]);
   });
 });
 

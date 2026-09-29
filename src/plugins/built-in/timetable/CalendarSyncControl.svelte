@@ -63,6 +63,7 @@
   let syncProgress = $state<GoogleCalendarSyncProgress | null>(null);
   let syncWeeksAhead = $state(12);
   let autoSyncWeekly = $state(true);
+  let syncAssessmentDueDates = $state(false);
 
   let rootEl = $state<HTMLDivElement | null>(null);
   let triggerEl = $state<HTMLButtonElement | null>(null);
@@ -159,6 +160,7 @@
     outlookStatus = outlook;
     syncWeeksAhead = google.syncWeeksAhead ?? 12;
     autoSyncWeekly = google.autoSyncWeekly !== false;
+    syncAssessmentDueDates = google.syncAssessmentDueDates === true;
   }
 
   function handleSyncProgress(progress: GoogleCalendarSyncProgress) {
@@ -168,10 +170,14 @@
   async function saveSyncSettings(patch: {
     syncWeeksAhead?: number;
     autoSyncWeekly?: boolean;
+    syncAssessmentDueDates?: boolean;
   }) {
     const result = await updateGoogleSyncSettings(patch);
     if (result.syncWeeksAhead != null) syncWeeksAhead = result.syncWeeksAhead;
     if (result.autoSyncWeekly != null) autoSyncWeekly = result.autoSyncWeekly;
+    if (result.syncAssessmentDueDates != null) {
+      syncAssessmentDueDates = result.syncAssessmentDueDates;
+    }
     googleStatus = { ...googleStatus, ...result };
   }
 
@@ -299,6 +305,12 @@
     const checked = (event.currentTarget as HTMLInputElement).checked;
     autoSyncWeekly = checked;
     await saveSyncSettings({ autoSyncWeekly: checked });
+  }
+
+  async function onAssessmentDueDatesToggle(event: Event) {
+    const checked = (event.currentTarget as HTMLInputElement).checked;
+    syncAssessmentDueDates = checked;
+    await saveSyncSettings({ syncAssessmentDueDates: checked });
   }
 
   async function disconnectProvider(
@@ -588,7 +600,10 @@
     >
       <div class="bsplus-cal-menu-header">
         <span class="bsplus-cal-menu-title">Calendar sync</span>
-        <span class="bsplus-cal-menu-sub">Copy your SEQTA classes and appointments to Google or Outlook</span>
+        <span class="bsplus-cal-menu-sub"
+          >Copy your SEQTA classes, appointments, and optional assessment due dates to Google or
+          Outlook</span
+        >
       </div>
 
       {@render providerPanel(
@@ -638,6 +653,22 @@
               checked={autoSyncWeekly}
               disabled={isBusy}
               onchange={(e) => void onAutoSyncToggle(e)}
+            />
+          </label>
+          <label class="bsplus-cal-setting bsplus-cal-setting--toggle">
+            <div class="bsplus-cal-setting-copy">
+              <span class="bsplus-cal-setting-label">Sync assessment due dates</span>
+              <span class="bsplus-cal-setting-desc">
+                Add upcoming assessment due dates from SEQTA using the same weeks window. Run Update
+                calendar after enabling to backfill.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              class="bsplus-cal-setting-checkbox"
+              checked={syncAssessmentDueDates}
+              disabled={isBusy}
+              onchange={(e) => void onAssessmentDueDatesToggle(e)}
             />
           </label>
         </div>

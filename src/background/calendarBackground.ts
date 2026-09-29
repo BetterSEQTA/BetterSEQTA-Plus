@@ -29,6 +29,7 @@ import {
   CALENDAR_WEEKLY_ALARM,
   clampSyncWeeks,
   getAutoSyncWeekly,
+  getSyncAssessmentDueDates,
   getSyncWeeksAhead,
   isAnyCalendarConnected,
   markWeeklySyncPending,
@@ -324,12 +325,14 @@ export function registerTrustedAsyncHandler(
 }
 
 async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
-  const [state, shared, syncWeeksAhead, autoSyncWeekly] = await Promise.all([
-    readGoogleCalendarState(),
-    readSharedCalendarSyncSettings(),
-    getSyncWeeksAhead(),
-    getAutoSyncWeekly(),
-  ]);
+  const [state, shared, syncWeeksAhead, autoSyncWeekly, syncAssessmentDueDates] =
+    await Promise.all([
+      readGoogleCalendarState(),
+      readSharedCalendarSyncSettings(),
+      getSyncWeeksAhead(),
+      getAutoSyncWeekly(),
+      getSyncAssessmentDueDates(),
+    ]);
   return {
     configured: isGoogleCalendarConfigured(),
     connected: !!(state.refreshToken || state.accessToken),
@@ -338,6 +341,7 @@ async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
     lastSyncOrigin: state.lastSyncOrigin,
     syncWeeksAhead,
     autoSyncWeekly,
+    syncAssessmentDueDates,
   };
 }
 
@@ -479,10 +483,17 @@ export function registerGoogleCalendarMessageHandlers(
   }));
 
   registerTrustedAsyncHandler(handlers, isTrustedSender, "googleCalendarUpdateSyncSettings", async (request) => {
-    const body = request as { syncWeeksAhead?: number; autoSyncWeekly?: boolean };
+    const body = request as {
+      syncWeeksAhead?: number;
+      autoSyncWeekly?: boolean;
+      syncAssessmentDueDates?: boolean;
+    };
     const patch: Record<string, unknown> = {};
     if (body.syncWeeksAhead != null) patch.syncWeeksAhead = clampSyncWeeks(body.syncWeeksAhead);
     if (body.autoSyncWeekly != null) patch.autoSyncWeekly = !!body.autoSyncWeekly;
+    if (body.syncAssessmentDueDates != null) {
+      patch.syncAssessmentDueDates = !!body.syncAssessmentDueDates;
+    }
     if (Object.keys(patch).length > 0) await writeSharedCalendarSyncSettings(patch);
     await ensureWeeklySyncAlarm();
     return { success: true, ...(await getGoogleCalendarStatus()) };
