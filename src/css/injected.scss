@@ -16,6 +16,7 @@
 @include meta.load-css("injected/sidebar-styles.scss");
 @include meta.load-css("injected/theme.scss");
 @include meta.load-css("injected/transparency.scss");
+@include meta.load-css("injected/performance-mode.scss");
 
 .bsplus-login-active .login {
   visibility: hidden !important;
@@ -54,12 +55,12 @@ button.bsplus-timetable-control.iconFamily,
 body,
 .legacy-root input,
 .legacy-root textarea,
-.legacy-root button,
+.legacy-root button:not(.iconFamily),
 .legacy-root select,
 .legacy-root option,
 .legacy-root .input,
 html {
-  font-family: Rubik, sans-serif !important;
+  font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
 }
 
 .legacy-root {
@@ -136,9 +137,17 @@ select option {
   background: var(--auto-background) !important;
 }
 .legacy-root,
-.legacy-root * {
-  font-family: Rubik, sans-serif !important;
-  --theme-fg-parts: white;
+.legacy-root *:not(.iconFamily) {
+  font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
+}
+
+/* SEQTA uses `rgb(var(--theme-fg-parts))` — must be an rgb triplet, not `white`. */
+html.dark .legacy-root {
+  --theme-fg-parts: 255, 255, 255;
+}
+
+html:not(.dark) .legacy-root {
+  --theme-fg-parts: 0, 0, 0;
 }
 .extension-editor {
   background: var(--background-primary);
@@ -151,9 +160,10 @@ select option {
 
 #themeCreator {
   position: fixed;
+  top: 0;
   right: 0;
   height: 100%;
-  z-index: 100;
+  z-index: 10050;
 }
 
 .resizeBar {
@@ -181,15 +191,15 @@ select option {
 }
 
 .themeCloseButton {
-  position: absolute !important;
+  position: fixed !important;
   color: var(--text-primary) !important;
   font-size: x-large !important;
   top: 5px;
   right: 5px;
+  z-index: 10060 !important;
   border-radius: 80px !important;
   padding: 8px;
   cursor: pointer;
-  z-index: 10000;
 }
 
 .modaliser-container {
@@ -497,15 +507,15 @@ ul.magicDelete > li.deleting {
   pointer-events: none;
 }
 
-#menu li.hasChildren.active > .sub {
+#menu li.hasChildren:is(.active, .bsplus-active) > .sub {
   pointer-events: auto;
 }
 
-#menu li.hasChildren.active > .sub:has(.hasChildren.active) {
+#menu li.hasChildren:is(.active, .bsplus-active) > .sub:has(.hasChildren:is(.active, .bsplus-active)) {
   pointer-events: none !important;
 }
 
-#menu li.hasChildren.active .hasChildren.active > .sub {
+#menu li.hasChildren:is(.active, .bsplus-active) .hasChildren:is(.active, .bsplus-active) > .sub {
   pointer-events: auto !important;
 }
 
@@ -542,8 +552,7 @@ ul.magicDelete > li.deleting {
   visibility: visible !important;
 }
 
-/* Edit rows should match normal custom-sidebar item size (not shrunk). */
-#menu.bsplus-sidebar-edit-mode > #bsplus-sidebar-root > li.item.draggable,
+/* Edit rows should match normal sidebar item size (not shrunk). */
 #menu.bsplus-sidebar-edit-mode .item.draggable {
   display: flex !important;
   align-items: center !important;
@@ -629,26 +638,6 @@ ul.magicDelete > li.deleting {
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hide native menu as soon as possible (during loading), before Svelte mounts.
-   Keep `#bsplus-sidebar-root` visible — themes target `#menu > ul > li.item` on it. */
-html.bsplus-custom-sidebar-pending #menu > ul:not(#bsplus-sidebar-root),
-html.bsplus-custom-sidebar-pending #menu > #userInfo,
-html.bsplus-custom-sidebar-pending #menu > .icon-cover,
-#menu.bsplus-custom-sidebar > ul:not(#bsplus-sidebar-root),
-#menu.bsplus-custom-sidebar > #userInfo,
-#menu.bsplus-custom-sidebar > .icon-cover {
-  position: absolute !important;
-  left: -10000px !important;
-  width: 1px !important;
-  height: 1px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  clip: rect(0, 0, 0, 0) !important;
-}
-
 /* Custom title bar: keep native `#title` children for sync, hide them visually.
    Loading overlay stays until waitForCustomTitleBarReady() so this is ready underneath. */
 html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
@@ -675,165 +664,6 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
   align-items: center;
 }
 
-/* Custom Svelte sidebar: keep `#menu > ul > li.item` / `.sub` shape for theme CSS. */
-#menu.bsplus-custom-sidebar {
-  position: absolute !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-sizing: border-box !important;
-  height: auto !important;
-  max-height: none !important;
-  overflow: hidden !important;
-
-  > #bsplus-sidebar-root {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    position: relative;
-    padding-top: 0 !important;
-
-    /*
-     * Extend the logo spacer for the same gap as between items.
-     * SEQTA's #menu>ul::before border-bottom is the hairline under the logo.
-     */
-    &::before {
-      box-shadow: none !important;
-      border-bottom: none !important;
-      height: calc(71px + 8px) !important;
-    }
-  }
-
-  li.hasChildren {
-    position: static !important;
-  }
-
-  /* Native list may keep `.active` after click-through; force our rows clickable,
-     then lock siblings only while a custom drill `.sub` is open. */
-  > #bsplus-sidebar-root .bsplus-sidebar-item {
-    width: auto !important;
-    max-width: none !important;
-    margin: 0 6px 8px !important;
-    box-sizing: border-box !important;
-  }
-
-  > #bsplus-sidebar-root > li.item {
-    pointer-events: auto !important;
-  }
-
-  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
-    > #bsplus-sidebar-root
-    > li:not(.hasChildren.bsplus-active),
-  &:has(> #bsplus-sidebar-root > li.hasChildren.bsplus-active > .sub)
-    > #bsplus-sidebar-root
-    > li:not(.hasChildren.bsplus-active)
-    * {
-    pointer-events: none !important;
-  }
-
-  /* Same locks keyed off `.drilling` so nested leaf clicks do not flicker when
-     SEQTA briefly strips `.active` from folder rows. */
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren),
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren) * {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root .sub {
-    pointer-events: none;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active > .sub {
-    pointer-events: auto;
-    transform: none;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active
-    > .sub:has(.hasChildren.bsplus-active) {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root li.hasChildren.bsplus-active
-    .hasChildren.bsplus-active
-    > .sub {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:not(:has(.sub)) {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub:has(.sub) {
-    pointer-events: none !important;
-  }
-
-  > #bsplus-sidebar-root.drilling li.hasChildren > .sub .sub {
-    pointer-events: auto !important;
-    background: transparent !important;
-    background-image: none !important;
-  }
-
-  > #bsplus-sidebar-root > li.hasChildren.bsplus-active > label,
-  > #bsplus-sidebar-root.drilling > li.hasChildren > label {
-    pointer-events: none !important;
-  }
-
-  /* Theme decorations on root leaves (Beach palm/sand) must not show through
-     the transparent drill `.sub` panel. */
-  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
-    > li:not(.hasChildren.bsplus-active)::before,
-  > #bsplus-sidebar-root:has(> li.hasChildren.bsplus-active > .sub)
-    > li:not(.hasChildren.bsplus-active)::after {
-    content: none !important;
-    display: none !important;
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::before,
-  > #bsplus-sidebar-root.drilling > li:not(.hasChildren)::after {
-    content: none !important;
-    display: none !important;
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
-  #bsplus-sidebar-root .sub .back {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 12px 16px 8px;
-    cursor: pointer;
-    font-weight: 700;
-    color: inherit;
-  }
-
-  #bsplus-sidebar-root .sub .back:hover {
-    opacity: 0.9;
-  }
-
-  #bsplus-sidebar-root .sub .backLabel {
-    font-size: 16px;
-    font-weight: 700;
-  }
-
-  #bsplus-sidebar-root .sub > ul {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0 16px;
-  }
-
-}
-
 #menu li > label > svg,
 #menu section > label > svg {
   margin: 0 10px 0 4px;
@@ -842,7 +672,7 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
 }
 
 /* Icon Only Sidebar - compact mode. When submenu is open, all styles are disabled so it behaves as normal sidebar. */
-body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
   #menu {
     width: 70px !important;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -928,6 +758,7 @@ body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
   }
 
 }
+
 [class*="notifications__items___"] {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
@@ -977,7 +808,7 @@ body > .sortable-fallback.bsplus-sortable-drag,
 }
 
 #menu {
-  li.active > .sub > ul > .item:not(.hasChildren) {
+  li:is(.active, .hasChildren.bsplus-active) > .sub > ul > .item:not(.hasChildren) {
     position: relative;
 
     &::before {
@@ -992,10 +823,11 @@ body > .sortable-fallback.bsplus-sortable-drag,
         width 100ms,
         transform 0.3s ease;
       border-radius: 8px 0 0 8px;
+      pointer-events: none;
     }
 
     &:hover::before,
-    &.active::before {
+    &:is(.active, .bsplus-active)::before {
       width: 6px;
       background: var(--item-colour, transparent);
     }
@@ -1134,9 +966,9 @@ ol:has([class*="MessageList__avatar___"] svg) {
   -webkit-box-shadow: 0px 5px 16px 6px rgba(0, 0, 0, 0.2) !important;
   box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.2) !important;
 }
-/* Custom sidebar: keep title depth to the right, not a hairline under the logo into the menu. */
-body:has(#menu.bsplus-custom-sidebar) #container #content #title,
-body:has(#menu.bsplus-custom-sidebar).menuShown #container #content #title {
+/* Styled sidebar: keep title depth to the right, not a hairline under the logo into the menu. */
+body:has(#menu.bsplus-styled-sidebar) #container #content #title,
+body:has(#menu.bsplus-styled-sidebar).menuShown #container #content #title {
   -webkit-box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
   box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.25) !important;
 }
@@ -1438,7 +1270,7 @@ html.transparencyEffects
     transform: translatex(var(--bsplus-sidebar-width, 270px));
   }
 
-  body.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) {
+  body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
     #menu {
       -webkit-transform: translatex(-70px);
       transform: translatex(-70px);
@@ -2045,11 +1877,11 @@ html.transparencyEffects
   width: 25px;
   height: 25px;
 }
-.dark .legacy-root button::after {
+.dark .legacy-root button.iconFamily::after {
   background: white;
 }
-.legacy-root button::after {
-  background: black !important;
+.legacy-root button.iconFamily::after {
+  background: currentColor;
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);
@@ -2081,11 +1913,21 @@ html.transparencyEffects
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
 
-/* Smoothed by attachNotificationsPanelAnimation (matches #ExtensionPopup spring) */
+/* Smoothed by attachNotificationsPanelAnimation (CSS transition, no JS spring ticks) */
 .bsplus-notifications-panel {
   transform-origin: top right;
-  will-change: opacity, transform;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.35));
+  backface-visibility: hidden;
+}
+
+.bsplus-notifications-panel--open {
+  opacity: 1;
+  transform: scale(1);
 }
 
 #menu li.active {
@@ -4298,6 +4140,40 @@ div.day-empty {
   background: rgba(0, 0, 0, 0.5);
   z-index: 49;
   transform: scale(1) !important;
+}
+
+/* Lightweight popup motion (performance mode) — fade + scale, no blur springs. */
+.whatsnewBackground.bsplus-popup-css-animate {
+  opacity: 0;
+  transition: opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  .whatsnewContainer {
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+      transform var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  &.bsplus-popup-css-animate--open {
+    opacity: 1;
+
+    .whatsnewContainer {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+.whatsnewBackground.bsplus-popup-backdrop--lite {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+
+  .whatsnewContainer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 .whatsnewImgContainer {
   width: 96%;

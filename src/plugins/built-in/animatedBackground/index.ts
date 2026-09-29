@@ -11,6 +11,7 @@ import {
   syncAnimatedBackground,
   updateAnimationSpeed,
 } from "./backgroundLayers";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 const settings = defineSettings({
   speed: numberSetting({
@@ -40,6 +41,11 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   settings: instance.settings,
 
   run: async (api) => {
+    if (isPerformanceMode()) {
+      removeAnimatedBackgroundLayers();
+      return () => removeAnimatedBackgroundLayers();
+    }
+
     await syncAnimatedBackground(api);
     const resync = () => void syncAnimatedBackground(api);
 

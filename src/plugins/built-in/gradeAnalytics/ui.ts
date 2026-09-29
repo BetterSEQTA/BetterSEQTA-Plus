@@ -1,6 +1,7 @@
 import tailwindStyles from "./tailwind.css?inline";
 import pluginStyles from "./styles.css?inline";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { isSimpleAnalyticsUi } from "@/seqta/utils/performanceMode";
 import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
@@ -121,6 +122,7 @@ function syncThemeToAnalyticsUi() {
   if (analyticsRoot) {
     syncThemeFromPage(analyticsRoot);
     analyticsRoot.classList.toggle("bsplus-analytics-motion", !!settingsState.animations);
+    analyticsRoot.classList.toggle("bsplus-analytics-simple", isSimpleAnalyticsUi());
   }
 }
 
@@ -204,7 +206,10 @@ export function renderAnalyticsPage(container: HTMLElement) {
     attributeFilter: ["class"],
   });
 
-  currentApp = mount(GradeAnalyticsPage, { target: analyticsRoot });
+  currentApp = mount(GradeAnalyticsPage, {
+    target: analyticsRoot,
+    props: { simpleMode: isSimpleAnalyticsUi() },
+  });
 }
 
 export function unmountAnalyticsPage() {

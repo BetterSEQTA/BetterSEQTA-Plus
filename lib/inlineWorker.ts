@@ -1,5 +1,6 @@
 import { Plugin } from "vite";
 import { build } from "esbuild";
+import { resolve } from "node:path";
 
 /** Bundle worker entry points imported with `?inlineWorker` as Blob-backed Workers in dev. */
 export default function InlineWorkerDevPlugin(): Plugin {
@@ -16,6 +17,12 @@ export default function InlineWorkerDevPlugin(): Plugin {
         platform: "browser",
         format: "iife",
         target: "esnext",
+        minify: true,
+        alias: {
+          "@huggingface/transformers": resolve(
+            "node_modules/@huggingface/transformers/dist/transformers.web.js",
+          ),
+        },
         external: ["webextension-polyfill"],
       });
 

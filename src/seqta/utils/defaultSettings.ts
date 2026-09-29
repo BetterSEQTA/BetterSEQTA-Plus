@@ -48,6 +48,8 @@ export function getDefaultSettingsState(): SettingsState {
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
+    performanceMode: isLowEndDevice,
+    performanceModePluginOverrides: {},
     assessmentsAverage: false,
     defaultPage: "home",
     homeUpcomingSubjectsMax: 5,
@@ -68,6 +70,7 @@ export function getDefaultSettingsState(): SettingsState {
     sidebarCornerRadius: 12,
     sidebarActiveIndicator: "fill",
     sidebarWidth: "default",
+    sidebarPosition: "left",
     sidebarBlur: 50,
     adaptiveThemeColour: false,
     adaptiveThemeGradient: false,
@@ -80,5 +83,6 @@ export function getDefaultSettingsState(): SettingsState {
     timeFormat: "24",
     privacyStatementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
+    coursesAssessmentsFixPopupShown: false,
   };
 }

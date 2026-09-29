@@ -3,6 +3,7 @@ import { unmount } from "svelte";
 import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { transparencyEnabled } from "@/seqta/utils/performanceMode";
 import browser from "webextension-polyfill";
 
 type AppRef = {
@@ -295,7 +296,7 @@ export async function mountSearchBar(
       SearchBar,
       searchRoot.attachShadow({ mode: "open" }),
       {
-        transparencyEffects: api.settings.transparencyEffects,
+        transparencyEffects: transparencyEnabled(),
         showRecentFirst: api.settings.showRecentFirst,
         searchHotkey: currentHotkey,
       },

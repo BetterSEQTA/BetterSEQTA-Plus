@@ -5,11 +5,11 @@ import touchGlobalCSSPlugin from "./lib/touchGlobalCSS";
 import InlineWorkerPlugin from "./lib/inlineWorker";
 import { base64Loader } from "./lib/base64loader";
 import type { BuildTarget, Manifest } from "./lib/types";
-import ClosePlugin from "./lib/closePlugin";
 import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
 import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
 import { extensionChunkUrls } from "./lib/extensionChunkUrls";
+import dedupePublicAssets from "./lib/dedupePublicAssets";
 
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
@@ -96,13 +96,23 @@ export default defineConfig(({ command, mode: viteMode }) => {
     fixCrxWorkerLiveReload(),
     stabilizeCrxDevHmr(),
     touchGlobalCSSPlugin(),
-    ...(command === "build" ? [ClosePlugin(), firefoxStripFunctionProbe()] : []),
+    ...(command === "build"
+      ? [
+          dedupePublicAssets(),
+          firefoxStripFunctionProbe(),
+        ]
+      : []),
   ],
   root: resolve(__dirname, "./src"),
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
     },
+    dedupe: [
+      "@huggingface/transformers",
+      "onnxruntime-common",
+      "onnxruntime-web",
+    ],
   },
   server: {
     port: DEV_SERVER_PORT,

@@ -193,7 +193,11 @@ function slugSubjectKey(name: string, keyBySubject: Map<string, string>): string
 export function buildGradeTrendChart(
   data: Assessment[],
   timeRange: TimeRange,
-  options: { showPerSubject?: boolean; custom?: CustomTimeRange } = {},
+  options: {
+    showPerSubject?: boolean;
+    custom?: CustomTimeRange;
+    combinedLabel?: string;
+  } = {},
 ): { points: TrendPoint[]; series: TrendSeries[]; accentColor: string } {
   const accentColor =
     "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
@@ -283,7 +287,7 @@ export function buildGradeTrendChart(
   const series: TrendSeries[] = [
     {
       key: "average",
-      label: "Overall average",
+      label: options.combinedLabel?.trim() || "Overall average",
       color: accentColor,
       isOverall: true,
     },

@@ -24,6 +24,12 @@ export interface JobContext {
   removeItem: (id: string, storeId?: string) => Promise<void>;
   getProgress: <T = any>() => Promise<T | undefined>;
   setProgress: <T = any>(progress: T) => Promise<void>;
+  /** Optional live status/progress while a long-running job is in flight. */
+  reportJobProgress?: (detail: {
+    processed: number;
+    total: number;
+    status?: string;
+  }) => void;
 }
 
 export interface Job {

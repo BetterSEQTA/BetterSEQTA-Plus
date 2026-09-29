@@ -39,6 +39,21 @@ input {
   scrollbar-width: none !important;
 }
 
+[data-settings-panel] {
+  transform: scale(0.94);
+  opacity: 0;
+  transform-origin: center center;
+  transition:
+    transform var(--bs-motion-duration, 0.22s) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--bs-motion-duration, 0.22s) cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+[data-settings-panel].bsplus-settings-panel--open {
+  transform: scale(1);
+  opacity: 1;
+}
+
 .cm-editor {
   width: 100%;
   min-height: 100px;

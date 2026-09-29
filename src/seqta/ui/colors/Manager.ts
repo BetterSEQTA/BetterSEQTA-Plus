@@ -5,8 +5,8 @@ import { lightenAndPaleColor } from "./lightenAndPaleColor";
 import ColorLuminance from "./ColorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
+import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
-
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -104,7 +104,7 @@ function applyBetterseqtaLogoBackground(isDark: boolean) {
       background-image: url("${fullUrl}") !important;
     }
     /* Icon-only sidebar: wordmark → compact mark (theme-aware). */
-    body.student.icon-only-sidebar:not(:has(#menu li.hasChildren.active)) #menu > ul::before {
+    body.student.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) #menu > ul::before {
       background-image: url("${iconUrl}") !important;
     }
   `;
@@ -126,8 +126,10 @@ function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: num
 }
 
 function applyColorsWith(selectedColor: string) {
-  if (settingsState.transparencyEffects) {
+  if (transparencyEnabled()) {
     document.documentElement.classList.add("transparencyEffects");
+  } else {
+    document.documentElement.classList.remove("transparencyEffects");
   }
 
   // Common properties, always applied
@@ -253,7 +255,7 @@ export async function updateAllColors() {
 
   const shouldAnimate =
     settingsState.adaptiveThemeColour &&
-    (settingsState.adaptiveThemeColourTransition ?? true) &&
+    adaptiveThemeTransitionEnabled() &&
     !!toHex;
 
   const applyImmediate = () => {

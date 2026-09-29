@@ -2,9 +2,11 @@
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
+  import type { ThemeListMode } from "@/interface/utils/themeListFilters"
 
-  let { section = "all" } = $props<{
+  let { section = "all", listMode = "all" } = $props<{
     section?: "all" | "themes" | "backgrounds";
+    listMode?: ThemeListMode;
   }>();
   
   // backgrounds
@@ -29,19 +31,36 @@
           : clearTheme ? 'Clear Background' : 'No Background Selected'}
       </button>
     {/if}
-    <div class="relative w-full">
-      <button
-        onclick={() => editMode = !editMode}
-        class="absolute top-0 right-0 z-10 px-2 h-8 text-lg rounded-xl bg-zinc-100 dark:bg-zinc-700">
-        <span class="mr-2">{editMode ? 'Done' : 'Edit'}</span>
-        <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
-      </button>
+    <div class="w-full">
+      {#if showThemes || showBackgrounds}
+        <div class="mb-3 flex justify-end">
+          <button
+            onclick={() => editMode = !editMode}
+            class="inline-flex h-8 items-center rounded-xl bg-zinc-100 px-3 text-lg dark:bg-zinc-700">
+            <span class="mr-2">{editMode ? 'Done' : 'Remove'}</span>
+            <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
+          </button>
+        </div>
+      {/if}
 
       {#if showBackgrounds}
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       {/if}
       {#if showThemes}
-        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
+        {#if listMode === "custom"}
+          <button
+            type="button"
+            class="mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            onclick={() =>
+              void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>
+                launchPageThemeBuilder(),
+              )}
+          >
+            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
+            Open theme builder
+          </button>
+        {/if}
+        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} {listMode} />
       {/if}
     </div>
   {:else}

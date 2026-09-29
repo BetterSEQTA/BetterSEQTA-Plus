@@ -9,6 +9,7 @@ import {
   resolveLoadingTheme,
   type LoadingVariant,
 } from "./loadingVariants";
+import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 let stopCanvas: (() => void) | null = null;
 let unbindThemeGuard: (() => void) | null = null;
@@ -320,7 +321,9 @@ export default function loading() {
   document.documentElement.append(host);
 
   applyVariantTheme(host, shadow, variant);
-  startCanvasForRoot(host, shadow, variant);
+  if (!isPerformanceMode()) {
+    startCanvasForRoot(host, shadow, variant);
+  }
 
   activeLoading = { host, shadow, variant };
   unbindThemeGuard = bindLoadingThemeGuard();

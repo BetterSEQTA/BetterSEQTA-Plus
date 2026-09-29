@@ -1,6 +1,9 @@
 export type SettingsDestination =
   | { page: "settings"; section?: string; search?: string }
-  | { page: "themes" | "backgrounds"; view?: "settings" | "store" };
+  | {
+      page: "themes" | "backgrounds";
+      view?: "settings" | "store" | "community" | "custom";
+    };
 
 export const SETTINGS_NAVIGATION_EVENT = "bsplus:navigate-settings";
 

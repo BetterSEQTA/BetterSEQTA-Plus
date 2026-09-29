@@ -8,6 +8,7 @@ import {
 } from "@/types/CustomThemes";
 import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloudSettingsSync";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
@@ -23,6 +24,7 @@ import {
   type ThemePageSyncInput,
 } from "@/seqta/utils/patchThemeImagesPageContext";
 import { verboseDebug, verboseInfo } from "@/utils/verboseLog";
+import { resolveLocalThemeInstallId } from "@/interface/utils/themeListFilters";
 import {
   clearThemeRuntime,
   injectThemeDom,
@@ -57,6 +59,8 @@ type ThemeContent = {
 
 export type InstallThemeMeta = {
   fromStore: boolean;
+  /** Community custom-themes API install (distinct from official store). */
+  fromCommunity?: boolean;
   /** Server list `updated_at` (Unix seconds); set when installing from store. */
   serverUpdatedAtSec?: number;
   forceTheme?: boolean;
@@ -70,6 +74,8 @@ export class ThemeManager {
   private lastSyncedImageKey: string | null = null;
   private originalPreviewColor: string | null = null;
   private originalPreviewTheme: boolean | null = null;
+  /** Theme id active before opening Theme Creator (restored on exit without save). */
+  private themeCreatorSuspendedThemeId: string | null = null;
   private lastTransitionPoint: { x: number; y: number } = { x: 0, y: 0 };
   private storeUpdateCheckRunning = false;
 
@@ -125,7 +131,7 @@ export class ThemeManager {
   private async applyViewTransition(callback: () => void): Promise<void> {
     if (
       !document.startViewTransition || 
-      !settingsState.animations || 
+      !fullMotionEffectsEnabled() || 
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       // Just run the callback without animation if transitions not supported
@@ -229,13 +235,18 @@ export class ThemeManager {
         await localforage.setItem(neumorphicThemeId, theme);
       }
 
-      const themeCreatorOpen = localStorage.getItem("themeCreatorOpen");
-      if (themeCreatorOpen === "true") {
-        verboseDebug(
-          "[ThemeManager] Theme creator was open, clearing preview state",
+      const { readThemeCreatorSession } = await import(
+        "@/plugins/built-in/themes/themeCreatorPersistence"
+      );
+      const creatorSession = readThemeCreatorSession();
+      if (creatorSession.open) {
+        verboseDebug("[ThemeManager] Restoring theme creator after navigation");
+        const { OpenThemeCreator, isThemeCreatorOpen } = await import(
+          "@/plugins/built-in/themes/ThemeCreator"
         );
-        this.clearPreview();
-        localStorage.removeItem("themeCreatorOpen");
+        if (!isThemeCreatorOpen()) {
+          void OpenThemeCreator(creatorSession.editingThemeId);
+        }
       }
 
       if (settingsState.selectedTheme) {
@@ -369,6 +380,11 @@ export class ThemeManager {
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
 
+      const { applyThemeCreatorMetaToSettings } = await import(
+        "@/interface/utils/themeCreatorMeta"
+      );
+      applyThemeCreatorMetaToSettings(theme.creatorMeta);
+
       injectThemeDom(theme.themeDom);
     } catch (error) {
       console.error("[ThemeManager] Error applying theme:", error);
@@ -455,6 +471,23 @@ export class ThemeManager {
   /**
    * Stable key so preview updates can skip re-encoding image blobs when only CSS changed.
    */
+  /** While Theme Creator is open, keep active theme image vars unless the draft replaces them. */
+  private resolvePreviewImages(
+    theme: Partial<LoadedCustomTheme>,
+  ): Array<{ id: string; variableName: string; blob: Blob }> {
+    const draftImages = theme.CustomImages ?? [];
+    if (!this.themeCreatorSuspendedThemeId) return draftImages;
+
+    const baseImages = this.currentTheme?.CustomImages ?? [];
+    if (draftImages.length === 0) return baseImages;
+
+    const merged = new Map(baseImages.map((image) => [image.id, image]));
+    for (const image of draftImages) {
+      merged.set(image.id, image);
+    }
+    return [...merged.values()];
+  }
+
   private imageSyncKey(
     images: Array<{ id: string; variableName: string; blob: Blob }>,
   ): string {
@@ -583,6 +616,67 @@ export class ThemeManager {
   }
 
   /**
+   * Download and install an approved community theme from `/api/custom-themes`.
+   */
+  public async downloadCommunityTheme(themeContent: {
+    id: string;
+    name?: string;
+    theme_json_url?: string;
+    updated_at?: number;
+  }): Promise<string> {
+    try {
+      return await this.downloadAndInstallCommunityTheme(themeContent);
+    } catch (error) {
+      console.error("[ThemeManager] Error downloading community theme:", error);
+      throw error;
+    }
+  }
+
+  private async downloadAndInstallCommunityTheme(themeContent: {
+    id: string;
+    theme_json_url?: string;
+    updated_at?: number;
+  }): Promise<string> {
+    verboseDebug("[ThemeManager] Downloading community theme:", themeContent.id);
+    if (!themeContent.id) {
+      throw new Error("Missing theme id");
+    }
+
+    let themeJsonUrl = themeContent.theme_json_url;
+    if (!themeJsonUrl) {
+      const downloadData = (await this.fetchFromUrl(
+        `${this.THEME_API_BASE}/custom-themes/${themeContent.id}/download`,
+      )) as { success?: boolean; data?: { theme_json_url: string } };
+      if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
+        throw new Error("Failed to get community theme download URL");
+      }
+      themeJsonUrl = downloadData.data.theme_json_url;
+    }
+
+    if (!isAllowedFetchUrl(themeJsonUrl)) {
+      throw new Error("Community theme download URL not allowed");
+    }
+
+    const themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
+    const catalogId = themeContent.id;
+    if (themeData.id && themeData.id !== catalogId) {
+      verboseDebug(
+        "[ThemeManager] Community theme.json id differs from catalog id; using catalog id",
+        { catalogId, themeJsonId: themeData.id },
+      );
+    }
+    await this.installTheme(
+      { ...themeData, id: catalogId },
+      {
+        fromStore: false,
+        fromCommunity: true,
+        serverUpdatedAtSec: themeContent.updated_at,
+      },
+    );
+    return catalogId;
+  }
+
+  /**
    * Fetch theme.json from the store and install (throws on failure).
    */
   private async downloadAndInstallStoreTheme(themeContent: {
@@ -650,7 +744,17 @@ export class ThemeManager {
       }
 
       const fromStore = meta?.fromStore ?? false;
+      const fromCommunity = meta?.fromCommunity ?? false;
       const serverUpdatedAtSec = meta?.serverUpdatedAtSec;
+      const isLocalInstall = !fromStore && !fromCommunity;
+
+      const existingTheme = (await localforage.getItem(themeData.id)) as CustomTheme | null;
+      const themeId = resolveLocalThemeInstallId(
+        themeData.id,
+        existingTheme,
+        fromStore,
+        fromCommunity,
+      );
 
       // Handle cover image (optional)
       let coverImageBlob = null;
@@ -687,20 +791,21 @@ export class ThemeManager {
           .filter((img) => img !== null) ?? [];
 
       const theme: LoadedCustomTheme = {
-        id: themeData.id,
+        id: themeId,
         name: themeData.name,
         description: themeData.description || "",
-        webURL: themeData.id,
+        webURL: themeId,
         coverImage: coverImageBlob,
         CustomImages: images,
         CustomCSS: themeData.CustomCSS || "",
         defaultColour: themeData.defaultColour || "rgba(0, 123, 255, 1)",
         CanChangeColour: themeData.CanChangeColour ?? true,
         allowBackgrounds: true,
-        isEditable: false,
+        isEditable: isLocalInstall,
         hideThemeName: themeData.hideThemeName ?? false,
         forceDark: themeData.forceDark,
         installedFromStore: fromStore,
+        installedFromCommunity: fromCommunity || undefined,
         userEdited: fromStore ? false : undefined,
         storeSyncedAtSec:
           fromStore && serverUpdatedAtSec != null
@@ -948,15 +1053,21 @@ export class ThemeManager {
       }
 
       const syncInput: ThemePageSyncInput = {};
+      const inCreatorSession = this.themeCreatorSuspendedThemeId !== null;
 
       if (theme.CustomCSS !== undefined) {
         syncInput.previewCss = theme.CustomCSS;
       }
 
-      if (theme.CustomImages) {
-        const imageKey = this.imageSyncKey(theme.CustomImages);
-        if (imageKey !== this.lastSyncedImageKey) {
-          syncInput.images = theme.CustomImages;
+      const previewImages = this.resolvePreviewImages(theme);
+      if (previewImages.length > 0) {
+        const imageKey = this.imageSyncKey(previewImages);
+        const shouldSyncImages =
+          inCreatorSession ||
+          imageKey !== this.lastSyncedImageKey ||
+          theme.CustomCSS !== undefined;
+        if (shouldSyncImages) {
+          syncInput.images = previewImages;
           this.lastSyncedImageKey = imageKey;
         }
       }
@@ -976,6 +1087,12 @@ export class ThemeManager {
       }
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
+
+      const { applyThemeCreatorMetaToSettings } = await import(
+        "@/interface/utils/themeCreatorMeta"
+      );
+      applyThemeCreatorMetaToSettings(theme.creatorMeta);
+
       void updateAllColors();
     } catch (error) {
       console.error("[ThemeManager] Error updating theme preview:", error);
@@ -994,12 +1111,48 @@ export class ThemeManager {
   );
 
   /**
+   * Start Theme Creator: keep the current theme on SEQTA; preview layers on top only.
+   */
+  public beginThemeCreatorSession(): void {
+    const activeId = settingsState.selectedTheme?.trim() || "";
+    this.themeCreatorSuspendedThemeId = activeId || null;
+
+    if (this.originalPreviewColor === null) {
+      this.originalPreviewColor = settingsState.selectedColor;
+    }
+    if (this.originalPreviewTheme === null) {
+      this.originalPreviewTheme = settingsState.DarkMode;
+    }
+
+    verboseDebug("[ThemeManager] Theme creator session started", {
+      suspendedThemeId: this.themeCreatorSuspendedThemeId,
+    });
+  }
+
+  /**
+   * End Theme Creator: drop preview CSS and re-apply the theme that was active before editing.
+   */
+  public discardThemeCreatorRestore(): void {
+    this.themeCreatorSuspendedThemeId = null;
+  }
+
+  public async endThemeCreatorSession(): Promise<void> {
+    const restoreId = this.themeCreatorSuspendedThemeId;
+    this.themeCreatorSuspendedThemeId = null;
+    this.clearPreview();
+    if (restoreId) {
+      verboseDebug("[ThemeManager] Restoring theme after creator exit:", restoreId);
+      await this.setTheme(restoreId, false);
+    }
+  }
+
+  /**
    * Clear theme preview
    */
   public clearPreview(): void {
     verboseDebug("[ThemeManager] Clearing theme preview");
     try {
-      void syncThemeToPage({ clearPreview: true, images: [] });
+      void syncThemeToPage({ clearPreview: true });
       this.lastSyncedImageKey = null;
 
       clearCustomThemeAdaptiveCssVariables();

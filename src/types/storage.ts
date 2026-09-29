@@ -36,6 +36,8 @@ export interface SettingsState {
   privacyStatementLastUpdated?: string;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
+  /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
+  coursesAssessmentsFixPopupShown?: boolean;
   /**
    * Calendar month (`YYYY-MM`) for which the user closed the Theme of the Month popup.
    * Cleared automatically when a new month's entry is fetched (different `month`).
@@ -47,6 +49,10 @@ export interface SettingsState {
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
   animations: boolean;
+  /** Reduces animations, blur, background work, and indexing for smoother SEQTA. */
+  performanceMode?: boolean;
+  /** Per-plugin force-enable while Performance Mode is active (`pluginId` → true). */
+  performanceModePluginOverrides?: Record<string, boolean>;
   defaultPage: string;
   /** Max subjects with upcoming assessments on the home page; 0 = no limit. */
   homeUpcomingSubjectsMax?: number;
@@ -78,6 +84,8 @@ export interface SettingsState {
   sidebarActiveIndicator?: string;
   /** Sidebar width: `narrow` | `default` (270px) | `wide`. */
   sidebarWidth?: string;
+  /** Sidebar edge: `left` (default) | `right`. */
+  sidebarPosition?: string;
   /** Backdrop blur strength in px when transparency is on (default `50`). */
   sidebarBlur?: number;
   adaptiveThemeColour?: boolean;

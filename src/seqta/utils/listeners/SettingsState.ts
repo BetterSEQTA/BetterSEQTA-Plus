@@ -369,10 +369,16 @@ class StorageManager {
     };
   }
 
+  private notifyFrame = 0;
+
   private notifySubscribers(): void {
-    for (const subscriber of this.subscribers) {
-      subscriber(this.data);
-    }
+    if (this.notifyFrame) return;
+    this.notifyFrame = requestAnimationFrame(() => {
+      this.notifyFrame = 0;
+      for (const subscriber of this.subscribers) {
+        subscriber(this.data);
+      }
+    });
   }
 }
 

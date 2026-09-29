@@ -1,9 +1,6 @@
 <script lang="ts">
-  import Settings from "./settings/general.svelte";
-  import Shortcuts from "./settings/shortcuts.svelte";
-  import Theme from "./settings/theme.svelte";
-  import Store from "./store.svelte";
   import TabbedContainer from "../components/TabbedContainer.svelte";
+  import LazyPanel from "../components/LazyPanel.svelte";
   import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
   import lightLogo from "@/resources/icons/betterseqta-light-full.png";
   import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
@@ -11,16 +8,13 @@
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
   import { onMount, onDestroy } from "svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
   import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
 
   import type { Component } from "svelte";
-  import FontPickerModal from "../components/FontPickerModal.svelte";
-  import CloudPanel from "../components/CloudPanel.svelte";
-  import DisclaimerModal from "../components/DisclaimerModal.svelte";
-  import FeedbackModal from "../components/FeedbackModal.svelte";
   import SidebarNav from "../components/SidebarNav.svelte";
   import StoreHeader from "../components/store/Header.svelte";
   import { settingsPopup } from "@/seqta/utils/settingsPopup";
@@ -39,8 +33,14 @@
   } from "@/utils/githubReleaseUpdate";
   type PageId = "settings" | "themes" | "backgrounds";
   type StoreTab = "themes" | "backgrounds";
-  type ThemeView = "theme-settings" | "theme-store";
+  type ThemeView = "theme-settings" | "theme-store" | "community-themes" | "create-theme";
   type BackgroundView = "background-settings" | "background-store";
+
+  const loadSettingsBody = () => import("./settings/SettingsBody.svelte");
+  const loadShortcuts = () => import("./settings/shortcuts.svelte");
+  const loadThemeSettings = () => import("./settings/theme.svelte");
+  const loadStore = () => import("./store.svelte");
+  const loadCommunityThemes = () => import("./communityThemes.svelte");
 
   type NavItem = {
     id: string;
@@ -62,6 +62,18 @@
   let backgroundCategories = $state<string[]>([]);
   let storeSearchTerm = $state("");
   let settingsSearch = $state("");
+  let debouncedSettingsSearch = $state("");
+  let settingsSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  $effect(() => {
+    const query = settingsSearch;
+    if (settingsSearchTimer) clearTimeout(settingsSearchTimer);
+    const delay = isPerformanceMode() ? 250 : 150;
+    settingsSearchTimer = setTimeout(() => {
+      debouncedSettingsSearch = query;
+      settingsSearchTimer = null;
+    }, delay);
+  });
 
   let showDisclaimerModal = $state(false);
   let disclaimerCallbacks = $state<{ onConfirm: () => void; onCancel: () => void } | null>(null);
@@ -94,9 +106,10 @@
     {
       label: "Themes",
       items: [
-        { id: "theme-store", label: "Store" },
-        { id: "theme-settings", label: "Theme settings" },
-        { id: "create-theme", label: "Create theme" },
+        { id: "theme-store", label: "Theme store" },
+        { id: "community-themes", label: "Community themes" },
+        { id: "theme-settings", label: "Downloaded themes" },
+        { id: "create-theme", label: "Custom themes" },
       ],
     },
   ];
@@ -143,15 +156,32 @@
   );
 
   const sectionTitle = $derived.by(() => {
-    if (activePage === "settings" && settingsSearch.trim()) return "Search results";
-    if (activePage === "themes") return "Themes";
+    if (activePage === "settings" && debouncedSettingsSearch.trim()) return "Search results";
+    if (activePage === "themes") {
+      if (activeThemeView === "theme-settings") return "Downloaded themes";
+      if (activeThemeView === "create-theme") return "Custom themes";
+      if (activeThemeView === "community-themes") return "Community themes";
+      if (activeThemeView === "theme-store") return "Theme store";
+      return "Themes";
+    }
     if (activePage === "backgrounds") return "Backgrounds";
     return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
   });
 
+  const activeThemeListMode = $derived.by(() => {
+    if (activeThemeView === "create-theme") return "custom" as const;
+    if (activeThemeView === "theme-settings") return "downloaded" as const;
+    return "all" as const;
+  });
+
   const isStoreView = $derived(
-    (activePage === "themes" && activeThemeView === "theme-store") ||
+    (activePage === "themes" &&
+      (activeThemeView === "theme-store" || activeThemeView === "community-themes")) ||
       (activePage === "backgrounds" && activeBackgroundView === "background-store"),
+  );
+
+  const isOfficialStoreView = $derived(
+    activePage === "themes" && activeThemeView === "theme-store",
   );
 
   const openGhRelease = () => {
@@ -182,6 +212,10 @@
   };
 
   let ColourPickerComponent = $state<Component | null>(null);
+  let FontPickerComponent = $state<Component | null>(null);
+  let CloudPanelComponent = $state<Component | null>(null);
+  let DisclaimerModalComponent = $state<Component | null>(null);
+  let FeedbackModalComponent = $state<Component | null>(null);
 
   const openColourPicker = async () => {
     if (!ColourPickerComponent) {
@@ -190,7 +224,10 @@
     showColourPicker = true;
   };
 
-  const openFontPicker = () => {
+  const openFontPicker = async () => {
+    if (!FontPickerComponent) {
+      FontPickerComponent = (await import("../components/FontPickerModal.svelte")).default;
+    }
     showFontPicker = true;
   };
 
@@ -216,25 +253,41 @@
   let showFeedbackModal = $state<boolean>(false);
   let feedbackFocusId = $state<string | null>(null);
 
-  const openCloudPanel = () => {
+  const openCloudPanel = async () => {
+    if (!CloudPanelComponent) {
+      CloudPanelComponent = (await import("../components/CloudPanel.svelte")).default;
+    }
     showCloudPanel = true;
   };
 
-  const openFeedback = (feedbackId?: string | null) => {
+  const openFeedback = async (feedbackId?: string | null) => {
+    if (!FeedbackModalComponent) {
+      FeedbackModalComponent = (await import("../components/FeedbackModal.svelte")).default;
+    }
     feedbackFocusId = typeof feedbackId === "string" && feedbackId ? feedbackId : null;
     showFeedbackModal = true;
   };
 
-  const showDisclaimer = (
+  const showDisclaimer = async (
     onConfirm: () => void,
     onCancel: () => void,
     title = "Confirm",
     message = "",
   ) => {
+    if (!DisclaimerModalComponent) {
+      DisclaimerModalComponent = (await import("../components/DisclaimerModal.svelte")).default;
+    }
     disclaimerCallbacks = { onConfirm, onCancel };
     disclaimerTitle = title;
     disclaimerMessage = message;
     showDisclaimerModal = true;
+  };
+
+  const settingsSharedProps = {
+    showColourPicker: openColourPicker,
+    showFontPicker: openFontPicker,
+    showDisclaimer,
+    showCloudPanel: openCloudPanel,
   };
 
   const closePopupsOnSettingsClose = () => {
@@ -259,11 +312,7 @@
     }
 
     if (activePage === "themes") {
-      if (id === "create-theme") {
-        void openThemeCreator();
-      } else {
-        activeThemeView = id as ThemeView;
-      }
+      activeThemeView = id as ThemeView;
       return;
     }
 
@@ -273,12 +322,6 @@
     } else {
       activeBackgroundView = id as BackgroundView;
     }
-  };
-
-  const openThemeCreator = async () => {
-    const { OpenThemeCreator } = await import("@/plugins/built-in/themes/ThemeCreator");
-    OpenThemeCreator();
-    closeExtensionPopup();
   };
 
   const applyDestination = (destination: SettingsDestination) => {
@@ -292,7 +335,14 @@
         settingsSearch = destination.search;
       }
     } else if (destination.page === "themes" && destination.view) {
-      activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
+      activeThemeView =
+        destination.view === "store"
+          ? "theme-store"
+          : destination.view === "community"
+            ? "community-themes"
+            : destination.view === "custom"
+              ? "create-theme"
+              : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
       activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
     }
@@ -312,9 +362,16 @@
     }
 
     if (ghReleaseUpdateEnabled) {
-      void checkGithubReleaseUpdate().then((info) => {
-        ghReleaseUpdate = info;
-      });
+      const runCheck = () => {
+        void checkGithubReleaseUpdate().then((info) => {
+          ghReleaseUpdate = info;
+        });
+      };
+      if (typeof requestIdleCallback === "function") {
+        requestIdleCallback(runCheck, { timeout: 4000 });
+      } else {
+        setTimeout(runCheck, 500);
+      }
     }
 
     const pendingFeedbackId = consumeOpenFeedbackRequest();
@@ -369,7 +426,7 @@
         activePage = page;
         if (page === "themes") activeThemeView = "theme-store";
       }}
-      showStoreTools={isStoreView}
+      showStoreTools={isOfficialStoreView || activeThemeView === "community-themes"}
       onLogoClick={handleDevModeToggle}
       onClose={handleClose}
     />
@@ -466,53 +523,85 @@
         </div>
       </nav>
 
-      {#if isStoreView}
-        <div class="min-w-0 min-h-0 flex-1">
-          <Store
-            activeTab={activePage as StoreTab}
-            searchTerm={storeSearchTerm}
-            {selectedBackgroundCategory}
-            setActiveTab={(tab) => {
-              activePage = tab;
-              if (tab === "themes") activeThemeView = "theme-store";
-              else activeBackgroundView = "background-store";
-            }}
-            setSearchTerm={(term) => (storeSearchTerm = term)}
-            setBackgroundCategories={(categories) => (backgroundCategories = categories)}
-          />
-        </div>
-      {:else}
-        <div class="flex flex-col flex-1 min-w-0 min-h-0">
-          <div class="shrink-0 px-6 pt-5 pb-3">
-            <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              {sectionTitle}
-            </h1>
-          </div>
-          <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
-            {#if activePage === "settings"}
-              {#if activeSection === "shortcuts" && !settingsSearch.trim()}
-                <Shortcuts />
-              {:else}
-                <Settings
-                  showColourPicker={openColourPicker}
-                  showFontPicker={openFontPicker}
-                  {showDisclaimer}
-                  showCloudPanel={openCloudPanel}
-                  activeSection={settingsSearch.trim() ? "all" : activeSection}
-                  searchQuery={settingsSearch}
-                />
-                {#if settingsSearch.trim()}
-                  <Shortcuts searchQuery={settingsSearch} />
-                {/if}
-              {/if}
-            {:else if activePage === "themes"}
-              <Theme section="themes" />
+      <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        {#if isStoreView}
+          <div class="min-h-0 min-w-0 flex-1 overflow-hidden">
+            {#if activePage === "themes" && activeThemeView === "community-themes"}
+              <LazyPanel
+                loader={loadCommunityThemes}
+                remountKey="community-themes"
+                props={{
+                  searchTerm: storeSearchTerm,
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                }}
+              />
             {:else}
-              <Theme section="backgrounds" />
+              <LazyPanel
+                loader={loadStore}
+                remountKey="store"
+                props={{
+                  activeTab: activePage as StoreTab,
+                  searchTerm: storeSearchTerm,
+                  selectedBackgroundCategory,
+                  setActiveTab: (tab: StoreTab) => {
+                    activePage = tab;
+                    if (tab === "themes") activeThemeView = "theme-store";
+                    else activeBackgroundView = "background-store";
+                  },
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                  setBackgroundCategories: (categories: string[]) =>
+                    (backgroundCategories = categories),
+                }}
+              />
             {/if}
           </div>
-        </div>
-      {/if}
+        {:else}
+          <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <div class="shrink-0 px-6 pt-5 pb-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                {sectionTitle}
+              </h1>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
+              {#if activePage === "settings"}
+                {#if activeSection === "shortcuts" && !debouncedSettingsSearch.trim()}
+                  <LazyPanel loader={loadShortcuts} remountKey="shortcuts-page" />
+                {:else}
+                  <LazyPanel
+                    loader={loadSettingsBody}
+                    remountKey="settings-body"
+                    props={{
+                      ...settingsSharedProps,
+                      activeSection: debouncedSettingsSearch.trim() ? "all" : activeSection,
+                      searchQuery: debouncedSettingsSearch,
+                    }}
+                  />
+                  {#if debouncedSettingsSearch.trim()}
+                    <LazyPanel
+                      loader={loadShortcuts}
+                      remountKey="shortcuts-search"
+                      props={{ searchQuery: debouncedSettingsSearch }}
+                    />
+                  {/if}
+                {/if}
+              {:else if activePage === "themes"}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey={`theme-settings-${activeThemeListMode}`}
+                  props={{ section: "themes", listMode: activeThemeListMode }}
+                />
+              {:else}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey="background-settings"
+                  props={{ section: "backgrounds" }}
+                />
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+      </div>
     </div>
   </div>
 {/snippet}
@@ -548,17 +637,21 @@
         tabs={[
           {
             title: "Settings",
-            Content: Settings,
+            loader: loadSettingsBody,
             props: {
-              showColourPicker: openColourPicker,
-              showFontPicker: openFontPicker,
-              showDisclaimer,
-              showCloudPanel: openCloudPanel,
+              ...settingsSharedProps,
               activeSection: "all",
             },
           },
-          { title: "Shortcuts", Content: Shortcuts },
-          { title: "Themes", Content: Theme },
+          {
+            title: "Shortcuts",
+            loader: loadShortcuts,
+          },
+          {
+            title: "Themes",
+            loader: loadThemeSettings,
+            props: { section: "all" },
+          },
         ]}
       />
     </div>
@@ -584,13 +677,15 @@
   >
     <button
       type="button"
-      class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-colors duration-200"
+      class="absolute inset-0 bg-black/60 {$settingsState.performanceMode
+        ? 'backdrop-blur-none'
+        : 'backdrop-blur-sm'} transition-colors duration-200"
       aria-label="Close settings"
       onclick={handleClose}
     ></button>
 
     <div
-      class="relative z-10 w-[min(1180px,96vw)] h-[min(860px,92vh)] no-scrollbar overflow-clip"
+      class="relative z-10 h-[min(860px,92vh)] w-[min(1180px,96vw)] no-scrollbar overflow-clip"
       data-settings-panel
     >
       {@render settingsShell()}
@@ -606,24 +701,24 @@
   />
 {/if}
 
-{#if showCloudPanel}
-  <CloudPanel
+{#if showCloudPanel && CloudPanelComponent}
+  <CloudPanelComponent
     hidePanel={() => {
       showCloudPanel = false;
     }}
   />
 {/if}
 
-{#if showFontPicker}
-  <FontPickerModal
+{#if showFontPicker && FontPickerComponent}
+  <FontPickerComponent
     hidePicker={() => {
       showFontPicker = false;
     }}
   />
 {/if}
 
-{#if showDisclaimerModal && disclaimerCallbacks}
-  <DisclaimerModal
+{#if showDisclaimerModal && disclaimerCallbacks && DisclaimerModalComponent}
+  <DisclaimerModalComponent
     title={disclaimerTitle}
     message={disclaimerMessage}
     onConfirm={() => {
@@ -639,8 +734,8 @@
   />
 {/if}
 
-{#if showFeedbackModal}
-  <FeedbackModal
+{#if showFeedbackModal && FeedbackModalComponent}
+  <FeedbackModalComponent
     initialFeedbackId={feedbackFocusId}
     onClose={() => {
       showFeedbackModal = false;
