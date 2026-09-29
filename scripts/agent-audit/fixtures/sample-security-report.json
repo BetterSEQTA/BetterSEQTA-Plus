@@ -1,0 +1,53 @@
+{
+  "requiresAction": true,
+  "summary": "Sample security audit for dashboard preview. Two items need follow-up.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "category": "security",
+      "title": "Missing rate limit on public endpoint",
+      "location": "server/routes/example.js:42",
+      "confidence": "high",
+      "requiresAction": true,
+      "evidence": "No rateLimit middleware on POST /api/v1/queue/add",
+      "scenario": "Attacker floods queue adds.",
+      "fix": "Apply publicApiRateLimit category queue."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "category": "security",
+      "title": "Secret in log line",
+      "location": "server/utils/logger.js:88",
+      "confidence": "medium",
+      "evidence": "console.log includes token prefix"
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "category": "reliability",
+      "title": "Unhandled promise in worker",
+      "location": "server/index.js:200",
+      "confidence": "low"
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "category": "dependency",
+      "title": "Transitive advisory",
+      "location": "package-lock.json",
+      "confidence": "high"
+    },
+    {
+      "id": "F5",
+      "severity": "info",
+      "category": "security",
+      "title": "CSP report-only header present",
+      "location": "server/index.js",
+      "confidence": "high"
+    }
+  ],
+  "limitations": ["Preview fixture only.", "No live grep was run."],
+  "checkedAreas": ["auth", "public-api"]
+}

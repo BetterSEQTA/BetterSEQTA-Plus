@@ -1,0 +1,61 @@
+name: Agent audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 0,1,3,5'
+  workflow_dispatch:
+
+concurrency:
+  group: agent-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: security-stability-audit
+    if: github.repository == 'BetterSEQTA/BetterSEQTA-Plus' || vars.AGENT_AUDIT_ALLOW_FORKS == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      AGENT_AUDIT_BASE_URL: https://9router.stroepwafel.au/v1
+      AGENT_AUDIT_MODEL: fast
+      AGENT_AUDIT_MAX_TURNS: "250"
+      AGENT_AUDIT_MIN_TURNS: "25"
+      AGENT_AUDIT_MAX_TOKENS: "8192"
+      AGENT_AUDIT_LLM_RETRIES: "3"
+      AGENT_AUDIT_LLM_STICKY: "1"
+      AGENT_AUDIT_DISCORD_ATTACH_HTML: "1"
+      AGENT_AUDIT_ALLOW_FORKS: ${{ vars.AGENT_AUDIT_ALLOW_FORKS }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node and dependencies
+        uses: ./.github/actions/setup-node-deps
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Agent security audit
+        run: npm run audit:agent
+        env:
+          AGENT_AUDIT_API_KEY: ${{ secrets.AGENT_AUDIT_API_KEY }}
+          AGENT_AUDIT_DISCORD_WEBHOOK_URL: ${{ secrets.AGENT_AUDIT_DISCORD_WEBHOOK_URL }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-audit-report
+          path: |
+            agent-audit-report.json
+            agent-audit-report.md
+            agent-audit-report.html
+            agent-audit-transcript.jsonl
+          if-no-files-found: ignore
