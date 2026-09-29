@@ -19,6 +19,8 @@ export interface Assessment {
   availability: string;
   finalGrade?: number;
   letterGrade?: string;
+  /** How finalGrade was derived (for optional inference features). */
+  gradeSource?: "seqta" | "criteriaRollup" | "customBand" | "defaultLetter";
 }
 
 export type AnalyticsData = Assessment[];

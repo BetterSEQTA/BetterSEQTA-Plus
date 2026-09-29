@@ -24,6 +24,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Added a new toggleable titlebar founder badge to the topbar for BetterSEQTA Cloud celebrations.",
       "Addded Editing a teacher's name in the timetable editor now affect Assements.",
       "Added a 'this year' & custom date range option to grade analyitics.",
+      "Added Community Themes for you all to show off your best BetterSEQTA setups!",
       "Removed white background around SEQTA Learn mobile App icons in settings.",
       "Re-added the kitten back to the 404 Error pages.",
       "Improved the sidebar to be more stable and performant.",

@@ -1,11 +1,17 @@
 import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockGradeAnalyticsData } from "@/seqta/ui/dev/hideSensitiveContent";
+import { resolveGradeFromAssessmentPayload } from "./gradeResolution";
 import {
   extractLetterGradeStringFromPayload,
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
-import { loadAnalyticsCache, saveAnalyticsCache } from "./storage";
+import {
+  loadAnalyticsCache,
+  loadGradeInferenceSettings,
+  saveAnalyticsCache,
+} from "./storage";
+import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
 const PAST_FETCH_CONCURRENCY = 8;
@@ -72,6 +78,13 @@ export function parseAssessment(data: unknown): Assessment | null {
       availability: String(raw.availability || ""),
       finalGrade,
       letterGrade,
+      gradeSource:
+        raw.gradeSource === "seqta" ||
+        raw.gradeSource === "criteriaRollup" ||
+        raw.gradeSource === "customBand" ||
+        raw.gradeSource === "defaultLetter"
+          ? raw.gradeSource
+          : undefined,
     };
 
     if (
@@ -95,40 +108,14 @@ function jsonGradeToString(grade: unknown): string | undefined {
   return undefined;
 }
 
-function extractFinalGrade(assessment: Record<string, unknown>): number | undefined {
-  if (assessment.status !== "MARKS_RELEASED") return undefined;
-
-  const criteria = assessment.criteria as
-    | { results?: { percentage?: unknown } }[]
-    | undefined;
-  if (criteria?.[0]?.results?.percentage !== undefined) {
-    const n = Number(criteria[0].results!.percentage);
-    if (!isNaN(n)) return n;
-  }
-
-  const results = assessment.results as { percentage?: unknown } | undefined;
-  if (results?.percentage !== undefined) {
-    const n = Number(results.percentage);
-    if (!isNaN(n)) return n;
-  }
-
-  if (assessment.finalGrade !== undefined && assessment.finalGrade !== null) {
-    const n = Number(assessment.finalGrade);
-    if (!isNaN(n)) return n;
-  }
-
-  const letter = extractLetterGradeStringFromPayload(
-    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
-  );
-  if (letter) {
-    const approx = resolveNumericGradeFromAssessmentPayload({
-      status: "MARKS_RELEASED",
-      letterGrade: letter,
-    });
-    if (approx !== undefined) return approx;
-  }
-
-  return undefined;
+function applyResolvedGrade(
+  raw: Record<string, unknown>,
+  inference: AnalyticsGradeInferenceSettings,
+): void {
+  const resolved = resolveGradeFromAssessmentPayload(raw, inference);
+  if (resolved.finalGrade !== undefined) raw.finalGrade = resolved.finalGrade;
+  if (resolved.letterGrade !== undefined) raw.letterGrade = resolved.letterGrade;
+  if (resolved.source) raw.gradeSource = resolved.source;
 }
 
 function extractLetterGrade(
@@ -331,6 +318,7 @@ async function loadAllPast(
 function mergeRawAssessments(
   existing: Assessment[],
   rawItems: Record<string, unknown>[],
+  inference: AnalyticsGradeInferenceSettings,
 ): Assessment[] {
   const existingMap = new Map<number, Assessment>();
   for (const a of existing) {
@@ -341,10 +329,10 @@ function mergeRawAssessments(
     const id = Number(raw.id);
     if (!id) continue;
 
-    const finalGrade = extractFinalGrade(raw);
+    applyResolvedGrade(raw, inference);
+    const finalGrade =
+      raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
     const letterGrade = extractLetterGrade(raw);
-    if (finalGrade !== undefined) raw.finalGrade = finalGrade;
-    if (letterGrade !== undefined) raw.letterGrade = letterGrade;
 
     const existingItem = existingMap.get(id);
     if (existingItem?.finalGrade !== undefined && finalGrade === undefined) {
@@ -407,13 +395,14 @@ export async function syncGradeAnalytics(): Promise<{
   const existing = cached?.assessments ?? [];
 
   const subjectList = await loadAllSubjects(existing);
+  const inference = await loadGradeInferenceSettings(location.origin, studentId);
 
   const [upcoming, past] = await Promise.all([
     loadUpcoming(studentId),
     loadAllPast(studentId, subjectList),
   ]);
 
-  const merged = mergeRawAssessments(existing, [...upcoming, ...past]);
+  const merged = mergeRawAssessments(existing, [...upcoming, ...past], inference);
   await saveAnalyticsCache(location.origin, studentId, merged);
 
   return { assessments: merged, updatedAt: Date.now() };

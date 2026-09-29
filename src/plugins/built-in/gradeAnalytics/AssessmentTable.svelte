@@ -60,9 +60,13 @@
 
   function gradeDisplay(a: Assessment) {
     if (a.finalGrade !== undefined) {
-      return a.letterGrade
+      const base = a.letterGrade
         ? `${a.finalGrade}% (${a.letterGrade})`
         : `${a.finalGrade}%`;
+      if (a.gradeSource === "criteriaRollup") return `${base} · est. from parts`;
+      if (a.gradeSource === "customBand") return `${base} · custom band`;
+      if (a.gradeSource === "defaultLetter") return `${base} · approx.`;
+      return base;
     }
     return a.letterGrade ?? "—";
   }

@@ -25,8 +25,16 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { animationsEnabled } from "@/seqta/utils/performanceMode";
   import ClassGroupsPanel from "./ClassGroupsPanel.svelte";
+  import GradeInferencePanel from "./GradeInferencePanel.svelte";
   import type { AnalyticsClassGroup, AnalyticsClassOption } from "./types";
-  import { loadClassGroups, saveClassGroups } from "./storage";
+  import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
+  import { DEFAULT_ANALYTICS_GRADE_INFERENCE } from "./gradeInferenceSettings";
+  import {
+    loadClassGroups,
+    loadGradeInferenceSettings,
+    saveClassGroups,
+    saveGradeInferenceSettings,
+  } from "./storage";
 
   let { simpleMode = false } = $props<{ simpleMode?: boolean }>();
 
@@ -49,6 +57,9 @@
   let classCatalog: AnalyticsClassOption[] = $state([]);
   let activeClassGroupId: string | null = $state(null);
   let studentId: number | null = $state(null);
+  let gradeInference = $state<AnalyticsGradeInferenceSettings>(
+    DEFAULT_ANALYTICS_GRADE_INFERENCE,
+  );
 
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
@@ -191,6 +202,13 @@
     await saveClassGroups(location.origin, studentId, groups);
   }
 
+  async function persistGradeInference(settings: AnalyticsGradeInferenceSettings) {
+    gradeInference = settings;
+    if (studentId == null) return;
+    await saveGradeInferenceSettings(location.origin, studentId, settings);
+    await runSync();
+  }
+
   async function loadClassCatalog(assessments: Assessment[]) {
     classCatalog = await loadAnalyticsClassCatalog(assessments);
   }
@@ -230,6 +248,7 @@
         const id = await getStudentId();
         studentId = id;
         classGroups = await loadClassGroups(location.origin, id);
+        gradeInference = await loadGradeInferenceSettings(location.origin, id);
         await loadClassCatalog(result.assessments);
       } catch {
         classGroups = [];
@@ -463,6 +482,12 @@
           activeGroupId={activeClassGroupId}
           onSelectGroup={selectClassGroup}
           onSaveGroups={persistClassGroups}
+        />
+
+        <GradeInferencePanel
+          settings={gradeInference}
+          onSave={persistGradeInference}
+          disabled={syncing}
         />
         {/if}
 
