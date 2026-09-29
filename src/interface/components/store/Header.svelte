@@ -71,7 +71,7 @@
           role="tab"
           aria-selected={activePage === tab.id}
           onclick={() => setActivePage(tab.id)}
-          class="relative z-10 h-10 flex-1 whitespace-nowrap rounded-full px-4 text-base transition-colors duration-200
+          class="relative z-10 h-10 flex-1 whitespace-nowrap rounded-full px-4 text-lg transition-colors duration-200
             {activePage === tab.id
             ? 'font-semibold text-zinc-900 dark:text-white'
             : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"

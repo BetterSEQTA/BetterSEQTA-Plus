@@ -4,9 +4,10 @@
     masterGridDisplayDownloadCount,
     gridCardPreviewImageUrls,
   } from '@/interface/utils/themeStoreFlavours'
+  import { isStoreThemeInstalled } from '@/interface/utils/themeListFilters'
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
-  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows } = $props<{
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' } = $props<{
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
@@ -14,6 +15,8 @@
     onRequestSignIn?: () => void;
     /** Raw API themes (includes hidden slaves) for aggregated master download totals */
     allStoreThemeRows?: Theme[];
+    installedThemeIds?: string[];
+    variant?: 'official' | 'community';
   }>();
 
   const displayDownloadCount = $derived(
@@ -47,6 +50,10 @@
     ];
   });
 
+  const isInstalled = $derived(isStoreThemeInstalled(theme, installedThemeIds));
+  const isCommunity = $derived(variant === 'community');
+  const showFavorites = $derived(!isCommunity);
+
   function handleCardClick(e: MouseEvent) {
     if ((e.target as HTMLElement).closest('[data-theme-favorite]')) return;
     onClick();
@@ -72,8 +79,18 @@
   <div
     class="theme-card isolate bg-gray-50 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
   >
-    {#if theme.featured === true}
+    {#if isCommunity}
       <div class="absolute top-2 left-2 z-20 pointer-events-none">
+        <span
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100 shadow-sm"
+          aria-label="Community theme"
+        >
+          Community
+        </span>
+      </div>
+    {/if}
+    {#if theme.featured === true}
+      <div class="absolute top-2 z-20 pointer-events-none {isCommunity ? 'left-[5.75rem]' : 'left-2'}">
         <span
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-sm"
           aria-label="Featured theme"
@@ -85,6 +102,20 @@
         </span>
       </div>
     {/if}
+    {#if isInstalled}
+      <div class="absolute top-2 z-20 pointer-events-none {theme.featured === true ? (isCommunity ? 'left-[11rem]' : 'left-[5.5rem]') : isCommunity ? 'left-[5.75rem]' : 'left-2'}">
+        <span
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100 shadow-sm"
+          aria-label="Installed"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+          </svg>
+          Installed
+        </span>
+      </div>
+    {/if}
+    {#if showFavorites}
     <button
       type="button"
       data-theme-favorite
@@ -113,6 +144,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
       </svg>
     </button>
+    {/if}
     <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
       <span class="text-xl font-bold text-white drop-shadow-md">{theme.name}</span>
       {#if theme.author}
@@ -125,12 +157,14 @@
           </svg>
           {displayDownloadCount.toLocaleString()}
         </span>
+        {#if showFavorites}
         <span class="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           {(theme.favorite_count ?? 0).toLocaleString()}
         </span>
+        {/if}
       </div>
     </div>
     {#if gridRotatorUrls.length === 0}

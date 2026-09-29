@@ -33,13 +33,14 @@
   } from "@/utils/githubReleaseUpdate";
   type PageId = "settings" | "themes" | "backgrounds";
   type StoreTab = "themes" | "backgrounds";
-  type ThemeView = "theme-settings" | "theme-store";
+  type ThemeView = "theme-settings" | "theme-store" | "community-themes" | "create-theme";
   type BackgroundView = "background-settings" | "background-store";
 
   const loadSettingsBody = () => import("./settings/SettingsBody.svelte");
   const loadShortcuts = () => import("./settings/shortcuts.svelte");
   const loadThemeSettings = () => import("./settings/theme.svelte");
   const loadStore = () => import("./store.svelte");
+  const loadCommunityThemes = () => import("./communityThemes.svelte");
 
   type NavItem = {
     id: string;
@@ -105,9 +106,10 @@
     {
       label: "Themes",
       items: [
-        { id: "theme-store", label: "Store" },
-        { id: "theme-settings", label: "Theme settings" },
-        { id: "create-theme", label: "Create theme" },
+        { id: "theme-store", label: "Theme store" },
+        { id: "community-themes", label: "Community themes" },
+        { id: "theme-settings", label: "Downloaded themes" },
+        { id: "create-theme", label: "Custom themes" },
       ],
     },
   ];
@@ -155,14 +157,31 @@
 
   const sectionTitle = $derived.by(() => {
     if (activePage === "settings" && debouncedSettingsSearch.trim()) return "Search results";
-    if (activePage === "themes") return "Themes";
+    if (activePage === "themes") {
+      if (activeThemeView === "theme-settings") return "Downloaded themes";
+      if (activeThemeView === "create-theme") return "Custom themes";
+      if (activeThemeView === "community-themes") return "Community themes";
+      if (activeThemeView === "theme-store") return "Theme store";
+      return "Themes";
+    }
     if (activePage === "backgrounds") return "Backgrounds";
     return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
   });
 
+  const activeThemeListMode = $derived.by(() => {
+    if (activeThemeView === "create-theme") return "custom" as const;
+    if (activeThemeView === "theme-settings") return "downloaded" as const;
+    return "all" as const;
+  });
+
   const isStoreView = $derived(
-    (activePage === "themes" && activeThemeView === "theme-store") ||
+    (activePage === "themes" &&
+      (activeThemeView === "theme-store" || activeThemeView === "community-themes")) ||
       (activePage === "backgrounds" && activeBackgroundView === "background-store"),
+  );
+
+  const isOfficialStoreView = $derived(
+    activePage === "themes" && activeThemeView === "theme-store",
   );
 
   const openGhRelease = () => {
@@ -293,11 +312,7 @@
     }
 
     if (activePage === "themes") {
-      if (id === "create-theme") {
-        void openThemeCreator();
-      } else {
-        activeThemeView = id as ThemeView;
-      }
+      activeThemeView = id as ThemeView;
       return;
     }
 
@@ -307,12 +322,6 @@
     } else {
       activeBackgroundView = id as BackgroundView;
     }
-  };
-
-  const openThemeCreator = async () => {
-    const { OpenThemeCreator } = await import("@/plugins/built-in/themes/ThemeCreator");
-    OpenThemeCreator();
-    closeExtensionPopup();
   };
 
   const applyDestination = (destination: SettingsDestination) => {
@@ -326,7 +335,14 @@
         settingsSearch = destination.search;
       }
     } else if (destination.page === "themes" && destination.view) {
-      activeThemeView = destination.view === "store" ? "theme-store" : "theme-settings";
+      activeThemeView =
+        destination.view === "store"
+          ? "theme-store"
+          : destination.view === "community"
+            ? "community-themes"
+            : destination.view === "custom"
+              ? "create-theme"
+              : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
       activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
     }
@@ -410,7 +426,7 @@
         activePage = page;
         if (page === "themes") activeThemeView = "theme-store";
       }}
-      showStoreTools={isStoreView}
+      showStoreTools={isOfficialStoreView || activeThemeView === "community-themes"}
       onLogoClick={handleDevModeToggle}
       onClose={handleClose}
     />
@@ -507,71 +523,85 @@
         </div>
       </nav>
 
-      {#if isStoreView}
-        <div class="min-w-0 min-h-0 flex-1">
-          <LazyPanel
-            loader={loadStore}
-            remountKey="store"
-            props={{
-              activeTab: activePage as StoreTab,
-              searchTerm: storeSearchTerm,
-              selectedBackgroundCategory,
-              setActiveTab: (tab: StoreTab) => {
-                activePage = tab;
-                if (tab === "themes") activeThemeView = "theme-store";
-                else activeBackgroundView = "background-store";
-              },
-              setSearchTerm: (term: string) => (storeSearchTerm = term),
-              setBackgroundCategories: (categories: string[]) =>
-                (backgroundCategories = categories),
-            }}
-          />
-        </div>
-      {:else}
-        <div class="flex flex-col flex-1 min-w-0 min-h-0">
-          <div class="shrink-0 px-6 pt-5 pb-3">
-            <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              {sectionTitle}
-            </h1>
-          </div>
-          <div class="flex-1 min-h-0 px-4 pb-8 overflow-y-auto no-scrollbar">
-            {#if activePage === "settings"}
-              {#if activeSection === "shortcuts" && !debouncedSettingsSearch.trim()}
-                <LazyPanel loader={loadShortcuts} remountKey="shortcuts-page" />
-              {:else}
-                <LazyPanel
-                  loader={loadSettingsBody}
-                  remountKey="settings-body"
-                  props={{
-                    ...settingsSharedProps,
-                    activeSection: debouncedSettingsSearch.trim() ? "all" : activeSection,
-                    searchQuery: debouncedSettingsSearch,
-                  }}
-                />
-                {#if debouncedSettingsSearch.trim()}
-                  <LazyPanel
-                    loader={loadShortcuts}
-                    remountKey="shortcuts-search"
-                    props={{ searchQuery: debouncedSettingsSearch }}
-                  />
-                {/if}
-              {/if}
-            {:else if activePage === "themes"}
+      <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        {#if isStoreView}
+          <div class="min-h-0 min-w-0 flex-1 overflow-hidden">
+            {#if activePage === "themes" && activeThemeView === "community-themes"}
               <LazyPanel
-                loader={loadThemeSettings}
-                remountKey="theme-settings"
-                props={{ section: "themes" }}
+                loader={loadCommunityThemes}
+                remountKey="community-themes"
+                props={{
+                  searchTerm: storeSearchTerm,
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                }}
               />
             {:else}
               <LazyPanel
-                loader={loadThemeSettings}
-                remountKey="background-settings"
-                props={{ section: "backgrounds" }}
+                loader={loadStore}
+                remountKey="store"
+                props={{
+                  activeTab: activePage as StoreTab,
+                  searchTerm: storeSearchTerm,
+                  selectedBackgroundCategory,
+                  setActiveTab: (tab: StoreTab) => {
+                    activePage = tab;
+                    if (tab === "themes") activeThemeView = "theme-store";
+                    else activeBackgroundView = "background-store";
+                  },
+                  setSearchTerm: (term: string) => (storeSearchTerm = term),
+                  setBackgroundCategories: (categories: string[]) =>
+                    (backgroundCategories = categories),
+                }}
               />
             {/if}
           </div>
-        </div>
-      {/if}
+        {:else}
+          <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <div class="shrink-0 px-6 pt-5 pb-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                {sectionTitle}
+              </h1>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
+              {#if activePage === "settings"}
+                {#if activeSection === "shortcuts" && !debouncedSettingsSearch.trim()}
+                  <LazyPanel loader={loadShortcuts} remountKey="shortcuts-page" />
+                {:else}
+                  <LazyPanel
+                    loader={loadSettingsBody}
+                    remountKey="settings-body"
+                    props={{
+                      ...settingsSharedProps,
+                      activeSection: debouncedSettingsSearch.trim() ? "all" : activeSection,
+                      searchQuery: debouncedSettingsSearch,
+                    }}
+                  />
+                  {#if debouncedSettingsSearch.trim()}
+                    <LazyPanel
+                      loader={loadShortcuts}
+                      remountKey="shortcuts-search"
+                      props={{ searchQuery: debouncedSettingsSearch }}
+                    />
+                  {/if}
+                {/if}
+              {:else if activePage === "themes"}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey={`theme-settings-${activeThemeListMode}`}
+                  props={{ section: "themes", listMode: activeThemeListMode }}
+                />
+              {:else}
+                <LazyPanel
+                  loader={loadThemeSettings}
+                  remountKey="background-settings"
+                  props={{ section: "backgrounds" }}
+                />
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+      </div>
     </div>
   </div>
 {/snippet}
@@ -655,7 +685,7 @@
     ></button>
 
     <div
-      class="relative z-10 w-[min(1180px,96vw)] h-[min(860px,92vh)] no-scrollbar overflow-clip"
+      class="relative z-10 h-[min(860px,92vh)] w-[min(1180px,96vw)] no-scrollbar overflow-clip"
       data-settings-panel
     >
       {@render settingsShell()}

@@ -1,3 +1,7 @@
+jest.mock("@/seqta/utils/DevApiBase", () => ({
+  getApiBase: () => "https://example.test",
+}));
+
 import browser from "webextension-polyfill";
 import {
   addPendingFeedbackId,

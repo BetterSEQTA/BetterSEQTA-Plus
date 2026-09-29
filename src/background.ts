@@ -19,6 +19,8 @@ import {
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
 } from "./background/calendarBackground";
+import { createCustomThemesHandlers } from "./background/customThemesHandlers";
+import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -32,6 +34,8 @@ import {
 const DEFAULT_API_BASE = "https://betterseqta.org";
 let DEV_API_BASE: string | null = null;
 function apiBase(): string {
+  // Extension dev builds always hit production (see DevApiBase.ts).
+  if (import.meta.env.DEV) return DEFAULT_API_BASE;
   return DEV_API_BASE ?? DEFAULT_API_BASE;
 }
 
@@ -469,6 +473,10 @@ function handleSetDevApiBase(
   sender?: browser.Runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) return false;
+  if (import.meta.env.DEV) {
+    DEV_API_BASE = null;
+    return false;
+  }
   const url = typeof request?.url === "string" ? request.url.trim() : null;
   if (url && /^https?:\/\//.test(url)) {
     DEV_API_BASE = url.replace(/\/$/, "");
@@ -478,7 +486,14 @@ function handleSetDevApiBase(
   return false;
 }
 
+const customThemesHandlers = createCustomThemesHandlers({
+  apiBase,
+  getAccessTokenFromStorage,
+});
+
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
+  ...customThemesHandlers,
+  searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
   setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {

@@ -7,7 +7,6 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
-
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import darkLogo from "@/resources/icons/betterseqta-light-full.png";
 import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -129,6 +128,8 @@ function getRepresentativeRgbChannels(s: string): { r: number; g: number; b: num
 function applyColorsWith(selectedColor: string) {
   if (transparencyEnabled()) {
     document.documentElement.classList.add("transparencyEffects");
+  } else {
+    document.documentElement.classList.remove("transparencyEffects");
   }
 
   // Common properties, always applied

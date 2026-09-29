@@ -3,7 +3,6 @@ import {
   closeExtensionPopup,
   SettingsClicked,
 } from "./Closers/closeExtensionPopup";
-import { settingsState } from "./listeners/SettingsState";
 import {
   animateSettingsOpen,
   prefetchSettingsShell,

@@ -150,9 +150,10 @@ html:not(.dark) .legacy-root {
 
 #themeCreator {
   position: fixed;
+  top: 0;
   right: 0;
   height: 100%;
-  z-index: 100;
+  z-index: 10050;
 }
 
 .resizeBar {
@@ -180,15 +181,15 @@ html:not(.dark) .legacy-root {
 }
 
 .themeCloseButton {
-  position: absolute !important;
+  position: fixed !important;
   color: var(--text-primary) !important;
   font-size: x-large !important;
   top: 5px;
   right: 5px;
+  z-index: 10060 !important;
   border-radius: 80px !important;
   padding: 8px;
   cursor: pointer;
-  z-index: 10000;
 }
 
 .modaliser-container {

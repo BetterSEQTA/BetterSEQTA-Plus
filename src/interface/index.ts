@@ -34,6 +34,8 @@ if (!mountPoint) {
   void (async () => {
     await initializeSettingsState();
     initVerboseLogging();
+    const { syncApiBaseToBackground } = await import("@/seqta/utils/DevApiBase");
+    syncApiBaseToBackground();
     renderSvelte(Settings, mountPoint, { standalone: true });
   })();
 }
