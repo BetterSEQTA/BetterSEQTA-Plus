@@ -1,8 +1,11 @@
 name: Agent audit
 
+# 06:00 Australia/Adelaide on Sun, Mon, Wed, Fri (GitHub schedule timezone).
+
 on:
   schedule:
-    - cron: '0 6 * * 0,1,3,5'
+    - cron: "0 6 * * 0,1,3,5"
+      timezone: Australia/Adelaide
   workflow_dispatch:
 
 concurrency:

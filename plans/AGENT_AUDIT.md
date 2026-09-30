@@ -4,7 +4,7 @@ Scheduled GitHub Actions job that runs an agentic review of BetterSEQTA+ for exp
 
 ## Schedule
 
-- **Cron:** `0 6 * * 0,1,3,5` (Sunday, Monday, Wednesday, Friday at **06:00 UTC**)
+- **Cron:** `0 6 * * 0,1,3,5` with **`timezone: Australia/Adelaide`** (Sunday, Monday, Wednesday, Friday at **06:00** local)
 - **Manual:** Actions → **Agent audit** → Run workflow
 
 ## Where it runs (fork policy)
