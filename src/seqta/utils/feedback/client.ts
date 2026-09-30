@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
-import { SettingsClicked } from "@/seqta/utils/Closers/closeExtensionPopup";
+import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
@@ -291,6 +291,6 @@ export function consumeOpenFeedbackRequest(): string | null {
 }
 
 export function openExtensionSettingsPopup(): void {
-  if (SettingsClicked) return;
+  if (isExtensionSettingsOpen()) return;
   document.getElementById("AddedSettings")?.click();
 }

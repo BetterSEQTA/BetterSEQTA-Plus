@@ -1,8 +1,5 @@
-import {
-  changeSettingsClicked,
-  closeExtensionPopup,
-  SettingsClicked,
-} from "../Closers/closeExtensionPopup";
+import { closeExtensionPopup } from "../Closers/closeExtensionPopup";
+import { isExtensionSettingsOpen } from "../settingsPopupAnimation";
 
 let isSettingsRendered = false;
 let settingsLoadPromise: Promise<void> | null = null;
@@ -10,7 +7,7 @@ let resizerAttached = false;
 
 function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
   return (event: MouseEvent) => {
-    if (!SettingsClicked) return;
+    if (!isExtensionSettingsOpen()) return;
 
     const target = event.target;
     if (!(target instanceof Node)) return;
@@ -20,7 +17,7 @@ function extensionOutsideClickHandler(extensionPopup: HTMLElement) {
     if (target instanceof HTMLElement && target.closest("#AddedSettings")) return;
     if (target === extensionPopup) return;
 
-    changeSettingsClicked(closeExtensionPopup());
+    closeExtensionPopup();
   };
 }
 

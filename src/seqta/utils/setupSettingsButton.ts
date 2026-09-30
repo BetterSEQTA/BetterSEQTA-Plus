@@ -1,12 +1,5 @@
-import {
-  changeSettingsClicked,
-  closeExtensionPopup,
-  SettingsClicked,
-} from "./Closers/closeExtensionPopup";
-import {
-  animateSettingsOpen,
-  prefetchSettingsShell,
-} from "./settingsPopupAnimation";
+import { closeExtensionPopup, getSettingsOpenGeneration } from "./Closers/closeExtensionPopup";
+import { animateSettingsOpen, isExtensionSettingsOpen, prefetchSettingsShell } from "./settingsPopupAnimation";
 import { renderSettingsIfNeeded } from "./Adders/AddExtensionSettings";
 
 export function setupSettingsButton() {
@@ -18,8 +11,9 @@ export function setupSettingsButton() {
 
   prefetchSettingsShell();
 
-  AddedSettings.addEventListener("click", async () => {
-    if (SettingsClicked) {
+  AddedSettings.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    if (isExtensionSettingsOpen()) {
       closeExtensionPopup();
     } else {
       await openSettingsPopup();
@@ -27,18 +21,34 @@ export function setupSettingsButton() {
   });
 }
 
+let openSettingsInFlight: { gen: number; promise: Promise<void> } | null = null;
+
 export async function openSettingsPopup(): Promise<void> {
-  if (SettingsClicked && document.getElementById("ExtensionPopup")) return;
+  if (isExtensionSettingsOpen()) return;
 
-  let extensionPopup = document.getElementById("ExtensionPopup");
-  if (!extensionPopup) {
-    const { addExtensionSettings } = await import("./Adders/AddExtensionSettings");
-    addExtensionSettings();
-    extensionPopup = document.getElementById("ExtensionPopup");
-  }
-  if (!extensionPopup) return;
+  const gen = getSettingsOpenGeneration();
+  if (openSettingsInFlight?.gen === gen) return openSettingsInFlight.promise;
 
-  await renderSettingsIfNeeded();
-  animateSettingsOpen(extensionPopup);
-  changeSettingsClicked(true);
+  const promise = (async () => {
+    try {
+      let host = document.getElementById("ExtensionPopup");
+      if (!host) {
+        const { addExtensionSettings } = await import("./Adders/AddExtensionSettings");
+        addExtensionSettings();
+        host = document.getElementById("ExtensionPopup");
+      }
+      if (!host) return;
+
+      await renderSettingsIfNeeded();
+      if (gen !== getSettingsOpenGeneration()) return;
+
+      host = document.getElementById("ExtensionPopup");
+      if (host) animateSettingsOpen(host);
+    } finally {
+      if (openSettingsInFlight?.gen === gen) openSettingsInFlight = null;
+    }
+  })();
+
+  openSettingsInFlight = { gen, promise };
+  return promise;
 }
