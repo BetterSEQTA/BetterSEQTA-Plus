@@ -146,12 +146,12 @@ function securityTableRows(findings) {
         <td><a href="#finding-${id}" id="finding-${id}" class="id-link">${id}</a></td>
         <td>${severityBadge(f.severity)}</td>
         <td>${escapeHtml(f.category || '')}</td>
-        <td>${escapeHtml(f.title || '')}</td>
+        <td class="cell-title">${escapeHtml(f.title || '')}</td>
         <td>${loc}</td>
         <td>${escapeHtml(f.confidence || '')}</td>
         <td>${action}</td>
       </tr>
-      ${detail ? `<tr class="row-detail" id="${detailId}" hidden><td colspan="8"><div class="detail-inner">${detail}</div></td></tr>` : ''}`;
+      ${detail ? `<tr class="row-detail" id="${detailId}" hidden><td colspan="8"><div class="detail-panel">${detail}</div></td></tr>` : ''}`;
     })
     .join('');
 }
@@ -176,13 +176,38 @@ function soc2TableRows(gaps) {
         <td>${escapeHtml(g.criterion || '')}</td>
         <td>${statusBadge(g.status)}</td>
         <td>${severityBadge(g.severity)}</td>
-        <td>${escapeHtml(g.title || '')}</td>
+        <td class="cell-title">${escapeHtml(g.title || '')}</td>
         <td>${escapeHtml(g.ownerHint || g.owner || '')}</td>
         <td>${escapeHtml(g.effort || '')}</td>
       </tr>
-      ${detail ? `<tr class="row-detail" id="${detailId}" hidden><td colspan="8"><div class="detail-inner">${detail}</div></td></tr>` : ''}`;
+      ${detail ? `<tr class="row-detail" id="${detailId}" hidden><td colspan="8"><div class="detail-panel">${detail}</div></td></tr>` : ''}`;
     })
     .join('');
+}
+
+function itemsTableColgroup(mode) {
+  if (mode === 'soc2') {
+    return `<colgroup>
+      <col style="width:2.25rem" />
+      <col style="width:8%" />
+      <col style="width:9%" />
+      <col style="width:9%" />
+      <col style="width:9%" />
+      <col style="width:38%" />
+      <col style="width:17%" />
+      <col style="width:6%" />
+    </colgroup>`;
+  }
+  return `<colgroup>
+    <col style="width:2.25rem" />
+    <col style="width:8%" />
+    <col style="width:10%" />
+    <col style="width:11%" />
+    <col style="width:34%" />
+    <col style="width:18%" />
+    <col style="width:10%" />
+    <col style="width:7%" />
+  </colgroup>`;
 }
 
 const TL_ICONS = {
@@ -606,6 +631,12 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   box-shadow: var(--shadow-sm);
   background: var(--card);
 }
+#items-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 thead th {
   position: sticky;
@@ -622,6 +653,17 @@ thead th {
   text-align: left;
 }
 td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+#items-table .cell-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.45;
+}
+#items-table tr.row-main.is-open .cell-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
 .row-main { cursor: pointer; transition: background 0.15s; }
 .row-main:hover { background: rgba(${BRAND_RGB}, 0.06); }
 .row-main.is-open { background: rgba(${BRAND_RGB}, 0.1); }
@@ -636,9 +678,34 @@ td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); ve
   transition: transform 0.2s;
 }
 .row-main.is-open .chevron { transform: rotate(45deg); }
-.row-detail td { background: var(--bg-elevated); font-size: 0.85rem; }
-.detail-inner { padding: 0.5rem 0; }
+.row-detail td {
+  padding: 0;
+  background: var(--bg-elevated);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+.detail-panel {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--brand);
+  background: var(--bg-elevated);
+  max-width: 100%;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+.detail-panel pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0.35rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--border-subtle);
+  max-height: min(28rem, 50vh);
+  overflow: auto;
+}
 .detail-label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 0.15rem; }
+.detail-line { margin: 0.65rem 0 0; }
 pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
 .badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
 .badge-sev-critical, .badge-sev-high { background: rgba(239,68,68,0.2); color: #f87171; }
@@ -972,8 +1039,8 @@ function buildFindingsPanel(mode, report, exportMeta) {
   );
   const tableHead =
     mode === 'soc2'
-      ? `<thead><tr><th></th><th>ID</th><th>Criterion</th><th>Status</th><th>Severity</th><th>Title</th><th>Owner</th><th>Effort</th></tr></thead><tbody>${soc2TableRows(items)}</tbody>`
-      : `<thead><tr><th></th><th>ID</th><th>Severity</th><th>Category</th><th>Title</th><th>Location</th><th>Confidence</th><th></th></tr></thead><tbody>${securityTableRows(items)}</tbody>`;
+      ? `${itemsTableColgroup('soc2')}<thead><tr><th></th><th>ID</th><th>Criterion</th><th>Status</th><th>Severity</th><th>Title</th><th>Owner</th><th>Effort</th></tr></thead><tbody>${soc2TableRows(items)}</tbody>`
+      : `${itemsTableColgroup('security')}<thead><tr><th></th><th>ID</th><th>Severity</th><th>Category</th><th>Title</th><th>Location</th><th>Confidence</th><th></th></tr></thead><tbody>${securityTableRows(items)}</tbody>`;
   let emptyBlock;
   if (report.llmError && empty) {
     emptyBlock = `<div class="empty-state"><p>Audit stopped before gaps were saved to the report.</p><p class="empty-hint">Check the Agent run tab for tools and turns completed earlier in the job.</p></div>`;
