@@ -85,6 +85,11 @@ const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   "devMode",
   "devGhReleaseVersionOverride",
   "devDelayLoadingScreen",
+  "bsplus_dev_api_base",
+  "bsplus_dev_accounts_base",
+  "bsplus_dev_oauth_client_id",
+  "bsplus_dev_oauth_client_secret",
+  "bsplus_dev_oauth_redirect_uri",
 ]);
 
 const UNSAFE_STORAGE_KEYS = new Set(["__proto__", "constructor", "prototype"]);

@@ -1,8 +1,19 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
-const HOST_OPEN_CLASS = "bsplus-settings-host--open";
+export const HOST_OPEN_CLASS = "bsplus-settings-host--open";
 const HOST_CLOSING_CLASS = "bsplus-settings-host--closing";
 const PANEL_OPEN_CLASS = "bsplus-settings-panel--open";
+
+/** True when the settings host is shown (not fully hidden). */
+export function isSettingsHostVisiblyOpen(host: HTMLElement | null | undefined): boolean {
+  if (!host) return false;
+  if (host.classList.contains("hide")) return false;
+  return host.classList.contains(HOST_OPEN_CLASS);
+}
+
+export function isExtensionSettingsOpen(): boolean {
+  return isSettingsHostVisiblyOpen(document.getElementById("ExtensionPopup"));
+}
 
 function settingsPanel(host: HTMLElement): HTMLElement | null {
   return host.shadowRoot?.querySelector<HTMLElement>("[data-settings-panel]") ?? null;

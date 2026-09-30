@@ -41,16 +41,16 @@
   class="flex shrink-0 items-center gap-4 border-b border-zinc-200/60 px-5 py-4 dark:border-zinc-700/50"
   style="--bs-settings-ease: 0.28s cubic-bezier(0.22, 1, 0.36, 1)"
 >
-  <button type="button" class="hidden shrink-0 lg:block" onclick={onLogoClick}>
+  <button type="button" class="shrink-0" onclick={onLogoClick} aria-label="BetterSEQTA+">
     <img
       src={resolveExtensionAssetUrl(darkLogo)}
-      class="h-11 w-52 object-cover dark:hidden"
-      alt="BetterSEQTA+"
+      class="h-9 max-w-[10.5rem] object-contain object-left dark:hidden sm:h-10"
+      alt=""
     />
     <img
       src={resolveExtensionAssetUrl(lightLogo)}
-      class="hidden h-11 w-52 object-cover dark:block"
-      alt="BetterSEQTA+"
+      class="hidden h-9 max-w-[10.5rem] object-contain object-left dark:block sm:h-10"
+      alt=""
     />
   </button>
 

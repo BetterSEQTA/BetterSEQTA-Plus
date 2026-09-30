@@ -32,11 +32,39 @@ export function defaultAccountsPfpUrl(userId: string): string {
   return `${ACCOUNTS_BASE}/api/user/pfp/${userId}`;
 }
 
+const NO_PFP_META_TTL_MS = 10 * 60 * 1000;
+const noPfpMetaUntil = new Map<string, number>();
+const metaInflight = new Map<string, Promise<string | null>>();
+
 async function fetchServerHash(userId: string): Promise<string | null> {
-  const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp/${userId}/meta`);
-  if (!res.ok) return null;
-  const data = (await res.json()) as { pfpHash?: string | null };
-  return data.pfpHash ?? null;
+  const cachedUntil = noPfpMetaUntil.get(userId);
+  if (cachedUntil != null && Date.now() < cachedUntil) return null;
+
+  const inflight = metaInflight.get(userId);
+  if (inflight) return inflight;
+
+  const work = (async () => {
+    try {
+      const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp/${userId}/meta`);
+      if (!res.ok) {
+        noPfpMetaUntil.set(userId, Date.now() + NO_PFP_META_TTL_MS);
+        return null;
+      }
+      const data = (await res.json()) as { pfpHash?: string | null };
+      const hash = data.pfpHash ?? null;
+      if (!hash) {
+        noPfpMetaUntil.set(userId, Date.now() + NO_PFP_META_TTL_MS);
+        return null;
+      }
+      noPfpMetaUntil.delete(userId);
+      return hash;
+    } finally {
+      metaInflight.delete(userId);
+    }
+  })();
+
+  metaInflight.set(userId, work);
+  return work;
 }
 
 async function clearLocal(userId: string): Promise<void> {
@@ -67,23 +95,21 @@ export async function resolveCloudPfp(
     return { src: pfpUrl, fromCache: false };
   }
 
-  const sessionHash = cloudAuth.state.user?.pfpHash ?? null;
+  const viewerId = cloudAuth.state.user?.id ?? null;
   const localHash = await store.getItem<string>(hashKey(userId));
   const localBlob = await store.getItem<Blob>(blobKey(userId));
 
-  let serverHash = sessionHash;
+  let serverHash: string | null =
+    viewerId && viewerId === userId ? (cloudAuth.state.user?.pfpHash ?? null) : null;
 
-  const localMatches =
-    !!serverHash && serverHash === localHash && localBlob instanceof Blob;
-  if (localMatches) {
+  if (serverHash && serverHash === localHash && localBlob instanceof Blob) {
     return { src: URL.createObjectURL(localBlob), fromCache: true };
   }
 
-  if (!serverHash || serverHash !== localHash) {
-    serverHash = await fetchServerHash(userId);
-  }
+  serverHash = await fetchServerHash(userId);
 
   if (!serverHash) {
+    if (!localHash && !localBlob) return null;
     await clearLocal(userId);
     return null;
   }

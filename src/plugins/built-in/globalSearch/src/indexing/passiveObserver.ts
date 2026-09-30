@@ -319,6 +319,17 @@ function synthesizeItems(
       continue;
     }
 
+    if (
+      ctx.route.includes("/load/message") &&
+      entity &&
+      typeof entity === "object"
+    ) {
+      const subject = (entity as Record<string, unknown>).subject;
+      if (typeof subject === "string" && subject.startsWith("BQ+TIMETABLE:")) {
+        continue;
+      }
+    }
+
     // For the messages compose-people endpoint, skip records that don't
     // carry a real human name. We never want raw entries like
     // `/seqta/student/load/message/people#20` becoming titles, and we
