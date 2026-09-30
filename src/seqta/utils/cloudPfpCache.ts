@@ -47,8 +47,11 @@ async function fetchServerHash(userId: string): Promise<string | null> {
     try {
       const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp/${userId}/meta`);
       if (!res.ok) {
-        noPfpMetaUntil.set(userId, Date.now() + NO_PFP_META_TTL_MS);
-        return null;
+        if (res.status === 404) {
+          noPfpMetaUntil.set(userId, Date.now() + NO_PFP_META_TTL_MS);
+          return null;
+        }
+        throw new Error(`pfp meta HTTP ${res.status}`);
       }
       const data = (await res.json()) as { pfpHash?: string | null };
       const hash = data.pfpHash ?? null;
@@ -106,7 +109,14 @@ export async function resolveCloudPfp(
     return { src: URL.createObjectURL(localBlob), fromCache: true };
   }
 
-  serverHash = await fetchServerHash(userId);
+  try {
+    serverHash = await fetchServerHash(userId);
+  } catch {
+    if (localHash && localBlob instanceof Blob) {
+      return { src: URL.createObjectURL(localBlob), fromCache: true };
+    }
+    return null;
+  }
 
   if (!serverHash) {
     if (!localHash && !localBlob) return null;

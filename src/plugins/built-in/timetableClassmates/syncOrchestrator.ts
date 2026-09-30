@@ -20,6 +20,7 @@ import {
   loadSession,
   notifyClassmatesUpdated,
   patchSession,
+  recordConsent,
   resolveClassmatesScope,
   saveArchivedMembers,
   saveCiToClassKey,
@@ -92,13 +93,17 @@ export async function registerOptIn(): Promise<{ ok: boolean; error?: string }> 
   }
   const body = await optInIdentityDigest(instanceHost, cloudUserId);
   if (!body) return { ok: false, error: "Could not read your SEQTA login." };
+  await recordConsent();
   const res = await putOptIn(body);
   if (!res.ok) return res;
   const scope = await resolveClassmatesScope();
   if (scope) await setScopeSyncOptIn(scope, true);
   await patchSession({ syncOptIn: true, showAvatars: true });
   const sync = await runTimetableClassmatesSync();
-  return sync.ok ? res : { ok: false, error: sync.error ?? "Opt-in saved but initial sync failed." };
+  if (!sync.ok) {
+    return { ok: true, error: sync.error ?? "Opt-in saved but initial sync failed." };
+  }
+  return res;
 }
 
 export async function revokeOptIn(): Promise<{ ok: boolean; error?: string }> {

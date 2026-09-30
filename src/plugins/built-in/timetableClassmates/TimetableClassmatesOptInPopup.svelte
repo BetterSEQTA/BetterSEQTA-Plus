@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { ACCOUNTS_BASE } from "./constants";
-  import { recordConsent } from "./rosterStore";
   import { registerOptIn } from "./syncOrchestrator";
 
   interface Props {
@@ -53,7 +52,7 @@
         error = reg.error ?? "Could not complete opt-in.";
         return;
       }
-      await recordConsent();
+      if (reg.error) error = reg.error;
       await onAccepted();
       onComplete();
     } catch (e) {

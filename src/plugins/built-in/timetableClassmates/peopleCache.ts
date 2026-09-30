@@ -1,6 +1,11 @@
 import { postSeqtaJson } from "./seqtaClient";
 import type { PeopleCache } from "./rosterStore";
-import { loadPeopleCache, savePeopleCache } from "./rosterStore";
+import {
+  loadPeopleCache,
+  loadPeopleCacheFetchedAt,
+  savePeopleCache,
+  savePeopleCacheFetchedAt,
+} from "./rosterStore";
 
 const PEOPLE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -12,8 +17,8 @@ type PeopleApiRow = {
 
 export async function refreshPeopleCacheIfStale(): Promise<PeopleCache> {
   const existing = await loadPeopleCache();
-  const any = Object.values(existing)[0];
-  if (any && Date.now() - any.updatedAt < PEOPLE_TTL_MS) return existing;
+  const fetchedAt = await loadPeopleCacheFetchedAt();
+  if (fetchedAt != null && Date.now() - fetchedAt < PEOPLE_TTL_MS) return existing;
 
   const data = await postSeqtaJson<{ payload?: PeopleApiRow[] }>(
     "/seqta/student/load/message/people",
@@ -31,6 +36,7 @@ export async function refreshPeopleCacheIfStale(): Promise<PeopleCache> {
     };
   }
   await savePeopleCache(next);
+  await savePeopleCacheFetchedAt(now);
   return next;
 }
 

@@ -126,12 +126,13 @@ export function openClassmatesRosterPopup(
   host.className = "whatsnewTextContainer bsplus-classmates-roster-popup";
   host.append(list);
 
-  const header = stringToHTML(/* html */ `
-    <div class="whatsnewHeader">
-      <h1>${title}</h1>
-      <p>${peers.length} classmate${peers.length === 1 ? "" : "s"} in this class</p>
-    </div>
-  `).firstChild as HTMLElement;
+  const header = document.createElement("div");
+  header.className = "whatsnewHeader";
+  const heading = document.createElement("h1");
+  heading.textContent = title;
+  const subtitle = document.createElement("p");
+  subtitle.textContent = `${peers.length} classmate${peers.length === 1 ? "" : "s"} in this class`;
+  header.append(heading, subtitle);
 
   openPopup({
     header,

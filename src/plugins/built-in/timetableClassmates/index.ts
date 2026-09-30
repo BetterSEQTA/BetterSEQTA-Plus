@@ -149,14 +149,13 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
 
     const onUpdated = () => schedulePaint();
     window.addEventListener(CLASSMATES_UPDATED_EVENT, onUpdated);
-    document.addEventListener(
-      "click",
-      (e) => {
-        if ((e.target as HTMLElement).closest?.(".timetablepage .entry.class")) schedulePaint();
-      },
-      true,
-    );
-    api.settings.onChange("enabled", schedulePaint);
+
+    const onClassEntryClick = (e: Event) => {
+      if ((e.target as HTMLElement).closest?.(".timetablepage .entry.class")) schedulePaint();
+    };
+    document.addEventListener("click", onClassEntryClick, true);
+
+    const { unregister: unregisterEnabled } = api.settings.onChange("enabled", schedulePaint);
 
     const { unregister } = api.seqta.onMount(".timetablepage", handleTimetablePage);
     if ((await loadSession()).syncOptIn) scheduleClassmatesSyncIfNeeded();
@@ -169,6 +168,8 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
       if (paintTimer) clearTimeout(paintTimer);
       if (pollTimer) clearInterval(pollTimer);
       window.removeEventListener(CLASSMATES_UPDATED_EVENT, onUpdated);
+      document.removeEventListener("click", onClassEntryClick, true);
+      unregisterEnabled();
       removeClassmateStacks();
     };
   },

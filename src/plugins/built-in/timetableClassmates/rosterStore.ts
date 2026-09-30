@@ -6,6 +6,7 @@ import { TIMETABLE_CLASSMATES_CONSENT_VERSION } from "./constants";
 
 const ROSTER_KEY = "classRosterIndex";
 const PEOPLE_CACHE_KEY = "peopleCache";
+const PEOPLE_CACHE_FETCHED_AT_KEY = "peopleCacheFetchedAt";
 const CI_MAP_KEY = "ciToClassKey";
 const ARCHIVED_KEY = "archivedMembers";
 const SESSION_KEY = "session";
@@ -113,6 +114,19 @@ export async function savePeopleCache(cache: PeopleCache): Promise<void> {
   const store = await scopedStore();
   if (!store) return;
   await store.setItem(PEOPLE_CACHE_KEY, cache);
+}
+
+export async function loadPeopleCacheFetchedAt(): Promise<number | null> {
+  const store = await scopedStore();
+  if (!store) return null;
+  const at = await store.getItem<number>(PEOPLE_CACHE_FETCHED_AT_KEY);
+  return typeof at === "number" ? at : null;
+}
+
+export async function savePeopleCacheFetchedAt(at: number): Promise<void> {
+  const store = await scopedStore();
+  if (!store) return;
+  await store.setItem(PEOPLE_CACHE_FETCHED_AT_KEY, at);
 }
 
 export async function loadCiToClassKey(): Promise<Record<string, string>> {

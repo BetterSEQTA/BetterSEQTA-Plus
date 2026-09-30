@@ -21,15 +21,15 @@ export function setupSettingsButton() {
   });
 }
 
-let openSettingsInFlight: Promise<void> | null = null;
+let openSettingsInFlight: { gen: number; promise: Promise<void> } | null = null;
 
 export async function openSettingsPopup(): Promise<void> {
   if (isExtensionSettingsOpen()) return;
-  if (openSettingsInFlight) return openSettingsInFlight;
 
   const gen = getSettingsOpenGeneration();
+  if (openSettingsInFlight?.gen === gen) return openSettingsInFlight.promise;
 
-  openSettingsInFlight = (async () => {
+  const promise = (async () => {
     try {
       let host = document.getElementById("ExtensionPopup");
       if (!host) {
@@ -45,9 +45,10 @@ export async function openSettingsPopup(): Promise<void> {
       host = document.getElementById("ExtensionPopup");
       if (host) animateSettingsOpen(host);
     } finally {
-      openSettingsInFlight = null;
+      if (openSettingsInFlight?.gen === gen) openSettingsInFlight = null;
     }
   })();
 
-  return openSettingsInFlight;
+  openSettingsInFlight = { gen, promise };
+  return promise;
 }
