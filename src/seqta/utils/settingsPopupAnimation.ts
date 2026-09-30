@@ -61,6 +61,7 @@ export function animateSettingsClose(host: HTMLElement): void {
     : 200;
 
   window.setTimeout(() => {
+    if (!host.classList.contains(HOST_CLOSING_CLASS)) return;
     host.classList.remove(HOST_CLOSING_CLASS);
     host.style.opacity = "0";
   }, durationMs);

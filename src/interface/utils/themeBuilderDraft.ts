@@ -30,7 +30,7 @@ export function buildThemeBuilderCss(
   imageVariables: string[],
   draft: Pick<
     ThemeBuilderDraft,
-    "accentColor" | "gradientEnd" | "gradientAngle" | "backgroundBlurPx" | "overlayOpacity"
+    "accentColor" | "gradientEnd" | "gradientAngle" | "backgroundBlurPx" | "overlayOpacity" | "customCssExtra"
   >,
 ): string {
   const importLine = font.googleUrl ? `@import url("${font.googleUrl}");\n` : "";
@@ -77,9 +77,8 @@ export function buildThemeBuilderCss(
   background-attachment: fixed !important;
 }`);
   } else {
-    const bgLayers: string[] = [];
+    const bgLayers: string[] = [gradientLayer];
     if (imageLayer) bgLayers.push(imageLayer);
-    bgLayers.push(gradientLayer);
     rules.push(`#container {
   background-image: ${bgLayers.join(", ")} !important;
   background-size: cover !important;

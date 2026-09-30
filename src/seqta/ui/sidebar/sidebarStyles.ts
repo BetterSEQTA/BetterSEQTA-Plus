@@ -127,7 +127,7 @@ export function applySidebarStyleClass(
 /** Apply left/right placement on `body` and drill slide direction vars. */
 export function applySidebarPosition() {
   const position = normalizeSidebarPosition(settingsState.sidebarPosition);
-  document.body.classList.toggle("bsplus-sidebar-right", position === "right");
+  document.body?.classList.toggle("bsplus-sidebar-right", position === "right");
   const root = document.documentElement;
   root.style.setProperty("--bsplus-slide-off", position === "right" ? "320px" : "-320px");
   root.style.setProperty("--bsplus-slide-off-compact", position === "right" ? "70px" : "-70px");
@@ -135,6 +135,7 @@ export function applySidebarPosition() {
 
 /** Safe to call with no menu (still sets width/blur/radius on `:root`). */
 let lastSidebarLookKey = "";
+let lastSidebarLookMenu: HTMLElement | null | undefined;
 
 export function applySidebarLook(
   menu: HTMLElement | null | undefined = document.getElementById("menu"),
@@ -150,8 +151,9 @@ export function applySidebarLook(
   applySidebarPosition();
 
   const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}|${normalizeSidebarPosition(settingsState.sidebarPosition)}`;
-  if (lookKey === lastSidebarLookKey) return;
+  if (lookKey === lastSidebarLookKey && menu === lastSidebarLookMenu) return;
   lastSidebarLookKey = lookKey;
+  lastSidebarLookMenu = menu;
 
   const root = document.documentElement;
   root.style.setProperty("--bsplus-sidebar-width", `${SIDEBAR_WIDTH_PX[width]}px`);
@@ -169,13 +171,15 @@ export function applySidebarLook(
 }
 
 export function clearSidebarAppearance(menu: HTMLElement | null | undefined) {
+  lastSidebarLookKey = "";
+  lastSidebarLookMenu = undefined;
   const root = document.documentElement;
   root.style.removeProperty("--bsplus-sidebar-width");
   root.style.removeProperty("--bsplus-sidebar-radius");
   root.style.removeProperty("--bsplus-sidebar-blur");
   root.style.removeProperty("--bsplus-slide-off");
   root.style.removeProperty("--bsplus-slide-off-compact");
-  document.body.classList.remove("bsplus-sidebar-right");
+  document.body?.classList.remove("bsplus-sidebar-right");
   if (!menu) return;
   clearPrefixed(menu, STYLE_CLASS_PREFIX);
   clearPrefixed(menu, DENSITY_CLASS_PREFIX);

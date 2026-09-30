@@ -40,6 +40,7 @@ import {
   writeGoogleCalendarState,
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
+  isDateInRange,
   syncWindowRange,
   trailingWeekRange,
   wideCleanupRange,
@@ -199,6 +200,9 @@ export async function syncLessonsToCalendar(
     syncWindowRange,
     trailingWeekRange,
   });
+  const currentMapKeys = new Set(
+    events.map((event) => eventMapKey(request.origin, event.seqtaKey)),
+  );
 
   try {
     const remoteEvents = await provider.listSyncedEvents(
@@ -207,11 +211,21 @@ export async function syncLessonsToCalendar(
       refreshAccessToken,
     );
     mergeRemoteEventsIntoMap(eventMap, request.origin, remoteEvents, eventMapKey);
+    const remoteIds = new Set(remoteEvents.map((event) => event.id));
+    for (const key of currentMapKeys) {
+      const entry = normalizeEventMapEntry(eventMap[key]);
+      if (
+        entry?.date &&
+        isDateInRange(entry.date, reconcileRange) &&
+        !remoteIds.has(entry.id)
+      ) {
+        delete eventMap[key];
+      }
+    }
   } catch (err) {
     verboseLog(`[BetterSEQTA+] ${provider.label} remote event list failed:`, err);
   }
 
-  const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
   let staleEntries = entriesToPrune(
     eventMap,
     request.origin,

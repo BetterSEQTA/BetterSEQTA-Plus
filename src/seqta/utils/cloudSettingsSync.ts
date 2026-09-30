@@ -39,6 +39,7 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "cloudAccessToken",
   "cloudUsername",
   "bsplus_google_calendar",
+  "bsplus_outlook_calendar",
   /** Anonymous feedback install id — device-local, never synced. */
   "bsplus_install_id",
   /** Pending feedback ids awaiting a reply notification — device-local. */
@@ -76,6 +77,7 @@ const AUTH_KEYS_TO_PRESERVE = [
   "bsplus_client_id",
   "bsplus_user",
   "bsplus_google_calendar",
+  "bsplus_outlook_calendar",
 ] as const;
 
 const OMIT_FROM_UPLOAD_EXACT = new Set<string>([

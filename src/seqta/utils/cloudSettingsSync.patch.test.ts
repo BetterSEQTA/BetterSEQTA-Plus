@@ -1,10 +1,35 @@
 import {
+  applyDownloadedEnvelope,
+  buildUploadPayload,
   buildUploadPatch,
   CLOUD_SETTINGS_SYNC_SCHEMA_VERSION,
   diffSyncableStorage,
   normalizeStorageForSync,
   normalizeThemeIdForSync,
 } from "./cloudSettingsSync";
+import browser from "webextension-polyfill";
+
+describe("calendar credentials stay device-local", () => {
+  const key = "bsplus_outlook_calendar";
+  const remoteConnection = { accessToken: "remote-access", refreshToken: "remote-refresh" };
+
+  it("excludes Outlook credentials from full and sparse uploads", () => {
+    const all = { DarkMode: true, [key]: remoteConnection };
+    expect(buildUploadPayload(all).data).toEqual({ DarkMode: true });
+    expect(buildUploadPatch(all, { DarkMode: true })).toBeNull();
+  });
+
+  it.each([undefined, { accessToken: "local-access", refreshToken: "local-refresh" }])(
+    "ignores Outlook credentials in old backups and preserves local connection %p",
+    async (localConnection) => {
+      if (localConnection) await browser.storage.local.set({ [key]: localConnection });
+      await applyDownloadedEnvelope({ data: { DarkMode: false, [key]: remoteConnection } });
+      const stored = await browser.storage.local.get();
+      expect(stored.DarkMode).toBe(false);
+      expect(stored[key]).toEqual(localConnection);
+    },
+  );
+});
 
 describe("normalizeStorageForSync", () => {
   it("strips omitted auth and client-only keys", () => {

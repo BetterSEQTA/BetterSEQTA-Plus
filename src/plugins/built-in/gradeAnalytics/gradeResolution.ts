@@ -37,7 +37,7 @@ function parseGradeString(value: unknown): string | undefined {
   return s || undefined;
 }
 
-function percentFromGradeLabel(
+function customPercentFromGradeLabel(
   label: string | undefined,
   settings: AnalyticsGradeInferenceSettings,
 ): number | undefined {
@@ -50,8 +50,6 @@ function percentFromGradeLabel(
       }
     }
   }
-  const approx = approximatePercentFromLetterGrade(label);
-  if (approx !== undefined) return approx;
   return undefined;
 }
 
@@ -78,7 +76,9 @@ export function rollupPercentFromCriteria(
       continue;
     }
     const letter = parseGradeString(row.results?.grade);
-    const mapped = percentFromGradeLabel(letter, settings);
+    const mapped =
+      customPercentFromGradeLabel(letter, settings) ??
+      approximatePercentFromLetterGrade(letter);
     if (mapped !== undefined) {
       parts.push({ percent: mapped, weight: criterionWeight(row) });
     }
@@ -155,7 +155,7 @@ export function resolveGradeFromAssessmentPayload(
   const letter = extractLetterFromPayload(assessment);
   if (letter) {
     const custom = settings.useCustomGradeBands
-      ? percentFromGradeLabel(letter, settings)
+      ? customPercentFromGradeLabel(letter, settings)
       : undefined;
     const finalGrade =
       custom ?? approximatePercentFromLetterGrade(letter);

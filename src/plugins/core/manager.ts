@@ -57,6 +57,8 @@ export class PluginManager {
   private static instance: PluginManager;
   private plugins: Map<string, Plugin<any, any>> = new Map();
   private runningPlugins: Map<string, boolean> = new Map();
+  private startingPlugins: Map<string, Promise<void>> = new Map();
+  private pendingStops: Map<string, symbol> = new Map();
   private eventBacklog: Map<string, any[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
   private apiDisposers: Map<string, () => void> = new Map();
@@ -162,6 +164,22 @@ export class PluginManager {
    */
   public async startPlugin(pluginId: string): Promise<void> {
     const plugin = this.plugins.get(pluginId);
+    if (plugin && !this.shouldStartPlugin(plugin)) return;
+    this.pendingStops.delete(pluginId);
+    const starting = this.startingPlugins.get(pluginId);
+    if (starting) return starting;
+
+    const promise = this.startPluginOnce(pluginId);
+    this.startingPlugins.set(pluginId, promise);
+    try {
+      await promise;
+    } finally {
+      this.startingPlugins.delete(pluginId);
+    }
+  }
+
+  private async startPluginOnce(pluginId: string): Promise<void> {
+    const plugin = this.plugins.get(pluginId);
     if (!plugin) {
       throw new Error(`Plugin "${pluginId}" not found`);
     }
@@ -175,31 +193,6 @@ export class PluginManager {
       const api = createPluginAPI(plugin);
       this.apiDisposers.set(pluginId, api.dispose);
 
-      // Check if plugin is enabled before starting
-      if (plugin.disableToggle) {
-        const all = settingsState.getAll() as unknown as Record<string, unknown>;
-        const pluginSettings = all[`plugin.${pluginId}.settings`] as
-          | PluginSettingsStorage
-          | undefined;
-        const enabled =
-          pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
-        if (!enabled) {
-          this.disposePluginAPI(pluginId);
-          verboseInfo(
-            `Plugin "${pluginId}" is disabled, skipping initialization`,
-          );
-          return;
-        }
-      }
-
-      if (!isPluginAllowedInPerformanceMode(pluginId)) {
-        this.disposePluginAPI(pluginId);
-        verboseInfo(
-          `Plugin "${pluginId}" paused by performance mode`,
-        );
-        return;
-      }
-
       // Inject plugin styles if provided
       if (plugin.styles) {
         const styleElement = document.createElement("style");
@@ -211,7 +204,19 @@ export class PluginManager {
       // Wait for both settings and storage to be loaded before starting the plugin
       await Promise.all([(api.settings as any).loaded, api.storage.loaded]);
 
+      if (!this.shouldStartPlugin(plugin)) {
+        this.removePluginStyles(pluginId);
+        this.disposePluginAPI(pluginId);
+        return;
+      }
+
       const result = await plugin.run(api);
+      if (!this.shouldStartPlugin(plugin)) {
+        if (typeof result === "function") result();
+        this.removePluginStyles(pluginId);
+        this.disposePluginAPI(pluginId);
+        return;
+      }
       if (typeof result === "function") {
         this.cleanupFunctions.set(plugin.id, result);
       }
@@ -229,6 +234,16 @@ export class PluginManager {
       );
       throw error;
     }
+  }
+
+  private shouldStartPlugin(plugin: Plugin): boolean {
+    if (settingsState.onoff === false || !isPluginAllowedInPerformanceMode(plugin.id)) {
+      return false;
+    }
+    if (!plugin.disableToggle) return true;
+    const all = settingsState.getAll() as unknown as Record<string, unknown>;
+    const stored = all[`plugin.${plugin.id}.settings`] as PluginSettingsStorage | undefined;
+    return stored?.enabled ?? plugin.defaultEnabled ?? true;
   }
 
   private removePluginStyles(pluginId: string): void {
@@ -294,6 +309,11 @@ export class PluginManager {
    * @returns {Promise<void>} A promise that resolves when the plugin has been stopped.
    */
   public async stopPlugin(pluginId: string): Promise<void> {
+    const stopRequest = Symbol();
+    this.pendingStops.set(pluginId, stopRequest);
+    await this.startingPlugins.get(pluginId)?.catch(() => {});
+    if (this.pendingStops.get(pluginId) !== stopRequest) return;
+    this.pendingStops.delete(pluginId);
     this.removePluginStyles(pluginId);
     this.disposePluginAPI(pluginId);
 

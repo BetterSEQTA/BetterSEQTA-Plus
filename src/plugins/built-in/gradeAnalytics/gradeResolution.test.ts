@@ -100,4 +100,17 @@ describe("resolveGradeFromAssessmentPayload", () => {
     expect(resolved.finalGrade).toBe(72);
     expect(resolved.source).toBe("customBand");
   });
+
+  it("attributes unmatched conventional letters to the default scale", () => {
+    expect(
+      resolveGradeFromAssessmentPayload(
+        { status: "MARKS_RELEASED", results: { grade: "A" } },
+        {
+          ...DEFAULT_ANALYTICS_GRADE_INFERENCE,
+          useCustomGradeBands: true,
+          gradeBands: [{ id: "1", label: "Proficient", percent: 72 }],
+        },
+      ),
+    ).toMatchObject({ finalGrade: 85, source: "defaultLetter" });
+  });
 });

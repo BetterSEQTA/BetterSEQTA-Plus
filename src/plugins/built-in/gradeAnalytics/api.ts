@@ -335,7 +335,11 @@ function mergeRawAssessments(
     const letterGrade = extractLetterGrade(raw);
 
     const existingItem = existingMap.get(id);
-    if (existingItem?.finalGrade !== undefined && finalGrade === undefined) {
+    if (
+      existingItem?.finalGrade !== undefined &&
+      finalGrade === undefined &&
+      (!existingItem.gradeSource || existingItem.gradeSource === "seqta")
+    ) {
       continue;
     }
 

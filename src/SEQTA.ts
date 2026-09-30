@@ -178,24 +178,24 @@ async function bootErrorPage() {
   }
   document.removeEventListener("readystatechange", watchTitle);
 
-  if (!isSeqta404Page()) return;
-
-  const stored = await storagePromise;
-  if ((stored.onoff ?? true) === false) return;
-  const kittenSettings = stored["plugin.error-page-kitten.settings"] as
-    | { enabled?: boolean }
-    | undefined;
-  if (kittenSettings?.enabled === false) return;
-
   try {
+    if (!isSeqta404Page()) return;
+
+    const stored = await storagePromise;
+    if ((stored.onoff ?? true) === false) return;
+    const kittenSettings = stored["plugin.error-page-kitten.settings"] as
+      | { enabled?: boolean }
+      | undefined;
+    if (kittenSettings?.enabled === false) return;
+
     mountErrorPageKitten();
-    document.getElementById("bsplus-404-flash-hide")?.remove();
   } catch (error) {
-    document.getElementById("bsplus-404-flash-hide")?.remove();
     document
       .querySelectorAll(".bsplus-kitten-404-hidden")
       .forEach((el) => el.classList.remove("bsplus-kitten-404-hidden"));
     console.error("[BetterSEQTA+] Failed to boot 404 page:", error);
+  } finally {
+    document.getElementById("bsplus-404-flash-hide")?.remove();
   }
 }
 

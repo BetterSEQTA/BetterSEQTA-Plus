@@ -3,6 +3,16 @@ import { buildThemeBuilderCss } from "./themeBuilderDraft";
 import { getFontPreset } from "@/seqta/ui/fonts/presets";
 
 describe("buildSimpleTheme", () => {
+  it("paints the tint above an opaque photo when blur is disabled", () => {
+    const css = buildThemeBuilderCss(
+      getFontPreset("inter"),
+      ["theme-bg-0"],
+      { accentColor: "#00f", overlayOpacity: 0.5, backgroundBlurPx: 0 },
+    );
+    const backgroundLayers = css.match(/background-image: (.*) !important;/)?.[1];
+    expect(backgroundLayers).toMatch(/^linear-gradient\(.*\), var\(--theme-bg-0\)$/);
+  });
+
   it("builds CSS with font import and image variables", () => {
     const css = buildThemeBuilderCss(
       getFontPreset("inter"),
