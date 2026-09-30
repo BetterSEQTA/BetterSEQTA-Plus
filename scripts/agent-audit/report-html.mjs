@@ -15,6 +15,7 @@ import {
 
 const BRAND = '#007bff';
 const RING_TRACK = '#3f3f46';
+const BRAND_RGB = '0,123,255';
 const DONUT_COLORS = {
   critical: '#ef4444',
   high: '#f97316',
@@ -64,7 +65,7 @@ function ringSvg(score, label, size = 104, { unknown = false } = {}) {
       <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="10"
         stroke-dasharray="${dash} ${c - dash}" stroke-linecap="round"
         transform="rotate(-90 ${size / 2} ${size / 2})"/>
-      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" fill="#e8f5ef" font-size="${size > 120 ? 28 : 20}" font-weight="600">${Math.round(score)}</text>
+      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" fill="#fafafa" font-size="${size > 120 ? 28 : 20}" font-weight="600">${Math.round(score)}</text>
     </svg>
     <span class="ring-label">${escapeHtml(label)}</span>
   </div>`;
@@ -367,7 +368,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   flex-wrap: wrap;
   padding: 0.85rem 0;
   margin-bottom: 1.25rem;
-  background: rgba(10,15,13,0.92);
+  background: rgba(24,24,27,0.94);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -384,7 +385,13 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 }
 .tab-btn:hover { background: var(--card-hover); color: var(--text); }
 .tab-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.tab-btn[aria-selected="true"] { background: var(--brand); border-color: var(--brand-dark); color: #04210f; font-weight: 600; }
+.tab-btn[aria-selected="true"] {
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(${BRAND_RGB}, 0.25);
+}
 .tab-panel { display: none; animation: fadeIn 0.2s ease; }
 .tab-panel.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -496,7 +503,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 .summary-card { padding: 1.5rem 1.75rem 1.75rem; margin-bottom: 0; }
 .summary-card p { margin: 0.25rem 0 0; line-height: 1.65; color: var(--text); max-width: 85ch; }
 .chip { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
-.chip-ok { background: rgba(29,185,84,0.2); color: var(--brand); border: 1px solid rgba(29,185,84,0.35); }
+.chip-ok { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; border: 1px solid rgba(${BRAND_RGB}, 0.4); }
 .chip-warn { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
 .filter-bar {
   position: sticky;
@@ -547,7 +554,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   transition: background 0.15s, color 0.15s;
 }
 .filter-chip:hover { background: var(--card-hover); color: var(--text); }
-.filter-chip[data-active="true"] { background: rgba(29,185,84,0.2); color: var(--brand); border-color: var(--brand); }
+.filter-chip[data-active="true"] { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; border-color: var(--brand); }
 .export-bar {
   display: flex;
   flex-wrap: wrap;
@@ -574,8 +581,8 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 }
 .export-btn:hover { background: var(--card-hover); border-color: var(--brand); color: var(--text); }
 .export-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.export-btn-primary { background: rgba(29,185,84,0.12); border-color: rgba(29,185,84,0.45); }
-.export-btn-primary:hover { background: rgba(29,185,84,0.22); }
+.export-btn-primary { background: rgba(${BRAND_RGB}, 0.12); border-color: rgba(${BRAND_RGB}, 0.45); }
+.export-btn-primary:hover { background: rgba(${BRAND_RGB}, 0.22); }
 .export-status { font-size: 0.8rem; color: var(--brand); min-width: 6rem; }
 .filter-clear {
   flex-shrink: 0;
@@ -616,8 +623,8 @@ thead th {
 }
 td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
 .row-main { cursor: pointer; transition: background 0.15s; }
-.row-main:hover { background: rgba(29,185,84,0.06); }
-.row-main.is-open { background: rgba(29,185,84,0.08); }
+.row-main:hover { background: rgba(${BRAND_RGB}, 0.06); }
+.row-main.is-open { background: rgba(${BRAND_RGB}, 0.1); }
 .col-chevron { width: 2rem; color: var(--muted); }
 .chevron {
   display: inline-block;
@@ -640,7 +647,7 @@ pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
 .badge-sev-info { background: rgba(100,116,139,0.25); color: #94a3b8; }
 .badge-status-fail { background: rgba(239,68,68,0.2); color: #f87171; }
 .badge-status-partial { background: rgba(234,179,8,0.2); color: #fbbf24; }
-.badge-status-pass { background: rgba(29,185,84,0.2); color: var(--brand); }
+.badge-status-pass { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; }
 .path-pill {
   font-family: ui-monospace, monospace;
   font-size: 0.75rem;
@@ -717,7 +724,7 @@ a:hover { color: var(--brand-dark); }
   background: var(--card);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.tl-card:hover { border-color: rgba(29,185,84,0.35); box-shadow: var(--shadow-sm); }
+.tl-card:hover { border-color: rgba(${BRAND_RGB}, 0.35); box-shadow: var(--shadow-sm); }
 .tl-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.35rem; }
 .tl-turn { font-weight: 600; color: var(--text); }
 .tl-flag {
