@@ -169,3 +169,22 @@ export function attachPopupMediaFullscreenIfPresent(
     attachPopupMediaFullscreen(el);
   }
 }
+
+/** Autoplay hero video for What's New / feature popups (`whatsnewImgContainer`). */
+export function createPopupHeroVideo(src: string, ariaLabel: string): HTMLElement {
+  const wrap = document.createElement("div");
+  wrap.classList.add("whatsnewImgContainer");
+  const video = document.createElement("video");
+  video.src = src;
+  video.classList.add("whatsnewImg");
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("aria-label", ariaLabel);
+  wrap.appendChild(video);
+  attachPopupMediaFullscreen(video);
+  void video.play().catch(() => {});
+  return wrap;
+}
