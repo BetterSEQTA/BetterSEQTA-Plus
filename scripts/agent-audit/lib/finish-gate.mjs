@@ -1,3 +1,5 @@
+import { readScratch } from './scratch-pad.mjs';
+
 export function resolveMinFinishTurns(minTurns) {
   const raw = process.env.AGENT_AUDIT_MIN_FINISH_TURNS;
   if (raw != null && String(raw).trim() !== '') {
@@ -10,13 +12,22 @@ export function resolveMinFinishTurns(minTurns) {
 /**
  * Decide whether to accept a finish report this turn.
  */
+function scratchChecklistOk(scratchDir) {
+  if (!scratchDir) return false;
+  const r = readScratch(scratchDir, { name: 'checklist' });
+  if (r.error || !r.content) return false;
+  const text = String(r.content);
+  return text.trim().length > 40 && /(\[x\]|status:\s*checked|checked\s*-\s*)/i.test(text);
+}
+
 export function evaluateFinishGate({
   turnIndex,
   minTurns,
   minFinishTurns,
   mode,
   report,
-  tooling
+  tooling,
+  scratchDir = null
 }) {
   const turn = turnIndex + 1;
 
@@ -56,11 +67,13 @@ export function evaluateFinishGate({
     const hasLimitations =
       Array.isArray(limitations) && limitations.some((line) => String(line).trim().length > 24);
     if (empty && !hasLimitations && turn < minFinishTurns + 15) {
-      return {
-        accept: false,
-        userMessage:
-          'Finish rejected: findings array is empty but limitations do not explain unchecked areas. Record findings or list unchecked areas in limitations.'
-      };
+      if (!scratchChecklistOk(scratchDir)) {
+        return {
+          accept: false,
+          userMessage:
+            'Finish rejected: empty findings with shallow depth. write_scratch name checklist with each focus area marked checked or skipped-with-reason, or add detailed limitations.'
+        };
+      }
     }
   }
 

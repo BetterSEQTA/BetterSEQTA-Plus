@@ -189,8 +189,18 @@ function collectReportItemIds(mode, report) {
 function timelineSummary(entry) {
   if (entry.role === 'tool' && entry.name) {
     const args = entry.args || {};
-    if (entry.name === 'read_file' && args.filePath) return `read_file ${args.filePath}`;
-    if (entry.name === 'grep' && args.pattern) return `grep ${String(args.pattern).slice(0, 80)}`;
+    if (entry.name === 'read_file' && args.filePath) {
+      const range =
+        args.startLine != null ? ` L${args.startLine}-${args.endLine || '?'}` : '';
+      return `read_file ${args.filePath}${range}`;
+    }
+    if (entry.name === 'file_info' && args.filePath) return `file_info ${args.filePath}`;
+    if ((entry.name === 'grep' || entry.name === 'search_files') && args.pattern) {
+      return `${entry.name} ${String(args.pattern).slice(0, 80)}`;
+    }
+    if (entry.name === 'read_context_section' && args.key) return `read_context_section ${args.key}`;
+    if (entry.name === 'write_scratch' && args.name) return `write_scratch ${args.name}`;
+    if (entry.name === 'read_scratch') return args.name ? `read_scratch ${args.name}` : 'read_scratch list';
     if (entry.name === 'list_files' && args.prefix) return `list_files ${args.prefix}`;
     return `Tool: ${entry.name}`;
   }

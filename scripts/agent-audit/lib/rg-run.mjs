@@ -50,16 +50,38 @@ export function resolveGrepSanityProbe(repoRoot) {
 /**
  * Run ripgrep from repo root. Returns { pattern, glob, matchCount, lines, error?, detail? }.
  */
-export function runRipgrep({ repoRoot, pattern, glob = '', maxMatches = 60 }) {
+export function runRipgrep({
+  repoRoot,
+  pattern,
+  glob = '',
+  maxMatches = 60,
+  pathPrefix = '',
+  contextLines = 0,
+  filesOnly = false
+}) {
   if (!pattern || pattern.length > 200) {
     return { pattern, glob, matchCount: 0, lines: [], error: 'invalid_pattern' };
   }
 
   const root = path.resolve(repoRoot);
+  let searchRoot = root;
+  if (pathPrefix) {
+    const normalized = path.normalize(String(pathPrefix)).replace(/^(\.\.(\/|\\|$))+/, '');
+    searchRoot = path.resolve(root, normalized);
+    if (!searchRoot.startsWith(root + path.sep) && searchRoot !== root) {
+      return { pattern, glob, matchCount: 0, lines: [], error: 'invalid_path_prefix' };
+    }
+    if (!fs.existsSync(searchRoot)) {
+      return { pattern, glob, matchCount: 0, lines: [], error: 'path_prefix_not_found' };
+    }
+  }
+
   const rg = resolveRgBinary(root);
-  const args = ['--max-count', String(maxMatches), '--no-heading', '-n'];
+  const ctx = Math.min(3, Math.max(0, parseInt(contextLines, 10) || 0));
+  const args = filesOnly ? ['-l'] : ['--max-count', String(maxMatches), '--no-heading', '-n'];
+  if (ctx > 0 && !filesOnly) args.unshift('-C', String(ctx));
   if (glob) args.push('-g', glob);
-  args.push(pattern, root);
+  args.push(pattern, searchRoot);
 
   const result = spawnSync(rg, args, { encoding: 'utf8', maxBuffer: 512 * 1024 });
 

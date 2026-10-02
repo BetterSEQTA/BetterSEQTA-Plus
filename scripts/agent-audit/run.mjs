@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -19,6 +20,7 @@ import {
 } from './lib/audit-cjs.mjs';
 import { auditLog } from './audit-log.mjs';
 import { assertRipgrepReady } from './lib/rg-run.mjs';
+import { resolveScratchDir } from './lib/scratch-pad.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -129,6 +131,11 @@ async function main() {
   const context = await buildContext(mode, { git });
   auditLog('Context bundle ready');
 
+  const runId = String(process.env.GITHUB_RUN_ID || crypto.randomUUID());
+  const scratchDir = resolveScratchDir(REPO_ROOT, runId);
+  fs.mkdirSync(scratchDir, { recursive: true });
+  auditLog(`Scratch dir: ${scratchDir}`);
+
   const transcriptPath = path.join(outDir, names.transcript);
   const transcriptStream = fs.createWriteStream(transcriptPath, { flags: 'w' });
 
@@ -151,7 +158,8 @@ async function main() {
       minTurns,
       maxTurns,
       onLog: auditLog,
-      onTranscriptLine: (line) => logTranscript(line)
+      onTranscriptLine: (line) => logTranscript(line),
+      scratchDir
     });
     report = loopResult.report;
     turnsUsed = loopResult.turnsUsed ?? 0;

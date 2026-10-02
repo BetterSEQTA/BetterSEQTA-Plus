@@ -27,6 +27,18 @@ describe('rg-run', () => {
     assert.ok(result.matchCount >= (probe.minMatches || 1));
   });
 
+  it('runRipgrep pathPrefix scopes search', () => {
+    const probe = resolveGrepSanityProbe(REPO_ROOT);
+    const result = runRipgrep({
+      repoRoot: REPO_ROOT,
+      pattern: probe.pattern,
+      pathPrefix: probe.glob?.includes('/') ? probe.glob.split('/')[0] : 'server',
+      maxMatches: 5
+    });
+    assert.equal(result.error, undefined);
+    assert.ok(result.matchCount >= 1);
+  });
+
   it('assertRipgrepReady passes when @vscode/ripgrep is installed', () => {
     const pkgRg = path.join(REPO_ROOT, 'node_modules', '@vscode', 'ripgrep', 'package.json');
     if (!fs.existsSync(pkgRg)) {

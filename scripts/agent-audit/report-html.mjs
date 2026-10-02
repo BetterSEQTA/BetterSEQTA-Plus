@@ -245,9 +245,11 @@ function timelineIconKind(ev) {
   if (ev.role === 'tool') {
     const n = ev.name || '';
     if (n === 'read_file') return 'file';
-    if (n === 'grep') return 'search';
+    if (n === 'file_info') return 'file';
+    if (n === 'grep' || n === 'search_files') return 'search';
     if (n === 'list_files') return 'folder';
-    if (n === 'read_context_bundle') return 'bundle';
+    if (n === 'read_context_bundle' || n === 'read_context_section') return 'bundle';
+    if (n === 'write_scratch' || n === 'read_scratch' || n === 'delete_scratch') return 'notable';
     return 'wrench';
   }
   if (ev.role === 'assistant') {

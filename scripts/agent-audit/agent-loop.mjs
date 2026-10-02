@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { chatCompletion } from './llm-client.mjs';
-import { createToolHost, TOOL_DEFINITIONS } from './tools.mjs';
+import { createToolHost, TOOL_DEFINITIONS, toolResultMaxChars } from './tools.mjs';
+import { scratchSummary } from './lib/scratch-pad.mjs';
 import { parseAgentJson, extractFinishReport, displaySummary } from './lib/audit-cjs.mjs';
 import { evaluateFinishGate, resolveMinFinishTurns } from './lib/finish-gate.mjs';
 import { runRipgrep, resolveGrepSanityProbe } from './lib/rg-run.mjs';
@@ -25,8 +26,9 @@ function buildInitialUserMessage(mode, context) {
     `Begin the ${mode} audit.${meta ? ` Repository ${meta}.` : ''}`,
     'Do NOT guess repo facts. Your FIRST reply must be a tool call only:',
     '{"type":"tool","name":"read_context_bundle","args":{}}',
-    'Then use read_file and grep across every focus area in the system prompt.',
-    'Send finish only when you are extremely confident no critical or high issues remain in what you checked. Empty findings require high confidence and honest limitations.',
+    'First read_context_bundle for the index, then read_context_section for sections you need.',
+    'Use file_info and read_file line ranges on large files. Use write_scratch (e.g. name checklist) for progress.',
+    'Send finish only when you are extremely confident no critical or high issues remain in what you checked.',
     'The harness rejects finish that is too shallow or too early.'
   ].join('\n');
 }
@@ -63,21 +65,27 @@ function turnBudgetNudge(turnIndex, maxTurns) {
   return null;
 }
 
-function trimMessages(messages) {
+function trimMessages(messages, scratchDir) {
   const max = parseInt(process.env.AGENT_AUDIT_TRIM_MAX_MESSAGES || '48', 10);
   if (process.env.AGENT_AUDIT_TRIM_MESSAGES === '0') return messages;
   if (messages.length <= max) return messages;
   const head = messages.slice(0, 2);
   const tail = messages.slice(-(max - 2));
-  return [
-    ...head,
-    {
-      role: 'user',
-      content:
-        '[Earlier turns trimmed from context. Re-run read_file or grep if you need those paths again.]'
-    },
-    ...tail
-  ];
+  const trimmed = messages.slice(2, messages.length - tail.length);
+  for (let i = 0; i < trimmed.length; i += 1) {
+    const m = trimmed[i];
+    if (m.role === 'user' && String(m.content || '').startsWith('Tool result for')) {
+      trimmed[i] = {
+        ...m,
+        content: `${String(m.content).slice(0, 400)}... [tool result truncated from history]`
+      };
+    }
+  }
+  const scratchNote = scratchDir ? scratchSummary(scratchDir) : '';
+  const scratchLine = scratchNote
+    ? `[Scratch notes: ${scratchNote}. Use read_scratch to reload.]`
+    : '[Earlier turns trimmed from context. Re-run read_file or grep if you need those paths again.]';
+  return [...head, { role: 'user', content: scratchLine }, ...tail];
 }
 
 function finishResult(report, turnsUsed, loopStartedMs) {
@@ -98,11 +106,12 @@ export async function runAgentLoop({
   minTurns = 25,
   maxTurns,
   onTranscriptLine,
-  onLog
+  onLog,
+  scratchDir = null
 }) {
   const loopStartedMs = Date.now();
   const log = (msg) => onLog?.(msg);
-  const tools = createToolHost(repoRoot);
+  const tools = createToolHost(repoRoot, { scratchDir, contextBundle: context });
   const system = loadPrompt(mode);
   const toolDoc = JSON.stringify(TOOL_DEFINITIONS, null, 2);
 
@@ -160,7 +169,7 @@ export async function runAgentLoop({
         baseUrl,
         apiKey,
         model,
-        messages: trimMessages(messages),
+        messages: trimMessages(messages, scratchDir),
         onLog: log
       });
     } catch (err) {
@@ -233,7 +242,8 @@ export async function runAgentLoop({
           minFinishTurns,
           mode,
           report: finalReport,
-          tooling
+          tooling,
+          scratchDir
         });
         if (!gate.accept) {
           log(`Turn ${turn + 1}: finish rejected (${gate.userMessage.slice(0, 120)}...)`);
@@ -258,12 +268,13 @@ export async function runAgentLoop({
       } else {
         result = tools.dispatch(parsed.name, parsed.args || {}, context);
         if (parsed.name === 'read_context_bundle') contextBundleDelivered = true;
-        if (parsed.name === 'grep' && result?.error) {
+        if ((parsed.name === 'grep' || parsed.name === 'search_files') && result?.error) {
           tooling.grepBroken = true;
           tooling.grepErrorDetail = result.detail || result.error;
         }
       }
-      const toolResult = JSON.stringify(result).slice(0, 14000);
+      const cap = toolResultMaxChars(parsed.name);
+      const toolResult = JSON.stringify(result).slice(0, cap);
       const userMsg = { role: 'user', content: `Tool result for ${parsed.name}:\n${toolResult}` };
       messages.push(userMsg);
       onTranscriptLine?.({
@@ -299,7 +310,7 @@ export async function runAgentLoop({
         baseUrl,
         apiKey,
         model,
-        messages: trimMessages(messages),
+        messages: trimMessages(messages, scratchDir),
         onLog: log
       });
     } catch (err) {

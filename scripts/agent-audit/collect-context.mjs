@@ -4,6 +4,8 @@ import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { globSync } from 'glob';
 import { runRipgrep } from './lib/rg-run.mjs';
+import { npmAuditSummary } from './lib/npm-audit-summary.mjs';
+import { buildRepoIndex } from './repo-context-betterseqta.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -23,26 +25,6 @@ function runRg(pattern, glob = '') {
   const result = runRipgrep({ repoRoot: REPO_ROOT, pattern, glob, maxMatches: 25 });
   if (result.error) return [];
   return result.lines;
-}
-
-function npmAuditSummary() {
-  const result = spawnSync('npm', ['audit', '--json'], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-    maxBuffer: 4 * 1024 * 1024
-  });
-  try {
-    const data = JSON.parse(result.stdout || '{}');
-    const meta = data.metadata?.vulnerabilities || {};
-    return {
-      ok: result.status === 0,
-      exitCode: result.status,
-      vulnerabilities: meta,
-      advisoriesSample: Object.keys(data.advisories || {}).slice(0, 15)
-    };
-  } catch {
-    return { ok: false, parseError: true, stderr: (result.stderr || '').slice(0, 500) };
-  }
 }
 
 function countUnitTests() {
@@ -66,18 +48,48 @@ function securityGrepBundle() {
   };
 }
 
+function optionalGitDelta() {
+  if (process.env.AGENT_AUDIT_GIT_DELTA !== '1') return null;
+  const result = spawnSync('git', ['diff', '--name-only', 'HEAD~1', 'HEAD'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8'
+  });
+  if (result.status !== 0) return null;
+  const changedFiles = (result.stdout || '')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .slice(0, 100);
+  return { base: 'HEAD~1', head: 'HEAD', changedFiles };
+}
+
 function soc2PolicyBundle() {
   return {};
 }
 
 export async function buildContext(mode, meta = {}) {
-  const shared = {
+  const repoIndex = buildRepoIndex(REPO_ROOT);
+  const npmAudit = npmAuditSummary(REPO_ROOT);
+  const gitDelta = optionalGitDelta();
+
+  const index = {
     mode,
     generatedAt: new Date().toISOString(),
     git: meta.git || {},
-    npmAudit: npmAuditSummary(),
+    npmAuditSummary: {
+      ok: npmAudit.ok,
+      vulnerabilities: npmAudit.vulnerabilities,
+      advisoriesSample: npmAudit.advisoriesSample
+    },
+    scratchHint: 'Use write_scratch for checklist and file:line bookmarks across long runs.',
+    sectionKeys: [],
+    ...repoIndex,
+    gitDelta
+  };
+
+  const sections = {
+    npmAuditFull: npmAudit,
     securityGreps: securityGrepBundle(),
-    migrationsRecent: [],
     fileHints: {
       manifest: readExcerpt('src/manifests/manifest.json', 8000),
       background: readExcerpt('src/background.ts', 10000),
@@ -94,22 +106,32 @@ export async function buildContext(mode, meta = {}) {
   };
 
   if (mode === 'soc2') {
-    shared.soc2 = {
+    sections.soc2 = {
       policies: soc2PolicyBundle(),
-      accessFlowsHead: null,
-      logger: null,
       dependabot: fs.existsSync(path.join(REPO_ROOT, '.github/dependabot.yml'))
         ? readExcerpt('.github/dependabot.yml', 2000)
         : { note: 'no dependabot.yml in repo' }
     };
   } else {
-    shared.security = {
+    sections.security = {
       smokeScript: readExcerpt('scripts/smoke-test.mjs', 3000),
       testCount: countUnitTests()
     };
   }
 
-  return shared;
+  index.sectionKeys = Object.keys(sections);
+
+  return {
+    mode,
+    generatedAt: index.generatedAt,
+    git: index.git,
+    index,
+    sections,
+    npmAudit,
+    securityGreps: sections.securityGreps,
+    migrationsRecent: [],
+    fileHints: sections.fileHints
+  };
 }
 
 export function writeContextFile(context, outPath) {

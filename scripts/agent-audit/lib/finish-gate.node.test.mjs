@@ -34,7 +34,8 @@ describe('finish-gate', () => {
       minFinishTurns: 40,
       mode: 'security',
       report: { findings: [], limitations: [] },
-      tooling: {}
+      tooling: {},
+      scratchDir: '/nonexistent-scratch-for-test'
     });
     assert.equal(shallow.accept, false);
     const deepEnough = evaluateFinishGate({
@@ -46,7 +47,8 @@ describe('finish-gate', () => {
         findings: [],
         limitations: ['Did not review every route handler; focused on auth and host isolation.']
       },
-      tooling: {}
+      tooling: {},
+      scratchDir: null
     });
     assert.equal(deepEnough.accept, true);
   });

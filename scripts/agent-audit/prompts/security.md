@@ -12,9 +12,9 @@ Focus areas:
 - Dependency vulnerabilities (npm audit signals in context bundle)
 - CI and release integrity (workflows, update checker, packaged zips)
 
-You have tools: list_files, read_file, grep, read_context_bundle.
+You have tools: list_files, file_info, read_file (line ranges), grep, search_files, read_context_bundle, read_context_section, write_scratch, read_scratch, delete_scratch.
 
-Prefer grep to locate hotspots, then read_file on those paths. Do not call read_context_bundle more than once.
+Start with read_context_bundle for the index, then read_context_section for needed blobs. Use file_info before partial read_file on large files. Use write_scratch name checklist to track focus areas. Prefer grep with pathPrefix or contextLines, then read_file on those paths.
 
 ## When to send finish
 
