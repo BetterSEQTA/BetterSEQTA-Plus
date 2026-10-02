@@ -74,6 +74,22 @@ export function reportToMarkdown(mode, report) {
     }
   }
 
+  if (Array.isArray(report.scratchRevisions) && report.scratchRevisions.length) {
+    lines.push('## Scratch edit history');
+    if (report.scratchRevisionsTruncated) {
+      lines.push('');
+      lines.push('_Some edit history was truncated for report size limits._');
+    }
+    lines.push('');
+    for (const r of report.scratchRevisions) {
+      const turnLabel = r.turn != null ? ` turn ${r.turn + 1}` : '';
+      lines.push(
+        `- **${r.name || 'note'}** ${r.action || 'write'}${turnLabel}${r.ts ? ` (${r.ts})` : ''}`
+      );
+    }
+    lines.push('');
+  }
+
   if (report.llmError) {
     lines.push('## LLM error');
     lines.push('');

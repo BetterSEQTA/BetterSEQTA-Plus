@@ -227,6 +227,53 @@ function isFlaggedEvent(entry) {
   return false;
 }
 
+function buildScratchRevisionsFromTranscript(transcriptEntries) {
+  const revisions = [];
+  let revisionIndex = 0;
+  for (const e of transcriptEntries) {
+    if (e.role !== 'tool') continue;
+    const args = e.args && typeof e.args === 'object' ? e.args : {};
+    if (e.name === 'write_scratch') {
+      const noteName = args.name;
+      if (!noteName || args.content == null) continue;
+      revisionIndex += 1;
+      const content = String(args.content);
+      revisions.push({
+        ts: e.ts || '',
+        turn: e.turn,
+        name: String(noteName),
+        action: args.append ? 'append' : 'write',
+        append: !!args.append,
+        content,
+        bytes: Buffer.byteLength(content, 'utf8'),
+        revisionIndex,
+        source: 'transcript'
+      });
+      continue;
+    }
+    if (e.name === 'delete_scratch' && args.name) {
+      revisionIndex += 1;
+      revisions.push({
+        ts: e.ts || '',
+        turn: e.turn,
+        name: String(args.name),
+        action: 'delete',
+        append: false,
+        content: '',
+        bytes: 0,
+        revisionIndex,
+        source: 'transcript'
+      });
+    }
+  }
+  return revisions;
+}
+
+function countScratchEdits(transcriptEntries, scratchRevisions) {
+  if (Array.isArray(scratchRevisions) && scratchRevisions.length) return scratchRevisions.length;
+  return buildScratchRevisionsFromTranscript(transcriptEntries).length;
+}
+
 function buildTimelineEvents(transcriptEntries, options = {}) {
   const validIds = options.validIds instanceof Set ? options.validIds : null;
   return transcriptEntries.map((entry, index) => ({
@@ -237,6 +284,8 @@ function buildTimelineEvents(transcriptEntries, options = {}) {
     name: entry.name || null,
     args: entry.args || null,
     content: String(entry.content || ''),
+    contentPreview: entry.contentPreview ? String(entry.contentPreview) : null,
+    revisionIndex: entry.revisionIndex != null ? entry.revisionIndex : null,
     summary: timelineSummary(entry),
     flagged: isFlaggedEvent(entry),
     findingRef: extractFindingRef(entry.content, validIds)
@@ -259,13 +308,15 @@ function computeAgentMetrics(transcriptEntries, meta = {}) {
   if (times.length >= 2) {
     durationMs = Math.max(...times) - Math.min(...times);
   }
+  const scratchEdits = countScratchEdits(transcriptEntries, meta.scratchRevisions);
   return {
     turnsUsed: meta.turnsUsed ?? maxTurn,
     toolCalls,
     parseRetries,
     errors,
     durationMs,
-    eventCount: transcriptEntries.length
+    eventCount: transcriptEntries.length,
+    scratchEdits
   };
 }
 
@@ -277,6 +328,7 @@ module.exports = {
   parseTranscriptJsonl,
   readTranscriptFile,
   buildTimelineEvents,
+  buildScratchRevisionsFromTranscript,
   computeAgentMetrics,
   healthFromFindings,
   countBySeverity,

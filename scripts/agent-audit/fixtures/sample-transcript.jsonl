@@ -2,7 +2,7 @@
 {"ts":"2026-09-28T10:00:05.000Z","turn":0,"role":"tool","name":"read_context_bundle","content":"{\"mode\":\"security\"}"}
 {"ts":"2026-09-28T10:00:12.000Z","turn":1,"role":"assistant","content":"{\"type\":\"tool\",\"name\":\"grep\",\"args\":{\"pattern\":\"password\"}}"}
 {"ts":"2026-09-28T10:00:18.000Z","turn":1,"role":"tool","name":"grep","content":"server/utils/auth.js:12"}
-{"ts":"2026-09-28T10:00:22.000Z","turn":2,"role":"assistant","content":"{\"type\":\"tool\",\"name\":\"write_scratch\",\"args\":{\"name\":\"checklist\",\"content\":\"- manifest: in progress\"}}"}
-{"ts":"2026-09-28T10:00:24.000Z","turn":2,"role":"tool","name":"write_scratch","content":"{\"ok\":true,\"name\":\"checklist\"}"}
+{"ts":"2026-09-28T10:00:22.000Z","turn":2,"role":"assistant","content":"{\"type\":\"tool\",\"name\":\"write_scratch\",\"args\":{\"name\":\"checklist\",\"content\":\"- host isolation: in progress\"}}"}
+{"ts":"2026-09-28T10:00:24.000Z","turn":2,"role":"tool","name":"write_scratch","args":{"name":"checklist","content":"- host isolation: in progress"},"contentPreview":"- host isolation: in progress","revisionIndex":1,"content":"{\"ok\":true,\"name\":\"checklist\",\"revisionIndex\":1}"}
 {"ts":"2026-09-28T10:00:30.000Z","turn":3,"role":"assistant","content":"Finding F1 relates to rate limits on public API."}
 {"ts":"2026-09-28T10:00:45.000Z","turn":4,"role":"assistant","content":"{\"type\":\"finish\",\"report\":{\"requiresAction\":true}}"}

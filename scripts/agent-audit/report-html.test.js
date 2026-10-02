@@ -6,6 +6,7 @@ const {
   computeSoc2Stats,
   parseTranscriptJsonl,
   buildTimelineEvents,
+  buildScratchRevisionsFromTranscript,
   computeAgentMetrics,
   extractFindingRef,
   collectReportItemIds
@@ -75,7 +76,10 @@ describe('agentAuditHtml', () => {
     const flagged = events.filter((e) => e.flagged);
     expect(flagged.length).toBeGreaterThanOrEqual(1);
     const metrics = computeAgentMetrics(entries, { turnsUsed: 4 });
-    expect(metrics.toolCalls).toBe(2);
+    expect(metrics.toolCalls).toBe(3);
+    const revisions = buildScratchRevisionsFromTranscript(entries);
+    expect(revisions.length).toBe(1);
+    expect(revisions[0].name).toBe('checklist');
   });
 
 });

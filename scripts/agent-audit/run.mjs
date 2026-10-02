@@ -15,12 +15,17 @@ import {
   computeDashboardStats,
   readTranscriptFile,
   buildTimelineEvents,
+  buildScratchRevisionsFromTranscript,
   computeAgentMetrics,
   collectReportItemIds
 } from './lib/audit-cjs.mjs';
 import { auditLog } from './audit-log.mjs';
 import { assertRipgrepReady } from './lib/rg-run.mjs';
-import { resolveScratchDir, exportScratchForReport } from './lib/scratch-pad.mjs';
+import {
+  resolveScratchDir,
+  exportScratchForReport,
+  exportScratchRevisionsForReport
+} from './lib/scratch-pad.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -207,10 +212,22 @@ async function main() {
   }
 
   const transcriptEntries = readTranscriptFile(transcriptPath, fs);
+
+  const revExport = exportScratchRevisionsForReport(scratchDir);
+  let scratchRevisions = revExport.revisions?.length ? revExport.revisions : [];
+  if (!scratchRevisions.length) {
+    scratchRevisions = buildScratchRevisionsFromTranscript(transcriptEntries);
+  }
+  if (scratchRevisions.length) {
+    report.scratchRevisions = scratchRevisions;
+    if (revExport.truncated) report.scratchRevisionsTruncated = true;
+    auditLog(`Scratch revisions in report: ${scratchRevisions.length}`);
+  }
+
   const timelineEvents = buildTimelineEvents(transcriptEntries, {
     validIds: collectReportItemIds(mode, report)
   });
-  const metrics = computeAgentMetrics(transcriptEntries, { turnsUsed });
+  const metrics = computeAgentMetrics(transcriptEntries, { turnsUsed, scratchRevisions });
   const runUrl = buildRunUrl();
   const written = writeReportFiles(mode, outDir, report, {
     timelineEvents,

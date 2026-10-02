@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 
 const NAME_RE = /^[a-zA-Z0-9_-]{1,48}$/;
+const REVISIONS_BASENAME = '_revisions.jsonl';
 
 function maxFileBytes() {
   return parseInt(process.env.AGENT_AUDIT_SCRATCH_MAX_BYTES || '32768', 10);
@@ -26,6 +27,33 @@ function scratchPath(scratchDir, name) {
   return { path: abs };
 }
 
+function revisionsPath(scratchDir) {
+  return path.join(scratchDir, REVISIONS_BASENAME);
+}
+
+function appendRevision(scratchDir, row) {
+  if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
+  const line = `${JSON.stringify({ ts: new Date().toISOString(), ...row })}\n`;
+  fs.appendFileSync(revisionsPath(scratchDir), line, 'utf8');
+}
+
+/** @returns {Array<Record<string, unknown>>} */
+export function readRevisionJournal(scratchDir) {
+  const p = revisionsPath(scratchDir);
+  if (!fs.existsSync(p)) return [];
+  const entries = [];
+  for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      entries.push(JSON.parse(t));
+    } catch {
+      /* skip bad line */
+    }
+  }
+  return entries;
+}
+
 export function writeScratch(scratchDir, { name, content, append = false }) {
   const v = validateScratchName(name);
   if (v.error) return v;
@@ -46,7 +74,18 @@ export function writeScratch(scratchDir, { name, content, append = false }) {
   }
 
   fs.writeFileSync(p.path, body, 'utf8');
-  return { ok: true, name: v.name, bytes: Buffer.byteLength(body, 'utf8') };
+  const bytes = Buffer.byteLength(body, 'utf8');
+  const action = append && existing ? 'append' : 'write';
+  const revisionIndex = readRevisionJournal(scratchDir).length + 1;
+  appendRevision(scratchDir, {
+    name: v.name,
+    action,
+    append: !!(append && existing),
+    content: body,
+    bytes,
+    revisionIndex
+  });
+  return { ok: true, name: v.name, bytes, revisionIndex };
 }
 
 export function readScratch(scratchDir, { name } = {}) {
@@ -79,8 +118,19 @@ export function deleteScratch(scratchDir, { name }) {
   const p = scratchPath(scratchDir, v.name);
   if (p.error) return p;
   if (!fs.existsSync(p.path)) return { error: 'not_found', name: v.name };
+  const previousBytes = fs.statSync(p.path).size;
   fs.unlinkSync(p.path);
-  return { ok: true, name: v.name };
+  const revisionIndex = readRevisionJournal(scratchDir).length + 1;
+  appendRevision(scratchDir, {
+    name: v.name,
+    action: 'delete',
+    append: false,
+    content: '',
+    previousBytes,
+    bytes: 0,
+    revisionIndex
+  });
+  return { ok: true, name: v.name, revisionIndex };
 }
 
 export function scratchSummary(scratchDir) {
@@ -145,6 +195,49 @@ export function exportScratchForReport(scratchDir) {
 
   if (sorted.length > notes.length) truncated = true;
   return { notes, ...(truncated ? { truncated: true } : {}) };
+}
+
+/** Revision journal for JSON/HTML report (size-capped). */
+export function exportScratchRevisionsForReport(scratchDir) {
+  const journal = readRevisionJournal(scratchDir);
+  if (!journal.length) return { revisions: [] };
+
+  const maxTotal = reportMaxTotalBytes();
+  const revisions = [];
+  let total = 0;
+  let truncated = false;
+
+  for (const row of journal) {
+    if (total >= maxTotal) {
+      truncated = true;
+      break;
+    }
+    const content = String(row.content ?? '');
+    const remaining = maxTotal - total;
+    let outContent = content;
+    let rowTruncated = false;
+    const contentBytes = Buffer.byteLength(content, 'utf8');
+    if (contentBytes > remaining) {
+      outContent = truncateUtf8ForReport(content, remaining);
+      rowTruncated = true;
+      truncated = true;
+    }
+    total += Buffer.byteLength(outContent, 'utf8');
+    revisions.push({
+      ts: row.ts,
+      name: row.name,
+      action: row.action,
+      append: !!row.append,
+      content: outContent,
+      bytes: row.bytes,
+      ...(row.revisionIndex != null ? { revisionIndex: row.revisionIndex } : {}),
+      ...(row.previousBytes != null ? { previousBytes: row.previousBytes } : {}),
+      ...(rowTruncated ? { truncated: true } : {})
+    });
+  }
+
+  if (journal.length > revisions.length) truncated = true;
+  return { revisions, ...(truncated ? { truncated: true } : {}) };
 }
 
 export function resolveScratchDir(repoRoot, runId) {

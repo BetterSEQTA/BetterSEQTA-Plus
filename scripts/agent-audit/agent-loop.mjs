@@ -277,13 +277,21 @@ export async function runAgentLoop({
       const toolResult = JSON.stringify(result).slice(0, cap);
       const userMsg = { role: 'user', content: `Tool result for ${parsed.name}:\n${toolResult}` };
       messages.push(userMsg);
-      onTranscriptLine?.({
+      const transcriptTool = {
         turn,
         role: 'tool',
         name: parsed.name,
         args: parsed.args || {},
         content: toolResult.slice(0, 2000)
-      });
+      };
+      if (parsed.name === 'write_scratch' && result?.ok && parsed.args?.content != null) {
+        transcriptTool.contentPreview = String(parsed.args.content).slice(0, 400);
+        if (result.revisionIndex != null) transcriptTool.revisionIndex = result.revisionIndex;
+      }
+      if (parsed.name === 'delete_scratch' && result?.ok && result.revisionIndex != null) {
+        transcriptTool.revisionIndex = result.revisionIndex;
+      }
+      onTranscriptLine?.(transcriptTool);
       continue;
     }
 

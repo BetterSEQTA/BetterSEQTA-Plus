@@ -93,6 +93,7 @@ describe('agentAuditHtml (report-html.mjs)', () => {
     assert.ok(Array.isArray(report.scratchNotes) && report.scratchNotes.length > 0);
     assert.match(html, /data-tab="scratch-checklist"/);
     assert.match(html, /id="panel-scratch-checklist"/);
+    assert.match(html, /scratch-revision-stepper/);
   });
 
   it('reportToHtml gives each scratch note its own tab', async () => {

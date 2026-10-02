@@ -1,10 +1,10 @@
 import {
   escapeHtml,
   computeDashboardStats,
+  normalizeAuditReport,
   displaySummary,
   isJsonLikeSummary,
   prettyJsonString,
-  normalizeAuditReport,
   normalizeSecurityItem,
   normalizeSoc2Item,
   exportItemPayloadBase64,
@@ -13,9 +13,7 @@ import {
   itemsToAgentJson
 } from './lib/audit-cjs.mjs';
 
-const BRAND = '#007bff';
-const RING_TRACK = '#3f3f46';
-const BRAND_RGB = '0,123,255';
+const BRAND = '#1DB954';
 const DONUT_COLORS = {
   critical: '#ef4444',
   high: '#f97316',
@@ -24,7 +22,7 @@ const DONUT_COLORS = {
   info: '#64748b',
   fail: '#ef4444',
   partial: '#eab308',
-  pass: '#007bff'
+  pass: '#1DB954'
 };
 
 function clamp(n, min, max) {
@@ -48,7 +46,7 @@ function ringSvg(score, label, size = 104, { unknown = false } = {}) {
     const cx = size / 2;
     return `<div class="ring-wrap ring-unknown" title="${escapeHtml(label)}">
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-      <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${RING_TRACK}" stroke-width="10" stroke-dasharray="4 6"/>
+      <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="#1e2a24" stroke-width="10" stroke-dasharray="4 6"/>
       <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-size="${size > 120 ? 22 : 18}" font-weight="600">—</text>
     </svg>
     <span class="ring-label">${escapeHtml(label)}</span>
@@ -61,11 +59,11 @@ function ringSvg(score, label, size = 104, { unknown = false } = {}) {
   const color = scoreColor(score);
   return `<div class="ring-wrap" title="${escapeHtml(label)}">
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${RING_TRACK}" stroke-width="10"/>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#1e2a24" stroke-width="10"/>
       <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="10"
         stroke-dasharray="${dash} ${c - dash}" stroke-linecap="round"
         transform="rotate(-90 ${size / 2} ${size / 2})"/>
-      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" fill="#fafafa" font-size="${size > 120 ? 28 : 20}" font-weight="600">${Math.round(score)}</text>
+      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" fill="#e8f5ef" font-size="${size > 120 ? 28 : 20}" font-weight="600">${Math.round(score)}</text>
     </svg>
     <span class="ring-label">${escapeHtml(label)}</span>
   </div>`;
@@ -278,6 +276,22 @@ function timelineBodyHtml(ev) {
     const compact = escapeHtml(raw.slice(0, 280)) + (raw.length > 280 ? '…' : '');
     return `<p class="tl-summary">${summary}</p><pre class="tl-mono">${compact}</pre>`;
   }
+  const scratchTools = ['write_scratch', 'read_scratch', 'delete_scratch'];
+  if (ev.role === 'tool' && scratchTools.includes(ev.name)) {
+    let html = `<p class="tl-summary">${summary}</p>`;
+    const args = ev.args && typeof ev.args === 'object' ? ev.args : {};
+    const preview =
+      ev.contentPreview ||
+      (args.content != null && ev.name === 'write_scratch' ? String(args.content).slice(0, 400) : '');
+    if (preview) {
+      html += `<pre class="tl-mono tl-scratch-preview">${escapeHtml(preview)}</pre>`;
+    }
+    if (ev.name === 'write_scratch' && args.name) {
+      const revAttr = ev.revisionIndex != null ? String(ev.revisionIndex) : '';
+      html += `<button type="button" class="tl-scratch-jump" data-scratch-name="${escapeHtml(String(args.name))}" data-revision-index="${escapeHtml(revAttr)}">Open in Scratch tab</button>`;
+    }
+    return html;
+  }
   return `<p class="tl-summary">${summary}</p>`;
 }
 
@@ -329,15 +343,15 @@ function buildStyles() {
   return `<style>
 :root {
   --brand: ${BRAND};
-  --brand-dark: #0069d9;
-  --bg: #18181b;
-  --bg-elevated: #27272a;
-  --card: #27272a;
-  --card-hover: #3f3f46;
-  --border: #3f3f46;
-  --border-subtle: #52525b;
-  --text: #fafafa;
-  --muted: #a1a1aa;
+  --brand-dark: #169c46;
+  --bg: #0a0f0d;
+  --bg-elevated: #0d1210;
+  --card: #101814;
+  --card-hover: #141f1a;
+  --border: #1e2a24;
+  --border-subtle: #172019;
+  --text: #e8f5ef;
+  --muted: #8fa99a;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.35);
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -358,14 +372,14 @@ body {
   width: 100%;
   padding: 1.5rem 0 1rem;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(0,123,255,0.08) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(29,185,84,0.06) 0%, transparent 100%);
 }
 .site-header .shell { padding-bottom: 0; }
 .header-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; justify-content: space-between; }
 .brand-line { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
 .wordmark { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; color: var(--text); text-decoration: none; }
 .wordmark-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
-.mode-pill { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.55rem; border-radius: 999px; background: rgba(0,123,255,0.15); color: var(--brand); border: 1px solid rgba(0,123,255,0.35); }
+.mode-pill { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.55rem; border-radius: 999px; background: rgba(29,185,84,0.15); color: var(--brand); border: 1px solid rgba(29,185,84,0.35); }
 h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 .header-meta {
   text-align: right;
@@ -402,7 +416,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   gap: 0.35rem;
   padding: 0.65rem 0;
   margin-bottom: 1.25rem;
-  background: rgba(24,24,27,0.94);
+  background: rgba(10,15,13,0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
   overflow-x: auto;
@@ -443,13 +457,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 }
 .tab-btn:hover { background: var(--card-hover); color: var(--text); }
 .tab-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.tab-btn[aria-selected="true"] {
-  background: var(--brand);
-  border-color: var(--brand-dark);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 0 0 1px rgba(${BRAND_RGB}, 0.25);
-}
+.tab-btn[aria-selected="true"] { background: var(--brand); border-color: var(--brand-dark); color: #04210f; font-weight: 600; }
 .tab-panel { display: none; animation: fadeIn 0.2s ease; }
 .tab-panel.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -561,7 +569,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 .summary-card { padding: 1.5rem 1.75rem 1.75rem; margin-bottom: 0; }
 .summary-card p { margin: 0.25rem 0 0; line-height: 1.65; color: var(--text); max-width: 85ch; }
 .chip { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
-.chip-ok { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; border: 1px solid rgba(${BRAND_RGB}, 0.4); }
+.chip-ok { background: rgba(29,185,84,0.2); color: var(--brand); border: 1px solid rgba(29,185,84,0.35); }
 .chip-warn { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
 .filter-bar {
   position: sticky;
@@ -612,7 +620,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   transition: background 0.15s, color 0.15s;
 }
 .filter-chip:hover { background: var(--card-hover); color: var(--text); }
-.filter-chip[data-active="true"] { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; border-color: var(--brand); }
+.filter-chip[data-active="true"] { background: rgba(29,185,84,0.2); color: var(--brand); border-color: var(--brand); }
 .export-bar {
   display: flex;
   flex-wrap: wrap;
@@ -639,8 +647,8 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 }
 .export-btn:hover { background: var(--card-hover); border-color: var(--brand); color: var(--text); }
 .export-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.export-btn-primary { background: rgba(${BRAND_RGB}, 0.12); border-color: rgba(${BRAND_RGB}, 0.45); }
-.export-btn-primary:hover { background: rgba(${BRAND_RGB}, 0.22); }
+.export-btn-primary { background: rgba(29,185,84,0.12); border-color: rgba(29,185,84,0.45); }
+.export-btn-primary:hover { background: rgba(29,185,84,0.22); }
 .export-status { font-size: 0.8rem; color: var(--brand); min-width: 6rem; }
 .filter-clear {
   flex-shrink: 0;
@@ -698,8 +706,8 @@ td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border-subtle); ve
   text-overflow: unset;
 }
 .row-main { cursor: pointer; transition: background 0.15s; }
-.row-main:hover { background: rgba(${BRAND_RGB}, 0.06); }
-.row-main.is-open { background: rgba(${BRAND_RGB}, 0.1); }
+.row-main:hover { background: rgba(29,185,84,0.06); }
+.row-main.is-open { background: rgba(29,185,84,0.08); }
 .col-chevron { width: 2rem; color: var(--muted); }
 .chevron {
   display: inline-block;
@@ -747,7 +755,7 @@ pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
 .badge-sev-info { background: rgba(100,116,139,0.25); color: #94a3b8; }
 .badge-status-fail { background: rgba(239,68,68,0.2); color: #f87171; }
 .badge-status-partial { background: rgba(234,179,8,0.2); color: #fbbf24; }
-.badge-status-pass { background: rgba(${BRAND_RGB}, 0.18); color: #93c5fd; }
+.badge-status-pass { background: rgba(29,185,84,0.2); color: var(--brand); }
 .path-pill {
   font-family: ui-monospace, monospace;
   font-size: 0.75rem;
@@ -797,6 +805,39 @@ a:hover { color: var(--brand-dark); }
   color: var(--text);
   max-height: min(70vh, 520px);
   overflow: auto;
+}
+.scratch-revision-stepper { margin-bottom: 1rem; }
+.scratch-rev-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+.scratch-rev-controls button {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+.scratch-rev-controls button:disabled { opacity: 0.45; cursor: not-allowed; }
+.scratch-rev-label { font-size: 0.8125rem; color: var(--muted); }
+.scratch-rev-meta { font-size: 0.75rem; color: var(--muted); margin: 0 0 0.5rem; }
+.tl-scratch-preview { margin-top: 0.35rem; max-height: 8rem; overflow: auto; }
+.tl-scratch-jump {
+  margin-top: 0.45rem;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--primary);
+  cursor: pointer;
 }
 .tl-track {
   list-style: none;
@@ -853,7 +894,7 @@ a:hover { color: var(--brand-dark); }
   background: var(--card);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.tl-card:hover { border-color: rgba(${BRAND_RGB}, 0.35); box-shadow: var(--shadow-sm); }
+.tl-card:hover { border-color: rgba(29,185,84,0.35); box-shadow: var(--shadow-sm); }
 .tl-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.35rem; }
 .tl-turn { font-weight: 600; color: var(--text); }
 .tl-flag {
@@ -1004,7 +1045,7 @@ function buildHeader(mode, report, runUrl, generatedAt) {
   <div class="header-row">
     <div>
       <div class="brand-line">
-        <span class="wordmark font-display"><span class="wordmark-dot"></span> BetterSEQTA+</span>
+        <span class="wordmark font-display"><span class="wordmark-dot"></span> SpotiQueue</span>
         <span class="mode-pill">${escapeHtml(modeLabel)}</span>
       </div>
       <h1 class="font-display">${escapeHtml(title)}</h1>
@@ -1164,33 +1205,95 @@ function scratchTabLabel(name) {
     .join(' ');
 }
 
-function buildScratchTabButtons(scratchNotes) {
-  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
-  return scratchNotes
-    .map((n) => {
-      const slug = scratchTabSlug(n.name);
-      const label = escapeHtml(scratchTabLabel(n.name));
+function collectScratchNoteNames(scratchNotes, scratchRevisions) {
+  const names = new Set();
+  if (Array.isArray(scratchNotes)) {
+    for (const n of scratchNotes) {
+      if (n?.name) names.add(String(n.name));
+    }
+  }
+  if (Array.isArray(scratchRevisions)) {
+    for (const r of scratchRevisions) {
+      if (r?.name) names.add(String(r.name));
+    }
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+function scratchRevisionsB64(revisions) {
+  return Buffer.from(JSON.stringify(revisions), 'utf8').toString('base64');
+}
+
+function buildScratchTabButtons(report) {
+  const names = collectScratchNoteNames(report.scratchNotes, report.scratchRevisions);
+  if (!names.length) {
+    return `<button type="button" class="tab-btn tab-btn-scratch" role="tab" aria-selected="false" data-tab="scratch-empty">Scratch</button>`;
+  }
+  return names
+    .map((name) => {
+      const slug = scratchTabSlug(name);
+      const label = escapeHtml(scratchTabLabel(name));
       return `<button type="button" class="tab-btn tab-btn-scratch" role="tab" aria-selected="false" data-tab="${slug}">${label}</button>`;
     })
     .join('');
 }
 
-function buildScratchTabPanels(scratchNotes, truncated) {
-  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
-  const hint = truncated
-    ? '<p class="scratch-banner" role="status">Some scratch content was omitted or truncated for report size limits.</p>'
-    : '';
-  return scratchNotes
-    .map((n, i) => {
-      const slug = scratchTabSlug(n.name);
-      const body = escapeHtml(String(n.content ?? ''));
-      const partial = n.truncated
-        ? '<p class="scratch-banner" role="status">This note was partially truncated for the report.</p>'
+function buildScratchRevisionStepper(name, revisions) {
+  if (!revisions.length) return '';
+  const b64 = scratchRevisionsB64(revisions);
+  return `<div class="scratch-revision-stepper" data-scratch-name="${escapeHtml(name)}" data-scratch-revisions-b64="${b64}">
+    <div class="scratch-rev-controls">
+      <button type="button" class="scratch-rev-prev">Previous</button>
+      <span class="scratch-rev-label scratch-revision">Revision 1 of ${revisions.length}</span>
+      <button type="button" class="scratch-rev-next">Next</button>
+    </div>
+    <p class="scratch-rev-meta scratch-revision-meta"></p>
+    <div class="scratch-doc"><pre class="scratch-body scratch-revision-body"></pre></div>
+  </div>`;
+}
+
+function buildScratchTabPanels(report) {
+  const scratchNotes = report.scratchNotes || [];
+  const scratchRevisions = report.scratchRevisions || [];
+  const names = collectScratchNoteNames(scratchNotes, scratchRevisions);
+  const notesTruncated = report.scratchNotesTruncated;
+  const revTruncated = report.scratchRevisionsTruncated;
+
+  if (!names.length) {
+    return `<section id="panel-scratch-empty" class="tab-panel scratch-tab-panel" role="tabpanel" aria-label="Scratch">
+    <div class="empty-state">
+      <p>No scratch notes were saved this run.</p>
+      <p class="empty-hint">Check the Agent run timeline for write_scratch tool calls.</p>
+    </div>
+  </section>`;
+  }
+
+  const hint =
+    notesTruncated || revTruncated
+      ? '<p class="scratch-banner" role="status">Some scratch content or edit history was omitted or truncated for report size limits.</p>'
+      : '';
+
+  const noteByName = new Map(scratchNotes.map((n) => [n.name, n]));
+
+  return names
+    .map((name, i) => {
+      const slug = scratchTabSlug(name);
+      const note = noteByName.get(name);
+      const revsForName = scratchRevisions.filter((r) => r.name === name);
+      const stepper = buildScratchRevisionStepper(name, revsForName);
+      const finalBody = note ? escapeHtml(String(note.content ?? '')) : '';
+      const partial = note?.truncated
+        ? '<p class="scratch-banner" role="status">Final snapshot was partially truncated for the report.</p>'
         : '';
       const topHint = i === 0 ? hint : '';
-      return `<section id="panel-${slug}" class="tab-panel scratch-tab-panel" role="tabpanel" aria-label="${escapeHtml(scratchTabLabel(n.name))}">
-    ${topHint}${partial}
-    <div class="scratch-doc"><pre class="scratch-body">${body}</pre></div>
+      const finalBlock = finalBody
+        ? `<h3 class="font-display" style="font-size:0.95rem;margin:1rem 0 0.35rem">Final snapshot</h3>${partial}<div class="scratch-doc"><pre class="scratch-body">${finalBody}</pre></div>`
+        : '';
+      return `<section id="panel-${slug}" class="tab-panel scratch-tab-panel" role="tabpanel" aria-label="${escapeHtml(scratchTabLabel(name))}">
+    ${topHint}
+    <h3 class="font-display" style="font-size:0.95rem;margin:0 0 0.35rem">Edit history</h3>
+    ${stepper || '<p class="empty-hint">No recorded edits for this note.</p>'}
+    ${finalBlock}
   </section>`;
     })
     .join('');
@@ -1203,6 +1306,7 @@ function buildAgentPanel(metrics, events) {
       <div class="kpi-tile"><strong>${metrics.toolCalls ?? 0}</strong><span>tools</span></div>
       <div class="kpi-tile"><strong>${metrics.parseRetries ?? 0}</strong><span>parse retries</span></div>
       <div class="kpi-tile"><strong>${metrics.errors ?? 0}</strong><span>errors</span></div>
+      <div class="kpi-tile"><strong>${metrics.scratchEdits ?? 0}</strong><span>scratch edits</span></div>
     </div>
     ${timelineHtml(events)}
   </section>`;
@@ -1364,7 +1468,7 @@ function buildScript(exportMode) {
     if (st) st.textContent = msg || '';
   }
   function exportBasename(){
-    return exportMode === 'soc2' ? 'betterseqta-soc2-gaps' : 'betterseqta-security-findings';
+    return exportMode === 'soc2' ? 'spotiqueue-soc2-gaps' : 'spotiqueue-security-findings';
   }
   function downloadBlob(filename, mime, text){
     var blob = new Blob([text], { type: mime });
@@ -1410,6 +1514,87 @@ function buildScript(exportMode) {
   if (dlMd) dlMd.addEventListener('click', function(){ runExport('md'); });
   if (dlJson) dlJson.addEventListener('click', function(){ runExport('json'); });
   updateExportHint();
+
+  function decodeRevisions(b64){
+    try { return JSON.parse(atob(b64)); } catch (e) { return []; }
+  }
+  function renderScratchRevision(stepper, index){
+    var b64 = stepper.getAttribute('data-scratch-revisions-b64');
+    var list = decodeRevisions(b64 || '');
+    if (!list.length) return;
+    var i = Math.max(0, Math.min(index, list.length - 1));
+    stepper.setAttribute('data-scratch-rev-idx', String(i));
+    var row = list[i];
+    var label = stepper.querySelector('.scratch-rev-label');
+    var meta = stepper.querySelector('.scratch-rev-meta');
+    var body = stepper.querySelector('.scratch-revision-body');
+    var prev = stepper.querySelector('.scratch-rev-prev');
+    var next = stepper.querySelector('.scratch-rev-next');
+    if (label) label.textContent = 'Revision ' + (i + 1) + ' of ' + list.length;
+    if (meta) {
+      var parts = [];
+      if (row.action) parts.push(row.action);
+      if (row.turn != null) parts.push('turn ' + (row.turn + 1));
+      if (row.ts) parts.push(row.ts);
+      meta.textContent = parts.join(' · ');
+    }
+    if (body) {
+      if (row.action === 'delete') {
+        body.textContent = row.previousBytes != null
+          ? '[deleted — was ' + row.previousBytes + ' bytes]'
+          : '[deleted]';
+      } else {
+        body.textContent = row.content != null ? String(row.content) : '';
+      }
+    }
+    if (prev) prev.disabled = i <= 0;
+    if (next) next.disabled = i >= list.length - 1;
+  }
+  document.querySelectorAll('.scratch-revision-stepper').forEach(function(stepper){
+    renderScratchRevision(stepper, 0);
+    var prev = stepper.querySelector('.scratch-rev-prev');
+    var next = stepper.querySelector('.scratch-rev-next');
+    if (prev) prev.addEventListener('click', function(){
+      var idx = parseInt(stepper.getAttribute('data-scratch-rev-idx') || '0', 10) - 1;
+      renderScratchRevision(stepper, idx);
+    });
+    if (next) next.addEventListener('click', function(){
+      var idx = parseInt(stepper.getAttribute('data-scratch-rev-idx') || '0', 10) + 1;
+      renderScratchRevision(stepper, idx);
+    });
+  });
+
+  function activateScratchTab(name, revisionIndex){
+    var slug = 'scratch-' + String(name || 'note').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!slug || slug === 'scratch-') slug = 'scratch-empty';
+    var btn = document.querySelector('.tab-btn[data-tab="' + slug + '"]');
+    if (!btn && slug !== 'scratch-empty') {
+      btn = document.querySelector('.tab-btn[data-tab="scratch-empty"]');
+    }
+    if (btn) btn.click();
+    if (!name) return;
+    var panel = document.getElementById('panel-' + slug);
+    if (!panel) return;
+    var stepper = panel.querySelector('.scratch-revision-stepper[data-scratch-name="' + name + '"]');
+    if (!stepper) return;
+    var list = decodeRevisions(stepper.getAttribute('data-scratch-revisions-b64') || '');
+    var idx = 0;
+    if (revisionIndex != null && revisionIndex !== '') {
+      var want = parseInt(String(revisionIndex), 10);
+      for (var j = 0; j < list.length; j++) {
+        if (list[j].revisionIndex === want) { idx = j; break; }
+      }
+    }
+    renderScratchRevision(stepper, idx);
+    stepper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  document.querySelectorAll('.tl-scratch-jump').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      activateScratchTab(btn.getAttribute('data-scratch-name'), btn.getAttribute('data-revision-index'));
+    });
+  });
+  window.__auditActivateScratchTab = activateScratchTab;
 })();
 </script>`;
 }
@@ -1434,13 +1619,13 @@ ${buildHeader(mode, report, runUrl, generatedAt)}
     <button type="button" class="tab-btn" role="tab" aria-selected="true" data-tab="overview">Overview</button>
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="findings">${findingsLabel}</button>
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="agent">Agent run</button>
-    ${buildScratchTabButtons(report.scratchNotes)}
+    ${buildScratchTabButtons(report)}
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="raw">Raw</button>
   </div>
   ${buildOverviewPanel(mode, report, stats, metrics)}
   ${buildFindingsPanel(mode, report, { generatedAt, runUrl, summary: displaySummary(report) })}
   ${buildAgentPanel(metrics, events)}
-  ${buildScratchTabPanels(report.scratchNotes, report.scratchNotesTruncated)}
+  ${buildScratchTabPanels(report)}
   ${buildRawPanel(report)}
 </main>
 ${buildScript(mode)}

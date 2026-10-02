@@ -53,11 +53,33 @@
   "scratchNotes": [
     {
       "name": "checklist",
-      "content": "- manifest permissions: checked (src/manifests/manifest.json)\n- content scripts: checked\n- background messaging: checked\n- storage / sync: checked\n- host_permissions: checked\n- dependencies: checked (npm audit summary)"
+      "content": "- host isolation: checked (server/index.js, allowedHost.js)\n- public API: checked (public-api-v1.js, publicApiAuth.js)\n- guest queue: checked\n- OAuth callbacks: skipped-with-reason (no code changes since last audit)\n- dependencies: checked (npm audit summary)"
     },
     {
       "name": "bookmarks",
-      "content": "F1: src/background.ts:120 (message handler)\nF2: grep postMessage in src/content/"
+      "content": "F1 evidence: server/routes/example.js:42\nF2 evidence: server/utils/logger.js:88\nRate limit grep: server/middleware/publicApiRateLimit.js"
+    }
+  ],
+  "scratchRevisions": [
+    {
+      "ts": "2026-09-28T10:00:24.000Z",
+      "turn": 2,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- host isolation: in progress",
+      "bytes": 28,
+      "revisionIndex": 1
+    },
+    {
+      "ts": "2026-09-28T10:00:28.000Z",
+      "turn": 3,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- host isolation: checked (server/index.js, allowedHost.js)\n- public API: checked (public-api-v1.js, publicApiAuth.js)\n- guest queue: checked\n- OAuth callbacks: skipped-with-reason (no code changes since last audit)\n- dependencies: checked (npm audit summary)",
+      "bytes": 220,
+      "revisionIndex": 2
     }
   ]
 }

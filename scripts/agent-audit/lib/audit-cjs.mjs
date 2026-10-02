@@ -27,6 +27,7 @@ export const {
   parseTranscriptJsonl,
   readTranscriptFile,
   buildTimelineEvents,
+  buildScratchRevisionsFromTranscript,
   computeAgentMetrics,
   healthFromFindings,
   countBySeverity,
