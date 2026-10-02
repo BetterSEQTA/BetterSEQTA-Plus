@@ -89,6 +89,64 @@ export function scratchSummary(scratchDir) {
   return r.files.map((f) => `${f.name} (${f.bytes}B)`).join(', ');
 }
 
+function reportMaxTotalBytes() {
+  return parseInt(process.env.AGENT_AUDIT_SCRATCH_REPORT_MAX_BYTES || '65536', 10);
+}
+
+function truncateUtf8ForReport(str, maxBytes) {
+  const buf = Buffer.from(String(str ?? ''), 'utf8');
+  if (buf.length <= maxBytes) return String(str ?? '');
+  let end = maxBytes;
+  while (end > 0) {
+    const slice = buf.subarray(0, end).toString('utf8');
+    if (!slice.endsWith('\uFFFD') || end === maxBytes) {
+      return `${slice}\n… [truncated for report]`;
+    }
+    end -= 1;
+  }
+  return '… [truncated for report]';
+}
+
+/** Snapshot scratch notes for JSON/HTML report (read-only, size-capped). */
+export function exportScratchForReport(scratchDir) {
+  const r = readScratch(scratchDir, {});
+  if (!r.files?.length) return { notes: [] };
+
+  const maxTotal = reportMaxTotalBytes();
+  const sorted = [...r.files].sort((a, b) => a.name.localeCompare(b.name));
+  const notes = [];
+  let total = 0;
+  let truncated = false;
+
+  for (const f of sorted) {
+    if (total >= maxTotal) {
+      truncated = true;
+      break;
+    }
+    const one = readScratch(scratchDir, { name: f.name });
+    if (one.error || one.content == null) continue;
+
+    const remaining = maxTotal - total;
+    let content = one.content;
+    let noteTruncated = false;
+    const bytes = Buffer.byteLength(content, 'utf8');
+    if (bytes > remaining) {
+      content = truncateUtf8ForReport(content, remaining);
+      noteTruncated = true;
+      truncated = true;
+    }
+    total += Buffer.byteLength(content, 'utf8');
+    notes.push({
+      name: f.name,
+      content,
+      ...(noteTruncated ? { truncated: true } : {})
+    });
+  }
+
+  if (sorted.length > notes.length) truncated = true;
+  return { notes, ...(truncated ? { truncated: true } : {}) };
+}
+
 export function resolveScratchDir(repoRoot, runId) {
   const override = String(process.env.AGENT_AUDIT_SCRATCH_DIR || '').trim();
   if (override) return path.resolve(override);

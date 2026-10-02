@@ -84,4 +84,17 @@ describe('agentAuditHtml (report-html.mjs)', () => {
     });
     assert.match(html, /tl-spine/);
   });
+
+  it('reportToHtml agent tab shows session scratch notes when present', async () => {
+    const { reportToHtml } = await import('./report-html.mjs');
+    const report = {
+      requiresAction: false,
+      summary: 'ok',
+      findings: [],
+      scratchNotes: [{ name: 'checklist', content: '- host: checked\n- api: checked' }]
+    };
+    const html = reportToHtml('security', report, { timelineEvents: [], metrics: {} });
+    assert.match(html, /Session scratch notes/);
+    assert.match(html, /host: checked/);
+  });
 });

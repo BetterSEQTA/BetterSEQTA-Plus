@@ -20,7 +20,7 @@ import {
 } from './lib/audit-cjs.mjs';
 import { auditLog } from './audit-log.mjs';
 import { assertRipgrepReady } from './lib/rg-run.mjs';
-import { resolveScratchDir } from './lib/scratch-pad.mjs';
+import { resolveScratchDir, exportScratchForReport } from './lib/scratch-pad.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -181,6 +181,13 @@ async function main() {
     }
   } finally {
     transcriptStream.end();
+  }
+
+  const scratchExport = exportScratchForReport(scratchDir);
+  if (scratchExport.notes?.length) {
+    report.scratchNotes = scratchExport.notes;
+    if (scratchExport.truncated) report.scratchNotesTruncated = true;
+    auditLog(`Scratch notes in report: ${scratchExport.notes.map((n) => n.name).join(', ')}`);
   }
 
   report = normalizeAuditReport(mode, report);

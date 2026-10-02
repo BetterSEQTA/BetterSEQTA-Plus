@@ -57,6 +57,23 @@ export function reportToMarkdown(mode, report) {
   for (const l of report.limitations || []) lines.push(`- ${l}`);
   lines.push('');
 
+  if (Array.isArray(report.scratchNotes) && report.scratchNotes.length) {
+    lines.push('## Session scratch notes');
+    if (report.scratchNotesTruncated) {
+      lines.push('');
+      lines.push('_Some scratch content was truncated for report size limits._');
+    }
+    lines.push('');
+    for (const n of report.scratchNotes) {
+      lines.push(`### ${n.name || 'note'}${n.truncated ? ' (partial)' : ''}`);
+      lines.push('');
+      lines.push('```');
+      lines.push(String(n.content ?? ''));
+      lines.push('```');
+      lines.push('');
+    }
+  }
+
   if (report.llmError) {
     lines.push('## LLM error');
     lines.push('');

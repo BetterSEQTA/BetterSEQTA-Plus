@@ -1118,7 +1118,28 @@ function buildFindingsPanel(mode, report, exportMeta) {
   </section>`;
 }
 
-function buildAgentPanel(metrics, events) {
+function buildScratchNotesSection(scratchNotes, truncated) {
+  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
+  const hint = truncated
+    ? '<p class="empty-hint" role="status">Some scratch content was omitted or truncated for report size limits.</p>'
+    : '';
+  const blocks = scratchNotes
+    .map((n) => {
+      const title = escapeHtml(String(n.name || 'note'));
+      const body = escapeHtml(String(n.content ?? ''));
+      const tag = n.truncated ? ' <span class="empty-hint">(partial)</span>' : '';
+      return `<details class="card scratch-note" open><summary class="font-display">${title}${tag}</summary><pre class="json-block scratch-note-body">${body}</pre></details>`;
+    })
+    .join('');
+  return `<div class="scratch-notes-wrap">
+    <h3 class="section-title font-display">Session scratch notes</h3>
+    <p class="empty-hint">Checklist, bookmarks, and gap notes the agent saved during the run.</p>
+    ${hint}
+    ${blocks}
+  </div>`;
+}
+
+function buildAgentPanel(metrics, events, scratchNotes, scratchNotesTruncated) {
   return `<section id="panel-agent" class="tab-panel" role="tabpanel">
     <div class="kpi-grid" style="margin-bottom:1rem">
       <div class="kpi-tile"><strong>${metrics.turnsUsed ?? '—'}</strong><span>turns</span></div>
@@ -1126,6 +1147,7 @@ function buildAgentPanel(metrics, events) {
       <div class="kpi-tile"><strong>${metrics.parseRetries ?? 0}</strong><span>parse retries</span></div>
       <div class="kpi-tile"><strong>${metrics.errors ?? 0}</strong><span>errors</span></div>
     </div>
+    ${buildScratchNotesSection(scratchNotes, scratchNotesTruncated)}
     ${timelineHtml(events)}
   </section>`;
 }
@@ -1364,7 +1386,7 @@ ${buildHeader(mode, report, runUrl, generatedAt)}
   </div>
   ${buildOverviewPanel(mode, report, stats, metrics)}
   ${buildFindingsPanel(mode, report, { generatedAt, runUrl, summary: displaySummary(report) })}
-  ${buildAgentPanel(metrics, events)}
+  ${buildAgentPanel(metrics, events, report.scratchNotes, report.scratchNotesTruncated)}
   ${buildRawPanel(report)}
 </main>
 ${buildScript(mode)}
