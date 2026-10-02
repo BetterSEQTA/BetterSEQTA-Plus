@@ -101,7 +101,8 @@ function chunkText(text, maxLen) {
 /**
  * Build Discord webhook payload embeds for security or SOC2 report.
  */
-function chunkDiscordEmbeds(mode, report, runUrl, htmlArtifactName = '') {
+function chunkDiscordEmbeds(mode, report, runUrl, htmlArtifactName = '', options = {}) {
+  const htmlAttached = !!options.htmlAttached;
   const username = mode === 'soc2' ? 'BetterSEQTA+ SOC2' : 'BetterSEQTA+ Audit';
   const embeds = [];
 
@@ -181,7 +182,9 @@ function chunkDiscordEmbeds(mode, report, runUrl, htmlArtifactName = '') {
 
   if (runUrl) {
     const artifactHint = htmlArtifactName
-      ? `\n\nDownload the **${htmlArtifactName}** artifact from this run for the full tabbed dashboard.`
+      ? htmlAttached
+        ? `\n\nThe **${htmlArtifactName}** dashboard is attached to this message.`
+        : `\n\nDownload the **${htmlArtifactName}** artifact from this run for the full tabbed dashboard.`
       : '';
     embeds.push({
       title: 'Workflow run',

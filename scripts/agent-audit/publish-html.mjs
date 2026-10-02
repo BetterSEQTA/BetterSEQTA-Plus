@@ -4,7 +4,13 @@ import path from 'path';
 /**
  * Post audit dashboard HTML to Discord as a file (works with private GitHub repos).
  */
-export async function publishHtmlToDiscord({ webhookUrl, htmlPath, filename, contentMessage }) {
+export async function publishHtmlToDiscord({
+  webhookUrl,
+  htmlPath,
+  filename,
+  contentMessage,
+  embedPayload = null
+}) {
   const url = String(webhookUrl || '').trim();
   if (!url || !fs.existsSync(htmlPath)) {
     return { ok: false, reason: 'missing_webhook_or_file' };
@@ -15,8 +21,11 @@ export async function publishHtmlToDiscord({ webhookUrl, htmlPath, filename, con
   }
   const payload = {
     content: contentMessage || `Audit dashboard: **${filename}** (open in browser).`,
-    username: 'BetterSEQTA+ Audit'
+    username: embedPayload?.username || 'SpotiQueue Audit'
   };
+  if (embedPayload?.embeds?.length) {
+    payload.embeds = embedPayload.embeds.slice(0, 10);
+  }
   const form = new FormData();
   form.append('payload_json', JSON.stringify(payload));
   form.append('files[0]', new Blob([body], { type: 'text/html;charset=utf-8' }), filename);
@@ -49,7 +58,15 @@ export async function publishHtmlViaPresignedPut({ putUrl, htmlPath }) {
   return { ok: true };
 }
 
-export async function publishAuditHtmlArtifacts({ mode, outDir, htmlBasename, webhookUrl, runUrl }) {
+export async function publishAuditHtmlArtifacts({
+  mode,
+  outDir,
+  htmlBasename,
+  webhookUrl,
+  runUrl,
+  report = null,
+  embedPayload = null
+}) {
   const htmlPath = path.join(outDir, htmlBasename);
   if (!fs.existsSync(htmlPath)) {
     return { discord: { ok: false, reason: 'no_html' }, put: { ok: false, reason: 'no_html' } };
@@ -68,7 +85,8 @@ export async function publishAuditHtmlArtifacts({ mode, outDir, htmlBasename, we
       webhookUrl,
       htmlPath,
       filename: htmlBasename,
-      contentMessage: msg
+      contentMessage: msg,
+      embedPayload
     });
   } else if (attachDiscord) {
     results.discord = { ok: false, reason: 'webhook_not_configured' };

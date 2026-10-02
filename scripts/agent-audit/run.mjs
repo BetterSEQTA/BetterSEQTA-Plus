@@ -11,6 +11,7 @@ import { notifyDiscordIfNeeded } from './discord-notify.mjs';
 import { publishAuditHtmlArtifacts } from './publish-html.mjs';
 import {
   syncRequiresAction,
+  chunkDiscordEmbeds,
   normalizeAuditReport,
   computeDashboardStats,
   readTranscriptFile,
@@ -237,17 +238,26 @@ async function main() {
   auditLog(`Wrote ${written.json}, ${written.md}, ${written.html}, ${names.transcript}`);
   auditLog(`requiresAction=${report.requiresAction}`);
 
-  const notify = await notifyDiscordIfNeeded({
-    mode,
-    report,
-    webhookUrl,
-    runUrl,
-    htmlArtifactName: written.html
+  const attachHtmlToDiscord = process.env.AGENT_AUDIT_DISCORD_ATTACH_HTML === '1';
+  const discordEmbedPayload = chunkDiscordEmbeds(mode, report, runUrl, written.html, {
+    htmlAttached: attachHtmlToDiscord
   });
-  if (notify.sent) {
-    auditLog('Discord notification sent');
+
+  if (!attachHtmlToDiscord) {
+    const notify = await notifyDiscordIfNeeded({
+      mode,
+      report,
+      webhookUrl,
+      runUrl,
+      htmlArtifactName: written.html
+    });
+    if (notify.sent) {
+      auditLog('Discord notification sent');
+    } else {
+      auditLog(`Discord skipped: ${notify.reason}`);
+    }
   } else {
-    auditLog(`Discord skipped: ${notify.reason}`);
+    auditLog('Discord embed will ship with HTML attachment (AGENT_AUDIT_DISCORD_ATTACH_HTML=1)');
   }
 
   try {
@@ -256,7 +266,8 @@ async function main() {
       outDir,
       htmlBasename: written.html,
       webhookUrl,
-      runUrl
+      runUrl,
+      embedPayload: attachHtmlToDiscord ? discordEmbedPayload : null
     });
     if (published.discord?.ok) {
       auditLog(`Discord HTML attached: ${written.html}`);
