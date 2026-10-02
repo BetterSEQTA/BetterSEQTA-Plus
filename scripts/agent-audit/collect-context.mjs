@@ -3,6 +3,7 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { globSync } from 'glob';
+import { runRipgrep } from './lib/rg-run.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -19,11 +20,9 @@ function readExcerpt(relPath, maxBytes = 8000) {
 }
 
 function runRg(pattern, glob = '') {
-  const args = ['--max-count', '25', '--no-heading', '-n', pattern, REPO_ROOT];
-  if (glob) args.unshift('-g', glob);
-  const result = spawnSync('rg', args, { encoding: 'utf8', maxBuffer: 256 * 1024 });
-  const lines = (result.stdout || '').trim().split('\n').filter(Boolean);
-  return lines.slice(0, 25);
+  const result = runRipgrep({ repoRoot: REPO_ROOT, pattern, glob, maxMatches: 25 });
+  if (result.error) return [];
+  return result.lines;
 }
 
 function npmAuditSummary() {

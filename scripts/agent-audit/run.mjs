@@ -18,6 +18,7 @@ import {
   collectReportItemIds
 } from './lib/audit-cjs.mjs';
 import { auditLog } from './audit-log.mjs';
+import { assertRipgrepReady } from './lib/rg-run.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -114,6 +115,17 @@ async function main() {
   );
 
   auditLog('Collecting static context (npm audit, ripgrep, policy excerpts)…');
+  try {
+    const rgStatus = assertRipgrepReady(REPO_ROOT);
+    auditLog(
+      rgStatus.sanity
+        ? `Ripgrep ready (sanity ${rgStatus.matchCount} hits for ${rgStatus.sanity.pattern})`
+        : 'Ripgrep ready'
+    );
+  } catch (err) {
+    auditLog(`Ripgrep preflight failed: ${err.message}`);
+    process.exit(1);
+  }
   const context = await buildContext(mode, { git });
   auditLog('Context bundle ready');
 

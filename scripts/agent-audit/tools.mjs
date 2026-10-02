@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { spawnSync } from 'child_process';
+import { runRipgrep } from './lib/rg-run.mjs';
 
 const DENY_DIRS = new Set(['.git', 'node_modules']);
 const DENY_GLOBS = ['.env', '.env.local'];
@@ -52,13 +52,23 @@ export function createToolHost(repoRoot) {
   }
 
   function grep({ pattern, glob = '', maxMatches = defaultGrepMatches } = {}) {
-    if (!pattern || pattern.length > 200) return { error: 'invalid pattern' };
-    const args = ['--max-count', String(maxMatches), '--no-heading', '-n', pattern, root];
-    if (glob) args.splice(0, 0, ...['-g', glob]);
-    const result = spawnSync('rg', args, { encoding: 'utf8', maxBuffer: 512 * 1024 });
-    const out = (result.stdout || '').trim();
-    const lines = out ? out.split('\n').slice(0, maxMatches) : [];
-    return { pattern, matchCount: lines.length, lines };
+    const result = runRipgrep({ repoRoot: root, pattern, glob, maxMatches });
+    if (result.error) {
+      return {
+        pattern: result.pattern,
+        glob: result.glob,
+        matchCount: 0,
+        lines: [],
+        error: result.error,
+        detail: result.detail || ''
+      };
+    }
+    return {
+      pattern: result.pattern,
+      glob: result.glob,
+      matchCount: result.matchCount,
+      lines: result.lines
+    };
   }
 
   function dispatch(name, args, contextBundle) {

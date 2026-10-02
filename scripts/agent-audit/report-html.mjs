@@ -383,14 +383,21 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
 .scores-muted .ring-wrap { opacity: 0.55; }
 .status-row { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .status-summary { color: var(--muted); font-size: 0.9rem; max-width: 72ch; line-height: 1.45; }
+.status-summary-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  max-width: none;
+}
 .prose-summary { margin: 0.25rem 0 0; line-height: 1.65; color: var(--text); max-width: 85ch; }
 .tab-bar {
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.35rem;
-  flex-wrap: wrap;
   padding: 0.85rem 0;
   margin-bottom: 1.25rem;
   background: rgba(24,24,27,0.94);
@@ -401,12 +408,37 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--muted);
-  padding: 0.45rem 1rem;
+  padding: 0.45rem 0.65rem;
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  text-align: center;
+  min-width: 0;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+@media (max-width: 640px) {
+  body { overflow-x: clip; }
+  h1 { font-size: 1.25rem; }
+  .header-row { flex-direction: column; align-items: stretch; }
+  .header-meta { align-items: flex-start; text-align: left; min-width: 0; width: 100%; }
+  .status-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .tab-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.65rem 0;
+  }
+  .tab-btn { padding: 0.55rem 0.5rem; font-size: 0.8rem; }
+  .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+  .kpi-tile { padding: 1rem 0.75rem; min-height: 4.25rem; }
+  .kpi-tile strong { font-size: 1.5rem; }
+  .filter-bar { position: relative; top: auto; }
+  .export-hint { min-width: 0; flex-basis: 100%; }
+  .tl-ts { word-break: break-all; }
+  .hero-primary { flex-direction: column; align-items: stretch; }
+}
+@media (max-width: 380px) {
+  .tab-btn { font-size: 0.75rem; padding: 0.5rem 0.35rem; }
 }
 .tab-btn:hover { background: var(--card-hover); color: var(--text); }
 .tab-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
@@ -932,7 +964,7 @@ function buildHeader(mode, report, runUrl, generatedAt) {
   const title = mode === 'soc2' ? 'SOC 2 audit dashboard' : 'Security audit dashboard';
   const modeLabel = mode === 'soc2' ? 'SOC 2' : 'Security';
   const statusChip = buildStatusChip(report);
-  const shortSummary = escapeHtml(truncate(displaySummary(report), 140));
+  const shortSummary = escapeHtml(displaySummary(report));
   const metaLink = runUrl
     ? `<a href="${escapeHtml(runUrl)}" rel="noopener">CI run</a>`
     : `<span>Local preview or CI artifact</span>`;
@@ -949,7 +981,7 @@ function buildHeader(mode, report, runUrl, generatedAt) {
     </div>
     <div class="header-meta">${metaLink}${timeLine}</div>
   </div>
-  <div class="status-row">${statusChip}<span class="status-summary">${shortSummary}</span></div>
+  <div class="status-row">${statusChip}<span class="status-summary status-summary-clamp">${shortSummary}</span></div>
   </div>
 </header>`;
 }

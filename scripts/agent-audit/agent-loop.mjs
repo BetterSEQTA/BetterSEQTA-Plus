@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { chatCompletion } from './llm-client.mjs';
 import { createToolHost, TOOL_DEFINITIONS } from './tools.mjs';
 import { parseAgentJson, extractFinishReport, displaySummary } from './lib/audit-cjs.mjs';
+import { evaluateFinishGate, resolveMinFinishTurns } from './lib/finish-gate.mjs';
+import { runRipgrep, resolveGrepSanityProbe } from './lib/rg-run.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,7 +25,9 @@ function buildInitialUserMessage(mode, context) {
     `Begin the ${mode} audit.${meta ? ` Repository ${meta}.` : ''}`,
     'Do NOT guess repo facts. Your FIRST reply must be a tool call only:',
     '{"type":"tool","name":"read_context_bundle","args":{}}',
-    'Then use read_file and grep, then finish with {"type":"finish","report":{...}}.'
+    'Then use read_file and grep across every focus area in the system prompt.',
+    'Send finish only when you are extremely confident no critical or high issues remain in what you checked. Empty findings require high confidence and honest limitations.',
+    'The harness rejects finish that is too shallow or too early.'
   ].join('\n');
 }
 
@@ -48,13 +52,13 @@ function contextSummary(context) {
 function turnBudgetNudge(turnIndex, maxTurns) {
   const remaining = maxTurns - turnIndex;
   if (remaining === 20) {
-    return 'About 20 turns left. Wrap up open areas and plan to send {"type":"finish","report":{...}} soon.';
+    return 'About 20 turns left. Keep covering focus areas with read_file and grep. Finish only when extremely confident; the harness rejects shallow clean reports.';
   }
   if (remaining === 10) {
-    return 'About 10 turns left. Prefer finish unless one critical path still needs read_file or grep.';
+    return 'About 10 turns left. Finish only if every focus area is checked and you are extremely confident. Otherwise read the highest-risk paths still open.';
   }
   if (remaining === 3) {
-    return 'Last turns before the hard cap. Send {"type":"finish","report":{...}} now and note gaps in limitations.';
+    return 'Hard cap soon. Send {"type":"finish","report":{...}} with honest limitations for anything not read. Do not claim no issues in areas you skipped.';
   }
   return null;
 }
@@ -102,9 +106,10 @@ export async function runAgentLoop({
   const system = loadPrompt(mode);
   const toolDoc = JSON.stringify(TOOL_DEFINITIONS, null, 2);
 
+  const minFinishTurns = resolveMinFinishTurns(minTurns);
   const depthNote =
     minTurns > 0
-      ? `\nDepth: aim for about ${minTurns} or more tool turns when risk areas are not yet covered. You may still send {"type":"finish","report":{...}} early when you are confident. Note early finish and any skipped areas in report limitations.`
+      ? `\nDepth and confidence: use at least ${minFinishTurns} tool turns before finish. Finish is rejected before turn ${minTurns}. Send finish only when extremely confident no critical or high issues remain in checked areas. Empty findings mean high-confidence clean scope; otherwise record findings or detailed limitations. Optimistic early finish is rejected.`
       : '';
   const messages = [
     { role: 'system', content: `${system}${depthNote}\n\nTool reference:\n${toolDoc}` },
@@ -118,6 +123,28 @@ export async function runAgentLoop({
   let emptyResponseRecoveries = 0;
   const maxEmptyRecoveries = parseInt(process.env.AGENT_AUDIT_EMPTY_RECOVERIES || '3', 10);
   let contextBundleDelivered = false;
+  const tooling = {
+    grepBroken: false,
+    grepSanityFailed: false,
+    grepErrorDetail: ''
+  };
+  const sanityProbe = resolveGrepSanityProbe(repoRoot);
+  if (sanityProbe) {
+    const sanity = runRipgrep({
+      repoRoot,
+      pattern: sanityProbe.pattern,
+      glob: sanityProbe.glob || '',
+      maxMatches: Math.max(sanityProbe.minMatches || 1, 5)
+    });
+    if (sanity.error || sanity.matchCount < (sanityProbe.minMatches || 1)) {
+      tooling.grepSanityFailed = true;
+      tooling.grepErrorDetail =
+        sanity.error || `sanity matchCount ${sanity.matchCount} for ${sanityProbe.pattern}`;
+      log(`Ripgrep sanity check failed: ${tooling.grepErrorDetail}`);
+    } else {
+      log(`Ripgrep sanity ok (${sanity.matchCount} hits for ${sanityProbe.pattern})`);
+    }
+  }
 
   for (let turn = 0; turn < maxTurns; turn += 1) {
     turnsUsed = turn + 1;
@@ -200,12 +227,22 @@ export async function runAgentLoop({
           ? parsed.report
           : extractFinishReport(assistantContent);
       if (finalReport) {
-        const early = turn + 1 < minTurns;
-        log(
-          early
-            ? `Turn ${turn + 1}: received finish report (early, before guidance ${minTurns} turns)`
-            : `Turn ${turn + 1}: received finish report`
-        );
+        const gate = evaluateFinishGate({
+          turnIndex: turn,
+          minTurns,
+          minFinishTurns,
+          mode,
+          report: finalReport,
+          tooling
+        });
+        if (!gate.accept) {
+          log(`Turn ${turn + 1}: finish rejected (${gate.userMessage.slice(0, 120)}...)`);
+          messages.push({ role: 'user', content: gate.userMessage });
+          onTranscriptLine?.({ turn, role: 'system', content: 'finish_rejected' });
+          finalReport = null;
+          continue;
+        }
+        log(`Turn ${turn + 1}: received finish report`);
         break;
       }
     }
@@ -221,6 +258,10 @@ export async function runAgentLoop({
       } else {
         result = tools.dispatch(parsed.name, parsed.args || {}, context);
         if (parsed.name === 'read_context_bundle') contextBundleDelivered = true;
+        if (parsed.name === 'grep' && result?.error) {
+          tooling.grepBroken = true;
+          tooling.grepErrorDetail = result.detail || result.error;
+        }
       }
       const toolResult = JSON.stringify(result).slice(0, 14000);
       const userMsg = { role: 'user', content: `Tool result for ${parsed.name}:\n${toolResult}` };
