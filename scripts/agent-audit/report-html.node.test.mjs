@@ -85,7 +85,17 @@ describe('agentAuditHtml (report-html.mjs)', () => {
     assert.match(html, /tl-spine/);
   });
 
-  it('reportToHtml agent tab shows session scratch notes when present', async () => {
+  it('preview fixture includes scratch notes for dashboard demo', async () => {
+    const { reportToHtml } = await import('./report-html.mjs');
+    const fixture = path.join(__dirname, 'fixtures', 'sample-security-report.json');
+    const report = JSON.parse(fs.readFileSync(fixture, 'utf8'));
+    const html = reportToHtml('security', report, { timelineEvents: [], metrics: {} });
+    assert.ok(Array.isArray(report.scratchNotes) && report.scratchNotes.length > 0);
+    assert.match(html, /data-tab="scratch-checklist"/);
+    assert.match(html, /id="panel-scratch-checklist"/);
+  });
+
+  it('reportToHtml gives each scratch note its own tab', async () => {
     const { reportToHtml } = await import('./report-html.mjs');
     const report = {
       requiresAction: false,
@@ -94,7 +104,8 @@ describe('agentAuditHtml (report-html.mjs)', () => {
       scratchNotes: [{ name: 'checklist', content: '- host: checked\n- api: checked' }]
     };
     const html = reportToHtml('security', report, { timelineEvents: [], metrics: {} });
-    assert.match(html, /Session scratch notes/);
+    assert.match(html, /data-tab="scratch-checklist"/);
     assert.match(html, /host: checked/);
+    assert.doesNotMatch(html, /Session scratch notes/);
   });
 });

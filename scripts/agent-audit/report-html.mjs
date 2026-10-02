@@ -397,26 +397,30 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   position: sticky;
   top: 0;
   z-index: 20;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 0.35rem;
-  padding: 0.85rem 0;
+  padding: 0.65rem 0;
   margin-bottom: 1.25rem;
   background: rgba(24,24,27,0.94);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 .tab-btn {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--muted);
-  padding: 0.45rem 0.65rem;
+  padding: 0.38rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
   font-size: 0.8125rem;
   text-align: center;
-  min-width: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 @media (max-width: 640px) {
@@ -425,12 +429,7 @@ h1 { margin: 0.35rem 0 0; font-size: 1.5rem; font-weight: 600; }
   .header-row { flex-direction: column; align-items: stretch; }
   .header-meta { align-items: flex-start; text-align: left; min-width: 0; width: 100%; }
   .status-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-  .tab-bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-    padding: 0.65rem 0;
-  }
-  .tab-btn { padding: 0.55rem 0.5rem; font-size: 0.8rem; }
+  .tab-btn { padding: 0.45rem 0.65rem; font-size: 0.78rem; }
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
   .kpi-tile { padding: 1rem 0.75rem; min-height: 4.25rem; }
   .kpi-tile strong { font-size: 1.5rem; }
@@ -769,7 +768,36 @@ a:hover { color: var(--brand-dark); }
   background: var(--card);
 }
 .empty-state p { margin: 0 0 0.5rem; }
-.empty-hint { font-size: 0.85rem; max-width: 42ch; margin: 0 auto !important; }
+.empty-hint { font-size: 0.85rem; color: var(--muted); margin: 0; max-width: none; }
+.empty-state .empty-hint { max-width: 42ch; margin: 0 auto !important; }
+.scratch-tab-panel { padding-top: 0.15rem; }
+.scratch-banner {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.22);
+  line-height: 1.45;
+}
+.scratch-doc {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+}
+.scratch-body {
+  margin: 0;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+  max-height: min(70vh, 520px);
+  overflow: auto;
+}
 .tl-track {
   list-style: none;
   margin: 0;
@@ -1118,28 +1146,57 @@ function buildFindingsPanel(mode, report, exportMeta) {
   </section>`;
 }
 
-function buildScratchNotesSection(scratchNotes, truncated) {
-  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
-  const hint = truncated
-    ? '<p class="empty-hint" role="status">Some scratch content was omitted or truncated for report size limits.</p>'
-    : '';
-  const blocks = scratchNotes
-    .map((n) => {
-      const title = escapeHtml(String(n.name || 'note'));
-      const body = escapeHtml(String(n.content ?? ''));
-      const tag = n.truncated ? ' <span class="empty-hint">(partial)</span>' : '';
-      return `<details class="card scratch-note" open><summary class="font-display">${title}${tag}</summary><pre class="json-block scratch-note-body">${body}</pre></details>`;
-    })
-    .join('');
-  return `<div class="scratch-notes-wrap">
-    <h3 class="section-title font-display">Session scratch notes</h3>
-    <p class="empty-hint">Checklist, bookmarks, and gap notes the agent saved during the run.</p>
-    ${hint}
-    ${blocks}
-  </div>`;
+function scratchTabSlug(name) {
+  const base = String(name || 'note')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return base ? `scratch-${base}` : 'scratch-note';
 }
 
-function buildAgentPanel(metrics, events, scratchNotes, scratchNotesTruncated) {
+function scratchTabLabel(name) {
+  const n = String(name || 'note').trim();
+  return n
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+function buildScratchTabButtons(scratchNotes) {
+  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
+  return scratchNotes
+    .map((n) => {
+      const slug = scratchTabSlug(n.name);
+      const label = escapeHtml(scratchTabLabel(n.name));
+      return `<button type="button" class="tab-btn tab-btn-scratch" role="tab" aria-selected="false" data-tab="${slug}">${label}</button>`;
+    })
+    .join('');
+}
+
+function buildScratchTabPanels(scratchNotes, truncated) {
+  if (!Array.isArray(scratchNotes) || !scratchNotes.length) return '';
+  const hint = truncated
+    ? '<p class="scratch-banner" role="status">Some scratch content was omitted or truncated for report size limits.</p>'
+    : '';
+  return scratchNotes
+    .map((n, i) => {
+      const slug = scratchTabSlug(n.name);
+      const body = escapeHtml(String(n.content ?? ''));
+      const partial = n.truncated
+        ? '<p class="scratch-banner" role="status">This note was partially truncated for the report.</p>'
+        : '';
+      const topHint = i === 0 ? hint : '';
+      return `<section id="panel-${slug}" class="tab-panel scratch-tab-panel" role="tabpanel" aria-label="${escapeHtml(scratchTabLabel(n.name))}">
+    ${topHint}${partial}
+    <div class="scratch-doc"><pre class="scratch-body">${body}</pre></div>
+  </section>`;
+    })
+    .join('');
+}
+
+function buildAgentPanel(metrics, events) {
   return `<section id="panel-agent" class="tab-panel" role="tabpanel">
     <div class="kpi-grid" style="margin-bottom:1rem">
       <div class="kpi-tile"><strong>${metrics.turnsUsed ?? '—'}</strong><span>turns</span></div>
@@ -1147,7 +1204,6 @@ function buildAgentPanel(metrics, events, scratchNotes, scratchNotesTruncated) {
       <div class="kpi-tile"><strong>${metrics.parseRetries ?? 0}</strong><span>parse retries</span></div>
       <div class="kpi-tile"><strong>${metrics.errors ?? 0}</strong><span>errors</span></div>
     </div>
-    ${buildScratchNotesSection(scratchNotes, scratchNotesTruncated)}
     ${timelineHtml(events)}
   </section>`;
 }
@@ -1194,17 +1250,13 @@ function buildScript(exportMode) {
   var itemsToAgentMarkdown = ${mdFn};
   var itemsToAgentJson = ${jsonFn};
   var tabs = document.querySelectorAll('.tab-btn');
-  var panels = {
-    overview: document.getElementById('panel-overview'),
-    findings: document.getElementById('panel-findings'),
-    agent: document.getElementById('panel-agent'),
-    raw: document.getElementById('panel-raw')
-  };
   tabs.forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = btn.getAttribute('data-tab');
       tabs.forEach(function(b){ b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
-      Object.keys(panels).forEach(function(k){ if (panels[k]) panels[k].classList.toggle('active', k === id); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){
+        p.classList.toggle('active', p.id === 'panel-' + id);
+      });
     });
   });
   document.querySelectorAll('[data-goto-findings]').forEach(function(a){
@@ -1382,11 +1434,13 @@ ${buildHeader(mode, report, runUrl, generatedAt)}
     <button type="button" class="tab-btn" role="tab" aria-selected="true" data-tab="overview">Overview</button>
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="findings">${findingsLabel}</button>
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="agent">Agent run</button>
+    ${buildScratchTabButtons(report.scratchNotes)}
     <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="raw">Raw</button>
   </div>
   ${buildOverviewPanel(mode, report, stats, metrics)}
   ${buildFindingsPanel(mode, report, { generatedAt, runUrl, summary: displaySummary(report) })}
-  ${buildAgentPanel(metrics, events, report.scratchNotes, report.scratchNotesTruncated)}
+  ${buildAgentPanel(metrics, events)}
+  ${buildScratchTabPanels(report.scratchNotes, report.scratchNotesTruncated)}
   ${buildRawPanel(report)}
 </main>
 ${buildScript(mode)}

@@ -49,5 +49,15 @@
     }
   ],
   "limitations": ["Preview fixture only.", "No live grep was run."],
-  "checkedAreas": ["auth", "public-api"]
+  "checkedAreas": ["auth", "public-api"],
+  "scratchNotes": [
+    {
+      "name": "checklist",
+      "content": "- manifest permissions: checked (src/manifests/manifest.json)\n- content scripts: checked\n- background messaging: checked\n- storage / sync: checked\n- host_permissions: checked\n- dependencies: checked (npm audit summary)"
+    },
+    {
+      "name": "bookmarks",
+      "content": "F1: src/background.ts:120 (message handler)\nF2: grep postMessage in src/content/"
+    }
+  ]
 }
