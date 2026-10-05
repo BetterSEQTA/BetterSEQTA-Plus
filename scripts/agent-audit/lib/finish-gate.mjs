@@ -41,7 +41,7 @@ export function evaluateFinishGate({
   if (turn < minFinishTurns) {
     return {
       accept: false,
-      userMessage: `Finish rejected at turn ${turn}. Minimum finish depth is ${minFinishTurns} tool turns. Keep auditing auth, isolation, guest/public surfaces, cookies, and outbound calls.`
+      userMessage: `Finish rejected at turn ${turn}. Minimum finish depth is ${minFinishTurns} tool turns. Keep auditing manifest permissions, content scripts, message passing, storage, OAuth, and HTML injection paths.`
     };
   }
 

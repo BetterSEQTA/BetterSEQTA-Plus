@@ -15,6 +15,12 @@ function loadPrompt(mode) {
   return fs.readFileSync(path.join(__dirname, 'prompts', file), 'utf8');
 }
 
+function embedIndexEnabled() {
+  if (process.env.AGENT_AUDIT_EMBED_INDEX === '0') return false;
+  if (process.env.AGENT_AUDIT_EMBED_INDEX === '1') return true;
+  return process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+}
+
 function buildInitialUserMessage(mode, context) {
   if (process.env.AGENT_AUDIT_EMBED_CONTEXT === '1') {
     return `Begin the ${mode} audit. Context summary (use read_context_bundle for full JSON):\n${contextSummary(context)}`;
@@ -22,15 +28,86 @@ function buildInitialUserMessage(mode, context) {
   const sha = context.git?.sha ? String(context.git.sha).slice(0, 12) : '';
   const repo = context.git?.repository || '';
   const meta = [repo, sha].filter(Boolean).join(' @ ');
+  const deltaNote =
+    context.index?.gitDelta?.changedFiles?.length
+      ? ` Git delta (${context.index.gitDelta.changedFiles.length} files): prioritize these paths first.`
+      : '';
+  if (embedIndexEnabled() && context.index) {
+    const indexJson = JSON.stringify(context.index, null, 2).slice(0, 14000);
+    return [
+      `Begin the ${mode} audit.${meta ? ` Repository ${meta}.` : ''}${deltaNote}`,
+      'Context index (preloaded). Do NOT call read_context_bundle unless you need the full bundle again.',
+      indexJson,
+      'Use read_context_section, batch tool calls (up to 6), grep with filesOnly, then read_file line ranges.',
+      'Use write_scratch name checklist for progress. Send finish only when extremely confident.',
+      'The harness rejects finish that is too shallow or too early.'
+    ].join('\n');
+  }
   return [
-    `Begin the ${mode} audit.${meta ? ` Repository ${meta}.` : ''}`,
+    `Begin the ${mode} audit.${meta ? ` Repository ${meta}.` : ''}${deltaNote}`,
     'Do NOT guess repo facts. Your FIRST reply must be a tool call only:',
     '{"type":"tool","name":"read_context_bundle","args":{}}',
     'First read_context_bundle for the index, then read_context_section for sections you need.',
+    'Prefer {"type":"batch","tools":[...]} for independent grep/read_file calls (max 6).',
     'Use file_info and read_file line ranges on large files. Use write_scratch (e.g. name checklist) for progress.',
     'Send finish only when you are extremely confident no critical or high issues remain in what you checked.',
     'The harness rejects finish that is too shallow or too early.'
   ].join('\n');
+}
+
+function compactToolDocEnabled() {
+  if (process.env.AGENT_AUDIT_COMPACT_TOOL_DOC === '0') return false;
+  if (process.env.AGENT_AUDIT_COMPACT_TOOL_DOC === '1') return true;
+  return process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+}
+
+function buildToolReference() {
+  if (!compactToolDocEnabled()) {
+    return JSON.stringify(TOOL_DEFINITIONS, null, 2);
+  }
+  return TOOL_DEFINITIONS.map((t) => `- ${t.name}: ${t.description}`).join('\n');
+}
+
+const MAX_BATCH_TOOLS = parseInt(process.env.AGENT_AUDIT_MAX_BATCH_TOOLS || '6', 10);
+
+async function runToolBatch(toolsHost, toolList, context, contextState, tooling) {
+  const capped = toolList.slice(0, MAX_BATCH_TOOLS);
+  const settled = await Promise.allSettled(
+    capped.map(async (item) => {
+      const name = item?.name;
+      const args = item?.args || {};
+      if (!name) return { name: '', ok: false, error: 'missing_name' };
+      if (name === 'read_context_bundle' && contextState.contextBundleDelivered) {
+        return {
+          name,
+          ok: true,
+          result: {
+            note:
+              'Context bundle was already loaded this run. Use grep and read_file instead of read_context_bundle again.'
+          }
+        };
+      }
+      const result = toolsHost.dispatch(name, args, context);
+      if (name === 'read_context_bundle') contextState.contextBundleDelivered = true;
+      if ((name === 'grep' || name === 'search_files') && result?.error) {
+        tooling.grepBroken = true;
+        tooling.grepErrorDetail = result.detail || result.error;
+      }
+      return { name, ok: true, result };
+    })
+  );
+  return settled.map((outcome, i) => {
+    const name = capped[i]?.name || `tool_${i}`;
+    if (outcome.status === 'fulfilled') return outcome.value;
+    return { name, ok: false, error: String(outcome.reason?.message || outcome.reason) };
+  });
+}
+
+function pushToolResultMessages(messages, label, results) {
+  const cap = toolResultMaxChars(label);
+  const payload = JSON.stringify({ results }).slice(0, cap);
+  messages.push({ role: 'user', content: `Tool result for ${label}:\n${payload}` });
+  return payload;
 }
 
 function contextSummary(context) {
@@ -42,7 +119,8 @@ function contextSummary(context) {
       securityGreps: context.securityGreps,
       migrationsRecent: context.migrationsRecent,
       hints: {
-        hasServerIndex: !!context.fileHints?.serverIndex,
+        hasManifest: !!context.fileHints?.manifest,
+        hasBackground: !!context.fileHints?.background,
         hasPolicies: !!context.soc2?.policies
       }
     },
@@ -113,7 +191,7 @@ export async function runAgentLoop({
   const log = (msg) => onLog?.(msg);
   const tools = createToolHost(repoRoot, { scratchDir, contextBundle: context });
   const system = loadPrompt(mode);
-  const toolDoc = JSON.stringify(TOOL_DEFINITIONS, null, 2);
+  const toolDoc = buildToolReference();
 
   const minFinishTurns = resolveMinFinishTurns(minTurns);
   const depthNote =
@@ -131,7 +209,8 @@ export async function runAgentLoop({
   let turnsUsed = 0;
   let emptyResponseRecoveries = 0;
   const maxEmptyRecoveries = parseInt(process.env.AGENT_AUDIT_EMPTY_RECOVERIES || '3', 10);
-  let contextBundleDelivered = false;
+  let contextBundleDelivered = embedIndexEnabled();
+  const contextState = { contextBundleDelivered };
   const tooling = {
     grepBroken: false,
     grepSanityFailed: false,
@@ -164,12 +243,14 @@ export async function runAgentLoop({
     }
     log(`Turn ${turn + 1}/${maxTurns}: calling model…`);
     let llm;
+    let llmIntent = 'tool';
     try {
       llm = await chatCompletion({
         baseUrl,
         apiKey,
         model,
         messages: trimMessages(messages, scratchDir),
+        intent: llmIntent,
         onLog: log
       });
     } catch (err) {
@@ -231,6 +312,7 @@ export async function runAgentLoop({
     }
 
     if (parsed.type === 'finish') {
+      llmIntent = 'finish';
       finalReport =
         parsed.report && typeof parsed.report === 'object'
           ? parsed.report
@@ -257,26 +339,29 @@ export async function runAgentLoop({
       }
     }
 
+    if (parsed.type === 'batch' && Array.isArray(parsed.tools) && parsed.tools.length) {
+      log(`Turn ${turn + 1}: batch (${parsed.tools.length} tools)`);
+      const results = await runToolBatch(tools, parsed.tools, context, contextState, tooling);
+      contextBundleDelivered = contextState.contextBundleDelivered;
+      const toolResult = pushToolResultMessages(messages, 'batch', results);
+      onTranscriptLine?.({
+        turn,
+        role: 'tool',
+        name: 'batch',
+        args: { tools: parsed.tools.map((t) => t.name) },
+        content: toolResult.slice(0, 2000)
+      });
+      continue;
+    }
+
     if (parsed.type === 'tool' && parsed.name) {
       log(`Turn ${turn + 1}: tool ${parsed.name}`);
-      let result;
-      if (parsed.name === 'read_context_bundle' && contextBundleDelivered) {
-        result = {
-          note:
-            'Context bundle was already loaded this run. Use grep and read_file instead of read_context_bundle again.'
-        };
-      } else {
-        result = tools.dispatch(parsed.name, parsed.args || {}, context);
-        if (parsed.name === 'read_context_bundle') contextBundleDelivered = true;
-        if ((parsed.name === 'grep' || parsed.name === 'search_files') && result?.error) {
-          tooling.grepBroken = true;
-          tooling.grepErrorDetail = result.detail || result.error;
-        }
-      }
+      const results = await runToolBatch(tools, [{ name: parsed.name, args: parsed.args || {} }], context, contextState, tooling);
+      contextBundleDelivered = contextState.contextBundleDelivered;
+      const result = results[0]?.result ?? { error: results[0]?.error || 'tool_failed' };
       const cap = toolResultMaxChars(parsed.name);
       const toolResult = JSON.stringify(result).slice(0, cap);
-      const userMsg = { role: 'user', content: `Tool result for ${parsed.name}:\n${toolResult}` };
-      messages.push(userMsg);
+      messages.push({ role: 'user', content: `Tool result for ${parsed.name}:\n${toolResult}` });
       const transcriptTool = {
         turn,
         role: 'tool',
@@ -297,7 +382,8 @@ export async function runAgentLoop({
 
     messages.push({
       role: 'user',
-      content: 'Expected type "tool" or "finish". Continue auditing or finish with report JSON.'
+      content:
+        'Expected type "tool", "batch", or "finish". Use batch for parallel reads. Continue auditing or finish with report JSON.'
     });
   }
 
@@ -319,6 +405,7 @@ export async function runAgentLoop({
         apiKey,
         model,
         messages: trimMessages(messages, scratchDir),
+        intent: 'finish',
         onLog: log
       });
     } catch (err) {

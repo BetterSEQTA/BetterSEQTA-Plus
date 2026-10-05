@@ -39,13 +39,10 @@ function buildAuthHeaders(apiKey) {
   return headers;
 }
 
-function toolCallsToAgentJson(message) {
-  const calls = message?.tool_calls;
-  if (!Array.isArray(calls) || !calls.length) return '';
-  const tc = calls[0];
+function parseToolCall(tc) {
   const fn = tc?.function || tc;
   const name = fn?.name;
-  if (!name) return '';
+  if (!name) return null;
   let args = {};
   try {
     const raw = fn.arguments ?? fn.args ?? '{}';
@@ -53,7 +50,18 @@ function toolCallsToAgentJson(message) {
   } catch {
     args = {};
   }
-  return JSON.stringify({ type: 'tool', name, args });
+  return { name, args };
+}
+
+function toolCallsToAgentJson(message) {
+  const calls = message?.tool_calls;
+  if (!Array.isArray(calls) || !calls.length) return '';
+  const parsed = calls.map(parseToolCall).filter(Boolean);
+  if (!parsed.length) return '';
+  if (parsed.length === 1) {
+    return JSON.stringify({ type: 'tool', name: parsed[0].name, args: parsed[0].args });
+  }
+  return JSON.stringify({ type: 'batch', tools: parsed });
 }
 
 function extractAssistantText(data, rawText) {
@@ -175,9 +183,14 @@ export async function chatCompletion({
   messages,
   temperature = 0.2,
   maxTokens,
+  intent = 'tool',
   onLog
 }) {
-  const max_tokens = maxTokens ?? parseInt(process.env.AGENT_AUDIT_MAX_TOKENS || '8192', 10);
+  const finishDefault = parseInt(process.env.AGENT_AUDIT_MAX_TOKENS_FINISH || process.env.AGENT_AUDIT_MAX_TOKENS || '8192', 10);
+  const toolDefault = parseInt(process.env.AGENT_AUDIT_MAX_TOKENS_TOOL || '512', 10);
+  const max_tokens =
+    maxTokens ??
+    (intent === 'finish' ? finishDefault : toolDefault);
   const timeoutMs = parseInt(process.env.AGENT_AUDIT_LLM_TIMEOUT_MS || '540000', 10);
   const maxRetries = parseInt(process.env.AGENT_AUDIT_LLM_RETRIES || '3', 10);
   let streamEnabled = useStreaming();

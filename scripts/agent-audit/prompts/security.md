@@ -37,7 +37,10 @@ Put the entire reply in the assistant **content** field as JSON. Do not use reas
 Every reply MUST be a single JSON object (no markdown fence) of one of:
 
 1. Tool call: `{"type":"tool","name":"read_file","args":{"filePath":"src/manifests/manifest.json"}}`
-2. Final report: `{"type":"finish","report":{ ... }}`
+2. Batch (up to 6 independent tools): `{"type":"batch","tools":[{"name":"grep","args":{...}},{"name":"read_file","args":{...}}]}`
+3. Final report: `{"type":"finish","report":{ ... }}`
+
+Prefer batch for parallel grep, file_info, and read_file. Use grep with filesOnly:true before read_file line ranges. When gitDelta.changedFiles is in the index, start reads there, then cover every focus area before finish.
 
 The final `report` must match this schema:
 

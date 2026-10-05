@@ -4,7 +4,7 @@ Scheduled GitHub Actions job that runs an agentic review of BetterSEQTA+ for exp
 
 ## Schedule
 
-- **Cron:** `0 6 * * 0,1,3,5` with **`timezone: Australia/Adelaide`** (Sunday, Monday, Wednesday, Friday at **06:00** local)
+- **Cron:** `0 6 * * 5` with **`timezone: Australia/Adelaide`** (Fridays at **06:00** local)
 - **Manual:** Actions → **Agent audit** → Run workflow
 
 ## Where it runs (fork policy)
@@ -30,9 +30,16 @@ Local runs without `GITHUB_REPOSITORY` are not blocked. To simulate fork opt-in 
 | `AGENT_AUDIT_MODEL` | `fast` |
 | `AGENT_AUDIT_MAX_TURNS` | `250` |
 | `AGENT_AUDIT_MIN_TURNS` | `25` |
+| `AGENT_AUDIT_MIN_FINISH_TURNS` | `32` |
 | `AGENT_AUDIT_MAX_TOKENS` | `8192` |
-| `AGENT_AUDIT_READ_MAX_BYTES` | `20000` (read_file tool) |
-| `AGENT_AUDIT_GREP_MAX_MATCHES` | `60` |
+| `AGENT_AUDIT_MAX_TOKENS_TOOL` | `512` |
+| `AGENT_AUDIT_MAX_TOKENS_FINISH` | `8192` |
+| `AGENT_AUDIT_EMBED_INDEX` | `1` in CI (preload context index) |
+| `AGENT_AUDIT_COMPACT_TOOL_DOC` | `1` in CI (compact tool reference) |
+| `AGENT_AUDIT_GIT_DELTA` | `1` in CI (prioritize last-commit file list) |
+| `AGENT_AUDIT_TRIM_MAX_MESSAGES` | `36` |
+| `AGENT_AUDIT_READ_MAX_BYTES` | `12000` (read_file tool) |
+| `AGENT_AUDIT_GREP_MAX_MATCHES` | `40` |
 | `AGENT_AUDIT_TRIM_MESSAGES` | trim long chat history (set `0` to disable) |
 | `AGENT_AUDIT_LLM_RETRIES` | `3` |
 | `AGENT_AUDIT_LLM_TIMEOUT_MS` | `540000` (9 minutes) |
@@ -53,6 +60,8 @@ Artifacts at repo root by default: `agent-audit-report.json`, `agent-audit-repor
 Preview HTML without an API key: `npm run audit:dashboard:preview` (see `plans/AGENT_AUDIT_HTML.md`).
 
 Connectivity smoke test: `npm run audit:probe`.
+
+Agent replies use `{"type":"tool",...}`, `{"type":"batch","tools":[...]}` (up to 6 parallel tools), or `{"type":"finish","report":{...}}`. Native multi `tool_calls` from the router map to batch automatically.
 
 ## Discord
 

@@ -21,7 +21,7 @@ export async function publishHtmlToDiscord({
   }
   const payload = {
     content: contentMessage || `Audit dashboard: **${filename}** (open in browser).`,
-    username: embedPayload?.username || 'SpotiQueue Audit'
+    username: embedPayload?.username || 'BetterSEQTA Audit'
   };
   if (embedPayload?.embeds?.length) {
     payload.embeds = embedPayload.embeds.slice(0, 10);

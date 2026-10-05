@@ -50,6 +50,18 @@ describe('agentAuditLlmClient', () => {
     assert.equal(toolCallsToAgentJson({ content: 'hi' }), '');
   });
 
+  it('toolCallsToAgentJson maps multiple tool_calls to batch', () => {
+    const json = toolCallsToAgentJson({
+      tool_calls: [
+        { function: { name: 'grep', arguments: '{}' } },
+        { function: { name: 'file_info', arguments: '{"filePath":"package.json"}' } }
+      ]
+    });
+    const parsed = JSON.parse(json);
+    assert.equal(parsed.type, 'batch');
+    assert.equal(parsed.tools.length, 2);
+  });
+
   it('isReasoningOnlyResponse detects empty content with reasoning_content', () => {
     assert.equal(
       isReasoningOnlyResponse({
