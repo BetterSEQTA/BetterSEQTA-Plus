@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
+import { getRipgrepInstallTarget } from './ensure-ripgrep-lib.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkgRoot = path.join(REPO_ROOT, 'node_modules', '@vscode', 'ripgrep');
@@ -18,8 +19,22 @@ if (fs.existsSync(rgExe)) {
 
 const postinstall = path.join(pkgRoot, 'lib', 'postinstall.js');
 if (!fs.existsSync(postinstall)) {
-  console.error('ensure-ripgrep: @vscode/ripgrep is not installed');
-  process.exit(1);
+  const pkgJson = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
+  const installTarget = getRipgrepInstallTarget(pkgJson.devDependencies);
+  console.log(
+    `ensure-ripgrep: @vscode/ripgrep missing (dev deps omitted?); installing ${installTarget}`
+  );
+  const install = spawnSync(
+    'npm',
+    ['install', installTarget, '--legacy-peer-deps', '--include=dev', '--no-audit', '--no-fund'],
+    { cwd: REPO_ROOT, stdio: 'inherit', shell: process.platform === 'win32' }
+  );
+  if (install.status !== 0 || !fs.existsSync(postinstall)) {
+    console.error(
+      'ensure-ripgrep: @vscode/ripgrep is not installed (try npm install --include=dev)'
+    );
+    process.exit(install.status ?? 1);
+  }
 }
 
 console.log('ensure-ripgrep: downloading ripgrep binary (--force)');

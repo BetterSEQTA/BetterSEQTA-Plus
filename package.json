@@ -21,7 +21,7 @@
     "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint \"src/**/*.{js,ts}\"",
     "test": "npm run test:unit",
     "test:unit": "jest && npm run test:agent-audit",
-    "test:agent-audit": "node --test scripts/agent-audit/llm-client.node.test.mjs scripts/agent-audit/agent-batch.node.test.mjs scripts/agent-audit/report-html.node.test.mjs scripts/agent-audit/tools.node.test.mjs scripts/agent-audit/lib/finish-gate.node.test.mjs scripts/agent-audit/lib/rg-run.node.test.mjs scripts/agent-audit/lib/read-file-slice.node.test.mjs scripts/agent-audit/lib/scratch-pad.node.test.mjs",
+    "test:agent-audit": "node --test scripts/agent-audit/llm-client.node.test.mjs scripts/agent-audit/agent-batch.node.test.mjs scripts/agent-audit/report-html.node.test.mjs scripts/agent-audit/tools.node.test.mjs scripts/agent-audit/lib/finish-gate.node.test.mjs scripts/agent-audit/lib/rg-run.node.test.mjs scripts/agent-audit/lib/read-file-slice.node.test.mjs scripts/agent-audit/lib/scratch-pad.node.test.mjs scripts/ensure-ripgrep-lib.node.test.mjs",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:ci": "npm run test:unit && npm run build && npm run test:smoke",
     "audit:agent": "node scripts/agent-audit/run.mjs --mode security",
