@@ -61,6 +61,8 @@ Preview HTML without an API key: `npm run audit:dashboard:preview` (see `plans/A
 
 Connectivity smoke test: `npm run audit:probe`.
 
+CI runs `node scripts/ensure-ripgrep.mjs` after `npm install` because `@vscode/ripgrep` postinstall can skip download when an empty `bin/` folder already exists (Windows runners then hit `rg_spawn_failed` in tests).
+
 Agent replies use `{"type":"tool",...}`, `{"type":"batch","tools":[...]}` (up to 6 parallel tools), or `{"type":"finish","report":{...}}`. Native multi `tool_calls` from the router map to batch automatically.
 
 ## Discord

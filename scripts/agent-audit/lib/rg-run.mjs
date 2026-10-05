@@ -1,8 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
+import { createRequire } from 'module';
 
 let cachedRgBinary = null;
+
+function cacheRgPath(candidate) {
+  if (candidate && fs.existsSync(candidate)) {
+    cachedRgBinary = candidate;
+    return candidate;
+  }
+  return null;
+}
 
 /**
  * Resolve ripgrep binary: AGENT_AUDIT_RG_PATH, then @vscode/ripgrep, then PATH `rg`.
@@ -12,6 +21,15 @@ export function resolveRgBinary(repoRoot) {
   if (override) return override;
   if (cachedRgBinary) return cachedRgBinary;
 
+  try {
+    const req = createRequire(path.join(repoRoot, 'package.json'));
+    const fromPkg = req('@vscode/ripgrep')?.rgPath;
+    const hit = cacheRgPath(fromPkg);
+    if (hit) return hit;
+  } catch {
+    /* @vscode/ripgrep not installed */
+  }
+
   const pkgRoot = path.join(repoRoot, 'node_modules', '@vscode', 'ripgrep');
   const candidates =
     process.platform === 'win32'
@@ -19,10 +37,8 @@ export function resolveRgBinary(repoRoot) {
       : [path.join(pkgRoot, 'bin', 'rg'), path.join(pkgRoot, 'bin', 'rg.exe')];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      cachedRgBinary = candidate;
-      return candidate;
-    }
+    const hit = cacheRgPath(candidate);
+    if (hit) return hit;
   }
 
   cachedRgBinary = 'rg';
