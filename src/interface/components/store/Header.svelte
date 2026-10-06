@@ -17,6 +17,7 @@
     showStoreTools,
     onLogoClick,
     onClose,
+    onToggleSize,
   } = $props<{
     searchTerm: string;
     setSearchTerm: (term: string) => void;
@@ -25,6 +26,7 @@
     showStoreTools: boolean;
     onLogoClick: () => void;
     onClose: () => void;
+    onToggleSize?: () => void;
   }>();
 
   const tabs: { id: SettingsPage; title: string }[] = [
@@ -115,6 +117,13 @@
       <CloudHeader />
     {/if}
 
+    {#if onToggleSize}
+      <button type="button" onclick={onToggleSize}
+        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-none dark:text-zinc-400 dark:hover:text-white"
+        aria-label="Collapse settings" title="Collapse settings" aria-expanded="true">
+        <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uec06"}</span>
+      </button>
+    {/if}
     <PlainCloseButton onclick={onClose} label="Close settings" />
   </div>
 </header>

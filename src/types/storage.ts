@@ -26,6 +26,8 @@ export interface SettingsState {
   };
   menuorder: any[];
   onoff: boolean;
+  /** Last popup size explicitly selected with the expand/collapse control. */
+  settingsPopupExpanded?: boolean;
   selectedColor: string;
   originalSelectedColor: string;
   shortcuts: Shortcut[];

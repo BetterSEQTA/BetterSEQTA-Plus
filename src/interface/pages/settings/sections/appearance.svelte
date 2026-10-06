@@ -49,10 +49,10 @@
     <div
       class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
     >
-      <div class="flex justify-between items-center px-5 py-4">
+      <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
-          <h2 class="text-xl font-bold">Adaptive Theme Colour</h2>
-          <p class="text-base text-zinc-600 dark:text-zinc-300">
+          <h2 class="text-sm font-bold">Adaptive Theme Colour</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Change the theme colour based on the current class (e.g. when viewing a course or
             assessments page)
           </p>
@@ -66,11 +66,11 @@
       </div>
       {#if $settingsState.adaptiveThemeColour}
         <div
-          class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50"
+          class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
         >
           <div class="pr-4">
-            <h2 class="text-xl font-bold">Soft Gradient</h2>
-            <p class="text-base text-zinc-600 dark:text-zinc-300">
+            <h2 class="text-sm font-bold">Soft Gradient</h2>
+            <p class="text-xs text-zinc-600 dark:text-zinc-300">
               Use a soft gradient instead of a solid colour when viewing a class
             </p>
           </div>
@@ -82,11 +82,11 @@
           </div>
         </div>
         <div
-          class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50"
+          class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
         >
           <div class="pr-4">
-            <h2 class="text-xl font-bold">Smooth colour transition</h2>
-            <p class="text-base text-zinc-600 dark:text-zinc-300">
+            <h2 class="text-sm font-bold">Smooth colour transition</h2>
+            <p class="text-xs text-zinc-600 dark:text-zinc-300">
               Ease between class/subject colours when navigating instead of switching instantly
             </p>
           </div>

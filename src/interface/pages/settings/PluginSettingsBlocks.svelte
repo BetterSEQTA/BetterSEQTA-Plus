@@ -89,9 +89,9 @@
       {/if}
 
       {#if plugin.disableToggle}
-        <div class="flex justify-between items-center px-5 py-4 {perfPaused ? 'pointer-events-none' : ''}">
+        <div class="flex justify-between items-center px-4 py-3 {perfPaused ? 'pointer-events-none' : ''}">
           <div class="pr-4">
-            <h2 class="flex gap-2 items-center text-xl font-bold">
+            <h2 class="flex gap-2 items-center text-sm font-bold">
               Enable {plugin.name}
               {#if plugin.beta}
                 <span
@@ -101,7 +101,7 @@
                 </span>
               {/if}
             </h2>
-            <p class="text-base text-zinc-600 dark:text-zinc-300">{plugin.description}</p>
+            <p class="text-xs text-zinc-600 dark:text-zinc-300">{plugin.description}</p>
           </div>
           <div>
             <Switch
@@ -128,10 +128,10 @@
       {#if !perfPaused && (!plugin.disableToggle || ((pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined) ?? true))}
         {#each Object.entries(plugin.settings) as [key, setting] (key)}
           {#if key !== "enabled" && !(key === "useCloudPfp" && !cloudState.isLoggedIn)}
-            <div class="flex justify-between items-center px-5 py-4">
+            <div class="flex justify-between items-center px-4 py-3">
               <div class="pr-4">
-                <h2 class="text-xl font-bold">{setting.title || key}</h2>
-                <p class="text-base text-zinc-600 dark:text-zinc-300">{setting.description || ""}</p>
+                <h2 class="text-sm font-bold">{setting.title || key}</h2>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300">{setting.description || ""}</p>
               </div>
               <div>
                 {#if setting.type === "boolean"}

@@ -4,9 +4,10 @@
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
-  let { alwaysShowUserName = false, onClick = undefined } = $props<{
+  let { alwaysShowUserName = false, onClick = undefined, compact = false } = $props<{
     alwaysShowUserName?: boolean;
     onClick?: () => void;
+    compact?: boolean;
   }>();
 
   let cloudState = $state(cloudAuth.state);
@@ -71,7 +72,7 @@
   <button
     type="button"
     onclick={handleButtonClick}
-    class="flex h-12 items-center gap-2 rounded-full bg-zinc-100/80 px-4 text-sm font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-none dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
+    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-none dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}

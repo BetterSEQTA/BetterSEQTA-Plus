@@ -14,10 +14,10 @@
 </script>
 
 {#if visible}
-  <div class="flex justify-between items-center px-5 py-5">
-    <div class="pr-5">
-      <h2 class="text-xl font-bold">{title}</h2>
-      <p class="text-base text-zinc-600 dark:text-zinc-300">{description}</p>
+  <div class="flex justify-between items-center px-4 py-3">
+    <div class="pr-4">
+      <h2 class="text-sm font-bold">{title}</h2>
+      <p class="text-xs text-zinc-600 dark:text-zinc-300">{description}</p>
     </div>
     <div class="shrink-0">
       <Component {...props} />
