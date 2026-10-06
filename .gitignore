@@ -30,3 +30,11 @@ dependency-graph.svg
 
 update-videos/
 
+# Agent security audit (local / CI artifacts)
+agent-audit-report.json
+agent-audit-report.md
+agent-audit-report.html
+agent-audit-transcript.jsonl
+agent-audit-report.preview.html
+.agent-audit/scratch/
+

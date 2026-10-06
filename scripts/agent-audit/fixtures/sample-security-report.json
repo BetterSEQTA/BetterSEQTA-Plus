@@ -1,0 +1,85 @@
+{
+  "requiresAction": true,
+  "summary": "Sample security audit for dashboard preview. Two items need follow-up.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "category": "security",
+      "title": "Missing rate limit on public endpoint",
+      "location": "server/routes/example.js:42",
+      "confidence": "high",
+      "requiresAction": true,
+      "evidence": "No rateLimit middleware on POST /api/v1/queue/add",
+      "scenario": "Attacker floods queue adds.",
+      "fix": "Apply publicApiRateLimit category queue."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "category": "security",
+      "title": "Secret in log line",
+      "location": "server/utils/logger.js:88",
+      "confidence": "medium",
+      "evidence": "console.log includes token prefix"
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "category": "reliability",
+      "title": "Unhandled promise in worker",
+      "location": "server/index.js:200",
+      "confidence": "low"
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "category": "dependency",
+      "title": "Transitive advisory",
+      "location": "package-lock.json",
+      "confidence": "high"
+    },
+    {
+      "id": "F5",
+      "severity": "info",
+      "category": "security",
+      "title": "CSP report-only header present",
+      "location": "server/index.js",
+      "confidence": "high"
+    }
+  ],
+  "limitations": ["Preview fixture only.", "No live grep was run."],
+  "checkedAreas": ["auth", "public-api"],
+  "scratchNotes": [
+    {
+      "name": "checklist",
+      "content": "- host isolation: checked (server/index.js, allowedHost.js)\n- public API: checked (public-api-v1.js, publicApiAuth.js)\n- guest queue: checked\n- OAuth callbacks: skipped-with-reason (no code changes since last audit)\n- dependencies: checked (npm audit summary)"
+    },
+    {
+      "name": "bookmarks",
+      "content": "F1 evidence: server/routes/example.js:42\nF2 evidence: server/utils/logger.js:88\nRate limit grep: server/middleware/publicApiRateLimit.js"
+    }
+  ],
+  "scratchRevisions": [
+    {
+      "ts": "2026-09-28T10:00:24.000Z",
+      "turn": 2,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- host isolation: in progress",
+      "bytes": 28,
+      "revisionIndex": 1
+    },
+    {
+      "ts": "2026-09-28T10:00:28.000Z",
+      "turn": 3,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- host isolation: checked (server/index.js, allowedHost.js)\n- public API: checked (public-api-v1.js, publicApiAuth.js)\n- guest queue: checked\n- OAuth callbacks: skipped-with-reason (no code changes since last audit)\n- dependencies: checked (npm audit summary)",
+      "bytes": 220,
+      "revisionIndex": 2
+    }
+  ]
+}
