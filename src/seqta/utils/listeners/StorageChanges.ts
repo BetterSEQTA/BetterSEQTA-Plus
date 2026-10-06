@@ -10,7 +10,6 @@ import { applyMenuItemVisibility, scheduleMenuItemVisibility } from "@/seqta/uti
 import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
 import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
 
-import browser from "webextension-polyfill";
 import type { CustomShortcut } from "@/types/storage";
 
 export class StorageChangeHandler {
@@ -27,7 +26,6 @@ export class StorageChangeHandler {
     );
     settingsState.register("selectedTheme", () => void updateAllColors());
     settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
-    settingsState.register("onoff", this.handleOnOffChange.bind(this));
     settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
     settingsState.register(
       "customshortcuts",
@@ -70,11 +68,6 @@ export class StorageChangeHandler {
 
   private handleDarkModeChange() {
     void updateAllColors();
-  }
-
-  private handleOnOffChange(newValue: boolean) {
-    if (newValue) return;
-    browser.runtime.sendMessage({ type: "reloadTabs" });
   }
 
   private handleCustomShortcutsChange(newValue: CustomShortcut[] | undefined) {
