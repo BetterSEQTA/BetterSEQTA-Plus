@@ -36,6 +36,7 @@ const PLUGIN_START_PHASES: readonly string[][] = [
     "assessments-overview",
     "assessments-average",
     "messageFolders",
+    "timetable-classmates",
     "profile-picture",
     "background-music",
     // Menu icon is eager; page UI still loads on demand via dynamic import.
