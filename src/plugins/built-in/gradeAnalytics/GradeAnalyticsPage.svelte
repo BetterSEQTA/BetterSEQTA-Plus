@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
-  import type { Assessment } from "./types";
+  import type {
+    AnalyticsClassGroup,
+    AnalyticsClassOption,
+    Assessment,
+  } from "./types";
   import {
     loadGradeAnalytics,
     syncGradeAnalytics,
@@ -13,6 +17,8 @@
   import AnalyticsBarChart from "./AnalyticsBarChart.svelte";
   import AssessmentTable from "./AssessmentTable.svelte";
   import GradeRangeSlider from "./GradeRangeSlider.svelte";
+  import ClassGroupsPanel from "./ClassGroupsPanel.svelte";
+  import GradeInferencePanel from "./GradeInferencePanel.svelte";
   import {
     defaultCustomTimeRange,
     filterAssessmentsByTimeRange,
@@ -22,13 +28,11 @@
     type TimeRange,
   } from "./timeRange";
   import { openAnalyticsPrivacyPopup } from "./openAnalyticsPrivacyPopup";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { animationsEnabled } from "@/seqta/utils/performanceMode";
-  import ClassGroupsPanel from "./ClassGroupsPanel.svelte";
-  import GradeInferencePanel from "./GradeInferencePanel.svelte";
-  import type { AnalyticsClassGroup, AnalyticsClassOption } from "./types";
-  import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
-  import { DEFAULT_ANALYTICS_GRADE_INFERENCE } from "./gradeInferenceSettings";
+  import {
+    DEFAULT_ANALYTICS_GRADE_INFERENCE,
+    type AnalyticsGradeInferenceSettings,
+  } from "./gradeInferenceSettings";
   import {
     loadClassGroups,
     loadGradeInferenceSettings,
@@ -37,6 +41,11 @@
   } from "./storage";
 
   let { simpleMode = false } = $props<{ simpleMode?: boolean }>();
+
+  const LOAD_ERROR =
+    "Unable to load analytics. Check your connection, then select Refresh data.";
+  const SYNC_ERROR_WITH_DATA =
+    "Unable to sync. Showing saved data. Select Refresh data to try again.";
 
   let analyticsData: Assessment[] | null = $state(null);
   let loading = $state(true);
@@ -61,14 +70,20 @@
     DEFAULT_ANALYTICS_GRADE_INFERENCE,
   );
 
+  let timeRangeTrigger: HTMLButtonElement | null = $state(null);
+  let subjectsTrigger: HTMLButtonElement | null = $state(null);
+
   let timestampInterval: ReturnType<typeof setInterval> | null = null;
   let contentReady = $state(false);
   const fadeDuration = $derived(animationsEnabled() ? 200 : 0);
 
-  const formattedTimestamp = $derived(() => {
-    if (!lastUpdated) return "";
+  const showLoading = $derived(loading || !contentReady);
+  const hasData = $derived(!!analyticsData?.length);
+  const totalCount = $derived(analyticsData?.length ?? 0);
+
+  const formattedTimestamp = $derived.by(() => {
     timestampRefresh;
-    return formatLastUpdated(lastUpdated);
+    return lastUpdated ? formatLastUpdated(lastUpdated) : "";
   });
 
   const activeClassGroup = $derived(
@@ -81,14 +96,15 @@
     activeClassGroup && !showSubjectTrends ? activeClassGroup.name : undefined,
   );
 
-  const uniqueSubjects = $derived(() => {
+  const uniqueSubjects = $derived.by(() => {
     if (!analyticsData) return [];
     return [...new Set(analyticsData.map((a) => a.subject))].sort();
   });
 
-  const filteredData = $derived(() => {
+  const filteredData = $derived.by(() => {
     if (!analyticsData) return [];
     const [minG, maxG] = gradeRange;
+    const query = filterSearch.toLowerCase();
     return analyticsData.filter((a) => {
       if (activeClassKeys.length) {
         const key = `${a.programmeID}-${a.metaclassID}`;
@@ -100,9 +116,9 @@
         if (a.finalGrade < minG || a.finalGrade > maxG) return false;
       }
       if (
-        filterSearch &&
-        !a.title.toLowerCase().includes(filterSearch.toLowerCase()) &&
-        !a.subject.toLowerCase().includes(filterSearch.toLowerCase())
+        query &&
+        !a.title.toLowerCase().includes(query) &&
+        !a.subject.toLowerCase().includes(query)
       ) {
         return false;
       }
@@ -110,28 +126,58 @@
     });
   });
 
-  const timeScopedData = $derived(() =>
-    filterAssessmentsByTimeRange(filteredData(), timeRange, customTimeRange),
+  const timeScopedData = $derived(
+    filterAssessmentsByTimeRange(filteredData, timeRange, customTimeRange),
   );
 
-  const gradedFiltered = $derived(() =>
-    timeScopedData().filter((a) => a.finalGrade !== undefined),
+  const gradedFiltered = $derived(
+    timeScopedData.filter((a) => a.finalGrade !== undefined),
   );
 
   const statsAverage = $derived.by(() => {
-    const graded = gradedFiltered();
-    if (!graded.length) return null;
-    const sum = graded.reduce((acc, a) => acc + (a.finalGrade ?? 0), 0);
-    return Math.round((sum / graded.length) * 10) / 10;
+    if (!gradedFiltered.length) return null;
+    const sum = gradedFiltered.reduce((acc, a) => acc + (a.finalGrade ?? 0), 0);
+    return Math.round((sum / gradedFiltered.length) * 10) / 10;
   });
 
   const statsSubjectCount = $derived(
-    new Set(timeScopedData().map((a) => a.subject)).size,
+    new Set(timeScopedData.map((a) => a.subject)).size,
   );
 
+  const timeRangeLabel = $derived(getTimeRangeLabel(timeRange, customTimeRange));
+
+  const subjectsLabel = $derived.by(() => {
+    if (activeClassGroup) return activeClassGroup.name;
+    if (filterSubjects.length === 0) return "All subjects";
+    if (filterSubjects.length === 1) return filterSubjects[0];
+    return `${filterSubjects.length} selected`;
+  });
+
+  const hasActiveFilters = $derived(
+    !!(
+      filterSubjects.length ||
+      activeClassGroupId ||
+      filterSearch ||
+      gradeRange[0] !== 0 ||
+      gradeRange[1] !== 100
+    ),
+  );
+
+  const resultsSummary = $derived.by(() => {
+    const shown = `${timeScopedData.length} of ${totalCount} assessments shown`;
+    return gradedFiltered.length !== timeScopedData.length
+      ? `${shown} (${gradedFiltered.length} with grades)`
+      : shown;
+  });
+
+  const statusMessage = $derived.by(() => {
+    if (loading) return "Loading analytics…";
+    if (syncing) return "Syncing analytics…";
+    return hasData ? resultsSummary : "";
+  });
+
   function formatLastUpdated(date: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = Date.now() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -152,8 +198,7 @@
       await loadClassCatalog(result.assessments);
     } catch (e) {
       console.error("[BetterSEQTA+] Analytics sync failed:", e);
-      error =
-        "Failed to sync analytics data. Showing cached data if available.";
+      error = analyticsData?.length ? SYNC_ERROR_WITH_DATA : LOAD_ERROR;
     } finally {
       syncing = false;
     }
@@ -166,16 +211,6 @@
     activeClassGroupId = null;
   }
 
-  function hasActiveFilters() {
-    return !!(
-      filterSubjects.length ||
-      activeClassGroupId ||
-      filterSearch ||
-      gradeRange[0] !== 0 ||
-      gradeRange[1] !== 100
-    );
-  }
-
   function toggleSubject(subject: string) {
     activeClassGroupId = null;
     if (filterSubjects.includes(subject)) {
@@ -183,6 +218,13 @@
     } else {
       filterSubjects = [...filterSubjects, subject];
     }
+  }
+
+  function selectAllSubjects() {
+    filterSubjects = [];
+    activeClassGroupId = null;
+    showSubjectsDropdown = false;
+    subjectsTrigger?.focus();
   }
 
   function selectClassGroup(group: AnalyticsClassGroup | null) {
@@ -213,7 +255,15 @@
     classCatalog = await loadAnalyticsClassCatalog(assessments);
   }
 
-  const timeRangeLabel = $derived(() => getTimeRangeLabel(timeRange, customTimeRange));
+  function toggleTimeRangeDropdown() {
+    showSubjectsDropdown = false;
+    showTimeRangeDropdown = !showTimeRangeDropdown;
+  }
+
+  function toggleSubjectsDropdown() {
+    showTimeRangeDropdown = false;
+    showSubjectsDropdown = !showSubjectsDropdown;
+  }
 
   function closeToolbarDropdowns() {
     showSubjectsDropdown = false;
@@ -228,10 +278,22 @@
     });
   }
 
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key !== "Escape") return;
+    if (showTimeRangeDropdown) {
+      showTimeRangeDropdown = false;
+      timeRangeTrigger?.focus();
+    } else if (showSubjectsDropdown) {
+      showSubjectsDropdown = false;
+      subjectsTrigger?.focus();
+    }
+  }
+
   function selectTimeRange(value: TimeRange) {
     timeRange = value;
     if (value === "custom") customTimeRange = defaultCustomTimeRange();
     showTimeRangeDropdown = false;
+    timeRangeTrigger?.focus();
   }
 
   onMount(async () => {
@@ -249,14 +311,18 @@
         studentId = id;
         classGroups = await loadClassGroups(location.origin, id);
         gradeInference = await loadGradeInferenceSettings(location.origin, id);
-        await loadClassCatalog(result.assessments);
-      } catch {
+      } catch (e) {
+        console.warn(
+          "[BetterSEQTA+] Analytics student settings unavailable; class groups will not be saved:",
+          e,
+        );
         classGroups = [];
-        classCatalog = await loadAnalyticsClassCatalog(result.assessments);
       }
+      await loadClassCatalog(result.assessments);
     } catch (e) {
       console.error("[BetterSEQTA+] Failed to load analytics:", e);
       analyticsData = [];
+      error = LOAD_ERROR;
     } finally {
       loading = false;
       requestAnimationFrame(() => {
@@ -283,72 +349,34 @@
       closeToolbarDropdowns();
     }
   }}
+  onkeydown={handleWindowKeydown}
 />
 
 <div class="bsplus-analytics-root">
-  {#if error}
+  <p class="bsplus-analytics-sr-only" role="status">{statusMessage}</p>
+
+  {#if error && hasData}
     <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: fadeDuration }}>
       {error}
     </p>
   {/if}
 
-  {#snippet sidebarTitle()}
-    <header class="bsplus-analytics-sidebar-head bsplus-analytics-animate">
-      <h1>
-        Analytics
+  <div class="bsplus-analytics-layout bsplus-analytics-animate">
+    <aside class="bsplus-analytics-filters" aria-label="Analytics controls">
+      <header class="bsplus-analytics-sidebar-head bsplus-analytics-animate">
+        <h1>Analytics</h1>
         {#if syncing}
           <span class="bsplus-analytics-badge">
             <span class="bsplus-analytics-badge-dot" aria-hidden="true"></span>
             Syncing
           </span>
         {/if}
-      </h1>
-    </header>
-  {/snippet}
+      </header>
 
-  {#snippet sidebarActions()}
-    <div class="bsplus-analytics-sidebar-actions">
-      {#if lastUpdated}
-        <p class="bsplus-analytics-meta">Last updated: {formattedTimestamp()}</p>
-      {/if}
-      <button
-        type="button"
-        class="bsplus-analytics-btn bsplus-analytics-btn-privacy"
-        onclick={() => openAnalyticsPrivacyPopup()}
-      >
-        Privacy notice
-      </button>
-      <button
-        type="button"
-        class="bsplus-analytics-btn bsplus-analytics-btn-primary"
-        disabled={syncing}
-        onclick={() => runSync()}
-      >
-        {syncing ? "Syncing…" : "Refresh data"}
-      </button>
-    </div>
-  {/snippet}
-
-  {#if loading || !contentReady}
-    <div class="bsplus-analytics-layout bsplus-analytics-animate">
-      <aside class="bsplus-analytics-filters" aria-label="Analytics">
-        {@render sidebarTitle()}
-        {@render sidebarActions()}
-      </aside>
-      <div class="bsplus-analytics-main">
-        <div class="bsplus-analytics-loading">
-          <div class="bsplus-analytics-spinner" aria-label="Loading analytics"></div>
-        </div>
-      </div>
-    </div>
-  {:else if analyticsData && analyticsData.length > 0}
-    <div class="bsplus-analytics-layout bsplus-analytics-animate bsplus-analytics-delay-1">
-      <aside class="bsplus-analytics-filters" aria-label="Filters">
-        {@render sidebarTitle()}
-
+      {#if !showLoading && hasData}
         <div class="bsplus-analytics-filters-head">
           <h2 class="bsplus-analytics-filters-title">Filters</h2>
-          {#if hasActiveFilters()}
+          {#if hasActiveFilters}
             <button
               type="button"
               class="bsplus-analytics-filters-clear"
@@ -359,38 +387,33 @@
           {/if}
         </div>
 
-        <div class="bsplus-analytics-filter-group" data-analytics-dropdown>
-          <span class="bsplus-analytics-field-label">Time period</span>
+        <div class="bsplus-analytics-filter-group">
+          <span class="bsplus-analytics-field-label" id="bsplus-analytics-time-label">Time period</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
+              bind:this={timeRangeTrigger}
               type="button"
+              id="bsplus-analytics-time-trigger"
               class="bsplus-analytics-dropdown-trigger"
-              onclick={(e) => {
-                e.stopPropagation();
-                showSubjectsDropdown = false;
-                showTimeRangeDropdown = !showTimeRangeDropdown;
-              }}
               aria-expanded={showTimeRangeDropdown}
-              aria-haspopup="listbox"
-              aria-label="Time period for analytics"
+              aria-controls="bsplus-analytics-time-menu"
+              aria-labelledby="bsplus-analytics-time-label bsplus-analytics-time-trigger"
+              onclick={toggleTimeRangeDropdown}
             >
-              {timeRangeLabel()}
+              {timeRangeLabel}
             </button>
             {#if showTimeRangeDropdown}
-              <div class="bsplus-analytics-dropdown-menu" role="listbox">
+              <div id="bsplus-analytics-time-menu" class="bsplus-analytics-dropdown-menu">
                 {#each TIME_RANGE_OPTIONS as option (option.value)}
                   {@const selected = timeRange === option.value}
                   <button
                     type="button"
                     class="bsplus-analytics-dropdown-item"
                     class:is-selected={selected}
-                    role="option"
-                    aria-selected={selected}
+                    aria-pressed={selected}
                     onclick={() => selectTimeRange(option.value)}
                   >
-                    <span class="bsplus-analytics-dropdown-check"
-                      >{selected ? "✓" : ""}</span
-                    >
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
                     <span>{option.label}</span>
                   </button>
                 {/each}
@@ -398,75 +421,67 @@
             {/if}
           </div>
           {#if timeRange === "custom"}
-            <input
-              type="date"
-              class="bsplus-analytics-input"
-              bind:value={customTimeRange.from}
-              max={customTimeRange.to}
-              aria-label="Custom range start date"
-            />
-            <input
-              type="date"
-              class="bsplus-analytics-input"
-              bind:value={customTimeRange.to}
-              min={customTimeRange.from}
-              aria-label="Custom range end date"
-            />
+            <div class="bsplus-analytics-date-range">
+              <label class="bsplus-analytics-date-field">
+                <span class="bsplus-analytics-field-label">From</span>
+                <input
+                  type="date"
+                  class="bsplus-analytics-input"
+                  bind:value={customTimeRange.from}
+                  max={customTimeRange.to}
+                />
+              </label>
+              <label class="bsplus-analytics-date-field">
+                <span class="bsplus-analytics-field-label">To</span>
+                <input
+                  type="date"
+                  class="bsplus-analytics-input"
+                  bind:value={customTimeRange.to}
+                  min={customTimeRange.from}
+                />
+              </label>
+            </div>
           {/if}
         </div>
 
-        <div class="bsplus-analytics-filter-group" data-analytics-dropdown>
-          <span class="bsplus-analytics-field-label">Subjects</span>
+        <div class="bsplus-analytics-filter-group">
+          <span class="bsplus-analytics-field-label" id="bsplus-analytics-subjects-label">Subjects</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
+              bind:this={subjectsTrigger}
               type="button"
+              id="bsplus-analytics-subjects-trigger"
               class="bsplus-analytics-dropdown-trigger"
-              onclick={(e) => {
-                e.stopPropagation();
-                showTimeRangeDropdown = false;
-                showSubjectsDropdown = !showSubjectsDropdown;
-              }}
               aria-expanded={showSubjectsDropdown}
-              aria-haspopup="listbox"
+              aria-controls="bsplus-analytics-subjects-menu"
+              aria-labelledby="bsplus-analytics-subjects-label bsplus-analytics-subjects-trigger"
+              onclick={toggleSubjectsDropdown}
             >
-              {#if !activeClassGroup && filterSubjects.length === 0}
-                All subjects
-              {:else if activeClassGroup}
-                {activeClassGroup.name}
-              {:else if filterSubjects.length === 1}
-                {filterSubjects[0]}
-              {:else}
-                {filterSubjects.length} selected
-              {/if}
+              {subjectsLabel}
             </button>
             {#if showSubjectsDropdown}
-              <div class="bsplus-analytics-dropdown-menu" role="listbox">
+              {@const allSelected = !activeClassGroup && filterSubjects.length === 0}
+              <div id="bsplus-analytics-subjects-menu" class="bsplus-analytics-dropdown-menu">
                 <button
                   type="button"
                   class="bsplus-analytics-dropdown-item"
-                  class:is-selected={!activeClassGroup && filterSubjects.length === 0}
-                  onclick={() => {
-                    filterSubjects = [];
-                    activeClassGroupId = null;
-                    showSubjectsDropdown = false;
-                  }}
+                  class:is-selected={allSelected}
+                  aria-pressed={allSelected}
+                  onclick={selectAllSubjects}
                 >
-                  <span class="bsplus-analytics-dropdown-check"
-                    >{!activeClassGroup && filterSubjects.length === 0 ? "✓" : ""}</span
-                  >
-                  All subjects
+                  <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{allSelected ? "✓" : ""}</span>
+                  <span>All subjects</span>
                 </button>
-                {#each uniqueSubjects() as subject}
+                {#each uniqueSubjects as subject (subject)}
                   {@const selected = filterSubjects.includes(subject)}
                   <button
                     type="button"
                     class="bsplus-analytics-dropdown-item"
                     class:is-selected={selected}
+                    aria-pressed={selected}
                     onclick={() => toggleSubject(subject)}
                   >
-                    <span class="bsplus-analytics-dropdown-check"
-                      >{selected ? "✓" : ""}</span
-                    >
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
                     <span class="bsplus-analytics-filter-subject-name">{subject}</span>
                   </button>
                 {/each}
@@ -476,24 +491,25 @@
         </div>
 
         {#if !simpleMode}
-        <ClassGroupsPanel
-          classOptions={classCatalog}
-          groups={classGroups}
-          activeGroupId={activeClassGroupId}
-          onSelectGroup={selectClassGroup}
-          onSaveGroups={persistClassGroups}
-        />
+          <ClassGroupsPanel
+            classOptions={classCatalog}
+            groups={classGroups}
+            activeGroupId={activeClassGroupId}
+            onSelectGroup={selectClassGroup}
+            onSaveGroups={persistClassGroups}
+          />
 
-        <GradeInferencePanel
-          settings={gradeInference}
-          onSave={persistGradeInference}
-          disabled={syncing}
-        />
+          <GradeInferencePanel
+            settings={gradeInference}
+            onSave={persistGradeInference}
+            disabled={syncing}
+          />
         {/if}
 
         <div class="bsplus-analytics-filter-group">
-          <span class="bsplus-analytics-field-label">Search</span>
+          <label class="bsplus-analytics-field-label" for="bsplus-analytics-search">Search</label>
           <input
+            id="bsplus-analytics-search"
             type="search"
             class="bsplus-analytics-input"
             bind:value={filterSearch}
@@ -502,34 +518,64 @@
         </div>
 
         {#if !simpleMode}
-        <div class="bsplus-analytics-filter-group">
-          <span class="bsplus-analytics-field-label">Grade range</span>
-          <GradeRangeSlider bind:value={gradeRange} />
-        </div>
+          <div
+            class="bsplus-analytics-filter-group"
+            role="group"
+            aria-labelledby="bsplus-analytics-grade-label"
+          >
+            <span class="bsplus-analytics-field-label" id="bsplus-analytics-grade-label">Grade range</span>
+            <GradeRangeSlider bind:value={gradeRange} />
+          </div>
 
-        <div class="bsplus-analytics-filter-group">
-          <label class="bsplus-analytics-checkbox">
-            <input type="checkbox" bind:checked={showSubjectTrends} />
-            <span class="bsplus-analytics-checkmark" aria-hidden="true"></span>
-            <span>Per-subject trends</span>
-          </label>
-        </div>
+          <div class="bsplus-analytics-filter-group">
+            <label class="bsplus-analytics-checkbox">
+              <input type="checkbox" bind:checked={showSubjectTrends} />
+              <span class="bsplus-analytics-checkmark" aria-hidden="true"></span>
+              <span>Per-subject trends</span>
+            </label>
+          </div>
         {/if}
+      {/if}
 
-        {@render sidebarActions()}
-      </aside>
+      <div class="bsplus-analytics-sidebar-actions">
+        {#if lastUpdated}
+          <p class="bsplus-analytics-meta">Last updated: {formattedTimestamp}</p>
+        {/if}
+        <button
+          type="button"
+          class="bsplus-analytics-btn bsplus-analytics-btn-privacy"
+          onclick={() => openAnalyticsPrivacyPopup()}
+        >
+          Privacy notice
+        </button>
+        <button
+          type="button"
+          class="bsplus-analytics-btn bsplus-analytics-btn-primary"
+          disabled={syncing}
+          onclick={() => runSync()}
+        >
+          {syncing ? "Syncing…" : "Refresh data"}
+        </button>
+      </div>
+    </aside>
 
-      <div class="bsplus-analytics-main">
-        <div class="bsplus-analytics-stats" aria-label="Summary statistics">
+    <div class="bsplus-analytics-main">
+      {#if showLoading}
+        <div class="bsplus-analytics-loading">
+          <div class="bsplus-analytics-spinner" aria-hidden="true"></div>
+          <p class="bsplus-analytics-meta">Loading analytics…</p>
+        </div>
+      {:else if hasData}
+        <div class="bsplus-analytics-stats bsplus-analytics-animate" aria-label="Summary statistics">
           <div class="bsplus-analytics-stat">
             <div class="bsplus-analytics-stat-label">Average grade</div>
-            <div class="bsplus-analytics-stat-value bsplus-analytics-stat-value-accent">
+            <div class="bsplus-analytics-stat-value">
               {statsAverage !== null ? `${statsAverage}%` : "—"}
             </div>
           </div>
           <div class="bsplus-analytics-stat">
             <div class="bsplus-analytics-stat-label">Graded shown</div>
-            <div class="bsplus-analytics-stat-value">{gradedFiltered().length}</div>
+            <div class="bsplus-analytics-stat-value">{gradedFiltered.length}</div>
           </div>
           <div class="bsplus-analytics-stat">
             <div class="bsplus-analytics-stat-label">Subjects</div>
@@ -537,52 +583,44 @@
           </div>
         </div>
 
-        <div class="bsplus-analytics-results">
+        <div class="bsplus-analytics-results bsplus-analytics-animate">
           {#if !simpleMode}
-          <div class="bsplus-analytics-charts">
-            <div class="bsplus-analytics-chart-cell">
-              <AnalyticsAreaChart
-                data={gradedFiltered()}
-                {timeRange}
-                {customTimeRange}
-                showSubjectTrends={showSubjectTrends}
-                combinedLabel={combinedChartLabel}
-              />
+            <div class="bsplus-analytics-charts">
+              <div class="bsplus-analytics-chart-cell">
+                <AnalyticsAreaChart
+                  data={gradedFiltered}
+                  {timeRange}
+                  {customTimeRange}
+                  {showSubjectTrends}
+                  combinedLabel={combinedChartLabel}
+                />
+              </div>
+              <div class="bsplus-analytics-chart-cell">
+                <AnalyticsBarChart data={gradedFiltered} {timeRange} {customTimeRange} />
+              </div>
             </div>
-            <div class="bsplus-analytics-chart-cell">
-              <AnalyticsBarChart data={gradedFiltered()} {timeRange} {customTimeRange} />
-            </div>
-          </div>
           {/if}
 
-          <AssessmentTable data={timeScopedData()} />
+          <AssessmentTable data={timeScopedData} />
         </div>
 
-        <footer class="bsplus-analytics-footer">
-          <span>
-            {timeScopedData().length} of {analyticsData.length} assessments shown
-            {#if gradedFiltered().length !== timeScopedData().length}
-              ({gradedFiltered().length} with grades)
-            {/if}
-          </span>
+        <footer class="bsplus-analytics-footer bsplus-analytics-animate">
+          <span>{resultsSummary}</span>
         </footer>
-      </div>
-    </div>
-  {:else}
-    <div class="bsplus-analytics-layout bsplus-analytics-animate" transition:fade={{ duration: fadeDuration }}>
-      <aside class="bsplus-analytics-filters" aria-label="Analytics">
-        {@render sidebarTitle()}
-        {@render sidebarActions()}
-      </aside>
-      <div class="bsplus-analytics-main">
-        <div class="bsplus-analytics-empty">
-          <h2>No analytics data yet</h2>
-          <p>
-            Data syncs when you visit this page. Assessments with released marks will
-            appear here with trends and grade breakdowns.
-          </p>
+      {:else}
+        <div class="bsplus-analytics-empty bsplus-analytics-animate">
+          {#if error}
+            <h2>Analytics unavailable</h2>
+            <p role="alert">{error}</p>
+          {:else}
+            <h2>No analytics data yet</h2>
+            <p>
+              Data syncs when you visit this page. Assessments with released marks will
+              appear here with trends and grade breakdowns.
+            </p>
+          {/if}
         </div>
-      </div>
+      {/if}
     </div>
-  {/if}
+  </div>
 </div>
