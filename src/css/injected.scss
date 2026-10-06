@@ -661,92 +661,241 @@ html.bsplus-custom-title-pending #title > :not(#bsplus-title-root),
   height: 28px !important;
 }
 
-/* Icon Only Sidebar - compact mode. When submenu is open, all styles are disabled so it behaves as normal sidebar. */
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
+/* Icons-only keeps the root rail visible while a full submenu opens beside it. */
+body.icon-only-sidebar {
+  --bsplus-icon-rail-space: 70px;
+
   #menu {
     width: 70px !important;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible !important;
   }
 
   #menu > ul {
+    position: static !important;
     min-width: 0 !important;
-    overflow-x: visible !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
 
   #content {
-    left: 70px !important;
-    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    left: var(--bsplus-icon-rail-space) !important;
+    /* Reserve the panel before its reveal so it never covers page content. */
+    transition: none !important;
   }
 
-  #menu .sub {
-    left: 70px !important;
-    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #menu li > label span,
-  #menu section > label span {
-    display: none !important;
-  }
-
-  #menu ul > li > svg {
-    display: none !important;
-  }
-
-  #menu ul li,
-  #menu ul section {
+  /* Keep root hitboxes and icons in place; only nested lists drill away. */
+  #menu#menu > ul > :is(li, section) {
+    width: 85% !important;
     min-width: 0 !important;
-    max-width: 100% !important;
+    max-width: 70px !important;
+    margin: 8px auto !important;
     padding: 8px !important;
     justify-content: center !important;
     box-sizing: border-box !important;
-  }
+    pointer-events: auto !important;
+    transform: none !important;
+    animation: none !important;
+    transition: background-color 150ms ease !important;
 
-  #menu li > label,
-  #menu section > label {
-    flex: 0 0 auto !important;
-    min-width: 0 !important;
-    justify-content: center !important;
-    overflow: visible !important;
-  }
+    > label {
+      position: relative;
+      font-size: 0 !important;
+      flex: 0 0 auto !important;
+      min-width: 0 !important;
+      justify-content: center !important;
+      overflow: visible !important;
+      transform: none !important;
 
-  #menu li > label > svg,
-  #menu section > label > svg {
-    margin: 0 auto !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* Engage: hide text nodes in labels via font-size trick, restore SVG size */
-  #menu .logo-link li > label,
-  #menu .logo-link section > label {
-    font-size: 0 !important;
-    justify-content: center !important;
-
-    svg {
-      width: 24px !important;
-      height: 24px !important;
-      font-size: initial !important;
-      flex-shrink: 0 !important;
-      margin: 0 auto !important;
+      span {
+        display: none !important;
+      }
+      > svg {
+        margin: 0 auto !important;
+        flex-shrink: 0 !important;
+      }
+    }
+    > svg {
+      display: none !important;
     }
   }
 
-  /* Engage: hide chevron arrows on hasChildren items */
-  #menu .logo-link li > svg {
-    display: none !important;
+  #menu#menu > ul > .hasChildren {
+    position: static !important;
+    backdrop-filter: none !important;
+    contain: none !important;
   }
 
-  /* Engage: hide the name/details in #userActions */
+  #menu#menu > ul > .hasChildren:is(.active, .bsplus-active) {
+    /* Preserve the outer hover inset; the inner edge meets the panel. */
+    width: 92.5% !important;
+    margin-left: 7.5% !important;
+    margin-right: 0 !important;
+    border-radius: var(--bsplus-sidebar-radius, 12px) 0 0
+      var(--bsplus-sidebar-radius, 12px) !important;
+    background: var(--background-primary) !important;
+    transition: none !important;
+    color: var(--text-primary) !important;
+  }
+
+  #menu#menu > ul > .hasChildren:is(.active, .bsplus-active) > label {
+    /* Compensate for the extra inner fill, keeping the icon centered on the rail. */
+    transform: translateX(-2.625px) !important;
+  }
+
+  /* Keep the arc fixed; bleed its paint into the opaque panel to avoid a
+     fractional compositor gap at the rail edge when zoomed. */
+  #menu#menu > ul > .hasChildren:is(.active, .bsplus-active) > label::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    width: calc(var(--bsplus-sidebar-radius, 12px) + 1px);
+    right: calc((100% - 70px) / 2 - 1px);
+    top: calc(-8px - var(--bsplus-sidebar-radius, 12px));
+    bottom: calc(-8px - var(--bsplus-sidebar-radius, 12px));
+    background:
+      radial-gradient(
+          circle at 0 0,
+          transparent calc(var(--bsplus-sidebar-radius, 12px) - 0.5px),
+          var(--background-primary) var(--bsplus-sidebar-radius, 12px)
+        )
+        top / 100% var(--bsplus-sidebar-radius, 12px) no-repeat,
+      radial-gradient(
+          circle at 0 100%,
+          transparent calc(var(--bsplus-sidebar-radius, 12px) - 0.5px),
+          var(--background-primary) var(--bsplus-sidebar-radius, 12px)
+        )
+        bottom / 100% var(--bsplus-sidebar-radius, 12px) no-repeat,
+      linear-gradient(var(--background-primary), var(--background-primary))
+        center / 100% calc(100% - 2 * var(--bsplus-sidebar-radius, 12px))
+        no-repeat;
+  }
+
+  #menu > ul > .hasChildren > .sub {
+    left: 70px !important;
+    right: auto !important;
+    top: 71px !important;
+    margin-top: 0 !important;
+    width: min(
+      var(--bsplus-sidebar-width, 270px),
+      calc(100vw - 70px)
+    ) !important;
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    border-right: 1px solid var(--border-color, rgba(128, 128, 128, 0.3)) !important;
+    visibility: hidden;
+    opacity: 1;
+    transform: translateX(-100%);
+    /* The matching clip keeps the visible edge at the rail during the slide. */
+    clip-path: inset(0 0 0 100%);
+    transition:
+      transform 0.3s ease,
+      clip-path 0.3s ease,
+      visibility 0s 0.3s;
+
+    .nav {
+      background: var(--background-primary) !important;
+    }
+    :is(.nav, .back, .backLabel, li, section, label, svg) {
+      color: var(--text-primary) !important;
+    }
+    svg:not([fill="none"]) {
+      fill: currentColor !important;
+    }
+    :is(li, section):hover {
+      background: color-mix(
+        in srgb,
+        var(--text-primary) 8%,
+        transparent
+      ) !important;
+    }
+    :is(li, section):is(.active, .bsplus-active):not(.hasChildren) {
+      background: color-mix(
+        in srgb,
+        var(--text-primary) 14%,
+        transparent
+      ) !important;
+      &::after {
+        background: var(--text-primary) !important;
+        box-shadow: 0 0 10px
+          color-mix(in srgb, var(--text-primary) 45%, transparent) !important;
+      }
+    }
+    .sub {
+      left: 0 !important;
+      right: auto !important;
+      width: 100% !important;
+      background: var(--background-primary) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  #menu > ul > .hasChildren:is(.active, .bsplus-active) > .sub {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0);
+    transition-delay: 0s;
+  }
+
+  /* Switching root folders retires the previous panel immediately. */
+  #menu:has(> ul > .hasChildren:is(.active, .bsplus-active))
+    > ul
+    > .hasChildren:not(:is(.active, .bsplus-active))
+    > .sub {
+    visibility: hidden;
+    transition-delay: 0s;
+  }
+
+  /* Full panel rows retain their preset shape with equal horizontal insets. */
+  #menu#menu .sub :is(li.item, section.item) {
+    box-sizing: border-box !important;
+  }
+  #menu#menu:not(.bsplus-sidebar-style-strip)
+    .sub
+    > ul:not(.bsplus-drill-rows)
+    > :is(li.item, section.item) {
+    margin-inline: auto !important;
+  }
+  #menu#menu.bsplus-sidebar-style-strip .sub :is(li.item, section.item) {
+    width: 100% !important;
+    margin-inline: 0 !important;
+  }
+
+  #menu.bsplus-icon-rail-switching > ul > .hasChildren > .sub {
+    transition: none !important;
+  }
+
+  #menu#menu.bsplus-sidebar-style-neon .sub li.active:not(.hasChildren) {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--text-primary) 55%, transparent),
+      0 0 14px color-mix(in srgb, var(--text-primary) 40%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
+  }
+
+  #menu#menu.bsplus-sidebar-indicator-outline .sub li.active:not(.hasChildren) {
+    background: transparent !important;
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--text-primary) 55%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
+  }
+
   #menu #userActions .details {
     display: none !important;
   }
 
-  /* Compact BetterSEQTA mark instead of the full wordmark. */
   &.student #menu > ul::before {
+    width: 70px !important;
     background-size: 36px 36px !important;
     background-position: center center !important;
   }
+}
 
+body.icon-only-sidebar:has(
+    #menu > ul > .hasChildren:is(.active, .bsplus-active)
+  ) {
+  --bsplus-icon-rail-space: calc(
+    70px + min(var(--bsplus-sidebar-width, 270px), calc(100vw - 70px))
+  );
 }
 
 [class*="notifications__items___"] {
@@ -1260,15 +1409,16 @@ html.transparencyEffects
     transform: translatex(var(--bsplus-sidebar-width, 270px));
   }
 
-  body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active))) {
+  body.icon-only-sidebar {
     #menu {
       -webkit-transform: translatex(-70px);
       transform: translatex(-70px);
     }
-    .menuShown #content {
-      -webkit-transform: translatex(70px);
-      transform: translatex(70px);
-    }
+    #content { left: 0 !important; }
+  }
+  body.icon-only-sidebar.menuShown #content {
+    -webkit-transform: translatex(var(--bsplus-icon-rail-space)) !important;
+    transform: translatex(var(--bsplus-icon-rail-space)) !important;
   }
 }
 

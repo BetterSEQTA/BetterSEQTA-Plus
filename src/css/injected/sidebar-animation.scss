@@ -1,4 +1,5 @@
-#menu ul:has(li.hasChildren:is(.active, .bsplus-active))
+#menu
+  ul:has(li.hasChildren:is(.active, .bsplus-active))
   li.hasChildren:is(.active, .bsplus-active) {
   box-shadow: inset 0px 0 var(--item-colour, transparent) !important;
   background: transparent !important;
@@ -8,77 +9,61 @@
   overflow-y: scroll !important;
 }
 
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::before,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li::after,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > label,
-#menu > ul ul:has(li.hasChildren:is(.active, .bsplus-active)) > li > svg {
-  /* !important beats theme animations (e.g. Beach palm-slide forwards). */
-  transform: translateX(-320px) !important;
+/* Move the complete row, including hover fill, arrow and subject stripe.
+   A transform on the folder itself would also move its absolute `.sub` panel.
+   Resting margins are measured before drilling so auto margins interpolate. */
+#menu#menu ul.bsplus-drill-rows > :is(li, section) {
+  margin-left: var(--bsplus-row-margin-left) !important;
+  transition:
+    margin-left 0.3s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease !important;
   animation: none !important;
-}
 
-#menu ul > li > label,
-#menu ul > li > svg {
-  transition: transform 0.3s ease;
-}
-
-/* Frontmost drill panel: rows move with `.sub` only — no separate enter animation. */
-#menu
-  li.hasChildren:is(.active, .bsplus-active):not(
-    :has(.sub li.hasChildren:is(.active, .bsplus-active))
-  )
-  > .sub
-  > ul
-  > li,
-#menu
-  li.hasChildren:is(.active, .bsplus-active):not(
-    :has(.sub li.hasChildren:is(.active, .bsplus-active))
-  )
-  > .sub
-  > ul
-  > li
   > label,
-#menu
-  li.hasChildren:is(.active, .bsplus-active):not(
-    :has(.sub li.hasChildren:is(.active, .bsplus-active))
-  )
-  > .sub
-  > ul
-  > li
   > svg,
-#menu
-  li.hasChildren:is(.active, .bsplus-active):not(
-    :has(.sub li.hasChildren:is(.active, .bsplus-active))
-  )
-  > .sub
-  > ul
-  > li::before,
-#menu
-  li.hasChildren:is(.active, .bsplus-active):not(
-    :has(.sub li.hasChildren:is(.active, .bsplus-active))
-  )
-  > .sub
-  > ul
-  > li::after {
-  animation: none !important;
-  transition: none !important;
-  transform: none !important;
+  &::before,
+  &::after {
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+#menu#menu
+  ul.bsplus-drill-rows:has(> .hasChildren:is(.active, .bsplus-active))
+  > :is(li, section) {
+  margin-left: calc(
+    var(--bsplus-row-margin-left) + var(--bsplus-slide-off, -320px)
+  ) !important;
+}
+
+/* Incoming rows travel only with their native panel. */
+#menu .sub > ul:not(.bsplus-drill-rows) > li {
+  &,
+  > label,
+  > svg,
+  &::before,
+  &::after {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 #menu .sub {
-  transition: transform 0.3s ease, left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.3s ease,
+    left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#menu .sub ul:has(> li.hasChildren:is(.active, .bsplus-active))
+#menu
+  .sub
+  ul:has(> li.hasChildren:is(.active, .bsplus-active))
   > li:not(:is(.active, .bsplus-active)) {
   pointer-events: none !important;
 }
 
-#menu > ul:has(li.hasChildren:is(.active, .bsplus-active))
+#menu
+  > ul:has(li.hasChildren:is(.active, .bsplus-active))
   > li:is(.active, .bsplus-active) {
   background: transparent !important;
 }
@@ -98,60 +83,4 @@
 
 #menu {
   --bsplus-slide-off: -320px;
-}
-
-/* Reverse slide when drilling back — label/svg motion is driven inline in JS
-   so text stays off-screen until `.active` clears. Pseudo-elements use CSS. */
-#menu.bsplus-sidebar-returning ul.bsplus-drill-return-target > li::before,
-#menu.bsplus-sidebar-returning ul.bsplus-drill-return-target > li::after {
-  animation: bsplus-sidebar-return 0.3s cubic-bezier(0.4, 0, 0.2, 1) both !important;
-  transition: none !important;
-}
-
-@keyframes bsplus-sidebar-return {
-  from {
-    transform: translateX(var(--bsplus-slide-off, -320px));
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* Icon-only collapsed: submenu slides over narrow icons. */
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li::before,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > svg,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > label,
-body.icon-only-sidebar:not(:has(#menu li.hasChildren:is(.active, .bsplus-active)))
-  #menu
-  > ul
-  ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li
-  > svg {
-  transform: translateX(-70px);
-}
-
-body.icon-only-sidebar #menu {
-  --bsplus-slide-off: -70px;
 }
