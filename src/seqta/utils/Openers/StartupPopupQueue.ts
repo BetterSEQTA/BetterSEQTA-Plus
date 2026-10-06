@@ -16,7 +16,7 @@ type QueueStep = (goNext: () => void) => void;
 
 /**
  * Runs startup modals in order: What's New (if the extension just updated),
- * Courses/Assessments fix notice (after What's New, or if features are off),
+ * Courses/Assessments fix notice (only if features are off),
  * Theme of the Month (when the user hasn't dismissed this calendar month),
  * then feedback reply notifications for pending submissions.
  */
@@ -32,14 +32,8 @@ export async function runStartupPopupQueue() {
     steps.push((goNext) => OpenWhatsNewPopup(goNext));
   }
 
-  if (
-    shouldShowCoursesAssessmentsFixPopup(settingsState, {
-      afterWhatsNew,
-    })
-  ) {
-    steps.push((goNext) =>
-      OpenCoursesAssessmentsFixPopup(goNext, { afterWhatsNew }),
-    );
+  if (shouldShowCoursesAssessmentsFixPopup(settingsState)) {
+    steps.push((goNext) => OpenCoursesAssessmentsFixPopup(goNext));
   }
 
   // Fetch the Theme of the Month before queueing so we don't show an empty

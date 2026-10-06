@@ -12,10 +12,8 @@ export type CoursesAssessmentsFixPopupState = {
 
 export function shouldShowCoursesAssessmentsFixPopup(
   state: CoursesAssessmentsFixPopupState = settingsState,
-  options?: { afterWhatsNew?: boolean },
 ): boolean {
   if (state.coursesAssessmentsFixPopupShown) return false;
-  if (options?.afterWhatsNew) return true;
   return state.onoff === false;
 }
 
@@ -238,13 +236,12 @@ function setPopupButtonsDisabled(disabled: boolean) {
 
 export function OpenCoursesAssessmentsFixPopup(
   onDismissed?: () => void,
-  options?: { afterWhatsNew?: boolean },
 ) {
   if (document.getElementById("whatsnewbk")) {
     onDismissed?.();
     return;
   }
-  if (!shouldShowCoursesAssessmentsFixPopup(settingsState, options)) {
+  if (!shouldShowCoursesAssessmentsFixPopup(settingsState)) {
     onDismissed?.();
     return;
   }
