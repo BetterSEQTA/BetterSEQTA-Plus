@@ -1,11 +1,15 @@
 import type { SettingsState } from "@/types/storage";
 
 function detectLowEndDevice(): boolean {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
   const lowCoreCount =
-    navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
-  const lowMemory =
-    (navigator as Navigator & { deviceMemory?: number }).deviceMemory != null &&
-    (navigator as Navigator & { deviceMemory?: number }).deviceMemory! <= 2;
+    navigator.hardwareConcurrency != null && navigator.hardwareConcurrency < 4;
+  const deviceMemory = (navigator as Navigator & { deviceMemory?: number })
+    .deviceMemory;
+  const lowMemory = deviceMemory != null && deviceMemory <= 2;
 
   return !!(lowCoreCount || lowMemory);
 }
