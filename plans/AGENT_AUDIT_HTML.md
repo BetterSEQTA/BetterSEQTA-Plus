@@ -1,15 +1,16 @@
 # Agent audit HTML dashboard
 
-Self-contained HTML reports for CI artifacts and local preview (security mode).
+Self-contained HTML reports for CI artifacts and local preview (security and optimization modes).
 
 ## Preview locally (no API key)
 
 ```bash
 npm run audit:dashboard:preview
 npm run audit:dashboard:preview -- --open
+npm run audit:dashboard:preview -- --mode optimization
 ```
 
-Writes `agent-audit-report.preview.html` in repo root (or `AUDIT_OUTPUT_DIR`).
+Writes `agent-audit-report.preview.html` (or `optimization-audit-report.preview.html` with `--mode optimization`) in repo root (or `AUDIT_OUTPUT_DIR`).
 
 ## Live audit outputs
 

@@ -39,9 +39,13 @@ export function evaluateFinishGate({
   }
 
   if (turn < minFinishTurns) {
+    const depthHint =
+      mode === 'optimization'
+        ? 'Keep reviewing dead code, duplication, large modules, bundle config, and hot paths in content scripts and Svelte UI.'
+        : 'Keep auditing manifest permissions, content scripts, message passing, storage, OAuth, and HTML injection paths.';
     return {
       accept: false,
-      userMessage: `Finish rejected at turn ${turn}. Minimum finish depth is ${minFinishTurns} tool turns. Keep auditing manifest permissions, content scripts, message passing, storage, OAuth, and HTML injection paths.`
+      userMessage: `Finish rejected at turn ${turn}. Minimum finish depth is ${minFinishTurns} tool turns. ${depthHint}`
     };
   }
 
@@ -60,7 +64,7 @@ export function evaluateFinishGate({
     };
   }
 
-  if (mode === 'security') {
+  if (mode === 'security' || mode === 'optimization') {
     const findings = report?.findings;
     const empty = !Array.isArray(findings) || findings.length === 0;
     const limitations = report?.limitations;

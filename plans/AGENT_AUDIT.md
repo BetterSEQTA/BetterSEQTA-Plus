@@ -4,8 +4,14 @@ Scheduled GitHub Actions job that runs an agentic review of BetterSEQTA+ for exp
 
 ## Schedule
 
-- **Cron:** `0 6 * * 5` with **`timezone: Australia/Adelaide`** (Fridays at **06:00** local)
+- **Cron:** `0 6 1 * *` with **`timezone: Australia/Adelaide`** (1st of each month at **06:00** local)
 - **Manual:** Actions → **Agent audit** → Run workflow
+
+## Optimization audit (separate workflow)
+
+- **Workflow:** `.github/workflows/agent-audit-optimization.yml`
+- **Cron:** `0 6 2 * *` (2nd of each month at **06:00** Adelaide) — code size, duplication, performance, and cleanup opportunities
+- **Local:** `npm run audit:agent:optimization` (see `plans/AGENT_AUDIT_OPTIMIZATION.md`)
 
 ## Where it runs (fork policy)
 

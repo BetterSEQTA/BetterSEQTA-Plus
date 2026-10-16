@@ -11,7 +11,8 @@ import { runRipgrep, resolveGrepSanityProbe } from './lib/rg-run.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function loadPrompt(mode) {
-  const file = mode === 'soc2' ? 'soc2.md' : 'security.md';
+  const files = { soc2: 'soc2.md', optimization: 'optimization.md', security: 'security.md' };
+  const file = files[mode] || 'security.md';
   return fs.readFileSync(path.join(__dirname, 'prompts', file), 'utf8');
 }
 

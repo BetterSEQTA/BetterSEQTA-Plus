@@ -43,7 +43,7 @@ function parseArgs(argv) {
       i += 1;
     }
   }
-  if (mode !== 'security' && mode !== 'soc2') {
+  if (mode !== 'security' && mode !== 'soc2' && mode !== 'optimization') {
     throw new Error(`Invalid --mode ${mode}`);
   }
   return { mode };
@@ -64,6 +64,14 @@ function artifactBasenames(mode) {
       md: 'soc2-audit-report.md',
       html: 'soc2-audit-report.html',
       transcript: 'soc2-audit-transcript.jsonl'
+    };
+  }
+  if (mode === 'optimization') {
+    return {
+      json: 'optimization-audit-report.json',
+      md: 'optimization-audit-report.md',
+      html: 'optimization-audit-report.html',
+      transcript: 'optimization-audit-transcript.jsonl'
     };
   }
   return {

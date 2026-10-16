@@ -53,6 +53,20 @@ describe('finish-gate', () => {
     assert.equal(deepEnough.accept, true);
   });
 
+  it('optimization mode rejects shallow empty findings like security', () => {
+    const gate = evaluateFinishGate({
+      turnIndex: 44,
+      minTurns: 25,
+      minFinishTurns: 40,
+      mode: 'optimization',
+      report: { findings: [], limitations: [] },
+      tooling: {},
+      scratchDir: '/nonexistent-scratch-for-test'
+    });
+    assert.equal(gate.accept, false);
+    assert.match(gate.userMessage, /empty findings with shallow depth/i);
+  });
+
   it('rejects when grep sanity failed', () => {
     const gate = evaluateFinishGate({
       turnIndex: 49,

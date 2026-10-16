@@ -25,19 +25,25 @@ function parseArgs(argv) {
       openBrowser = true;
     }
   }
-  if (mode !== 'security' && mode !== 'soc2') throw new Error(`Invalid --mode ${mode}`);
+  if (mode !== 'security' && mode !== 'soc2' && mode !== 'optimization') {
+    throw new Error(`Invalid --mode ${mode}`);
+  }
   return { mode, openBrowser };
 }
 
 function outputBasename(mode) {
-  return mode === 'soc2' ? 'soc2-audit-report.preview.html' : 'agent-audit-report.preview.html';
+  if (mode === 'soc2') return 'soc2-audit-report.preview.html';
+  if (mode === 'optimization') return 'optimization-audit-report.preview.html';
+  return 'agent-audit-report.preview.html';
 }
 
 function fixtureReport(mode) {
-  const file =
-    mode === 'soc2'
-      ? path.join(__dirname, 'fixtures', 'sample-soc2-report.json')
-      : path.join(__dirname, 'fixtures', 'sample-security-report.json');
+  const files = {
+    soc2: 'sample-soc2-report.json',
+    optimization: 'sample-optimization-report.json',
+    security: 'sample-security-report.json'
+  };
+  const file = path.join(__dirname, 'fixtures', files[mode] || files.security);
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 

@@ -16,6 +16,20 @@ function isValidDiscordWebhookUrl(url) {
   return DISCORD_WEBHOOK_RE.test(String(url || '').trim());
 }
 
+function requiresDiscordNotifyOptimization(report) {
+  if (!report || typeof report !== 'object') return false;
+  if (report.requiresAction === true) return true;
+  if (report.requiresAction === false) return false;
+  const findings = Array.isArray(report.findings) ? report.findings : [];
+  for (const f of findings) {
+    const sev = String(f.severity || '').toLowerCase();
+    const conf = String(f.confidence || 'medium').toLowerCase();
+    if (sev === 'critical' || sev === 'high') return true;
+    if (sev === 'medium' && conf !== 'low') return true;
+  }
+  return false;
+}
+
 function requiresDiscordNotifySecurity(report) {
   if (!report || typeof report !== 'object') return false;
   if (report.requiresAction === true) return true;
@@ -62,6 +76,7 @@ function requiresDiscordNotifySoc2(report) {
 
 function requiresDiscordNotify(mode, report) {
   if (mode === 'soc2') return requiresDiscordNotifySoc2(report);
+  if (mode === 'optimization') return requiresDiscordNotifyOptimization(report);
   return requiresDiscordNotifySecurity(report);
 }
 
@@ -147,8 +162,9 @@ function chunkDiscordEmbeds(mode, report, runUrl, htmlArtifactName = '', options
   } else {
     const findings = Array.isArray(report.findings) ? report.findings : [];
     const maxSev = maxSeveritySecurity(findings);
+    const isOptimization = mode === 'optimization';
     embeds.push({
-      title: 'Security and stability audit',
+      title: isOptimization ? 'Code optimization audit' : 'Security and stability audit',
       description: truncate(report.summary || 'Audit completed.', EMBED_DESC_MAX),
       color: severityColor(maxSev),
       url: runUrl || undefined,
@@ -159,12 +175,14 @@ function chunkDiscordEmbeds(mode, report, runUrl, htmlArtifactName = '', options
       const cat = String(f.category || '').toLowerCase();
       const conf = String(f.confidence || 'medium').toLowerCase();
       if (sev === 'critical' || sev === 'high') return true;
+      if (isOptimization) return sev === 'medium' && conf !== 'low';
       return sev === 'medium' && (cat === 'security' || cat === 'crash') && conf !== 'low';
     });
     for (const f of actionable.slice(0, 10)) {
+      const impactLine = f.impact || f.exploitOrCrashScenario;
       const body = [
         `**${f.title || ''}** (${f.category || ''})`,
-        f.exploitOrCrashScenario ? `Scenario: ${truncate(f.exploitOrCrashScenario, 400)}` : '',
+        impactLine ? `Impact: ${truncate(impactLine, 400)}` : '',
         f.recommendedFix ? `Fix: ${truncate(f.recommendedFix, 400)}` : '',
         f.location ? `Location: ${truncate(f.location, 200)}` : ''
       ]
@@ -214,6 +232,7 @@ module.exports = {
   isValidDiscordWebhookUrl,
   requiresDiscordNotify,
   requiresDiscordNotifySecurity,
+  requiresDiscordNotifyOptimization,
   requiresDiscordNotifySoc2,
   chunkDiscordEmbeds,
   syncRequiresAction,

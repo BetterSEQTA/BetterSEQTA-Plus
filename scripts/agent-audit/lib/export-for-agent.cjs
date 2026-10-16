@@ -11,7 +11,7 @@ function normalizeSecurityItem(f, index) {
     location: f.location || '',
     confidence: f.confidence || '',
     evidence: f.evidence || '',
-    scenario: f.exploitOrCrashScenario || f.scenario || '',
+    scenario: f.impact || f.exploitOrCrashScenario || f.scenario || '',
     recommendedFix: f.recommendedFix || f.fix || ''
   };
 }
@@ -78,7 +78,12 @@ function filterExportItems(items, { severities, statuses } = {}) {
 
 function itemsToAgentMarkdown(mode, meta, items) {
   const lines = [];
-  const auditLabel = mode === 'soc2' ? 'SOC 2 gap review' : 'security audit';
+  const auditLabel =
+    mode === 'soc2'
+      ? 'SOC 2 gap review'
+      : mode === 'optimization'
+        ? 'optimization audit'
+        : 'security audit';
   lines.push(`# BetterSEQTA+ ${auditLabel} — coding agent import`);
   lines.push('');
   lines.push(

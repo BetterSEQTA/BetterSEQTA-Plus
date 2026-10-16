@@ -25,6 +25,16 @@ const DONUT_COLORS = {
   pass: '#1DB954'
 };
 
+function isFindingsAuditMode(mode) {
+  return mode === 'security' || mode === 'optimization';
+}
+
+function auditDashboardCopy(mode) {
+  if (mode === 'soc2') return { title: 'SOC 2 audit dashboard', label: 'SOC 2' };
+  if (mode === 'optimization') return { title: 'Optimization audit dashboard', label: 'Optimization' };
+  return { title: 'Security audit dashboard', label: 'Security' };
+}
+
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
@@ -984,7 +994,7 @@ function buildStructuredMissingBanner(mode, report) {
       <p class="breakdown-unavailable-hint">The summary and posture describe issues, but the saved report has no usable <code>gaps</code> array.${rec} See Executive summary and Raw, or re-run the audit.</p>
     </div>`;
   }
-  if (mode === 'security' && report.structuredFindingsMissing) {
+  if (isFindingsAuditMode(mode) && report.structuredFindingsMissing) {
     return `<div class="alert-structured-missing" role="status">
       <strong>Structured findings missing</strong>
       <p class="breakdown-unavailable-hint">The summary mentions findings, but the saved report has no usable <code>findings</code> array. See Executive summary and Raw, or re-run the audit.</p>
@@ -1003,7 +1013,7 @@ function buildBreakdownChart(mode, report, stats) {
       <p class="breakdown-unavailable-hint">Posture is <strong>${posture}</strong>. Fail, partial, and pass counts need a populated <code>gaps</code> array in the model finish JSON.</p>
     </div>`;
   }
-  if (mode === 'security' && report.structuredFindingsMissing) {
+  if (isFindingsAuditMode(mode) && report.structuredFindingsMissing) {
     return `<div class="breakdown-unavailable" role="status">
       <p><strong>Severity breakdown unavailable</strong></p>
       <p class="breakdown-unavailable-hint">Finding counts need a populated <code>findings</code> array in the finish JSON.</p>
@@ -1032,8 +1042,7 @@ function buildExecutiveSummaryHtml(report) {
 }
 
 function buildHeader(mode, report, runUrl, generatedAt) {
-  const title = mode === 'soc2' ? 'SOC 2 audit dashboard' : 'Security audit dashboard';
-  const modeLabel = mode === 'soc2' ? 'SOC 2' : 'Security';
+  const { title, label: modeLabel } = auditDashboardCopy(mode);
   const statusChip = buildStatusChip(report);
   const shortSummary = escapeHtml(displaySummary(report));
   const metaLink = runUrl
@@ -1149,7 +1158,7 @@ function buildFindingsPanel(mode, report, exportMeta) {
     emptyBlock = `<div class="empty-state"><p>Audit stopped before gaps were saved to the report.</p><p class="empty-hint">Check the Agent run tab for tools and turns completed earlier in the job.</p></div>`;
   } else if (empty && mode === 'soc2' && report.structuredGapsMissing) {
     emptyBlock = `<div class="empty-state"><p>Structured gaps were not saved.</p><p class="empty-hint">The executive summary may still list issues. Open Raw for the full model payload or re-run the audit with a finish JSON that includes a <code>gaps</code> array.</p></div>`;
-  } else if (empty && mode === 'security' && report.structuredFindingsMissing) {
+  } else if (empty && isFindingsAuditMode(mode) && report.structuredFindingsMissing) {
     emptyBlock = `<div class="empty-state"><p>Structured findings were not saved.</p><p class="empty-hint">See Executive summary and Raw, or re-run the audit.</p></div>`;
   } else if (empty) {
     const emptyMsg = mode === 'soc2' ? 'No gaps in this report.' : 'No findings in this report.';
@@ -1468,7 +1477,9 @@ function buildScript(exportMode) {
     if (st) st.textContent = msg || '';
   }
   function exportBasename(){
-    return exportMode === 'soc2' ? 'spotiqueue-soc2-gaps' : 'spotiqueue-security-findings';
+    if (exportMode === 'soc2') return 'spotiqueue-soc2-gaps';
+    if (exportMode === 'optimization') return 'betterseqta-optimization-findings';
+    return 'spotiqueue-security-findings';
   }
   function downloadBlob(filename, mime, text){
     var blob = new Blob([text], { type: mime });
@@ -1606,7 +1617,7 @@ export function reportToHtml(mode, report, meta = {}) {
   const events = meta.timelineEvents || [];
   const runUrl = meta.runUrl || '';
   const generatedAt = meta.generatedAt || new Date().toISOString();
-  const title = mode === 'soc2' ? 'SOC 2 audit dashboard' : 'Security audit dashboard';
+  const { title } = auditDashboardCopy(mode);
   const findingsLabel = mode === 'soc2' ? 'Gaps' : 'Findings';
 
   return `<!DOCTYPE html>

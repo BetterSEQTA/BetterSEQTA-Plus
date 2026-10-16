@@ -25,6 +25,7 @@
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:ci": "npm run test:unit && npm run build && npm run test:smoke",
     "audit:agent": "node scripts/agent-audit/run.mjs --mode security",
+    "audit:agent:optimization": "node scripts/agent-audit/run.mjs --mode optimization",
     "audit:probe": "node scripts/agent-audit/probe.mjs",
     "audit:dashboard:preview": "node scripts/agent-audit/preview-dashboard.mjs",
     "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus ./dist/*.zip --generate-notes",

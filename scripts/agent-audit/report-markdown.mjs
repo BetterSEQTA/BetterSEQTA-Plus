@@ -1,6 +1,12 @@
 export function reportToMarkdown(mode, report) {
   const lines = [];
-  lines.push(`# ${mode === 'soc2' ? 'SOC2 weekly' : 'Security'} audit report`);
+  const heading =
+    mode === 'soc2'
+      ? 'SOC2 weekly'
+      : mode === 'optimization'
+        ? 'Optimization'
+        : 'Security';
+  lines.push(`# ${heading} audit report`);
   lines.push('');
   lines.push(`**Requires action:** ${report.requiresAction ? 'yes' : 'no'}`);
   lines.push('');
@@ -44,6 +50,7 @@ export function reportToMarkdown(mode, report) {
       lines.push(`- Severity: ${f.severity}, Category: ${f.category}, Confidence: ${f.confidence || ''}`);
       lines.push(`- Location: ${f.location || ''}`);
       lines.push(`- Evidence: ${f.evidence || ''}`);
+      if (f.impact) lines.push(`- Impact: ${f.impact}`);
       if (f.exploitOrCrashScenario) lines.push(`- Scenario: ${f.exploitOrCrashScenario}`);
       if (f.recommendedFix) lines.push(`- Fix: ${f.recommendedFix}`);
       lines.push('');

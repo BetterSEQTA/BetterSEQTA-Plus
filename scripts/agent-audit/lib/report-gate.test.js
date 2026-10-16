@@ -1,5 +1,6 @@
 const {
   requiresDiscordNotifySecurity,
+  requiresDiscordNotifyOptimization,
   requiresDiscordNotifySoc2,
   requiresDiscordNotify,
   chunkDiscordEmbeds,
@@ -82,9 +83,30 @@ describe('agentAuditReport', () => {
     ).toBe(false);
   });
 
+  it('optimization notify gate treats medium non-low confidence as actionable', () => {
+    expect(
+      requiresDiscordNotifyOptimization({
+        findings: [{ severity: 'medium', category: 'dead_code', confidence: 'high' }]
+      })
+    ).toBe(true);
+    expect(
+      requiresDiscordNotifyOptimization({
+        findings: [{ severity: 'medium', category: 'duplication', confidence: 'low' }]
+      })
+    ).toBe(false);
+    expect(
+      requiresDiscordNotifyOptimization({
+        findings: [{ severity: 'low', category: 'complexity' }]
+      })
+    ).toBe(false);
+  });
+
   it('requiresDiscordNotify dispatches by mode', () => {
     expect(
       requiresDiscordNotify('security', { findings: [{ severity: 'critical', category: 'crash' }] })
+    ).toBe(true);
+    expect(
+      requiresDiscordNotify('optimization', { findings: [{ severity: 'high', category: 'dead_code' }] })
     ).toBe(true);
     expect(
       requiresDiscordNotify('soc2', { gaps: [{ severity: 'medium', status: 'partial' }] })
@@ -121,6 +143,29 @@ describe('agentAuditReport', () => {
     expect(payload.username).toBe('BetterSEQTA+ Audit');
     expect(payload.embeds.length).toBeGreaterThanOrEqual(2);
     expect(payload.embeds.length).toBeLessThanOrEqual(10);
+  });
+
+  it('chunkDiscordEmbeds uses optimization title for optimization mode', () => {
+    const payload = chunkDiscordEmbeds(
+      'optimization',
+      {
+        summary: 'Monthly cleanup review',
+        findings: [
+          {
+            id: 'F1',
+            severity: 'high',
+            category: 'duplication',
+            title: 'Duplicate helpers',
+            impact: 'Smaller bundle',
+            recommendedFix: 'Merge utils',
+            location: 'src/utils/a.ts'
+          }
+        ]
+      },
+      'https://github.com/org/repo/actions/runs/9'
+    );
+    expect(payload.embeds[0].title).toBe('Code optimization audit');
+    expect(payload.embeds.some((e) => e.description && e.description.includes('Impact:'))).toBe(true);
   });
 
   it('chunkDiscordEmbeds handles SOC2 gaps', () => {

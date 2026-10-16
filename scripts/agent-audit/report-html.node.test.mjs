@@ -14,6 +14,14 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('agentAuditHtml (report-html.mjs)', () => {
+  it('reportToHtml renders optimization dashboard title', async () => {
+    const { reportToHtml } = await import('./report-html.mjs');
+    const fixture = path.join(__dirname, 'fixtures', 'sample-optimization-report.json');
+    const report = JSON.parse(fs.readFileSync(fixture, 'utf8'));
+    const html = reportToHtml('optimization', report, { timelineEvents: [], metrics: {} });
+    assert.match(html, /Optimization audit dashboard/);
+  });
+
   it('reportToHtml includes redesign markers and escapes summary', async () => {
     const { reportToHtml } = await import('./report-html.mjs');
     const report = {

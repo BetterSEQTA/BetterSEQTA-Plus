@@ -35,45 +35,107 @@ function countBySeverity(items, key = 'severity') {
   return counts;
 }
 
-function computeSecurityStats(report) {
+function computeFindingsStats(mode, report, ringsConfig) {
   const findings = report.findings || [];
   const sevCounts = countBySeverity(findings);
   const total = findings.length;
   const findingsUnknown = !!report.structuredFindingsMissing;
   return {
-    mode: 'security',
+    mode,
     requiresAction: !!report.requiresAction,
     totalFindings: total,
     findingsUnknown,
     severityCounts: sevCounts,
     rings: findingsUnknown
-      ? [
-          { id: 'overall', label: 'Overall health', score: null, unknown: true },
-          { id: 'security', label: 'Exploit surface', score: null, unknown: true },
-          { id: 'stability', label: 'Stability', score: null, unknown: true },
-          { id: 'deps', label: 'Dependencies', score: null, unknown: true },
-          {
-            id: 'action',
-            label: 'Action clear',
-            score: report.requiresAction ? 25 : null,
-            unknown: !report.requiresAction
-          }
-        ]
-      : [
-          { id: 'overall', label: 'Overall health', score: healthFromFindings(findings) },
-          { id: 'security', label: 'Exploit surface', score: healthFromFindings(findings, (f) => f.category === 'security') },
-          { id: 'stability', label: 'Stability', score: healthFromFindings(findings, (f) => ['crash', 'reliability'].includes(f.category)) },
-          { id: 'deps', label: 'Dependencies', score: healthFromFindings(findings, (f) => f.category === 'dependency') },
-          {
-            id: 'action',
-            label: 'Action clear',
-            score: report.requiresAction ? 25 : 100
-          }
-        ],
+      ? ringsConfig.unknownRings(report)
+      : ringsConfig.scoredRings(findings, report),
     donut: {
       segments: SEVERITIES.map((s) => ({ label: s, value: sevCounts[s] || 0 }))
     }
   };
+}
+
+function computeSecurityStats(report) {
+  return computeFindingsStats('security', report, {
+    unknownRings: (r) => [
+      { id: 'overall', label: 'Overall health', score: null, unknown: true },
+      { id: 'security', label: 'Exploit surface', score: null, unknown: true },
+      { id: 'stability', label: 'Stability', score: null, unknown: true },
+      { id: 'deps', label: 'Dependencies', score: null, unknown: true },
+      {
+        id: 'action',
+        label: 'Action clear',
+        score: r.requiresAction ? 25 : null,
+        unknown: !r.requiresAction
+      }
+    ],
+    scoredRings: (findings, r) => [
+      { id: 'overall', label: 'Overall health', score: healthFromFindings(findings) },
+      {
+        id: 'security',
+        label: 'Exploit surface',
+        score: healthFromFindings(findings, (f) => f.category === 'security')
+      },
+      {
+        id: 'stability',
+        label: 'Stability',
+        score: healthFromFindings(findings, (f) => ['crash', 'reliability'].includes(f.category))
+      },
+      {
+        id: 'deps',
+        label: 'Dependencies',
+        score: healthFromFindings(findings, (f) => f.category === 'dependency')
+      },
+      {
+        id: 'action',
+        label: 'Action clear',
+        score: r.requiresAction ? 25 : 100
+      }
+    ]
+  });
+}
+
+function computeOptimizationStats(report) {
+  return computeFindingsStats('optimization', report, {
+    unknownRings: (r) => [
+      { id: 'overall', label: 'Maintainability', score: null, unknown: true },
+      { id: 'dead', label: 'Dead code', score: null, unknown: true },
+      { id: 'dup', label: 'Duplication', score: null, unknown: true },
+      { id: 'perf', label: 'Perf / bundle', score: null, unknown: true },
+      {
+        id: 'action',
+        label: 'Action clear',
+        score: r.requiresAction ? 25 : null,
+        unknown: !r.requiresAction
+      }
+    ],
+    scoredRings: (findings, r) => [
+      { id: 'overall', label: 'Maintainability', score: healthFromFindings(findings) },
+      {
+        id: 'dead',
+        label: 'Dead code',
+        score: healthFromFindings(findings, (f) => f.category === 'dead_code')
+      },
+      {
+        id: 'dup',
+        label: 'Duplication',
+        score: healthFromFindings(findings, (f) => f.category === 'duplication')
+      },
+      {
+        id: 'perf',
+        label: 'Perf / bundle',
+        score: healthFromFindings(
+          findings,
+          (f) => f.category === 'performance' || f.category === 'bundle' || f.category === 'complexity'
+        )
+      },
+      {
+        id: 'action',
+        label: 'Action clear',
+        score: r.requiresAction ? 25 : 100
+      }
+    ]
+  });
 }
 
 function computeSoc2Stats(report) {
@@ -137,6 +199,7 @@ function computeSoc2Stats(report) {
 
 function computeDashboardStats(mode, report) {
   if (mode === 'soc2') return computeSoc2Stats(report);
+  if (mode === 'optimization') return computeOptimizationStats(report);
   return computeSecurityStats(report);
 }
 
@@ -324,6 +387,7 @@ module.exports = {
   escapeHtml,
   computeDashboardStats,
   computeSecurityStats,
+  computeOptimizationStats,
   computeSoc2Stats,
   parseTranscriptJsonl,
   readTranscriptFile,

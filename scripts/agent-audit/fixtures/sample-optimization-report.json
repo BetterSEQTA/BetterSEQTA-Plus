@@ -1,0 +1,41 @@
+{
+  "requiresAction": true,
+  "summary": "Sample optimization audit for dashboard preview. Two high-value cleanup items.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "category": "duplication",
+      "title": "Duplicate date formatting helpers",
+      "location": "src/seqta/utils/date.ts, src/content/helpers/date.ts",
+      "confidence": "high",
+      "evidence": "formatSeqtaDate and formatDisplayDate share logic",
+      "impact": "Smaller bundle and one place to fix timezone bugs",
+      "recommendedFix": "Extract shared helper under src/utils/dateFormat.ts"
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "category": "dead_code",
+      "title": "Unused export in theme loader",
+      "location": "src/seqta/theme/loader.ts:88",
+      "confidence": "medium",
+      "evidence": "applyLegacyTheme is exported but never imported",
+      "impact": "Less dead code for reviewers and tree-shaking",
+      "recommendedFix": "Remove export or wire into migration path"
+    },
+    {
+      "id": "F3",
+      "severity": "low",
+      "category": "complexity",
+      "title": "Large Svelte settings panel",
+      "location": "src/components/settings/SettingsPanel.svelte",
+      "confidence": "high",
+      "evidence": "File exceeds 800 lines with nested conditionals",
+      "impact": "Easier reviews and faster loads if split into sub-panels",
+      "recommendedFix": "Split into tab subcomponents"
+    }
+  ],
+  "checkedAreas": ["Duplication", "Dead code", "Build config", "Content scripts"],
+  "limitations": ["Preview fixture only"]
+}

@@ -63,6 +63,63 @@ function optionalGitDelta() {
   return { base: 'HEAD~1', head: 'HEAD', changedFiles };
 }
 
+function gitActivitySince(days = 35) {
+  const result = spawnSync(
+    'git',
+    ['log', `--since=${days} days ago`, '--pretty=format:', '--name-only'],
+    { cwd: REPO_ROOT, encoding: 'utf8' }
+  );
+  if (result.status !== 0) return null;
+  const seen = new Set();
+  for (const line of (result.stdout || '').split('\n')) {
+    const p = line.trim();
+    if (p) seen.add(p.replace(/\\/g, '/'));
+  }
+  const recentFiles = [...seen].slice(0, 120);
+  return { sinceDays: days, recentFiles };
+}
+
+function countLines(relPath) {
+  const abs = path.join(REPO_ROOT, relPath);
+  if (!fs.existsSync(abs)) return 0;
+  const text = fs.readFileSync(abs, 'utf8');
+  return text.split('\n').length;
+}
+
+function largestSourceFiles(limit = 25) {
+  try {
+    const files = globSync('src/**/*.{ts,js,svelte}', { cwd: REPO_ROOT });
+    const sized = files
+      .map((f) => {
+        const rel = f.replace(/\\/g, '/');
+        return { path: rel, lines: countLines(rel) };
+      })
+      .filter((x) => x.lines > 0)
+      .sort((a, b) => b.lines - a.lines)
+      .slice(0, limit);
+    return sized;
+  } catch {
+    return [];
+  }
+}
+
+function optimizationGrepBundle() {
+  return {
+    todoFixme: runRg('TODO|FIXME|HACK', 'src/**/*.{ts,js,svelte}'),
+    eslintDisable: runRg('eslint-disable', 'src/**/*.{ts,js,svelte}'),
+    tsIgnore: runRg('@ts-ignore|@ts-expect-error', 'src/**/*.{ts,js}'),
+    consoleLog: runRg('\\bconsole\\.log\\(', 'src/**/*.{ts,js,svelte}')
+  };
+}
+
+const OPTIMIZATION_CHECKLIST = [
+  { area: 'Dead code and exports', entryFiles: ['src/background.ts', 'src/content'] },
+  { area: 'Shared utilities / duplication', entryFiles: ['src/seqta/utils', 'src/utils'] },
+  { area: 'Build and bundle', entryFiles: ['vite.config.ts', 'package.json'] },
+  { area: 'Content script performance', entryFiles: ['src/content'] },
+  { area: 'Svelte UI components', entryFiles: ['src/components'] }
+];
+
 function soc2PolicyBundle() {
   return {};
 }
@@ -112,6 +169,15 @@ export async function buildContext(mode, meta = {}) {
         ? readExcerpt('.github/dependabot.yml', 2000)
         : { note: 'no dependabot.yml in repo' }
     };
+  } else if (mode === 'optimization') {
+    sections.optimizationGreps = optimizationGrepBundle();
+    sections.largeSourceFiles = largestSourceFiles();
+    sections.gitActivity = gitActivitySince();
+    sections.optimization = {
+      testCount: countUnitTests(),
+      packageExcerpt: readExcerpt('package.json', 4000)
+    };
+    index.optimizationChecklist = OPTIMIZATION_CHECKLIST;
   } else {
     sections.security = {
       smokeScript: readExcerpt('scripts/smoke-test.mjs', 3000),
