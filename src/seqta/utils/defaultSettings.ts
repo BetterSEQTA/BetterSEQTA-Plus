@@ -78,6 +78,7 @@ export function getDefaultSettingsState(): SettingsState {
     adaptiveThemeColourTransition: true,
     themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
+    customLoginPortal: true,
     showTitlebarFounderBadge: true,
     selectedFont: "rubik",
     timeFormat: "24",
