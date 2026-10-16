@@ -21,6 +21,7 @@ import {
 } from "./background/calendarBackground";
 import { createCustomThemesHandlers } from "./background/customThemesHandlers";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
+import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -750,4 +751,5 @@ browser.runtime.onStartup.addListener(() => {
 });
 
 initCloudSettingsAutoSync({ reloadSeqtaPages });
+initTimetableClassmatesBackgroundSync();
 void ensureSyncableStorageDefaults();

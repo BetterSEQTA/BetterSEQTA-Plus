@@ -46,6 +46,11 @@ export const PERFORMANCE_HEAVY_PLUGINS: readonly PerformanceHeavyPlugin[] = [
     name: "Message Folders",
     description: "Message DOM tagging and folder indexing",
   },
+  {
+    id: "timetable-classmates",
+    name: "Timetable Classmates",
+    description: "Classmate avatar sync and SEQTA message polling",
+  },
 ] as const;
 
 export const PERFORMANCE_HEAVY_PLUGIN_IDS = new Set(

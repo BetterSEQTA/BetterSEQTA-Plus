@@ -53,6 +53,7 @@ import {
   type OutlookCalendarStatus,
 } from "@/seqta/utils/calendarSync/providerStorage";
 import browser from "webextension-polyfill";
+import { isSeqtaTab } from "@/seqta/utils/seqtaTabMatch";
 
 const WEEKLY_PERIOD_MINUTES = 7 * 24 * 60;
 
@@ -508,11 +509,6 @@ export function registerOutlookCalendarMessageHandlers(
   isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
 ): void {
   registerProviderHandlers(handlers, isTrustedSender, OUTLOOK_BACKEND, getOutlookCalendarStatus);
-}
-
-function isSeqtaTab(tab: browser.Tabs.Tab): boolean {
-  const title = tab.title ?? "";
-  return title.includes("SEQTA Learn") || title.includes("SEQTA Engage");
 }
 
 export async function ensureWeeklySyncAlarm(): Promise<void> {

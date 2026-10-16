@@ -38,4 +38,5 @@ export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<
   },
   "grade-analytics": { cacheTtlHours: 24 },
   "error-page-kitten": {},
+  "timetable-classmates": { enabled: false },
 };
