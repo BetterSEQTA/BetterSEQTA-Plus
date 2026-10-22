@@ -14,7 +14,7 @@ import {
 
 const STYLE_ID = "bsplus-timetable-classmates-popup-styles";
 const CLASSMATES_VIDEO_URL =
-  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/timetable-classmates-video.webm";
+  "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/refs/heads/main/src/resources/timetable-classmates.webm";
 
 function ensurePopupStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -26,6 +26,8 @@ function ensurePopupStyles(): void {
 
 type ConsentPopupOptions = {
   onDismiss?: () => void;
+  /** Fires once the popup shell is ready (Svelte mounted). */
+  onOpened?: () => void;
   heroVideo?: boolean;
 };
 
@@ -76,6 +78,7 @@ function openConsentPopup(
           },
         },
       });
+      options?.onOpened?.();
     },
   });
 }
@@ -83,22 +86,17 @@ function openConsentPopup(
 export function openTimetableClassmatesOptInPopup(options: {
   onAccepted: () => void | Promise<void>;
   onDismiss?: () => void;
+  /** Clears post–cloud-login resume flag as soon as the modal is shown (one-shot reopen). */
+  onOpened?: () => void;
 }): void {
   openConsentPopup(
     "Timetable classmates",
     "Share class lists with opted-in students at your school",
     TimetableClassmatesOptInPopup,
+    { onAccepted: options.onAccepted },
     {
-      onAccepted: async () => {
-        clearResumeOptInAfterCloudLogin();
-        await options.onAccepted();
-      },
-    },
-    {
-      onDismiss: () => {
-        clearResumeOptInAfterCloudLogin();
-        options.onDismiss?.();
-      },
+      onDismiss: options.onDismiss,
+      onOpened: options.onOpened,
       heroVideo: true,
     },
   );
@@ -117,7 +115,10 @@ async function openResumeOptInIfNeeded(): Promise<void> {
     return;
   }
 
-  openTimetableClassmatesOptInPopup({ onAccepted: () => {} });
+  openTimetableClassmatesOptInPopup({
+    onAccepted: () => {},
+    onOpened: () => clearResumeOptInAfterCloudLogin(),
+  });
 }
 
 /** After cloud OAuth refreshes the page, reopen opt-in if the user started sign-in from this flow. */
