@@ -19,6 +19,7 @@
   import SidebarNav from "../components/SidebarNav.svelte";
   import StoreHeader from "../components/store/Header.svelte";
   import { settingsPopup } from "@/seqta/utils/settingsPopup";
+  import { armDevModeUnlock } from "@/seqta/utils/devModeUnlock";
   import { consumeOpenFeedbackRequest } from "@/seqta/utils/feedback/client";
   import {
     consumeSettingsDestination,
@@ -53,7 +54,6 @@
 
   const BACKGROUND_CATEGORY_PREFIX = "background-category:";
 
-  let devModeSequence = "";
   let compactActiveTab = $state(0);
   let expanded = $state(settingsState.settingsPopupExpanded === true);
   let lastExpandedTab: number | null = null;
@@ -201,22 +201,7 @@
     closeExtensionPopup();
   };
 
-  const handleDevModeToggle = () => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      devModeSequence += event.key.toLowerCase();
-      if (devModeSequence.includes("dev")) {
-        document.removeEventListener("keydown", handleKeyDown);
-        settingsState.devMode = true;
-        alert("Dev mode is now enabled");
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    setTimeout(() => {
-      document.removeEventListener("keydown", handleKeyDown);
-      devModeSequence = "";
-    }, 10000);
-  };
+  const handleDevModeToggle = () => armDevModeUnlock();
 
   let ColourPickerComponent = $state<Component | null>(null);
   let FontPickerComponent = $state<Component | null>(null);

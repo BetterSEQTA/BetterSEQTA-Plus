@@ -1,0 +1,81 @@
+.timetable-classmates-controls {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.bsplus-friends-sync-mount {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bsplus-friends-sync {
+  position: relative;
+  display: inline-flex;
+  font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
+  color: var(--bsplus-cal-text, var(--text-primary, #111));
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: auto;
+  height: auto;
+  padding: 0 10px;
+  margin: 0;
+  border-radius: 16px !important;
+  font-family: inherit;
+  background: var(--bsplus-cal-surface, var(--background-primary, #232323)) !important;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger-content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger-icon {
+  font-family: "IconFamily" !important;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger-text {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger:hover:not(:disabled) {
+  transform: scale(1.03);
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger--busy {
+  opacity: 0.95;
+  cursor: wait;
+}
+
+.bsplus-friends-sync .bsplus-cal-trigger--busy:hover,
+.bsplus-friends-sync .bsplus-cal-trigger--busy:active {
+  transform: none;
+}

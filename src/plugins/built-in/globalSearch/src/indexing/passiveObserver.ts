@@ -297,6 +297,73 @@ function titleFromEndpoint(
   return (firstLine || fallback).slice(0, 200);
 }
 
+function shouldSkipPassiveEntity(
+  ctx: CapturedContext,
+  entity: unknown,
+  isPeopleSupport: boolean,
+): boolean {
+  if (!entity || (typeof entity !== "object" && typeof entity !== "string")) {
+    return true;
+  }
+  if (ctx.route.includes("/load/message") && typeof entity === "object") {
+    const subject = (entity as Record<string, unknown>).subject;
+    if (typeof subject === "string" && subject.startsWith("BQ+TIMETABLE:")) {
+      return true;
+    }
+  }
+  return isPeopleSupport && !isPeopleEntityWorthIndexing(entity);
+}
+
+function passiveEntityToIndexItem(
+  ctx: CapturedContext,
+  entity: unknown,
+  index: number,
+  category: ReturnType<typeof categoryFromRoute>,
+  isPeopleSupport: boolean,
+): IndexItem | null {
+  const fallbackId = `${ctx.route}#${index}`;
+  const entityId = pickId(entity, fallbackId);
+  const stableId = `passive-${ctx.route.replace(/\//g, "_")}-${entityId}`;
+
+  const content = extractTextFromValue(entity, {
+    maxChars: MAX_PER_RESPONSE_TEXT_CHARS,
+  });
+  const title = titleFromEndpoint(ctx.route, entity, content, fallbackId);
+  if (!content && (!title || title === fallbackId)) {
+    return null;
+  }
+
+  const deepLinkHints = pickDeepLinkHints(entity);
+  const sourcePage = sourcePageForRoute(ctx.route);
+  const coursePm = ctx.route.includes("/load/courses")
+    ? extractProgrammeMetaclass(ctx.requestBody, entity)
+    : null;
+
+  return buildIndexItem({
+    id: stableId,
+    text: title,
+    category,
+    contentOverride: content,
+    metadata: {
+      route: ctx.route,
+      source: "passive",
+      observedAt: new Date(ctx.observedAt).toISOString(),
+      entityType: category,
+      entityId,
+      icon: "\ueb71",
+      sourcePage,
+      ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
+      ...deepLinkHints,
+      ...(coursePm
+        ? { programme: coursePm.programme, metaclass: coursePm.metaclass }
+        : {}),
+    },
+    actionId: "passive",
+    renderComponentId: "passive",
+    dateAdded: ctx.observedAt,
+  });
+}
+
 function synthesizeItems(
   ctx: CapturedContext,
   payload: unknown,
@@ -307,75 +374,16 @@ function synthesizeItems(
   if (entities.length === 0) return [];
 
   const category = categoryFromRoute(ctx.route);
-  const now = ctx.observedAt;
-  const out: IndexItem[] = [];
-
   const isPeopleSupport = ctx.route.includes("/load/message/people");
-
+  const out: IndexItem[] = [];
   const limit = Math.min(entities.length, MAX_ITEMS_PER_RESPONSE);
+
   for (let i = 0; i < limit; i++) {
     const entity = entities[i];
-    if (!entity || (typeof entity !== "object" && typeof entity !== "string")) {
-      continue;
-    }
+    if (shouldSkipPassiveEntity(ctx, entity, isPeopleSupport)) continue;
 
-    // For the messages compose-people endpoint, skip records that don't
-    // carry a real human name. We never want raw entries like
-    // `/seqta/student/load/message/people#20` becoming titles, and we
-    // explicitly route the rest to /messages so they're treated as support
-    // records, not standalone "people" results.
-    if (isPeopleSupport && !isPeopleEntityWorthIndexing(entity)) {
-      continue;
-    }
-
-    const fallbackId = `${ctx.route}#${i}`;
-    const entityId = pickId(entity, fallbackId);
-    const stableId = `passive-${ctx.route.replace(/\//g, "_")}-${entityId}`;
-
-    const content = extractTextFromValue(entity, {
-      maxChars: MAX_PER_RESPONSE_TEXT_CHARS,
-    });
-    const title = titleFromEndpoint(ctx.route, entity, content, fallbackId);
-    if (!content && (!title || title === fallbackId)) {
-      // Skip records that produced neither title nor content; they are
-      // structurally noise (e.g. tiny acknowledgement payloads).
-      continue;
-    }
-
-    const deepLinkHints = pickDeepLinkHints(entity);
-    const sourcePage = sourcePageForRoute(ctx.route);
-    const coursePm = ctx.route.includes("/load/courses")
-      ? extractProgrammeMetaclass(ctx.requestBody, entity)
-      : null;
-
-    out.push(
-      buildIndexItem({
-        id: stableId,
-        text: title,
-        category,
-        contentOverride: content,
-        metadata: {
-          route: ctx.route,
-          source: "passive",
-          observedAt: new Date(now).toISOString(),
-          entityType: category,
-          entityId,
-          icon: "\ueb71",
-          sourcePage,
-          // Mark message/people as a low-priority support record so the
-          // search ranker can deprioritize it relative to real messages,
-          // assessments, courses, etc.
-          ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
-          ...deepLinkHints,
-          ...(coursePm
-            ? { programme: coursePm.programme, metaclass: coursePm.metaclass }
-            : {}),
-        },
-        actionId: "passive",
-        renderComponentId: "passive",
-        dateAdded: now,
-      }),
-    );
+    const item = passiveEntityToIndexItem(ctx, entity, i, category, isPeopleSupport);
+    if (item) out.push(item);
   }
 
   return out;
