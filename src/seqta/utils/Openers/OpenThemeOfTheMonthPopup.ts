@@ -227,6 +227,7 @@ const TOTM_MORPH_MS = 550;
 const TOTM_LAYOUT_SWAP_MS = TOTM_MORPH_MS / 2;
 
 let themeOfTheMonthAnimGen = 0;
+let cleanupThemeOfTheMonthPopup: (() => void) | undefined;
 
 // ---------------------------------------------------------------------------
 // Dimension helpers
@@ -675,6 +676,7 @@ export async function OpenThemeOfTheMonthPopup(
   entry: ThemeOfTheMonthEntry,
   onDismissed?: () => void,
 ): Promise<void> {
+  cleanupThemeOfTheMonthPopup?.();
   document.getElementById("theme-of-the-month-card")?.remove();
   document.getElementById("theme-of-the-month-backdrop")?.remove();
 
@@ -779,13 +781,29 @@ export async function OpenThemeOfTheMonthPopup(
     );
   };
 
-  const dismissWithCleanup = () => {
+  const cleanup = () => {
     pauseAutoClose();
     window.removeEventListener("resize", onResize);
     backdrop.remove();
     document.removeEventListener("keydown", onDocKey, true);
+    document.removeEventListener("click", onOutsideClick, true);
+    if (cleanupThemeOfTheMonthPopup === cleanup) cleanupThemeOfTheMonthPopup = undefined;
+  };
+  const dismissWithCleanup = () => {
+    cleanup();
     closeThemeOfTheMonthCard(card, onDismissed);
   };
+  const dismissForMonth = () => {
+    settingsState.themeOfTheMonthDismissedMonth = entry.month;
+    dismissWithCleanup();
+  };
+  const onOutsideClick = (event: MouseEvent) => {
+    const target = event.target;
+    if (target instanceof Node && card.contains(target)) return;
+    if (target instanceof Element && target.closest("#bsplus-popup-media-overlay")) return;
+    dismissForMonth();
+  };
+  cleanupThemeOfTheMonthPopup = cleanup;
 
   autoCloseTimeout = window.setTimeout(dismissWithCleanup, 30_000);
   card.addEventListener("mouseenter", pauseAutoClose, { once: true });
@@ -807,22 +825,12 @@ export async function OpenThemeOfTheMonthPopup(
     toggleExpanded();
   });
 
-  backdrop.addEventListener("click", () => {
-    if (!isExpanded || expandAnimating) return;
-    isExpanded = false;
-    void applyExpandedState(false);
-  });
-
   document.addEventListener("keydown", onDocKey, true);
 
-  card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", () => {
-    settingsState.themeOfTheMonthDismissedMonth = entry.month;
-    dismissWithCleanup();
-  });
+  card.querySelector(".themeOfTheMonthCardSecondary")?.addEventListener("click", dismissForMonth);
 
   card.querySelector(".themeOfTheMonthCardPrimary")?.addEventListener("click", () => {
-    settingsState.themeOfTheMonthDismissedMonth = entry.month;
-    dismissWithCleanup();
+    dismissForMonth();
     void openThemeStoreWithHighlight(linkedThemeId!);
   });
 
@@ -852,6 +860,8 @@ export async function OpenThemeOfTheMonthPopup(
   card.style.left = "0";
 
   document.body.append(backdrop, card);
+  // Capture has already passed for the click that opened this card.
+  document.addEventListener("click", onOutsideClick, true);
 
   // Set initial collapsed position instantly (no transition).
   applyThemeOfTheMonthCardPosition(card, false, false);

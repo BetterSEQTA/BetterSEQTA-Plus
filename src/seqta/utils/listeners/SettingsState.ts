@@ -107,18 +107,7 @@ class StorageManager {
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
-        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
-          void browser.storage.local.set({ [prop]: value });
-          return true;
-        }
-        const oldValue = target.data[prop];
-
-        // Only save if the reference actually changed
-        if (oldValue !== value) {
-          Reflect.set(target.data, prop, value);
-          void target.saveToStorage([prop as string]);
-          target.notifySettingChange(prop as string, value, oldValue);
-        }
+        target.setKey(prop, value);
         return true;
       },
       deleteProperty: (target, prop: keyof SettingsState) => {
@@ -186,6 +175,13 @@ class StorageManager {
       this.data[key] = value;
       void this.saveToStorage([key as string]);
       this.notifySettingChange(key as string, value, oldValue);
+      if (key === "onoff" && typeof value === "boolean") {
+        // Reload only after this switch and any queued preferences reach storage.
+        // This also covers Settings opened while the extension is disabled.
+        void this.flushPendingPatch()
+          .then(() => browser.runtime.sendMessage({ type: "reloadTabs" }))
+          .catch((error) => console.error("[BetterSEQTA+] Failed to save master setting", error));
+      }
     }
   }
 
@@ -247,6 +243,7 @@ class StorageManager {
   }
 
   private async flushPendingPatch(): Promise<void> {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
     this.saveTimeout = null;
     if (this.bootstrapping || this.suppressWrites) return;
 

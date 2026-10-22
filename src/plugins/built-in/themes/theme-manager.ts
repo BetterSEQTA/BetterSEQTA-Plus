@@ -195,7 +195,7 @@ export class ThemeManager {
 
   /**
    * After cloud restore, IndexedDB/theme storage is only reachable from page context (not MV3 SW).
-   * Background sets BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY; we fetch the store JSON here before setTheme().
+   * Background sets BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY; we fetch catalog JSON here before setTheme().
    * The resolved id matches cloud sync **`themeId` / `selectedTheme`**: it may be a standard theme uuid or a
    * flavour (slave) variant id — **`downloadAndInstallStoreTheme`** is the same code path as the theme store installer.
    */
@@ -205,16 +205,21 @@ export class ThemeManager {
       const pending = snap[BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY];
       if (pending === undefined) return;
 
-      await browser.storage.local.remove(BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY);
-
-      if (typeof pending !== "string") return;
-      const id = pending.trim();
-      if (!id) return;
+      const id = typeof pending === "string" ? pending.trim() : "";
+      if (!id) {
+        await browser.storage.local.remove(BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY);
+        return;
+      }
 
       const existing = (await localforage.getItem(id)) as CustomTheme | null;
-      if (existing) return;
-
-      await this.downloadAndInstallStoreTheme({ id, name: id });
+      if (!existing) {
+        try {
+          await this.downloadAndInstallStoreTheme({ id, name: id });
+        } catch {
+          await this.downloadAndInstallCommunityTheme({ id });
+        }
+      }
+      await browser.storage.local.remove(BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY);
     } catch (e) {
       console.warn("[ThemeManager] prepareThemeAfterCloudSync:", e);
     }

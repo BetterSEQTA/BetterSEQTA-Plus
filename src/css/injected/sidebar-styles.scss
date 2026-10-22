@@ -92,20 +92,22 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   &.bsplus-sidebar-style-glass {
     /* Never put backdrop-filter on an open folder — it becomes a clip
        containing-block and hides `.sub` labels on Chromium/Edge. */
-    #{$item}:not(:has(> .sub)) {
-      margin: 0 8px 8px !important;
-      background: rgba(255, 255, 255, 0.1) !important;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-    }
-    #{$item}:has(> .sub) {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      box-shadow: none !important;
-      overflow: visible !important;
-      contain: none !important;
+    #{$item} {
+      &:not(:has(> .sub)) {
+        margin: 0 8px 8px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+      }
+      &:has(> .sub) {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        contain: none !important;
+      }
     }
     #{$active} {
       background: rgba(255, 255, 255, 0.2) !important;
@@ -145,16 +147,17 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &.bsplus-sidebar-style-neon #{$active} {
-    background: rgba(255, 255, 255, 0.1) !important;
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.55),
-      0 0 14px rgba(255, 255, 255, 0.4),
-      0 0 28px rgba(255, 255, 255, 0.22) !important;
-  }
-
-  &.bsplus-sidebar-style-neon #{$item} {
-    margin: 0 8px 8px !important;
+  &.bsplus-sidebar-style-neon {
+    #{$active} {
+      background: rgba(255, 255, 255, 0.1) !important;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.55),
+        0 0 14px rgba(255, 255, 255, 0.4),
+        0 0 28px rgba(255, 255, 255, 0.22) !important;
+    }
+    #{$item} {
+      margin: 0 8px 8px !important;
+    }
   }
 
   /* —— Density (comfortable = no class / no overrides) —— */
@@ -206,42 +209,48 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* —— Active indicator (fill = default, no class) —— */
-  &.bsplus-sidebar-indicator-bar:not(.bsplus-sidebar-style-strip) #{$active} {
-    position: relative !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    box-shadow: none !important;
-    &::after {
-      @include accent-bar(0.45);
+  &.bsplus-sidebar-indicator-bar:not(.bsplus-sidebar-style-strip) {
+    #{$active} {
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      box-shadow: none !important;
+      &::after {
+        @include accent-bar(0.45);
+      }
     }
   }
 
-  &.bsplus-sidebar-indicator-outline #{$active} {
-    background: transparent !important;
-    box-shadow:
-      inset 0 0 0 2px rgba(255, 255, 255, 0.55),
-      0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+  &.bsplus-sidebar-indicator-outline {
+    #{$active} {
+      background: transparent !important;
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+    }
   }
 
-  &.bsplus-sidebar-indicator-underline:not(.bsplus-sidebar-style-strip) #{$active} {
-    position: relative !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    &::after {
-      content: "" !important;
-      position: absolute !important;
-      left: 14px !important;
-      right: 14px !important;
-      bottom: 6px !important;
-      top: auto !important;
-      width: auto !important;
-      height: 3px !important;
-      border-radius: 999px !important;
-      background: #fff !important;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
-      pointer-events: none !important;
-      z-index: 3 !important;
-      opacity: 1 !important;
-      display: block !important;
+  &.bsplus-sidebar-indicator-underline:not(.bsplus-sidebar-style-strip) {
+    #{$active} {
+      position: relative !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      &::after {
+        content: "" !important;
+        position: absolute !important;
+        left: 14px !important;
+        right: 14px !important;
+        bottom: 6px !important;
+        top: auto !important;
+        width: auto !important;
+        height: 3px !important;
+        border-radius: 999px !important;
+        background: #fff !important;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
+        pointer-events: none !important;
+        z-index: 3 !important;
+        opacity: 1 !important;
+        display: block !important;
+      }
     }
   }
 }

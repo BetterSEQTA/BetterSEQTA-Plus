@@ -18,25 +18,13 @@ describe("shouldShowCoursesAssessmentsFixPopup", () => {
     ).toBe(true);
   });
 
-  it("does not show when BetterSEQTA features are on unless What's New just closed", () => {
+  it("does not show when BetterSEQTA features are on", () => {
     expect(
       shouldShowCoursesAssessmentsFixPopup({
         onoff: true,
         coursesAssessmentsFixPopupShown: false,
       }),
     ).toBe(false);
-  });
-
-  it("shows after What's New even when BetterSEQTA features are already on", () => {
-    expect(
-      shouldShowCoursesAssessmentsFixPopup(
-        {
-          onoff: true,
-          coursesAssessmentsFixPopupShown: false,
-        },
-        { afterWhatsNew: true },
-      ),
-    ).toBe(true);
   });
 
   it("does not show again after the user has seen it", () => {
@@ -46,7 +34,6 @@ describe("shouldShowCoursesAssessmentsFixPopup", () => {
           onoff: false,
           coursesAssessmentsFixPopupShown: true,
         },
-        { afterWhatsNew: true },
       ),
     ).toBe(false);
   });

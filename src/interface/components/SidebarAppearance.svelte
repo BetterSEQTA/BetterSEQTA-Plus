@@ -55,6 +55,7 @@
   }
 </script>
 
+<div class="sidebar-appearance">
 <div class="card">
   <header class="card-header split">
     <div>
@@ -94,7 +95,7 @@
         <button
           type="button"
           id={`sidebar-style-${style.id}`}
-          class="option"
+          class={`option style-${style.id}`}
           class:active
           role="option"
           aria-selected={active}
@@ -242,7 +243,13 @@
   </div>
 </div>
 
+</div>
+
 <style>
+  .sidebar-appearance {
+    container: sidebar-appearance / inline-size;
+  }
+
   .card {
     margin: 4px 0;
     padding: 4px;
@@ -605,5 +612,79 @@
   .control.toggle {
     display: flex;
     justify-content: flex-end;
+  }
+  @container sidebar-appearance (max-width: 500px) {
+    .preview-pane,
+    .thumb {
+      display: none;
+    }
+
+    .picker-body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .option {
+      min-height: 2.5rem;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+
+    .option.style-soft {
+      border-radius: 1rem;
+      box-shadow: 0 3px 8px rgb(0 0 0 / 0.2);
+    }
+
+    .option.style-pill {
+      border-radius: 999px;
+    }
+
+    .option.style-glass {
+      background: linear-gradient(135deg, rgb(148 163 184 / 0.24), rgb(148 163 184 / 0.08));
+      box-shadow: inset 0 0 0 1px rgb(148 163 184 / 0.35);
+    }
+
+    .option.style-sharp {
+      border-radius: 0.25rem;
+    }
+
+    .option.style-strip {
+      border-radius: 0;
+      border-left: 3px solid currentColor;
+    }
+
+    .option.style-neon {
+      box-shadow: 0 0 0 1px rgb(148 163 184 / 0.6), 0 0 12px rgb(148 163 184 / 0.4);
+    }
+
+    .option.active {
+      outline: 1px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .option-label {
+      font-size: 0.775rem;
+    }
+
+    .card-header.split {
+      gap: 0.5rem;
+    }
+
+    .card-header.split .title {
+      font-size: 0.875rem;
+    }
+
+    .card-header.split .subtitle {
+      font-size: 0.65rem;
+    }
+
+    .selected-meta {
+      display: none;
+    }
   }
 </style>

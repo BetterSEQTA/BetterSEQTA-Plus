@@ -18,6 +18,16 @@
 
   const generalOptions = $derived([
     {
+      title: "BetterSEQTA+",
+      description: "Enables BetterSEQTA+ features",
+      id: 12,
+      Component: Switch,
+      props: {
+        state: $settingsState.onoff,
+        onChange: (isOn: boolean) => (settingsState.onoff = isOn),
+      },
+    },
+    {
       title: "Performance Mode",
       description:
         "Pauses heavy plugins, disables blur, and uses shorter smooth animations while SEQTA is open",
@@ -170,20 +180,20 @@
     <div
       class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
     >
-      <div class="flex justify-between items-center px-5 py-4">
+      <div class="flex justify-between items-center px-4 py-3">
         <div class="pr-4">
-          <h2 class="text-xl font-bold">Home Page Assessments</h2>
-          <p class="text-base text-zinc-600 dark:text-zinc-300">
+          <h2 class="text-sm font-bold">Home Page Assessments</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Limit upcoming assessments shown on the home page by subject
           </p>
         </div>
       </div>
       <div
-        class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50"
+        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
       >
         <div class="pr-4">
-          <h2 class="text-xl font-bold">Include Past Assessments</h2>
-          <p class="text-base text-zinc-600 dark:text-zinc-300">
+          <h2 class="text-sm font-bold">Include Past Assessments</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Show past-due assessments from the upcoming list, matching the Assessments page
           </p>
         </div>
@@ -195,11 +205,11 @@
         </div>
       </div>
       <div
-        class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50"
+        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
       >
         <div class="pr-4">
-          <h2 class="text-xl font-bold">Maximum Subjects</h2>
-          <p class="text-base text-zinc-600 dark:text-zinc-300">
+          <h2 class="text-sm font-bold">Maximum Subjects</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Number of subjects to include, ordered by soonest due date
           </p>
         </div>
@@ -217,11 +227,11 @@
         />
       </div>
       <div
-        class="flex justify-between items-center px-5 py-4 pl-7 border-t border-zinc-100 dark:border-zinc-700/50"
+        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
       >
         <div class="pr-4">
-          <h2 class="text-xl font-bold">Maximum Assessments per Subject</h2>
-          <p class="text-base text-zinc-600 dark:text-zinc-300">
+          <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Assessments shown for each included subject
           </p>
         </div>

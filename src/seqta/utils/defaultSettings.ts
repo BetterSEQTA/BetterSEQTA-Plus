@@ -16,6 +16,7 @@ export function getDefaultSettingsState(): SettingsState {
 
   return {
     onoff: true,
+    settingsPopupExpanded: false,
     animatedbk: true,
     bksliderinput: "50",
     transparencyEffects: false,

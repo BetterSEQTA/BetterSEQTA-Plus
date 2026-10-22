@@ -1,7 +1,6 @@
 <script lang="ts">
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
-  import SettingRow from "../SettingRow.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
   import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/Openers/OpenThemeOfTheMonthPopup";
@@ -52,18 +51,6 @@
   }
 </script>
 
-<SettingRow
-  title="BetterSEQTA+"
-  description="Enables BetterSEQTA+ features"
-  id={12}
-  Component={Switch}
-  {searchQuery}
-  props={{
-    state: $settingsState.onoff,
-    onChange: (isOn: boolean) => (settingsState.onoff = isOn),
-  }}
-/>
-
 {#if $settingsState.devMode && matchesSearch(
   searchQuery,
   "Developer Mode",
@@ -80,10 +67,10 @@
   <div
     class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
   >
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Developer Mode</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Developer Mode</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Enables developer mode, allowing you to test new features and changes.
         </p>
       </div>
@@ -94,10 +81,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Verbose logging</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Verbose logging</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Show diagnostic console output (indexer, theme manager, timetable colour patch, etc.)
         </p>
       </div>
@@ -108,10 +95,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Delay loading screen</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Delay loading screen</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Keep the loading overlay visible for 5 extra seconds so you can preview canvas variants.
         </p>
       </div>
@@ -122,10 +109,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Sensitive Hider</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Sensitive Hider</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Replace sensitive content with mock data
         </p>
       </div>
@@ -136,10 +123,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Mock Notices</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Mock Notices</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Use fake notice data on homepage instead of real data
         </p>
       </div>
@@ -150,10 +137,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Show Privacy Notification</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Show Privacy Notification</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Show the privacy notification popup on next page load
         </p>
       </div>
@@ -170,10 +157,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Show Theme of the Month</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Show Theme of the Month</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Fetch and show the current month's popup now (ignores dismissed state)
         </p>
       </div>
@@ -188,10 +175,10 @@
         />
       </div>
     </div>
-    <div class="flex justify-between items-center px-5 py-4">
+    <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-xl font-bold">Export cloud settings JSON</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">Export cloud settings JSON</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Download the same payload as cloud sync (OAuth tokens stripped). For debugging and server
           testing.
         </p>
@@ -203,14 +190,14 @@
     <div class="flex flex-col gap-2 px-4 py-3">
       <div class="flex justify-between items-start gap-3">
         <div class="pr-4">
-          <h2 class="text-xl font-bold">API Base URL (session only)</h2>
+          <h2 class="text-sm font-bold">API Base URL (session only)</h2>
           {#if isExtensionDevBuild}
-            <p class="text-base text-zinc-600 dark:text-zinc-300">
+            <p class="text-xs text-zinc-600 dark:text-zinc-300">
               Extension dev builds always use production ({PRODUCTION_API_BASE}) for the theme store,
               community submit, and related APIs. Build a release package to test a staging host override.
             </p>
           {:else}
-            <p class="text-base text-zinc-600 dark:text-zinc-300">
+            <p class="text-xs text-zinc-600 dark:text-zinc-300">
               Override the content API host for this browser session. Cleared on restart. Affects
               themes, theme of the month, and other server-driven content.
             </p>
@@ -239,8 +226,8 @@
     </div>
     <div class="flex flex-col gap-2 px-4 py-3">
       <div>
-        <h2 class="text-xl font-bold">GitHub latest version override</h2>
-        <p class="text-base text-zinc-600 dark:text-zinc-300">
+        <h2 class="text-sm font-bold">GitHub latest version override</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
           Pretend a newer GitHub release exists to test the update badge. Only applies when dev mode
           is on.
         </p>

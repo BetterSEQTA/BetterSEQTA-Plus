@@ -1,8 +1,8 @@
 <script lang="ts">
-  import MotionDiv from "./MotionDiv.svelte";
   import LazyPanel from "./LazyPanel.svelte";
   import type { Component } from "svelte";
   import { onMount } from "svelte";
+  import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 
   type TabDef = {
     title: string;
@@ -15,37 +15,6 @@
     tabs: TabDef[];
     activeTab?: number;
   }>();
-
-  let containerRef: HTMLElement | null = $state(null);
-  let tabWidth = $state(0);
-  let containerWidth = $state(0);
-
-  const springTransition = { type: "spring", stiffness: 250, damping: 25 };
-
-  function measureTabs() {
-    if (!containerRef || tabs.length === 0) return;
-    tabWidth = 100 / tabs.length;
-    containerRef.style.setProperty("--tab-width", `${tabWidth}%`);
-    containerWidth = containerRef.getBoundingClientRect().width;
-  }
-
-  const indicatorX = $derived((tabWidth * activeTab * containerWidth) / 100);
-
-  $effect(() => {
-    tabs.length;
-    if (!containerRef) return;
-
-    measureTabs();
-    requestAnimationFrame(measureTabs);
-
-    const ro =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(measureTabs)
-        : null;
-    ro?.observe(containerRef);
-
-    return () => ro?.disconnect();
-  });
 
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -60,12 +29,11 @@
 
 <div class="flex flex-col h-full min-h-0">
   <div class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
-    <div bind:this={containerRef} class="flex relative">
-      <MotionDiv
+    <div class="flex relative">
+      <div
         class="absolute top-0 left-0 z-0 h-full bg-gradient-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
-        animate={{ x: indicatorX }}
-        transition={springTransition}
-      />
+        style={`width: ${100 / Math.max(1, tabs.length)}%; transform: translateX(${activeTab * 100}%); transition: transform ${fullMotionEffectsEnabled() ? 250 : 0}ms cubic-bezier(0.22, 1, 0.36, 1)`}
+      ></div>
       {#each tabs as { title }, index}
         <button
           role="tab"
@@ -78,17 +46,17 @@
       {/each}
     </div>
   </div>
-  <div class="overflow-hidden px-4 flex-1 min-h-0">
+  <div class="relative overflow-hidden px-4 flex-1 min-h-0">
+    <div
+      class="tab-scroll-fade absolute inset-x-4 top-0 h-3 bg-gradient-to-b from-white/80 dark:from-zinc-800/80 to-transparent pointer-events-none z-[1]"
+      aria-hidden="true"
+    ></div>
     {#each tabs as tab, index (index)}
       {#if activeTab === index}
         <div
           role="tabpanel"
           class="focus:outline-none w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
         >
-          <div
-            class="sticky top-0 w-full h-3 -mb-3 bg-gradient-to-b from-white/80 dark:from-zinc-800/80 to-transparent pointer-events-none z-[1]"
-            aria-hidden="true"
-          ></div>
           {#if tab.loader}
             <LazyPanel loader={tab.loader} props={tab.props} />
           {:else if tab.Content}
@@ -99,3 +67,9 @@
     {/each}
   </div>
 </div>
+
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    .tab-width { transition: none !important; }
+  }
+</style>

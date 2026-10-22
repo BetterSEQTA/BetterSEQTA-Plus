@@ -111,7 +111,7 @@ export function parseNativeMenu(menu: HTMLElement): SidebarItem[] {
 
   return [...list.children]
     .filter((node): node is HTMLElement => node instanceof HTMLElement)
-    .map(parseEntry)
+    .map((entry) => parseEntry(entry))
     .filter((item): item is SidebarItem => item != null);
 }
 

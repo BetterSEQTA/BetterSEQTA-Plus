@@ -76,7 +76,9 @@ describe("syncLessonsToGoogleCalendar", () => {
     });
     jest.mocked(upsertGoogleCalendarEvent).mockResolvedValue("google-existing");
     jest.mocked(deleteGoogleCalendarEvent).mockResolvedValue(undefined);
-    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([]);
+    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([
+      { seqtaKey: `${ORIGIN}:cal:12345`, id: "google-existing", date: syncDate, fingerprint: "" },
+    ]);
   });
 
   it("updates existing events and removes stale tracked events on full sync", async () => {
@@ -97,6 +99,7 @@ describe("syncLessonsToGoogleCalendar", () => {
   });
 
   it("creates events that are not yet tracked", async () => {
+    jest.mocked(listGoogleSyncedEvents).mockResolvedValue([]);
     jest.mocked(readGoogleCalendarState).mockResolvedValue({
       refreshToken: "refresh",
       calendarId: "app-calendar-id",
@@ -150,6 +153,24 @@ describe("syncLessonsToGoogleCalendar", () => {
       updated: 0,
       skipped: 1,
     });
+  });
+
+  it.each([false, true])("repairs missing remote events only after a complete listing (list failed: %s)", async (listFailed) => {
+    const mapped = lessonToGoogleEvent(ORIGIN, baseLesson, Intl.DateTimeFormat().resolvedOptions().timeZone)!;
+    jest.mocked(readGoogleCalendarState).mockResolvedValue({
+      refreshToken: "refresh", calendarId: "app-calendar-id",
+      eventMap: { [`${ORIGIN}::${mapped.seqtaKey}`]: { id: "deleted-remotely", date: syncDate, fingerprint: eventFingerprint(mapped) } },
+    });
+    if (listFailed) jest.mocked(listGoogleSyncedEvents).mockRejectedValueOnce(new Error("Second page failed"));
+    else jest.mocked(listGoogleSyncedEvents).mockResolvedValueOnce([]);
+    const result = await syncLessonsToGoogleCalendar({ origin: ORIGIN, lessons: [baseLesson], mode: "full" }, getAccessToken);
+    if (listFailed) {
+      expect(upsertGoogleCalendarEvent).not.toHaveBeenCalled();
+      expect(result.skipped).toBe(1);
+    } else {
+      expect(upsertGoogleCalendarEvent).toHaveBeenCalledWith("test-token", "app-calendar-id", undefined, expect.any(Object), expect.any(Function));
+      expect(result.created).toBe(1);
+    }
   });
 
   it("deletes cancelled lessons that remain inside the sync window", async () => {

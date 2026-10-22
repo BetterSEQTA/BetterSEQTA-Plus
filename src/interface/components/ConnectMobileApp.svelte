@@ -3,6 +3,7 @@
   import browser from "webextension-polyfill";
   import QRCode from "qrcode";
   import { portal } from "../utils/portal";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
   let showQrModal = $state(false);
   let qrDataUrl = $state<string | null>(null);
@@ -120,7 +121,7 @@
 {#if showQrModal && qrDataUrl}
   <div
     use:portal
-    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''}"
+    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''} {$settingsState.DarkMode ? 'dark' : ''}"
     role="button"
     tabindex="-1"
     onclick={(e) => {

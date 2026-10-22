@@ -758,7 +758,6 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
     subject.innerText = element.title;
     subject.classList.add("upcoming-assessment-title");
     subject.onclick = function () {
-      document.querySelector("#menu ul")!.classList.add("noscroll");
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
     detailsdiv.append(detailstitle, subject);

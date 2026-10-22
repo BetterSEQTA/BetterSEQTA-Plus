@@ -182,16 +182,13 @@ export function deleteOutlookCalendarEvent(
 }
 
 function toRfc3339Start(date: string): string {
-  return `${date}T00:00:00Z`;
+  return new Date(`${date}T00:00:00`).toISOString();
 }
 
 function toRfc3339EndExclusive(date: string): string {
-  const d = new Date(`${date}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${day}T00:00:00Z`;
+  const d = new Date(`${date}T00:00:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString();
 }
 
 function dateFromDateTime(value: string | undefined): string {
@@ -264,13 +261,22 @@ export async function listGoogleSyncedEvents(
       { method: "GET" },
       refreshAccessToken,
     );
-    const json = (await res.json().catch(() => ({}))) as {
+    const json = (await res.json()) as {
       items?: GoogleListItem[];
       nextPageToken?: string;
       error?: { message?: string };
     };
     if (!res.ok) {
       throw new Error(json?.error?.message ?? `Google Calendar list failed (${res.status})`);
+    }
+    if (
+      !json ||
+      typeof json !== "object" ||
+      Array.isArray(json) ||
+      json.error ||
+      (json.items !== undefined && !Array.isArray(json.items))
+    ) {
+      throw new Error("Invalid Google Calendar list response.");
     }
 
     for (const item of json.items ?? []) {
@@ -360,13 +366,16 @@ export async function listOutlookSyncedEvents(
       },
       refreshAccessToken,
     );
-    const json = (await res.json().catch(() => ({}))) as {
+    const json = (await res.json()) as {
       value?: OutlookListItem[];
       "@odata.nextLink"?: string;
       error?: { message?: string };
     };
     if (!res.ok) {
       throw new Error(json?.error?.message ?? `Outlook Calendar list failed (${res.status})`);
+    }
+    if (!Array.isArray(json?.value) || json.error) {
+      throw new Error("Invalid Outlook Calendar list response.");
     }
 
     for (const item of json.value ?? []) {

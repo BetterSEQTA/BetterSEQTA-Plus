@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { animate } from 'motion';
+  import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
   let { onConfirm, onCancel, title, message } = $props<{
     onConfirm: () => void;
@@ -27,7 +28,7 @@
 </script>
 
 <div 
-  class="flex fixed inset-0 z-[10000] justify-center items-center bg-black/50" 
+  class="flex fixed inset-0 z-[10000] justify-center items-center bg-black/50 {$settingsState.DarkMode ? 'dark' : ''}" 
   style="position: fixed; top: 0; left: 0; right: 0; bottom: 0;"
   onclick={(e) => {
     if (e.target === e.currentTarget) onCancel();

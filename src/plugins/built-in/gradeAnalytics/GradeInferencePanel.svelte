@@ -21,7 +21,7 @@
   let saving = $state(false);
 
   $effect(() => {
-    draft = structuredClone(settings);
+    draft = $state.snapshot(settings);
   });
 
   function updateDraft(patch: Partial<AnalyticsGradeInferenceSettings>) {

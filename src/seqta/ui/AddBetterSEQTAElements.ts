@@ -750,6 +750,10 @@ function updateSidebarAccessibility() {
   const visibleEntries = new Set(
     visibleList ? getDirectSidebarEntries(visibleList) : [],
   );
+  if (document.body?.classList.contains("icon-only-sidebar")) {
+    const rootList = menu.querySelector(":scope > ul") as HTMLElement | null;
+    if (rootList) getDirectSidebarEntries(rootList).forEach((entry) => visibleEntries.add(entry));
+  }
   const drillFolders = getDrillFolderChain(menu, visibleList);
   const menuEntries = menu.querySelectorAll("li.item, section.item, li, section");
 
