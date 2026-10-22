@@ -124,10 +124,34 @@ export function applySidebarStyleClass(
   );
 }
 
+let bodyPositionListenerAttached = false;
+
+function deferSidebarPositionUntilBody() {
+  if (bodyPositionListenerAttached) return;
+  bodyPositionListenerAttached = true;
+  const apply = () => {
+    bodyPositionListenerAttached = false;
+    const body = document.body;
+    if (!body) return;
+    const position = normalizeSidebarPosition(settingsState.sidebarPosition);
+    body.classList.toggle("bsplus-sidebar-right", position === "right");
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply, { once: true });
+  } else {
+    queueMicrotask(apply);
+  }
+}
+
 /** Apply left/right placement on `body` and drill slide direction vars. */
 export function applySidebarPosition() {
   const position = normalizeSidebarPosition(settingsState.sidebarPosition);
-  document.body.classList.toggle("bsplus-sidebar-right", position === "right");
+  const body = document.body;
+  if (body) {
+    body.classList.toggle("bsplus-sidebar-right", position === "right");
+  } else {
+    deferSidebarPositionUntilBody();
+  }
   const root = document.documentElement;
   root.style.setProperty("--bsplus-slide-off", position === "right" ? "320px" : "-320px");
   root.style.setProperty("--bsplus-slide-off-compact", position === "right" ? "70px" : "-70px");
@@ -149,16 +173,17 @@ export function applySidebarLook(
 
   applySidebarPosition();
 
-  const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}|${normalizeSidebarPosition(settingsState.sidebarPosition)}`;
-  if (lookKey === lastSidebarLookKey) return;
-  lastSidebarLookKey = lookKey;
-
   const root = document.documentElement;
   root.style.setProperty("--bsplus-sidebar-width", `${SIDEBAR_WIDTH_PX[width]}px`);
   root.style.setProperty("--bsplus-sidebar-radius", `${radius}px`);
   root.style.setProperty("--bsplus-sidebar-blur", `${blur}px`);
 
   if (!menu) return;
+
+  const lookKey = `${density}|${indicator}|${width}|${radius}|${blur}|${normalizeSidebarPosition(settingsState.sidebarPosition)}`;
+  if (lookKey === lastSidebarLookKey) return;
+  lastSidebarLookKey = lookKey;
+
   setExclusiveClass(menu, DENSITY_CLASS_PREFIX, density, DEFAULT_SIDEBAR_DENSITY);
   setExclusiveClass(
     menu,
@@ -169,13 +194,14 @@ export function applySidebarLook(
 }
 
 export function clearSidebarAppearance(menu: HTMLElement | null | undefined) {
+  lastSidebarLookKey = "";
   const root = document.documentElement;
   root.style.removeProperty("--bsplus-sidebar-width");
   root.style.removeProperty("--bsplus-sidebar-radius");
   root.style.removeProperty("--bsplus-sidebar-blur");
   root.style.removeProperty("--bsplus-slide-off");
   root.style.removeProperty("--bsplus-slide-off-compact");
-  document.body.classList.remove("bsplus-sidebar-right");
+  document.body?.classList.remove("bsplus-sidebar-right");
   if (!menu) return;
   clearPrefixed(menu, STYLE_CLASS_PREFIX);
   clearPrefixed(menu, DENSITY_CLASS_PREFIX);

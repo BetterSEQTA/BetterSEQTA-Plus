@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
+  import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
   import { ACCOUNTS_BASE } from "./constants";
+  import { markResumeOptInAfterCloudLogin } from "./optInResume";
   import { registerOptIn } from "./syncOrchestrator";
 
   interface Props {
@@ -17,16 +19,34 @@
   let busy = $state(false);
   let error = $state("");
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
-  let cloudName = $state(
-    cloudAuth.state.user?.displayName ?? cloudAuth.state.user?.username ?? "",
-  );
+  let cloudUser = $state<CloudUser | null>(cloudAuth.state.user);
 
   onMount(() =>
     cloudAuth.subscribe((s) => {
       cloudLoggedIn = s.isLoggedIn;
-      cloudName = s.user?.displayName ?? s.user?.username ?? "";
+      cloudUser = s.user;
     }),
   );
+
+  function cloudInitials(user: CloudUser | null | undefined): string {
+    if (!user) return "?";
+    if (user.displayName) return user.displayName.slice(0, 2).toUpperCase();
+    if (user.username) return user.username.slice(0, 2).toUpperCase();
+    if (user.email) return user.email.slice(0, 2).toUpperCase();
+    return "?";
+  }
+
+  function cloudDisplayName(user: CloudUser | null | undefined): string {
+    if (!user) return "Cloud account";
+    return user.displayName || user.username || user.email || "Cloud account";
+  }
+
+  function cloudSubtitle(user: CloudUser | null | undefined): string | null {
+    if (!user) return null;
+    if (user.username) return `@${user.username}`;
+    if (user.email) return user.email;
+    return null;
+  }
 
   const canSubmit = $derived(agreeShare && agreeJoin && cloudLoggedIn && !busy);
   const checksDisabled = $derived(busy || !cloudLoggedIn);
@@ -36,7 +56,11 @@
     error = "";
     try {
       const res = await cloudAuth.startLogin();
-      if (!res.success) error = res.error ?? "Could not open sign-in.";
+      if (!res.success) {
+        error = res.error ?? "Could not open sign-in.";
+        return;
+      }
+      markResumeOptInAfterCloudLogin();
     } finally {
       busy = false;
     }
@@ -66,21 +90,33 @@
 <div class="bsplus-tc-popup">
   <section class="bsplus-tc-card bsplus-tc-cloud" aria-labelledby="bsplus-tc-cloud-heading">
     <h2 id="bsplus-tc-cloud-heading">BetterSEQTA Cloud</h2>
-    {#if cloudLoggedIn}
-      <p class="bsplus-tc-cloud-ok">
-        Signed in{cloudName ? ` as ${cloudName}` : ""}. We link this account to your SEQTA student id
-        on this site.
-      </p>
+
+    {#if cloudLoggedIn && cloudUser}
+      <div class="bsplus-tc-cloud-user" role="status">
+        <div class="bsplus-tc-cloud-avatar" aria-hidden="true">
+          <span class="bsplus-tc-cloud-avatar-fallback">{cloudInitials(cloudUser)}</span>
+          <CloudPfpAvatar user={cloudUser} class="bsplus-tc-cloud-avatar-img" />
+        </div>
+        <div class="bsplus-tc-cloud-user-meta">
+          <span class="bsplus-tc-cloud-user-name">{cloudDisplayName(cloudUser)}</span>
+          {#if cloudSubtitle(cloudUser)}
+            <span class="bsplus-tc-cloud-user-sub">{cloudSubtitle(cloudUser)}</span>
+          {/if}
+        </div>
+        <span class="bsplus-tc-cloud-check iconFamily" aria-hidden="true">&#xe9db;</span>
+      </div>
     {:else}
-      <p class="bsplus-tc-muted">Sign in with a free cloud account to join your school phonebook.</p>
+      <p class="bsplus-tc-cloud-lead">
+        Sign in with your free cloud account to join your school's classmate phonebook.
+      </p>
       <div class="bsplus-tc-cloud-actions">
         <button
           type="button"
-          class="bsplus-cal-btn bsplus-cal-btn--primary"
+          class="bsplus-cal-btn bsplus-cal-btn--primary bsplus-tc-cloud-signin"
           disabled={busy}
           onclick={() => void signInWithCloud()}
         >
-          Sign in
+          Sign in with Cloud
         </button>
         <a
           class="bsplus-tc-link"
@@ -88,7 +124,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          Create account
+          Create free account
         </a>
       </div>
     {/if}

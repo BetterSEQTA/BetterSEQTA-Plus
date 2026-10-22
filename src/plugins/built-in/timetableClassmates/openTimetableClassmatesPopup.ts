@@ -5,6 +5,12 @@ import { mount, unmount } from "svelte";
 import TimetableClassmatesOptInPopup from "./TimetableClassmatesOptInPopup.svelte";
 import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.svelte";
 import popupStyles from "./consentPopup.css?inline";
+import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { loadSession } from "./rosterStore";
+import {
+  clearResumeOptInAfterCloudLogin,
+  shouldResumeOptInAfterCloudLogin,
+} from "./optInResume";
 
 const STYLE_ID = "bsplus-timetable-classmates-popup-styles";
 const CLASSMATES_VIDEO_URL =
@@ -82,9 +88,52 @@ export function openTimetableClassmatesOptInPopup(options: {
     "Timetable classmates",
     "Share class lists with opted-in students at your school",
     TimetableClassmatesOptInPopup,
-    { onAccepted: options.onAccepted },
-    { onDismiss: options.onDismiss, heroVideo: true },
+    {
+      onAccepted: async () => {
+        clearResumeOptInAfterCloudLogin();
+        await options.onAccepted();
+      },
+    },
+    {
+      onDismiss: () => {
+        clearResumeOptInAfterCloudLogin();
+        options.onDismiss?.();
+      },
+      heroVideo: true,
+    },
   );
+}
+
+async function openResumeOptInIfNeeded(): Promise<void> {
+  if (!shouldResumeOptInAfterCloudLogin()) return;
+  if (document.getElementById("whatsnewbk")) return;
+
+  const token = await cloudAuth.getStoredToken();
+  if (!token) return;
+
+  const session = await loadSession();
+  if (session.syncOptIn) {
+    clearResumeOptInAfterCloudLogin();
+    return;
+  }
+
+  openTimetableClassmatesOptInPopup({ onAccepted: () => {} });
+}
+
+/** After cloud OAuth refreshes the page, reopen opt-in if the user started sign-in from this flow. */
+export async function maybeResumeTimetableClassmatesOptInPopup(): Promise<void> {
+  if (!shouldResumeOptInAfterCloudLogin()) return;
+
+  if (await cloudAuth.getStoredToken()) {
+    await openResumeOptInIfNeeded();
+    return;
+  }
+
+  const unsub = cloudAuth.subscribe((state) => {
+    if (!state.isLoggedIn) return;
+    unsub();
+    void openResumeOptInIfNeeded();
+  });
 }
 
 export function openTimetableClassmatesOptOutPopup(options: {

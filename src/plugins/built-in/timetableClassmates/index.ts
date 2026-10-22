@@ -25,6 +25,11 @@ import { peerCloudIdsForPaint } from "./accountsClient";
 import { fetchSchoolYearEnrollmentSnapshot } from "./timetableYearSnapshot";
 import { CLASSMATES_TIMETABLE_POLL_MS } from "./constants";
 import { scheduleClassmatesSyncIfNeeded } from "./syncOrchestrator";
+import {
+  mountClassmatesToolbarChip,
+  unmountClassmatesToolbarChip,
+} from "./classmatesToolbarUi";
+import { maybeResumeTimetableClassmatesOptInPopup } from "./openTimetableClassmatesPopup";
 
 const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
   id: "timetable-classmates",
@@ -38,6 +43,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
   run: async (api) => {
     if (isPluginBlockedByPerformanceMode("timetable-classmates")) return () => {};
     await Promise.all([api.storage.loaded, api.settings.loaded]);
+    void maybeResumeTimetableClassmatesOptInPopup();
 
     const onSyncMessage = (request: { type?: string }) => {
       if (request?.type === "timetableClassmatesSync") scheduleClassmatesSyncIfNeeded();
@@ -134,6 +140,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
 
       schedulePaint();
       await paintTimetable();
+      void mountClassmatesToolbarChip();
 
       if (page && !gridObserver) {
         gridObserver = new MutationObserver((mutations) => {
@@ -171,6 +178,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
       document.removeEventListener("click", onClassEntryClick, true);
       unregisterEnabled();
       removeClassmateStacks();
+      unmountClassmatesToolbarChip();
     };
   },
 };

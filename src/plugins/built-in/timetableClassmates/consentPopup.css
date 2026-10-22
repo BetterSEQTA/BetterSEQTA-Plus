@@ -28,36 +28,124 @@
 }
 
 .bsplus-tc-cloud {
-  border-color: color-mix(in srgb, var(--tc-accent) 40%, transparent);
-  background: color-mix(in srgb, var(--tc-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--tc-accent) 35%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--tc-accent) 14%, transparent),
+    color-mix(in srgb, var(--tc-accent) 5%, transparent)
+  );
 }
 
 .bsplus-tc-cloud h2 {
   font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.65rem;
 }
 
 .bsplus-tc-cloud p {
   margin: 0;
 }
 
-.bsplus-tc-cloud-ok {
-  color: color-mix(in srgb, #4ade80 88%, currentColor);
-  font-weight: 500;
+.bsplus-tc-cloud-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  border: 1px solid var(--tc-edge);
+}
+
+.bsplus-tc-cloud-avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.bsplus-tc-cloud-avatar-fallback,
+.bsplus-tc-cloud-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.bsplus-tc-cloud-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--tc-accent) 70%, currentColor);
+  background: color-mix(in srgb, var(--tc-accent) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tc-accent) 35%, transparent);
+}
+
+.bsplus-tc-cloud-user-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bsplus-tc-cloud-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsplus-tc-cloud-user-sub {
+  font-size: 0.8rem;
+  opacity: 0.72;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsplus-tc-cloud-check {
+  flex-shrink: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: color-mix(in srgb, #4ade80 90%, currentColor);
+}
+
+.bsplus-tc-cloud-lead {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  opacity: 0.88;
 }
 
 .bsplus-tc-cloud-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.65rem;
-  margin-top: 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+}
+
+.bsplus-tc-cloud-signin {
+  width: 100%;
 }
 
 .bsplus-tc-link {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.bsplus-tc-link:hover {
+  opacity: 1;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -123,6 +211,36 @@
 
 .bsplus-timetable-classmates-popup-host .bsplus-cal-btn {
   min-width: 7.5rem;
+  padding: 0.5rem 0.9rem;
+  border: none;
+  border-radius: 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bsplus-timetable-classmates-popup-host .bsplus-cal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bsplus-timetable-classmates-popup-host .bsplus-cal-btn--primary {
+  background: var(--tc-accent);
+  color: #fff;
+}
+
+.bsplus-timetable-classmates-popup-host .bsplus-cal-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.bsplus-timetable-classmates-popup-host .bsplus-cal-btn--ghost {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: inherit;
+}
+
+.bsplus-timetable-classmates-popup-host .bsplus-cal-btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .bsplus-timetable-classmates-popup-host .bsplus-cal-btn--danger {
