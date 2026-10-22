@@ -5,9 +5,10 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.3 – Performance Mode, Timetable sync into Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
+    "title": "3.7.3 – Performance Mode, Timetable syncing with Friends and Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
+      "Added the ability to sync your timetable with your friends and calendars.",
       "Fixed custom background images and videos not uploading.",
       "Added combined class groups in Grade Analytics to merge multiple subjects into one trend.",
       "Fixed icon-only sidebar not expanding when opening a folder.",
