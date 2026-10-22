@@ -86,6 +86,56 @@ export type ResolveCloudPfpResult = {
   fromCache: boolean;
 };
 
+function cachedBlobUrl(blob: Blob): ResolveCloudPfpResult {
+  return { src: URL.createObjectURL(blob), fromCache: true };
+}
+
+function sessionPfpHash(viewerId: string | null, userId: string): string | null {
+  if (!viewerId || viewerId !== userId) return null;
+  return cloudAuth.state.user?.pfpHash ?? null;
+}
+
+function localHashHit(
+  serverHash: string | null | undefined,
+  localHash: string | null | undefined,
+  localBlob: Blob | null | undefined,
+): ResolveCloudPfpResult | null {
+  if (!serverHash || serverHash !== localHash || !(localBlob instanceof Blob)) {
+    return null;
+  }
+  return cachedBlobUrl(localBlob);
+}
+
+async function fetchAndCachePfp(
+  userId: string,
+  pfpUrl: string,
+  serverHash: string,
+  localHash: string | null | undefined,
+  localBlob: Blob | null | undefined,
+): Promise<ResolveCloudPfpResult | null> {
+  const imageUrl = pfpUrlWithHash(pfpUrl, serverHash);
+  const headers: HeadersInit = {};
+  if (localHash) {
+    headers["If-None-Match"] = `"${localHash}"`;
+  }
+  const token = await cloudAuth.getStoredToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(imageUrl, { headers });
+  if (res.status === 304 && localBlob instanceof Blob) {
+    await store.setItem(hashKey(userId), serverHash);
+    return cachedBlobUrl(localBlob);
+  }
+  if (!res.ok) return null;
+
+  const blob = await res.blob();
+  await store.setItem(blobKey(userId), blob);
+  await store.setItem(hashKey(userId), serverHash);
+  return { src: URL.createObjectURL(blob), fromCache: false };
+}
+
 /**
  * Returns an object URL or direct URL for the cloud profile picture.
  * Order: session hash match → local blob; else meta → download → store blob then hash.
@@ -102,20 +152,14 @@ export async function resolveCloudPfp(
   const localHash = await store.getItem<string>(hashKey(userId));
   const localBlob = await store.getItem<Blob>(blobKey(userId));
 
-  let serverHash: string | null =
-    viewerId && viewerId === userId ? (cloudAuth.state.user?.pfpHash ?? null) : null;
-
-  if (serverHash && serverHash === localHash && localBlob instanceof Blob) {
-    return { src: URL.createObjectURL(localBlob), fromCache: true };
-  }
+  let serverHash: string | null = sessionPfpHash(viewerId, userId);
+  const sessionHit = localHashHit(serverHash, localHash, localBlob);
+  if (sessionHit) return sessionHit;
 
   try {
     serverHash = await fetchServerHash(userId);
   } catch {
-    if (localHash && localBlob instanceof Blob) {
-      return { src: URL.createObjectURL(localBlob), fromCache: true };
-    }
-    return null;
+    return localHashHit(localHash, localHash, localBlob);
   }
 
   if (!serverHash) {
@@ -124,33 +168,9 @@ export async function resolveCloudPfp(
     return null;
   }
 
-  if (serverHash === localHash && localBlob instanceof Blob) {
-    return { src: URL.createObjectURL(localBlob), fromCache: true };
-  }
+  const metaHit = localHashHit(serverHash, localHash, localBlob);
+  if (metaHit) return metaHit;
 
   await clearLocal(userId);
-
-  const imageUrl = pfpUrlWithHash(pfpUrl, serverHash);
-  const headers: HeadersInit = {};
-  if (localHash) {
-    headers["If-None-Match"] = `"${localHash}"`;
-  }
-  const token = await cloudAuth.getStoredToken();
-  if (token && isAccountsHostedPfpUrl(pfpUrl)) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(imageUrl, { headers });
-  if (res.status === 304 && localBlob instanceof Blob) {
-    await store.setItem(hashKey(userId), serverHash);
-    return { src: URL.createObjectURL(localBlob), fromCache: true };
-  }
-
-  if (!res.ok) return null;
-
-  const blob = await res.blob();
-  await store.setItem(blobKey(userId), blob);
-  await store.setItem(hashKey(userId), serverHash);
-
-  return { src: URL.createObjectURL(blob), fromCache: false };
+  return fetchAndCachePfp(userId, pfpUrl, serverHash, localHash, localBlob);
 }
