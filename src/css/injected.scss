@@ -241,14 +241,15 @@ html:not(.dark) .legacy-root {
 .addedButton {
   position: absolute !important;
   right: 105px;
-  padding: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   overflow: unset !important;
   border-radius: 10px !important;
   cursor: pointer;
   background: var(--text-primary) !important;
   color: var(--theme-primary) !important;
   height: 35px;
-  justify-content: center;
   width: 35px !important;
 }
 
@@ -422,7 +423,9 @@ ul.magicDelete > li.deleting {
   background: unset;
 }
 .addedButton svg {
-  margin: 6px;
+  display: block;
+  margin: 0;
+  flex-shrink: 0;
   fill: var(--theme-primary);
   color: var(--theme-primary);
 }
