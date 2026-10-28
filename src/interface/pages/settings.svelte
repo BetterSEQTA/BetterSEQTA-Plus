@@ -35,7 +35,7 @@
   } from "@/utils/githubReleaseUpdate";
   type PageId = "settings" | "themes" | "backgrounds";
   type StoreTab = "themes" | "backgrounds";
-  type ThemeView = "theme-settings" | "theme-store" | "community-themes" | "create-theme";
+  type ThemeView = "theme-settings" | "theme-store" | "community-themes";
   type BackgroundView = "background-settings" | "background-store";
 
   const loadSettingsBody = () => import("./settings/SettingsBody.svelte");
@@ -115,8 +115,7 @@
       items: [
         { id: "theme-store", label: "Theme store" },
         { id: "community-themes", label: "Community themes" },
-        { id: "theme-settings", label: "Downloaded themes" },
-        { id: "create-theme", label: "Custom themes" },
+        { id: "theme-settings", label: "My themes" },
       ],
     },
   ];
@@ -165,20 +164,13 @@
   const sectionTitle = $derived.by(() => {
     if (activePage === "settings" && debouncedSettingsSearch.trim()) return "Search results";
     if (activePage === "themes") {
-      if (activeThemeView === "theme-settings") return "Downloaded themes";
-      if (activeThemeView === "create-theme") return "Custom themes";
+      if (activeThemeView === "theme-settings") return "My themes";
       if (activeThemeView === "community-themes") return "Community themes";
       if (activeThemeView === "theme-store") return "Theme store";
       return "Themes";
     }
     if (activePage === "backgrounds") return "Backgrounds";
     return [...userNav, ...appNav].find((item) => item.id === activeSection)?.label ?? "Settings";
-  });
-
-  const activeThemeListMode = $derived.by(() => {
-    if (activeThemeView === "create-theme") return "custom" as const;
-    if (activeThemeView === "theme-settings") return "downloaded" as const;
-    return "all" as const;
   });
 
   const isStoreView = $derived(
@@ -464,9 +456,7 @@
           ? "theme-store"
           : destination.view === "community"
             ? "community-themes"
-            : destination.view === "custom"
-              ? "create-theme"
-              : "theme-settings";
+            : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
       activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
     }
@@ -717,8 +707,8 @@
               {:else if activePage === "themes"}
                 <LazyPanel
                   loader={loadThemeSettings}
-                  remountKey={`theme-settings-${activeThemeListMode}`}
-                  props={{ section: "themes", listMode: activeThemeListMode }}
+                  remountKey="theme-settings"
+                  props={{ section: "themes" }}
                 />
               {:else}
                 <LazyPanel

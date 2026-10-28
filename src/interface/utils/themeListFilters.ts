@@ -2,18 +2,11 @@ import type { CustomTheme } from '@/types/CustomThemes';
 import type { Theme } from '@/interface/types/Theme';
 import { parseCssColor } from '@/seqta/ui/colors/parseCssColor';
 
-export type ThemeListMode = 'downloaded' | 'custom' | 'all';
-
 const DEFAULT_THEME_ACCENT = 'rgba(0, 123, 255, 1)';
 
 /** Local themes: created in the editor or imported from a file (not store/community). */
 export function isLocalCustomTheme(theme: CustomTheme): boolean {
   return theme.installedFromStore !== true && theme.installedFromCommunity !== true;
-}
-
-/** Themes installed from the official store or community API. */
-export function isDownloadedTheme(theme: CustomTheme): boolean {
-  return theme.installedFromStore === true || theme.installedFromCommunity === true;
 }
 
 /**
@@ -34,12 +27,6 @@ export function resolveLocalThemeInstallId(
     return crypto.randomUUID();
   }
   return themeId;
-}
-
-export function filterThemesByMode(themes: CustomTheme[], mode: ThemeListMode): CustomTheme[] {
-  if (mode === 'all') return themes;
-  if (mode === 'custom') return themes.filter(isLocalCustomTheme);
-  return themes.filter(isDownloadedTheme);
 }
 
 /** Installed theme ids from the official store only (excludes file imports / custom copies). */

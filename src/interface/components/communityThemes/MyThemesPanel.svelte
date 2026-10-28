@@ -13,7 +13,7 @@
   import type { CustomTheme } from "@/types/CustomThemes";
   import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
   import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
-  import { filterThemesByMode } from "@/interface/utils/themeListFilters";
+  import { isLocalCustomTheme } from "@/interface/utils/themeListFilters";
   import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
 
   let { communityState }: { communityState: CommunityThemesState } = $props();
@@ -30,7 +30,7 @@
     localThemesLoading = true;
     try {
       const all = await themeManager.getAvailableThemes();
-      localThemes = filterThemesByMode(all, "custom");
+      localThemes = all.filter(isLocalCustomTheme);
     } finally {
       localThemesLoading = false;
     }
@@ -101,7 +101,7 @@
       </div>
     {:else if localThemes.length === 0}
       <p class="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-        No local custom themes yet. Use Create &amp; submit above or build one in Custom themes settings.
+        No local custom themes yet. Use Create &amp; submit above or build one in My themes.
       </p>
     {:else}
       <ul class="mt-3 space-y-3">

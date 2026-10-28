@@ -2,11 +2,9 @@
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
-  import type { ThemeListMode } from "@/interface/utils/themeListFilters"
 
-  let { section = "all", listMode = "all" } = $props<{
+  let { section = "all" } = $props<{
     section?: "all" | "themes" | "backgrounds";
-    listMode?: ThemeListMode;
   }>();
   
   // backgrounds
@@ -47,7 +45,7 @@
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       {/if}
       {#if showThemes}
-        {#if listMode === "custom"}
+        {#if section === "themes"}
           <button
             type="button"
             class="mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
@@ -60,7 +58,7 @@
             Open theme builder
           </button>
         {/if}
-        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} {listMode} />
+        <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
       {/if}
     </div>
   {:else}

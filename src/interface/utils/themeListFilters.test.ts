@@ -1,7 +1,6 @@
 import type { CustomTheme } from '@/types/CustomThemes';
 import type { Theme } from '@/interface/types/Theme';
 import {
-  filterThemesByMode,
   getThemeApplyButtonStyles,
   getCommunityInstalledThemeIds,
   getStoreInstalledThemeIds,
@@ -51,27 +50,6 @@ describe('resolveLocalThemeInstallId', () => {
         false,
       ),
     ).toBe('theme-1');
-  });
-});
-
-describe('filterThemesByMode', () => {
-  const storeTheme = makeCustomTheme({
-    id: 'store-1',
-    name: 'Store Theme',
-    installedFromStore: true,
-  });
-  const communityTheme = makeCustomTheme({
-    id: 'community-1',
-    name: 'Community Theme',
-    installedFromCommunity: true,
-  });
-  const localTheme = makeCustomTheme({ id: 'local-1', name: 'Local Theme' });
-
-  it('splits store, community, and local themes by mode', () => {
-    const all = [storeTheme, communityTheme, localTheme];
-    expect(filterThemesByMode(all, 'all')).toEqual(all);
-    expect(filterThemesByMode(all, 'downloaded')).toEqual([storeTheme, communityTheme]);
-    expect(filterThemesByMode(all, 'custom')).toEqual([localTheme]);
   });
 });
 

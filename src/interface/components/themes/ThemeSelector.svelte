@@ -8,17 +8,16 @@
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
-  import { filterThemesByMode, isLocalCustomTheme, type ThemeListMode } from '@/interface/utils/themeListFilters'
+  import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
   import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
 
   const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
-  let { isEditMode, showNavigation = true, listMode = 'all' } = $props<{
+  let { isEditMode, showNavigation = true } = $props<{
     isEditMode: boolean;
     showNavigation?: boolean;
-    listMode?: ThemeListMode;
   }>();
   let favoriteStatus = $state<Record<string, boolean>>({});
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
@@ -112,11 +111,6 @@
     await launchPageThemeBuilder(themeId)
   }
 
-  const openCommunitySubmit = async () => {
-    const { openCommunityThemeSubmit } = await import('@/seqta/utils/openCommunityThemeSubmit')
-    await openCommunityThemeSubmit()
-  }
-
   const submitCustomTheme = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
     submitError = null;
@@ -134,9 +128,6 @@
       submittingThemeId = null;
     }
   }
-
-  const customThemeActionClass =
-    'flex h-12 items-center justify-center gap-2 w-full rounded-xl transition bg-zinc-100 text-xl dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
 
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
@@ -164,11 +155,7 @@
     themeUpdates.removeListener(fetchThemes);
   })
 
-  const visibleThemes = $derived(
-    themes ? filterThemesByMode(themes.themes, listMode) : [],
-  );
-
-  const useTwoColumnLayout = $derived(listMode === 'downloaded' || listMode === 'custom');
+  const useTwoColumnLayout = $derived(!showNavigation);
 </script>
 
 <div
@@ -178,7 +165,7 @@
 >
   <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
     {#if themes}
-      {#each visibleThemes as theme (theme.id)}
+      {#each themes.themes as theme (theme.id)}
         <button
           class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={(e) => handleThemeClick(theme, e)}
@@ -234,18 +221,16 @@
                 >
                   <span class="text-lg font-IconFamily">&#xeaa5;</span>
                 </div>
-                {#if listMode === 'custom'}
-                  <div
-                    class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
-                    onclick={(event) => void submitCustomTheme(theme, event)}
-                    onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void submitCustomTheme(theme, event as unknown as MouseEvent) }}
-                    role="button"
-                    tabindex="-1"
-                    title="Submit to community"
-                  >
-                    <span class="text-lg font-IconFamily">&#xe9fc;</span>
-                  </div>
-                {/if}
+                <div
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
+                  onclick={(event) => void submitCustomTheme(theme, event)}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void submitCustomTheme(theme, event as unknown as MouseEvent) }}
+                  role="button"
+                  tabindex="-1"
+                  title="Submit to community"
+                >
+                  <span class="text-lg font-IconFamily">&#xe9fc;</span>
+                </div>
               {/if}
             </div>
           {/if}
@@ -271,114 +256,39 @@
       {/each}
     {/if}
 
-    {#if themes && visibleThemes.length === 0}
+    {#if themes && themes.themes.length === 0}
       <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center {useTwoColumnLayout ? 'col-span-2' : ''}">
-        {#if listMode === 'custom'}
-          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-            No custom themes yet
-          </h3>
-          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-            Use the theme builder above to get started.
-          </p>
-        {:else if listMode === 'downloaded'}
-          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-            No downloaded themes
-          </h3>
-          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-            Browse the theme store to find and install themes.
-          </p>
-          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2">
-            <button
-              type="button"
-              onclick={() => void openStorePage()}
-              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-            >
-              <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
-              Browse the store
-            </button>
-          </div>
-        {:else}
-          <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
-            No themes installed
-          </h3>
-          <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-            Install a theme from the store or create one of your own.
-          </p>
-          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onclick={() => void openStorePage()}
-              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-            >
-              <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
-              Install a theme
-            </button>
-            <button
-              type="button"
-              onclick={() => void openThemeCreator()}
-              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-            >
-              <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
-              Create a theme
-            </button>
-          </div>
-        {/if}
+        <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
+          No themes installed
+        </h3>
+        <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
+          Install a theme from the store or create one of your own.
+        </p>
       </div>
     {/if}
 
-    {#if themes && (listMode === 'custom' || (showNavigation && visibleThemes.length > 0) || (listMode === 'downloaded' && visibleThemes.length > 0))}
-      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600 {useTwoColumnLayout ? 'col-span-2' : ''}"></div>
+    {#if submitError}
+      <p class="whitespace-pre-line text-sm text-red-600 dark:text-red-400 {useTwoColumnLayout ? 'col-span-2' : ''}">{submitError}</p>
+    {/if}
 
-      {#if listMode === 'custom' && submitError}
-        <p class="col-span-2 whitespace-pre-line text-sm text-red-600 dark:text-red-400">{submitError}</p>
-      {/if}
+    {#if themes && showNavigation}
+      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
 
-      {#if listMode === 'custom'}
-        <div class="grid grid-cols-2 gap-2 {useTwoColumnLayout ? 'col-span-2' : ''}">
-          <a
-            href="https://docs.betterseqta.org/theme-creation/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class={customThemeActionClass}
-          >
-            <span class="text-2xl font-IconFamily" aria-hidden="true">{'\uecb3'}</span>
-            <span>View docs</span>
-          </a>
+      <button
+        onclick={() => void openStorePage()}
+        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      >
+        <span class="text-xl font-IconFamily">&#xecc5;</span>
+        <span class="ml-2">Theme Store</span>
+      </button>
 
-          <button
-            type="button"
-            onclick={() => void openCommunitySubmit()}
-            class={customThemeActionClass}
-          >
-            <span class="text-2xl font-IconFamily" aria-hidden="true">&#xe9fc;</span>
-            <span>Create & submit</span>
-          </button>
-        </div>
-      {:else if listMode === 'downloaded'}
-        <button
-          onclick={() => void openStorePage()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white {useTwoColumnLayout ? 'col-span-2' : ''}"
-        >
-          <span class="text-xl font-IconFamily">&#xecc5;</span>
-          <span class="ml-2">Theme Store</span>
-        </button>
-      {:else}
-        <button
-          onclick={() => void openStorePage()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-        >
-          <span class="text-xl font-IconFamily">&#xecc5;</span>
-          <span class="ml-2">Theme Store</span>
-        </button>
-
-        <button
-          onclick={() => void openThemeCreator()}
-          class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
-        >
-          <span class="text-xl font-IconFamily">&#xec60;</span>
-          <span class="ml-2">Create your own</span>
-        </button>
-      {/if}
+      <button
+        onclick={() => void openThemeCreator()}
+        class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+      >
+        <span class="text-xl font-IconFamily">&#xec60;</span>
+        <span class="ml-2">Create your own</span>
+      </button>
     {/if}
   </div>
 </div>

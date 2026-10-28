@@ -375,6 +375,7 @@
 /* ── "Add to folder" button in message actions bar ── */
 .bsplus-folder-btn {
   position: relative;
+  margin-left: 8px;
 }
 
 .bsplus-folder-btn svg {
