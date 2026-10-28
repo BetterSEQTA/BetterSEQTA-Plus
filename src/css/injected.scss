@@ -4315,6 +4315,181 @@ div.day-empty {
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* Terms of service — compact whatsnew shell (theme vars, light + dark) */
+#whatsnewbk.bsplus-tos-overlay {
+  .whatsnewContainer.bsplus-tos-container {
+    position: relative !important;
+    width: min(34em, calc(100vw - 1.75rem)) !important;
+    height: auto !important;
+    max-height: min(32rem, calc(100vh - 2rem)) !important;
+    margin: auto !important;
+    padding: 0 0 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    background: var(--background-primary) !important;
+    color: var(--text-primary) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  .bsplus-tos-header {
+    margin: 20px 20px 0.5rem !important;
+    width: calc(100% - 40px) !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-shrink: 0;
+  }
+
+  .bsplus-tos-header h1 {
+    margin: 0 !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .bsplus-tos-header p {
+    margin: 0.35rem 0 0 !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    color: var(--text-primary) !important;
+    opacity: 0.88;
+  }
+
+  .bsplus-tos-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+  }
+
+  .bsplus-tos-intro {
+    margin: 0 !important;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .bsplus-tos-scroll {
+    flex: 1 1 auto;
+    min-height: 7rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+    color: var(--text-primary) !important;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+    background: color-mix(in srgb, var(--text-primary) 5%, var(--background-primary));
+  }
+
+  .bsplus-tos-scroll h3,
+  .bsplus-tos-scroll h4 {
+    margin: 1rem 0 0.4rem;
+    font-size: 1.15em !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .bsplus-tos-scroll h3:first-child,
+  .bsplus-tos-scroll h4:first-child,
+  .bsplus-tos-scroll p:first-child {
+    margin-top: 0;
+  }
+
+  .bsplus-tos-scroll p {
+    margin: 0 0 1ex;
+    font-size: inherit !important;
+    color: var(--text-primary) !important;
+  }
+
+  .bsplus-tos-scroll ul,
+  .bsplus-tos-scroll ol {
+    margin: 0 0 1ex;
+    padding-left: 1.25rem;
+  }
+
+  .bsplus-tos-scroll li {
+    margin: 0.15rem 0;
+  }
+
+  .bsplus-tos-scroll a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .bsplus-tos-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    flex-shrink: 0;
+    padding-top: 0.1rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .bsplus-tos-btn {
+    width: 100%;
+    min-height: 2.65rem;
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .bsplus-tos-btn:focus {
+    outline: none;
+  }
+
+  .bsplus-tos-btn:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background-primary),
+      0 0 0 4px color-mix(in srgb, var(--text-primary) 45%, transparent);
+  }
+
+  .bsplus-tos-btn--primary {
+    background: var(--text-primary);
+    color: var(--background-primary);
+  }
+
+  .bsplus-tos-btn--primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: scale(1.02);
+  }
+
+  .bsplus-tos-btn--secondary {
+    background: color-mix(in srgb, var(--text-primary) 10%, var(--background-primary));
+    color: var(--text-primary);
+    border: 1px solid color-mix(in srgb, var(--text-primary) 16%, transparent);
+  }
+
+  .bsplus-tos-btn--secondary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--text-primary) 14%, var(--background-primary));
+    transform: scale(1.02);
+  }
+
+  .bsplus-tos-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
 .whatsnewImgContainer {
   width: 96%;
   display: flex;

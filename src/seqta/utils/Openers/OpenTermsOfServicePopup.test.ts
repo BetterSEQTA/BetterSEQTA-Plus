@@ -6,7 +6,7 @@ jest.mock("../DevApiBase", () => ({
 }));
 
 import {
-  getFallbackPrivacyTerms,
+  getFallbackTermsOfService,
   markTermsOfServiceAccepted,
   shouldShowTermsOfServicePopup,
 } from "./OpenTermsOfServicePopup";
@@ -55,25 +55,22 @@ describe("shouldShowTermsOfServicePopup", () => {
 });
 
 describe("markTermsOfServiceAccepted", () => {
-  it("stores the accepted version and legacy privacy flags", () => {
+  it("stores the accepted terms version from GET /api/terms", () => {
     const state = {
       termsOfServiceLastAccepted: undefined as string | undefined,
-      privacyStatementShown: false,
-      privacyStatementLastUpdated: undefined as string | undefined,
     };
 
     markTermsOfServiceAccepted(state, SAMPLE_TERMS.last_updated);
 
     expect(state.termsOfServiceLastAccepted).toBe(SAMPLE_TERMS.last_updated);
-    expect(state.privacyStatementShown).toBe(true);
-    expect(state.privacyStatementLastUpdated).toBe(SAMPLE_TERMS.last_updated);
   });
 });
 
-describe("getFallbackPrivacyTerms", () => {
+describe("getFallbackTermsOfService", () => {
   it("returns bundled fallback content when the API is unavailable", () => {
-    const fallback = getFallbackPrivacyTerms();
+    const fallback = getFallbackTermsOfService();
     expect(fallback.last_updated).toBeTruthy();
     expect(fallback.whatsnew_html).toContain("whatsnewTextContainer");
+    expect(fallback.whatsnew_html).toContain("Agreement");
   });
 });

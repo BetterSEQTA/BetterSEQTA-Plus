@@ -2,48 +2,53 @@ import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { getApiBase } from "../DevApiBase";
 import { closePopup, openPopup } from "./PopupManager";
-import fallbackTerms from "@/exampleprivacyresponse.json";
+import fallbackTerms from "@/exampletermsresponse.json";
 import type { SettingsState } from "@/types/storage";
 
+export const TERMS_OF_SERVICE_URL = "https://betterseqta.org/terms";
 export const PRIVACY_POLICY_URL = "https://betterseqta.org/privacy";
 
-const PRIVACY_FETCH_TIMEOUT_MS = 8_000;
-const POPUP_STYLE_ID = "bsplus-tos-popup-styles";
+const TERMS_FETCH_TIMEOUT_MS = 8_000;
 
-export interface PrivacyTermsPayload {
+/** Shared shape for `GET /api/terms` and `GET /api/privacy`. */
+export interface LegalDocumentPayload {
   last_updated: string;
   whatsnew_html: string;
 }
 
-function isPrivacyTermsPayload(data: unknown): data is PrivacyTermsPayload {
+function isLegalDocumentPayload(data: unknown): data is LegalDocumentPayload {
   return (
     !!data &&
     typeof data === "object" &&
-    typeof (data as PrivacyTermsPayload).last_updated === "string" &&
-    typeof (data as PrivacyTermsPayload).whatsnew_html === "string" &&
-    !!(data as PrivacyTermsPayload).whatsnew_html.trim()
+    typeof (data as LegalDocumentPayload).last_updated === "string" &&
+    typeof (data as LegalDocumentPayload).whatsnew_html === "string" &&
+    !!(data as LegalDocumentPayload).whatsnew_html.trim()
   );
 }
 
-export function getFallbackPrivacyTerms(): PrivacyTermsPayload {
-  return fallbackTerms as PrivacyTermsPayload;
+export function getFallbackTermsOfService(): LegalDocumentPayload {
+  return fallbackTerms as LegalDocumentPayload;
 }
 
-export async function fetchPrivacyTerms(): Promise<PrivacyTermsPayload> {
+/** Loads Terms of Service body from `GET /api/terms`. */
+export async function fetchTermsOfService(): Promise<LegalDocumentPayload> {
   try {
-    const res = await fetch(`${getApiBase()}/api/privacy`, {
+    const res = await fetch(`${getApiBase()}/api/terms`, {
       cache: "no-store",
-      signal: AbortSignal.timeout(PRIVACY_FETCH_TIMEOUT_MS),
+      signal: AbortSignal.timeout(TERMS_FETCH_TIMEOUT_MS),
     });
-    if (!res.ok) return getFallbackPrivacyTerms();
+    if (!res.ok) return getFallbackTermsOfService();
     const data: unknown = await res.json();
-    if (!isPrivacyTermsPayload(data)) return getFallbackPrivacyTerms();
+    if (!isLegalDocumentPayload(data)) return getFallbackTermsOfService();
     return data;
   } catch (err) {
-    console.warn("[TermsOfService] Failed to fetch privacy terms:", err);
-    return getFallbackPrivacyTerms();
+    console.warn("[TermsOfService] Failed to fetch terms:", err);
+    return getFallbackTermsOfService();
   }
 }
+
+/** @deprecated Use {@link fetchTermsOfService}. */
+export const fetchPrivacyTerms = fetchTermsOfService;
 
 function termsVersionIsNewer(
   remoteLastUpdated: string,
@@ -80,106 +85,16 @@ export function shouldShowTermsOfServicePopup(
     | "privacyStatementShown"
     | "privacyStatementLastUpdated"
   >,
-  terms: PrivacyTermsPayload,
+  terms: LegalDocumentPayload,
 ): boolean {
   return termsVersionIsNewer(terms.last_updated, resolvedTermsAcceptance(state));
 }
 
 export function markTermsOfServiceAccepted(
-  state: Pick<
-    SettingsState,
-    "termsOfServiceLastAccepted" | "privacyStatementShown" | "privacyStatementLastUpdated"
-  >,
+  state: Pick<SettingsState, "termsOfServiceLastAccepted">,
   lastUpdated: string,
 ): void {
   state.termsOfServiceLastAccepted = lastUpdated;
-  state.privacyStatementShown = true;
-  state.privacyStatementLastUpdated = lastUpdated;
-}
-
-function ensurePopupStyles() {
-  if (document.getElementById(POPUP_STYLE_ID)) return;
-  const style = document.createElement("style");
-  style.id = POPUP_STYLE_ID;
-  style.textContent = `
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-body {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 0.75rem !important;
-      min-height: 0 !important;
-      flex: 1 1 auto !important;
-      width: 92% !important;
-      margin: 0 auto 1rem !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-intro {
-      margin: 0 !important;
-      font-size: 1rem !important;
-      line-height: 1.5 !important;
-      flex-shrink: 0 !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-scroll {
-      flex: 1 1 auto !important;
-      min-height: 8rem !important;
-      max-height: min(42vh, 28rem) !important;
-      overflow: auto !important;
-      border: 1px solid rgba(17, 24, 39, 0.12) !important;
-      border-radius: 0.75rem !important;
-      padding: 0.85rem 1rem !important;
-      background: rgba(17, 24, 39, 0.03) !important;
-      font-size: 0.95rem !important;
-      line-height: 1.55 !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay.bsplus-tos-overlay--dark .bsplus-tos-scroll {
-      border-color: rgba(255, 255, 255, 0.12) !important;
-      background: rgba(255, 255, 255, 0.04) !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-actions {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 0.65rem !important;
-      flex-shrink: 0 !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-btn {
-      width: 100% !important;
-      min-height: 2.75rem !important;
-      padding: 0.75rem 1rem !important;
-      border: none !important;
-      border-radius: 0.75rem !important;
-      font-size: 0.95rem !important;
-      font-weight: 600 !important;
-      font-family: inherit !important;
-      cursor: pointer !important;
-      transition: all 0.2s ease-in-out !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-btn--primary {
-      background: #2563eb !important;
-      color: #ffffff !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-btn--secondary {
-      background: rgba(17, 24, 39, 0.08) !important;
-      color: inherit !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay.bsplus-tos-overlay--dark .bsplus-tos-btn--secondary {
-      background: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-btn:hover:not(:disabled) {
-      transform: scale(1.02) !important;
-    }
-
-    #whatsnewbk.bsplus-tos-overlay .bsplus-tos-btn:active:not(:disabled) {
-      transform: scale(0.98) !important;
-    }
-  `;
-  document.head.appendChild(style);
 }
 
 function buildTermsScrollContent(html: string): HTMLElement {
@@ -188,7 +103,7 @@ function buildTermsScrollContent(html: string): HTMLElement {
   const scroll = document.createElement("div");
   scroll.className = "bsplus-tos-scroll privacyStatement";
   scroll.setAttribute("tabindex", "0");
-  scroll.setAttribute("aria-label", "Terms of service and privacy policy");
+  scroll.setAttribute("aria-label", "Terms of service");
 
   if (root?.classList.contains("whatsnewTextContainer")) {
     scroll.innerHTML = root.innerHTML;
@@ -203,26 +118,24 @@ function buildTermsScrollContent(html: string): HTMLElement {
 
 export async function openTermsOfServicePopup(
   onDismissed?: () => void,
-  options?: { terms?: PrivacyTermsPayload; force?: boolean },
+  options?: { terms?: LegalDocumentPayload; force?: boolean },
 ) {
   if (document.getElementById("whatsnewbk")) {
     onDismissed?.();
     return;
   }
 
-  const terms = options?.terms ?? (await fetchPrivacyTerms());
+  const terms = options?.terms ?? (await fetchTermsOfService());
   if (!options?.force && !shouldShowTermsOfServicePopup(settingsState, terms)) {
     onDismissed?.();
     return;
   }
 
-  ensurePopupStyles();
-
   const header = stringToHTML(
     /* html */
-    `<div class="whatsnewHeader">
+    `<div class="whatsnewHeader bsplus-tos-header">
       <h1>Terms of Service</h1>
-      <p>Review the terms below, then accept or dismiss for now</p>
+      <p>Scroll to read the full terms, then accept or dismiss for now</p>
     </div>`,
   ).firstChild as HTMLElement;
 
@@ -232,38 +145,36 @@ export async function openTermsOfServicePopup(
   body.className = "whatsnewTextContainer bsplus-tos-body";
 
   const intro = stringToHTML(/* html */ `
-    <p class="bsplus-tos-intro">
-      Do you accept the terms of service? Read the full policy at
-      <a href="${PRIVACY_POLICY_URL}" target="_blank" rel="noopener noreferrer">betterseqta.org/privacy</a>.
+    <p class="bsplus-tos-intro privacyStatement">
+      Do you accept the terms of service?
+      <a href="${TERMS_OF_SERVICE_URL}" target="_blank" rel="noopener noreferrer">Terms</a>
+      ·
+      <a href="${PRIVACY_POLICY_URL}" target="_blank" rel="noopener noreferrer">Privacy</a>
     </p>
   `).firstChild as HTMLElement;
 
   const actions = stringToHTML(/* html */ `
     <div class="bsplus-tos-actions">
-      <button type="button" id="bsplus-tos-accept" class="bsplus-tos-btn bsplus-tos-btn--primary">
-        I accept the terms of service
-      </button>
       <button type="button" id="bsplus-tos-decline" class="bsplus-tos-btn bsplus-tos-btn--secondary">
         Not now
+      </button>
+      <button type="button" id="bsplus-tos-accept" class="bsplus-tos-btn bsplus-tos-btn--primary">
+        I accept the terms of service
       </button>
     </div>
   `).firstChild as HTMLElement;
 
   body.append(intro, scrollContent, actions);
 
-  const isDark = settingsState.DarkMode;
-
   openPopup({
     header,
     content: [body],
-    containerClass: "whatsnewContainer--scrollBody whatsnewContainer--compact",
-    backgroundClass: isDark
-      ? "bsplus-tos-overlay bsplus-tos-overlay--dark"
-      : "bsplus-tos-overlay",
+    containerClass: "bsplus-tos-container",
+    backgroundClass: "bsplus-tos-overlay",
     hideCloseButton: true,
     closeOnBackdrop: false,
     closeOnEscape: false,
-    animateSelector: ".bsplus-tos-body > *",
+    animateSelector: ".bsplus-tos-header *, .bsplus-tos-body > *",
     afterClose: onDismissed,
     actions: [
       {

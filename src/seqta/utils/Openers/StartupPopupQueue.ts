@@ -12,7 +12,7 @@ import {
 } from "./OpenCoursesAssessmentsFixPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
 import {
-  fetchPrivacyTerms,
+  fetchTermsOfService,
   openTermsOfServicePopup,
   shouldShowTermsOfServicePopup,
 } from "./OpenTermsOfServicePopup";
@@ -58,12 +58,12 @@ export async function runStartupPopupQueue() {
 
   steps.push((goNext) => {
     void (async () => {
-      const privacyTerms = await fetchPrivacyTerms();
-      if (!shouldShowTermsOfServicePopup(settingsState, privacyTerms)) {
+      const termsDocument = await fetchTermsOfService();
+      if (!shouldShowTermsOfServicePopup(settingsState, termsDocument)) {
         goNext();
         return;
       }
-      await openTermsOfServicePopup(goNext, { terms: privacyTerms });
+      await openTermsOfServicePopup(goNext, { terms: termsDocument });
     })();
   });
 
