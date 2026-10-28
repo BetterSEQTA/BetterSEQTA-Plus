@@ -531,6 +531,6 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
 export function renderWhatsNewChangelogHtml(): string {
   return WHATS_NEW_CHANGELOG.map(
     (release) =>
-      `<h1>${release.title}</h1>\n${release.items.map((item) => `<li>${item}</li>`).join("\n")}`,
-  ).join("\n\n      ");
+      `<section class="whatsnewRelease">\n<h1>${release.title}</h1>\n${release.items.map((item) => `<li>${item}</li>`).join("\n")}\n</section>`,
+  ).join("\n");
 }

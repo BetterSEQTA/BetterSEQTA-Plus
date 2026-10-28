@@ -241,14 +241,15 @@ html:not(.dark) .legacy-root {
 .addedButton {
   position: absolute !important;
   right: 105px;
-  padding: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   overflow: unset !important;
   border-radius: 10px !important;
   cursor: pointer;
   background: var(--text-primary) !important;
   color: var(--theme-primary) !important;
   height: 35px;
-  justify-content: center;
   width: 35px !important;
 }
 
@@ -422,7 +423,9 @@ ul.magicDelete > li.deleting {
   background: unset;
 }
 .addedButton svg {
-  margin: 6px;
+  display: block;
+  margin: 0;
+  flex-shrink: 0;
   fill: var(--theme-primary);
   color: var(--theme-primary);
 }
@@ -717,6 +720,14 @@ body.icon-only-sidebar {
     > svg {
       display: none !important;
     }
+  }
+
+  /* Rail tiles follow the user radius even for squared presets (strip/sharp):
+     the compact rail's shape language is the rounded folder arc, so a
+     square active/hover tile there reads as a glitch. Pill keeps its
+     full capsule (it is the "rounder" shape, not the square one). */
+  #menu#menu:not(.bsplus-sidebar-style-pill) > ul > :is(li, section) {
+    border-radius: var(--bsplus-sidebar-radius, 12px) !important;
   }
 
   #menu#menu > ul > .hasChildren {
