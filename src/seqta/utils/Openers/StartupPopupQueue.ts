@@ -11,6 +11,7 @@ import {
   shouldShowCoursesAssessmentsFixPopup,
 } from "./OpenCoursesAssessmentsFixPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
+import { cloudAuth } from "../CloudAuth";
 import {
   fetchTermsOfService,
   openTermsOfServicePopup,
@@ -24,7 +25,7 @@ type QueueStep = (goNext: () => void) => void;
  * Courses/Assessments fix notice (only if features are off),
  * Theme of the Month (when the user hasn't dismissed this calendar month),
  * feedback reply notifications for pending submissions, then terms of service
- * acceptance (always last).
+ * acceptance (always last, and only once signed in to Cloud).
  */
 export async function runStartupPopupQueue() {
   // Make sure the background script knows about any dev-mode API override
@@ -58,6 +59,11 @@ export async function runStartupPopupQueue() {
 
   steps.push((goNext) => {
     void (async () => {
+      // Nothing is sent to BetterSEQTA servers until the user signs in to Cloud.
+      if (!(await cloudAuth.getStoredToken())) {
+        goNext();
+        return;
+      }
       const termsDocument = await fetchTermsOfService();
       if (!shouldShowTermsOfServicePopup(settingsState, termsDocument)) {
         goNext();
