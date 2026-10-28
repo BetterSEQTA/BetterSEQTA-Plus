@@ -47,7 +47,8 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
       "Improved background music autoplay with a tap-to-start hint when blocked.",
       "Added verbose logging toggle under Developer settings.",
       "Restored theme settings Edit/Done label and improved custom Select keyboard accessibility.",
-      "Cloud sign-in now sends a device name for account management."
+      "Cloud sign-in now sends a device name for account management.",
+      "Added TOS popup"
     ]
   },
   {
