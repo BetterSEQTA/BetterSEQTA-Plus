@@ -694,7 +694,7 @@
     {/each}
 
     <div
-      class="sticky bottom-0 z-10 -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
+      class="sticky bottom-0 z-[1500] -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
     >
       <button
         type="button"
