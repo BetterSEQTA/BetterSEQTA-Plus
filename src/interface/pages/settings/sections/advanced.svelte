@@ -2,7 +2,7 @@
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import { showPrivacyNotification } from "@/seqta/utils/Openers/OpenPrivacyNotification";
+  import { openTermsOfServicePopup } from "@/seqta/utils/Openers/OpenTermsOfServicePopup";
   import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/Openers/OpenThemeOfTheMonthPopup";
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync";
@@ -139,19 +139,20 @@
     </div>
     <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
-        <h2 class="text-sm font-bold">Show Privacy Notification</h2>
+        <h2 class="text-sm font-bold">Show Terms of Service</h2>
         <p class="text-xs text-zinc-600 dark:text-zinc-300">
-          Show the privacy notification popup on next page load
+          Show the terms of service acceptance popup (same as startup queue)
         </p>
       </div>
       <div>
         <Button
           onClick={async () => {
+            settingsState.termsOfServiceLastAccepted = undefined;
             settingsState.privacyStatementShown = false;
             settingsState.privacyStatementLastUpdated = undefined;
             closeExtensionPopup();
             await new Promise((resolve) => setTimeout(resolve, 100));
-            await showPrivacyNotification();
+            await openTermsOfServicePopup(undefined, { force: true });
           }}
           text="Show Now"
         />

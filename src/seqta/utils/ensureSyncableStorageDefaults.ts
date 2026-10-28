@@ -24,6 +24,7 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "selectedFont",
   "privacyStatementShown",
   "privacyStatementLastUpdated",
+  "termsOfServiceLastAccepted",
   "bsCloudAutoSyncAnnouncementShown",
   "coursesAssessmentsFixPopupShown",
   "themeOfTheMonthDismissedMonth",

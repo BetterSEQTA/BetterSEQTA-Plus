@@ -11,6 +11,11 @@ import {
   shouldShowCoursesAssessmentsFixPopup,
 } from "./OpenCoursesAssessmentsFixPopup";
 import { syncApiBaseToBackground } from "../DevApiBase";
+import {
+  fetchPrivacyTerms,
+  openTermsOfServicePopup,
+  shouldShowTermsOfServicePopup,
+} from "./OpenTermsOfServicePopup";
 
 type QueueStep = (goNext: () => void) => void;
 
@@ -18,7 +23,8 @@ type QueueStep = (goNext: () => void) => void;
  * Runs startup modals in order: What's New (if the extension just updated),
  * Courses/Assessments fix notice (only if features are off),
  * Theme of the Month (when the user hasn't dismissed this calendar month),
- * then feedback reply notifications for pending submissions.
+ * feedback reply notifications for pending submissions, then terms of service
+ * acceptance (always last).
  */
 export async function runStartupPopupQueue() {
   // Make sure the background script knows about any dev-mode API override
@@ -49,6 +55,17 @@ export async function runStartupPopupQueue() {
   if (feedbackReplyStep) {
     steps.push(feedbackReplyStep);
   }
+
+  steps.push((goNext) => {
+    void (async () => {
+      const privacyTerms = await fetchPrivacyTerms();
+      if (!shouldShowTermsOfServicePopup(settingsState, privacyTerms)) {
+        goNext();
+        return;
+      }
+      await openTermsOfServicePopup(goNext, { terms: privacyTerms });
+    })();
+  });
 
   function runNext() {
     const step = steps.shift();

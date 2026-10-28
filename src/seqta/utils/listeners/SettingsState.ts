@@ -35,6 +35,7 @@ const SETTINGS_STORAGE_KEYS = [
     "mockNotices",
     "hideSensitiveContent",
     "privacyStatementLastUpdated",
+    "termsOfServiceLastAccepted",
     "themeOfTheMonthDismissedMonth",
     "themeOfTheMonthLastSeenId",
     ...PLUGIN_SETTINGS_KEYS,

@@ -36,6 +36,8 @@ export interface SettingsState {
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
+  /** ISO timestamp from `/api/privacy` `last_updated` when the user accepted ToS. */
+  termsOfServiceLastAccepted?: string;
   /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
   bsCloudAutoSyncAnnouncementShown?: boolean;
   /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
