@@ -182,7 +182,7 @@
 
   {#if !(videoBackgrounds.length === 0 && isEditMode)}
     <h2 class="py-2 text-lg font-bold">Background Videos</h2>
-    <div class="flex flex-wrap gap-4">
+    <div class="flex flex-wrap gap-4 mb-4">
       {#if !isEditMode}
         <BackgroundUploader onFileChange={handleFileChange} />
       {/if}

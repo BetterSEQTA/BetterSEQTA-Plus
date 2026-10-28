@@ -138,8 +138,6 @@
   const customThemeActionClass =
     'flex h-12 items-center justify-center gap-2 w-full rounded-xl transition bg-zinc-100 text-xl dark:bg-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
 
-  const customThemeActionCompactClass = customThemeActionClass
-
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
     if (!cloudLoggedIn) {
@@ -280,27 +278,8 @@
             No custom themes yet
           </h3>
           <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
-            Create a theme with the builder, or follow our guide to get started.
+            Use the theme builder above to get started.
           </p>
-          <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onclick={() => void openThemeCreator()}
-              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-            >
-              <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
-              Create a theme
-            </button>
-            <a
-              href="https://docs.betterseqta.org/theme-creation/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-            >
-              <span class="font-IconFamily text-lg" aria-hidden="true">{'\uecb3'}</span>
-              View docs
-            </a>
-          </div>
         {:else if listMode === 'downloaded'}
           <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
             No downloaded themes
@@ -356,20 +335,11 @@
 
       {#if listMode === 'custom'}
         <div class="grid grid-cols-2 gap-2 {useTwoColumnLayout ? 'col-span-2' : ''}">
-          <button
-            type="button"
-            onclick={() => void openThemeCreator()}
-            class={customThemeActionCompactClass}
-          >
-            <span class="text-2xl font-IconFamily" aria-hidden="true">&#xec60;</span>
-            <span>Create theme</span>
-          </button>
-
           <a
             href="https://docs.betterseqta.org/theme-creation/"
             target="_blank"
             rel="noopener noreferrer"
-            class={customThemeActionCompactClass}
+            class={customThemeActionClass}
           >
             <span class="text-2xl font-IconFamily" aria-hidden="true">{'\uecb3'}</span>
             <span>View docs</span>
@@ -378,7 +348,7 @@
           <button
             type="button"
             onclick={() => void openCommunitySubmit()}
-            class="{customThemeActionClass} col-span-2"
+            class={customThemeActionClass}
           >
             <span class="text-2xl font-IconFamily" aria-hidden="true">&#xe9fc;</span>
             <span>Create & submit</span>
