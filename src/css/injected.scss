@@ -722,6 +722,14 @@ body.icon-only-sidebar {
     }
   }
 
+  /* Rail tiles follow the user radius even for squared presets (strip/sharp):
+     the compact rail's shape language is the rounded folder arc, so a
+     square active/hover tile there reads as a glitch. Pill keeps its
+     full capsule (it is the "rounder" shape, not the square one). */
+  #menu#menu:not(.bsplus-sidebar-style-pill) > ul > :is(li, section) {
+    border-radius: var(--bsplus-sidebar-radius, 12px) !important;
+  }
+
   #menu#menu > ul > .hasChildren {
     position: static !important;
     backdrop-filter: none !important;
