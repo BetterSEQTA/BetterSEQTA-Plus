@@ -867,11 +867,6 @@ body.icon-only-sidebar {
     > :is(li.item, section.item) {
     margin-inline: auto !important;
   }
-  #menu#menu.bsplus-sidebar-style-strip .sub :is(li.item, section.item) {
-    width: 100% !important;
-    margin-inline: 0 !important;
-  }
-
   #menu.bsplus-icon-rail-switching > ul > .hasChildren > .sub {
     transition: none !important;
   }
@@ -899,6 +894,16 @@ body.icon-only-sidebar {
     background-size: 36px 36px !important;
     background-position: center center !important;
   }
+}
+
+#menu#menu.bsplus-sidebar-style-strip .sub :is(li.item, section.item) {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-inline: 0 !important;
+}
+body:not(.icon-only-sidebar) #menu#menu.bsplus-sidebar-style-strip > ul > :is(li.item, section.item) {
+  width: calc(100% + 1px) !important;
+  box-sizing: border-box !important;
 }
 
 body.icon-only-sidebar:has(
