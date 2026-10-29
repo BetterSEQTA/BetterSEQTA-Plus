@@ -2,6 +2,7 @@
   import { fade } from "svelte/transition";
   import browser from "webextension-polyfill";
   import QRCode from "qrcode";
+  import Button from "./Button.svelte";
   import { portal } from "../utils/portal";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
@@ -106,13 +107,7 @@
 </script>
 
 <div class="flex flex-col gap-1 items-end">
-  <button
-    type="button"
-    onclick={generateQrCode}
-    disabled={isLoading}
-    class="px-5 py-1.5 text-[0.75rem] text-nowrap shadow-2xl border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity">
-    {isLoading ? "Generating..." : "Generate QR"}
-  </button>
+  <Button onClick={generateQrCode} disabled={isLoading} text={isLoading ? "Generating..." : "Generate QR"} />
   {#if errorMessage}
     <p class="text-xs text-right text-amber-600 dark:text-amber-400">{errorMessage}</p>
   {/if}

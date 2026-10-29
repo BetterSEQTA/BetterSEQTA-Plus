@@ -23,7 +23,7 @@
       <button
         onclick={() => selectNoBackground()}
         disabled={section === "backgrounds" && !clearTheme}
-        class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 disabled:opacity-50">
+        class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 enabled:hover:bg-zinc-300 dark:enabled:hover:bg-zinc-700 enabled:active:scale-[0.99] disabled:opacity-50">
         {section === "all"
           ? clearTheme ? 'Clear Theme' : 'Select a Theme'
           : clearTheme ? 'Clear Background' : 'No Background Selected'}

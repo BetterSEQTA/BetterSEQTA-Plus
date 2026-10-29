@@ -182,20 +182,19 @@
           {/if}
         {/each}
       {/if}
+      {#if plugin.pluginId === "global-search"}
+        <SettingRow
+          title="Theme of the Month"
+          description="Show the monthly featured theme popup when a new entry is available"
+          id={15}
+          Component={Switch}
+          {searchQuery}
+          props={{
+            state: !($settingsState.themeOfTheMonthDisabled ?? false),
+            onChange: (isOn: boolean) => (settingsState.themeOfTheMonthDisabled = !isOn),
+          }}
+        />
+      {/if}
     </div>
-
-    {#if plugin.pluginId === "global-search"}
-      <SettingRow
-        title="Theme of the Month"
-        description="Show the monthly featured theme popup when a new entry is available"
-        id={15}
-        Component={Switch}
-        {searchQuery}
-        props={{
-          state: !($settingsState.themeOfTheMonthDisabled ?? false),
-          onChange: (isOn: boolean) => (settingsState.themeOfTheMonthDisabled = !isOn),
-        }}
-      />
-    {/if}
   </div>
 {/each}
