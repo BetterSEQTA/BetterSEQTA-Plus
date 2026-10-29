@@ -5,7 +5,7 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.3 – Performance Mode, Timetable syncing with Friends and Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
+    "title": "3.7.4 - Performance Mode, Timetable syncing with Friends and Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
       "Added the ability to sync your timetable with your friends and calendars.",
@@ -52,7 +52,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
     ]
   },
   {
-    "title": "3.7.2 – Analytics Fixes",
+    "title": "3.7.2 - Analytics Fixes",
     "items": [
       "Fixed analytics page breaking on certain configurations.",
       "Added safer DOM handling for analytics to prevent crashes.",
@@ -62,7 +62,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
     ]
   },
   {
-    "title": "3.7.0 – Grade Analytics, Enhanced Navigation, fonts, Global Search & SEQTA Engage Improvements",
+    "title": "3.7.0 - Grade Analytics, Enhanced Navigation, fonts, Global Search & SEQTA Engage Improvements",
     "items": [
       "Added Enhanced Navigation for courses: the navigator now auto-scrolls to the selected lesson (e.g. inside the \"Go to…\" popup) and prev/next arrows for jumping between lessons.",
       "Added Grade Analytics, new sidebar page with grade trend charts synced from SEQTA.",
