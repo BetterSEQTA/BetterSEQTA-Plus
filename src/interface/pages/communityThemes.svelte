@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import Button from "@/interface/components/Button.svelte";
   import BrowsePanel from "@/interface/components/communityThemes/BrowsePanel.svelte";
   import MyThemesPanel from "@/interface/components/communityThemes/MyThemesPanel.svelte";
   import OwnerThemeDetailModal from "@/interface/components/communityThemes/OwnerThemeDetailModal.svelte";
@@ -36,16 +37,14 @@
           My themes
         </button>
       </div>
-      <button
-        type="button"
-        class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-        onclick={() =>
+      <Button
+        variant="primary"
+        text="Create & submit"
+        onClick={() =>
           void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>
             launchPageThemeBuilder(),
           )}
-      >
-        Create & submit
-      </button>
+      />
     </div>
     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
       Community themes are user-submitted and moderated separately from the official theme store.

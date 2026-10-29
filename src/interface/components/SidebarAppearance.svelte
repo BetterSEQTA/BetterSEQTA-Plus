@@ -280,14 +280,14 @@
   }
 
   .title {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     font-weight: 700;
     line-height: 1.3;
   }
 
   .subtitle {
     margin-top: 0.15rem;
-    font-size: 1rem;
+    font-size: 0.75rem;
     color: rgb(82 82 91);
   }
 
@@ -305,12 +305,12 @@
   }
 
   .selected-label {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     font-weight: 700;
   }
 
   .selected-desc {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     line-height: 1.35;
     color: rgb(113 113 122);
   }
@@ -583,14 +583,14 @@
   }
 
   .row-title {
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     font-weight: 700;
     line-height: 1.3;
   }
 
   .row-desc {
     margin-top: 0.1rem;
-    font-size: 0.95rem;
+    font-size: 0.75rem;
     color: rgb(82 82 91);
   }
 

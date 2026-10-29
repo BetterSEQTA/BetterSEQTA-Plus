@@ -5,6 +5,7 @@
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
+  import Button from "./Button.svelte";
 
   const { hidePanel } = $props<{
     hidePanel: () => void;
@@ -139,13 +140,7 @@
           <p class="text-sm text-zinc-600 dark:text-zinc-400">
             Sign in to sync settings across devices, use your cloud profile picture, and more.
           </p>
-          <button
-            type="button"
-            onclick={handleSignIn}
-            class="w-full px-4 py-2.5 text-sm font-medium rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors duration-200"
-          >
-            Sign in with BetterSEQTA Cloud
-          </button>
+          <Button class="w-full" icon={""} text="Sign in with BetterSEQTA Cloud" onClick={handleSignIn} />
           {#if loginError}
             <p class="text-xs text-red-600 dark:text-red-400">{loginError}</p>
           {/if}

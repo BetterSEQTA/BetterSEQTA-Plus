@@ -1,6 +1,7 @@
 <script lang="ts">
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
+  import Button from "@/interface/components/Button.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
 
   let { section = "all" } = $props<{
@@ -20,24 +21,23 @@
 <div class="py-4">
   {#if !standalone.standalone}
     {#if showBackgrounds}
-      <button
-        onclick={() => selectNoBackground()}
+      <Button
+        onClick={() => selectNoBackground()}
         disabled={section === "backgrounds" && !clearTheme}
-        class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 enabled:hover:bg-zinc-300 dark:enabled:hover:bg-zinc-700 enabled:active:scale-[0.99] disabled:opacity-50">
-        {section === "all"
+        text={section === "all"
           ? clearTheme ? 'Clear Theme' : 'Select a Theme'
           : clearTheme ? 'Clear Background' : 'No Background Selected'}
-      </button>
+        class="w-full mb-4"
+      />
     {/if}
     <div class="w-full">
       {#if showThemes || showBackgrounds}
         <div class="mb-3 flex justify-end">
-          <button
-            onclick={() => editMode = !editMode}
-            class="inline-flex h-8 items-center rounded-xl bg-zinc-100 px-3 text-lg dark:bg-zinc-700">
-            <span class="mr-2">{editMode ? 'Done' : 'Remove'}</span>
-            <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
-          </button>
+          <Button
+            onClick={() => editMode = !editMode}
+            text={editMode ? 'Done' : 'Remove'}
+            icon={editMode ? '\ue9e4' : '\uec38'}
+          />
         </div>
       {/if}
 
@@ -46,17 +46,16 @@
       {/if}
       {#if showThemes}
         {#if section === "themes"}
-          <button
-            type="button"
-            class="mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-            onclick={() =>
+          <Button
+            variant="primary"
+            class="w-full mb-4"
+            icon={""}
+            text="Open theme builder"
+            onClick={() =>
               void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>
                 launchPageThemeBuilder(),
               )}
-          >
-            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
-            Open theme builder
-          </button>
+          />
         {/if}
         <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
       {/if}

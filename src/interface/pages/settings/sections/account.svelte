@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SettingsCard from "../SettingsCard.svelte";
   import Switch from "@/interface/components/Switch.svelte";
   import ConnectMobileApp from "@/interface/components/ConnectMobileApp.svelte";
   import CloudSettingsSync from "@/interface/components/CloudSettingsSync.svelte";
@@ -46,65 +47,65 @@
   const showCloudAccountCard = $derived(showCloudCardHeader || showFounderBadgeSetting);
 </script>
 
-<SettingRow
-  title="Connect Mobile App"
-  description="Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn"
-  id={0}
-  Component={ConnectMobileApp}
-  {searchQuery}
-  props={{}}
-/>
+{#if matchesSearch(searchQuery, "Connect Mobile App", "Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn")}
+  <SettingsCard>
+    <SettingRow
+      title="Connect Mobile App"
+      description="Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn"
+      id={0}
+      Component={ConnectMobileApp}
+      {searchQuery}
+      props={{}}
+    />
+  </SettingsCard>
+{/if}
 
 {#if showCloudAccountCard}
-  <div class="border-none">
-    <div
-      class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
-    >
-      {#if showCloudCardHeader}
-        <div class="flex justify-between items-center px-4 py-3">
-          <div class="pr-4">
-            <h2 class="text-sm font-bold">BetterSEQTA Cloud</h2>
-            <p class="text-xs text-zinc-600 dark:text-zinc-300">Account & sync</p>
-          </div>
-          <div>
-            <CloudHeader compact alwaysShowUserName onClick={showCloudPanel} />
-          </div>
+  <SettingsCard>
+    {#if showCloudCardHeader}
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <h2 class="text-sm font-bold">BetterSEQTA Cloud</h2>
+          <p class="text-xs text-zinc-600 dark:text-zinc-300">Account & sync</p>
         </div>
-      {/if}
-      {#if cloudState.isLoggedIn}
-        <div class="px-3 pb-3" class:pt-3={!showCloudCardHeader}>
-          {#if showCloudCardHeader}
-            <CloudSettingsSync
-              showDisclaimer={(onConfirm, onCancel) =>
-                showDisclaimer(
-                  onConfirm,
-                  onCancel,
-                  "Restore from cloud?",
-                  "This will replace your local settings with the cloud backup. Continue?",
-                )}
-            />
-          {/if}
-          {#if showFounderBadgeSetting}
-            <SettingRow
-              title={founderBadgeSetting.title}
-              description={founderBadgeSetting.description}
-              id={17}
-              Component={Switch}
-              {searchQuery}
-              props={{
-                state: $settingsState.showTitlebarFounderBadge !== false,
-                onChange: (isOn: boolean) => (settingsState.showTitlebarFounderBadge = isOn),
-              }}
-            />
-          {/if}
+        <div>
+          <CloudHeader compact alwaysShowUserName onClick={showCloudPanel} />
         </div>
-      {:else if showFounderBadgeSetting}
-        <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
-          Sign in to Cloud first.
-        </div>
-      {/if}
-    </div>
-  </div>
+      </div>
+    {/if}
+    {#if cloudState.isLoggedIn}
+      <div class="px-3 pb-3" class:pt-3={!showCloudCardHeader}>
+        {#if showCloudCardHeader}
+          <CloudSettingsSync
+            showDisclaimer={(onConfirm, onCancel) =>
+              showDisclaimer(
+                onConfirm,
+                onCancel,
+                "Restore from cloud?",
+                "This will replace your local settings with the cloud backup. Continue?",
+              )}
+          />
+        {/if}
+        {#if showFounderBadgeSetting}
+          <SettingRow
+            title={founderBadgeSetting.title}
+            description={founderBadgeSetting.description}
+            id={17}
+            Component={Switch}
+            {searchQuery}
+            props={{
+              state: $settingsState.showTitlebarFounderBadge !== false,
+              onChange: (isOn: boolean) => (settingsState.showTitlebarFounderBadge = isOn),
+            }}
+          />
+        {/if}
+      </div>
+    {:else if showFounderBadgeSetting}
+      <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
+        Sign in to Cloud first.
+      </div>
+    {/if}
+  </SettingsCard>
 {/if}
 
 <PluginSettingsBlocks section="account" {showDisclaimer} {searchQuery} />

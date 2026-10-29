@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SettingsCard from "../SettingsCard.svelte";
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
   import Select from "@/interface/components/Select.svelte";
@@ -140,34 +141,38 @@
   ]);
 </script>
 
-{#each generalOptions as option (option.id)}
-  <SettingRow {...option} {searchQuery} />
-  {#if option.id === 0 && $settingsState.performanceMode && matchesSearch(searchQuery, "Performance Mode", "Global Search", "Assessment Averages", "enable anyway", "paused")}
-    <div class="border-none -mt-px">
-      <div
-        class="mx-5 mb-4 rounded-xl border border-zinc-200/80 bg-zinc-50/80 px-4 py-3 dark:border-zinc-700/60 dark:bg-zinc-900/40"
-      >
-        <p class="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Paused for performance — enable anyway:
-        </p>
-        <div class="space-y-3">
-          {#each PERFORMANCE_HEAVY_PLUGINS as heavy (heavy.id)}
-            <div class="flex justify-between items-center gap-4">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{heavy.name}</p>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">{heavy.description}</p>
-              </div>
-              <Switch
-                state={$settingsState.performanceModePluginOverrides?.[heavy.id] === true}
-                onChange={(forceOn: boolean) => setPerformanceModePluginOverride(heavy.id, forceOn)}
-              />
+{#if generalOptions.some((option) => matchesSearch(searchQuery, option.title, option.description))}
+  <SettingsCard class="divide-y divide-zinc-200/60 dark:divide-zinc-700/40">
+    {#each generalOptions as option (option.id)}
+      <SettingRow {...option} {searchQuery} />
+      {#if option.id === 0 && $settingsState.performanceMode && matchesSearch(searchQuery, "Performance Mode", "Global Search", "Assessment Averages", "enable anyway", "paused")}
+        <div class="border-none -mt-px">
+          <div
+            class="mx-5 mb-4 rounded-xl border border-zinc-200/80 bg-zinc-50/80 px-4 py-3 dark:border-zinc-700/60 dark:bg-zinc-900/40"
+          >
+            <p class="mb-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              Paused for performance — enable anyway:
+            </p>
+            <div class="space-y-3">
+              {#each PERFORMANCE_HEAVY_PLUGINS as heavy (heavy.id)}
+                <div class="flex justify-between items-center gap-4">
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{heavy.name}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{heavy.description}</p>
+                  </div>
+                  <Switch
+                    state={$settingsState.performanceModePluginOverrides?.[heavy.id] === true}
+                    onChange={(forceOn: boolean) => setPerformanceModePluginOverride(heavy.id, forceOn)}
+                  />
+                </div>
+              {/each}
             </div>
-          {/each}
+          </div>
         </div>
-      </div>
-    </div>
-  {/if}
-{/each}
+      {/if}
+    {/each}
+  </SettingsCard>
+{/if}
 
 {#if matchesSearch(
   searchQuery,
@@ -176,43 +181,41 @@
   "Maximum Subjects",
   "Maximum Assessments per Subject",
 )}
-  <div class="border-none">
+  <SettingsCard>
+    <div class="flex justify-between items-center px-4 py-3">
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Home Page Assessments</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
+          Limit upcoming assessments shown on the home page by subject
+        </p>
+      </div>
+    </div>
     <div
-      class="p-1 my-1 from-white to-zinc-100 bg-gradient-to-br rounded-xl border shadow-sm border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
+      class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
     >
-      <div class="flex justify-between items-center px-4 py-3">
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">Home Page Assessments</h2>
-          <p class="text-xs text-zinc-600 dark:text-zinc-300">
-            Limit upcoming assessments shown on the home page by subject
-          </p>
-        </div>
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Include Past Assessments</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
+          Show past-due assessments from the upcoming list, matching the Assessments page
+        </p>
       </div>
-      <div
-        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
-      >
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">Include Past Assessments</h2>
-          <p class="text-xs text-zinc-600 dark:text-zinc-300">
-            Show past-due assessments from the upcoming list, matching the Assessments page
-          </p>
-        </div>
-        <div>
-          <Switch
-            state={$settingsState.homeUpcomingIncludePast ?? true}
-            onChange={(isOn: boolean) => (settingsState.homeUpcomingIncludePast = isOn)}
-          />
-        </div>
+      <div>
+        <Switch
+          state={$settingsState.homeUpcomingIncludePast ?? true}
+          onChange={(isOn: boolean) => (settingsState.homeUpcomingIncludePast = isOn)}
+        />
       </div>
-      <div
-        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
-      >
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">Maximum Subjects</h2>
-          <p class="text-xs text-zinc-600 dark:text-zinc-300">
-            Number of subjects to include, ordered by soonest due date
-          </p>
-        </div>
+    </div>
+    <div
+      class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
+    >
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Maximum Subjects</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
+          Number of subjects to include, ordered by soonest due date
+        </p>
+      </div>
+      <div class="shrink-0">
         <Select
           value={String($settingsState.homeUpcomingSubjectsMax ?? 5)}
           onChange={(value: string) => (settingsState.homeUpcomingSubjectsMax = Number(value))}
@@ -226,15 +229,17 @@
           ]}
         />
       </div>
-      <div
-        class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
-      >
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
-          <p class="text-xs text-zinc-600 dark:text-zinc-300">
-            Assessments shown for each included subject
-          </p>
-        </div>
+    </div>
+    <div
+      class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
+    >
+      <div class="pr-4">
+        <h2 class="text-sm font-bold">Maximum Assessments per Subject</h2>
+        <p class="text-xs text-zinc-600 dark:text-zinc-300">
+          Assessments shown for each included subject
+        </p>
+      </div>
+      <div class="shrink-0">
         <Select
           value={String($settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0)}
           onChange={(value: string) =>
@@ -250,5 +255,5 @@
         />
       </div>
     </div>
-  </div>
+  </SettingsCard>
 {/if}

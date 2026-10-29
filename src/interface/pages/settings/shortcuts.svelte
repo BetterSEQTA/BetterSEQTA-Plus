@@ -2,6 +2,7 @@
   import MotionDiv from '@/interface/components/MotionDiv.svelte';
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import Switch from "@/interface/components/Switch.svelte"
+  import Button from "@/interface/components/Button.svelte"
   import { onMount } from 'svelte';
   import Shortcuts from "@/seqta/content/links.json"
 
@@ -199,16 +200,11 @@
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <button
-          class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 enabled:hover:bg-zinc-300 dark:enabled:hover:bg-zinc-700 enabled:active:scale-[0.99]"
-          onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
-        >
-          {#if isFormVisible}
-            Add
-          {:else}
-            Add Custom Shortcut
-          {/if}
-        </button>
+        <Button
+          class="w-full mb-4"
+          text={isFormVisible ? "Add" : "Add Custom Shortcut"}
+          onClick={isFormVisible ? addNewCustomShortcut : toggleForm}
+        />
       </MotionDiv>
     </div>
     {/if}

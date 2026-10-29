@@ -78,34 +78,27 @@
   }
 </script>
 
-<div class="flex flex-col items-end gap-2 shrink-0 max-w-[14rem]">
-  <p class="text-xs text-right text-zinc-500 dark:text-zinc-400">{scopeLabel}</p>
-
+<div class="flex flex-col items-end gap-2 shrink-0 max-w-[14rem]" title={scopeLabel}>
   {#if syncOptIn}
     <p class="text-xs font-medium text-green-600 dark:text-green-400">Opted in on this site</p>
-    <div class="flex flex-wrap gap-2 justify-end">
-      <Button text="Sync now" onClick={() => void syncNow()} disabled={busy} />
-      <button
-        type="button"
-        class="px-3 py-1.5 text-[0.75rem] rounded-lg text-red-600 dark:text-red-400 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/50 disabled:opacity-50 transition-colors duration-200"
-        disabled={busy}
-        onclick={startOptOut}
-      >
-        Opt out…
-      </button>
-    </div>
   {:else}
     <p class="text-xs text-right text-zinc-500 dark:text-zinc-400">
-      {cloudAuth.state.isLoggedIn
-        ? "Not sharing yet"
-        : "Sign in to Cloud in the opt-in guide"}
+      {cloudAuth.state.isLoggedIn ? "Not sharing yet" : "Sign in to Cloud first"}
     </p>
-    <Button text="Opt in…" onClick={startOptIn} disabled={busy} />
   {/if}
-
   {#if status}
     <p class="text-xs text-right text-zinc-500 dark:text-zinc-400">{status}</p>
   {/if}
+
+  {#if syncOptIn}
+    <div class="flex flex-wrap gap-2 justify-end">
+      <Button text="Sync now" onClick={() => void syncNow()} disabled={busy} />
+      <Button variant="ghost" class="text-red-600 dark:text-red-400" text="Opt out…" onClick={startOptOut} disabled={busy} />
+    </div>
+  {:else}
+    <Button text="Opt in…" onClick={startOptIn} disabled={busy} />
+  {/if}
+
   {#if error}
     <p class="text-xs text-right text-red-500">{error}</p>
   {/if}

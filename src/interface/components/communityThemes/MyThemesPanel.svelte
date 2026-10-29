@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from "svelte";
   import SkeletonLoader from "@/interface/components/SkeletonLoader.svelte";
   import SignInToFavoriteModal from "@/interface/components/SignInToFavoriteModal.svelte";
+  import Button from "@/interface/components/Button.svelte";
   import type { CommunityThemesState } from "@/interface/hooks/communityThemesState.svelte";
   import {
     formatCustomThemeStatus,
@@ -76,13 +77,11 @@
     <p class="mt-3 text-zinc-600 dark:text-zinc-300">
       Submit themes for review and track pending, approved, or rejected submissions.
     </p>
-    <button
-      type="button"
-      class="mt-6 rounded-lg bg-zinc-900 px-5 py-2.5 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-      onclick={() => (communityState.showSignInOverlay = true)}
-    >
-      Sign in with BetterSEQTA Cloud
-    </button>
+    <Button
+      class="mt-6"
+      text="Sign in with BetterSEQTA Cloud"
+      onClick={() => (communityState.showSignInOverlay = true)}
+    />
   </div>
 {:else}
   <section class="mb-8">
