@@ -3895,6 +3895,12 @@ div.day-empty {
   width: 100%;
   margin-top: 4px;
 }
+.bsplus-founder-badge-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
 .userInfoHouseWrap .bsplus-founder-badge-slot[hidden],
 .bsplus-founder-badge-slot[hidden] {
   display: none;

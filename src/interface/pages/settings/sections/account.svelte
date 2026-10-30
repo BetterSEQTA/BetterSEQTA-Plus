@@ -25,8 +25,8 @@
   });
 
   const founderBadgeSetting = {
-    title: "Titlebar founder badge",
-    description: "Show your Cloud founder badge in the SEQTA titlebar",
+    title: "Titlebar Cloud badges",
+    description: "Show your Cloud badges in the SEQTA titlebar",
   } as const;
 
   const showCloudCardHeader = $derived(
