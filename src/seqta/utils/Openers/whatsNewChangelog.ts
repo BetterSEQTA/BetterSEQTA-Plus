@@ -5,6 +5,12 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
+    "title": "3.7.6 - Temp",
+    "items": [
+      "Added ability for Admin's to view unreleased community themes for QA."
+    ]
+  },
+  {
     "title": "3.7.5 - Timetable Sharing Fixes",
     "items": [
       "Fixed the Sync with Friends button disappearing when classmate avatars fail to load.",
