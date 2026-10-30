@@ -111,7 +111,6 @@ export async function hydrateRemoteConfigFromStorage(): Promise<RemoteConfigSnap
     } catch {
       // SW unavailable
     }
-    void browser.runtime.sendMessage({ type: "refreshRemoteConfig" }).catch(() => {});
   }
 
   applyRemoteRuntime(
@@ -123,11 +122,16 @@ export async function hydrateRemoteConfigFromStorage(): Promise<RemoteConfigSnap
   return snapshot;
 }
 
+export function syncRemoteConfigFromBackend(): void {
+  void browser.runtime.sendMessage({ type: "refreshRemoteConfig" }).catch(() => {});
+}
+
 export function notifyRemoteConfigPageContext(hostname: string): void {
   void browser.storage.local.set({ [BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY]: hostname });
   void browser.runtime
     .sendMessage({ type: "setRemoteConfigPageContext", hostname })
     .catch(() => {});
+  syncRemoteConfigFromBackend();
 }
 
 export async function markCampaignSeen(campaignId: string, ack?: boolean): Promise<void> {

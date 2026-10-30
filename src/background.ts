@@ -19,6 +19,7 @@ import {
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
 } from "./background/calendarBackground";
+import { createCustomThemesHandlers } from "./background/customThemesHandlers";
 import {
   createRemoteConfigHandlers,
   initRemoteConfigBackground,

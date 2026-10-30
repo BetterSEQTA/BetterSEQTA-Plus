@@ -4101,6 +4101,24 @@ div.day-empty {
 .bsplus-founder-badge-hero__stage .bsplus-founder-badge {
   pointer-events: auto;
 }
+
+.bsplus-remote-page-banner {
+  width: 90%;
+  margin: 0 auto 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 5%, var(--background-primary));
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.bsplus-remote-page-banner__title {
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
 .whatsnewTextContainer.bsplus-founder-badge-body p {
   margin: 0 0 1rem;
   font-size: 1.2rem;

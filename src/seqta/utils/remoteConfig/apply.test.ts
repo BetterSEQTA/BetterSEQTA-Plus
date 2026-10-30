@@ -121,13 +121,15 @@ describe("hydrateRemoteConfigFromStorage", () => {
     jest.doMock("@/seqta/utils/listeners/SettingsState", () => ({
       settingsState: { onoff: true },
     }));
-    const { hydrateRemoteConfigFromStorage } = await import("./runtime");
+    const { hydrateRemoteConfigFromStorage, notifyRemoteConfigPageContext } = await import("./runtime");
     await hydrateRemoteConfigFromStorage();
+    notifyRemoteConfigPageContext("learn.example.edu.au");
     const browser = jest.requireMock("webextension-polyfill");
     const types = browser.runtime.sendMessage.mock.calls.map(
       (c: [{ type?: string }]) => c[0]?.type,
     );
     expect(types).toContain("getRemoteConfigSnapshot");
+    expect(types).toContain("setRemoteConfigPageContext");
     expect(types).toContain("refreshRemoteConfig");
     expect(types.indexOf("getRemoteConfigSnapshot")).toBeLessThan(
       types.indexOf("refreshRemoteConfig"),

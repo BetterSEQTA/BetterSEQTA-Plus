@@ -6,20 +6,6 @@ import type { RemoteCampaign } from "@/seqta/utils/remoteConfig/types";
 import { requestSettingsDestination } from "@/seqta/utils/settingsNavigation";
 import { openSettingsPopup } from "@/seqta/utils/setupSettingsButton";
 
-function campaignHero(campaign: RemoteCampaign): HTMLElement | null {
-  const hero = campaign.hero;
-  if (!hero?.url) return null;
-  if (hero.type === "video") {
-    return createPopupHeroVideo(hero.url, hero.alt ?? "");
-  }
-  const img = document.createElement("img");
-  img.src = hero.url;
-  img.alt = hero.alt ?? "";
-  img.className = "whatsnewHeroImage";
-  img.loading = "lazy";
-  return img;
-}
-
 export function openRemoteCampaignPopup(
   campaign: RemoteCampaign,
   onDismissed?: () => void,
@@ -31,27 +17,45 @@ export function openRemoteCampaignPopup(
     /* html */ `<div class="whatsnewHeader"><h1>${title}</h1>${subtitle ? `<p>${subtitle}</p>` : ""}</div>`,
   ).firstChild as HTMLElement;
 
-  const body = stringToHTML(/* html */ `<div class="whatsnewTextContainer"></div>`)
-    .firstChild as HTMLElement;
-  if (campaign.bodyHtml) body.innerHTML = campaign.bodyHtml;
-
   const buttons = campaign.buttons?.length
     ? campaign.buttons
     : [{ id: "dismiss", label: "Dismiss", action: "dismiss" as const }];
 
-  const footer = stringToHTML(
-    /* html */ `<div class="bsplus-campaign-actions flex flex-wrap gap-2 justify-end p-4">${buttons
-      .map(
-        (btn) =>
-          `<button type="button" id="bsplus-campaign-${campaign.id}-${btn.id}" class="bsplus-tos-btn bsplus-tos-btn--primary">${btn.label}</button>`,
-      )
-      .join("")}</div>`,
-  ).firstChild as HTMLElement;
+  const actionsHtml = buttons
+    .map(
+      (btn, i) =>
+        `<button type="button" id="bsplus-campaign-${campaign.id}-${btn.id}" class="bsplus-cal-btn ${i === 0 ? "bsplus-cal-btn--primary" : "bsplus-cal-btn--ghost"}">${btn.label}</button>`,
+    )
+    .join("");
+
+  const text = stringToHTML(/* html */ `
+    <div class="whatsnewTextContainer bsplus-founder-badge-body" style="overflow-y: auto;">
+      <div class="bsplus-campaign-body"></div>
+      <div class="bsplus-founder-badge-actions">${actionsHtml}</div>
+    </div>
+  `).firstChild as HTMLElement;
+
+  const bodySlot = text.querySelector(".bsplus-campaign-body");
+  if (bodySlot && campaign.bodyHtml) bodySlot.innerHTML = campaign.bodyHtml;
 
   const content: HTMLElement[] = [];
-  const hero = campaignHero(campaign);
-  if (hero) content.push(hero);
-  content.push(body, footer);
+  const hero = campaign.hero;
+  if (hero?.url) {
+    if (hero.type === "video") {
+      content.push(createPopupHeroVideo(hero.url, hero.alt ?? ""));
+    } else {
+      const wrap = stringToHTML(/* html */ `<div class="whatsnewImgContainer"></div>`)
+        .firstChild as HTMLElement;
+      const img = document.createElement("img");
+      img.src = hero.url;
+      img.alt = hero.alt ?? "";
+      img.className = "whatsnewImg";
+      img.loading = "lazy";
+      wrap.append(img);
+      content.push(wrap);
+    }
+  }
+  content.push(text);
 
   const actions = buttons.map((btn) => ({
     id: `bsplus-campaign-${campaign.id}-${btn.id}`,
@@ -70,6 +74,7 @@ export function openRemoteCampaignPopup(
   openPopup({
     header,
     content,
+    animateSelector: ".whatsnewImgContainer, .whatsnewTextContainer *",
     actions,
     afterClose: () => {
       void markCampaignSeen(campaign.id);
