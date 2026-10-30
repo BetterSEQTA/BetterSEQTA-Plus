@@ -5,9 +5,10 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.6 - Temp",
+    "title": "3.7.6 - Community Theme Submitter Badges,",
     "items": [
-      "Added ability for Admin's to view unreleased community themes for QA."
+      "Added a new submitter badge for community theme submitters.",
+      "Added ability for Admin's to view unreleased community themes for QA.",
     ]
   },
   {
