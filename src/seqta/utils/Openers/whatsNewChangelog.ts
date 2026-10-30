@@ -9,6 +9,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
     "items": [
       "Added a new submitter badge for community theme submitters.",
       "Added ability for Admin's to view unreleased community themes for QA.",
+      "Added ability for BetterSEQTA+ features to be dynamically configured remotly to negate compatability issues."
     ]
   },
   {
