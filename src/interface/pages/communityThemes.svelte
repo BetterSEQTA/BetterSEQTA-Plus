@@ -3,6 +3,7 @@
   import Button from "@/interface/components/Button.svelte";
   import BrowsePanel from "@/interface/components/communityThemes/BrowsePanel.svelte";
   import MyThemesPanel from "@/interface/components/communityThemes/MyThemesPanel.svelte";
+  import ReviewPanel from "@/interface/components/communityThemes/ReviewPanel.svelte";
   import OwnerThemeDetailModal from "@/interface/components/communityThemes/OwnerThemeDetailModal.svelte";
   import { createCommunityThemesState } from "@/interface/hooks/communityThemesState.svelte";
 
@@ -36,6 +37,17 @@
         >
           My themes
         </button>
+        {#if communityState.isAdmin}
+          <button
+            type="button"
+            class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'review'
+              ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
+              : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
+            onclick={() => (communityState.innerTab = "review")}
+          >
+            Review queue
+          </button>
+        {/if}
       </div>
       <Button
         variant="primary"
@@ -54,8 +66,10 @@
   <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 px-6 py-6 dark:bg-zinc-900/40 md:px-8 lg:px-10">
     {#if communityState.innerTab === "browse"}
       <BrowsePanel {communityState} {searchTerm} />
-    {:else}
+    {:else if communityState.innerTab === "mine"}
       <MyThemesPanel {communityState} />
+    {:else if communityState.innerTab === "review"}
+      <ReviewPanel {communityState} {searchTerm} />
     {/if}
   </main>
 

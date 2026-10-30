@@ -1,9 +1,10 @@
 import browser from "webextension-polyfill";
 import type { Theme } from "@/interface/types/Theme";
-import { getCommunityInstalledThemeIds } from "@/interface/utils/themeListFilters";
+import { getCommunityInstalledThemeIds, getStoreInstalledThemeIds } from "@/interface/utils/themeListFilters";
+import { normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth, isCloudAdmin } from "@/seqta/utils/CloudAuth";
 import {
   deleteCustomTheme,
   fetchCommunityThemes,
@@ -23,15 +24,23 @@ import {
   consumePendingCommunitySubmitThemeId,
   OPEN_COMMUNITY_SUBMIT_EVENT,
 } from "@/seqta/utils/openCommunityThemeSubmit";
-export type CommunityThemesTab = "browse" | "mine";
+export type CommunityThemesTab = "browse" | "mine" | "review";
 
 export class CommunityThemesState {
   innerTab = $state<CommunityThemesTab>("browse");
   cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
+  isAdmin = $state(isCloudAdmin(cloudAuth.state.user));
 
   browseThemes = $state<Theme[]>([]);
   browseLoading = $state(true);
   browseError = $state<string | null>(null);
+
+  reviewThemes = $state<Theme[]>([]);
+  reviewLoading = $state(false);
+  reviewError = $state<string | null>(null);
+  reviewStatusFilter = $state<"pending" | "approved" | "rejected">("pending");
+  reviewSourceFilter = $state<"" | "marketplace" | "community">("");
+  reviewPreviewError = $state<string | null>(null);
 
   myThemes = $state<CustomThemeOwner[]>([]);
   myLoading = $state(false);
@@ -62,13 +71,100 @@ export class CommunityThemesState {
 
   async refreshInstalledThemes() {
     const themes = await this.themeManager.getAvailableThemes();
-    this.currentThemes = getCommunityInstalledThemeIds(themes);
+    this.currentThemes = [
+      ...getCommunityInstalledThemeIds(themes),
+      ...getStoreInstalledThemeIds(themes),
+    ];
     this.selectedThemeId = this.themeManager.getSelectedThemeId() || "";
     this.installedThemeColors = Object.fromEntries(
       themes
         .filter((t) => t != null && t.installedFromCommunity === true)
         .map((t) => [t.id, t.defaultColour]),
     );
+  }
+
+  async syncAdminAccess() {
+    if (!this.cloudLoggedIn) {
+      this.isAdmin = false;
+      return;
+    }
+    if (isCloudAdmin(cloudAuth.state.user)) {
+      this.isAdmin = true;
+      return;
+    }
+    try {
+      const res = (await browser.runtime.sendMessage({ type: "fetchBsplusAdminMe" })) as {
+        success?: boolean;
+        data?: { admin_level?: number; id?: string; username?: string };
+        httpStatus?: number;
+      };
+      if (res?.success && res.data && cloudAuth.state.user) {
+        await cloudAuth.setUser({
+          ...cloudAuth.state.user,
+          admin_level: res.data.admin_level ?? cloudAuth.state.user.admin_level,
+          username: res.data.username ?? cloudAuth.state.user.username,
+        });
+      }
+    } catch {
+      // ignore — tab may need reload after extension update
+    }
+    this.isAdmin = isCloudAdmin(cloudAuth.state.user);
+  }
+
+  async loadReviewThemes() {
+    if (!this.isAdmin) return;
+    this.reviewLoading = true;
+    this.reviewError = null;
+    try {
+      const q = this.getSearchTerm().trim();
+      const res = (await browser.runtime.sendMessage({
+        type: "fetchBsplusAdminThemes",
+        status: this.reviewStatusFilter,
+        source: this.reviewSourceFilter || undefined,
+        search: q.length > 0 ? q : undefined,
+        limit: 50,
+      })) as { success?: boolean; data?: { themes?: unknown[] }; error?: unknown };
+      if (!res?.success || !Array.isArray(res.data?.themes)) {
+        throw new Error(
+          typeof res?.error === "string" ? res.error : "Could not load admin themes",
+        );
+      }
+      this.reviewThemes = res.data.themes
+        .map((row) => {
+          const theme = normalizeStoreTheme(row as Record<string, unknown>);
+          const source = (row as Record<string, unknown>).source;
+          theme.adminSource = source === "community" ? "community" : "marketplace";
+          const preview = (row as Record<string, unknown>).preview as
+            | { thumbnail?: string }
+            | undefined;
+          if (preview?.thumbnail) theme.coverImage = preview.thumbnail;
+          return theme;
+        })
+        .filter((t) => t.id.length > 0);
+    } catch (err) {
+      this.reviewError = err instanceof Error ? err.message : "Could not load admin themes";
+    } finally {
+      this.reviewLoading = false;
+    }
+  }
+
+  async previewAdminTheme(themeId: string, meta: Theme) {
+    const source = meta.adminSource ?? "community";
+    this.reviewPreviewError = null;
+    try {
+      const installedId = await this.themeManager.previewAdminTheme({
+        id: themeId,
+        source,
+        updated_at: meta.updated_at,
+      });
+      await this.themeManager.setTheme(installedId);
+      themeUpdates.triggerUpdate();
+      await this.refreshInstalledThemes();
+      this.selectedThemeId = installedId;
+      void browser.runtime.sendMessage({ type: "cloudSettingsRequestDebouncedUpload" }).catch(() => {});
+    } catch (err) {
+      this.reviewPreviewError = err instanceof Error ? err.message : "Preview failed";
+    }
   }
 
   async loadBrowseThemes() {
@@ -141,7 +237,6 @@ export class CommunityThemesState {
     const row = this.browseThemes.find((x) => x.id === themeId) ?? meta;
     const installedId = await this.themeManager.downloadCommunityTheme({
       id: themeId,
-      theme_json_url: row.theme_json_url,
       updated_at: row.updated_at,
     });
     await this.themeManager.setTheme(installedId);
@@ -219,8 +314,14 @@ export class CommunityThemesState {
     $effect(() => {
       const unsub = cloudAuth.subscribe((s) => {
         this.cloudLoggedIn = s.isLoggedIn;
+        this.isAdmin = isCloudAdmin(s.user);
       });
       return unsub;
+    });
+
+    $effect(() => {
+      if (this.cloudLoggedIn) void this.syncAdminAccess();
+      else this.isAdmin = false;
     });
 
     $effect(() => {
@@ -240,12 +341,20 @@ export class CommunityThemesState {
       this.statusFilter;
       if (this.innerTab === "mine" && this.cloudLoggedIn) void this.loadMyThemes();
     });
+
+    $effect(() => {
+      this.reviewStatusFilter;
+      this.reviewSourceFilter;
+      this.getSearchTerm();
+      if (this.innerTab === "review" && this.isAdmin) void this.loadReviewThemes();
+    });
   }
 
   mount() {
     const onThemesUpdated = () => void this.refreshInstalledThemes();
     themeUpdates.addListener(onThemesUpdated);
     void this.refreshInstalledThemes();
+    void this.syncAdminAccess();
 
     const openPageBuilderForSubmit = () => {
       const themeId = consumePendingCommunitySubmitThemeId() ?? undefined;

@@ -100,4 +100,29 @@ describe("cloud theme restoration", () => {
       [BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY]: "catalog-id",
     });
   });
+
+  it("installs via admin preview endpoints with auth", async () => {
+    const jsonUrl =
+      "https://betterseqta.org/api/bsplus/admin/themes/t1/theme.json?source=community";
+    (browser.runtime.sendMessage as jest.Mock).mockImplementation(async (msg) => {
+      if (msg.type === "fetchFromUrl" && msg.url.includes("/preview?")) {
+        return { data: { data: { theme_json_url: jsonUrl } } };
+      }
+      if (msg.type === "fetchFromUrl" && msg.url === jsonUrl && msg.auth === true) {
+        return {
+          data: { id: "t1", name: "Pending theme", CustomCSS: "body { color: green; }" },
+        };
+      }
+      return { error: "unexpected" };
+    });
+
+    const id = await ThemeManager.getInstance().previewAdminTheme({
+      id: "t1",
+      source: "community",
+    });
+    expect(id).toBe("t1");
+    expect(await localforage.getItem("t1")).toMatchObject({
+      installedFromCommunity: true,
+    });
+  });
 });

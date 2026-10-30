@@ -192,13 +192,36 @@ function handleFetchFromUrl(
     sendResponse({ error: "URL not allowed" });
     return false;
   }
-  fetch(url, { cache: "no-store" })
-    .then((r) => r.json())
-    .then((data) => sendResponse({ data }))
-    .catch((err) => {
+  void (async () => {
+    try {
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (request.auth === true) {
+        const token = await getAccessTokenFromStorage();
+        if (!token) {
+          sendResponse({ error: "Not authenticated" });
+          return;
+        }
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const r = await fetch(url, { cache: "no-store", headers });
+      const text = await r.text();
+      if (!r.ok) {
+        sendResponse({
+          error: text?.slice(0, 200) || `HTTP ${r.status}`,
+          httpStatus: r.status,
+        });
+        return;
+      }
+      try {
+        sendResponse({ data: text ? JSON.parse(text) : {} });
+      } catch {
+        sendResponse({ error: "Invalid JSON response" });
+      }
+    } catch (err) {
       console.error("[Background] fetchFromUrl error:", err);
-      sendResponse({ error: err?.message });
-    });
+      sendResponse({ error: (err as Error)?.message });
+    }
+  })();
   return true;
 }
 

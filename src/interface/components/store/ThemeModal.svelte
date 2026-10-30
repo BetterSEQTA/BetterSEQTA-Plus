@@ -29,6 +29,7 @@ onRequestSignIn,
 selectedThemeId = '',
 installedThemeColors = {},
 variant = 'official',
+adminPreviewMode = false,
 } = $props<{
 theme: Theme | null
 currentThemes: string[]
@@ -46,7 +47,9 @@ onRequestSignIn?: () => void
 selectedThemeId?: string
 installedThemeColors?: Record<string, string>
 variant?: 'official' | 'community'
+adminPreviewMode?: boolean
 }>()
+const installActionLabel = $derived(adminPreviewMode ? 'Preview & apply' : 'Install')
 const isCommunity = $derived(variant === 'community')
 const showFavorites = $derived(!isCommunity)
 function variantApplyStyles(variantId: string) {
@@ -254,12 +257,16 @@ By {theme.author}
 </p>
 {/if}
 <div class="flex gap-4 mb-4 text-sm text-zinc-600 dark:text-zinc-400">
+{#if !adminPreviewMode}
 <span class="flex items-center gap-1.5">
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>
 {modalDisplayDownloadCount.toLocaleString()} downloads
 </span>
+{:else}
+<span class="text-amber-700 dark:text-amber-300">Admin preview — does not count as a public download</span>
+{/if}
 {#if showFavorites}
 <span class="flex items-center gap-1.5">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
@@ -526,7 +533,7 @@ class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-bla
 <path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
 </svg>
 {/if}
-<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Install</span>
+<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">{installActionLabel}</span>
 </button>
 {/if}
 {/if}

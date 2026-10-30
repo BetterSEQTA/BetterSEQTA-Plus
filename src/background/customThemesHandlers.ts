@@ -286,6 +286,41 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
+  function handleFetchBsplusAdminMe(_request: unknown, sendResponse: MessageSender): boolean {
+    void (async () => {
+      try {
+        sendResponse(await customThemesJsonFetch("/api/bsplus/admin/me", {}, true));
+      } catch (err) {
+        sendResponse({
+          success: false,
+          error: err instanceof Error ? err.message : "Fetch failed",
+        });
+      }
+    })();
+    return true;
+  }
+
+  function handleFetchBsplusAdminThemes(request: any, sendResponse: MessageSender): boolean {
+    void (async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(request.page ?? 1));
+        params.set("limit", String(Math.min(Number(request.limit ?? 20) || 20, 100)));
+        if (request.status) params.set("status", String(request.status));
+        if (request.source) params.set("source", String(request.source));
+        const search = request.search?.trim();
+        if (search) params.set("search", search);
+        sendResponse(await customThemesJsonFetch(`/api/bsplus/admin/themes?${params}`, {}, true));
+      } catch (err) {
+        sendResponse({
+          success: false,
+          error: err instanceof Error ? err.message : "Fetch failed",
+        });
+      }
+    })();
+    return true;
+  }
+
   return {
     fetchCustomThemes: handleFetchCustomThemes,
     fetchMyCustomThemes: handleFetchMyCustomThemes,
@@ -294,5 +329,7 @@ export function createCustomThemesHandlers(deps: {
     replaceCustomThemeFiles: handleReplaceCustomThemeFiles,
     updateCustomThemeMetadata: handleUpdateCustomThemeMetadata,
     deleteCustomTheme: handleDeleteCustomTheme,
+    fetchBsplusAdminMe: handleFetchBsplusAdminMe,
+    fetchBsplusAdminThemes: handleFetchBsplusAdminThemes,
   };
 }

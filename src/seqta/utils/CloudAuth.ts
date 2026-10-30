@@ -36,6 +36,10 @@ export type CloudAuthState = {
   user: CloudUser | null;
 };
 
+export function isCloudAdmin(user: CloudUser | null | undefined): boolean {
+  return (user?.admin_level ?? 0) >= 1;
+}
+
 /** Callback invoked when auth state changes */
 type Listener = { (state: CloudAuthState): void };
 

@@ -592,10 +592,11 @@ export class ThemeManager {
   /**
    * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
    */
-  private async fetchFromUrl(url: string): Promise<any> {
+  private async fetchFromUrl(url: string, options?: { auth?: boolean }): Promise<any> {
     const result = (await browser.runtime.sendMessage({
       type: 'fetchFromUrl',
       url,
+      auth: options?.auth === true,
     })) as { data?: unknown; error?: string };
     if (result?.error) throw new Error(result.error);
     return result?.data;
@@ -635,6 +636,35 @@ export class ThemeManager {
       console.error("[ThemeManager] Error downloading community theme:", error);
       throw error;
     }
+  }
+
+  public async previewAdminTheme(themeContent: {
+    id: string;
+    source: "marketplace" | "community";
+    updated_at?: number;
+  }): Promise<string> {
+    if (!themeContent.id) throw new Error("Missing theme id");
+
+    const previewBody = (await this.fetchFromUrl(
+      `${this.THEME_API_BASE}/bsplus/admin/themes/${themeContent.id}/preview?source=${themeContent.source}`,
+      { auth: true },
+    )) as { data?: { theme_json_url?: string }; theme_json_url?: string };
+    const themeJsonUrl = previewBody?.data?.theme_json_url ?? previewBody?.theme_json_url;
+    if (!themeJsonUrl || !isAllowedFetchUrl(themeJsonUrl)) {
+      throw new Error("Failed to get admin theme preview URL");
+    }
+
+    const themeData = (await this.fetchFromUrl(themeJsonUrl, { auth: true })) as ThemeContent;
+    const fromCommunity = themeContent.source === "community";
+    await this.installTheme(
+      { ...themeData, id: themeContent.id },
+      {
+        fromStore: !fromCommunity,
+        fromCommunity,
+        serverUpdatedAtSec: themeContent.updated_at,
+      },
+    );
+    return themeContent.id;
   }
 
   private async downloadAndInstallCommunityTheme(themeContent: {
