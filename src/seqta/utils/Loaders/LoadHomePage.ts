@@ -507,8 +507,13 @@ function makeLessonDiv(lesson: any, num: number) {
     type,
   } = lesson;
 
+  const homeClassAttrs =
+    type === "class"
+      ? ` data-bsplus-meta-id="${metaID ?? ""}" data-bsplus-code="${code ?? ""}" data-bsplus-programme-id="${programmeID ?? ""}"`
+      : "";
+
   let lessonString = `
-      <div class="day" id="${code + num}" style="${colour}">
+      <div class="day" id="${code + num}" style="${colour}"${homeClassAttrs}>
         <h2>${type == "class" ? description : type == "tutorial" ? "Tutorial" : "Unknown"}</h2>
         <h3>${staff || "Unknown"}</h3>
         <h3>${room || (type == "tutorial" ? "Unknown" : "N/A")}</h3>

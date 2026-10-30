@@ -4,14 +4,12 @@
   import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
   import { runTimetableClassmatesSync } from "./syncOrchestrator";
   import { loadSession, resolveClassmatesScope } from "./rosterStore";
-  import { pluginSettingsStore } from "@/interface/pages/settings/pluginSettingsState.svelte";
   import { accountsAvailability } from "./accountsAvailability";
   import {
     openTimetableClassmatesOptInPopup,
     openTimetableClassmatesOptOutPopup,
   } from "./openTimetableClassmatesPopup";
 
-  const PLUGIN_ID = "timetable-classmates";
   const SETTINGS_CLOSE_MS = 320;
 
   let busy = $state(false);
@@ -47,10 +45,7 @@
     error = "";
     afterSettingsClosed(() => {
       openTimetableClassmatesOptInPopup({
-        onAccepted: async () => {
-          await pluginSettingsStore.update(PLUGIN_ID, "enabled", true);
-          await refreshStatus();
-        },
+        onAccepted: () => refreshStatus(),
       });
     });
   }

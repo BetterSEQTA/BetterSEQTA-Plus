@@ -5,10 +5,25 @@ import type { ArchivedMembers, ClassRosterIndex } from "./rosterMerge";
 import { rosterPeersForClass } from "./rosterMerge";
 import type { PeopleCache } from "./rosterStore";
 import { displayNameForSeqtaId } from "./peopleCache";
+import { classRosterKey } from "./classKeys";
 import { openClassmatesRosterPopup } from "./openTimetableClassmatesPopup";
 
 const STACK = "bsplus-classmate-stack";
 const AVATAR = "bsplus-classmate-avatar";
+
+/** Learn home `#day-container` tiles expose these attributes on class lessons. */
+export function classKeyForHomeDay(el: HTMLElement): string | null {
+  if (!el.hasAttribute("data-bsplus-meta-id") && !el.hasAttribute("data-bsplus-code")) {
+    return null;
+  }
+  const meta = parseInt(el.getAttribute("data-bsplus-meta-id") ?? "", 10);
+  const programme = parseInt(el.getAttribute("data-bsplus-programme-id") ?? "", 10);
+  return classRosterKey({
+    metaID: Number.isNaN(meta) ? undefined : meta,
+    code: el.getAttribute("data-bsplus-code")?.trim() || undefined,
+    programmeID: Number.isNaN(programme) ? undefined : programme,
+  });
+}
 
 export function isClassmatesPluginMutation(record: MutationRecord): boolean {
   const inStack = (el: Element | null) => Boolean(el?.closest(`.${STACK}`));
@@ -28,7 +43,8 @@ function avatarColumnWidth(host: HTMLElement): number {
   const scope =
     (host.classList.contains("entry") ? host : host.closest(".timetablepage .entry.class")) ??
     host.closest(".timetablepage .quickbar .meta") ??
-    host.closest(".timetablepage .days tbody td");
+    host.closest(".timetablepage .days tbody td") ??
+    host.closest("#day-container .day");
   if (!(scope instanceof HTMLElement)) return 0;
   const w = scope.getBoundingClientRect().width;
   return w > 0 ? w * 0.5 : 0;
@@ -165,7 +181,10 @@ export async function renderClassmateStackForEntry(
   if (existing?.dataset.bsplusPeers === signature) return;
   existing?.remove();
 
-  const classTitle = entry.querySelector(".title")?.textContent?.trim() ?? "";
+  const classTitle =
+    entry.querySelector(".title")?.textContent?.trim() ??
+    entry.querySelector("h2")?.textContent?.trim() ??
+    "";
   const stack = document.createElement("div");
   stack.className = STACK;
   stack.dataset.bsplusPeers = signature;

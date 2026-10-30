@@ -5,6 +5,7 @@ import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode"
 import { timetableClassmatesSettings } from "./settings";
 import styles from "./styles.css?inline";
 import {
+  classKeyForHomeDay,
   classKeyFromCi,
   findClassEntryByTitle,
   isClassmatesPluginMutation,
@@ -24,7 +25,10 @@ import { resolveStudentId } from "./seqtaClient";
 import { peerCloudIdsForPaint } from "./accountsClient";
 import { fetchSchoolYearEnrollmentSnapshot } from "./timetableYearSnapshot";
 import { CLASSMATES_TIMETABLE_POLL_MS } from "./constants";
-import { scheduleClassmatesSyncIfNeeded } from "./syncOrchestrator";
+import {
+  bindClassmatesOptInActivated,
+  scheduleClassmatesSyncIfNeeded,
+} from "./syncOrchestrator";
 import {
   mountClassmatesToolbarChip,
   unmountClassmatesToolbarChip,
@@ -51,7 +55,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
     };
     browser.runtime.onMessage.addListener(onSyncMessage);
 
-    let gridObserver: MutationObserver | null = null;
+    let domObserver: MutationObserver | null = null;
     let resizeObserver: ResizeObserver | null = null;
     let paintTimer: ReturnType<typeof setTimeout> | null = null;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
@@ -59,10 +63,35 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
 
     const schedulePaint = () => {
       if (paintTimer) clearTimeout(paintTimer);
-      paintTimer = setTimeout(() => void paintTimetable(), 120);
+      paintTimer = setTimeout(() => void paintStacks(), 120);
     };
 
-    const paintTimetable = async () => {
+    const startTimetablePoll = () => {
+      if (pollTimer) return;
+      scheduleClassmatesSyncIfNeeded(true);
+      pollTimer = setInterval(() => scheduleClassmatesSyncIfNeeded(), CLASSMATES_TIMETABLE_POLL_MS);
+    };
+
+    const armSyncIfOptedIn = async () => {
+      if (!(await loadSession()).syncOptIn) return;
+      void ensureCiToClassKey(() => fetchSchoolYearEnrollmentSnapshot()).catch(() => {});
+      startTimetablePoll();
+    };
+
+    bindClassmatesOptInActivated(() => {
+      if (document.querySelector(".timetablepage")) void armSyncIfOptedIn();
+      schedulePaint();
+    });
+
+    const watchRepaint = (root: Element) => {
+      domObserver ??= new MutationObserver((mutations) => {
+        if (mutations.every(isClassmatesPluginMutation)) return;
+        schedulePaint();
+      });
+      domObserver.observe(root, { childList: true, subtree: true });
+    };
+
+    const paintStacks = async () => {
       if (painting) return;
       painting = true;
       try {
@@ -71,9 +100,6 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
           removeClassmateStacks();
           return;
         }
-
-        const page = document.querySelector(".timetablepage");
-        if (!page) return;
 
         const selfId = await resolveStudentId();
         if (selfId == null) return;
@@ -86,10 +112,10 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
           peerCloudIdsForPaint(),
         ]);
 
-        const paintHost = (host: HTMLElement, ci: number | null) =>
+        const paintHost = (host: HTMLElement, classKey: string | null) =>
           renderClassmateStackForEntry(
             host,
-            classKeyFromCi(ci, ciMap),
+            classKey,
             roster,
             peopleCache,
             selfId,
@@ -102,27 +128,32 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
           return Number.isNaN(ci) ? null : ci;
         };
 
-        const paints = [...page.querySelectorAll(".entry.class")].map((entry) =>
-          paintHost(entry as HTMLElement, ciOf(entry)),
-        );
-
-        const quickbar = page.querySelector(".quickbar.visible[data-type='class']");
-        if (quickbar) {
-          const title = quickbar.querySelector(".title")?.textContent?.trim() ?? "";
-          const host =
-            (quickbar.querySelector(".meta") as HTMLElement | null) ?? (quickbar as HTMLElement);
-          paints.push(paintHost(host, ciOf(findClassEntryByTitle(page, title))));
+        const paints: Promise<void>[] = [];
+        const page = document.querySelector(".timetablepage");
+        if (page) {
+          paints.push(
+            ...[...page.querySelectorAll(".entry.class")].map((entry) =>
+              paintHost(entry as HTMLElement, classKeyFromCi(ciOf(entry), ciMap)),
+            ),
+          );
+          const quickbar = page.querySelector(".quickbar.visible[data-type='class']");
+          if (quickbar) {
+            const title = quickbar.querySelector(".title")?.textContent?.trim() ?? "";
+            const host =
+              (quickbar.querySelector(".meta") as HTMLElement | null) ?? (quickbar as HTMLElement);
+            paints.push(paintHost(host, ciOf(findClassEntryByTitle(page, title))));
+          }
         }
+
+        const homeDays = document.querySelectorAll<HTMLElement>("#day-container .day[data-bsplus-meta-id]");
+        for (const day of homeDays) {
+          paints.push(paintHost(day, classKeyForHomeDay(day)));
+        }
+
         await Promise.all(paints);
       } finally {
         painting = false;
       }
-    };
-
-    const startTimetablePoll = () => {
-      if (pollTimer) return;
-      scheduleClassmatesSyncIfNeeded();
-      pollTimer = setInterval(() => scheduleClassmatesSyncIfNeeded(), CLASSMATES_TIMETABLE_POLL_MS);
     };
 
     const handleTimetablePage = async () => {
@@ -133,48 +164,63 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
       }
 
       const page = document.querySelector(".timetablepage");
-      if ((await loadSession()).syncOptIn) {
-        void ensureCiToClassKey(() => fetchSchoolYearEnrollmentSnapshot()).catch(() => {});
-        startTimetablePoll();
-      }
-
+      await armSyncIfOptedIn();
       schedulePaint();
       void mountClassmatesToolbarChip();
 
-      if (page && !gridObserver) {
-        gridObserver = new MutationObserver((mutations) => {
-          if (mutations.every(isClassmatesPluginMutation)) return;
-          schedulePaint();
-        });
-        gridObserver.observe(page, { childList: true, subtree: true });
-
-        resizeObserver = new ResizeObserver(() => schedulePaint());
+      if (page) {
+        watchRepaint(page);
+        resizeObserver ??= new ResizeObserver(() => schedulePaint());
         resizeObserver.observe(page);
       }
+    };
+
+    const handleHomePage = async () => {
+      const container = document.getElementById("day-container");
+      if (!container) return;
+      try {
+        await waitForElm("#day-container .day", true, 50, 200);
+      } catch {
+        /* empty day */
+      }
+      watchRepaint(container);
+      schedulePaint();
     };
 
     const onUpdated = () => schedulePaint();
     window.addEventListener(CLASSMATES_UPDATED_EVENT, onUpdated);
 
-    const onClassEntryClick = (e: Event) => {
-      if ((e.target as HTMLElement).closest?.(".timetablepage .entry.class")) schedulePaint();
+    const onRepaintClick = (e: Event) => {
+      if (
+        (e.target as HTMLElement).closest?.(
+          ".timetablepage .entry.class, #day-container .day",
+        )
+      ) {
+        schedulePaint();
+      }
     };
-    document.addEventListener("click", onClassEntryClick, true);
+    document.addEventListener("click", onRepaintClick, true);
 
     const { unregister: unregisterEnabled } = api.settings.onChange("enabled", schedulePaint);
+    const { unregister: unregisterTimetable } = api.seqta.onMount(".timetablepage", handleTimetablePage);
+    const { unregister: unregisterHome } = api.seqta.onMount("#home-container", handleHomePage);
 
-    const { unregister } = api.seqta.onMount(".timetablepage", handleTimetablePage);
-    if ((await loadSession()).syncOptIn) scheduleClassmatesSyncIfNeeded();
+    if ((await loadSession()).syncOptIn) {
+      scheduleClassmatesSyncIfNeeded();
+      if (document.querySelector(".timetablepage")) startTimetablePoll();
+    }
 
     return () => {
-      unregister();
+      unregisterTimetable();
+      unregisterHome();
+      bindClassmatesOptInActivated(null);
       browser.runtime.onMessage.removeListener(onSyncMessage);
-      gridObserver?.disconnect();
+      domObserver?.disconnect();
       resizeObserver?.disconnect();
       if (paintTimer) clearTimeout(paintTimer);
       if (pollTimer) clearInterval(pollTimer);
       window.removeEventListener(CLASSMATES_UPDATED_EVENT, onUpdated);
-      document.removeEventListener("click", onClassEntryClick, true);
+      document.removeEventListener("click", onRepaintClick, true);
       unregisterEnabled();
       removeClassmateStacks();
       unmountClassmatesToolbarChip();

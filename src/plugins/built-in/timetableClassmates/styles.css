@@ -52,6 +52,26 @@
   position: relative;
 }
 
+.day-container .day:has(> .bsplus-classmate-stack) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  align-items: start;
+  column-gap: 4px;
+}
+
+.day-container .day:has(> .bsplus-classmate-stack) > :not(.bsplus-classmate-stack) {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.day-container .day:has(> .bsplus-classmate-stack) > .bsplus-classmate-stack {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: start;
+  justify-self: end;
+  margin: 2px 4px 0 0;
+}
+
 .bsplus-classmate-avatar {
   width: 20px;
   height: 20px;

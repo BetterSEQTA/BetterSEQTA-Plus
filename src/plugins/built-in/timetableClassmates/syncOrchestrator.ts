@@ -43,12 +43,19 @@ import { buildSharePayload } from "./relayPayload";
 import { runRelayRoundTrip, sendRelayRevoke, type RelaySnapshotShare } from "./relayClient";
 import type { ClassRef } from "./classKeys";
 import { CLASSMATES_PEER_REFRESH_MS } from "./constants";
+import { pluginSettingsStore } from "@/interface/pages/settings/pluginSettingsState.svelte";
 
 const HEARTBEAT_MIN_MS = 15 * 60 * 1000;
+const PLUGIN_ID = "timetable-classmates";
 
 export type SyncRunResult = { ok: boolean; error?: string; peers?: number };
 
 let syncChain: Promise<void> = Promise.resolve();
+let onOptInActivated: (() => void) | null = null;
+
+export function bindClassmatesOptInActivated(fn: (() => void) | null): void {
+  onOptInActivated = fn;
+}
 
 export function scheduleClassmatesSyncIfNeeded(force = false): void {
   syncChain = syncChain
@@ -100,6 +107,8 @@ export async function registerOptIn(): Promise<{ ok: boolean; error?: string }> 
   if (scope) await setScopeSyncOptIn(scope, true);
   await patchSession({ syncOptIn: true, showAvatars: true });
   const sync = await runTimetableClassmatesSync();
+  await pluginSettingsStore.update(PLUGIN_ID, "enabled", true);
+  onOptInActivated?.();
   if (!sync.ok) {
     return { ok: true, error: sync.error ?? "Opt-in saved but initial sync failed." };
   }
