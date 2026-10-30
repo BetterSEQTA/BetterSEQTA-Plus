@@ -23,6 +23,12 @@ import {
   resolveFeatureMode,
   shouldHideFeature,
 } from "./apply";
+import { scheduleReconcileRemoteTheme } from "./remoteTheme";
+
+export {
+  dismissOptionalRemoteTheme,
+  resolveEffectiveRemoteTheme,
+} from "./remoteTheme";
 
 let snapshot: RemoteConfigSnapshot = normalizeRemoteConfigSnapshot(null);
 let localOverride = false;
@@ -30,6 +36,11 @@ let hiddenUntilVersion: Record<string, string> = {};
 let campaignSeen: CampaignSeenRecord = {};
 
 const SNAPSHOT_FETCH_TIMEOUT_MS = 200;
+
+function kickRemoteSideEffects(): void {
+  scheduleReconcileRemoteTheme(snapshot);
+  void import("./routeGate").then((m) => m.syncRouteEnhancementChrome());
+}
 
 export function getRemoteConfigSnapshot(): RemoteConfigSnapshot {
   return snapshot;
@@ -119,6 +130,7 @@ export async function hydrateRemoteConfigFromStorage(): Promise<RemoteConfigSnap
     (stored[BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY] as Record<string, string>) ?? {},
     (stored[BSPLUS_CAMPAIGN_SEEN_KEY] as CampaignSeenRecord) ?? {},
   );
+  kickRemoteSideEffects();
   return snapshot;
 }
 
@@ -137,7 +149,10 @@ export function notifyRemoteConfigPageContext(hostname: string): void {
 export async function markCampaignSeen(campaignId: string, ack?: boolean): Promise<void> {
   campaignSeen = {
     ...campaignSeen,
-    [campaignId]: { seenAt: new Date().toISOString(), ack },
+    [campaignId]: {
+      seenAt: new Date().toISOString(),
+      ...(ack === true ? { ack: true } : ack === false ? { ack: false } : {}),
+    },
   };
   await browser.storage.local.set({ [BSPLUS_CAMPAIGN_SEEN_KEY]: campaignSeen });
 }
@@ -154,6 +169,7 @@ export function installRemoteConfigStorageListener(onEffectiveChange: () => void
     if (area !== "local") return;
     if (!Object.keys(changes).some((k) => REMOTE_STORAGE_WATCH_KEYS.has(k))) return;
     void hydrateRemoteConfigFromStorage().then(() => {
+      kickRemoteSideEffects();
       const next = isEffectiveBsplusEnabled();
       if (next !== priorEnabled) {
         priorEnabled = next;

@@ -12,6 +12,7 @@ export function openRemoteCampaignPopup(
 ): void {
   const title = campaign.header?.title ?? "BetterSEQTA+";
   const subtitle = campaign.header?.subtitle ?? "";
+  let acknowledged = false;
 
   const header = stringToHTML(
     /* html */ `<div class="whatsnewHeader"><h1>${title}</h1>${subtitle ? `<p>${subtitle}</p>` : ""}</div>`,
@@ -66,7 +67,7 @@ export function openRemoteCampaignPopup(
         requestSettingsDestination({ section: btn.section });
         await openSettingsPopup();
       }
-      await markCampaignSeen(campaign.id, campaign.requireAcknowledge === true);
+      if (campaign.requireAcknowledge) acknowledged = true;
       await closePopup();
     },
   }));
@@ -77,7 +78,10 @@ export function openRemoteCampaignPopup(
     animateSelector: ".whatsnewImgContainer, .whatsnewTextContainer *",
     actions,
     afterClose: () => {
-      void markCampaignSeen(campaign.id);
+      void markCampaignSeen(
+        campaign.id,
+        campaign.requireAcknowledge ? acknowledged : undefined,
+      );
       onDismissed?.();
     },
   });

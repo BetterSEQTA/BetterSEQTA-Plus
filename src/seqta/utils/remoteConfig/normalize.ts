@@ -1,4 +1,9 @@
-import type { RemoteConfigSnapshot, RemoteFeatureGate, RemoteGlobalConfig } from "./types";
+import type {
+  RemoteConfigSnapshot,
+  RemoteFeatureGate,
+  RemoteGlobalConfig,
+  RemoteThemeDirective,
+} from "./types";
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigSnapshot = {
   configVersion: "0",
@@ -6,6 +11,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigSnapshot = {
   global: { mode: "on", allowLocalOverride: true },
   features: {},
   campaigns: [],
+  remoteTheme: null,
 };
 
 function normalizeGlobal(raw: unknown): RemoteGlobalConfig {
@@ -83,6 +89,38 @@ function normalizeFeatures(raw: unknown): Record<string, RemoteFeatureGate> {
   return out;
 }
 
+function normalizeRemoteTheme(raw: unknown): RemoteThemeDirective | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const mode = r.mode;
+  if (mode !== "off" && mode !== "optional" && mode !== "forced") return null;
+  const packageId = typeof r.packageId === "string" ? r.packageId.trim() : "";
+  const packageVersion =
+    typeof r.packageVersion === "string" ? r.packageVersion.trim() : "";
+  if (!packageId || !packageVersion) return null;
+  if (mode === "off") return null;
+  const msg = r.message;
+  return {
+    packageId,
+    packageVersion,
+    mode,
+    activeFrom: typeof r.activeFrom === "string" ? r.activeFrom : undefined,
+    activeTo: typeof r.activeTo === "string" ? r.activeTo : undefined,
+    allowUserOptOut: r.allowUserOptOut !== false,
+    message:
+      msg && typeof msg === "object"
+        ? {
+            title: typeof (msg as { title?: string }).title === "string"
+              ? (msg as { title: string }).title
+              : undefined,
+            body: typeof (msg as { body?: string }).body === "string"
+              ? (msg as { body: string }).body
+              : undefined,
+          }
+        : undefined,
+  };
+}
+
 export function normalizeRemoteConfigSnapshot(raw: unknown): RemoteConfigSnapshot {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_REMOTE_CONFIG };
   const r = raw as Record<string, unknown>;
@@ -102,6 +140,7 @@ export function normalizeRemoteConfigSnapshot(raw: unknown): RemoteConfigSnapsho
     global: normalizeGlobal(data.global),
     features: normalizeFeatures(data.features),
     campaigns: Array.isArray(data.campaigns) ? (data.campaigns as RemoteConfigSnapshot["campaigns"]) : [],
+    remoteTheme: normalizeRemoteTheme(data.remoteTheme),
   };
 }
 
@@ -116,5 +155,6 @@ export function mergeGithubConfigFiles(
     global: files.global ?? {},
     features: files.features ?? {},
     campaigns: files.campaigns ?? [],
+    remoteTheme: files.remoteTheme ?? null,
   });
 }

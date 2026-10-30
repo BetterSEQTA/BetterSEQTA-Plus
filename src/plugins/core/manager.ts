@@ -14,6 +14,10 @@ import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
 import { isRemotePluginStartAllowed } from "@/seqta/utils/remoteConfig/runtime";
+import {
+  isRemoteRouteEnhancementsStripped,
+  ROUTE_STRIP_KEEP_PLUGINS,
+} from "@/seqta/utils/remoteConfig/routeGate";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
@@ -245,6 +249,12 @@ export class PluginManager {
     if (!isRemotePluginStartAllowed(plugin.id)) {
       return false;
     }
+    if (
+      isRemoteRouteEnhancementsStripped() &&
+      !ROUTE_STRIP_KEEP_PLUGINS.has(plugin.id)
+    ) {
+      return false;
+    }
     if (!plugin.disableToggle) return true;
     const all = settingsState.getAll() as unknown as Record<string, unknown>;
     const stored = all[`plugin.${plugin.id}.settings`] as PluginSettingsStorage | undefined;
@@ -338,6 +348,13 @@ export class PluginManager {
    */
   public stopAllPlugins(): void {
     Array.from(this.plugins.keys()).forEach((id) => this.stopPlugin(id));
+  }
+
+  public async stopPluginsExcept(keepIds: ReadonlySet<string>): Promise<void> {
+    const stops = Array.from(this.plugins.keys())
+      .filter((id) => !keepIds.has(id))
+      .map((id) => this.stopPlugin(id));
+    await Promise.allSettled(stops);
   }
 
   /**

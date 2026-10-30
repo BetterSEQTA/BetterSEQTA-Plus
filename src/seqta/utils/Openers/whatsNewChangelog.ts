@@ -5,7 +5,7 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    "title": "3.7.6 - Community Theme Submitter Badges,",
+    "title": "3.7.6 - Timetable Sharing Fixes, Better Update resilience & Community Theme Submitter Badges,",
     "items": [
       "Improved releiability of opening the connection for Timetable Sharing.",
       "Added a new submitter badge for community theme submitters.",

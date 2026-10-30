@@ -21,6 +21,26 @@ describe("normalizeRemoteConfigSnapshot", () => {
     expect(snap.global.mode).toBe("off");
     expect(snap.global.statusMessage).toBe("Maintenance");
   });
+
+  it("normalizes remoteTheme directive", () => {
+    const snap = normalizeRemoteConfigSnapshot({
+      configVersion: "10",
+      remoteTheme: {
+        packageId: "pkg",
+        packageVersion: "1",
+        mode: "optional",
+      },
+    });
+    expect(snap.remoteTheme?.packageId).toBe("pkg");
+    expect(snap.remoteTheme?.mode).toBe("optional");
+  });
+
+  it("drops invalid remoteTheme", () => {
+    const snap = normalizeRemoteConfigSnapshot({
+      remoteTheme: { mode: "forced" },
+    });
+    expect(snap.remoteTheme).toBeNull();
+  });
 });
 
 describe("mergeGithubConfigFiles", () => {

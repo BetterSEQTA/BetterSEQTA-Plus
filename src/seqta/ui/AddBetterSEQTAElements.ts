@@ -24,6 +24,7 @@ import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
+import { remoteChromeGateAllowed } from "@/seqta/utils/remoteConfig/routeGate";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
 import {
   installSidebarDrillReturn,
@@ -162,7 +163,9 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
-    maybeSetupSidebarAccessibility();
+    if (remoteChromeGateAllowed("ui.sidebar.styled")) {
+      maybeSetupSidebarAccessibility();
+    }
   }
 
   addExtensionSettings();

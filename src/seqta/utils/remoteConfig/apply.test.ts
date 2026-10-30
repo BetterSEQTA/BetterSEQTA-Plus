@@ -121,6 +121,14 @@ describe("hydrateRemoteConfigFromStorage", () => {
     jest.doMock("@/seqta/utils/listeners/SettingsState", () => ({
       settingsState: { onoff: true },
     }));
+    jest.doMock("./routeGate", () => ({
+      syncRouteEnhancementChrome: jest.fn(async () => {}),
+    }));
+    jest.doMock("./remoteTheme", () => ({
+      scheduleReconcileRemoteTheme: jest.fn(),
+      dismissOptionalRemoteTheme: jest.fn(),
+      resolveEffectiveRemoteTheme: jest.fn(),
+    }));
     const { hydrateRemoteConfigFromStorage, notifyRemoteConfigPageContext } = await import("./runtime");
     await hydrateRemoteConfigFromStorage();
     notifyRemoteConfigPageContext("learn.example.edu.au");

@@ -11,6 +11,9 @@ import {
   BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY,
   BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY,
   BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY,
+  BSPLUS_REMOTE_THEME_BEFORE_V1_KEY,
+  BSPLUS_REMOTE_THEME_STATE_V1_KEY,
+  BSPLUS_REMOTE_THEME_USER_OFF_KEY,
 } from "@/seqta/utils/remoteConfig/storageKeys";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
@@ -64,6 +67,9 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY,
   BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY,
   BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY,
+  BSPLUS_REMOTE_THEME_BEFORE_V1_KEY,
+  BSPLUS_REMOTE_THEME_STATE_V1_KEY,
+  BSPLUS_REMOTE_THEME_USER_OFF_KEY,
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
 ] as const;
 
@@ -88,6 +94,9 @@ const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   "bsplus_lastCloudPoll",
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
+  "bsplus_remote_theme_before_v1",
+  "bsplus_remote_theme_state_v1",
+  "bsplus_remote_theme_user_off",
 ] as const;
 
 /** After restoring from cloud, keep local session so the user stays signed in. */
@@ -356,6 +365,19 @@ export function migrateLegacyToPluginSettings(data: Record<string, unknown>): Re
   }
 
   return result;
+}
+
+/**
+ * Apply a flat settings record (e.g. remote theme restore snapshot).
+ */
+export async function applyLocalSettingsRecord(flat: Record<string, unknown>): Promise<void> {
+  await applyDownloadedEnvelope(flat);
+}
+
+/** Snapshot of keys eligible for cloud upload — used for remote theme restore capture. */
+export async function captureSyncableSettingsSnapshot(): Promise<Record<string, unknown>> {
+  const all = (await browser.storage.local.get()) as Record<string, unknown>;
+  return normalizeStorageForSync(all);
 }
 
 /**

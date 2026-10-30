@@ -19,6 +19,7 @@
   const isEngage = isSeqtaEngageExperience();
   const onoffGate = $derived(checkRemoteFeature("settings.control.onoff"));
   const onoffGreyedOut = $derived(onoffGate.mode === "greyout");
+  const sidebarEditHidden = $derived(checkRemoteFeature("ui.sidebar.edit").hide);
 
   const generalOptions = $derived([
     {
@@ -42,7 +43,7 @@
         onChange: (isOn: boolean) => (settingsState.performanceMode = isOn),
       },
     },
-    ...(!isEngage
+    ...(!isEngage && !sidebarEditHidden
       ? [
           {
             title: "Edit Sidebar Layout",

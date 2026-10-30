@@ -1,8 +1,10 @@
 <script lang="ts">
   import {
+    dismissOptionalRemoteTheme,
     getRemoteConfigSnapshot,
     isEffectiveBsplusEnabled,
     isRemoteKillActive,
+    resolveEffectiveRemoteTheme,
     setLocalOverrideOnoff,
   } from "@/seqta/utils/remoteConfig/runtime";
   import { getRemoteStatusMessage } from "@/seqta/utils/remoteConfig/apply";
@@ -14,15 +16,22 @@
   let localOverride = $state(false);
 
   const snapshot = $derived(getRemoteConfigSnapshot());
+  const activeTheme = $derived(resolveEffectiveRemoteTheme(snapshot));
   const killActive = $derived(isRemoteKillActive());
   const statusMessage = $derived(getRemoteStatusMessage(snapshot));
   const allowOverride = $derived(snapshot.global.allowLocalOverride !== false);
   const showStrip = $derived(
     killActive ||
+      activeTheme?.mode === "optional" ||
       !!statusMessage ||
       !!snapshot.global.maintenance?.body ||
       !!snapshot.global.maintenance?.title,
   );
+
+  async function turnOffOptionalTheme() {
+    await dismissOptionalRemoteTheme(snapshot);
+    location.reload();
+  }
 
   onMount(() => {
     void browser.storage.local.get("bsplus_local_override_onoff").then((stored) => {
@@ -47,10 +56,21 @@
     role="status"
   >
     <p class="leading-relaxed">
-      {statusMessage ??
-        "BetterSEQTA+ is temporarily limited. You can review settings for details."}
+      {activeTheme?.mode === "optional" && activeTheme.message?.body
+        ? activeTheme.message.body
+        : statusMessage ??
+          "BetterSEQTA+ is temporarily limited. You can review settings for details."}
     </p>
     <div class="mt-2 flex flex-wrap items-center gap-2">
+      {#if activeTheme?.mode === "optional" && snapshot.remoteTheme?.allowUserOptOut !== false}
+        <button
+          type="button"
+          class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+          onclick={() => void turnOffOptionalTheme()}
+        >
+          Turn off school theme
+        </button>
+      {/if}
       {#if killActive && !isEffectiveBsplusEnabled() && allowOverride}
         <button
           type="button"

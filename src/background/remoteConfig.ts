@@ -283,10 +283,87 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
     return true;
   }
 
+  function handleFetchRemoteThemePackage(
+    req: { packageId?: string },
+    sendResponse: MessageSender,
+  ): boolean {
+    const packageId = typeof req.packageId === "string" ? req.packageId.trim() : "";
+    if (!packageId) {
+      sendResponse({ error: "Missing packageId" });
+      return false;
+    }
+    void (async () => {
+      try {
+        const hostname = await readLastHostname();
+        const params = new URLSearchParams({
+          installId: await getOrCreateInstallId(),
+          extensionVersion: extensionVersion(),
+          channel: extensionChannel(),
+        });
+        if (hostname) params.set("hostname", hostname);
+        const base = apiBase();
+        const url = `${base}/api/bsplus/remote-theme-packages/${encodeURIComponent(packageId)}?${params}`;
+        if (!isAllowedFetchUrl(url)) {
+          sendResponse({ error: "URL not allowed" });
+          return;
+        }
+        const r = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
+        if (!r.ok) {
+          sendResponse({ error: `HTTP ${r.status}` });
+          return;
+        }
+        const json = await parseJson(r);
+        if (!json || typeof json !== "object") {
+          sendResponse({ error: "Invalid package response" });
+          return;
+        }
+        sendResponse({ package: json });
+      } catch (e) {
+        sendResponse({
+          error: e instanceof Error ? e.message : "Fetch failed",
+        });
+      }
+    })();
+    return true;
+  }
+
+  function handleFetchRemoteThemePackageUrl(
+    req: { url?: string },
+    sendResponse: MessageSender,
+  ): boolean {
+    const url = typeof req.url === "string" ? req.url.trim() : "";
+    if (!url || !isAllowedFetchUrl(url)) {
+      sendResponse({ error: "URL not allowed" });
+      return false;
+    }
+    void (async () => {
+      try {
+        const r = await fetch(url, { cache: "no-store" });
+        if (!r.ok) {
+          sendResponse({ error: `HTTP ${r.status}` });
+          return;
+        }
+        const theme = await parseJson(r);
+        if (!theme || typeof theme !== "object") {
+          sendResponse({ error: "Invalid theme JSON" });
+          return;
+        }
+        sendResponse({ theme });
+      } catch (e) {
+        sendResponse({
+          error: e instanceof Error ? e.message : "Fetch failed",
+        });
+      }
+    })();
+    return true;
+  }
+
   return {
     refreshRemoteConfig: handleRefresh,
     getRemoteConfigSnapshot: handleGetSnapshot,
     setRemoteConfigPageContext: handleSetPageContext,
+    fetchRemoteThemePackage: handleFetchRemoteThemePackage,
+    fetchRemoteThemePackageUrl: handleFetchRemoteThemePackageUrl,
   };
 }
 

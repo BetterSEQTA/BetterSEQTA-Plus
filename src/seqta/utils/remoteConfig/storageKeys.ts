@@ -9,6 +9,10 @@ export const BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY = "bsplus_remote_config_fetched
 export const BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY = "bsplus_remote_config_last_hostname";
 export const BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY = "bsplus_remote_last_primary_ok";
 
+export const BSPLUS_REMOTE_THEME_BEFORE_V1_KEY = "bsplus_remote_theme_before_v1";
+export const BSPLUS_REMOTE_THEME_STATE_V1_KEY = "bsplus_remote_theme_state_v1";
+export const BSPLUS_REMOTE_THEME_USER_OFF_KEY = "bsplus_remote_theme_user_off";
+
 export const REMOTE_CONFIG_ALARM = "bsplus_remote_config_poll";
 export const REMOTE_CONFIG_POLL_MINUTES = 20;
 export const REGISTER_INTERVAL_MS = 24 * 60 * 60 * 1000;

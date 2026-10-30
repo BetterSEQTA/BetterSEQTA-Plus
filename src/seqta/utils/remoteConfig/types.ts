@@ -49,6 +49,18 @@ export type RemoteCampaign = {
   maxVersion?: string;
 };
 
+export type RemoteThemeMode = "off" | "optional" | "forced";
+
+export type RemoteThemeDirective = {
+  packageId: string;
+  packageVersion: string;
+  mode: RemoteThemeMode;
+  activeFrom?: string;
+  activeTo?: string;
+  message?: { title?: string; body?: string };
+  allowUserOptOut?: boolean;
+};
+
 export type RemoteConfigSnapshot = {
   configVersion: string;
   etag?: string;
@@ -56,6 +68,7 @@ export type RemoteConfigSnapshot = {
   global: RemoteGlobalConfig;
   features: Record<string, RemoteFeatureGate>;
   campaigns: RemoteCampaign[];
+  remoteTheme?: RemoteThemeDirective | null;
 };
 
 export type CampaignSeenRecord = Record<
