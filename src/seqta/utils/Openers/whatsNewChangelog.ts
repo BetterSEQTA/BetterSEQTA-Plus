@@ -5,6 +5,14 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
+    "title": "3.7.5 - Timetable Sharing Fixes",
+    "items": [
+      "Fixed the Sync with Friends button disappearing when classmate avatars fail to load.",
+      "Sharing and sync controls now pause during BetterSEQTA Cloud outages and recover automatically.",
+      "Timetable sync failures now show an error."
+    ]
+  },
+  {
     "title": "3.7.4 - Performance Mode, Timetable syncing with Friends and Calendars, Sidebar Customisation, new loading animations & Bugfix Bundle",
     "items": [
       "Added Performance Mode in General settings dramatically improving performance with little sacrifice to looks.",
