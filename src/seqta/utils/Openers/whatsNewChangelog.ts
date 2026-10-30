@@ -7,6 +7,7 @@ export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
     "title": "3.7.6 - Community Theme Submitter Badges,",
     "items": [
+      "Improved releiability of opening the connection for Timetable Sharing.",
       "Added a new submitter badge for community theme submitters.",
       "Added ability for Admin's to view unreleased community themes for QA.",
       "Added ability for BetterSEQTA+ features to be dynamically configured remotly to negate compatability issues."
