@@ -22,6 +22,10 @@ import {
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
 import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
 import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
+import {
+  applyPageFeatureGateEarly,
+  injectPageFeatureBanner,
+} from "@/seqta/utils/remoteConfig/runtime";
 
 let lessonInterval: ReturnType<typeof setInterval> | null = null;
 let homeTeardown: (() => void) | null = null;
@@ -36,6 +40,8 @@ function clearLessonInterval(): void {
 }
 
 export async function loadHomePage() {
+  if (applyPageFeatureGateEarly("home")) return;
+
   homeTeardown?.();
   homeTeardown = null;
   clearLessonInterval();
@@ -99,6 +105,8 @@ export async function loadHomePage() {
       </div>`);
 
   homeContainer.appendChild(skeletonStructure.firstChild!);
+  injectPageFeatureBanner("home", "#home-container");
+  injectPageFeatureBanner("home", "#home-container");
 
   if (settingsState.animations) {
     animate(

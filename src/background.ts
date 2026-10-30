@@ -19,7 +19,12 @@ import {
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
 } from "./background/calendarBackground";
-import { createCustomThemesHandlers } from "./background/customThemesHandlers";
+import {
+  createRemoteConfigHandlers,
+  initRemoteConfigBackground,
+  refreshRemoteConfig,
+} from "./background/remoteConfig";
+import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 
@@ -515,8 +520,11 @@ const customThemesHandlers = createCustomThemesHandlers({
   getAccessTokenFromStorage,
 });
 
+const remoteConfigHandlers = createRemoteConfigHandlers(apiBase);
+
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   ...customThemesHandlers,
+  ...remoteConfigHandlers,
   searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
   setDevApiBase: handleSetDevApiBase,
@@ -765,7 +773,14 @@ browser.runtime.onInstalled.addListener(function (event) {
     void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
     void resetThemeOfTheMonthDisabledFor366Upgrade(event.previousVersion);
     void resetThemeOfTheMonthDismissalFor370Upgrade(event.previousVersion);
+    void browser.storage.local.remove(BSPLUS_INSTALL_REGISTERED_AT_KEY).then(() => {
+      void refreshRemoteConfig(apiBase);
+    });
     reloadSeqtaPages();
+  }
+
+  if (event.reason === "install") {
+    void refreshRemoteConfig(apiBase);
   }
 });
 
@@ -774,5 +789,6 @@ browser.runtime.onStartup.addListener(() => {
 });
 
 initCloudSettingsAutoSync({ reloadSeqtaPages });
+initRemoteConfigBackground(apiBase);
 initTimetableClassmatesBackgroundSync();
 void ensureSyncableStorageDefaults();

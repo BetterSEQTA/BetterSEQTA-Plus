@@ -13,6 +13,7 @@ import { createPluginAPI } from "./createAPI";
 import browser from "webextension-polyfill";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
+import { isRemotePluginStartAllowed } from "@/seqta/utils/remoteConfig/runtime";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
@@ -239,6 +240,9 @@ export class PluginManager {
 
   private shouldStartPlugin(plugin: Plugin): boolean {
     if (settingsState.onoff === false || !isPluginAllowedInPerformanceMode(plugin.id)) {
+      return false;
+    }
+    if (!isRemotePluginStartAllowed(plugin.id)) {
       return false;
     }
     if (!plugin.disableToggle) return true;

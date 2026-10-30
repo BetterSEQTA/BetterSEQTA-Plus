@@ -7,8 +7,14 @@ import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
 import { verboseInfo } from "@/utils/verboseLog";
+import {
+  applyPageFeatureGateEarly,
+  injectPageFeatureBanner,
+} from "@/seqta/utils/remoteConfig/runtime";
 
 export async function SendNewsPage() {
+  if (applyPageFeatureGateEarly("news")) return;
+
   verboseInfo("[BetterSEQTA+] Started Loading News Page");
   document.title = "News ― SEQTA Learn";
   await delay(10);
@@ -47,6 +53,7 @@ export async function SendNewsPage() {
   </div>`);
 
   main.append(html.firstChild!);
+  injectPageFeatureBanner("news", "#news-container");
 
   void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
     mod.setCustomTitleBarText("News");
@@ -121,7 +128,6 @@ export async function SendNewsPage() {
     fragment.append(newsarticle);
   });
 
-  // Single DOM update to append all articles
   newscontainer?.append(fragment);
 
   if (!settingsState.animations) return;

@@ -16,6 +16,7 @@ import {
   type FeedbackProduct,
 } from "./constants";
 import { getOrCreateInstallId } from "./installId";
+import { isRemoteFeedbackSubmitDisabled } from "@/seqta/utils/remoteConfig/runtime";
 
 export class FeedbackApiError extends Error {
   constructor(
@@ -143,6 +144,14 @@ async function throwApiError(res: Response): Promise<never> {
 export async function submitFeedback(form: FeedbackFormInput): Promise<{ id: string }> {
   const err = validateFeedbackForm(form);
   if (err) throw new FeedbackApiError(err, 422);
+
+  if (isRemoteFeedbackSubmitDisabled()) {
+    throw new FeedbackApiError(
+      "Feedback submissions are temporarily disabled.",
+      503,
+      "REMOTE_DISABLED",
+    );
+  }
 
   const installId = await getOrCreateInstallId();
   const host = getInstanceHostname();

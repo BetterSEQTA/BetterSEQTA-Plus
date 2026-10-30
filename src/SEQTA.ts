@@ -12,6 +12,14 @@ import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle
 import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 import { installThemeImagePagePatch } from "@/seqta/utils/patchThemeImagesPageContext";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
+import {
+  hydrateRemoteConfigFromStorage,
+  installRemoteConfigStorageListener,
+  isEffectiveBsplusEnabled,
+  notifyRemoteConfigPageContext,
+  ensureKilledModeSettingsAccess,
+} from "@/seqta/utils/remoteConfig/runtime";
+import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -113,14 +121,27 @@ async function init() {
         await delay(5);
       }
 
-      await main();
+      await hydrateRemoteConfigFromStorage();
+      notifyRemoteConfigPageContext(location.hostname);
+      installRemoteConfigStorageListener(() => {
+        location.reload();
+      });
 
-      const { init: Monofile } = await import("@/plugins/monofile");
-      Monofile();
+      const bsplusEnabled = isEffectiveBsplusEnabled();
 
-      if (settingsState.onoff) {
-        const { initializePlugins } = await import("@/plugins/index");
-        await initializePlugins();
+      if (bsplusEnabled) {
+        await main();
+
+        const { init: Monofile } = await import("@/plugins/monofile");
+        Monofile();
+
+        if (settingsState.onoff) {
+          const { initializePlugins } = await import("@/plugins/index");
+          await initializePlugins();
+        }
+      } else {
+        await ensureKilledModeSettingsAccess();
+        void runStartupPopupQueue();
       }
 
       if (settingsState.devMode) {

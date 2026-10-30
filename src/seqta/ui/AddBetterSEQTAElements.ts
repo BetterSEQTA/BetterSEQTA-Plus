@@ -23,6 +23,7 @@ import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
 import {
   installSidebarDrillReturn,
@@ -143,8 +144,12 @@ export async function AddBetterSEQTAElements() {
     const menu = document.getElementById("menu")!;
     const menuList = menu.firstChild as HTMLElement;
 
-    createHomeButton(fragment, menuList);
-    createNewsButton(fragment, menu);
+    if (!checkRemoteFeature("page.home").hide) {
+      createHomeButton(fragment, menuList);
+    }
+    if (!checkRemoteFeature("page.news").hide) {
+      createNewsButton(fragment, menu);
+    }
 
     menuList.insertBefore(fragment, menuList.firstChild);
 

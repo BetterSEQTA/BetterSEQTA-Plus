@@ -1,3 +1,5 @@
+import semver from "semver";
+import browser from "webextension-polyfill";
 import { settingsState } from "../listeners/SettingsState";
 import { OpenWhatsNewPopup } from "./OpenWhatsNewPopup";
 import {
@@ -17,25 +19,40 @@ import {
   openTermsOfServicePopup,
   shouldShowTermsOfServicePopup,
 } from "./OpenTermsOfServicePopup";
+import { getCampaignSeen, getRemoteConfigSnapshot } from "@/seqta/utils/remoteConfig/runtime";
+import type { RemoteCampaign } from "@/seqta/utils/remoteConfig/types";
+import { openRemoteCampaignPopup } from "./openRemoteCampaignPopup";
 
 type QueueStep = (goNext: () => void) => void;
 
-/**
- * Runs startup modals in order: What's New (if the extension just updated),
- * Courses/Assessments fix notice (only if features are off),
- * Theme of the Month (when the user hasn't dismissed this calendar month),
- * feedback reply notifications for pending submissions, then terms of service
- * acceptance (always last, and only once signed in to Cloud).
- */
+function remoteCampaignSteps(): QueueStep[] {
+  const now = Date.now();
+  const version = browser.runtime.getManifest().version;
+  const seen = getCampaignSeen();
+
+  return [...getRemoteConfigSnapshot().campaigns]
+    .filter((c) => {
+      if (!c.id) return false;
+      if (c.activeFrom && now < Date.parse(c.activeFrom)) return false;
+      if (c.activeTo && now > Date.parse(c.activeTo)) return false;
+      const hit = seen[c.id];
+      if (hit && (!c.requireAcknowledge || hit.ack)) return false;
+      if (c.minVersion && semver.valid(version) && semver.lt(version, c.minVersion)) return false;
+      if (c.maxVersion && semver.valid(version) && semver.gt(version, c.maxVersion)) return false;
+      return true;
+    })
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+    .map((campaign: RemoteCampaign) => (goNext: () => void) => {
+      openRemoteCampaignPopup(campaign, goNext);
+    });
+}
+
 export async function runStartupPopupQueue() {
-  // Make sure the background script knows about any dev-mode API override
-  // before we start firing requests.
   syncApiBaseToBackground();
 
-  const steps: QueueStep[] = [];
-  const afterWhatsNew = !!settingsState.justupdated;
+  const steps: QueueStep[] = [...remoteCampaignSteps()];
 
-  if (afterWhatsNew) {
+  if (settingsState.justupdated) {
     steps.push((goNext) => OpenWhatsNewPopup(goNext));
   }
 
@@ -43,8 +60,6 @@ export async function runStartupPopupQueue() {
     steps.push((goNext) => OpenCoursesAssessmentsFixPopup(goNext));
   }
 
-  // Fetch the Theme of the Month before queueing so we don't show an empty
-  // popup if the network or server is unavailable.
   const themeOfTheMonth = await fetchThemeOfTheMonth();
   if (shouldShowThemeOfTheMonth(themeOfTheMonth)) {
     steps.push((goNext) => {
@@ -53,13 +68,10 @@ export async function runStartupPopupQueue() {
   }
 
   const feedbackReplyStep = await maybeQueueFeedbackReplyPopup();
-  if (feedbackReplyStep) {
-    steps.push(feedbackReplyStep);
-  }
+  if (feedbackReplyStep) steps.push(feedbackReplyStep);
 
   steps.push((goNext) => {
     void (async () => {
-      // Nothing is sent to BetterSEQTA servers until the user signs in to Cloud.
       if (!(await cloudAuth.getStoredToken())) {
         goNext();
         return;

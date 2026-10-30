@@ -53,6 +53,12 @@ const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
   "cloudUsername",
   "bsplus_install_id",
   "bsplus_pending_feedback_ids",
+  "bsplus_remote_config_snapshot",
+  "bsplus_remote_config_etag",
+  "bsplus_campaign_seen",
+  "bsplus_local_override_onoff",
+  "bsplus_features_hidden_until_version",
+  "bsplus_install_registered_at",
 ]);
 
 function isExcludedSettingsKey(key: string): boolean {

@@ -16,6 +16,7 @@ import {
   getLastUploadedSnapshot,
   setKnownRemoteUpdatedAt,
 } from "@/seqta/utils/cloudSettingsSync";
+import { isRemoteCloudSyncDisabled } from "./remoteConfig";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 export const CLOUD_SUMMARY_URL = `${ACCOUNTS_BASE}/api/user/cloud-summary`;
@@ -216,6 +217,9 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
 export async function performCloudSettingsUploadWithRetry(
   token: string,
 ): Promise<{ success: boolean; error?: string; updated_at?: string; skipped?: boolean }> {
+  if (await isRemoteCloudSyncDisabled()) {
+    return { success: false, error: "Cloud sync disabled by remote config", skipped: true };
+  }
   let t = token;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await putSettingsOnce(t);
@@ -332,6 +336,8 @@ async function downloadIfNeeded(token: string): Promise<void> {
 }
 
 async function runCloudSettingsPollInner(): Promise<void> {
+  if (await isRemoteCloudSyncDisabled()) return;
+
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) return;
 
@@ -409,6 +415,7 @@ function scheduleDebouncedUpload(): void {
 /** Call after store theme install (and similar) so cloud upload runs even if storage events are flaky. */
 export function requestCloudSettingsDebouncedUpload(): void {
   void (async () => {
+    if (await isRemoteCloudSyncDisabled()) return;
     const all = (await browser.storage.local.get()) as Record<string, unknown>;
     if (!isAutoCloudSyncEnabled(all)) return;
     if (suppressAutoUploadDuringRestore) return;
@@ -418,6 +425,7 @@ export function requestCloudSettingsDebouncedUpload(): void {
 }
 
 async function runDebouncedUploadJob(): Promise<void> {
+  if (await isRemoteCloudSyncDisabled()) return;
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) return;
   const token = await getAccessToken();
@@ -449,6 +457,7 @@ function onStorageChanged(
   if (!keys.some((k) => isKeyIncludedInCloudUploadPayload(k))) return;
 
   void (async () => {
+    if (await isRemoteCloudSyncDisabled()) return;
     const all = (await browser.storage.local.get()) as Record<string, unknown>;
     if (!isAutoCloudSyncEnabled(all)) return;
     if (suppressAutoUploadDuringRestore) return;

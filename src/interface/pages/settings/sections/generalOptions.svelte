@@ -12,10 +12,13 @@
   } from "@/seqta/utils/performanceMode";
   import browser from "webextension-polyfill";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
+  import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 
   let { searchQuery = "" }: SettingsSectionSharedProps = $props();
 
   const isEngage = isSeqtaEngageExperience();
+  const onoffGate = $derived(checkRemoteFeature("settings.control.onoff"));
+  const onoffGreyedOut = $derived(onoffGate.mode === "greyout");
 
   const generalOptions = $derived([
     {
@@ -144,7 +147,19 @@
 {#if generalOptions.some((option) => matchesSearch(searchQuery, option.title, option.description))}
   <SettingsCard class="divide-y divide-zinc-200/60 dark:divide-zinc-700/40">
     {#each generalOptions as option (option.id)}
-      <SettingRow {...option} {searchQuery} />
+      {#if option.id === 12}
+        <div
+          class:opacity-50={onoffGreyedOut}
+          class:pointer-events-none={onoffGreyedOut}
+          title={onoffGreyedOut
+            ? (onoffGate.message?.body ?? "Disabled by site operator")
+            : undefined}
+        >
+          <SettingRow {...option} {searchQuery} />
+        </div>
+      {:else}
+        <SettingRow {...option} {searchQuery} />
+      {/if}
       {#if option.id === 0 && $settingsState.performanceMode && matchesSearch(searchQuery, "Performance Mode", "Global Search", "Assessment Averages", "enable anyway", "paused")}
         <div class="border-none -mt-px">
           <div

@@ -1,6 +1,14 @@
 import browser from "webextension-polyfill";
 import isEqual from "@/seqta/utils/isEqual";
 import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
+import {
+  BSPLUS_CAMPAIGN_SEEN_KEY,
+  BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY,
+  BSPLUS_INSTALL_REGISTERED_AT_KEY,
+  BSPLUS_LOCAL_OVERRIDE_ONOFF_KEY,
+  BSPLUS_REMOTE_CONFIG_ETAG_KEY,
+  BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY,
+} from "@/seqta/utils/remoteConfig/storageKeys";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
@@ -44,6 +52,15 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "bsplus_install_id",
   /** Pending feedback ids awaiting a reply notification — device-local. */
   "bsplus_pending_feedback_ids",
+  BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY,
+  BSPLUS_REMOTE_CONFIG_ETAG_KEY,
+  BSPLUS_CAMPAIGN_SEEN_KEY,
+  BSPLUS_LOCAL_OVERRIDE_ONOFF_KEY,
+  BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY,
+  BSPLUS_INSTALL_REGISTERED_AT_KEY,
+  BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY,
+  BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY,
+  BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY,
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
 ] as const;
 
