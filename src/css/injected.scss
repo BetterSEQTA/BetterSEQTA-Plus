@@ -3892,14 +3892,56 @@ div.day-empty {
   box-sizing: border-box;
 }
 .userInfoHouseWrap .bsplus-founder-badge-slot {
-  width: 100%;
+  display: block;
+  width: max-content;
+  max-width: 100%;
   margin-top: 4px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.bsplus-founder-badge-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.bsplus-founder-badge-carousel {
+  display: grid;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.bsplus-founder-badge-carousel > .bsplus-founder-badge {
+  grid-area: 1 / 1;
   width: 100%;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease,
+    visibility 0s linear 0.45s;
+  pointer-events: none;
+}
+.bsplus-founder-badge-carousel > .bsplus-founder-badge--active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease,
+    visibility 0s;
+  pointer-events: auto;
+  z-index: 1;
+}
+.bsplus-founder-badge-carousel--static > .bsplus-founder-badge {
+  transition: none;
+  transform: none;
+  visibility: hidden;
+}
+.bsplus-founder-badge-carousel--static > .bsplus-founder-badge--active {
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bsplus-founder-badge-carousel > .bsplus-founder-badge {
+    transition: none;
+    transform: none;
+  }
 }
 .userInfoHouseWrap .bsplus-founder-badge-slot[hidden],
 .bsplus-founder-badge-slot[hidden] {
@@ -3909,28 +3951,35 @@ div.day-empty {
   display: block;
   width: 100%;
   border-radius: 5px;
+  overflow: hidden;
 }
-.bsplus-founder-badge--titlebar .bsplus-founder-badge__glass,
-.bsplus-founder-badge--titlebar .bsplus-founder-badge__content {
+.bsplus-founder-badge--titlebar .bsplus-founder-badge__glass {
+  display: flex;
   width: 100%;
   border-radius: 5px;
   box-sizing: border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .bsplus-founder-badge--titlebar .bsplus-founder-badge__content {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
   justify-content: center;
   padding: 0 6px;
   gap: 0;
   min-height: 0;
+  min-width: 0;
   height: auto;
   font-size: 15px;
   line-height: normal;
+  border-radius: 5px;
+  box-sizing: border-box;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 .bsplus-founder-badge--titlebar .bsplus-founder-badge__label {
   display: block;
@@ -3939,11 +3988,16 @@ div.day-empty {
   white-space: nowrap;
   text-align: center;
 }
-.bsplus-founder-badge--titlebar:focus-visible .bsplus-founder-badge__content {
+.bsplus-founder-badge--titlebar:hover {
+  transform: none;
+}
+.bsplus-founder-badge--titlebar:focus-visible {
+  outline: none;
+}
+.bsplus-founder-badge--titlebar:focus-visible .bsplus-founder-badge__glass {
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 0 0 2px var(--theme-primary, #f97316),
     0 0 0 4px rgba(249, 115, 22, 0.35);
 }
