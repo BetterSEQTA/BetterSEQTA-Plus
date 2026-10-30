@@ -5,9 +5,11 @@
   import { loadSession } from "./rosterStore";
   import { openTimetableClassmatesOptInPopup } from "./openTimetableClassmatesPopup";
   import { runTimetableClassmatesSync } from "./syncOrchestrator";
+  import { accountsAvailability } from "./accountsAvailability";
 
   let rootEl = $state<HTMLDivElement | null>(null);
   let busy = $state(false);
+  let error = $state("");
 
   function syncTheme() {
     const host = rootEl?.closest(".bsplus-friends-sync-mount");
@@ -15,16 +17,19 @@
   }
 
   async function handleClick() {
-    if (busy) return;
-    const session = await loadSession();
-    if (!session.syncOptIn) {
-      openTimetableClassmatesOptInPopup({ onAccepted: () => {} });
-      return;
-    }
-
+    if (busy || !$accountsAvailability.available) return;
+    error = "";
     busy = true;
     try {
-      await runTimetableClassmatesSync();
+      const session = await loadSession();
+      if (!session.syncOptIn) {
+        openTimetableClassmatesOptInPopup({ onAccepted: () => {} });
+        return;
+      }
+      const result = await runTimetableClassmatesSync();
+      if (!result.ok) error = result.error ?? "Sync failed";
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Sync failed";
     } finally {
       busy = false;
     }
@@ -59,14 +64,17 @@
     type="button"
     class="uiButton bsplus-cal-trigger"
     class:bsplus-cal-trigger--busy={busy}
-    disabled={busy}
+    disabled={busy || !$accountsAvailability.available}
     aria-busy={busy}
-    aria-label="Sync with Friends"
+    aria-label={error || $accountsAvailability.message || "Sync with Friends"}
+    title={error || $accountsAvailability.message || "Sync with Friends"}
     onclick={() => void handleClick()}
   >
     <span class="bsplus-cal-trigger-content">
       <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xed66;</span>
-      <span class="bsplus-cal-trigger-text">Sync with Friends</span>
+      <span class="bsplus-cal-trigger-text">
+        {busy ? "Syncing…" : error ? "Sync failed" : "Sync with Friends"}
+      </span>
     </span>
   </button>
 </div>

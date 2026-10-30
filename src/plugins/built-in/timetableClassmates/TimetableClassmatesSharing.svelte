@@ -5,6 +5,7 @@
   import { runTimetableClassmatesSync } from "./syncOrchestrator";
   import { loadSession, resolveClassmatesScope } from "./rosterStore";
   import { pluginSettingsStore } from "@/interface/pages/settings/pluginSettingsState.svelte";
+  import { accountsAvailability } from "./accountsAvailability";
   import {
     openTimetableClassmatesOptInPopup,
     openTimetableClassmatesOptOutPopup,
@@ -92,11 +93,17 @@
 
   {#if syncOptIn}
     <div class="flex flex-wrap gap-2 justify-end">
-      <Button text="Sync now" onClick={() => void syncNow()} disabled={busy} />
+      <Button text="Sync now" onClick={() => void syncNow()} disabled={busy || !$accountsAvailability.available} />
       <Button variant="ghost" class="text-red-600 dark:text-red-400" text="Opt out…" onClick={startOptOut} disabled={busy} />
     </div>
   {:else}
-    <Button text="Opt in…" onClick={startOptIn} disabled={busy} />
+    <Button text="Opt in…" onClick={startOptIn} disabled={busy || !$accountsAvailability.available} />
+  {/if}
+
+  {#if $accountsAvailability.message}
+    <p class="text-xs text-right text-zinc-500 dark:text-zinc-400" role="status">
+      {$accountsAvailability.message}
+    </p>
   {/if}
 
   {#if error}

@@ -139,7 +139,6 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
       }
 
       schedulePaint();
-      await paintTimetable();
       void mountClassmatesToolbarChip();
 
       if (page && !gridObserver) {

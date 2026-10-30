@@ -5,6 +5,7 @@
   import { ACCOUNTS_BASE } from "./constants";
   import { markResumeOptInAfterCloudLogin } from "./optInResume";
   import { registerOptIn } from "./syncOrchestrator";
+  import { accountsAvailability } from "./accountsAvailability";
 
   interface Props {
     onAccepted: () => void | Promise<void>;
@@ -48,7 +49,7 @@
     return null;
   }
 
-  const canSubmit = $derived(agreeShare && agreeJoin && cloudLoggedIn && !busy);
+  const canSubmit = $derived(agreeShare && agreeJoin && cloudLoggedIn && !busy && $accountsAvailability.available);
   const checksDisabled = $derived(busy || !cloudLoggedIn);
 
   async function signInWithCloud() {
@@ -113,7 +114,7 @@
         <button
           type="button"
           class="bsplus-cal-btn bsplus-cal-btn--primary bsplus-tc-cloud-signin"
-          disabled={busy}
+          disabled={busy || !$accountsAvailability.available}
           onclick={() => void signInWithCloud()}
         >
           Sign in with Cloud
@@ -152,6 +153,10 @@
 
   {#if error}
     <p class="bsplus-tc-error">{error}</p>
+  {/if}
+
+  {#if $accountsAvailability.message}
+    <p class="bsplus-tc-error" role="status">{$accountsAvailability.message}</p>
   {/if}
 
   <div class="bsplus-tc-actions">
