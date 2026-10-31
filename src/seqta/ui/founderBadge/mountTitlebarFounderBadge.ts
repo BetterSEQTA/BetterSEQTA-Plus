@@ -43,25 +43,6 @@ function setActiveBadgeChip(chips: HTMLButtonElement[], index: number): void {
   });
 }
 
-/** Carousel chips share the widest label width so the pill does not shrink while cycling. */
-function syncCarouselTrackWidth(
-  carousel: HTMLElement,
-  chips: HTMLButtonElement[],
-): void {
-  carousel.style.removeProperty("width");
-  for (const chip of chips) chip.style.width = "max-content";
-
-  let maxWidth = 0;
-  for (const chip of chips) {
-    maxWidth = Math.max(maxWidth, chip.getBoundingClientRect().width);
-  }
-  if (maxWidth <= 0) return;
-
-  const px = `${Math.ceil(maxWidth)}px`;
-  carousel.style.width = px;
-  for (const chip of chips) chip.style.width = "100%";
-}
-
 function startBadgeCarousel(
   slot: HTMLElement,
   chips: HTMLButtonElement[],
@@ -136,9 +117,6 @@ function renderTitlebarBadges(
     if (!entry) return;
     wireBadgeChip(chip, entry.badge, signupNumber);
   });
-
-  const carousel = slot.querySelector<HTMLElement>(".bsplus-founder-badge-carousel");
-  if (carousel) syncCarouselTrackWidth(carousel, chips);
 
   startBadgeCarousel(
     slot,

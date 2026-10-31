@@ -632,7 +632,7 @@
 
     <Divider />
 
-    <div class="theme-creator-sidebar -mx-2">
+    <div class="-mx-2">
       <SidebarAppearance />
     </div>
 
@@ -722,12 +722,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .theme-creator-sidebar :global(.preview-pane) {
-    display: none;
-  }
-  .theme-creator-sidebar :global(.picker-body) {
-    grid-template-columns: 1fr;
-  }
-</style>

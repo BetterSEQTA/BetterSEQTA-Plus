@@ -44,9 +44,7 @@
 {/if}
 
 {#if !isEngage && matchesSearch(searchQuery, "Sidebar Style", "Item Size", "Corner Radius", "Active Indicator", "Sidebar Position", "Sidebar Width", "Transparency Effects", "Blur Strength")}
-  <div class="border-none">
-    <SidebarAppearance />
-  </div>
+  <SidebarAppearance {searchQuery} />
 {/if}
 
 {#if matchesSearch(searchQuery, "Adaptive Theme Colour", "Soft Gradient", "Smooth colour transition")}
