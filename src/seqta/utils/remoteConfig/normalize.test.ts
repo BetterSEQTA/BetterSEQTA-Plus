@@ -41,6 +41,18 @@ describe("normalizeRemoteConfigSnapshot", () => {
     });
     expect(snap.remoteTheme).toBeNull();
   });
+
+  it("normalizes applicationMode overlay", () => {
+    const snap = normalizeRemoteConfigSnapshot({
+      remoteTheme: {
+        packageId: "p",
+        packageVersion: "1",
+        mode: "optional",
+        applicationMode: "overlay",
+      },
+    });
+    expect(snap.remoteTheme?.applicationMode).toBe("overlay");
+  });
 });
 
 describe("mergeGithubConfigFiles", () => {

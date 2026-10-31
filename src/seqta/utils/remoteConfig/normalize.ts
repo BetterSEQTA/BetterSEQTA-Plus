@@ -104,6 +104,7 @@ function normalizeRemoteTheme(raw: unknown): RemoteThemeDirective | null {
     packageId,
     packageVersion,
     mode,
+    applicationMode: r.applicationMode === "overlay" ? "overlay" : "replace",
     activeFrom: typeof r.activeFrom === "string" ? r.activeFrom : undefined,
     activeTo: typeof r.activeTo === "string" ? r.activeTo : undefined,
     allowUserOptOut: r.allowUserOptOut !== false,

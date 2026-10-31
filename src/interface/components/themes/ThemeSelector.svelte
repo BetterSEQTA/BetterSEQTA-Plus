@@ -14,8 +14,9 @@
   import { getRemoteConfigSnapshot, resolveEffectiveRemoteTheme } from '@/seqta/utils/remoteConfig/runtime'
 
   const themeManager = ThemeManager.getInstance();
+  const remoteDirective = $derived(resolveEffectiveRemoteTheme(getRemoteConfigSnapshot()));
   const remoteThemeForced = $derived(
-    resolveEffectiveRemoteTheme(getRemoteConfigSnapshot())?.mode === "forced",
+    remoteDirective?.mode === 'forced' && (remoteDirective.applicationMode ?? 'replace') === 'replace',
   );
 
   let themes = $state<ThemeList | null>(null);

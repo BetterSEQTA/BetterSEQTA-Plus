@@ -14,8 +14,11 @@ export type ThemePageSyncInput = {
   images?: Array<{ variableName: string; blob: Blob }>;
   customCss?: string;
   previewCss?: string;
+  overlayCss?: string;
+  overlayImages?: Array<{ variableName: string; blob: Blob }>;
   clear?: boolean;
   clearPreview?: boolean;
+  clearOverlay?: boolean;
 };
 
 export function installThemeImagePagePatch(): void {
@@ -59,7 +62,22 @@ function preserveCustomSidebarActive(css: string): string {
   return css.replace(/\.active(?![\w-])/g, ":is(.active, .bsplus-active)");
 }
 
+async function encodeImages(images?: Array<{ variableName: string; blob: Blob }>) {
+  if (images === undefined) return undefined;
+  return Promise.all(
+    images.map(async (image) => ({
+      variableName: image.variableName,
+      data: await blobToBase64Data(image.blob),
+      mime: image.blob.type || "image/png",
+    })),
+  );
+}
+
 export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> {
+  if (input.clearOverlay) {
+    sendPayload({ clearOverlay: true });
+    return;
+  }
   if (input.clear) {
     sendPayload({ clear: true });
     return;
@@ -73,15 +91,14 @@ export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> 
   if (input.previewCss !== undefined) {
     payload.previewCss = preserveCustomSidebarActive(input.previewCss);
   }
-  if (input.images !== undefined) {
-    payload.images = await Promise.all(
-      input.images.map(async (image) => ({
-        variableName: image.variableName,
-        data: await blobToBase64Data(image.blob),
-        mime: image.blob.type || "image/png",
-      })),
-    );
+  if (input.overlayCss !== undefined) {
+    payload.overlayCss = preserveCustomSidebarActive(input.overlayCss);
   }
+
+  const images = await encodeImages(input.images);
+  if (images !== undefined) payload.images = images;
+  const overlayImages = await encodeImages(input.overlayImages);
+  if (overlayImages !== undefined) payload.overlayImages = overlayImages;
 
   if (Object.keys(payload).length === 0) return;
   sendPayload(payload);

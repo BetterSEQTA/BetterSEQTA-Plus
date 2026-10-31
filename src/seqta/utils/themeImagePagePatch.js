@@ -13,7 +13,10 @@
   var IMAGES_STYLE_ID = "bsplus-theme-images";
   var THEME_STYLE_ID = "custom-theme";
   var PREVIEW_STYLE_ID = "custom-theme-preview";
+  var OVERLAY_STYLE_ID = "bsplus-remote-theme-overlay";
+  var OVERLAY_IMAGES_STYLE_ID = "bsplus-remote-theme-overlay-images";
   var urlCache = {};
+  var overlayUrlCache = {};
   var headObserver = null;
 
   function log(event, detail) {
@@ -29,14 +32,16 @@
     return new Blob([ab], { type: mime || "image/png" });
   }
 
-  function releaseCachedUrls() {
-    for (var key in urlCache) {
-      if (!Object.prototype.hasOwnProperty.call(urlCache, key)) continue;
+  function releaseCache(cache) {
+    for (var key in cache) {
+      if (!Object.prototype.hasOwnProperty.call(cache, key)) continue;
       try {
-        URL.revokeObjectURL(urlCache[key]);
+        URL.revokeObjectURL(cache[key]);
       } catch (e) {}
     }
-    urlCache = {};
+    for (key in cache) {
+      if (Object.prototype.hasOwnProperty.call(cache, key)) delete cache[key];
+    }
   }
 
   function styleEl(id) {
@@ -49,11 +54,23 @@
     return el;
   }
 
+  function keepOverlayStylesLast() {
+    var overlayImages = document.getElementById(OVERLAY_IMAGES_STYLE_ID);
+    var overlayCss = document.getElementById(OVERLAY_STYLE_ID);
+    if (overlayImages && document.head.contains(overlayImages)) {
+      document.head.appendChild(overlayImages);
+    }
+    if (overlayCss && document.head.contains(overlayCss)) {
+      document.head.appendChild(overlayCss);
+    }
+  }
+
   function keepThemeStyleLast() {
     var themeStyle = document.getElementById(THEME_STYLE_ID);
     if (themeStyle && document.head.contains(themeStyle) && document.head.lastElementChild !== themeStyle) {
       document.head.appendChild(themeStyle);
     }
+    keepOverlayStylesLast();
   }
 
   function watchHead() {
@@ -74,38 +91,45 @@
     }
   }
 
-  function clearAll() {
-    releaseCachedUrls();
-    setStyleText(IMAGES_STYLE_ID, "");
-    document.getElementById(THEME_STYLE_ID)?.remove();
-    document.getElementById(PREVIEW_STYLE_ID)?.remove();
-    headObserver?.disconnect();
-    headObserver = null;
-    log("cleared");
-  }
-
-  function applyThemeImages(images) {
-    releaseCachedUrls();
+  function applyRootImages(images, styleId, cache, afterApply) {
+    releaseCache(cache);
     if (!images?.length) {
-      setStyleText(IMAGES_STYLE_ID, "");
+      document.getElementById(styleId)?.remove();
       return;
     }
-
     var lines = [":root {"];
     for (var i = 0; i < images.length; i++) {
       var img = images[i];
       if (!img?.variableName || !img.data) continue;
       try {
         var url = URL.createObjectURL(base64ToBlob(img.data, img.mime));
-        urlCache[img.variableName] = url;
+        cache[img.variableName] = url;
         lines.push('  --' + img.variableName + ': url("' + url + '");');
       } catch (e) {
         console.warn(LOG, "skip image", img.variableName, e);
       }
     }
     lines.push("}");
-    styleEl(IMAGES_STYLE_ID).textContent = lines.join("\n");
-    log("images applied", { count: images.length });
+    styleEl(styleId).textContent = lines.join("\n");
+    if (afterApply) afterApply();
+    log("images applied", { styleId: styleId, count: images.length });
+  }
+
+  function clearOverlayOnly() {
+    releaseCache(overlayUrlCache);
+    document.getElementById(OVERLAY_STYLE_ID)?.remove();
+    document.getElementById(OVERLAY_IMAGES_STYLE_ID)?.remove();
+    log("overlay cleared");
+  }
+
+  function clearAll() {
+    releaseCache(urlCache);
+    setStyleText(IMAGES_STYLE_ID, "");
+    document.getElementById(THEME_STYLE_ID)?.remove();
+    document.getElementById(PREVIEW_STYLE_ID)?.remove();
+    headObserver?.disconnect();
+    headObserver = null;
+    log("cleared");
   }
 
   function processPayload() {
@@ -121,25 +145,32 @@
         clearAll();
         return;
       }
+      if (payload.clearOverlay) {
+        clearOverlayOnly();
+        return;
+      }
 
-      if (payload.images !== undefined) applyThemeImages(payload.images);
-
+      if (payload.images !== undefined) {
+        applyRootImages(payload.images, IMAGES_STYLE_ID, urlCache);
+      }
       if (payload.customCss !== undefined) {
         setStyleText(THEME_STYLE_ID, payload.customCss || "", true);
         log("custom css applied");
       }
-
+      if (payload.overlayImages !== undefined) {
+        applyRootImages(payload.overlayImages, OVERLAY_IMAGES_STYLE_ID, overlayUrlCache, keepOverlayStylesLast);
+      }
+      if (payload.overlayCss !== undefined) {
+        setStyleText(OVERLAY_STYLE_ID, payload.overlayCss || "", false);
+        keepOverlayStylesLast();
+        log("overlay css applied");
+      }
       if (payload.previewCss !== undefined) {
         setStyleText(PREVIEW_STYLE_ID, payload.previewCss || "");
         var previewStyle = document.getElementById(PREVIEW_STYLE_ID);
-        if (previewStyle) {
-          document.head.appendChild(previewStyle);
-        }
+        if (previewStyle) document.head.appendChild(previewStyle);
       }
-
-      if (payload.clearPreview) {
-        setStyleText(PREVIEW_STYLE_ID, "");
-      }
+      if (payload.clearPreview) setStyleText(PREVIEW_STYLE_ID, "");
     } catch (e) {
       console.warn(LOG, "invalid payload", e);
     }

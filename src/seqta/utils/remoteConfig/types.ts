@@ -50,11 +50,13 @@ export type RemoteCampaign = {
 };
 
 export type RemoteThemeMode = "off" | "optional" | "forced";
+export type RemoteThemeApplicationMode = "replace" | "overlay";
 
 export type RemoteThemeDirective = {
   packageId: string;
   packageVersion: string;
   mode: RemoteThemeMode;
+  applicationMode?: RemoteThemeApplicationMode;
   activeFrom?: string;
   activeTo?: string;
   message?: { title?: string; body?: string };
