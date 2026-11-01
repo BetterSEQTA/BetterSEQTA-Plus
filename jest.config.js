@@ -14,6 +14,8 @@ export default {
     '/node_modules/(?!(color|color-string|color-convert|color-name)/)',
   ],
   moduleNameMapper: {
+    '^@/(.*)\\?script(?:&(?:iife|module))?$':
+      '<rootDir>/src/test/mocks/crxjsScriptPath.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^color$': '<rootDir>/src/test/mocks/color.ts',
     '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
