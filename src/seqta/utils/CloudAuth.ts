@@ -25,6 +25,7 @@ export type CloudUser = {
   displayName?: string;
   pfpUrl?: string;
   pfpHash?: string | null;
+  pfpHistory?: { id: string; r2Key: string; createdAt: number }[];
   admin_level?: number;
   signup_number?: number | null;
   badges?: CloudBadge[];

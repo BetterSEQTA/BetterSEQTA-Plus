@@ -29,7 +29,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
   id: "profile-picture",
   name: "Custom Profile Picture",
   description: "Use your own image in place of the profile icon",
-  version: "1.2.0",
+  version: "1.3.0",
   settings: settings,
   disableToggle: true,
   defaultEnabled: false,
@@ -96,9 +96,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     }
 
     if (api.settings.useCloudPfp && cloudAuth.state.isLoggedIn) {
-      const { pullCloudProfilePictureFromServer } = await import(
-        "@/seqta/utils/cloudPfpSync"
-      );
+      const { pullCloudProfilePictureFromServer } = await import("@/seqta/utils/cloudPfpSync");
       await pullCloudProfilePictureFromServer();
     }
 

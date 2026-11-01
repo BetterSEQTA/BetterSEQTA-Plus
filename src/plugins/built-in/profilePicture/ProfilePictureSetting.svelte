@@ -9,16 +9,20 @@
     isUseCloudPfpEnabled,
     notifyProfilePictureChanged,
     pullCloudProfilePictureFromServer,
+    revertCloudProfilePicture,
     syncLocalProfilePictureToCloud,
+    uploadCloudProfilePicture,
   } from '@/seqta/utils/cloudPfpSync'
 
   let value = $state<string | undefined>(undefined)
   let fileInput = $state<HTMLInputElement | undefined>(undefined)
+  let cloudFileInput = $state<HTMLInputElement | undefined>(undefined)
   let dragging = $state(false)
   let blobUrl = $state<string | undefined>(undefined)
   let useCloudPfp = $state(false)
-  let refreshingCloud = $state(false)
-  let cloudRefreshError = $state<string | undefined>(undefined)
+  let cloudState = $state(cloudAuth.state)
+  let cloudBusy = $state(false)
+  let cloudError = $state<string | undefined>(undefined)
 
   const store = localforage.createInstance({
     name: 'profile-picture-store',
@@ -39,34 +43,32 @@
 
   onMount(() => {
     void load()
+    const unsub = cloudAuth.subscribe((s) => { cloudState = s })
     const onStorage = (
       changes: Record<string, browser.Storage.StorageChange>,
       areaName: string,
     ) => {
-      if (areaName === 'local' && changes['plugin.profile-picture.settings']) {
-        void load()
-      }
+      if (areaName === 'local' && changes['plugin.profile-picture.settings']) void load()
     }
     browser.storage.onChanged.addListener(onStorage)
-    return () => browser.storage.onChanged.removeListener(onStorage)
+    return () => {
+      browser.storage.onChanged.removeListener(onStorage)
+      unsub()
+    }
   })
 
   async function afterProfilePictureChange() {
     window.dispatchEvent(new Event('profile-picture-updated'))
-    if (await isUseCloudPfpEnabled()) {
-      await syncLocalProfilePictureToCloud()
-    }
+    if (await isUseCloudPfpEnabled()) await syncLocalProfilePictureToCloud()
     await notifyProfilePictureChanged()
   }
 
-  async function refreshCloudPfp() {
-    cloudRefreshError = undefined
-    refreshingCloud = true
-    const result = await pullCloudProfilePictureFromServer()
-    refreshingCloud = false
-    if (!result.success) {
-      cloudRefreshError = result.error ?? 'Could not refresh cloud photo'
-    }
+  async function runCloud(action: () => Promise<{ success: boolean; error?: string }>) {
+    cloudError = undefined
+    cloudBusy = true
+    const result = await action()
+    cloudBusy = false
+    if (!result.success) cloudError = result.error
   }
 
   function triggerSelect() {
@@ -75,17 +77,20 @@
 
   async function handleFiles(files: FileList | null) {
     const file = files?.[0]
-    if (!file) return
+    if (!file?.type.startsWith('image/')) return
 
-    if (blobUrl) {
-      URL.revokeObjectURL(blobUrl)
-    }
-
+    if (blobUrl) URL.revokeObjectURL(blobUrl)
     await store.setItem('profile-picture', file)
-    const newBlobUrl = URL.createObjectURL(file)
-    value = newBlobUrl
-    blobUrl = newBlobUrl
+    blobUrl = URL.createObjectURL(file)
+    value = blobUrl
     await afterProfilePictureChange()
+  }
+
+  async function onCloudFileChange() {
+    const file = cloudFileInput?.files?.[0]
+    if (cloudFileInput) cloudFileInput.value = ''
+    if (!file) return
+    await runCloud(() => uploadCloudProfilePicture(file))
   }
 
   function onFileChange() {
@@ -105,27 +110,22 @@
     }
     value = undefined
     await store.removeItem('profile-picture')
-    if (await isUseCloudPfpEnabled()) {
-      await clearCloudProfilePicture()
-    }
+    if (await isUseCloudPfpEnabled()) await clearCloudProfilePicture()
     await afterProfilePictureChange()
   }
 </script>
 
 <div class="flex flex-col items-end gap-1 shrink-0">
   <div class="flex items-center gap-2">
-    {#if useCloudPfp}
-      <CloudPfpAvatar
-        user={cloudAuth.state.user}
-        class="object-cover rounded-full size-10 shrink-0"
-      />
+    {#if useCloudPfp && cloudState.isLoggedIn}
+      <CloudPfpAvatar user={cloudState.user} class="object-cover rounded-full size-10 shrink-0" />
       <button
         type="button"
         class="flex justify-center items-center shrink-0 rounded-md size-8 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 disabled:opacity-50"
-        disabled={refreshingCloud}
+        disabled={cloudBusy}
         title="Refresh from cloud"
         aria-label="Refresh from cloud"
-        onclick={() => refreshCloudPfp()}
+        onclick={() => runCloud(pullCloudProfilePictureFromServer)}
       >
         <span class="text-lg font-IconFamily dark:text-white">{'\uec79'}</span>
       </button>
@@ -171,7 +171,41 @@
       {/if}
     </div>
   </div>
-  {#if cloudRefreshError}
-    <p class="max-w-[12rem] text-xs text-right text-red-500">{cloudRefreshError}</p>
+
+  {#if cloudState.isLoggedIn}
+    <div class="flex flex-wrap gap-2 justify-end items-center max-w-[14rem]">
+      <button
+        type="button"
+        class="text-xs text-zinc-600 dark:text-zinc-300 hover:underline disabled:opacity-50"
+        disabled={cloudBusy}
+        onclick={() => cloudFileInput?.click()}
+      >
+        Cloud upload
+      </button>
+      <button
+        type="button"
+        class="text-xs text-zinc-600 dark:text-zinc-300 hover:underline disabled:opacity-50"
+        disabled={cloudBusy || !cloudState.user?.pfpUrl}
+        onclick={() => runCloud(clearCloudProfilePicture)}
+      >
+        Clear cloud
+      </button>
+      {#each cloudState.user?.pfpHistory ?? [] as entry (entry.id)}
+        <button
+          type="button"
+          class="size-7 overflow-hidden rounded-full ring-1 ring-zinc-300 dark:ring-zinc-600 disabled:opacity-50"
+          title="Restore"
+          disabled={cloudBusy}
+          onclick={() => runCloud(() => revertCloudProfilePicture(entry.id))}
+        >
+          <img src={entry.r2Key} alt="" class="object-cover size-full" />
+        </button>
+      {/each}
+      <input type="file" accept="image/*" class="hidden" bind:this={cloudFileInput} onchange={onCloudFileChange} />
+    </div>
+  {/if}
+
+  {#if cloudError}
+    <p class="max-w-[12rem] text-xs text-right text-red-500">{cloudError}</p>
   {/if}
 </div>
