@@ -1,4 +1,5 @@
 import { normalizeCustomThemeApiResponse } from "@/seqta/utils/customThemes/parseApiEnvelope";
+import { bsplusApiQueryParams } from "@/seqta/utils/bsplusClientContext";
 
 type MessageSender = { (response?: unknown): void };
 
@@ -115,6 +116,7 @@ export function createCustomThemesHandlers(deps: {
         params.set("type", "betterseqta");
         params.set("page", String(request.page ?? 1));
         params.set("limit", String(request.limit ?? 20));
+        (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.sort) params.set("sort", String(request.sort));
         const search = request.search?.trim();
         const path = search
@@ -139,6 +141,7 @@ export function createCustomThemesHandlers(deps: {
         params.set("page", String(request.page ?? 1));
         params.set("limit", String(request.limit ?? 20));
         params.set("type", "betterseqta");
+        (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.status) params.set("status", String(request.status));
         sendResponse(
           await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true),

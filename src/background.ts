@@ -27,6 +27,7 @@ import {
 } from "./background/remoteConfig";
 import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
+import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 
 /**
@@ -105,7 +106,11 @@ function normalizeFetchThemesResponse(json: unknown): {
 function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
-    const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+    const params = await bsplusApiQueryParams();
+    params.set("type", "betterseqta");
+    params.set("limit", "100");
+    params.set("nocache", String(Date.now()));
+    const apiUrl = `${apiBase()}/api/themes?${params}`;
     const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -151,7 +156,10 @@ function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boo
     const token = await getAccessTokenFromStorage();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
+    const detailUrl = await withBsplusApiQuery(
+      `${apiBase()}/api/themes/${encodeURIComponent(themeId)}`,
+    );
+    fetch(detailUrl, { cache: "no-store", headers })
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {

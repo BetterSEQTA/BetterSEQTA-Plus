@@ -12,6 +12,7 @@ import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
@@ -679,8 +680,16 @@ export class ThemeManager {
 
     let themeJsonUrl = themeContent.theme_json_url;
     if (!themeJsonUrl) {
+      const { bsplus_token } = await browser.storage.local.get("bsplus_token");
+      const auth =
+        typeof bsplus_token === "string" && bsplus_token.length > 0
+          ? { auth: true as const }
+          : undefined;
       const downloadData = (await this.fetchFromUrl(
-        `${this.THEME_API_BASE}/custom-themes/${themeContent.id}/download`,
+        await withBsplusApiQuery(
+          `${this.THEME_API_BASE}/custom-themes/${encodeURIComponent(themeContent.id)}/download`,
+        ),
+        auth,
       )) as { success?: boolean; data?: { theme_json_url: string } };
       if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
         throw new Error("Failed to get community theme download URL");
@@ -730,8 +739,16 @@ export class ThemeManager {
     let themeData: ThemeContent;
 
     try {
+      const { bsplus_token } = await browser.storage.local.get("bsplus_token");
+      const auth =
+        typeof bsplus_token === "string" && bsplus_token.length > 0
+          ? { auth: true as const }
+          : undefined;
       const downloadData = (await this.fetchFromUrl(
-        `${this.THEME_API_BASE}/themes/${themeContent.id}/download`,
+        await withBsplusApiQuery(
+          `${this.THEME_API_BASE}/themes/${encodeURIComponent(themeContent.id)}/download`,
+        ),
+        auth,
       )) as { success?: boolean; data?: { theme_json_url: string } };
       if (!downloadData?.success || !downloadData?.data?.theme_json_url) {
         throw new Error("Failed to get theme download URL");

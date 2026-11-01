@@ -1,4 +1,9 @@
 import browser from "webextension-polyfill";
+import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
+import {
+  bsplusApiQueryParams,
+  bsplusExtensionPayload,
+} from "@/seqta/utils/bsplusClientContext";
 import { getOrCreateInstallId } from "@/seqta/utils/feedback/installId";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import {
@@ -21,19 +26,28 @@ import type { RemoteConfigSnapshot } from "@/seqta/utils/remoteConfig/types";
 
 type MessageSender = { (response?: unknown): void };
 
-function extensionChannel(): string {
-  if (typeof __UPDATE_CHANNEL__ !== "undefined") {
-    if (__UPDATE_CHANNEL__ === "nightly") return "nightly";
-    if (__UPDATE_CHANNEL__ === "stable") return "stable";
-  }
-  return "unknown";
-}
+const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 
-function extensionVersion(): string {
+async function linkCloudInstall(token: string, installId: string): Promise<void> {
   try {
-    return browser.runtime.getManifest().version;
-  } catch {
-    return "0";
+    const r = await fetch(`${ACCOUNTS_BASE}/api/bsplus/installs/link`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        installId,
+        extension: bsplusExtensionPayload(),
+        deviceName: await getBsplusDeviceName(),
+        lastSeenAt: new Date().toISOString(),
+      }),
+      cache: "no-store",
+    });
+    if (!r.ok) console.warn("[BetterSEQTA+] cloud install link failed:", r.status);
+  } catch (e) {
+    console.warn("[BetterSEQTA+] cloud install link failed:", e);
   }
 }
 
@@ -94,6 +108,8 @@ async function registerInstall(
     "bsplus_token",
     "bsplus_user",
   ]);
+  const token =
+    typeof bsplus_token === "string" && bsplus_token.length > 0 ? bsplus_token : undefined;
   const userId =
     bsplus_user && typeof bsplus_user === "object" && "id" in bsplus_user
       ? String((bsplus_user as { id: string }).id)
@@ -103,11 +119,7 @@ async function registerInstall(
 
   const body = {
     installId,
-    extension: {
-      version: extensionVersion(),
-      channel: extensionChannel(),
-      browser: "chrome",
-    },
+    extension: bsplusExtensionPayload(),
     userId,
     lastSeenAt: new Date().toISOString(),
     ...(hostname ? { hostname } : {}),
@@ -118,9 +130,7 @@ async function registerInstall(
       Accept: "application/json",
       "Content-Type": "application/json",
     };
-    if (typeof bsplus_token === "string" && bsplus_token.length > 0) {
-      headers.Authorization = `Bearer ${bsplus_token}`;
-    }
+    if (token) headers.Authorization = `Bearer ${token}`;
     const r = await fetch(`${apiBase}/api/bsplus/installs/register`, {
       method: "POST",
       headers,
@@ -135,6 +145,7 @@ async function registerInstall(
   } catch (e) {
     console.warn("[BetterSEQTA+] install register failed:", e);
   }
+  if (token) void linkCloudInstall(token, installId);
 }
 
 export async function refreshRemoteConfig(apiBase: () => string): Promise<{
@@ -143,13 +154,8 @@ export async function refreshRemoteConfig(apiBase: () => string): Promise<{
   primaryOk: boolean;
 }> {
   const base = apiBase();
-  const installId = await getOrCreateInstallId();
   const hostname = await readLastHostname();
-  const params = new URLSearchParams({
-    installId,
-    extensionVersion: extensionVersion(),
-    channel: extensionChannel(),
-  });
+  const params = await bsplusApiQueryParams();
   if (hostname) params.set("hostname", hostname);
 
   const stored = await browser.storage.local.get([
@@ -237,6 +243,12 @@ export function initRemoteConfigBackground(apiBase: () => string): void {
         } else {
           const res = await refreshRemoteConfig(apiBase);
           if (res.primaryOk) await registerInstall(apiBase(), true, true);
+          else {
+            const { bsplus_token } = await browser.storage.local.get("bsplus_token");
+            if (typeof bsplus_token === "string" && bsplus_token) {
+              void linkCloudInstall(bsplus_token, await getOrCreateInstallId());
+            }
+          }
         }
       })();
     }
@@ -295,11 +307,7 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
     void (async () => {
       try {
         const hostname = await readLastHostname();
-        const params = new URLSearchParams({
-          installId: await getOrCreateInstallId(),
-          extensionVersion: extensionVersion(),
-          channel: extensionChannel(),
-        });
+        const params = await bsplusApiQueryParams();
         if (hostname) params.set("hostname", hostname);
         const base = apiBase();
         const url = `${base}/api/bsplus/remote-theme-packages/${encodeURIComponent(packageId)}?${params}`;

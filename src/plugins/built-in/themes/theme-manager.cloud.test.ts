@@ -52,7 +52,9 @@ describe("cloud theme restoration", () => {
       (browser.runtime.sendMessage as jest.Mock).mockImplementation(
         async ({ url }) => {
           if (
-            url === `https://betterseqta.org/api/${catalog}/catalog-id/download`
+            typeof url === "string" &&
+            url.includes(`/api/${catalog}/catalog-id/download`) &&
+            url.includes("extensionVersion=")
           ) {
             return {
               data: { success: true, data: { theme_json_url: jsonUrl } },
